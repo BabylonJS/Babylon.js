@@ -740,6 +740,11 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         clipChildren: boolean;
         /**
+         * Gets or sets a boolean indicating that control content must be clipped
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
+        clipContent: boolean;
+        /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
          */
         useBitmapCache: boolean;
@@ -2019,6 +2024,10 @@ declare module "babylonjs-gui/2D/controls/grid" {
         readonly rowCount: number;
         /** Gets the list of children */
         readonly children: Control[];
+        /** Gets the list of cells (e.g. the containers) */
+        readonly cells: {
+            [key: string]: Container;
+        };
         /**
          * Gets the definition of a specific row
          * @param index defines the index of the row
@@ -4558,6 +4567,11 @@ declare module BABYLON.GUI {
          */
         clipChildren: boolean;
         /**
+         * Gets or sets a boolean indicating that control content must be clipped
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
+        clipContent: boolean;
+        /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
          */
         useBitmapCache: boolean;
@@ -5797,6 +5811,10 @@ declare module BABYLON.GUI {
         readonly rowCount: number;
         /** Gets the list of children */
         readonly children: Control[];
+        /** Gets the list of cells (e.g. the containers) */
+        readonly cells: {
+            [key: string]: Container;
+        };
         /**
          * Gets the definition of a specific row
          * @param index defines the index of the row

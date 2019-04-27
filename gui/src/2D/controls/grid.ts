@@ -34,6 +34,11 @@ export class Grid extends Container {
         return this._childControls;
     }
 
+    /** Gets the list of cells (e.g. the containers) */
+    public get cells(): { [key: string]: Container } {
+        return this._cells;
+    }
+
     /**
      * Gets the definition of a specific row
      * @param index defines the index of the row

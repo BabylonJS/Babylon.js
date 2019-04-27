@@ -3764,6 +3764,11 @@ var Control = /** @class */ (function () {
          */
         this.clipChildren = true;
         /**
+         * Gets or sets a boolean indicating that control content must be clipped
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
+        this.clipContent = true;
+        /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
          */
         this.useBitmapCache = false;
@@ -5166,9 +5171,9 @@ var Control = /** @class */ (function () {
         // Transform
         this._transform(context);
         // Clip
-        //     if (this.clipChildren) {
-        this._clip(context, invalidatedRectangle);
-        //   }
+        if (this.clipContent) {
+            this._clip(context, invalidatedRectangle);
+        }
         if (this.onBeforeDrawObservable.hasObservers()) {
             this.onBeforeDrawObservable.notifyObservers(this);
         }
@@ -5893,6 +5898,14 @@ var Grid = /** @class */ (function (_super) {
         /** Gets the list of children */
         get: function () {
             return this._childControls;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Grid.prototype, "cells", {
+        /** Gets the list of cells (e.g. the containers) */
+        get: function () {
+            return this._cells;
         },
         enumerable: true,
         configurable: true
