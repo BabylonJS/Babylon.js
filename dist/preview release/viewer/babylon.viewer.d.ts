@@ -951,7 +951,7 @@ declare module BabylonViewer {
       * @param name the name of the custom optimizer configuration
       * @param upgrade set to true if you want to upgrade optimizer and false if you want to degrade
       */
-    export function getCustomOptimizerByName(name: string, upgrade?: boolean): (sceneManager: SceneManager) => boolean;
+    export function getCustomOptimizerByName(name: string, upgrade?: boolean): typeof extendedUpgrade;
     export function registerCustomOptimizer(name: string, optimizer: (sceneManager: SceneManager) => boolean): void;
 }
 declare module BabylonViewer {
@@ -1594,6 +1594,20 @@ declare module BabylonViewer {
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
 }
 declare module BabylonViewer {
+    /**
+        * A custom upgrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedUpgrade(sceneManager: SceneManager): boolean;
+    /**
+        * A custom degrade-oriented function configuration for the scene optimizer.
+        *
+        * @param viewer the viewer to optimize
+        */
+    export function extendedDegrade(sceneManager: SceneManager): boolean;
+}
+declare module BabylonViewer {
     export interface IEnvironmentMapConfiguration {
             /**
                 * Environment map texture path in relative to the asset folder.
@@ -1615,39 +1629,6 @@ declare module BabylonViewer {
                     g?: number;
                     b?: number;
             };
-    }
-}
-declare module BabylonViewer {
-    /**
-        * The EventManager is in charge of registering user interctions with the viewer.
-        * It is used in the TemplateManager
-        */
-    export class EventManager {
-            constructor(_templateManager: TemplateManager);
-            /**
-                * Register a new callback to a specific template.
-                * The best example for the usage can be found in the DefaultViewer
-                *
-                * @param templateName the templateName to register the event to
-                * @param callback The callback to be executed
-                * @param eventType the type of event to register
-                * @param selector an optional selector. if not defined the parent object in the template will be selected
-                */
-            registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
-            /**
-                * This will remove a registered event from the defined template.
-                * Each one of the variables apart from the template name are optional, but one must be provided.
-                *
-                * @param templateName the templateName
-                * @param callback the callback to remove (optional)
-                * @param eventType the event type to remove (optional)
-                * @param selector the selector from which to remove the event (optional)
-                */
-            unregisterCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
-            /**
-                * Dispose the event manager
-                */
-            dispose(): void;
     }
 }
 declare module BabylonViewer {
