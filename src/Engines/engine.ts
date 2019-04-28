@@ -2571,11 +2571,7 @@ export class Engine {
                 if (data instanceof ArrayBuffer) {
                     data = new Uint8Array(data, byteOffset, byteLength);
                 } else {
-                    let offset = data.byteOffset + byteOffset;
-
-                    if (offset || byteLength !== data.byteLength) {
-                        data = new Uint8Array(data.buffer, offset, byteLength);
-                    }
+                    data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
                 }
 
                 this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
