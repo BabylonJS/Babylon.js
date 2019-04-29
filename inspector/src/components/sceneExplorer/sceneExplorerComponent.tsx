@@ -272,7 +272,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         });
 
         return (
-            <div id="tree">
+            <div id="tree" onContextMenu={e => e.preventDefault()}>
                 <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
                 <SceneTreeItemComponent globalState={this.props.globalState}
                     extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />

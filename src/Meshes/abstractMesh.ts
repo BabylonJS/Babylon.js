@@ -22,6 +22,7 @@ import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { _MeshCollisionData } from '../Collisions/meshCollisionData';
+import { _DevTools } from '../Misc/devTools';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -2130,4 +2131,25 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public _checkOcclusionQuery(): boolean { // Will be replaced by correct code if Occlusion queries are referenced
         return false;
     }
+
+    /**
+     * Disables the mesh edge rendering mode
+     * @returns the currentAbstractMesh
+     */
+    disableEdgesRendering(): AbstractMesh {
+        throw _DevTools.WarnImport("EdgesRenderer");
+    }
+
+    /**
+     * Enables the edge rendering mode on the mesh.
+     * This mode makes the mesh edges visible
+     * @param epsilon defines the maximal distance between two angles to detect a face
+     * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+     * @returns the currentAbstractMesh
+     * @see https://www.babylonjs-playground.com/#19O9TU#0
+     */
+    enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh {
+        throw _DevTools.WarnImport("EdgesRenderer");
+    }
+
 }
