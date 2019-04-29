@@ -185,6 +185,14 @@ export class LightGizmo extends Gizmo {
         return root;
     }
 
+    /**
+     * Disposes of the light gizmo
+     */
+    public dispose() {
+        this._material.dispose();
+        super.dispose();
+    }
+
     private static _CreateHemisphericLightMesh(scene: Scene) {
         var root = new Mesh("hemisphereLight", scene);
         var hemisphere = HemisphereBuilder.CreateHemisphere(root.name, {segments: 10, diameter: 1}, scene);
