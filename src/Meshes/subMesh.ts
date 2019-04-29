@@ -369,15 +369,20 @@ export class SubMesh extends BaseSubMesh implements ICullable {
 
         // LineMesh first as it's also a Mesh...
         if (this._mesh.getClassName() === "InstancedLinesMesh" || this._mesh.getClassName() === "LinesMesh") {
+            // Check if mesh is unindexed
+            if (!indices.length) {
+                return this._intersectUnIndexedLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
+            }
             return this._intersectLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
         }
+        else {
+            // Check if mesh is unindexed
+            if (!indices.length) {
+                return this._intersectUnIndexedTriangles(ray, positions, indices, fastCheck, trianglePredicate);
+            }
 
-        // Check if mesh is unindexed
-        if (!indices.length) {
-            return this._intersectUnIndexedTriangles(ray, positions, indices, fastCheck, trianglePredicate);
+            return this._intersectTriangles(ray, positions, indices, fastCheck, trianglePredicate);
         }
-
-        return this._intersectTriangles(ray, positions, indices, fastCheck, trianglePredicate);
     }
 
     /** @hidden */
@@ -402,6 +407,32 @@ export class SubMesh extends BaseSubMesh implements ICullable {
                 }
             }
         }
+        return intersectInfo;
+    }
+
+    /** @hidden */
+    private _intersectUnIndexedLines(ray: Ray, positions: Vector3[], indices: IndicesArray, intersectionThreshold: number, fastCheck?: boolean): Nullable<IntersectionInfo> {
+        var intersectInfo: Nullable<IntersectionInfo> = null;
+
+        // Line test
+        for (var index = this.verticesStart; index < this.verticesStart + this.verticesCount; index += 2) {
+            var p0 = positions[index];
+            var p1 = positions[index + 1];
+
+            var length = ray.intersectionSegment(p0, p1, intersectionThreshold);
+            if (length < 0) {
+                continue;
+            }
+
+            if (fastCheck || !intersectInfo || length < intersectInfo.distance) {
+                intersectInfo = new IntersectionInfo(null, null, length);
+                intersectInfo.faceId = index / 2;
+                if (fastCheck) {
+                    break;
+                }
+            }
+        }
+
         return intersectInfo;
     }
 
