@@ -42539,6 +42539,10 @@ declare module BABYLON {
          * Creates the lines for a light mesh
          */
         private static _createLightLines;
+        /**
+         * Disposes of the light gizmo
+         */
+        dispose(): void;
         private static _CreateHemisphericLightMesh;
         private static _CreatePointLightMesh;
         private static _CreateSpotLightMesh;

@@ -83,6 +83,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         this.forceUpdate();
                     }
                     manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
+                }else{
+                    manager.attachToMesh(null);
                 }
             }
         });

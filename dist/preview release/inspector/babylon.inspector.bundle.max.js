@@ -40523,6 +40523,9 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                     }
                     manager.attachToMesh(_this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 }
+                else {
+                    manager.attachToMesh(null);
+                }
             }
         });
     };
@@ -41294,7 +41297,6 @@ var TreeItemComponent = /** @class */ (function (_super) {
     TreeItemComponent.prototype.renderContextMenu = function () {
         if (!this.props.contextMenuItems) {
             TreeItemComponent._ContextMenuUniqueIdGenerator++;
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react_contextmenu__WEBPACK_IMPORTED_MODULE_6__["ContextMenu"], { id: "contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator++, className: "context-menu" });
             return null;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react_contextmenu__WEBPACK_IMPORTED_MODULE_6__["ContextMenu"], { id: "contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator++, className: "context-menu" }, this.props.contextMenuItems.map(function (c) {
