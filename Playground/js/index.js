@@ -976,7 +976,7 @@ function showError(errorMessage, errorEvent) {
         }
 
         var formatCode = function() {
-            jsEditor.getAction('editor.action.format').run();
+            jsEditor.getAction('editor.action.formatDocument').run();
         }
 
         var toggleMinimap = function() {
