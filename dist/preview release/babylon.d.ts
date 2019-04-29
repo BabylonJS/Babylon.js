@@ -31694,6 +31694,7 @@ declare module BABYLON {
         private _isStarted;
         private _isPaused;
         private _speedRatio;
+        private _loopAnimation;
         /**
          * Gets or sets the unique id of the node
          */
@@ -31741,6 +31742,10 @@ declare module BABYLON {
         * Gets or sets the speed ratio to use for all animations
         */
         speedRatio: number;
+        /**
+         * Gets or sets if all animations should loop or not
+         */
+        loopAnimation: boolean;
         /**
          * Gets the targeted animations for this animation group
          */
