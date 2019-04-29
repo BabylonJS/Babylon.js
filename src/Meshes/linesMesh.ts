@@ -172,7 +172,8 @@ export class LinesMesh extends Mesh {
         const colorEffect = this._colorShader.getEffect();
 
         // VBOs
-        this._geometry._bind(colorEffect);
+        const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
+        this._geometry._bind(colorEffect, indexToBind);
 
         // Color
         if (!this.useVertexColor) {
@@ -193,7 +194,13 @@ export class LinesMesh extends Mesh {
         var engine = this.getScene().getEngine();
 
         // Draw order
-        engine.drawElementsType(Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
+
+        if (this._unIndexed) {
+            engine.drawArraysType(Material.LineListDrawMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+        }
+        else {
+            engine.drawElementsType(Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
+        }
         return this;
     }
 
