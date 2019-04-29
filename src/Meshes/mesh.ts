@@ -1289,7 +1289,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     break;
                 default:
                 case Material.TriangleFillMode:
-                    indexToBind = this._unIndexed ? null : this._geometry.getIndexBuffer();
+                    indexToBind = this._geometry.getIndexBuffer();
                     break;
             }
         }
