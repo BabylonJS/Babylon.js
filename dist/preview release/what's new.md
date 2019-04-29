@@ -137,7 +137,7 @@
 - Added LoadScriptAsync tools helper function [MackeyK24](https://github.com/mackeyk24))
 - Added customShaderNameResolve to PBRMaterialBase to allow subclasses to specify custom shader information [MackeyK24](https://github.com/mackeyk24))
 - Added PBRCustomMaterial to material library to allow easy subclassing of PBR materials [MackeyK24](https://github.com/mackeyk24))
-- Added custom defines for roughness and microsurface in PBRCustomMaterial [Lockphase](https://github.com/lockphase)) 
+- Added custom defines for roughness and microsurface in PBRCustomMaterial [Lockphase](https://github.com/lockphase))
 - Added `auto-exposure` support in `StandardRenderingPipeline` when `HDR` is enabled ([julien-moreau](https://github.com/julien-moreau))
 - Add `EquiRectangularCubeTexture` class to enable the usage of browser-canvas supported images as `CubeTexture`'s ([Dennis Dervisis](https://github.com/ddervisis))
 - Add `EquiRectangularCubeTextureAssetTask` to be able to load `EquiRectangularCubeTextures`s via Asset Manager ([Dennis Dervisis](https://github.com/ddervisis))
@@ -264,6 +264,7 @@
 - Fix a bug causing `Mesh.clone` to crash if no physicsEngineComponent is used  ([barroij](https://github.com/barroij))
 - Fix zoom inertia making it difficult to zoom out with ArcRotateCamera ([TrevorDev](https://github.com/TrevorDev))
 - Option for isInFrustum to check rigCameras, viewMatrix updates for rigCameras will notify their parent ([TrevorDev](https://github.com/TrevorDev))
+- Handle properly unindexed `LinesMesh` (rendering + picking) ([barroij](https://github.com/barroij))
 
 ### Loaders
 
