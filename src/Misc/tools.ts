@@ -598,7 +598,7 @@ export class Tools {
     }
 
     // DOC TODO
-    public static WorldUniformUvScaling(positions: FloatArray, uvs: FloatArray, indices: number[], scale: Vector3, worldToTexelRatio: number) {
+    public static WorldUniformUvScaling(positions: FloatArray, uvs: FloatArray, indices: number[], scale: Vector3, worldToTexelRatio: number, padding: number = 1) {
         // world to texel in units/1texel
         let v0 = new Vector3();
         let v1 = new Vector3();
@@ -643,14 +643,17 @@ export class Tools {
         let width = averageWorldToUvRatio * uvExpand.x;
         let height = averageWorldToUvRatio * uvExpand.y;
 
-        let textureWidth = Math.max(1, Tools.NearestPOT(width / worldToTexelRatio));
-        let textureHeight = Math.max(1, Tools.NearestPOT(height / worldToTexelRatio));
+        let textureWidth = Math.max(1, Tools.FloorPOT(2 * (width / worldToTexelRatio + 2 * padding)));
+        let textureHeight = Math.max(1, Tools.FloorPOT(2 * (height / worldToTexelRatio + 2 * padding)));
+
+        let uvPadding = new Vector2(padding / textureWidth, padding / textureHeight);
+        let scalingFactor = new Vector2((1 - 2 * uvPadding.x) / uvExpand.x, (1 - 2 * uvPadding.y) / uvExpand.y);
 
         // scale to use full extent of texture
         for (let i = 0; i < uvs.length; i += 2) {
             uv0.copyFromFloats(uvs[i], uvs[i + 1]);
-            uv0.subtractInPlace(lowestUv);
-            newUvs.push(uv0.x / uvExpand.x, uv0.y / uvExpand.y);
+            uv0.subtractInPlace(lowestUv).multiplyInPlace(scalingFactor).addInPlace(uvPadding);
+            newUvs.push(uv0.x, uv0.y);
         }
 
         // legacy

@@ -84,6 +84,7 @@ export class PatchRenderer {
     private _radiosityEffect: Effect;
     private _shootEffect: Effect;
     private _nextShooterEffect: Effect;
+    private _dilateEffect: Effect;
     private _near: number;
     private _far: number;
     private _texelSize: number;
@@ -564,7 +565,10 @@ export class PatchRenderer {
         engine.unBindFramebuffer(destGatheringTexture);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-        // Swap buffers
+        // Dilates to origin, swapping buffers in the process
+        this.dilate(1, mrt.textures[6], mrt.textures[4]);
+
+        // Swap buffers that should not be dilated
         var t = mrt.textures[3];
         mrt.textures[3] = mrt.textures[5];
         mrt.textures[5] = t;
@@ -573,13 +577,13 @@ export class PatchRenderer {
         mrt.internalTextures[3] = mrt.internalTextures[5];
         mrt.internalTextures[5] = it;
 
-        t = mrt.textures[4];
-        mrt.textures[4] = mrt.textures[6];
-        mrt.textures[6] = t;
+        // t = mrt.textures[4];
+        // mrt.textures[4] = mrt.textures[6];
+        // mrt.textures[6] = t;
 
-        it = mrt.internalTextures[4];
-        mrt.internalTextures[4] = mrt.internalTextures[6];
-        mrt.internalTextures[6] = it;
+        // it = mrt.internalTextures[4];
+        // mrt.internalTextures[4] = mrt.internalTextures[6];
+        // mrt.internalTextures[6] = it;
     }
 
     public isGatheringEffectReady() {
@@ -638,7 +642,7 @@ export class PatchRenderer {
         }
         var shooter = this.nextShooter();
 
-        if (!shooter || !this.isRadiosityDataEffectReady() || !this.isGatheringEffectReady() || !this.isPatchEffectReady()) {
+        if (!shooter || !this.isRadiosityDataEffectReady() || !this.isGatheringEffectReady() || !this.isPatchEffectReady() || !this.isDilateEffectReady()) {
             console.log("No shooter yet");
             return true;
         }
@@ -737,6 +741,33 @@ export class PatchRenderer {
         engine.unBindFramebuffer(<InternalTexture>(this._nextShooterTexture._texture));
 
         return this._submeshMap[id];
+    }
+
+    public dilate(padding: number = 1, origin: Texture, dest: Texture) {
+        if (!this.isDilateEffectReady()) {
+            return;
+        }
+
+        // TODO : turn into postprocess
+        var engine = this._scene.getEngine();
+        engine.enableEffect(this._dilateEffect);
+        engine.setState(false);
+        let gl = engine._gl;
+        let fb = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb)
+        gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, (<InternalTexture>dest._texture)._webGLTexture, 0);
+
+        engine.clear(new Color4(0.0, 0.0, 0.0, 0.0), true, true, true);
+        this._prepareBuffers();
+        let vb: any = {};
+        vb[VertexBuffer.PositionKind] = this._vertexBuffer;
+        this._dilateEffect.setTexture("inputTexture", origin);
+        this._dilateEffect.setFloat2("texelSize", 1 / dest.getSize().width, 1 / dest.getSize().height);
+        engine.bindBuffers(vb, this._indexBuffer, this._dilateEffect);
+
+        engine.setDirectViewport(0, 0, dest.getSize().width, dest.getSize().height);
+        engine.drawElementsType(Material.TriangleFillMode, 0, 6);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
     private _prepareBuffers(): void {
@@ -881,6 +912,15 @@ export class PatchRenderer {
             ["polygonIdSampler", "unshotRadiositySampler"], "");
 
         return this._nextShooterEffect.isReady();
+    }
+
+    public isDilateEffectReady(): boolean {
+        this._dilateEffect = this._scene.getEngine().createEffect("dilate",
+            [VertexBuffer.PositionKind],
+            ["offset", "texelSize"],
+            ["inputTexture"], "");
+
+        return this._dilateEffect.isReady();
     }
 
     public encodeId(n: number) {

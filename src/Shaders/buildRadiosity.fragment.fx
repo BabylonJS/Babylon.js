@@ -33,6 +33,6 @@ void main(void) {
 	// glFragData[2] = vec4(vUV, 0.0, 1.0);
 	glFragData[3] = vec4(color, lightStrength);
 	glFragData[4] = vec4(color, lightStrength);
-	glFragData[5] = vec4(0.0, 0.0, 0.0, 0.0); // offscreen textures
-	glFragData[6] = vec4(0.0, 0.0, 0.0, 0.0); // offscreen textures
+	glFragData[5] = vec4(0.0, 0.0, 0.0, 1.0); // offscreen textures
+	glFragData[6] = vec4(0.0, 0.0, 0.0, 1.0); // offscreen textures
 }

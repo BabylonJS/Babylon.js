@@ -72,12 +72,13 @@ vec3 formFactorEnergy()
 void main(void) {
     // Draw in residual AND gathering with multidraw buffer at uv position
     id = texture(idBuffer, vUV).xyz; 
-    worldPos = texture(worldPosBuffer, vUV).xyz;
+    vec4 worldPos4 = texture(worldPosBuffer, vUV);
+    worldPos = worldPos4.xyz;
     // worldPos.x -= 1.5 / 16.;
     // worldPos.z += 1.5 / 16.;
     worldNormal = texture(worldNormalBuffer, vUV).xyz;
     
     vec3 energy = formFactorEnergy();
-	  glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, 1.0);
-    glFragData[1] = vec4(energy + texture(gatheringBuffer, vUV).xyz, 1.0);
+	  glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
+    glFragData[1] = vec4(energy + texture(gatheringBuffer, vUV).xyz, worldPos4.a);
 }
