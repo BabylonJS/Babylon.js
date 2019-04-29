@@ -1843,6 +1843,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             this.instances.forEach((instance) => {
+                instance.refreshBoundingInfo();
                 instance._syncSubMeshes();
             });
 
@@ -3859,6 +3860,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (index = 0; index < meshes.length; index++) {
             if (meshes[index]) {
                 var mesh = meshes[index];
+                if (mesh.isAnInstance) {
+                    Logger.Warn("Cannot merge instance meshes.");
+                    return null;
+                }
+
                 const wm = mesh.computeWorldMatrix(true);
                 otherVertexData = VertexData.ExtractFromMesh(mesh, true, true);
                 otherVertexData.transform(wm);
