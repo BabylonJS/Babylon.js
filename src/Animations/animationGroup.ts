@@ -6,6 +6,9 @@ import { Scene, IDisposable } from "../scene";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
+
+import "./animatable";
+
 /**
  * This class defines the direct association between an animation and a target
  */
