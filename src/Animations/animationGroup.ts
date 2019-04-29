@@ -33,6 +33,7 @@ export class AnimationGroup implements IDisposable {
     private _isStarted: boolean;
     private _isPaused: boolean;
     private _speedRatio = 1;
+    private _loopAnimation = false;
 
     /**
      * Gets or sets the unique id of the node
@@ -112,6 +113,26 @@ export class AnimationGroup implements IDisposable {
         for (var index = 0; index < this._animatables.length; index++) {
             let animatable = this._animatables[index];
             animatable.speedRatio = this._speedRatio;
+        }
+    }
+
+    /**
+     * Gets or sets if all animations should loop or not
+     */
+    public get loopAnimation(): boolean {
+        return this._loopAnimation;
+    }
+
+    public set loopAnimation(value: boolean) {
+        if (this._loopAnimation === value) {
+            return;
+        }
+
+        this._loopAnimation = value;
+
+        for (var index = 0; index < this._animatables.length; index++) {
+            let animatable = this._animatables[index];
+            animatable.loopAnimation = this._loopAnimation;
         }
     }
 
@@ -231,6 +252,8 @@ export class AnimationGroup implements IDisposable {
             return this;
         }
 
+        this._loopAnimation = loop;
+
         for (const targetedAnimation of this._targetedAnimations) {
             let animatable = this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], from !== undefined ? from : this._from, to !== undefined ? to : this._to, loop, speedRatio);
             animatable.onAnimationEnd = () => {
@@ -294,10 +317,7 @@ export class AnimationGroup implements IDisposable {
         // only if all animatables are ready and exist
         if (this.isStarted && this._animatables.length === this._targetedAnimations.length) {
             if (loop !== undefined) {
-                for (var index = 0; index < this._animatables.length; index++) {
-                    let animatable = this._animatables[index];
-                    animatable.loopAnimation = loop;
-                }
+                this.loopAnimation = loop;
             }
             this.restart();
         } else {
