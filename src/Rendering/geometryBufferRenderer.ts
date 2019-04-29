@@ -15,6 +15,7 @@ import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { _DevTools } from '../Misc/devTools';
 
+/** @hidden */
 interface ISavedTransformationMatrix {
     world: Matrix;
     viewProjection: Matrix;
