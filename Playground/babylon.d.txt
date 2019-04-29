@@ -17040,20 +17040,6 @@ declare module BABYLON {
 declare module BABYLON {
         interface AbstractMesh {
             /**
-             * Disables the mesh edge rendering mode
-             * @returns the currentAbstractMesh
-             */
-            disableEdgesRendering(): AbstractMesh;
-            /**
-             * Enables the edge rendering mode on the mesh.
-             * This mode makes the mesh edges visible
-             * @param epsilon defines the maximal distance between two angles to detect a face
-             * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-             * @returns the currentAbstractMesh
-             * @see https://www.babylonjs-playground.com/#19O9TU#0
-             */
-            enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
-            /**
              * Gets the edgesRenderer associated with the mesh
              */
             edgesRenderer: Nullable<EdgesRenderer>;
@@ -22306,6 +22292,8 @@ declare module BABYLON {
         /** @hidden */
         private _intersectLines;
         /** @hidden */
+        private _intersectUnIndexedLines;
+        /** @hidden */
         private _intersectTriangles;
         /** @hidden */
         private _intersectUnIndexedTriangles;
@@ -24533,6 +24521,20 @@ declare module BABYLON {
          */
         alignWithNormal(normal: Vector3, upDirection?: Vector3): AbstractMesh;
         /** @hidden */private _checkOcclusionQuery(): boolean;
+        /**
+         * Disables the mesh edge rendering mode
+         * @returns the currentAbstractMesh
+         */
+        disableEdgesRendering(): AbstractMesh;
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the currentAbstractMesh
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
     }
 }
 declare module BABYLON {
@@ -52234,6 +52236,11 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+    /** @hidden */
+    interface ISavedTransformationMatrix {
+        world: Matrix;
+        viewProjection: Matrix;
+    }
     /**
      * This renderer is helpfull to fill one of the render target with a geometry buffer.
      */
@@ -52253,8 +52260,20 @@ declare module BABYLON {
          * in order to compute objects velocities when enableVelocity is set to "true"
          * @hidden
          */private _previousTransformationMatrices: {
-            [index: number]: Matrix;
+            [index: number]: ISavedTransformationMatrix;
         };
+        /**
+         * Dictionary used to store the previous bones transformation matrices of each rendered mesh
+         * in order to compute objects velocities when enableVelocity is set to "true"
+         * @hidden
+         */private _previousBonesTransformationMatrices: {
+            [index: number]: Float32Array;
+        };
+        /**
+         * Array used to store the ignored skinned meshes while computing velocity map (typically used by the motion blur post-process).
+         * Avoids computing bones velocities and computes only mesh's velocity itself (position, rotation, scaling).
+         */
+        excludedSkinnedMeshesFromVelocity: AbstractMesh[];
         private _scene;
         private _multiRenderTarget;
         private _ratio;
@@ -52333,6 +52352,7 @@ declare module BABYLON {
          */
         dispose(): void;
         protected _createRenderTargets(): void;
+        private _copyBonesTransformationMatrices;
     }
 }
 declare module BABYLON {
@@ -52434,6 +52454,18 @@ declare module BABYLON {
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
         constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        /**
+         * Excludes the given skinned mesh from computing bones velocities.
+         * Computing bones velocities can have a cost and that cost. The cost can be saved by calling this function and by passing the skinned mesh reference to ignore.
+         * @param skinnedMesh The mesh containing the skeleton to ignore when computing the velocity map.
+         */
+        excludeSkinnedMesh(skinnedMesh: AbstractMesh): void;
+        /**
+         * Removes the given skinned mesh from the excluded meshes to integrate bones velocities while rendering the velocity map.
+         * @param skinnedMesh The mesh containing the skeleton that has been ignored previously.
+         * @see excludeSkinnedMesh to exclude a skinned mesh from bones velocity computation.
+         */
+        removeExcludedSkinnedMesh(skinnedMesh: AbstractMesh): void;
         /**
          * Disposes the post process.
          * @param camera The camera to dispose the post process on.

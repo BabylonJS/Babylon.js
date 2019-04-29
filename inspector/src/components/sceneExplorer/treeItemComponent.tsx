@@ -126,6 +126,8 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
     renderContextMenu() {
         if (!this.props.contextMenuItems) {
             TreeItemComponent._ContextMenuUniqueIdGenerator++;
+            <ContextMenu id={"contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator++} className="context-menu">
+            </ContextMenu>
             return null;
         }
 
