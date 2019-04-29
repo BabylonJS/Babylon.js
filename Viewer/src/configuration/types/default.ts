@@ -28,7 +28,8 @@ export let defaultConfiguration: ViewerConfiguration = deepmerge(renderOnlyDefau
             html: loadingScreen,
             params: {
                 backgroundColor: "#000000",
-                loadingImage: images.loading
+                loadingImage: images.loading,
+                staticLoadingImage: images.staticLoading
             }
         },
         viewer: {
