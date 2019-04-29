@@ -22,7 +22,7 @@ import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { _MeshCollisionData } from '../Collisions/meshCollisionData';
-import { _DevTools } from '../Misc/DevTools';
+import { _DevTools } from '../Misc/devTools';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
