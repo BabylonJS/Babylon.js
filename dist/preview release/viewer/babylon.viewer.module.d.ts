@@ -1341,7 +1341,16 @@ declare module 'babylonjs-viewer/viewer/viewerWithTemplate' {
 }
 
 declare module 'babylonjs-viewer/configuration/configurationContainer' {
-    
+    import { ViewerConfiguration } from 'babylonjs-viewer/configuration/configuration';
+    import { Color3 } from 'babylonjs/Maths/math';
+    import { Scene } from 'babylonjs/scene';
+    export class ConfigurationContainer {
+        configuration: ViewerConfiguration;
+        viewerId: string;
+        mainColor: Color3;
+        reflectionColor: Color3;
+        scene?: Scene;
+    }
 }
 
 declare module 'babylonjs-viewer/configuration/renderOnlyLoader' {

@@ -1237,6 +1237,15 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
+    export class ConfigurationContainer {
+        configuration: ViewerConfiguration;
+        viewerId: string;
+        mainColor: BABYLON.Color3;
+        reflectionColor: BABYLON.Color3;
+        scene?: BABYLON.Scene;
+    }
+}
+declare module BabylonViewer {
     /**
         * The configuration loader will load the configuration object from any source and will use the defined mapper to
         * parse the object and return a conform ViewerConfiguration.
