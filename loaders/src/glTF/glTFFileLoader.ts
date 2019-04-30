@@ -1,5 +1,3 @@
-import { IGLTFValidationResults, IGLTFValidationOptions } from "babylonjs-gltf2interface";
-
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Tools } from "babylonjs/Misc/tools";
@@ -15,9 +13,51 @@ import { AssetContainer } from "babylonjs/assetContainer";
 import { Scene, IDisposable } from "babylonjs/scene";
 
 /**
+ * Interface for glTF validation results
+ */
+interface IGLTFValidationResults {
+    info: {
+        generator: string;
+        hasAnimations: boolean;
+        hasDefaultScene: boolean;
+        hasMaterials: boolean;
+        hasMorphTargets: boolean;
+        hasSkins: boolean;
+        hasTextures: boolean;
+        maxAttributesUsed: number;
+        primitivesCount: number
+    };
+    issues: {
+        messages: Array<string>;
+        numErrors: number;
+        numHints: number;
+        numInfos: number;
+        numWarnings: number;
+        truncated: boolean
+    };
+    mimeType: string;
+    uri: string;
+    validatedAt: string;
+    validatorVersion: string;
+}
+
+/**
+ * Interface for glTF validation options
+ */
+interface IGLTFValidationOptions {
+    uri?: string;
+    externalResourceFunction?: (uri: string) => Promise<Uint8Array>;
+    validateAccessorData?: boolean;
+    maxIssues?: number;
+    ignoredIssues?: Array<string>;
+    severityOverrides?: Object;
+}
+
+/**
  * glTF validator object
  */
 declare var GLTFValidator: {
+    validateBytes: (data: Uint8Array, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
     validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
 };
 
@@ -574,9 +614,9 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     private _parseAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, fileName?: string): Promise<IGLTFLoaderData> {
         return Promise.resolve().then(() => {
-            const unpacked = (data instanceof ArrayBuffer) ? this._unpackBinary(data) : { json: data, bin: null };
+            return this._validateAsync(scene, data, rootUrl, fileName).then(() => {
+                const unpacked = (data instanceof ArrayBuffer) ? this._unpackBinary(data) : { json: data, bin: null };
 
-            return this._validateAsync(scene, unpacked.json, rootUrl, fileName).then(() => {
                 this._startPerformanceCounter("Parse JSON");
                 this._log(`JSON length: ${unpacked.json.length}`);
 
@@ -595,7 +635,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    private _validateAsync(scene: Scene, json: string, rootUrl: string, fileName?: string): Promise<void> {
+    private _validateAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, fileName?: string): Promise<void> {
         if (!this.validate || typeof GLTFValidator === "undefined") {
             return Promise.resolve();
         }
@@ -614,9 +654,12 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             options.uri = (rootUrl === "file:" ? fileName : `${rootUrl}${fileName}`);
         }
 
-        return GLTFValidator.validateString(json, options).then((result) => {
-            this._endPerformanceCounter("Validate JSON");
+        const promise = (data instanceof ArrayBuffer)
+            ? GLTFValidator.validateBytes(new Uint8Array(data), options)
+            : GLTFValidator.validateString(data, options);
 
+        return promise.then((result) => {
+            this._endPerformanceCounter("Validate JSON");
             this.onValidatedObservable.notifyObservers(result);
             this.onValidatedObservable.clear();
         }, (reason) => {
