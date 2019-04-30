@@ -16,8 +16,8 @@
     }
 
     img.loading-image {
-        -webkit-animation: spin 2s linear infinite;
-        animation: spin 2s linear infinite;
+        -webkit-animation: spin 0.75s linear infinite;
+        animation: spin 0.75s linear infinite;
     }
 
     @-webkit-keyframes spin {
@@ -39,4 +39,5 @@
     }
 </style>
 
-<img class="loading-image" src="{{loadingImage}}">
+<img class="loading-image" style="position:absolute" src="{{loadingImage}}">
+<img class="static-loading-image" style="position:absolute" src="{{staticLoadingImage}}">
