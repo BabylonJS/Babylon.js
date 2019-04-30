@@ -635,6 +635,8 @@ export abstract class EffectLayer {
         var scene = this._scene;
         var engine = scene.getEngine();
 
+        mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+
         if (!material) {
             return;
         }

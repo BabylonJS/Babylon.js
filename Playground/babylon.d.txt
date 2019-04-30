@@ -16603,7 +16603,7 @@ declare module BABYLON {
          */
         refreshBoundingInfo(applySkeleton?: boolean): InstancedMesh;
         /** @hidden */private _preActivate(): InstancedMesh;
-        /** @hidden */private _activate(renderId: number): boolean;
+        /** @hidden */private _activate(renderId: number, intermediateRendering: boolean): boolean;
         /** @hidden */private _postActivate(): void;
         getWorldMatrix(): Matrix;
         readonly isAnInstance: boolean;
@@ -23809,6 +23809,44 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */private class _FacetDataStorage {
+        facetPositions: Vector3[];
+        facetNormals: Vector3[];
+        facetPartitioning: number[][];
+        facetNb: number;
+        partitioningSubdivisions: number;
+        partitioningBBoxRatio: number;
+        facetDataEnabled: boolean;
+        facetParameters: any;
+        bbSize: Vector3;
+        subDiv: {
+            max: number;
+            X: number;
+            Y: number;
+            Z: number;
+        };
+        facetDepthSort: boolean;
+        facetDepthSortEnabled: boolean;
+        depthSortedIndices: IndicesArray;
+        depthSortedFacets: {
+            ind: number;
+            sqDistance: number;
+        }[];
+        facetDepthSortFunction: (f1: {
+            ind: number;
+            sqDistance: number;
+        }, f2: {
+            ind: number;
+            sqDistance: number;
+        }) => number;
+        facetDepthSortFrom: Vector3;
+        facetDepthSortOrigin: Vector3;
+        invertedMatrix: Matrix;
+    }
+    /**
+     * @hidden
+     **/private class _InternalAbstractMeshDataInfo {private _hasVertexAlpha: boolean;private _useVertexColors: boolean;private _numBoneInfluencers: number;private _applyFog: boolean;private _receiveShadows: boolean;private _facetData: _FacetDataStorage;private _visibility: number;private _skeleton: Nullable<Skeleton>;private _layerMask: number;private _computeBonesUsingShaders: boolean;private _isActive: boolean;private _onlyForInstances: boolean;private _isActiveIntermediate: boolean;private _onlyForInstancesIntermediate: boolean;
+    }
     /**
      * Class used to store all common mesh properties
      */
@@ -23869,7 +23907,7 @@ declare module BABYLON {
         static readonly BILLBOARDMODE_Z: number;
         /** Billboard on all axes */
         static readonly BILLBOARDMODE_ALL: number;
-        private _internalAbstractMeshDataInfo;
+        /** @hidden */private _internalAbstractMeshDataInfo: _InternalAbstractMeshDataInfo;
         /**
          * The culling strategy to use to check whether the mesh must be rendered or not.
          * This value can be changed at any time and will be used on the next render mesh selection.
@@ -23938,8 +23976,6 @@ declare module BABYLON {
          */
         definedFacingForward: boolean;
         /** @hidden */private _occlusionQuery: Nullable<WebGLQuery>;
-        /** @hidden */private _isActive: boolean;
-        /** @hidden */private _onlyForInstances: boolean;
         /** @hidden */private _renderingGroup: Nullable<RenderingGroup>;
         /**
          * Gets or sets mesh visibility between 0 and 1 (default is 1)
@@ -24236,7 +24272,7 @@ declare module BABYLON {
         readonly useBones: boolean;
         /** @hidden */private _preActivate(): void;
         /** @hidden */private _preActivateForIntermediateRendering(renderId: number): void;
-        /** @hidden */private _activate(renderId: number): boolean;
+        /** @hidden */private _activate(renderId: number, intermediateRendering: boolean): boolean;
         /** @hidden */private _postActivate(): void;
         /** @hidden */private _freeze(): void;
         /** @hidden */private _unFreeze(): void;
@@ -26343,6 +26379,10 @@ declare module BABYLON {
         private _loadingDivBackgroundColor;
         private _loadingDiv;
         private _loadingTextDiv;
+        /** Gets or sets the logo url to use for the default loading screen */
+        static DefaultLogoUrl: string;
+        /** Gets or sets the spinner url to use for the default loading screen */
+        static DefaultSpinnerUrl: string;
         /**
          * Creates a new default loading screen
          * @param _renderingCanvas defines the canvas used to render the scene

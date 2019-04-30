@@ -278,14 +278,21 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /** @hidden */
-    public _activate(renderId: number): boolean {
+    public _activate(renderId: number, intermediateRendering: boolean): boolean {
         if (this._currentLOD) {
             this._currentLOD._registerInstanceForRenderId(this, renderId);
         }
 
-        if (!this._currentLOD._isActive) {
-            this._currentLOD._onlyForInstances = true;
-            return true;
+        if (intermediateRendering) {
+            if (!this._currentLOD._internalAbstractMeshDataInfo._isActiveIntermediate) {
+                this._currentLOD._internalAbstractMeshDataInfo._onlyForInstancesIntermediate = true;
+                return true;
+            }
+        } else {
+            if (!this._currentLOD._internalAbstractMeshDataInfo._isActive) {
+                this._currentLOD._internalAbstractMeshDataInfo._onlyForInstances = true;
+                return true;
+            }
         }
         return false;
     }
