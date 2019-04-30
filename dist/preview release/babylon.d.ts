@@ -26879,6 +26879,10 @@ declare module BABYLON {
         private _loadingDivBackgroundColor;
         private _loadingDiv;
         private _loadingTextDiv;
+        /** Gets or sets the logo url to use for the default loading screen */
+        static DefaultLogoUrl: string;
+        /** Gets or sets the spinner url to use for the default loading screen */
+        static DefaultSpinnerUrl: string;
         /**
          * Creates a new default loading screen
          * @param _renderingCanvas defines the canvas used to render the scene

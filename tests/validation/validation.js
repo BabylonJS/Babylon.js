@@ -148,7 +148,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
             currentScene.activeCamera.useAutoRotationBehavior = false;
         }
         engine.runRenderLoop(function() {
-            try {                
+            try {
                 currentScene.render();
                 renderCount--;
 
@@ -324,10 +324,10 @@ function runTest(index, done) {
                     try {
                         request.onreadystatechange = null;
 
-                        var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
-                        scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
-                        scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/Assets/");
-                        scriptToRun = scriptToRun.replace(/\/Assets\//g, config.root + "/Assets/");
+                        var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/assets/");
+                        scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/assets/");
+                        scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/assets/");
+                        scriptToRun = scriptToRun.replace(/\/Assets\//g, config.root + "/assets/");
 
                         if (test.replace) {
                             var split = test.replace.split(",");
