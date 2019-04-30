@@ -491,14 +491,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.0.0-rc.1";
+        return "babylonjs@4.0.0-rc.3";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.0.0-rc.1";
+        return "4.0.0-rc.3";
     }
 
     /**
@@ -2571,11 +2571,7 @@ export class Engine {
                 if (data instanceof ArrayBuffer) {
                     data = new Uint8Array(data, byteOffset, byteLength);
                 } else {
-                    let offset = data.byteOffset + byteOffset;
-
-                    if (offset || byteLength !== data.byteLength) {
-                        data = new Uint8Array(data.buffer, offset, byteLength);
-                    }
+                    data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
                 }
 
                 this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);

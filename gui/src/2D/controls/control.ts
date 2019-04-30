@@ -128,6 +128,12 @@ export class Control {
     public clipChildren = true;
 
     /**
+     * Gets or sets a boolean indicating that control content must be clipped
+     * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+     */
+    public clipContent = true;
+
+    /**
      * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
      */
     public useBitmapCache = false;
@@ -435,14 +441,6 @@ export class Control {
         return this._width.toString(this._host);
     }
 
-    /**
-     * Gets control width in pixel
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
-     */
-    public get widthInPixels(): number {
-        return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
-    }
-
     public set width(value: string | number) {
         if (this._width.toString(this._host) === value) {
             return;
@@ -454,19 +452,26 @@ export class Control {
     }
 
     /**
+     * Gets or sets the control width in pixel
+     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     */
+    public get widthInPixels(): number {
+        return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
+    }
+
+    public set widthInPixels(value: number) {
+        if (isNaN(value)) {
+            return;
+        }
+        this.width = value + "px";
+    }
+
+    /**
      * Gets or sets control height
      * @see http://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get height(): string | number {
         return this._height.toString(this._host);
-    }
-
-    /**
-     * Gets control height in pixel
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
-     */
-    public get heightInPixels(): number {
-        return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
     }
 
     public set height(value: string | number) {
@@ -477,6 +482,21 @@ export class Control {
         if (this._height.fromString(value)) {
             this._markAsDirty();
         }
+    }
+
+    /**
+     * Gets or sets control height in pixel
+     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     */
+    public get heightInPixels(): number {
+        return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+    }
+
+    public set heightInPixels(value: number) {
+        if (isNaN(value)) {
+            return;
+        }
+        this.height = value + "px";
     }
 
     /** Gets or set font family */
@@ -556,7 +576,7 @@ export class Control {
         return this._fontSize.isPercentage;
     }
 
-    /** Gets font size in pixels */
+    /** Gets or sets font size in pixels */
     public get fontSizeInPixels(): number {
         let fontSizeToUse = this._style ? this._style._fontSize : this._fontSize;
 
@@ -565,6 +585,13 @@ export class Control {
         }
 
         return fontSizeToUse.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
+    }
+
+    public set fontSizeInPixels(value: number) {
+        if (isNaN(value)) {
+            return;
+        }
+        this.fontSize = value + "px";
     }
 
     /** Gets or sets font size */
@@ -662,18 +689,25 @@ export class Control {
         return this._paddingLeft.toString(this._host);
     }
 
+    public set paddingLeft(value: string | number) {
+        if (this._paddingLeft.fromString(value)) {
+            this._markAsDirty();
+        }
+    }
+
     /**
-     * Gets a value indicating the padding in pixels to use on the left of the control
+     * Gets or sets a value indicating the padding in pixels to use on the left of the control
      * @see http://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingLeftInPixels(): number {
         return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
     }
 
-    public set paddingLeft(value: string | number) {
-        if (this._paddingLeft.fromString(value)) {
-            this._markAsDirty();
+    public set paddingLeftInPixels(value: number) {
+        if (isNaN(value)) {
+            return;
         }
+        this.paddingLeft = value + "px";
     }
 
     /**
@@ -684,18 +718,25 @@ export class Control {
         return this._paddingRight.toString(this._host);
     }
 
+    public set paddingRight(value: string | number) {
+        if (this._paddingRight.fromString(value)) {
+            this._markAsDirty();
+        }
+    }
+
     /**
-     * Gets a value indicating the padding in pixels to use on the right of the control
+     * Gets or sets a value indicating the padding in pixels to use on the right of the control
      * @see http://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingRightInPixels(): number {
         return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
     }
 
-    public set paddingRight(value: string | number) {
-        if (this._paddingRight.fromString(value)) {
-            this._markAsDirty();
+    public set paddingRightInPixels(value: number) {
+        if (isNaN(value)) {
+            return;
         }
+        this.paddingRight = value + "px";
     }
 
     /**
@@ -706,18 +747,25 @@ export class Control {
         return this._paddingTop.toString(this._host);
     }
 
+    public set paddingTop(value: string | number) {
+        if (this._paddingTop.fromString(value)) {
+            this._markAsDirty();
+        }
+    }
+
     /**
-     * Gets a value indicating the padding in pixels to use on the top of the control
+     * Gets or sets a value indicating the padding in pixels to use on the top of the control
      * @see http://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingTopInPixels(): number {
         return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
     }
 
-    public set paddingTop(value: string | number) {
-        if (this._paddingTop.fromString(value)) {
-            this._markAsDirty();
+    public set paddingTopInPixels(value: number) {
+        if (isNaN(value)) {
+            return;
         }
+        this.paddingTop = value + "px";
     }
 
     /**
@@ -728,18 +776,25 @@ export class Control {
         return this._paddingBottom.toString(this._host);
     }
 
+    public set paddingBottom(value: string | number) {
+        if (this._paddingBottom.fromString(value)) {
+            this._markAsDirty();
+        }
+    }
+
     /**
-     * Gets a value indicating the padding in pixels to use on the bottom of the control
+     * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
      * @see http://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingBottomInPixels(): number {
         return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
     }
 
-    public set paddingBottom(value: string | number) {
-        if (this._paddingBottom.fromString(value)) {
-            this._markAsDirty();
+    public set paddingBottomInPixels(value: number) {
+        if (isNaN(value)) {
+            return;
         }
+        this.paddingBottom = value + "px";
     }
 
     /**
@@ -750,18 +805,25 @@ export class Control {
         return this._left.toString(this._host);
     }
 
+    public set left(value: string | number) {
+        if (this._left.fromString(value)) {
+            this._markAsDirty();
+        }
+    }
+
     /**
-     * Gets a value indicating the left coordinate in pixels of the control
+     * Gets or sets a value indicating the left coordinate in pixels of the control
      * @see http://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get leftInPixels(): number {
         return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
     }
 
-    public set left(value: string | number) {
-        if (this._left.fromString(value)) {
-            this._markAsDirty();
+    public set leftInPixels(value: number) {
+        if (isNaN(value)) {
+            return;
         }
+        this.left = value + "px";
     }
 
     /**
@@ -772,18 +834,25 @@ export class Control {
         return this._top.toString(this._host);
     }
 
+    public set top(value: string | number) {
+        if (this._top.fromString(value)) {
+            this._markAsDirty();
+        }
+    }
+
     /**
-     * Gets a value indicating the top coordinate in pixels of the control
+     * Gets or sets a value indicating the top coordinate in pixels of the control
      * @see http://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get topInPixels(): number {
         return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
     }
 
-    public set top(value: string | number) {
-        if (this._top.fromString(value)) {
-            this._markAsDirty();
+    public set topInPixels(value: number) {
+        if (isNaN(value)) {
+            return;
         }
+        this.top = value + "px";
     }
 
     /**
@@ -794,18 +863,25 @@ export class Control {
         return this._linkOffsetX.toString(this._host);
     }
 
+    public set linkOffsetX(value: string | number) {
+        if (this._linkOffsetX.fromString(value)) {
+            this._markAsDirty();
+        }
+    }
+
     /**
-     * Gets a value indicating the offset in pixels on X axis to the linked mesh
+     * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
      * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public get linkOffsetXInPixels(): number {
         return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
     }
 
-    public set linkOffsetX(value: string | number) {
-        if (this._linkOffsetX.fromString(value)) {
-            this._markAsDirty();
+    public set linkOffsetXInPixels(value: number) {
+        if (isNaN(value)) {
+            return;
         }
+        this.linkOffsetX = value + "px";
     }
 
     /**
@@ -816,18 +892,25 @@ export class Control {
         return this._linkOffsetY.toString(this._host);
     }
 
+    public set linkOffsetY(value: string | number) {
+        if (this._linkOffsetY.fromString(value)) {
+            this._markAsDirty();
+        }
+    }
+
     /**
-     * Gets a value indicating the offset in pixels on Y axis to the linked mesh
+     * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
      * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public get linkOffsetYInPixels(): number {
         return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
     }
 
-    public set linkOffsetY(value: string | number) {
-        if (this._linkOffsetY.fromString(value)) {
-            this._markAsDirty();
+    public set linkOffsetYInPixels(value: number) {
+        if (isNaN(value)) {
+            return;
         }
+        this.linkOffsetY = value + "px";
     }
 
     /** Gets the center coordinate on X axis */
@@ -1512,9 +1595,9 @@ export class Control {
         this._transform(context);
 
         // Clip
-        //     if (this.clipChildren) {
-        this._clip(context, invalidatedRectangle);
-        //   }
+        if (this.clipContent) {
+            this._clip(context, invalidatedRectangle);
+        }
 
         if (this.onBeforeDrawObservable.hasObservers()) {
             this.onBeforeDrawObservable.notifyObservers(this);

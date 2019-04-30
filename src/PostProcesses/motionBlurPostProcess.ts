@@ -7,6 +7,7 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 import { Scene } from "../scene";
+import { AbstractMesh } from "../Meshes/abstractMesh";
 
 import "../Animations/animatable";
 import '../Rendering/geometryBufferRendererSceneComponent';
@@ -93,6 +94,31 @@ export class MotionBlurPostProcess extends PostProcess {
     }
 
     /**
+     * Excludes the given skinned mesh from computing bones velocities.
+     * Computing bones velocities can have a cost and that cost. The cost can be saved by calling this function and by passing the skinned mesh reference to ignore.
+     * @param skinnedMesh The mesh containing the skeleton to ignore when computing the velocity map.
+     */
+    public excludeSkinnedMesh(skinnedMesh: AbstractMesh): void {
+        if (this._geometryBufferRenderer && skinnedMesh.skeleton) {
+            this._geometryBufferRenderer.excludedSkinnedMeshesFromVelocity.push(skinnedMesh);
+        }
+    }
+
+    /**
+     * Removes the given skinned mesh from the excluded meshes to integrate bones velocities while rendering the velocity map.
+     * @param skinnedMesh The mesh containing the skeleton that has been ignored previously.
+     * @see excludeSkinnedMesh to exclude a skinned mesh from bones velocity computation.
+     */
+    public removeExcludedSkinnedMesh(skinnedMesh: AbstractMesh): void {
+        if (this._geometryBufferRenderer && skinnedMesh.skeleton) {
+            const index = this._geometryBufferRenderer.excludedSkinnedMeshesFromVelocity.indexOf(skinnedMesh);
+            if (index !== -1) {
+                this._geometryBufferRenderer.excludedSkinnedMeshesFromVelocity.splice(index, 1);
+            }
+        }
+    }
+
+    /**
      * Disposes the post process.
      * @param camera The camera to dispose the post process on.
      */
@@ -100,6 +126,8 @@ export class MotionBlurPostProcess extends PostProcess {
         if (this._geometryBufferRenderer) {
             // Clear previous transformation matrices dictionary used to compute objects velocities
             this._geometryBufferRenderer._previousTransformationMatrices = {};
+            this._geometryBufferRenderer._previousBonesTransformationMatrices = {};
+            this._geometryBufferRenderer.excludedSkinnedMeshesFromVelocity = [];
         }
 
         super.dispose(camera);
