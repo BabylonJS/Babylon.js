@@ -16,6 +16,7 @@ import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.renderTarget";
+import { InstancedMesh } from 'Meshes';
 
 declare type Engine = import("../../Engines/engine").Engine;
 
@@ -676,12 +677,19 @@ export class RenderTargetTexture extends Texture {
                 }
 
                 if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && !isMasked) {
-                    mesh._activate(sceneRenderId);
+                    if (mesh._activate(sceneRenderId, true)) {
+                        if (!mesh.isAnInstance) {
+                            mesh._internalAbstractMeshDataInfo._onlyForInstancesIntermediate = false;
+                        } else {
+                            mesh = (mesh as InstancedMesh).sourceMesh;
+                        }
+                        mesh._internalAbstractMeshDataInfo._isActiveIntermediate = true;
 
-                    for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                        var subMesh = mesh.subMeshes[subIndex];
-                        scene._activeIndices.addCount(subMesh.indexCount, false);
-                        this._renderingManager.dispatch(subMesh, mesh);
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
+                            scene._activeIndices.addCount(subMesh.indexCount, false);
+                            this._renderingManager.dispatch(subMesh, mesh);
+                        }
                     }
                 }
             }
