@@ -1371,15 +1371,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this._instanceDataStorage.previousBatch;
         }
         var scene = this.getScene();
+        const isInIntermediateRendering = scene._isInIntermediateRendering();
+        const onlyForInstances = isInIntermediateRendering ? this._internalAbstractMeshDataInfo._onlyForInstancesIntermediate : this._internalAbstractMeshDataInfo._onlyForInstances;
         let batchCache = this._instanceDataStorage.batchCache;
         batchCache.mustReturn = false;
-        batchCache.renderSelf[subMeshId] = !this._onlyForInstances && this.isEnabled() && this.isVisible;
+        batchCache.renderSelf[subMeshId] = !onlyForInstances && this.isEnabled() && this.isVisible;
         batchCache.visibleInstances[subMeshId] = null;
 
         if (this._instanceDataStorage.visibleInstances) {
             let visibleInstances = this._instanceDataStorage.visibleInstances;
             var currentRenderId = scene.getRenderId();
-            var defaultRenderId = (scene._isInIntermediateRendering() ? visibleInstances.intermediateDefaultRenderId : visibleInstances.defaultRenderId);
+            var defaultRenderId = (isInIntermediateRendering ? visibleInstances.intermediateDefaultRenderId : visibleInstances.defaultRenderId);
             batchCache.visibleInstances[subMeshId] = visibleInstances[currentRenderId];
 
             if (!batchCache.visibleInstances[subMeshId] && defaultRenderId) {
@@ -1518,13 +1520,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
-        this._isActive = false;
+        var scene = this.getScene();
+
+        if (scene._isInIntermediateRendering()) {
+            this._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+        } else {
+            this._internalAbstractMeshDataInfo._isActive = false;
+        }
 
         if (this._checkOcclusionQuery()) {
             return this;
         }
 
-        var scene = this.getScene();
         // Managing instances
         var batch = this._getInstancesRenderList(subMesh._id);
 
@@ -1545,13 +1552,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
         let instanceDataStorage = this._instanceDataStorage;
 
-        // Material
-        if (!instanceDataStorage.isFrozen || !this._effectiveMaterial) {
-            let material = subMesh.getMaterial();
+        let material = subMesh.getMaterial();
 
-            if (!material) {
-                return this;
-            }
+        if (!material) {
+            return this;
+        }
+
+        // Material
+        if (!instanceDataStorage.isFrozen || !this._effectiveMaterial || this._effectiveMaterial !== material) {
 
             this._effectiveMaterial = material;
 

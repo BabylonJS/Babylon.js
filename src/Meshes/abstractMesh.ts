@@ -73,6 +73,10 @@ class _InternalAbstractMeshDataInfo {
     public _skeleton: Nullable<Skeleton> = null;
     public _layerMask: number = 0x0FFFFFFF;
     public _computeBonesUsingShaders = true;
+    public _isActive = false;
+    public _onlyForInstances = false;
+    public _isActiveIntermediate = false;
+    public _onlyForInstancesIntermediate = false;
 }
 
 /**
@@ -153,7 +157,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     // Internal data
-    private _internalAbstractMeshDataInfo = new _InternalAbstractMeshDataInfo();
+    /** @hidden */
+    public _internalAbstractMeshDataInfo = new _InternalAbstractMeshDataInfo();
 
     /**
      * The culling strategy to use to check whether the mesh must be rendered or not.
@@ -281,12 +286,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _occlusionQuery: Nullable<WebGLQuery> = null;
-
-    /** @hidden */
-    public _isActive = false;
-
-    /** @hidden */
-    public _onlyForInstances = false;
 
     /** @hidden */
     public _renderingGroup: Nullable<RenderingGroup> = null;
@@ -1045,7 +1044,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _activate(renderId: number): boolean {
+    public _activate(renderId: number, intermediateRendering: boolean): boolean {
         this._renderId = renderId;
         return true;
     }
