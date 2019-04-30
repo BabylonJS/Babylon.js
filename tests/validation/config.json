@@ -1,6 +1,11 @@
 ﻿{
-    "root": "https://rawgit.com/BabylonJS/Website/master",
+    "root": "https://rawgit.com/BabylonJS/Website/master/build",
     "tests": [
+        {
+            "title": "Unindexed mesh",
+            "playgroundId": "#4IHSY2#0",
+            "referenceImage": "unindexedmesh.png"
+        },
         {
             "title": "LOD + Billboards + Instances",
             "playgroundId": "#UAIZCS#0",
