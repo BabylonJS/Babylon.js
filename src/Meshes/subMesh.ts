@@ -377,7 +377,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
         }
         else {
             // Check if mesh is unindexed
-            if (!indices.length) {
+            if (!indices.length && this._mesh._unIndexed) {
                 return this._intersectUnIndexedTriangles(ray, positions, indices, fastCheck, trianglePredicate);
             }
 
