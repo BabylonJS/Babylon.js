@@ -7,6 +7,12 @@ var dropdownLabel = document.getElementById("dropdownLabel");
 var dropdownContent = document.getElementById("dropdownContent");
 var playBtn = document.getElementById("playBtn");
 var slider = document.getElementById("slider");
+var clickInterceptor = document.getElementById("click-interceptor");
+
+clickInterceptor.addEventListener("mousedown", function() {
+    displayDropdownContent(false);
+    displayDropdownContentEnv(false);
+});
 
 // event on the dropdown
 function formatId(name) {
@@ -18,11 +24,15 @@ function displayDropdownContent(display) {
         dropdownContent.style.display = "flex";
         chevronDown.style.display = "inline";
         chevronUp.style.display = "none";
+        dropdownBtn.classList.add("open");
+        clickInterceptor.classList.remove("hidden");
     }
     else {
         dropdownContent.style.display = "none";
         chevronDown.style.display = "none";
         chevronUp.style.display = "inline";
+        dropdownBtn.classList.remove("open");
+        clickInterceptor.classList.add("hidden");
     }
 }
 dropdownBtn.addEventListener("click", function() {

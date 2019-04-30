@@ -716,6 +716,7 @@ declare module INSPECTOR {
         renderNormalVectors(): void;
         displayNormals(): void;
         onMaterialLink(): void;
+        onSourceMeshLink(): void;
         convertPhysicsTypeToString(): string;
         render(): JSX.Element;
     }

@@ -1300,6 +1300,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     constructor(engine: Engine, options?: SceneOptions) {
         super();
         this._engine = engine || EngineStore.LastCreatedEngine;
+        EngineStore._LastCreatedScene = this;
 
         this._engine.scenes.push(this);
         this._uid = null;
@@ -3306,14 +3307,14 @@ export class Scene extends AbstractScene implements IAnimatable {
                 this.activeCamera._activeMeshes.push(mesh);
 
                 if (meshToRender !== mesh) {
-                    meshToRender._activate(this._renderId);
+                    meshToRender._activate(this._renderId, false);
                 }
 
-                if (mesh._activate(this._renderId)) {
+                if (mesh._activate(this._renderId, false)) {
                     if (!mesh.isAnInstance) {
-                        meshToRender._onlyForInstances = false;
+                        meshToRender._internalAbstractMeshDataInfo._onlyForInstances = false;
                     }
-                    meshToRender._isActive = true;
+                    meshToRender._internalAbstractMeshDataInfo._isActive = true;
                     this._activeMesh(mesh, meshToRender);
                 }
 
