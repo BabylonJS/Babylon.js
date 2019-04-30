@@ -131,4 +131,4 @@ To get a complete list of supported features, please visit our [website](https:/
 
 ## Build
 
-Babylon.js is automatically built using [Gulp](https://gulpjs.com/). For further instructions see the readme at [/Tools/Gulp](https://github.com/BabylonJS/Babylon.js/tree/master/Tools/Gulp).
+Babylon.js is automatically built using [Gulp](https://gulpjs.com/). Further instructions can be found in [the documentation](https://doc.babylonjs.com/how_to/how_to_start#the-build) or in the readme at [/Tools/Gulp](https://github.com/BabylonJS/Babylon.js/tree/master/Tools/Gulp).
