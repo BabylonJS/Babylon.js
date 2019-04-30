@@ -16,7 +16,7 @@ import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.renderTarget";
-import { InstancedMesh } from 'Meshes';
+import { InstancedMesh } from '../../Meshes/instancedMesh';
 
 declare type Engine = import("../../Engines/engine").Engine;
 

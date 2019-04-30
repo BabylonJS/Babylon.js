@@ -16882,7 +16882,7 @@ declare module BABYLON {
         /** @hidden */
         _preActivate(): InstancedMesh;
         /** @hidden */
-        _activate(renderId: number): boolean;
+        _activate(renderId: number, intermediateRendering: boolean): boolean;
         /** @hidden */
         _postActivate(): void;
         getWorldMatrix(): Matrix;
@@ -24222,6 +24222,60 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    class _FacetDataStorage {
+        facetPositions: Vector3[];
+        facetNormals: Vector3[];
+        facetPartitioning: number[][];
+        facetNb: number;
+        partitioningSubdivisions: number;
+        partitioningBBoxRatio: number;
+        facetDataEnabled: boolean;
+        facetParameters: any;
+        bbSize: Vector3;
+        subDiv: {
+            max: number;
+            X: number;
+            Y: number;
+            Z: number;
+        };
+        facetDepthSort: boolean;
+        facetDepthSortEnabled: boolean;
+        depthSortedIndices: IndicesArray;
+        depthSortedFacets: {
+            ind: number;
+            sqDistance: number;
+        }[];
+        facetDepthSortFunction: (f1: {
+            ind: number;
+            sqDistance: number;
+        }, f2: {
+            ind: number;
+            sqDistance: number;
+        }) => number;
+        facetDepthSortFrom: Vector3;
+        facetDepthSortOrigin: Vector3;
+        invertedMatrix: Matrix;
+    }
+    /**
+     * @hidden
+     **/
+    class _InternalAbstractMeshDataInfo {
+        _hasVertexAlpha: boolean;
+        _useVertexColors: boolean;
+        _numBoneInfluencers: number;
+        _applyFog: boolean;
+        _receiveShadows: boolean;
+        _facetData: _FacetDataStorage;
+        _visibility: number;
+        _skeleton: Nullable<Skeleton>;
+        _layerMask: number;
+        _computeBonesUsingShaders: boolean;
+        _isActive: boolean;
+        _onlyForInstances: boolean;
+        _isActiveIntermediate: boolean;
+        _onlyForInstancesIntermediate: boolean;
+    }
     /**
      * Class used to store all common mesh properties
      */
@@ -24282,7 +24336,8 @@ declare module BABYLON {
         static readonly BILLBOARDMODE_Z: number;
         /** Billboard on all axes */
         static readonly BILLBOARDMODE_ALL: number;
-        private _internalAbstractMeshDataInfo;
+        /** @hidden */
+        _internalAbstractMeshDataInfo: _InternalAbstractMeshDataInfo;
         /**
          * The culling strategy to use to check whether the mesh must be rendered or not.
          * This value can be changed at any time and will be used on the next render mesh selection.
@@ -24353,10 +24408,6 @@ declare module BABYLON {
         definedFacingForward: boolean;
         /** @hidden */
         _occlusionQuery: Nullable<WebGLQuery>;
-        /** @hidden */
-        _isActive: boolean;
-        /** @hidden */
-        _onlyForInstances: boolean;
         /** @hidden */
         _renderingGroup: Nullable<RenderingGroup>;
         /**
@@ -24676,7 +24727,7 @@ declare module BABYLON {
         /** @hidden */
         _preActivateForIntermediateRendering(renderId: number): void;
         /** @hidden */
-        _activate(renderId: number): boolean;
+        _activate(renderId: number, intermediateRendering: boolean): boolean;
         /** @hidden */
         _postActivate(): void;
         /** @hidden */
