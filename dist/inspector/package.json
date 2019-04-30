@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-inspector",
     "description": "The Babylon.js inspector.",
-    "version": "4.0.1",
+    "version": "4.0.2",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -31,11 +31,11 @@
     "dependencies": {
         "@types/react": "~16.7.3",
         "@types/react-dom": "~16.0.9",
-        "babylonjs": "4.0.1",
-        "babylonjs-gui": "4.0.1",
-        "babylonjs-loaders": "4.0.1",
-        "babylonjs-serializers": "4.0.1",
-        "babylonjs-gltf2interface": "4.0.1"
+        "babylonjs": "4.0.2",
+        "babylonjs-gui": "4.0.2",
+        "babylonjs-loaders": "4.0.2",
+        "babylonjs-serializers": "4.0.2",
+        "babylonjs-gltf2interface": "4.0.2"
     },
     "engines": {
         "node": "*"
