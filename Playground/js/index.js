@@ -628,7 +628,7 @@ function showError(errorMessage, errorEvent) {
                         if (showInspector) {
                             if (scene.then) {
                                 // Handle if scene is a promise
-                                scene.then((s) => {
+                                scene.then(function(s) {
                                     if (!s.debugLayer.isVisible()) {
                                         s.debugLayer.show({ embedMode: true });
                                     }
@@ -976,7 +976,7 @@ function showError(errorMessage, errorEvent) {
         }
 
         var formatCode = function() {
-            jsEditor.getAction('editor.action.format').run();
+            jsEditor.getAction('editor.action.formatDocument').run();
         }
 
         var toggleMinimap = function() {

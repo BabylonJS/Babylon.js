@@ -39518,7 +39518,7 @@ var TabsComponent = /** @class */ (function (_super) {
     };
     TabsComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "tabs" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "tabs", onContextMenu: function (e) { return e.preventDefault(); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "labels" }, this.props.children.map(function (child, index) {
                 return _this.renderLabel(child, index);
             })),
@@ -40523,6 +40523,9 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                     }
                     manager.attachToMesh(_this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 }
+                else {
+                    manager.attachToMesh(null);
+                }
             }
         });
     };
@@ -40939,6 +40942,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./sceneExplorer.scss */ "./components/sceneExplorer/sceneExplorer.scss");
 var SceneExplorerFilterComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneExplorerFilterComponent, _super);
@@ -41128,13 +41132,20 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             }
         });
         nodeContextMenus.push({
+            label: "Add new directional light",
+            action: function () {
+                var newDirectionalLight = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["DirectionalLight"]("directional light", new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"](1, -1, 1), scene);
+                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newDirectionalLight);
+            }
+        });
+        nodeContextMenus.push({
             label: "Add new free camera",
             action: function () {
                 var newFreeCamera = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["FreeCamera"]("free camera", scene.activeCamera ? scene.activeCamera.globalPosition : new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, 0, -5), scene);
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
             }
         });
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree", onContextMenu: function (e) { return e.preventDefault(); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](SceneExplorerFilterComponent, { onFilter: function (filter) { return _this.filterContent(filter); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_6__["SceneTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, contextMenuItems: nodeContextMenus, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, filter: this.state.filter }),

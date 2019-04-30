@@ -19,22 +19,6 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
-         * Disables the mesh edge rendering mode
-         * @returns the currentAbstractMesh
-         */
-        disableEdgesRendering(): AbstractMesh;
-
-        /**
-         * Enables the edge rendering mode on the mesh.
-         * This mode makes the mesh edges visible
-         * @param epsilon defines the maximal distance between two angles to detect a face
-         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the currentAbstractMesh
-         * @see https://www.babylonjs-playground.com/#19O9TU#0
-         */
-        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
-
-        /**
          * Gets the edgesRenderer associated with the mesh
          */
         edgesRenderer: Nullable<EdgesRenderer>;

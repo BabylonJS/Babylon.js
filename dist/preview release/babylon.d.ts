@@ -6087,6 +6087,8 @@ declare module BABYLON {
     export class EngineStore {
         /** Gets the list of created engines */
         static Instances: Engine[];
+        /** @hidden */
+        static _LastCreatedScene: Nullable<Scene>;
         /**
          * Gets the latest created engine
          */
@@ -16880,7 +16882,7 @@ declare module BABYLON {
         /** @hidden */
         _preActivate(): InstancedMesh;
         /** @hidden */
-        _activate(renderId: number): boolean;
+        _activate(renderId: number, intermediateRendering: boolean): boolean;
         /** @hidden */
         _postActivate(): void;
         getWorldMatrix(): Matrix;
@@ -17321,20 +17323,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
         interface AbstractMesh {
-            /**
-             * Disables the mesh edge rendering mode
-             * @returns the currentAbstractMesh
-             */
-            disableEdgesRendering(): AbstractMesh;
-            /**
-             * Enables the edge rendering mode on the mesh.
-             * This mode makes the mesh edges visible
-             * @param epsilon defines the maximal distance between two angles to detect a face
-             * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-             * @returns the currentAbstractMesh
-             * @see https://www.babylonjs-playground.com/#19O9TU#0
-             */
-            enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
             /**
              * Gets the edgesRenderer associated with the mesh
              */
@@ -22678,6 +22666,8 @@ declare module BABYLON {
         /** @hidden */
         private _intersectLines;
         /** @hidden */
+        private _intersectUnIndexedLines;
+        /** @hidden */
         private _intersectTriangles;
         /** @hidden */
         private _intersectUnIndexedTriangles;
@@ -24232,6 +24222,60 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    class _FacetDataStorage {
+        facetPositions: Vector3[];
+        facetNormals: Vector3[];
+        facetPartitioning: number[][];
+        facetNb: number;
+        partitioningSubdivisions: number;
+        partitioningBBoxRatio: number;
+        facetDataEnabled: boolean;
+        facetParameters: any;
+        bbSize: Vector3;
+        subDiv: {
+            max: number;
+            X: number;
+            Y: number;
+            Z: number;
+        };
+        facetDepthSort: boolean;
+        facetDepthSortEnabled: boolean;
+        depthSortedIndices: IndicesArray;
+        depthSortedFacets: {
+            ind: number;
+            sqDistance: number;
+        }[];
+        facetDepthSortFunction: (f1: {
+            ind: number;
+            sqDistance: number;
+        }, f2: {
+            ind: number;
+            sqDistance: number;
+        }) => number;
+        facetDepthSortFrom: Vector3;
+        facetDepthSortOrigin: Vector3;
+        invertedMatrix: Matrix;
+    }
+    /**
+     * @hidden
+     **/
+    class _InternalAbstractMeshDataInfo {
+        _hasVertexAlpha: boolean;
+        _useVertexColors: boolean;
+        _numBoneInfluencers: number;
+        _applyFog: boolean;
+        _receiveShadows: boolean;
+        _facetData: _FacetDataStorage;
+        _visibility: number;
+        _skeleton: Nullable<Skeleton>;
+        _layerMask: number;
+        _computeBonesUsingShaders: boolean;
+        _isActive: boolean;
+        _onlyForInstances: boolean;
+        _isActiveIntermediate: boolean;
+        _onlyForInstancesIntermediate: boolean;
+    }
     /**
      * Class used to store all common mesh properties
      */
@@ -24292,7 +24336,8 @@ declare module BABYLON {
         static readonly BILLBOARDMODE_Z: number;
         /** Billboard on all axes */
         static readonly BILLBOARDMODE_ALL: number;
-        private _internalAbstractMeshDataInfo;
+        /** @hidden */
+        _internalAbstractMeshDataInfo: _InternalAbstractMeshDataInfo;
         /**
          * The culling strategy to use to check whether the mesh must be rendered or not.
          * This value can be changed at any time and will be used on the next render mesh selection.
@@ -24363,10 +24408,6 @@ declare module BABYLON {
         definedFacingForward: boolean;
         /** @hidden */
         _occlusionQuery: Nullable<WebGLQuery>;
-        /** @hidden */
-        _isActive: boolean;
-        /** @hidden */
-        _onlyForInstances: boolean;
         /** @hidden */
         _renderingGroup: Nullable<RenderingGroup>;
         /**
@@ -24686,7 +24727,7 @@ declare module BABYLON {
         /** @hidden */
         _preActivateForIntermediateRendering(renderId: number): void;
         /** @hidden */
-        _activate(renderId: number): boolean;
+        _activate(renderId: number, intermediateRendering: boolean): boolean;
         /** @hidden */
         _postActivate(): void;
         /** @hidden */
@@ -24985,6 +25026,20 @@ declare module BABYLON {
         alignWithNormal(normal: Vector3, upDirection?: Vector3): AbstractMesh;
         /** @hidden */
         _checkOcclusionQuery(): boolean;
+        /**
+         * Disables the mesh edge rendering mode
+         * @returns the currentAbstractMesh
+         */
+        disableEdgesRendering(): AbstractMesh;
+        /**
+         * Enables the edge rendering mode on the mesh.
+         * This mode makes the mesh edges visible
+         * @param epsilon defines the maximal distance between two angles to detect a face
+         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+         * @returns the currentAbstractMesh
+         * @see https://www.babylonjs-playground.com/#19O9TU#0
+         */
+        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
     }
 }
 declare module BABYLON {
@@ -31692,6 +31747,7 @@ declare module BABYLON {
         private _isStarted;
         private _isPaused;
         private _speedRatio;
+        private _loopAnimation;
         /**
          * Gets or sets the unique id of the node
          */
@@ -31739,6 +31795,10 @@ declare module BABYLON {
         * Gets or sets the speed ratio to use for all animations
         */
         speedRatio: number;
+        /**
+         * Gets or sets if all animations should loop or not
+         */
+        loopAnimation: boolean;
         /**
          * Gets the targeted animations for this animation group
          */
@@ -37448,6 +37508,352 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines supported buttons for XBox360 compatible gamepads
+     */
+    export enum Xbox360Button {
+        /** A */
+        A = 0,
+        /** B */
+        B = 1,
+        /** X */
+        X = 2,
+        /** Y */
+        Y = 3,
+        /** Start */
+        Start = 4,
+        /** Back */
+        Back = 5,
+        /** Left button */
+        LB = 6,
+        /** Right button */
+        RB = 7,
+        /** Left stick */
+        LeftStick = 8,
+        /** Right stick */
+        RightStick = 9
+    }
+    /** Defines values for XBox360 DPad  */
+    export enum Xbox360Dpad {
+        /** Up */
+        Up = 0,
+        /** Down */
+        Down = 1,
+        /** Left */
+        Left = 2,
+        /** Right */
+        Right = 3
+    }
+    /**
+     * Defines a XBox360 gamepad
+     */
+    export class Xbox360Pad extends Gamepad {
+        private _leftTrigger;
+        private _rightTrigger;
+        private _onlefttriggerchanged;
+        private _onrighttriggerchanged;
+        private _onbuttondown;
+        private _onbuttonup;
+        private _ondpaddown;
+        private _ondpadup;
+        /** Observable raised when a button is pressed */
+        onButtonDownObservable: Observable<Xbox360Button>;
+        /** Observable raised when a button is released */
+        onButtonUpObservable: Observable<Xbox360Button>;
+        /** Observable raised when a pad is pressed */
+        onPadDownObservable: Observable<Xbox360Dpad>;
+        /** Observable raised when a pad is released */
+        onPadUpObservable: Observable<Xbox360Dpad>;
+        private _buttonA;
+        private _buttonB;
+        private _buttonX;
+        private _buttonY;
+        private _buttonBack;
+        private _buttonStart;
+        private _buttonLB;
+        private _buttonRB;
+        private _buttonLeftStick;
+        private _buttonRightStick;
+        private _dPadUp;
+        private _dPadDown;
+        private _dPadLeft;
+        private _dPadRight;
+        private _isXboxOnePad;
+        /**
+         * Creates a new XBox360 gamepad object
+         * @param id defines the id of this gamepad
+         * @param index defines its index
+         * @param gamepad defines the internal HTML gamepad object
+         * @param xboxOne defines if it is a XBox One gamepad
+         */
+        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
+        /**
+         * Defines the callback to call when left trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onlefttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Defines the callback to call when right trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onrighttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Gets the left trigger value
+         */
+        /**
+        * Sets the left trigger value
+        */
+        leftTrigger: number;
+        /**
+         * Gets the right trigger value
+         */
+        /**
+        * Sets the right trigger value
+        */
+        rightTrigger: number;
+        /**
+         * Defines the callback to call when a button is pressed
+         * @param callback defines the callback to use
+         */
+        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
+        /**
+         * Defines the callback to call when a button is released
+         * @param callback defines the callback to use
+         */
+        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
+        /**
+         * Defines the callback to call when a pad is pressed
+         * @param callback defines the callback to use
+         */
+        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
+        /**
+         * Defines the callback to call when a pad is released
+         * @param callback defines the callback to use
+         */
+        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
+        private _setButtonValue;
+        private _setDPadValue;
+        /**
+         * Gets the value of the `A` button
+         */
+        /**
+        * Sets the value of the `A` button
+        */
+        buttonA: number;
+        /**
+         * Gets the value of the `B` button
+         */
+        /**
+        * Sets the value of the `B` button
+        */
+        buttonB: number;
+        /**
+         * Gets the value of the `X` button
+         */
+        /**
+        * Sets the value of the `X` button
+        */
+        buttonX: number;
+        /**
+         * Gets the value of the `Y` button
+         */
+        /**
+        * Sets the value of the `Y` button
+        */
+        buttonY: number;
+        /**
+         * Gets the value of the `Start` button
+         */
+        /**
+        * Sets the value of the `Start` button
+        */
+        buttonStart: number;
+        /**
+         * Gets the value of the `Back` button
+         */
+        /**
+        * Sets the value of the `Back` button
+        */
+        buttonBack: number;
+        /**
+         * Gets the value of the `Left` button
+         */
+        /**
+        * Sets the value of the `Left` button
+        */
+        buttonLB: number;
+        /**
+         * Gets the value of the `Right` button
+         */
+        /**
+        * Sets the value of the `Right` button
+        */
+        buttonRB: number;
+        /**
+         * Gets the value of the Left joystick
+         */
+        /**
+        * Sets the value of the Left joystick
+        */
+        buttonLeftStick: number;
+        /**
+         * Gets the value of the Right joystick
+         */
+        /**
+        * Sets the value of the Right joystick
+        */
+        buttonRightStick: number;
+        /**
+         * Gets the value of D-pad up
+         */
+        /**
+        * Sets the value of D-pad up
+        */
+        dPadUp: number;
+        /**
+         * Gets the value of D-pad down
+         */
+        /**
+        * Sets the value of D-pad down
+        */
+        dPadDown: number;
+        /**
+         * Gets the value of D-pad left
+         */
+        /**
+        * Sets the value of D-pad left
+        */
+        dPadLeft: number;
+        /**
+         * Gets the value of D-pad right
+         */
+        /**
+        * Sets the value of D-pad right
+        */
+        dPadRight: number;
+        /**
+         * Force the gamepad to synchronize with device values
+         */
+        update(): void;
+        /**
+         * Disposes the gamepad
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Manager for handling gamepads
+     */
+    export class GamepadManager {
+        private _scene?;
+        private _babylonGamepads;
+        private _oneGamepadConnected;
+        /** @hidden */
+        _isMonitoring: boolean;
+        private _gamepadEventSupported;
+        private _gamepadSupport;
+        /**
+         * observable to be triggered when the gamepad controller has been connected
+         */
+        onGamepadConnectedObservable: Observable<Gamepad>;
+        /**
+         * observable to be triggered when the gamepad controller has been disconnected
+         */
+        onGamepadDisconnectedObservable: Observable<Gamepad>;
+        private _onGamepadConnectedEvent;
+        private _onGamepadDisconnectedEvent;
+        /**
+         * Initializes the gamepad manager
+         * @param _scene BabylonJS scene
+         */
+        constructor(_scene?: Scene | undefined);
+        /**
+         * The gamepads in the game pad manager
+         */
+        readonly gamepads: Gamepad[];
+        /**
+         * Get the gamepad controllers based on type
+         * @param type The type of gamepad controller
+         * @returns Nullable gamepad
+         */
+        getGamepadByType(type?: number): Nullable<Gamepad>;
+        /**
+         * Disposes the gamepad manager
+         */
+        dispose(): void;
+        private _addNewGamepad;
+        private _startMonitoringGamepads;
+        private _stopMonitoringGamepads;
+        /** @hidden */
+        _checkGamepadsStatus(): void;
+        private _updateGamepadObjects;
+    }
+}
+declare module BABYLON {
+        interface Scene {
+            /** @hidden */
+            _gamepadManager: Nullable<GamepadManager>;
+            /**
+             * Gets the gamepad manager associated with the scene
+             * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
+             */
+            gamepadManager: GamepadManager;
+        }
+        /**
+         * Interface representing a free camera inputs manager
+         */
+        interface FreeCameraInputsManager {
+            /**
+             * Adds gamepad input support to the FreeCameraInputsManager.
+             * @returns the FreeCameraInputsManager
+             */
+            addGamepad(): FreeCameraInputsManager;
+        }
+        /**
+         * Interface representing an arc rotate camera inputs manager
+         */
+        interface ArcRotateCameraInputsManager {
+            /**
+             * Adds gamepad input support to the ArcRotateCamera InputManager.
+             * @returns the camera inputs manager
+             */
+            addGamepad(): ArcRotateCameraInputsManager;
+        }
+    /**
+      * Defines the gamepad scene component responsible to manage gamepads in a given scene
+      */
+    export class GamepadSystemSceneComponent implements ISceneComponent {
+        /**
+         * The component name helpfull to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources
+         */
+        dispose(): void;
+        private _beforeCameraUpdate;
+    }
+}
+declare module BABYLON {
+    /**
      * The Universal Camera is the one to choose for first person shooter type games, and works with all the keyboard, mouse, touch and gamepads. This replaces the earlier Free Camera,
      * which still works and will still be found in many Playgrounds.
      * @see http://doc.babylonjs.com/features/cameras#universal-camera
@@ -38009,240 +38415,6 @@ declare module BABYLON {
          * @returns VRDeviceOrientationGamepadCamera
          */
         getClassName(): string;
-    }
-}
-declare module BABYLON {
-    /**
-     * Defines supported buttons for XBox360 compatible gamepads
-     */
-    export enum Xbox360Button {
-        /** A */
-        A = 0,
-        /** B */
-        B = 1,
-        /** X */
-        X = 2,
-        /** Y */
-        Y = 3,
-        /** Start */
-        Start = 4,
-        /** Back */
-        Back = 5,
-        /** Left button */
-        LB = 6,
-        /** Right button */
-        RB = 7,
-        /** Left stick */
-        LeftStick = 8,
-        /** Right stick */
-        RightStick = 9
-    }
-    /** Defines values for XBox360 DPad  */
-    export enum Xbox360Dpad {
-        /** Up */
-        Up = 0,
-        /** Down */
-        Down = 1,
-        /** Left */
-        Left = 2,
-        /** Right */
-        Right = 3
-    }
-    /**
-     * Defines a XBox360 gamepad
-     */
-    export class Xbox360Pad extends Gamepad {
-        private _leftTrigger;
-        private _rightTrigger;
-        private _onlefttriggerchanged;
-        private _onrighttriggerchanged;
-        private _onbuttondown;
-        private _onbuttonup;
-        private _ondpaddown;
-        private _ondpadup;
-        /** Observable raised when a button is pressed */
-        onButtonDownObservable: Observable<Xbox360Button>;
-        /** Observable raised when a button is released */
-        onButtonUpObservable: Observable<Xbox360Button>;
-        /** Observable raised when a pad is pressed */
-        onPadDownObservable: Observable<Xbox360Dpad>;
-        /** Observable raised when a pad is released */
-        onPadUpObservable: Observable<Xbox360Dpad>;
-        private _buttonA;
-        private _buttonB;
-        private _buttonX;
-        private _buttonY;
-        private _buttonBack;
-        private _buttonStart;
-        private _buttonLB;
-        private _buttonRB;
-        private _buttonLeftStick;
-        private _buttonRightStick;
-        private _dPadUp;
-        private _dPadDown;
-        private _dPadLeft;
-        private _dPadRight;
-        private _isXboxOnePad;
-        /**
-         * Creates a new XBox360 gamepad object
-         * @param id defines the id of this gamepad
-         * @param index defines its index
-         * @param gamepad defines the internal HTML gamepad object
-         * @param xboxOne defines if it is a XBox One gamepad
-         */
-        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
-        /**
-         * Defines the callback to call when left trigger is pressed
-         * @param callback defines the callback to use
-         */
-        onlefttriggerchanged(callback: (value: number) => void): void;
-        /**
-         * Defines the callback to call when right trigger is pressed
-         * @param callback defines the callback to use
-         */
-        onrighttriggerchanged(callback: (value: number) => void): void;
-        /**
-         * Gets the left trigger value
-         */
-        /**
-        * Sets the left trigger value
-        */
-        leftTrigger: number;
-        /**
-         * Gets the right trigger value
-         */
-        /**
-        * Sets the right trigger value
-        */
-        rightTrigger: number;
-        /**
-         * Defines the callback to call when a button is pressed
-         * @param callback defines the callback to use
-         */
-        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
-        /**
-         * Defines the callback to call when a button is released
-         * @param callback defines the callback to use
-         */
-        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
-        /**
-         * Defines the callback to call when a pad is pressed
-         * @param callback defines the callback to use
-         */
-        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
-        /**
-         * Defines the callback to call when a pad is released
-         * @param callback defines the callback to use
-         */
-        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
-        private _setButtonValue;
-        private _setDPadValue;
-        /**
-         * Gets the value of the `A` button
-         */
-        /**
-        * Sets the value of the `A` button
-        */
-        buttonA: number;
-        /**
-         * Gets the value of the `B` button
-         */
-        /**
-        * Sets the value of the `B` button
-        */
-        buttonB: number;
-        /**
-         * Gets the value of the `X` button
-         */
-        /**
-        * Sets the value of the `X` button
-        */
-        buttonX: number;
-        /**
-         * Gets the value of the `Y` button
-         */
-        /**
-        * Sets the value of the `Y` button
-        */
-        buttonY: number;
-        /**
-         * Gets the value of the `Start` button
-         */
-        /**
-        * Sets the value of the `Start` button
-        */
-        buttonStart: number;
-        /**
-         * Gets the value of the `Back` button
-         */
-        /**
-        * Sets the value of the `Back` button
-        */
-        buttonBack: number;
-        /**
-         * Gets the value of the `Left` button
-         */
-        /**
-        * Sets the value of the `Left` button
-        */
-        buttonLB: number;
-        /**
-         * Gets the value of the `Right` button
-         */
-        /**
-        * Sets the value of the `Right` button
-        */
-        buttonRB: number;
-        /**
-         * Gets the value of the Left joystick
-         */
-        /**
-        * Sets the value of the Left joystick
-        */
-        buttonLeftStick: number;
-        /**
-         * Gets the value of the Right joystick
-         */
-        /**
-        * Sets the value of the Right joystick
-        */
-        buttonRightStick: number;
-        /**
-         * Gets the value of D-pad up
-         */
-        /**
-        * Sets the value of D-pad up
-        */
-        dPadUp: number;
-        /**
-         * Gets the value of D-pad down
-         */
-        /**
-        * Sets the value of D-pad down
-        */
-        dPadDown: number;
-        /**
-         * Gets the value of D-pad left
-         */
-        /**
-        * Sets the value of D-pad left
-        */
-        dPadLeft: number;
-        /**
-         * Gets the value of D-pad right
-         */
-        /**
-        * Sets the value of D-pad right
-        */
-        dPadRight: number;
-        /**
-         * Force the gamepad to synchronize with device values
-         */
-        update(): void;
-        /**
-         * Disposes the gamepad
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -39525,118 +39697,6 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
         }, scene: any): Mesh;
-    }
-}
-declare module BABYLON {
-    /**
-     * Manager for handling gamepads
-     */
-    export class GamepadManager {
-        private _scene?;
-        private _babylonGamepads;
-        private _oneGamepadConnected;
-        /** @hidden */
-        _isMonitoring: boolean;
-        private _gamepadEventSupported;
-        private _gamepadSupport;
-        /**
-         * observable to be triggered when the gamepad controller has been connected
-         */
-        onGamepadConnectedObservable: Observable<Gamepad>;
-        /**
-         * observable to be triggered when the gamepad controller has been disconnected
-         */
-        onGamepadDisconnectedObservable: Observable<Gamepad>;
-        private _onGamepadConnectedEvent;
-        private _onGamepadDisconnectedEvent;
-        /**
-         * Initializes the gamepad manager
-         * @param _scene BabylonJS scene
-         */
-        constructor(_scene?: Scene | undefined);
-        /**
-         * The gamepads in the game pad manager
-         */
-        readonly gamepads: Gamepad[];
-        /**
-         * Get the gamepad controllers based on type
-         * @param type The type of gamepad controller
-         * @returns Nullable gamepad
-         */
-        getGamepadByType(type?: number): Nullable<Gamepad>;
-        /**
-         * Disposes the gamepad manager
-         */
-        dispose(): void;
-        private _addNewGamepad;
-        private _startMonitoringGamepads;
-        private _stopMonitoringGamepads;
-        /** @hidden */
-        _checkGamepadsStatus(): void;
-        private _updateGamepadObjects;
-    }
-}
-declare module BABYLON {
-        interface Scene {
-            /** @hidden */
-            _gamepadManager: Nullable<GamepadManager>;
-            /**
-             * Gets the gamepad manager associated with the scene
-             * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
-             */
-            gamepadManager: GamepadManager;
-        }
-        /**
-         * Interface representing a free camera inputs manager
-         */
-        interface FreeCameraInputsManager {
-            /**
-             * Adds gamepad input support to the FreeCameraInputsManager.
-             * @returns the FreeCameraInputsManager
-             */
-            addGamepad(): FreeCameraInputsManager;
-        }
-        /**
-         * Interface representing an arc rotate camera inputs manager
-         */
-        interface ArcRotateCameraInputsManager {
-            /**
-             * Adds gamepad input support to the ArcRotateCamera InputManager.
-             * @returns the camera inputs manager
-             */
-            addGamepad(): ArcRotateCameraInputsManager;
-        }
-    /**
-      * Defines the gamepad scene component responsible to manage gamepads in a given scene
-      */
-    export class GamepadSystemSceneComponent implements ISceneComponent {
-        /**
-         * The component name helpfull to identify the component in the list of scene components.
-         */
-        readonly name: string;
-        /**
-         * The scene the component belongs to.
-         */
-        scene: Scene;
-        /**
-         * Creates a new instance of the component for the given scene
-         * @param scene Defines the scene to register the component in
-         */
-        constructor(scene: Scene);
-        /**
-         * Registers the component in a given scene
-         */
-        register(): void;
-        /**
-         * Rebuilds the elements related to this component in case of
-         * context lost for instance.
-         */
-        rebuild(): void;
-        /**
-         * Disposes the component and the associated ressources
-         */
-        dispose(): void;
-        private _beforeCameraUpdate;
     }
 }
 declare module BABYLON {
@@ -43235,6 +43295,8 @@ declare module BABYLON {
     export class LightGizmo extends Gizmo {
         private _lightMesh;
         private _material;
+        private cachedPosition;
+        private cachedForward;
         /**
          * Creates a LightGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -43255,6 +43317,10 @@ declare module BABYLON {
          * Creates the lines for a light mesh
          */
         private static _createLightLines;
+        /**
+         * Disposes of the light gizmo
+         */
+        dispose(): void;
         private static _CreateHemisphericLightMesh;
         private static _CreatePointLightMesh;
         private static _CreateSpotLightMesh;
@@ -53005,6 +53071,11 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+    /** @hidden */
+    interface ISavedTransformationMatrix {
+        world: Matrix;
+        viewProjection: Matrix;
+    }
     /**
      * This renderer is helpfull to fill one of the render target with a geometry buffer.
      */
@@ -53025,8 +53096,21 @@ declare module BABYLON {
          * @hidden
          */
         _previousTransformationMatrices: {
-            [index: number]: Matrix;
+            [index: number]: ISavedTransformationMatrix;
         };
+        /**
+         * Dictionary used to store the previous bones transformation matrices of each rendered mesh
+         * in order to compute objects velocities when enableVelocity is set to "true"
+         * @hidden
+         */
+        _previousBonesTransformationMatrices: {
+            [index: number]: Float32Array;
+        };
+        /**
+         * Array used to store the ignored skinned meshes while computing velocity map (typically used by the motion blur post-process).
+         * Avoids computing bones velocities and computes only mesh's velocity itself (position, rotation, scaling).
+         */
+        excludedSkinnedMeshesFromVelocity: AbstractMesh[];
         private _scene;
         private _multiRenderTarget;
         private _ratio;
@@ -53106,6 +53190,7 @@ declare module BABYLON {
          */
         dispose(): void;
         protected _createRenderTargets(): void;
+        private _copyBonesTransformationMatrices;
     }
 }
 declare module BABYLON {
@@ -53208,6 +53293,18 @@ declare module BABYLON {
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
         constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        /**
+         * Excludes the given skinned mesh from computing bones velocities.
+         * Computing bones velocities can have a cost and that cost. The cost can be saved by calling this function and by passing the skinned mesh reference to ignore.
+         * @param skinnedMesh The mesh containing the skeleton to ignore when computing the velocity map.
+         */
+        excludeSkinnedMesh(skinnedMesh: AbstractMesh): void;
+        /**
+         * Removes the given skinned mesh from the excluded meshes to integrate bones velocities while rendering the velocity map.
+         * @param skinnedMesh The mesh containing the skeleton that has been ignored previously.
+         * @see excludeSkinnedMesh to exclude a skinned mesh from bones velocity computation.
+         */
+        removeExcludedSkinnedMesh(skinnedMesh: AbstractMesh): void;
         /**
          * Disposes the post process.
          * @param camera The camera to dispose the post process on.
