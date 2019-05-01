@@ -1069,7 +1069,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         if (!v) {
             return null;
         }
-        return new Vector3(v.x(), v.y(), v.z());
+        var result = new Vector3(v.x(), v.y(), v.z());
+        Ammo.destroy(v);
+        return result;
     }
 
     /**
@@ -1087,7 +1089,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         if (!v) {
             return null;
         }
-        return new Vector3(v.x(), v.y(), v.z());
+        var result = new Vector3(v.x(), v.y(), v.z());
+        Ammo.destroy(v);
+        return result;
     }
 
     /**
@@ -1460,7 +1464,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             );
             this._raycastResult.calculateHitDistance();
         }
-
+        Ammo.destroy(rayCallback);
+        Ammo.destroy(this._tmpAmmoVectorRCA);
+        Ammo.destroy(this._tmpAmmoVectorRCB);
         return this._raycastResult;
     }
 }

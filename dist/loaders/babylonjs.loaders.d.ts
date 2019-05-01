@@ -235,12 +235,12 @@ declare module BABYLON {
         /**
          * Observable raised after validation when validate is set to true. The event data is the result of the validation.
          */
-        readonly onValidatedObservable: Observable<IGLTFValidationResults>;
+        readonly onValidatedObservable: Observable<BABYLON.GLTF2.IGLTFValidationResults>;
         private _onValidatedObserver;
         /**
          * Callback raised after a loader extension is created.
          */
-        onValidated: (results: IGLTFValidationResults) => void;
+        onValidated: (results: BABYLON.GLTF2.IGLTFValidationResults) => void;
         private _loader;
         /**
          * Name of the loader ("gltf")
