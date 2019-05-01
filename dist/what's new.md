@@ -66,6 +66,7 @@
 - Added per mesh culling strategy ([jerome](https://github.com/jbousquie))
 
 ## Updates
+- Added new CreateTiledPlane and CreateTiledBox ([JohnK](https://github.com/BabylonJSGuide/)
 
 ### GUI
 
