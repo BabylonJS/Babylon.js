@@ -32,6 +32,8 @@ export class InstancedMesh extends AbstractMesh {
 
         this._sourceMesh = source;
 
+        this._unIndexed = source._unIndexed;
+
         this.position.copyFrom(source.position);
         this.rotation.copyFrom(source.rotation);
         this.scaling.copyFrom(source.scaling);
@@ -251,10 +253,6 @@ export class InstancedMesh extends AbstractMesh {
 
     public get _positions(): Nullable<Vector3[]> {
         return this._sourceMesh._positions;
-    }
-
-    public get _unIndexed(): boolean {
-        return this._sourceMesh._unIndexed;
     }
 
     /**
