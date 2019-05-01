@@ -252,7 +252,7 @@ export class InstancedMesh extends AbstractMesh {
     public get _positions(): Nullable<Vector3[]> {
         return this._sourceMesh._positions;
     }
-    
+
     public get _unIndexed(): boolean {
         return this._sourceMesh._unIndexed;
     }
