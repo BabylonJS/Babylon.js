@@ -31951,6 +31951,8 @@ declare module BABYLON {
          * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
          */
         useClonedMeshhMap?: boolean;
+        /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
+        virtual?: boolean;
     }
     /**
      * Represents a scene to be rendered by the engine.
