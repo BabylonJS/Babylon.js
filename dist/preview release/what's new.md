@@ -6,20 +6,9 @@
 
 ## Updates
 
-### GUI
-
-### Core Engine
-
-### glTF Loader
-
-### glTF Serializer
-
-### Infrastructure
+### Meshes
+- Added new CreateTiledPlane and CreateTiledBox ([JohnK](https://github.com/BabylonJSGuide/)
 
 ## Bug fixes
-
-### Core Engine
-
-### Loaders
 
 ## Breaking changes
