@@ -96,7 +96,7 @@ export class Sound {
     private _readyToPlayCallback: Nullable<() => any>;
     private _audioBuffer: Nullable<AudioBuffer>;
     private _soundSource: Nullable<AudioBufferSourceNode>;
-    private _streamingSource: MediaElementAudioSourceNode;
+    private _streamingSource: AudioNode;
     private _soundPanner: Nullable<PannerNode>;
     private _soundGain: Nullable<GainNode>;
     private _inputAudioNode: AudioNode;
@@ -190,7 +190,7 @@ export class Sound {
                         case "MediaStream":
                             this._streaming = true;
                             this._isReadyToPlay = true;
-                            this._streamingSource = Engine.audioEngine.audioContext.createMediaElementSource(urlOrArrayBuffer);
+                            this._streamingSource = Engine.audioEngine.audioContext.createMediaStreamSource(urlOrArrayBuffer);
 
                             if (this.autoplay) {
                                 this.play();
@@ -743,16 +743,16 @@ export class Sound {
                 } else {
                     this._streamingSource.disconnect();
                 }
+                this.isPlaying = false;
             }
             else if (Engine.audioEngine.audioContext && this._soundSource) {
                 var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                 this._soundSource.stop(stopTime);
-                this._soundSource.onended = () => { };
+                this._soundSource.onended = () => { this.isPlaying = false; };
                 if (!this.isPaused) {
                     this._startOffset = 0;
                 }
             }
-            this.isPlaying = false;
         }
     }
 

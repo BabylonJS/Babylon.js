@@ -10,9 +10,6 @@ import { Tools } from './tools';
 
 declare type Engine = import("../Engines/engine").Engine;
 
-// Screenshots
-var screenshotCanvas: HTMLCanvasElement;
-
 /**
  * Class containing a set of static utilities functions for screenshots
  */
@@ -66,14 +63,14 @@ export class ScreenshotTools {
             return;
         }
 
-        if (!screenshotCanvas) {
-            screenshotCanvas = document.createElement('canvas');
+        if (!Tools._ScreenshotCanvas) {
+            Tools._ScreenshotCanvas = document.createElement('canvas');
         }
 
-        screenshotCanvas.width = width;
-        screenshotCanvas.height = height;
+        Tools._ScreenshotCanvas.width = width;
+        Tools._ScreenshotCanvas.height = height;
 
-        var renderContext = screenshotCanvas.getContext("2d");
+        var renderContext = Tools._ScreenshotCanvas.getContext("2d");
 
         var ratio = engine.getRenderWidth() / engine.getRenderHeight();
         var newWidth = width;

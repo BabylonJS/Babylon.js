@@ -129,8 +129,9 @@ export interface ISceneSerializableComponent extends ISceneComponent {
     /**
      * Removes all the elements in the container from the scene
      * @param container contains the elements to remove
+     * @param dispose if the removed element should be disposed (default: false)
      */
-    removeFromContainer(container: AbstractScene): void;
+    removeFromContainer(container: AbstractScene, dispose?: boolean): void;
 
     /**
      * Serializes the component data to the specified json object
@@ -158,6 +159,11 @@ export type ActiveMeshStageAction = (sourceMesh: AbstractMesh, mesh: AbstractMes
  * Strong typing of a Camera related stage step action
  */
 export type CameraStageAction = (camera: Camera) => void;
+
+/**
+ * Strong typing of a Camera Frame buffer related stage step action
+ */
+export type CameraStageFrameBufferAction = (camera: Camera) => boolean;
 
 /**
  * Strong typing of a Render Target related stage step action

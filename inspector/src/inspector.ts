@@ -37,9 +37,13 @@ export class Inspector {
     private static _OpenedPane = 0;
     private static _OnBeforeRenderObserver: Nullable<Observer<Scene>>;
 
-    public static OnSelectionChangeObservable = new Observable<string>();
+    public static OnSelectionChangeObservable = new Observable<any>();
     public static OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
     private static _GlobalState = new GlobalState();
+
+    public static MarkLineContainerTitleForHighlighting(title: string) {
+        this._GlobalState.selectedLineContainerTitle = title;
+    }
 
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
@@ -319,7 +323,7 @@ export class Inspector {
 
         // Prepare state
         if (!this._GlobalState.onPropertyChangedObservable) {
-            this._GlobalState.onPropertyChangedObservable = this.OnPropertyChangedObservable;
+            this._GlobalState.init(this.OnPropertyChangedObservable);
         }
         if (!this._GlobalState.onSelectionChangedObservable) {
             this._GlobalState.onSelectionChangedObservable = this.OnSelectionChangeObservable;

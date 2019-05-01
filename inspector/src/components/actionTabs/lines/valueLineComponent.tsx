@@ -1,11 +1,11 @@
 import * as React from "react";
 
 interface IValueLineComponentProps {
-    label: string,
-    value: number,
-    color?: string,
-    fractionDigits?: number,
-    units?: string
+    label: string;
+    value: number;
+    color?: string;
+    fractionDigits?: number;
+    units?: string;
 }
 
 export class ValueLineComponent extends React.Component<IValueLineComponentProps> {

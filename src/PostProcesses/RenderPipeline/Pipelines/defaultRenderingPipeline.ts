@@ -24,6 +24,8 @@ import { BloomEffect } from "../../../PostProcesses/bloomEffect";
 import { _TypeStore } from '../../../Misc/typeStore';
 import { EngineStore } from "../../../Engines/engineStore";
 
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+
 declare type Animation = import("../../../Animations/animation").Animation;
 
 /**
@@ -357,6 +359,13 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     @serialize()
     public get glowLayerEnabled(): boolean {
         return this._glowLayer != null;
+    }
+
+    /**
+     * Gets the glow layer (or null if not defined)
+     */
+    public get glowLayer() {
+        return this._glowLayer;
     }
 
     /**

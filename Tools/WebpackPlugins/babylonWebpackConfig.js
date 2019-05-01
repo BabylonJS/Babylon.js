@@ -1,6 +1,5 @@
 const webpack = require('webpack');
 const babylonExternals = require('./babylonExternals');
-const hardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 const config = require("../Config/config.js");
 
@@ -32,7 +31,8 @@ module.exports = function defaultConfig(options) {
                 amd: settings.build.umd.packageName,
                 commonjs: settings.build.umd.packageName
             },
-            umdNamedDefine: true
+            umdNamedDefine: true,
+            globalObject: '(typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)'
         },
         resolve: options.resolve || {
             extensions: [".ts", ...options.resolveExtensions]
@@ -54,7 +54,6 @@ module.exports = function defaultConfig(options) {
             hints: false
         },
         plugins: [
-            //new hardSourceWebpackPlugin(),
             new webpack.WatchIgnorePlugin([
                 /\.js$/,
                 /\.d\.ts$/,

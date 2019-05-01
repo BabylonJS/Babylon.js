@@ -300,7 +300,7 @@ export class BaseTexture implements IAnimatable {
     */
     public onDisposeObservable = new Observable<BaseTexture>();
 
-    private _onDisposeObserver: Nullable<Observer<BaseTexture>>;
+    private _onDisposeObserver: Nullable<Observer<BaseTexture>> = null;
     /**
      * Callback triggered when the texture has been disposed.
      * Kept for back compatibility, you can use the onDisposeObservable instead.
@@ -317,11 +317,11 @@ export class BaseTexture implements IAnimatable {
      */
     public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
-    private _scene: Nullable<Scene>;
+    private _scene: Nullable<Scene> = null;
 
     /** @hidden */
-    public _texture: Nullable<InternalTexture>;
-    private _uid: Nullable<string>;
+    public _texture: Nullable<InternalTexture> = null;
+    private _uid: Nullable<string> = null;
 
     /**
      * Define if the texture is preventinga material to render or not.
@@ -497,7 +497,7 @@ export class BaseTexture implements IAnimatable {
     }
 
     /** @hidden */
-    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number): Nullable<InternalTexture> {
+    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture> {
         if (!this._scene) {
             return null;
         }
@@ -506,10 +506,12 @@ export class BaseTexture implements IAnimatable {
         for (var index = 0; index < texturesCache.length; index++) {
             var texturesCacheEntry = texturesCache[index];
 
-            if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
-                if (!sampling || sampling === texturesCacheEntry.samplingMode) {
-                    texturesCacheEntry.incrementReferences();
-                    return texturesCacheEntry;
+            if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
+                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
+                    if (!sampling || sampling === texturesCacheEntry.samplingMode) {
+                        texturesCacheEntry.incrementReferences();
+                        return texturesCacheEntry;
+                    }
                 }
             }
         }
@@ -665,7 +667,9 @@ export class BaseTexture implements IAnimatable {
         }
 
         // Animations
-        this._scene.stopAnimation(this);
+        if (this._scene.stopAnimation) {
+            this._scene.stopAnimation(this);
+        }
 
         // Remove from scene
         this._scene._removePendingData(this);

@@ -1,9 +1,9 @@
 import * as React from "react";
 
 interface IFileButtonLineComponentProps {
-    label: string,
-    onClick: (file: File) => void,
-    accept: string
+    label: string;
+    onClick: (file: File) => void;
+    accept: string;
 }
 
 export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {

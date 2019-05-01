@@ -25,8 +25,10 @@ import { Skeleton } from "../../Bones/skeleton";
 import { MorphTargetManager } from "../../Morph/morphTargetManager";
 import { CannonJSPlugin } from "../../Physics/Plugins/cannonJSPlugin";
 import { OimoJSPlugin } from "../../Physics/Plugins/oimoJSPlugin";
+import { AmmoJSPlugin } from "../../Physics/Plugins/ammoJSPlugin";
 import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { _TypeStore } from '../../Misc/typeStore';
+import { Tools } from '../../Misc/tools';
 
 /** @hidden */
 export var _BabylonLoaderRegistered = true;
@@ -59,6 +61,42 @@ var logOperation = (operation: string, producer: { file: string, name: string, v
     return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
 };
 
+var loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
+    const mastermesh: Mesh = mesh as Mesh;
+
+    // Every value specified in the ids array of the lod data points to another mesh which should be used as the lower LOD level.
+    // The distances (or coverages) array values specified are used along with the lod mesh ids as a hint to determine the switching threshold for the various LODs.
+    if (mesh._waitingData.lods) {
+        if (mesh._waitingData.lods.ids && mesh._waitingData.lods.ids.length > 0) {
+            const lodmeshes: string[] = mesh._waitingData.lods.ids;
+            const wasenabled: boolean = mastermesh.isEnabled(false);
+            if (mesh._waitingData.lods.distances) {
+                const distances: number[] = mesh._waitingData.lods.distances;
+                if (distances.length >= lodmeshes.length) {
+                    const culling: number = (distances.length > lodmeshes.length) ? distances[distances.length - 1] : 0;
+                    mastermesh.setEnabled(false);
+                    for (let index = 0; index < lodmeshes.length; index++) {
+                        const lodid: string = lodmeshes[index];
+                        const lodmesh: Mesh = scene.getMeshByID(lodid) as Mesh;
+                        if (lodmesh != null) {
+                            mastermesh.addLODLevel(distances[index], lodmesh);
+                        }
+                    }
+                    if (culling > 0) {
+                        mastermesh.addLODLevel(culling, null);
+                    }
+                    if (wasenabled === true) {
+                        mastermesh.setEnabled(true);
+                    }
+                } else {
+                    Tools.Warn("Invalid level of detail distances for " + mesh.name);
+                }
+            }
+        }
+        mesh._waitingData.lods = null;
+    }
+};
+
 var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     var container = new AssetContainer(scene);
 
@@ -74,6 +112,41 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
 
         var index: number;
         var cache: number;
+
+        // Environment texture
+        if (parsedData.environmentTexture !== undefined && parsedData.environmentTexture !== null) {
+            // PBR needed for both HDR texture (gamma space) & a sky box
+            var isPBR = parsedData.isPBR !== undefined ? parsedData.isPBR : true;
+            if (parsedData.environmentTextureType && parsedData.environmentTextureType === "BABYLON.HDRCubeTexture") {
+                var hdrSize: number = (parsedData.environmentTextureSize) ? parsedData.environmentTextureSize : 128;
+                var hdrTexture = new HDRCubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene, hdrSize, true, !isPBR);
+                if (parsedData.environmentTextureRotationY) {
+                    hdrTexture.rotationY = parsedData.environmentTextureRotationY;
+                }
+                scene.environmentTexture = hdrTexture;
+            } else {
+                if (Tools.EndsWith(parsedData.environmentTexture, ".env")) {
+                    var compressedTexture = new CubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
+                    if (parsedData.environmentTextureRotationY) {
+                        compressedTexture.rotationY = parsedData.environmentTextureRotationY;
+                    }
+                    scene.environmentTexture = compressedTexture;
+                } else {
+                    var cubeTexture = CubeTexture.CreateFromPrefilteredData((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
+                    if (parsedData.environmentTextureRotationY) {
+                        cubeTexture.rotationY = parsedData.environmentTextureRotationY;
+                    }
+                    scene.environmentTexture = cubeTexture;
+                }
+            }
+            if (parsedData.createDefaultSkybox === true) {
+                var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;
+                var skyboxBlurLevel = parsedData.skyboxBlurLevel || 0;
+                scene.createDefaultSkybox(scene.environmentTexture, isPBR, skyboxScale, skyboxBlurLevel);
+            }
+            container.environmentTexture = scene.environmentTexture;
+        }
+
         // Lights
         if (parsedData.lights !== undefined && parsedData.lights !== null) {
             for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
@@ -120,9 +193,19 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
                 var parsedMaterial = parsedData.materials[index];
                 var mat = Material.Parse(parsedMaterial, scene, rootUrl);
-                container.materials.push(mat);
-                log += (index === 0 ? "\n\tMaterials:" : "");
-                log += "\n\t\t" + mat.toString(fullDetails);
+                if (mat) {
+                    container.materials.push(mat);
+                    log += (index === 0 ? "\n\tMaterials:" : "");
+                    log += "\n\t\t" + mat.toString(fullDetails);
+
+                    // Textures
+                    var textures = mat.getActiveTextures();
+                    textures.forEach((t) => {
+                        if (container.textures.indexOf(t) == -1) {
+                            container.textures.push(t);
+                        }
+                    });
+                }
             }
         }
 
@@ -131,8 +214,17 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedMultiMaterial = parsedData.multiMaterials[index];
                 var mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
                 container.multiMaterials.push(mmat);
+
                 log += (index === 0 ? "\n\tMultiMaterials:" : "");
                 log += "\n\t\t" + mmat.toString(fullDetails);
+
+                // Textures
+                var textures = mmat.getActiveTextures();
+                textures.forEach((t) => {
+                    if (container.textures.indexOf(t) == -1) {
+                        container.textures.push(t);
+                    }
+                });
             }
         }
 
@@ -234,7 +326,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             }
         }
 
-        // Connect parents & children and parse actions
+        // Connect parents & children and parse actions and lods
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             var transformNode = scene.transformNodes[index];
             if (transformNode._waitingParentId) {
@@ -248,14 +340,36 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
                 mesh._waitingParentId = null;
             }
+            if (mesh._waitingData.lods) {
+                loadDetailLevels(scene, mesh);
+            }
+        }
+
+        // link skeleton transform nodes
+        for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
+            var skeleton = scene.skeletons[index];
+            if (skeleton._hasWaitingData) {
+                if (skeleton.bones != null) {
+                    skeleton.bones.forEach((bone) => {
+                        if (bone._waitingTransformNodeId) {
+                            var linkTransformNode = scene.getLastEntryByID(bone._waitingTransformNodeId) as TransformNode;
+                            if (linkTransformNode) {
+                                bone.linkTransformNode(linkTransformNode);
+                            }
+                            bone._waitingTransformNodeId = null;
+                        }
+                    });
+                }
+                skeleton._hasWaitingData = null;
+            }
         }
 
         // freeze world matrix application
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             var currentMesh = scene.meshes[index];
-            if (currentMesh._waitingFreezeWorldMatrix) {
+            if (currentMesh._waitingData.freezeWorldMatrix) {
                 currentMesh.freezeWorldMatrix();
-                currentMesh._waitingFreezeWorldMatrix = null;
+                currentMesh._waitingData.freezeWorldMatrix = null;
             } else {
                 currentMesh.computeWorldMatrix(true);
             }
@@ -296,9 +410,9 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         // Actions (scene) Done last as it can access other objects.
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             var mesh = scene.meshes[index];
-            if (mesh._waitingActions) {
-                ActionManager.Parse(mesh._waitingActions, mesh, scene);
-                mesh._waitingActions = null;
+            if (mesh._waitingData.actions) {
+                ActionManager.Parse(mesh._waitingData.actions, mesh, scene);
+                mesh._waitingData.actions = null;
             }
         }
         if (parsedData.actions !== undefined && parsedData.actions !== null) {
@@ -461,7 +575,7 @@ SceneLoader.RegisterPlugin({
                     }
                 }
 
-                // Connecting parents
+                // Connecting parents and lods
                 var currentMesh: AbstractMesh;
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
@@ -469,14 +583,36 @@ SceneLoader.RegisterPlugin({
                         currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
                         currentMesh._waitingParentId = null;
                     }
+                    if (currentMesh._waitingData.lods) {
+                        loadDetailLevels(scene, currentMesh);
+                    }
+                }
+
+                // link skeleton transform nodes
+                for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
+                    var skeleton = scene.skeletons[index];
+                    if (skeleton._hasWaitingData) {
+                        if (skeleton.bones != null) {
+                            skeleton.bones.forEach((bone) => {
+                                if (bone._waitingTransformNodeId) {
+                                    var linkTransformNode = scene.getLastEntryByID(bone._waitingTransformNodeId) as TransformNode;
+                                    if (linkTransformNode) {
+                                        bone.linkTransformNode(linkTransformNode);
+                                    }
+                                    bone._waitingTransformNodeId = null;
+                                }
+                            });
+                        }
+                        skeleton._hasWaitingData = null;
+                    }
                 }
 
                 // freeze and compute world matrix application
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
-                    if (currentMesh._waitingFreezeWorldMatrix) {
+                    if (currentMesh._waitingData.freezeWorldMatrix) {
                         currentMesh.freezeWorldMatrix();
-                        currentMesh._waitingFreezeWorldMatrix = null;
+                        currentMesh._waitingData.freezeWorldMatrix = null;
                     } else {
                         currentMesh.computeWorldMatrix(true);
                     }
@@ -564,6 +700,8 @@ SceneLoader.RegisterPlugin({
                     physicsPlugin = new CannonJSPlugin();
                 } else if (parsedData.physicsEngine === "oimo") {
                     physicsPlugin = new OimoJSPlugin();
+                } else if (parsedData.physicsEngine === "ammo") {
+                    physicsPlugin = new AmmoJSPlugin();
                 }
                 log = "\tPhysics engine " + (parsedData.physicsEngine ? parsedData.physicsEngine : "oimo") + " enabled\n";
                 //else - default engine, which is currently oimo
@@ -606,11 +744,19 @@ SceneLoader.RegisterPlugin({
                     }
                     scene.environmentTexture = hdrTexture;
                 } else {
-                    var cubeTexture = CubeTexture.CreateFromPrefilteredData(rootUrl + parsedData.environmentTexture, scene);
-                    if (parsedData.environmentTextureRotationY) {
-                        cubeTexture.rotationY = parsedData.environmentTextureRotationY;
+                    if (Tools.EndsWith(parsedData.environmentTexture, ".env")) {
+                        var compressedTexture = new CubeTexture(rootUrl + parsedData.environmentTexture, scene);
+                        if (parsedData.environmentTextureRotationY) {
+                            compressedTexture.rotationY = parsedData.environmentTextureRotationY;
+                        }
+                        scene.environmentTexture = compressedTexture;
+                    } else {
+                        var cubeTexture = CubeTexture.CreateFromPrefilteredData(rootUrl + parsedData.environmentTexture, scene);
+                        if (parsedData.environmentTextureRotationY) {
+                            cubeTexture.rotationY = parsedData.environmentTextureRotationY;
+                        }
+                        scene.environmentTexture = cubeTexture;
                     }
-                    scene.environmentTexture = cubeTexture;
                 }
                 if (parsedData.createDefaultSkybox === true) {
                     var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;

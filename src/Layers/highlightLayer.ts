@@ -456,13 +456,7 @@ export class HighlightLayer extends EffectLayer {
 
         // Cache
         var engine = this._engine;
-        var previousStencilBuffer = engine.getStencilBuffer();
-        var previousStencilFunction = engine.getStencilFunction();
-        var previousStencilMask = engine.getStencilMask();
-        var previousStencilOperationPass = engine.getStencilOperationPass();
-        var previousStencilOperationFail = engine.getStencilOperationFail();
-        var previousStencilOperationDepthFail = engine.getStencilOperationDepthFail();
-        var previousStencilReference = engine.getStencilFunctionReference();
+        engine.cacheStencilState();
 
         // Stencil operations
         engine.setStencilOperationPass(Constants.REPLACE);
@@ -487,13 +481,7 @@ export class HighlightLayer extends EffectLayer {
         }
 
         // Restore Cache
-        engine.setStencilFunction(previousStencilFunction);
-        engine.setStencilMask(previousStencilMask);
-        engine.setStencilBuffer(previousStencilBuffer);
-        engine.setStencilOperationPass(previousStencilOperationPass);
-        engine.setStencilOperationFail(previousStencilOperationFail);
-        engine.setStencilOperationDepthFail(previousStencilOperationDepthFail);
-        engine.setStencilFunctionReference(previousStencilReference);
+        engine.restoreStencilState();
     }
 
     /**

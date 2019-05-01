@@ -5,6 +5,8 @@ import { PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointe
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { EngineStore } from "../Engines/engineStore";
+import { HemisphericLight } from '../Lights/hemisphericLight';
+import { Vector3, Color3 } from '../Maths/math';
 
 /**
  * Renders a layer on top of an existing scene
@@ -14,6 +16,19 @@ export class UtilityLayerRenderer implements IDisposable {
     private _lastPointerEvents: { [pointerId: number]: boolean } = {};
     private static _DefaultUtilityLayer: Nullable<UtilityLayerRenderer> = null;
     private static _DefaultKeepDepthUtilityLayer: Nullable<UtilityLayerRenderer> = null;
+    private _sharedGizmoLight: Nullable<HemisphericLight> = null;
+    /**
+     * @hidden
+     * Light which used by gizmos to get light shading
+     */
+    public _getSharedGizmoLight(): HemisphericLight {
+        if (!this._sharedGizmoLight) {
+            this._sharedGizmoLight = new HemisphericLight("shared gizmo light", new Vector3(0, 1, 0), this.utilityLayerScene);
+            this._sharedGizmoLight.intensity = 2;
+            this._sharedGizmoLight.groundColor = Color3.Gray();
+        }
+        return this._sharedGizmoLight;
+    }
 
     /**
      * If the picking should be done on the utility layer prior to the actual scene (Default: true)
@@ -187,8 +202,12 @@ export class UtilityLayerRenderer implements IDisposable {
                         }
                     }
                 }
-
             });
+
+            // As a newly added utility layer will be rendered over the screen last, it's pointer events should be processed first
+            if (this._originalPointerObserver) {
+                originalScene.onPrePointerObservable.makeObserverTopPriority(this._originalPointerObserver);
+            }
         }
 
         // Render directly on top of existing scene without clearing

@@ -1,3 +1,5 @@
+$line-padding-left: 2px;
+
 #inspector-host {
     position: absolute;
     right: 0px;
@@ -127,7 +129,7 @@
             grid-row: 2;
 
             display: grid;
-            grid-template-rows: 1fr;
+            grid-template-rows: 100%;
 
             overflow: hidden;
 
@@ -143,6 +145,7 @@
 
                 overflow-x: hidden;
                 overflow-y: auto;
+                height: 100%;
 
                 -webkit-user-select: none; 
                 -moz-user-select: none;   
@@ -184,7 +187,7 @@
                 }
 
                 .iconMessageLine {
-                    padding-left: 5px;
+                    padding-left: $line-padding-left;
                     height: 30px;
                     display: grid;
                     grid-template-columns: 30px 1fr;
@@ -204,7 +207,7 @@
                 }
 
                 .textLine {
-                    padding-left: 5px;
+                    padding-left: $line-padding-left;
                     height: 30px;
                     display: grid;
                     grid-template-columns: 1fr auto;
@@ -255,7 +258,7 @@
                 }
 
                 .textInputLine {
-                    padding-left: 5px;
+                    padding-left: $line-padding-left;
                     height: 30px;
                     display: grid;
                     grid-template-columns: 1fr 120px;
@@ -331,7 +334,7 @@
                 }
 
                 .radioLine {
-                    padding-left: 5px;
+                    padding-left: $line-padding-left;
                     height: 30px;
                     display: grid;
                     grid-template-columns: 1fr 24px;
@@ -393,7 +396,7 @@
                 }
 
                 .vector3Line {
-                    padding-left: 5px;                    
+                    padding-left:$line-padding-left;                    
                     display: grid;
 
                     .firstLine {
@@ -454,7 +457,7 @@
                 }
 
                 .checkBoxLine {
-                    padding-left: 5px;
+                    padding-left: $line-padding-left;
                     height: 30px;
                     display: grid;
                     grid-template-columns: 1fr auto;
@@ -608,7 +611,7 @@
                 }
 
                 .floatLine {
-                    padding-left: 5px;
+                    padding-left: $line-padding-left;
                     height: 30px;
                     display: grid;
                     grid-template-columns: 1fr 120px;
@@ -633,7 +636,7 @@
                 }
 
                 .sliderLine {
-                    padding-left: 5px;
+                    padding-left: 2px;
                     height: 30px;
                     display: grid;
                     grid-template-columns: 1fr auto;
@@ -688,7 +691,7 @@
                 }       
                 
                 .color3Line {
-                    padding-left: 5px;
+                    padding-left: $line-padding-left;
                     display: grid;
 
                     .firstLine {
@@ -774,7 +777,7 @@
                 }     
                 
                 .listLine {
-                    padding-left: 5px;
+                    padding-left: $line-padding-left;
                     height: 30px;
                     display: grid;
                     grid-template-columns: 1fr auto;
@@ -801,37 +804,81 @@
 
                 .paneContainer {
                     margin-top: 3px;
+                    display:grid;
+                    grid-template-rows: 100%;
+                    grid-template-columns: 100%;
                     
-                    .header {
-                        display: grid;
-                        grid-template-columns: 1fr auto;
-                        background: #555555;    
-                        height: 30px;   
-                        padding-right: 5px;                        
-                        cursor: pointer;
-                        
-                        .title {
-                            margin-left: 5px;
-                            grid-column: 1;
-                            display: flex;
-                            align-items: center;
-                        }
-
-                        .collapse {
-                            grid-column: 2;
-                            display: flex;
-                            align-items: center;  
-                            justify-items: center;
-                            transform-origin: center;
-
-                            &.closed {
-                                transform: rotate(180deg);
-                            }
-                        }                        
+                    .paneList {
+                        border-left: 3px solid transparent;
                     }
 
-                    .paneList > div:not(:last-child) {
-                        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+                    &:hover {  
+                        .paneList {                      
+                            border-left: 3px solid rgba(51, 122, 183, 0.8);
+                        }
+
+                        .paneContainer-content {
+                            .header {
+                                .title {   
+                                    border-left: 3px solid rgb(51, 122, 183);
+                                }
+                            }
+                        }
+                    }
+                    
+                    .paneContainer-highlight-border {
+                        grid-row: 1;
+                        grid-column: 1;
+                        opacity: 1;
+                        border: 3px solid red;
+                        transition: opacity 250ms;
+                        pointer-events: none;
+                        
+                        &.transparent {
+                            opacity: 0;
+                        }
+                    }
+
+                    .paneContainer-content {
+                        grid-row: 1;
+                        grid-column: 1;
+
+                        .header {
+                            display: grid;
+                            grid-template-columns: 1fr auto;
+                            background: #555555;    
+                            height: 30px;   
+                            padding-right: 5px;                        
+                            cursor: pointer;
+                            
+                            .title {                                
+                                border-left: 3px solid transparent;
+                                padding-left: 5px;
+                                grid-column: 1;
+                                display: flex;
+                                align-items: center;
+                            }
+
+                            .collapse {
+                                grid-column: 2;
+                                display: flex;
+                                align-items: center;  
+                                justify-items: center;
+                                transform-origin: center;
+
+                                &.closed {
+                                    transform: rotate(180deg);
+                                }
+                            }                        
+                        }
+
+                        .paneList > div:not(:last-child) {
+                            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+                        }
+
+                        .fragment > div:not(:last-child)  {
+                            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+                        }
                     }
                 }
             }

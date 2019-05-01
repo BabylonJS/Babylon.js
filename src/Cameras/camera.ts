@@ -93,21 +93,24 @@ export class Camera extends Node {
     public static ForceAttachControlToAlwaysPreventDefault = false;
 
     /**
-     * @hidden
-     * Might be removed once multiview will be a thing
-     */
-    public static UseAlternateWebVRRendering = false;
-
-    /**
      * Define the input manager associated with the camera.
      */
     public inputs: CameraInputsManager<Camera>;
 
+    /** @hidden */
+    @serializeAsVector3("position")
+    public _position = Vector3.Zero();
+
     /**
      * Define the current local position of the camera in the scene
      */
-    @serializeAsVector3()
-    public position: Vector3;
+    public get position(): Vector3 {
+        return this._position;
+    }
+
+    public set position(newPosition: Vector3) {
+        this._position = newPosition;
+    }
 
     /**
      * The vector the camera should consider as up.
@@ -262,8 +265,6 @@ export class Camera extends Node {
     protected _webvrViewMatrix = Matrix.Identity();
     /** @hidden */
     public _skipRendering = false;
-    /** @hidden */
-    public _alternateCamera: Camera;
 
     /** @hidden */
     public _projectionMatrix = new Matrix();
@@ -642,12 +643,17 @@ export class Camera extends Node {
         this.updateCache();
         this._computedViewMatrix = this._getViewMatrix();
         this._currentRenderId = this.getScene().getRenderId();
-        this._childRenderId = this._currentRenderId;
+        this._childUpdateId++;
 
         this._refreshFrustumPlanes = true;
 
         if (this._cameraRigParams && this._cameraRigParams.vrPreViewMatrix) {
             this._computedViewMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._computedViewMatrix);
+        }
+
+        // Notify parent camera if rig camera is changed
+        if (this.parent && (this.parent as Camera).onViewMatrixChangedObservable) {
+            (this.parent as Camera).onViewMatrixChangedObservable.notifyObservers((this.parent as Camera));
         }
 
         this.onViewMatrixChangedObservable.notifyObservers(this);
@@ -784,12 +790,22 @@ export class Camera extends Node {
      * Checks if a cullable object (mesh...) is in the camera frustum
      * This checks the bounding box center. See isCompletelyInFrustum for a full bounding check
      * @param target The object to check
+     * @param checkRigCameras If the rig cameras should be checked (eg. with webVR camera both eyes should be checked) (Default: false)
      * @returns true if the object is in frustum otherwise false
      */
-    public isInFrustum(target: ICullable): boolean {
+    public isInFrustum(target: ICullable, checkRigCameras = false): boolean {
         this._updateFrustumPlanes();
 
-        return target.isInFrustum(this._frustumPlanes);
+        if (checkRigCameras && this.rigCameras.length > 0) {
+            var result = false;
+            this.rigCameras.forEach((cam) => {
+                cam._updateFrustumPlanes();
+                result = result || target.isInFrustum(cam._frustumPlanes);
+            });
+            return result;
+        }else {
+            return target.isInFrustum(this._frustumPlanes);
+        }
     }
 
     /**
@@ -876,6 +892,24 @@ export class Camera extends Node {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
+    /** @hidden */
+    public _isLeftCamera = false;
+    /**
+     * Gets the left camera of a rig setup in case of Rigged Camera
+     */
+    public get isLeftCamera(): boolean {
+        return this._isLeftCamera;
+    }
+
+    /** @hidden */
+    public _isRightCamera = true;
+    /**
+     * Gets the right camera of a rig setup in case of Rigged Camera
+     */
+    public get isRightCamera(): boolean {
+        return this._isRightCamera;
+    }
+
     /**
      * Gets the left camera of a rig setup in case of Rigged Camera
      */
@@ -943,7 +977,13 @@ export class Camera extends Node {
         // create the rig cameras, unless none
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             let leftCamera = this.createRigCamera(this.name + "_L", 0);
+            if (leftCamera) {
+                leftCamera._isLeftCamera = true;
+            }
             let rightCamera = this.createRigCamera(this.name + "_R", 1);
+            if (rightCamera) {
+                rightCamera._isRightCamera = true;
+            }
             if (leftCamera && rightCamera) {
                 this._rigCameras.push(leftCamera);
                 this._rigCameras.push(rightCamera);

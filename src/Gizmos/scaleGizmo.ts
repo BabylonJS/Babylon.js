@@ -34,6 +34,9 @@ export class ScaleGizmo extends Gizmo {
     /** Fires an event when any of it's sub gizmos are released from dragging */
     public onDragEndObservable = new Observable();
 
+    public get attachedMesh() {
+        return this.xGizmo.attachedMesh;
+    }
     public set attachedMesh(mesh: Nullable<AbstractMesh>) {
         if (this.xGizmo) {
             this.xGizmo.attachedMesh = mesh;
@@ -63,6 +66,8 @@ export class ScaleGizmo extends Gizmo {
         octahedron.scaling.scaleInPlace(0.007);
         uniformScalingMesh.addChild(octahedron);
         this.uniformScaleGizmo.setCustomMesh(uniformScalingMesh, true);
+        var light = gizmoLayer._getSharedGizmoLight();
+        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(octahedron);
 
         // Relay drag events
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {

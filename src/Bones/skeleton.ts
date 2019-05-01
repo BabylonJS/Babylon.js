@@ -15,6 +15,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
+import { IInspectable } from '../Misc/iInspectable';
 
 /**
  * Class used to handle skinning animations
@@ -57,20 +58,32 @@ export class Skeleton implements IAnimatable {
     private _lastAbsoluteTransformsUpdateId = -1;
 
     private _canUseTextureForBones = false;
+    private _uniqueId = 0;
 
     /** @hidden */
     public _numBonesWithLinkedTransformNode = 0;
+
+    /** @hidden */
+    public _hasWaitingData: Nullable<boolean> = null;
 
     /**
      * Specifies if the skeleton should be serialized
      */
     public doNotSerialize = false;
 
+    private _useTextureToStoreBoneMatrices = true;
     /**
      * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
      * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
      */
-    public useTextureToStoreBoneMatrices = true;
+    public get useTextureToStoreBoneMatrices(): boolean {
+        return this._useTextureToStoreBoneMatrices;
+    }
+
+    public set useTextureToStoreBoneMatrices(value: boolean) {
+        this._useTextureToStoreBoneMatrices = value;
+        this._markAsDirty();
+    }
 
     private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
@@ -88,6 +101,12 @@ export class Skeleton implements IAnimatable {
         this._animationPropertiesOverride = value;
     }
 
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
+
     // Events
 
     /**
@@ -100,6 +119,13 @@ export class Skeleton implements IAnimatable {
      */
     public get isUsingTextureForMatrices() {
         return this.useTextureToStoreBoneMatrices && this._canUseTextureForBones && !this.needInitialSkinMatrix;
+    }
+
+    /**
+     * Gets the unique ID of this skeleton
+     */
+    public get uniqueId(): number {
+        return this._uniqueId;
     }
 
     /**
@@ -116,14 +142,31 @@ export class Skeleton implements IAnimatable {
         this.bones = [];
 
         this._scene = scene || EngineStore.LastCreatedScene;
+        this._uniqueId = this._scene.getUniqueId();
 
-        this._scene.skeletons.push(this);
+        this._scene.addSkeleton(this);
 
         //make sure it will recalculate the matrix next time prepare is called.
         this._isDirty = true;
 
         const engineCaps = this._scene.getEngine().getCaps();
         this._canUseTextureForBones = engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0;
+    }
+
+    /**
+     * Gets the current object class name.
+     * @return the class name
+     */
+    public getClassName(): string {
+        return "Skeleton";
+    }
+
+    /**
+     * Returns an array containing the root bones
+     * @returns an array containing the root bones
+     */
+    public getChildren(): Array<Bone> {
+        return this.bones.filter((b) => !b.getParent());
     }
 
     // Members
@@ -247,10 +290,8 @@ export class Skeleton implements IAnimatable {
     public getAnimationRanges(): Nullable<AnimationRange>[] {
         var animationRanges: Nullable<AnimationRange>[] = [];
         var name: string;
-        var i: number = 0;
         for (name in this._ranges) {
-            animationRanges[i] = this._ranges[name];
-            i++;
+            animationRanges.push(this._ranges[name]);
         }
         return animationRanges;
     }
@@ -369,6 +410,7 @@ export class Skeleton implements IAnimatable {
 
         for (var index = 0; index < this.bones.length; index++) {
             var bone = this.bones[index];
+            bone._childUpdateId++;
             var parentBone = bone.getParent();
 
             if (parentBone) {
@@ -481,7 +523,7 @@ export class Skeleton implements IAnimatable {
     /**
      * Clone the current skeleton
      * @param name defines the name of the new skeleton
-     * @param id defines the id of the enw skeleton
+     * @param id defines the id of the new skeleton
      * @returns the new skeleton
      */
     public clone(name: string, id: string): Skeleton {
@@ -651,6 +693,11 @@ export class Skeleton implements IAnimatable {
 
             if (parsedBone.animation) {
                 bone.animations.push(Animation.Parse(parsedBone.animation));
+            }
+
+            if (parsedBone.linkedTransformNodeId !== undefined && parsedBone.linkedTransformNodeId !== null) {
+                skeleton._hasWaitingData = true;
+                bone._waitingTransformNodeId = parsedBone.linkedTransformNodeId;
             }
         }
 

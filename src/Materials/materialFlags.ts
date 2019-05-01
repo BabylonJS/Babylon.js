@@ -213,4 +213,68 @@ export class MaterialFlags {
         this._ClearCoatBumpTextureEnabled = value;
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
+
+    private static _ClearCoatTintTextureEnabled = true;
+    /**
+     * Are clear coat tint textures enabled in the application.
+     */
+    public static get ClearCoatTintTextureEnabled(): boolean {
+        return this._ClearCoatTintTextureEnabled;
+    }
+    public static set ClearCoatTintTextureEnabled(value: boolean) {
+        if (this._ClearCoatTintTextureEnabled === value) {
+            return;
+        }
+
+        this._ClearCoatTintTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private static _SheenTextureEnabled = true;
+    /**
+     * Are sheen textures enabled in the application.
+     */
+    public static get SheenTextureEnabled(): boolean {
+        return this._SheenTextureEnabled;
+    }
+    public static set SheenTextureEnabled(value: boolean) {
+        if (this._SheenTextureEnabled === value) {
+            return;
+        }
+
+        this._SheenTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private static _AnisotropicTextureEnabled = true;
+    /**
+     * Are anisotropic textures enabled in the application.
+     */
+    public static get AnisotropicTextureEnabled(): boolean {
+        return this._AnisotropicTextureEnabled;
+    }
+    public static set AnisotropicTextureEnabled(value: boolean) {
+        if (this._AnisotropicTextureEnabled === value) {
+            return;
+        }
+
+        this._AnisotropicTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private static _ThicknessTextureEnabled = true;
+    /**
+     * Are thickness textures enabled in the application.
+     */
+    public static get ThicknessTextureEnabled(): boolean {
+        return this._ThicknessTextureEnabled;
+    }
+    public static set ThicknessTextureEnabled(value: boolean) {
+        if (this._ThicknessTextureEnabled === value) {
+            return;
+        }
+
+        this._ThicknessTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
 }

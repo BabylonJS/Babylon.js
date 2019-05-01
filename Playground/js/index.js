@@ -626,8 +626,17 @@ function showError(errorMessage, errorEvent) {
 
                     if (scene) {
                         if (showInspector) {
-                            if (!scene.debugLayer.isVisible()) {
-                                scene.debugLayer.show({ embedMode: true });
+                            if (scene.then) {
+                                // Handle if scene is a promise
+                                scene.then(function(s) {
+                                    if (!s.debugLayer.isVisible()) {
+                                        s.debugLayer.show({ embedMode: true });
+                                    }
+                                })
+                            } else {
+                                if (!scene.debugLayer.isVisible()) {
+                                    scene.debugLayer.show({ embedMode: true });
+                                }
                             }
                         }
                     }
@@ -651,7 +660,7 @@ function showError(errorMessage, errorEvent) {
 
         // Zip
         var addContentToZip = function(zip, name, url, replace, buffer, then) {
-            if (url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
+            if (url.substring(0, 5) == "data:" || url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
                 then();
                 return;
             }
@@ -694,7 +703,7 @@ function showError(errorMessage, errorEvent) {
 
         var addTexturesToZip = function(zip, index, textures, folder, then) {
 
-            if (index === textures.length) {
+            if (index === textures.length || !textures[index].name) {
                 then();
                 return;
             }
@@ -705,9 +714,15 @@ function showError(errorMessage, errorEvent) {
             }
 
             if (textures[index].isCube) {
-                if (textures[index]._extensions && textures[index].name.indexOf("dds") === -1) {
-                    for (var i = 0; i < 6; i++) {
-                        textures.push({ name: textures[index].name + textures[index]._extensions[i] });
+                if (textures[index].name.indexOf("dds") === -1) {
+                    if (textures[index]._extensions) {
+                        for (var i = 0; i < 6; i++) {
+                            textures.push({ name: textures[index].name + textures[index]._extensions[i] });
+                        }
+                    } else if (textures[index]._files) {
+                        for (var i = 0; i < 6; i++) {
+                            textures.push({ name: textures[index]._files[i] });
+                        }
                     }
                 }
                 else {
@@ -961,7 +976,7 @@ function showError(errorMessage, errorEvent) {
         }
 
         var formatCode = function() {
-            jsEditor.getAction('editor.action.format').run();
+            jsEditor.getAction('editor.action.formatDocument').run();
         }
 
         var toggleMinimap = function() {

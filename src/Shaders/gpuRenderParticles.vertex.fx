@@ -4,6 +4,7 @@
 uniform mat4 view;
 uniform mat4 projection;
 uniform vec2 translationPivot;
+uniform vec3 worldOffset;
 
 // Particles state
 in vec3 position;
@@ -59,7 +60,7 @@ vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 
 	vec3 alignedCorner = rotMatrix * rotatedCorner;
 
-	return position + alignedCorner;
+	return (position + worldOffset) + alignedCorner;
 }
 
 #ifdef BILLBOARDSTRETCHED
@@ -75,7 +76,7 @@ vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 	mat3 rotMatrix =  mat3(row0, row1, row2);
 
 	vec3 alignedCorner = rotMatrix * rotatedCorner;
-	return position + alignedCorner; 
+	return (position + worldOffset) + alignedCorner; 
 }
 #endif
 
@@ -109,7 +110,7 @@ void main() {
 		rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 		rotatedCorner.y = 0.;
 
-		vec3 yaxis = position - eyePosition;
+		vec3 yaxis = (position + worldOffset) - eyePosition;
 		yaxis.y = 0.;
 		vec3 worldPos = rotate(normalize(yaxis), rotatedCorner.xyz);
 
@@ -119,7 +120,7 @@ void main() {
 		rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 		rotatedCorner.z = 0.;
 
-		vec3 toCamera = position - eyePosition;	
+		vec3 toCamera = (position + worldOffset) - eyePosition;	
 		vec3 worldPos = rotateAlign(toCamera, rotatedCorner.xyz);
 		
 		vec4 viewPosition = (view * vec4(worldPos, 1.0)); 	
@@ -130,7 +131,7 @@ void main() {
 		rotatedCorner.z = 0.;
 
 		// Expand position
-		vec4 viewPosition = view * vec4(position, 1.0) + rotatedCorner;
+		vec4 viewPosition = view * vec4((position + worldOffset), 1.0) + rotatedCorner;
 	#endif
 
 #else

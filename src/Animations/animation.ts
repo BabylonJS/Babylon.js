@@ -16,6 +16,18 @@ declare type Animatable = import("./animatable").Animatable;
 declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
 
 /**
+ * @hidden
+ */
+export class _IAnimationState {
+    key: number;
+    repeatCount: number;
+    workValue?: any;
+    loopMode?: number;
+    offsetValue?: any;
+    highLimitValue?: any;
+}
+
+/**
  * Class used to store any kind of animation
  */
 export class Animation {
@@ -571,18 +583,17 @@ export class Animation {
     /**
      * @hidden Internal use only
      */
-    public _interpolate(currentFrame: number, repeatCount: number, workValue?: any, loopMode?: number, offsetValue?: any, highLimitValue?: any): any {
-        if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
-            return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
+    public _interpolate(currentFrame: number, state: _IAnimationState): any {
+        if (state.loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && state.repeatCount > 0) {
+            return state.highLimitValue.clone ? state.highLimitValue.clone() : state.highLimitValue;
         }
 
-        const keys = this.getKeys();
+        const keys = this._keys;
         if (keys.length === 1) {
             return this._getKeyValue(keys[0].value);
         }
 
-        // Try to get a hash to find the right key
-        var startKeyIndex = Math.max(0, Math.min(keys.length - 1, Math.floor(keys.length * (currentFrame - keys[0].frame) / (keys[keys.length - 1].frame - keys[0].frame)) - 1));
+        var startKeyIndex = state.key;
 
         if (keys[startKeyIndex].frame >= currentFrame) {
             while (startKeyIndex - 1 >= 0 && keys[startKeyIndex].frame >= currentFrame) {
@@ -594,6 +605,7 @@ export class Animation {
             var endKey = keys[key + 1];
 
             if (endKey.frame >= currentFrame) {
+                state.key = key;
                 var startKey = keys[key];
                 var startValue = this._getKeyValue(startKey.value);
                 if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
@@ -618,71 +630,71 @@ export class Animation {
                     // Float
                     case Animation.ANIMATIONTYPE_FLOAT:
                         var floatValue = useTangent ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this.floatInterpolateFunction(startValue, endValue, gradient);
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return floatValue;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return offsetValue * repeatCount + floatValue;
+                                return state.offsetValue * state.repeatCount + floatValue;
                         }
                         break;
                     // Quaternion
                     case Animation.ANIMATIONTYPE_QUATERNION:
                         var quatValue = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return quatValue;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return quatValue.addInPlace(offsetValue.scale(repeatCount));
+                                return quatValue.addInPlace(state.offsetValue.scale(state.repeatCount));
                         }
 
                         return quatValue;
                     // Vector3
                     case Animation.ANIMATIONTYPE_VECTOR3:
                         var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return vec3Value;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return vec3Value.add(offsetValue.scale(repeatCount));
+                                return vec3Value.add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Vector2
                     case Animation.ANIMATIONTYPE_VECTOR2:
                         var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return vec2Value;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return vec2Value.add(offsetValue.scale(repeatCount));
+                                return vec2Value.add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Size
                     case Animation.ANIMATIONTYPE_SIZE:
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return this.sizeInterpolateFunction(startValue, endValue, gradient);
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return this.sizeInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                return this.sizeInterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return this.color3InterpolateFunction(startValue, endValue, gradient);
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return this.color3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                return this.color3InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Matrix
                     case Animation.ANIMATIONTYPE_MATRIX:
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 if (Animation.AllowMatricesInterpolation) {
-                                    return this.matrixInterpolateFunction(startValue, endValue, gradient, workValue);
+                                    return this.matrixInterpolateFunction(startValue, endValue, gradient, state.workValue);
                                 }
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return startValue;

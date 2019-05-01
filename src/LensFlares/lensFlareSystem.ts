@@ -17,6 +17,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/lensFlare.fragment";
 import "../Shaders/lensFlare.vertex";
 import { _DevTools } from '../Misc/devTools';
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
@@ -58,7 +59,7 @@ export class LensFlareSystem {
     private _scene: Scene;
     private _emitter: any;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
     private _positionX: number;
     private _positionY: number;

@@ -1,7 +1,8 @@
 import { ILoaderPlugin } from "./loaderPlugin";
 import { telemetryManager } from "../../managers/telemetryManager";
 import { ViewerModel } from "../../model/viewerModel";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, PrecisionDate } from "babylonjs";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
+import { PrecisionDate } from "babylonjs/Misc/precisionDate";
 
 export class TelemetryLoaderPlugin implements ILoaderPlugin {
 

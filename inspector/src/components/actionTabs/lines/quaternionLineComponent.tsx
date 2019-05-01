@@ -7,10 +7,10 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 
 interface IQuaternionLineComponentProps {
-    label: string,
-    target: any,
-    propertyName: string,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    label: string;
+    target: any;
+    propertyName: string;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class QuaternionLineComponent extends React.Component<IQuaternionLineComponentProps, { isExpanded: boolean, value: Quaternion }> {
@@ -19,14 +19,14 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
     constructor(props: IQuaternionLineComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, value: this.props.target[this.props.propertyName] }
+        this.state = { isExpanded: false, value: this.props.target[this.props.propertyName].clone() }
     }
 
     shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: { isExpanded: boolean, value: Quaternion }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
-            nextState.value = nextPropsValue;
+            nextState.value = nextPropsValue.clone();
             this._localChange = false;
             return true;
         }
@@ -99,7 +99,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                         {this.props.label}
                     </div>
                     <div className="vector">
-                        {`X: ${quat.x.toFixed(2)}, Y: ${quat.y.toFixed(2)}, Z: ${quat.z.toFixed(2)}, W: ${quat.w.toFixed(2)}`}
+                        {`X: ${quat.x.toFixed(1)}, Y: ${quat.y.toFixed(1)}, Z: ${quat.z.toFixed(1)}, W: ${quat.w.toFixed(1)}`}
                     </div>
                     <div className="expand" onClick={() => this.switchExpandState()}>
                         {chevron}
