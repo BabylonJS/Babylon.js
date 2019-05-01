@@ -1464,9 +1464,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             );
             this._raycastResult.calculateHitDistance();
         }
-        Ammo.destroy(rayCallback)
-        Ammo.destroy(this._tmpAmmoVectorRCA)
-        Ammo.destroy(this._tmpAmmoVectorRCB)
+        Ammo.destroy(rayCallback);
+        Ammo.destroy(this._tmpAmmoVectorRCA);
+        Ammo.destroy(this._tmpAmmoVectorRCB);
         return this._raycastResult;
     }
 }
