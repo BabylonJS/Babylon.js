@@ -1,4 +1,4 @@
-import { Nullable, FloatArray } from "babylonjs/types";
+import { Nullable, FloatArray, IndicesArray } from "babylonjs/types";
 import { Vector3, Vector2, Color3, Color4 } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexData } from "babylonjs/Meshes/mesh.vertexData";
@@ -1003,7 +1003,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
             var vertexData: VertexData = new VertexData(); //The container for the values
             //Set the data for the babylonMesh
             vertexData.uvs = handledMesh.uvs as FloatArray;
-            vertexData.indices = handledMesh.indices as FloatArray;
+            vertexData.indices = handledMesh.indices as IndicesArray;
             vertexData.positions = handledMesh.positions as FloatArray;
             if (OBJFileLoader.COMPUTE_NORMALS === true) {
                 let normals: Array<number> = new Array<number>();
