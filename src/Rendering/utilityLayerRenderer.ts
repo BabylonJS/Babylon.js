@@ -100,10 +100,9 @@ export class UtilityLayerRenderer implements IDisposable {
         public originalScene: Scene,
         handleEvents: boolean = true) {
         // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
-        this.utilityLayerScene = new Scene(originalScene.getEngine());
+        this.utilityLayerScene = new Scene(originalScene.getEngine(), {virtual: true});
         this.utilityLayerScene.useRightHandedSystem = originalScene.useRightHandedSystem;
         this.utilityLayerScene._allowPostProcessClearColor = false;
-        originalScene.getEngine().scenes.pop();
 
         // Detach controls on utility scene, events will be fired by logic below to handle picking priority
         this.utilityLayerScene.detachControl();
