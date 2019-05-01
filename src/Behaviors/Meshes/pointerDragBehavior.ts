@@ -144,9 +144,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             if (this._debugMode) {
                 PointerDragBehavior._planeScene = this._scene;
             } else {
-                PointerDragBehavior._planeScene = new Scene(this._scene.getEngine());
+                PointerDragBehavior._planeScene = new Scene(this._scene.getEngine(), {virtual: true});
                 PointerDragBehavior._planeScene.detachControl();
-                this._scene.getEngine().scenes.pop();
                 this._scene.onDisposeObservable.addOnce(() => {
                     PointerDragBehavior._planeScene.dispose();
                     (<any>PointerDragBehavior._planeScene) = null;
