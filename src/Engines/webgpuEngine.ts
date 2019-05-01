@@ -72,6 +72,7 @@ export class WebGPUEngine extends Engine {
     // Page Life cycle and constants
     private readonly _uploadEncoderDescriptor = { label: "upload" };
     private readonly _renderEncoderDescriptor = { label: "render" };
+    private readonly _blitDescriptor = { label: "upload" };
 
     // Engine Life Cycle
     private _canvas: HTMLCanvasElement;
@@ -85,12 +86,16 @@ export class WebGPUEngine extends Engine {
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
     // And when the frame starts to swap the target texture from the swap chain
+    private _mainTextureCopyView: GPUTextureCopyView;
     private _mainColorAttachments: GPURenderPassColorAttachmentDescriptor[];
+    private _mainTextureExtends: GPUExtent3D;
     private _mainDepthAttachment: GPURenderPassDepthStencilAttachmentDescriptor;
 
     // Frame Life Cycle (recreated each frame)
     private _uploadEncoder: GPUCommandEncoder;
     private _renderEncoder: GPUCommandEncoder;
+    private _blitEncoder: GPUCommandEncoder;
+
     private _commandBuffers: GPUCommandBuffer[] = [null as any, null as any];
 
     // Frame Buffer Life Cycle (recreated for each render target pass)
@@ -256,27 +261,51 @@ export class WebGPUEngine extends Engine {
         this._swapChain = this._context.configureSwapChain({
             device: this._device,
             format: this._options.swapChainFormat,
+            usage: WebGPUConstants.GPUTextureUsage_TRANSFER_DST,
         });
     }
 
     // Set default values as WebGL with depth and stencil attachment for the broadest Compat.
     // TODO. Reinit on resize.
     private _initializeMainAttachments(): void {
-        this._mainColorAttachments = [{
-            // attachment is acquired in render loop.
-            clearColor: new Color4(0, 0, 0, 1),
-            loadOp: WebGPUConstants.GPULoadOp_clear,
-            storeOp: WebGPUConstants.GPUStoreOp_store
-        }];
-
-        const depthSize = {
+        this._mainTextureExtends = {
             width: this.getRenderWidth(),
             height: this.getRenderHeight(),
             depth: 1
         };
 
+        const mainTextureDescriptor = {
+            size: this._mainTextureExtends,
+            arrayLayerCount: 1,
+            mipLevelCount: 1,
+            // sampleCount: 1,
+            dimension: WebGPUConstants.GPUTextureDimension_2d,
+            format: WebGPUConstants.GPUTextureFormat_bgra8unorm,
+            usage: WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT | WebGPUConstants.GPUTextureUsage_TRANSFER_SRC,
+        };
+
+        const mainTexture = this._device.createTexture(mainTextureDescriptor);
+        const mainTextureView = mainTexture.createDefaultView();
+        this._mainTextureCopyView = {
+            texture: mainTexture,
+            origin: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+            mipLevel: 0,
+            arrayLayer: 0,
+        };
+
+        this._mainColorAttachments = [{
+            attachment: mainTextureView,
+            clearColor: new Color4(0, 0, 0, 1),
+            loadOp: WebGPUConstants.GPULoadOp_clear,
+            storeOp: WebGPUConstants.GPUStoreOp_store
+        }];
+
         const depthTextureDescriptor = {
-            size: depthSize,
+            size: this._mainTextureExtends,
             arrayLayerCount: 1,
             mipLevelCount: 1,
             sampleCount: 1,
@@ -1196,6 +1225,14 @@ export class WebGPUEngine extends Engine {
 
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
+        this._blitEncoder = this._device.createCommandEncoder(this._blitDescriptor);
+    }
+
+    private _freezeCommands: boolean = false;
+    private _frozenCommands: Nullable<GPUCommandBuffer[]> = null;
+
+    public _shouldOnlyUpdateCameras(): boolean {
+        return this._frozenCommands !== null;
     }
 
     /**
@@ -1203,12 +1240,54 @@ export class WebGPUEngine extends Engine {
      */
     public endFrame(): void {
         this._endRenderPass();
-        this._commandBuffers[0] = this._uploadEncoder.finish();
-        this._commandBuffers[1] = this._renderEncoder.finish();
+
+        if (this._freezeCommands && this._frozenCommands) {
+            this._commandBuffers[0] = this._frozenCommands[0];
+            this._commandBuffers[1] = this._frozenCommands[1];
+        }
+        else {
+            this._commandBuffers[0] = this._uploadEncoder.finish();
+            this._commandBuffers[1] = this._renderEncoder.finish();
+        }
+
+        if (this._freezeCommands && !this._frozenCommands) {
+            this._frozenCommands = [ ];
+            this._frozenCommands[0] = this._commandBuffers[0];
+            this._frozenCommands[1] = this._commandBuffers[1];
+        }
+
+        this._blitEncoder.copyTextureToTexture(this._mainTextureCopyView, {
+                texture: this._swapChain.getCurrentTexture(),
+                origin: {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                },
+                mipLevel: 0,
+                arrayLayer: 0,
+            },
+            this._mainTextureExtends);
+        this._commandBuffers[2] = this._blitEncoder.finish();
 
         this._device.getQueue().submit(this._commandBuffers);
 
         super.endFrame();
+    }
+
+    /**
+     * Freezes the current list of commands to speed up rendering of sub sequent frames.
+     */
+    public freezeCommands(): void {
+        this._freezeCommands  = true;
+        this._frozenCommands = null;
+    }
+
+    /**
+     * Freezes the current list of commands to speed up rendering of sub sequent frames.
+     */
+    public unFreezeCommands(): void {
+        this._freezeCommands = false;
+        this._frozenCommands = null;
     }
 
     //------------------------------------------------------------------------------
@@ -1220,7 +1299,7 @@ export class WebGPUEngine extends Engine {
             this._endRenderPass();
         }
 
-        this._mainColorAttachments[0].attachment = this._swapChain.getCurrentTexture().createDefaultView();
+        // this._mainColorAttachments[0].attachment = this._swapChain.getCurrentTexture().createDefaultView();
 
         this._currentRenderPass = this._renderEncoder.beginRenderPass({
             colorAttachments: this._mainColorAttachments,
@@ -1393,10 +1472,10 @@ export class WebGPUEngine extends Engine {
 
     private _getFrontFace(): GPUFrontFace {
         switch (this._depthCullingState.frontFace) {
-            case 1: // Should be the opposite will be fixed tomorrow
-                return WebGPUConstants.GPUFrontFace_ccw;
-            default:
+            case 1:
                 return WebGPUConstants.GPUFrontFace_cw;
+            default:
+                return WebGPUConstants.GPUFrontFace_ccw;
         }
     }
 
