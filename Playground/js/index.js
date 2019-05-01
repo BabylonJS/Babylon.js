@@ -848,6 +848,11 @@ function showError(errorMessage, errorEvent) {
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 
+        showQRCode = function() {
+            $("#qrCodeImage").empty();
+            $("#qrCodeImage").qrcode({text: window.location.href});
+        };
+
         // Fullscreen
         document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function() {
             if (document.webkitIsFullScreen) goFullPage();
