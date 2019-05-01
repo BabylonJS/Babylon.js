@@ -3727,9 +3727,24 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Before render
         this.onBeforeRenderObservable.notifyObservers(this);
 
+        var engine = this.getEngine();
+        if (engine._shouldOnlyUpdateCameras()) {
+            if (this.activeCameras.length) {
+                for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                    const camera = this.activeCameras[cameraIndex];
+                    this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+                }
+            }
+            else {
+                const camera = this.activeCamera!;
+                this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+            }
+            return;
+        }
+
         // Customs render targets
         this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
-        var engine = this.getEngine();
+
         var currentActiveCamera = this.activeCamera;
         if (this.renderTargetsEnabled) {
             Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);

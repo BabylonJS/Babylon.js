@@ -6374,6 +6374,11 @@ export class Engine {
         });
     }
 
+    /** @hidden */
+    public _shouldOnlyUpdateCameras(): boolean {
+        return false;
+    }
+
     // Statics
 
     /**
