@@ -3764,6 +3764,11 @@ var Control = /** @class */ (function () {
          */
         this.clipChildren = true;
         /**
+         * Gets or sets a boolean indicating that control content must be clipped
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
+        this.clipContent = true;
+        /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
          */
         this.useBitmapCache = false;
@@ -4092,11 +4097,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "widthInPixels", {
         /**
-         * Gets control width in pixel
+         * Gets or sets the control width in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.width = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4122,11 +4133,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "heightInPixels", {
         /**
-         * Gets control height in pixel
+         * Gets or sets control height in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.height = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4215,13 +4232,19 @@ var Control = /** @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Control.prototype, "fontSizeInPixels", {
-        /** Gets font size in pixels */
+        /** Gets or sets font size in pixels */
         get: function () {
             var fontSizeToUse = this._style ? this._style._fontSize : this._fontSize;
             if (fontSizeToUse.isPixel) {
                 return fontSizeToUse.getValue(this._host);
             }
             return fontSizeToUse.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.fontSize = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4341,11 +4364,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "paddingLeftInPixels", {
         /**
-         * Gets a value indicating the padding in pixels to use on the left of the control
+         * Gets or sets a value indicating the padding in pixels to use on the left of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.paddingLeft = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4368,11 +4397,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "paddingRightInPixels", {
         /**
-         * Gets a value indicating the padding in pixels to use on the right of the control
+         * Gets or sets a value indicating the padding in pixels to use on the right of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.paddingRight = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4395,11 +4430,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "paddingTopInPixels", {
         /**
-         * Gets a value indicating the padding in pixels to use on the top of the control
+         * Gets or sets a value indicating the padding in pixels to use on the top of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.paddingTop = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4422,11 +4463,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "paddingBottomInPixels", {
         /**
-         * Gets a value indicating the padding in pixels to use on the bottom of the control
+         * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.paddingBottom = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4449,11 +4496,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "leftInPixels", {
         /**
-         * Gets a value indicating the left coordinate in pixels of the control
+         * Gets or sets a value indicating the left coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.left = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4476,11 +4529,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "topInPixels", {
         /**
-         * Gets a value indicating the top coordinate in pixels of the control
+         * Gets or sets a value indicating the top coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.top = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4503,11 +4562,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "linkOffsetXInPixels", {
         /**
-         * Gets a value indicating the offset in pixels on X axis to the linked mesh
+         * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         get: function () {
             return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.linkOffsetX = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4530,11 +4595,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "linkOffsetYInPixels", {
         /**
-         * Gets a value indicating the offset in pixels on Y axis to the linked mesh
+         * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         get: function () {
             return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.linkOffsetY = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -5100,9 +5171,9 @@ var Control = /** @class */ (function () {
         // Transform
         this._transform(context);
         // Clip
-        //     if (this.clipChildren) {
-        this._clip(context, invalidatedRectangle);
-        //   }
+        if (this.clipContent) {
+            this._clip(context, invalidatedRectangle);
+        }
         if (this.onBeforeDrawObservable.hasObservers()) {
             this.onBeforeDrawObservable.notifyObservers(this);
         }
@@ -5778,6 +5849,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__);
+
 
 
 
@@ -5824,6 +5898,14 @@ var Grid = /** @class */ (function (_super) {
         /** Gets the list of children */
         get: function () {
             return this._childControls;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Grid.prototype, "cells", {
+        /** Gets the list of cells (e.g. the containers) */
+        get: function () {
+            return this._cells;
         },
         enumerable: true,
         configurable: true
@@ -6028,6 +6110,10 @@ var Grid = /** @class */ (function (_super) {
             // Add default column definition
             this.addColumnDefinition(1, false);
         }
+        if (this._childControls.indexOf(control) !== -1) {
+            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].Warn("Control (Name:" + control.name + ", UniqueId:" + control.uniqueId + ") is already associated with this grid. You must remove it before reattaching it");
+            return this;
+        }
         var x = Math.min(row, this._rowDefinitions.length - 1);
         var y = Math.min(column, this._columnDefinitions.length - 1);
         var key = x + ":" + y;
@@ -6059,6 +6145,7 @@ var Grid = /** @class */ (function (_super) {
         var cell = this._cells[control._tag];
         if (cell) {
             cell.removeControl(control);
+            control._tag = null;
         }
         this._markAsDirty();
         return this;

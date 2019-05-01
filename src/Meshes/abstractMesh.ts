@@ -22,6 +22,7 @@ import { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { _MeshCollisionData } from '../Collisions/meshCollisionData';
+import { _DevTools } from '../Misc/devTools';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -72,6 +73,10 @@ class _InternalAbstractMeshDataInfo {
     public _skeleton: Nullable<Skeleton> = null;
     public _layerMask: number = 0x0FFFFFFF;
     public _computeBonesUsingShaders = true;
+    public _isActive = false;
+    public _onlyForInstances = false;
+    public _isActiveIntermediate = false;
+    public _onlyForInstancesIntermediate = false;
 }
 
 /**
@@ -152,7 +157,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     // Internal data
-    private _internalAbstractMeshDataInfo = new _InternalAbstractMeshDataInfo();
+    /** @hidden */
+    public _internalAbstractMeshDataInfo = new _InternalAbstractMeshDataInfo();
 
     /**
      * The culling strategy to use to check whether the mesh must be rendered or not.
@@ -280,12 +286,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _occlusionQuery: Nullable<WebGLQuery> = null;
-
-    /** @hidden */
-    public _isActive = false;
-
-    /** @hidden */
-    public _onlyForInstances = false;
 
     /** @hidden */
     public _renderingGroup: Nullable<RenderingGroup> = null;
@@ -1044,7 +1044,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _activate(renderId: number): boolean {
+    public _activate(renderId: number, intermediateRendering: boolean): boolean {
         this._renderId = renderId;
         return true;
     }
@@ -2130,4 +2130,25 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public _checkOcclusionQuery(): boolean { // Will be replaced by correct code if Occlusion queries are referenced
         return false;
     }
+
+    /**
+     * Disables the mesh edge rendering mode
+     * @returns the currentAbstractMesh
+     */
+    disableEdgesRendering(): AbstractMesh {
+        throw _DevTools.WarnImport("EdgesRenderer");
+    }
+
+    /**
+     * Enables the edge rendering mode on the mesh.
+     * This mode makes the mesh edges visible
+     * @param epsilon defines the maximal distance between two angles to detect a face
+     * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
+     * @returns the currentAbstractMesh
+     * @see https://www.babylonjs-playground.com/#19O9TU#0
+     */
+    enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh {
+        throw _DevTools.WarnImport("EdgesRenderer");
+    }
+
 }
