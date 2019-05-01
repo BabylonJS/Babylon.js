@@ -8,6 +8,7 @@ import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import "../Meshes/Builders/sphereBuilder";
+import { Vector3 } from '../Maths/math';
 
 /**
  * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
@@ -82,7 +83,8 @@ export class PhotoDome extends TransformNode {
     constructor(name: string, urlOfPhoto: string, options: {
         resolution?: number,
         size?: number,
-        useDirectMapping?: boolean
+        useDirectMapping?: boolean,
+        faceForward?: boolean
     }, scene: Scene, onError: Nullable<(message?: string, exception?: any) => void> = null) {
         super(name, scene);
 
@@ -95,6 +97,10 @@ export class PhotoDome extends TransformNode {
             this._useDirectMapping = true;
         } else {
             this._useDirectMapping = options.useDirectMapping;
+        }
+
+        if (options.faceForward === undefined) {
+            options.faceForward = true;
         }
 
         this._setReady(false);
@@ -123,6 +129,17 @@ export class PhotoDome extends TransformNode {
         // configure mesh
         this._mesh.material = material;
         this._mesh.parent = this;
+
+        // Initial rotation
+        if (options.faceForward && scene.activeCamera) {
+            let camera = scene.activeCamera;
+
+            let forward = Vector3.Forward();
+            var direction = Vector3.TransformNormal(forward, camera.getViewMatrix());
+            direction.normalize();
+
+            this.rotation.y = Math.acos(Vector3.Dot(forward, direction));
+        }
     }
 
     /**

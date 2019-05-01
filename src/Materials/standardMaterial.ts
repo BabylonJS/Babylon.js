@@ -124,6 +124,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public MULTIVIEW = false;
     /**
      * If the reflection texture on this material is in linear color space
      * @hidden
@@ -162,7 +163,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
  */
 export class StandardMaterial extends PushMaterial {
     @serializeAsTexture("diffuseTexture")
-    private _diffuseTexture: Nullable<BaseTexture>;
+    private _diffuseTexture: Nullable<BaseTexture> = null;
     /**
      * The basic texture of the material as viewed under a light.
      */
@@ -170,7 +171,7 @@ export class StandardMaterial extends PushMaterial {
     public diffuseTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("ambientTexture")
-    private _ambientTexture: Nullable<BaseTexture>;
+    private _ambientTexture: Nullable<BaseTexture> = null;
     /**
      * AKA Occlusion Texture in other nomenclature, it helps adding baked shadows into your material.
      */
@@ -178,7 +179,7 @@ export class StandardMaterial extends PushMaterial {
     public ambientTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("opacityTexture")
-    private _opacityTexture: Nullable<BaseTexture>;
+    private _opacityTexture: Nullable<BaseTexture> = null;
     /**
      * Define the transparency of the material from a texture.
      * The final alpha value can be read either from the red channel (if texture.getAlphaFromRGB is false)
@@ -188,7 +189,7 @@ export class StandardMaterial extends PushMaterial {
     public opacityTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("reflectionTexture")
-    private _reflectionTexture: Nullable<BaseTexture>;
+    private _reflectionTexture: Nullable<BaseTexture> = null;
     /**
      * Define the texture used to display the reflection.
      * @see http://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
@@ -197,7 +198,7 @@ export class StandardMaterial extends PushMaterial {
     public reflectionTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("emissiveTexture")
-    private _emissiveTexture: Nullable<BaseTexture>;
+    private _emissiveTexture: Nullable<BaseTexture> = null;
     /**
      * Define texture of the material as if self lit.
      * This will be mixed in the final result even in the absence of light.
@@ -206,7 +207,7 @@ export class StandardMaterial extends PushMaterial {
     public emissiveTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("specularTexture")
-    private _specularTexture: Nullable<BaseTexture>;
+    private _specularTexture: Nullable<BaseTexture> = null;
     /**
      * Define how the color and intensity of the highlight given by the light in the material.
      */
@@ -214,7 +215,7 @@ export class StandardMaterial extends PushMaterial {
     public specularTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("bumpTexture")
-    private _bumpTexture: Nullable<BaseTexture>;
+    private _bumpTexture: Nullable<BaseTexture> = null;
     /**
      * Bump mapping is a technique to simulate bump and dents on a rendered surface.
      * These are made by creating a normal map from an image. The means to do this can be found on the web, a search for 'normal map generator' will bring up free and paid for methods of doing this.
@@ -224,7 +225,7 @@ export class StandardMaterial extends PushMaterial {
     public bumpTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("lightmapTexture")
-    private _lightmapTexture: Nullable<BaseTexture>;
+    private _lightmapTexture: Nullable<BaseTexture> = null;
     /**
      * Complex lighting can be computationally expensive to compute at runtime.
      * To save on computation, lightmaps may be used to store calculated lighting in a texture which will be applied to a given mesh.
@@ -234,7 +235,7 @@ export class StandardMaterial extends PushMaterial {
     public lightmapTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("refractionTexture")
-    private _refractionTexture: Nullable<BaseTexture>;
+    private _refractionTexture: Nullable<BaseTexture> = null;
     /**
      * Define the texture used to display the refraction.
      * @see http://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
@@ -793,6 +794,9 @@ export class StandardMaterial extends PushMaterial {
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
 
+        // Multiview
+        MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+
         // Textures
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
@@ -1080,6 +1084,10 @@ export class StandardMaterial extends PushMaterial {
                 fallbacks.addFallback(4, "FRESNEL");
             }
 
+            if (defines.MULTIVIEW) {
+                fallbacks.addFallback(0, "MULTIVIEW");
+            }
+
             //Attributes
             var attribs = [VertexBuffer.PositionKind];
 
@@ -1105,7 +1113,7 @@ export class StandardMaterial extends PushMaterial {
 
             var shaderName = "default";
 
-            var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
+            var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor", "visibility",
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                 "mBones",
@@ -1182,44 +1190,46 @@ export class StandardMaterial extends PushMaterial {
      */
     public buildUniformLayout(): void {
         // Order is important !
-        this._uniformBuffer.addUniform("diffuseLeftColor", 4);
-        this._uniformBuffer.addUniform("diffuseRightColor", 4);
-        this._uniformBuffer.addUniform("opacityParts", 4);
-        this._uniformBuffer.addUniform("reflectionLeftColor", 4);
-        this._uniformBuffer.addUniform("reflectionRightColor", 4);
-        this._uniformBuffer.addUniform("refractionLeftColor", 4);
-        this._uniformBuffer.addUniform("refractionRightColor", 4);
-        this._uniformBuffer.addUniform("emissiveLeftColor", 4);
-        this._uniformBuffer.addUniform("emissiveRightColor", 4);
+        let ubo = this._uniformBuffer;
+        ubo.addUniform("diffuseLeftColor", 4);
+        ubo.addUniform("diffuseRightColor", 4);
+        ubo.addUniform("opacityParts", 4);
+        ubo.addUniform("reflectionLeftColor", 4);
+        ubo.addUniform("reflectionRightColor", 4);
+        ubo.addUniform("refractionLeftColor", 4);
+        ubo.addUniform("refractionRightColor", 4);
+        ubo.addUniform("emissiveLeftColor", 4);
+        ubo.addUniform("emissiveRightColor", 4);
 
-        this._uniformBuffer.addUniform("vDiffuseInfos", 2);
-        this._uniformBuffer.addUniform("vAmbientInfos", 2);
-        this._uniformBuffer.addUniform("vOpacityInfos", 2);
-        this._uniformBuffer.addUniform("vReflectionInfos", 2);
-        this._uniformBuffer.addUniform("vReflectionPosition", 3);
-        this._uniformBuffer.addUniform("vReflectionSize", 3);
-        this._uniformBuffer.addUniform("vEmissiveInfos", 2);
-        this._uniformBuffer.addUniform("vLightmapInfos", 2);
-        this._uniformBuffer.addUniform("vSpecularInfos", 2);
-        this._uniformBuffer.addUniform("vBumpInfos", 3);
+        ubo.addUniform("vDiffuseInfos", 2);
+        ubo.addUniform("vAmbientInfos", 2);
+        ubo.addUniform("vOpacityInfos", 2);
+        ubo.addUniform("vReflectionInfos", 2);
+        ubo.addUniform("vReflectionPosition", 3);
+        ubo.addUniform("vReflectionSize", 3);
+        ubo.addUniform("vEmissiveInfos", 2);
+        ubo.addUniform("vLightmapInfos", 2);
+        ubo.addUniform("vSpecularInfos", 2);
+        ubo.addUniform("vBumpInfos", 3);
 
-        this._uniformBuffer.addUniform("diffuseMatrix", 16);
-        this._uniformBuffer.addUniform("ambientMatrix", 16);
-        this._uniformBuffer.addUniform("opacityMatrix", 16);
-        this._uniformBuffer.addUniform("reflectionMatrix", 16);
-        this._uniformBuffer.addUniform("emissiveMatrix", 16);
-        this._uniformBuffer.addUniform("lightmapMatrix", 16);
-        this._uniformBuffer.addUniform("specularMatrix", 16);
-        this._uniformBuffer.addUniform("bumpMatrix", 16);
-        this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
-        this._uniformBuffer.addUniform("refractionMatrix", 16);
-        this._uniformBuffer.addUniform("vRefractionInfos", 4);
-        this._uniformBuffer.addUniform("vSpecularColor", 4);
-        this._uniformBuffer.addUniform("vEmissiveColor", 3);
-        this._uniformBuffer.addUniform("vDiffuseColor", 4);
-        this._uniformBuffer.addUniform("pointSize", 1);
+        ubo.addUniform("diffuseMatrix", 16);
+        ubo.addUniform("ambientMatrix", 16);
+        ubo.addUniform("opacityMatrix", 16);
+        ubo.addUniform("reflectionMatrix", 16);
+        ubo.addUniform("emissiveMatrix", 16);
+        ubo.addUniform("lightmapMatrix", 16);
+        ubo.addUniform("specularMatrix", 16);
+        ubo.addUniform("bumpMatrix", 16);
+        ubo.addUniform("vTangentSpaceParams", 2);
+        ubo.addUniform("pointSize", 1);
+        ubo.addUniform("refractionMatrix", 16);
+        ubo.addUniform("vRefractionInfos", 4);
+        ubo.addUniform("vSpecularColor", 4);
+        ubo.addUniform("vEmissiveColor", 3);
+        ubo.addUniform("visibility", 1);
+        ubo.addUniform("vDiffuseColor", 4);
 
-        this._uniformBuffer.create();
+        ubo.create();
     }
 
     /**
@@ -1267,7 +1277,9 @@ export class StandardMaterial extends PushMaterial {
         this._activeEffect = effect;
 
         // Matrices
-        this.bindOnlyWorldMatrix(world);
+        if (!defines.INSTANCES) {
+            this.bindOnlyWorldMatrix(world);
+        }
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
@@ -1279,45 +1291,45 @@ export class StandardMaterial extends PushMaterial {
 
         // Bones
         MaterialHelper.BindBonesParameters(mesh, effect);
-
+        let ubo = this._uniformBuffer;
         if (mustRebind) {
-            this._uniformBuffer.bindToEffect(effect, "Material");
+            ubo.bindToEffect(effect, "Material");
 
             this.bindViewProjection(effect);
-            if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
+            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
 
                 if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                     // Fresnel
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
-                        this._uniformBuffer.updateColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
-                        this._uniformBuffer.updateColor4("diffuseRightColor", this.diffuseFresnelParameters.rightColor, this.diffuseFresnelParameters.bias);
+                        ubo.updateColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
+                        ubo.updateColor4("diffuseRightColor", this.diffuseFresnelParameters.rightColor, this.diffuseFresnelParameters.bias);
                     }
 
                     if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
-                        this._uniformBuffer.updateColor4("opacityParts", new Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
+                        ubo.updateColor4("opacityParts", new Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
                     }
 
                     if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
-                        this._uniformBuffer.updateColor4("reflectionLeftColor", this.reflectionFresnelParameters.leftColor, this.reflectionFresnelParameters.power);
-                        this._uniformBuffer.updateColor4("reflectionRightColor", this.reflectionFresnelParameters.rightColor, this.reflectionFresnelParameters.bias);
+                        ubo.updateColor4("reflectionLeftColor", this.reflectionFresnelParameters.leftColor, this.reflectionFresnelParameters.power);
+                        ubo.updateColor4("reflectionRightColor", this.reflectionFresnelParameters.rightColor, this.reflectionFresnelParameters.bias);
                     }
 
                     if (this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled) {
-                        this._uniformBuffer.updateColor4("refractionLeftColor", this.refractionFresnelParameters.leftColor, this.refractionFresnelParameters.power);
-                        this._uniformBuffer.updateColor4("refractionRightColor", this.refractionFresnelParameters.rightColor, this.refractionFresnelParameters.bias);
+                        ubo.updateColor4("refractionLeftColor", this.refractionFresnelParameters.leftColor, this.refractionFresnelParameters.power);
+                        ubo.updateColor4("refractionRightColor", this.refractionFresnelParameters.rightColor, this.refractionFresnelParameters.bias);
                     }
 
                     if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
-                        this._uniformBuffer.updateColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
-                        this._uniformBuffer.updateColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
+                        ubo.updateColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
+                        ubo.updateColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
                     }
                 }
 
                 // Textures
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._diffuseTexture, this._uniformBuffer, "diffuse");
+                        ubo.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._diffuseTexture, ubo, "diffuse");
 
                         if (this._diffuseTexture.hasAlpha) {
                             effect.setFloat("alphaCutOff", this.alphaCutOff);
@@ -1325,78 +1337,81 @@ export class StandardMaterial extends PushMaterial {
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._ambientTexture, this._uniformBuffer, "ambient");
+                        ubo.updateFloat2("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._ambientTexture, ubo, "ambient");
                     }
 
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._opacityTexture, this._uniformBuffer, "opacity");
+                        ubo.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._opacityTexture, ubo, "opacity");
                     }
 
                     if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vReflectionInfos", this._reflectionTexture.level, this.roughness);
-                        this._uniformBuffer.updateMatrix("reflectionMatrix", this._reflectionTexture.getReflectionTextureMatrix());
+                        ubo.updateFloat2("vReflectionInfos", this._reflectionTexture.level, this.roughness);
+                        ubo.updateMatrix("reflectionMatrix", this._reflectionTexture.getReflectionTextureMatrix());
 
                         if ((<any>this._reflectionTexture).boundingBoxSize) {
                             let cubeTexture = <CubeTexture>this._reflectionTexture;
 
-                            this._uniformBuffer.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
-                            this._uniformBuffer.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
+                            ubo.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
+                            ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
                         }
                     }
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._emissiveTexture, this._uniformBuffer, "emissive");
+                        ubo.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._emissiveTexture, ubo, "emissive");
                     }
 
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._lightmapTexture, this._uniformBuffer, "lightmap");
+                        ubo.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._lightmapTexture, ubo, "lightmap");
                     }
 
                     if (this._specularTexture && StandardMaterial.SpecularTextureEnabled) {
-                        this._uniformBuffer.updateFloat2("vSpecularInfos", this._specularTexture.coordinatesIndex, this._specularTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._specularTexture, this._uniformBuffer, "specular");
+                        ubo.updateFloat2("vSpecularInfos", this._specularTexture.coordinatesIndex, this._specularTexture.level);
+                        MaterialHelper.BindTextureMatrix(this._specularTexture, ubo, "specular");
                     }
 
                     if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
-                        this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
-                        MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
+                        ubo.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
+                        MaterialHelper.BindTextureMatrix(this._bumpTexture, ubo, "bump");
 
                         if (scene._mirroredCameraPosition) {
-                            this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
+                            ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                         } else {
-                            this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
+                            ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
                         }
                     }
 
                     if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
                         var depth = 1.0;
                         if (!this._refractionTexture.isCube) {
-                            this._uniformBuffer.updateMatrix("refractionMatrix", this._refractionTexture.getReflectionTextureMatrix());
+                            ubo.updateMatrix("refractionMatrix", this._refractionTexture.getReflectionTextureMatrix());
 
                             if ((<any>this._refractionTexture).depth) {
                                 depth = (<any>this._refractionTexture).depth;
                             }
                         }
-                        this._uniformBuffer.updateFloat4("vRefractionInfos", this._refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
+                        ubo.updateFloat4("vRefractionInfos", this._refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
                     }
                 }
 
                 // Point size
                 if (this.pointsCloud) {
-                    this._uniformBuffer.updateFloat("pointSize", this.pointSize);
+                    ubo.updateFloat("pointSize", this.pointSize);
                 }
 
                 if (defines.SPECULARTERM) {
-                    this._uniformBuffer.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
+                    ubo.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
                 }
-                this._uniformBuffer.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
+                ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
+
+                // Visibility
+                ubo.updateFloat("visibility", mesh.visibility);
 
                 // Diffuse
-                this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
+                ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);
             }
 
             // Textures
@@ -1485,7 +1500,7 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
-        this._uniformBuffer.update();
+        ubo.update();
         this._afterBind(mesh, this._activeEffect);
     }
 

@@ -10,10 +10,10 @@ import { PassPostProcess, PassCubePostProcess } from "babylonjs/PostProcesses/pa
 import { GlobalState } from "../../../components/globalState";
 
 interface ITextureLineComponentProps {
-    texture: BaseTexture,
-    width: number,
-    height: number,
-    globalState: GlobalState
+    texture: BaseTexture;
+    width: number;
+    height: number;
+    globalState: GlobalState;
 }
 
 export class TextureLineComponent extends React.Component<ITextureLineComponentProps, { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }> {
@@ -48,7 +48,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         var size = texture.getSize();
         var ratio = size.width / size.height;
         var width = this.props.width;
-        var height = (width / ratio) | 0;
+        var height = (width / ratio) | 1;
 
         let passPostProcess: PostProcess;
 

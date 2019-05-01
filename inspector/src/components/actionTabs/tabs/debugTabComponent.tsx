@@ -4,14 +4,12 @@ import { LineContainerComponent } from "../lineContainerComponent";
 import { CheckBoxLineComponent } from "../lines/checkBoxLineComponent";
 import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPropertyGridComponent";
 
-import { SkeletonViewer } from "babylonjs/Debug/skeletonViewer";
 import { PhysicsViewer } from "babylonjs/Debug/physicsViewer";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Mesh } from 'babylonjs/Meshes/mesh';
 
 export class DebugTabComponent extends PaneComponent {
-    private _skeletonViewersEnabled = false;
     private _physicsViewersEnabled = false;
-    private _skeletonViewers = new Array<SkeletonViewer>();
 
     constructor(props: IPaneComponentProps) {
         super(props);
@@ -28,53 +26,10 @@ export class DebugTabComponent extends PaneComponent {
             scene.reservedDataStore = {};
         }
 
-        for (var mesh of scene.meshes) {
-            if (mesh.skeleton && mesh.reservedDataStore && mesh.reservedDataStore.skeletonViewer) {
-                this._skeletonViewers.push(mesh.reservedDataStore.skeletonViewer);
-            }
-        }
-
-        this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
         this._physicsViewersEnabled = scene.reservedDataStore.physicsViewer != null;
     }
 
     componentWillUnmount() {
-    }
-
-    switchSkeletonViewers() {
-        this._skeletonViewersEnabled = !this._skeletonViewersEnabled;
-        const scene = this.props.scene;
-
-        if (this._skeletonViewersEnabled) {
-            for (var mesh of scene.meshes) {
-                if (mesh.skeleton) {
-                    var found = false;
-                    for (var sIndex = 0; sIndex < this._skeletonViewers.length; sIndex++) {
-                        if (this._skeletonViewers[sIndex].skeleton === mesh.skeleton) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (found) {
-                        continue;
-                    }
-                    var viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, true, 0);
-                    viewer.isEnabled = true;
-                    this._skeletonViewers.push(viewer);
-                    if (!mesh.reservedDataStore) {
-                        mesh.reservedDataStore = {};
-                    }
-                    mesh.reservedDataStore.skeletonViewer = viewer;
-                }
-            }
-        } else {
-            for (var index = 0; index < this._skeletonViewers.length; index++) {
-                this._skeletonViewers[index].mesh.reservedDataStore.skeletonViewer = null;
-                this._skeletonViewers[index].dispose();
-            }
-            this._skeletonViewers = [];
-
-        }
     }
 
     switchPhysicsViewers() {
@@ -87,7 +42,7 @@ export class DebugTabComponent extends PaneComponent {
 
             for (var mesh of scene.meshes) {
                 if (mesh.physicsImpostor) {
-                    let debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor);
+                    let debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor, mesh as Mesh);
 
                     if (debugMesh) {
                         debugMesh.reservedDataStore = { hidden: true };
@@ -110,12 +65,11 @@ export class DebugTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <LineContainerComponent title="HELPERS">
-                    <RenderGridPropertyGridComponent scene={scene} />
-                    <CheckBoxLineComponent label="Bones" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
+                <LineContainerComponent globalState={this.props.globalState} title="HELPERS">
+                    <RenderGridPropertyGridComponent globalState={this.props.globalState} scene={scene} />
                     <CheckBoxLineComponent label="Physics" isSelected={() => this._physicsViewersEnabled} onSelect={() => this.switchPhysicsViewers()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="TEXTURE CHANNELS">
+                <LineContainerComponent globalState={this.props.globalState} title="TEXTURE CHANNELS">
                     <CheckBoxLineComponent label="Diffuse" isSelected={() => StandardMaterial.DiffuseTextureEnabled} onSelect={() => StandardMaterial.DiffuseTextureEnabled = !StandardMaterial.DiffuseTextureEnabled} />
                     <CheckBoxLineComponent label="Ambient" isSelected={() => StandardMaterial.AmbientTextureEnabled} onSelect={() => StandardMaterial.AmbientTextureEnabled = !StandardMaterial.AmbientTextureEnabled} />
                     <CheckBoxLineComponent label="Specular" isSelected={() => StandardMaterial.SpecularTextureEnabled} onSelect={() => StandardMaterial.SpecularTextureEnabled = !StandardMaterial.SpecularTextureEnabled} />
@@ -128,7 +82,7 @@ export class DebugTabComponent extends PaneComponent {
                     <CheckBoxLineComponent label="Lightmap" isSelected={() => StandardMaterial.LightmapTextureEnabled} onSelect={() => StandardMaterial.LightmapTextureEnabled = !StandardMaterial.LightmapTextureEnabled} />
                     <CheckBoxLineComponent label="Fresnel" isSelected={() => StandardMaterial.FresnelEnabled} onSelect={() => StandardMaterial.FresnelEnabled = !StandardMaterial.FresnelEnabled} />
                 </LineContainerComponent>
-                <LineContainerComponent title="FEATURES">
+                <LineContainerComponent globalState={this.props.globalState} title="FEATURES">
                     <CheckBoxLineComponent label="Animations" isSelected={() => scene.animationsEnabled} onSelect={() => scene.animationsEnabled = !scene.animationsEnabled} />
                     <CheckBoxLineComponent label="Collisions" isSelected={() => scene.collisionsEnabled} onSelect={() => scene.collisionsEnabled = !scene.collisionsEnabled} />
                     <CheckBoxLineComponent label="Fog" isSelected={() => scene.fogEnabled} onSelect={() => scene.fogEnabled = !scene.fogEnabled} />

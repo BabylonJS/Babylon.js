@@ -168,6 +168,19 @@ export class DebugLayer {
         this.BJSINSPECTOR.Inspector.Show(this._scene, userOptions);
     }
 
+    /**
+     * Select a specific entity in the scene explorer and highlight a specific block in that entity property grid
+     * @param entity defines the entity to select
+     * @param lineContainerTitle defines the specific block to highlight
+     */
+    public select(entity: any, lineContainerTitle?: string) {
+        if (this.BJSINSPECTOR) {
+            this.BJSINSPECTOR.Inspector.MarkLineContainerTitleForHighlighting(lineContainerTitle);
+            this.BJSINSPECTOR.Inspector.OnSelectionChangeObservable.notifyObservers(entity);
+        }
+
+    }
+
     /** Get the inspector from bundle or global */
     private _getGlobalInspector(): any {
         // UMD Global name detection from Webpack Bundle UMD Name.
@@ -203,16 +216,23 @@ export class DebugLayer {
     /**
       * Launch the debugLayer.
       * @param config Define the configuration of the inspector
+      * @return a promise fulfilled when the debug layer is visible
       */
-    public show(config?: IInspectorOptions): void {
-        if (typeof this.BJSINSPECTOR == 'undefined') {
-            const inspectorUrl = config && config.inspectorURL ? config.inspectorURL : DebugLayer.InspectorURL;
+    public show(config?: IInspectorOptions): Promise<DebugLayer> {
+        return new Promise((resolve, reject) => {
+            if (typeof this.BJSINSPECTOR == 'undefined') {
+                const inspectorUrl = config && config.inspectorURL ? config.inspectorURL : DebugLayer.InspectorURL;
 
-            // Load inspector and add it to the DOM
-            Tools.LoadScript(inspectorUrl, this._createInspector.bind(this, config));
-        } else {
-            // Otherwise creates the inspector
-            this._createInspector(config);
-        }
+                // Load inspector and add it to the DOM
+                Tools.LoadScript(inspectorUrl, () => {
+                    this._createInspector(config);
+                    resolve(this);
+                });
+            } else {
+                // Otherwise creates the inspector
+                this._createInspector(config);
+                resolve(this);
+            }
+        });
     }
 }

@@ -92,6 +92,10 @@ Object.defineProperty(AbstractMesh.prototype, "renderOverlay", {
  */
 export class OutlineRenderer implements ISceneComponent {
     /**
+     * Stencil value used to avoid outline being seen within the mesh when the mesh is transparent
+     */
+    private static _StencilReference = 0x04;
+    /**
      * The name of the component. Each component must have a unique name.
      */
     public name = SceneComponentConstants.NAME_OUTLINERENDERER;
@@ -274,27 +278,50 @@ export class OutlineRenderer implements ISceneComponent {
         // Outline - step 1
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
+            var material = subMesh.getMaterial();
+            if (material && material.needAlphaBlending) {
+                this._engine.cacheStencilState();
+                // Draw only to stencil buffer for the original mesh
+                // The resulting stencil buffer will be used so the outline is not visible inside the mesh when the mesh is transparent
+                this._engine.setDepthWrite(false);
+                this._engine.setColorWrite(false);
+                this._engine.setStencilBuffer(true);
+                this._engine.setStencilOperationPass(Constants.REPLACE);
+                this._engine.setStencilFunction(Constants.ALWAYS);
+                this._engine.setStencilMask(OutlineRenderer._StencilReference);
+                this._engine.setStencilFunctionReference(OutlineRenderer._StencilReference);
+                this.render(subMesh, batch, /* This sets offset to 0 */ true);
+
+                this._engine.setColorWrite(true);
+                this._engine.setStencilFunction(Constants.NOTEQUAL);
+            }
+
+            // Draw the outline using the above stencil if needed to avoid drawing within the mesh
             this._engine.setDepthWrite(false);
             this.render(subMesh, batch);
             this._engine.setDepthWrite(this._savedDepthWrite);
+
+            if (material && material.needAlphaBlending) {
+                this._engine.restoreStencilState();
+            }
         }
     }
 
     private _afterRenderingMesh(mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch): void {
-        // Outline - step 2
-        if (mesh.renderOutline && this._savedDepthWrite) {
-            this._engine.setDepthWrite(true);
-            this._engine.setColorWrite(false);
-            this.render(subMesh, batch);
-            this._engine.setColorWrite(true);
-        }
-
         // Overlay
         if (mesh.renderOverlay) {
             var currentMode = this._engine.getAlphaMode();
             this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
             this.render(subMesh, batch, true);
             this._engine.setAlphaMode(currentMode);
+        }
+
+        // Outline - step 2
+        if (mesh.renderOutline && this._savedDepthWrite) {
+            this._engine.setDepthWrite(true);
+            this._engine.setColorWrite(false);
+            this.render(subMesh, batch);
+            this._engine.setColorWrite(true);
         }
     }
 }

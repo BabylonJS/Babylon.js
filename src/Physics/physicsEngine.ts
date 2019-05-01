@@ -3,6 +3,7 @@ import { Vector3 } from "../Maths/math";
 import { IPhysicsEngine, PhysicsImpostorJoint, IPhysicsEnginePlugin } from "./IPhysicsEngine";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
+import { PhysicsRaycastResult } from "./physicsRaycastResult";
 import { _DevTools } from '../Misc/devTools';
 
 /**
@@ -116,8 +117,7 @@ export class PhysicsEngine implements IPhysicsEngine {
             var removed = this._impostors.splice(index, 1);
             //Is it needed?
             if (removed.length) {
-                //this will also remove it from the world.
-                removed[0].physicsBody = null;
+                this.getPhysicsPlugin().removePhysicsBody(impostor);
             }
         }
     }
@@ -224,5 +224,15 @@ export class PhysicsEngine implements IPhysicsEngine {
         }
 
         return null;
+    }
+
+    /**
+     * Does a raycast in the physics world
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     * @returns PhysicsRaycastResult
+     */
+    public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
+        return this._physicsPlugin.raycast(from, to);
     }
 }

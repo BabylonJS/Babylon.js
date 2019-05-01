@@ -54,7 +54,7 @@ export class GizmoManager implements IDisposable {
     constructor(private scene: Scene) {
         this._defaultKeepDepthUtilityLayer = new UtilityLayerRenderer(scene);
         this._defaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
-        this._defaultUtilityLayer = new UtilityLayerRenderer(scene);
+        this._defaultUtilityLayer = UtilityLayerRenderer.DefaultUtilityLayer;
 
         this.gizmos = { positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null };
 
@@ -184,6 +184,9 @@ export class GizmoManager implements IDisposable {
                 this._attachedMesh.addBehavior(this.boundingBoxDragBehavior);
             }
         } else if (this.gizmos.boundingBoxGizmo) {
+            if (this._attachedMesh) {
+                this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
+            }
             this.gizmos.boundingBoxGizmo.attachedMesh = null;
         }
         this._gizmosEnabled.boundingBoxGizmo = value;
@@ -204,7 +207,6 @@ export class GizmoManager implements IDisposable {
             }
         }
         this._defaultKeepDepthUtilityLayer.dispose();
-        this._defaultUtilityLayer.dispose();
         this.boundingBoxDragBehavior.detach();
         this.onAttachedToMeshObservable.clear();
     }

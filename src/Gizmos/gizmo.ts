@@ -2,7 +2,7 @@ import { Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
 import { Scene, IDisposable } from "../scene";
-import { Quaternion, Matrix, Vector3 } from "../Maths/math";
+import { Quaternion, Vector3 } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -16,12 +16,11 @@ export class Gizmo implements IDisposable {
      * The root mesh of the gizmo
      */
     public _rootMesh: Mesh;
-    private _attachedMesh: Nullable<AbstractMesh>;
+    private _attachedMesh: Nullable<AbstractMesh> = null;
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
     public scaleRatio = 1;
-    private _tmpMatrix = new Matrix();
     /**
      * If a custom mesh has been set (Default: false)
      */
@@ -71,6 +70,7 @@ export class Gizmo implements IDisposable {
     }
 
     private _beforeRenderObserver: Nullable<Observer<Scene>>;
+    private _tempVector = new Vector3();
 
     /**
      * Creates a gizmo
@@ -79,54 +79,50 @@ export class Gizmo implements IDisposable {
     constructor(
         /** The utility layer the gizmo will be added to */
         public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+
         this._rootMesh = new Mesh("gizmoRootNode", gizmoLayer.utilityLayerScene);
+        this._rootMesh.rotationQuaternion = Quaternion.Identity();
+
         this._beforeRenderObserver = this.gizmoLayer.utilityLayerScene.onBeforeRenderObservable.add(() => {
             this._update();
         });
-        this.attachedMesh = null;
     }
 
-    private _tempVector = new Vector3();
     /**
-     * @hidden
      * Updates the gizmo to match the attached mesh's position/rotation
      */
     protected _update() {
         if (this.attachedMesh) {
-            if (this.updateGizmoRotationToMatchAttachedMesh) {
-                if (!this._rootMesh.rotationQuaternion) {
-                    this._rootMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._rootMesh.rotation.y, this._rootMesh.rotation.x, this._rootMesh.rotation.z);
-                }
+            const effectiveMesh = this.attachedMesh._effectiveMesh || this.attachedMesh;
 
-                // Remove scaling before getting rotation matrix to get rotation matrix unmodified by scale
-                this._tempVector.copyFrom(this.attachedMesh.scaling);
-                if (this.attachedMesh.scaling.x < 0) {
-                    this.attachedMesh.scaling.x *= -1;
-                }
-                if (this.attachedMesh.scaling.y < 0) {
-                    this.attachedMesh.scaling.y *= -1;
-                }
-                if (this.attachedMesh.scaling.z < 0) {
-                    this.attachedMesh.scaling.z *= -1;
-                }
-                this.attachedMesh.computeWorldMatrix().getRotationMatrixToRef(this._tmpMatrix);
-                this.attachedMesh.scaling.copyFrom(this._tempVector);
-                this.attachedMesh.computeWorldMatrix();
-                Quaternion.FromRotationMatrixToRef(this._tmpMatrix, this._rootMesh.rotationQuaternion);
-            } else if (this._rootMesh.rotationQuaternion) {
-                this._rootMesh.rotationQuaternion.set(0, 0, 0, 1);
-            }
+            // Position
             if (this.updateGizmoPositionToMatchAttachedMesh) {
-                this._rootMesh.position.copyFrom(this.attachedMesh.absolutePosition);
+                this._rootMesh.position.copyFrom(effectiveMesh.absolutePosition);
             }
-            if (this._updateScale && this.gizmoLayer.utilityLayerScene.activeCamera && this.attachedMesh) {
-                var cameraPosition = this.gizmoLayer.utilityLayerScene.activeCamera.globalPosition;
-                if ((<WebVRFreeCamera>this.gizmoLayer.utilityLayerScene.activeCamera).devicePosition) {
-                    cameraPosition = (<WebVRFreeCamera>this.gizmoLayer.utilityLayerScene.activeCamera).devicePosition;
+
+            // Rotation
+            if (this.updateGizmoRotationToMatchAttachedMesh) {
+                effectiveMesh.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!);
+            }
+            else {
+                this._rootMesh.rotationQuaternion!.set(0, 0, 0, 1);
+            }
+
+            // Scale
+            if (this._updateScale) {
+                const activeCamera = this.gizmoLayer.utilityLayerScene.activeCamera!;
+                var cameraPosition = activeCamera.globalPosition;
+                if ((<WebVRFreeCamera>activeCamera).devicePosition) {
+                    cameraPosition = (<WebVRFreeCamera>activeCamera).devicePosition;
                 }
                 this._rootMesh.position.subtractToRef(cameraPosition, this._tempVector);
                 var dist = this._tempVector.length() * this.scaleRatio;
                 this._rootMesh.scaling.set(dist, dist, dist);
+
+                // Account for handedness, similar to Matrix.decompose
+                if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
+                    this._rootMesh.scaling.y *= -1;
+                }
             }
         }
     }

@@ -7,6 +7,8 @@ uniform vec4 vLightingIntensity;
 uniform vec4 vReflectivityColor;
 uniform vec3 vEmissiveColor;
 
+uniform float visibility;
+
 // Samplers
 #ifdef ALBEDO
 uniform vec2 vAlbedoInfos;
@@ -21,7 +23,7 @@ uniform vec3 vBumpInfos;
 uniform vec2 vTangentSpaceParams;
 #endif
 
-#ifdef OPACITY	
+#ifdef OPACITY
 uniform vec2 vOpacityInfos;
 #endif
 
@@ -42,15 +44,8 @@ uniform vec2 vMicroSurfaceSamplerInfos;
 #endif
 
 // Refraction Reflection
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(SS_REFRACTION)
 uniform mat4 view;
-#endif
-
-// Refraction
-#ifdef REFRACTION
-    uniform vec4 vRefractionInfos;
-    uniform mat4 refractionMatrix;
-    uniform vec3 vRefractionMicrosurfaceInfos;
 #endif
 
 // Reflection
@@ -68,6 +63,7 @@ uniform mat4 view;
 // Clear Coat
 #ifdef CLEARCOAT
     uniform vec2 vClearCoatParams;
+    uniform vec4 vClearCoatRefractionParams;
 
     #ifdef CLEARCOAT_TEXTURE
         uniform vec2 vClearCoatInfos;
@@ -79,9 +75,53 @@ uniform mat4 view;
         uniform vec2 vClearCoatTangentSpaceParams;
         uniform mat4 clearCoatBumpMatrix;
     #endif
+
+    #ifdef CLEARCOAT_TINT
+        uniform vec4 vClearCoatTintParams;
+        uniform float clearCoatColorAtDistance;
+
+        #ifdef CLEARCOAT_TINT_TEXTURE
+            uniform vec2 vClearCoatTintInfos;
+            uniform mat4 clearCoatTintMatrix;
+        #endif
+    #endif
 #endif
 
 // Anisotropy
 #ifdef ANISOTROPIC
-    uniform float anisotropy;
+    uniform vec3 vAnisotropy;
+
+    #ifdef ANISOTROPIC_TEXTURE
+        uniform vec2 vAnisotropyInfos;
+        uniform mat4 anisotropyMatrix;
+    #endif
+#endif
+
+// Sheen
+#ifdef SHEEN
+    uniform vec4 vSheenColor;
+
+    #ifdef SHEEN_TEXTURE
+        uniform vec2 vSheenInfos;
+        uniform mat4 sheenMatrix;
+    #endif
+#endif
+
+// SubSurface
+#ifdef SUBSURFACE
+    #ifdef SS_REFRACTION
+        uniform vec3 vRefractionMicrosurfaceInfos;
+        uniform vec4 vRefractionInfos;
+        uniform mat4 refractionMatrix;
+    #endif
+
+    #ifdef SS_THICKNESSANDMASK_TEXTURE
+        uniform vec2 vThicknessInfos;
+        uniform mat4 thicknessMatrix;;
+    #endif
+
+    uniform vec2 vThicknessParam;
+    uniform vec3 vDiffusionDistance;
+    uniform vec4 vTintColor;
+    uniform vec3 vSubSurfaceIntensity;
 #endif

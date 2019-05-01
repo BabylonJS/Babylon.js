@@ -1,5 +1,5 @@
 import { Tools } from "../Misc/tools";
-import { Nullable, IndicesArray, DeepImmutable } from "../types";
+import { Nullable, IndicesArray, DeepImmutable, FloatArray } from "../types";
 import { Matrix, Vector3, Plane } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "./buffer";
@@ -7,6 +7,7 @@ import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
+import { DataBuffer } from './dataBuffer';
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;
@@ -15,15 +16,16 @@ declare type MultiMaterial = import("../Materials/multiMaterial").MultiMaterial;
 declare type AbstractMesh = import("./abstractMesh").AbstractMesh;
 declare type Mesh = import("./mesh").Mesh;
 declare type Ray = import("../Culling/ray").Ray;
+declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
 
 /**
  * Base class for submeshes
  */
 export class BaseSubMesh {
     /** @hidden */
-    public _materialDefines: Nullable<MaterialDefines>;
+    public _materialDefines: Nullable<MaterialDefines> = null;
     /** @hidden */
-    public _materialEffect: Nullable<Effect>;
+    public _materialEffect: Nullable<Effect> = null;
 
     /**
      * Gets associated effect
@@ -54,28 +56,28 @@ export class BaseSubMesh {
  */
 export class SubMesh extends BaseSubMesh implements ICullable {
     /** @hidden */
-    public _linesIndexCount: number;
+    public _linesIndexCount: number = 0;
     private _mesh: AbstractMesh;
     private _renderingMesh: Mesh;
     private _boundingInfo: BoundingInfo;
-    private _linesIndexBuffer: Nullable<WebGLBuffer>;
+    private _linesIndexBuffer: Nullable<DataBuffer> = null;
     /** @hidden */
-    public _lastColliderWorldVertices: Nullable<Vector3[]>;
+    public _lastColliderWorldVertices: Nullable<Vector3[]> = null;
     /** @hidden */
     public _trianglePlanes: Plane[];
     /** @hidden */
-    public _lastColliderTransformMatrix: Matrix;
+    public _lastColliderTransformMatrix: Nullable<Matrix> = null;
 
     /** @hidden */
     public _renderId = 0;
     /** @hidden */
-    public _alphaIndex: number;
+    public _alphaIndex: number = 0;
     /** @hidden */
-    public _distanceToCamera: number;
+    public _distanceToCamera: number = 0;
     /** @hidden */
     public _id: number;
 
-    private _currentMaterial: Nullable<Material>;
+    private _currentMaterial: Nullable<Material> = null;
 
     /**
      * Add a new submesh to a mesh
@@ -204,15 +206,19 @@ export class SubMesh extends BaseSubMesh implements ICullable {
 
     /**
      * Sets a new updated BoundingInfo object to the submesh
+     * @param data defines an optional position array to use to determine the bounding info
      * @returns the SubMesh
      */
-    public refreshBoundingInfo(): SubMesh {
+    public refreshBoundingInfo(data: Nullable<FloatArray> = null): SubMesh {
         this._lastColliderWorldVertices = null;
 
         if (this.IsGlobal || !this._renderingMesh || !this._renderingMesh.geometry) {
             return this;
         }
-        var data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
+
+        if (!data) {
+            data = this._renderingMesh.getVerticesData(VertexBuffer.PositionKind);
+        }
 
         if (!data) {
             this._boundingInfo = this._mesh.getBoundingInfo();
@@ -305,7 +311,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
     /**
      * @hidden
      */
-    public _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): WebGLBuffer {
+    public _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): DataBuffer {
         if (!this._linesIndexBuffer) {
             var linesIndices = [];
 
@@ -341,9 +347,11 @@ export class SubMesh extends BaseSubMesh implements ICullable {
      * @param positions defines mesh's positions array
      * @param indices defines mesh's indices array
      * @param fastCheck defines if only bounding info should be used
+     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns intersection info or null if no intersection
      */
-    public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+    public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray,
+        fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo> {
         const material = this.getMaterial();
         if (!material) {
             return null;
@@ -361,10 +369,20 @@ export class SubMesh extends BaseSubMesh implements ICullable {
 
         // LineMesh first as it's also a Mesh...
         if (this._mesh.getClassName() === "InstancedLinesMesh" || this._mesh.getClassName() === "LinesMesh") {
+            // Check if mesh is unindexed
+            if (!indices.length) {
+                return this._intersectUnIndexedLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
+            }
             return this._intersectLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
         }
+        else {
+            // Check if mesh is unindexed
+            if (!indices.length && this._mesh._unIndexed) {
+                return this._intersectUnIndexedTriangles(ray, positions, indices, fastCheck, trianglePredicate);
+            }
 
-        return this._intersectTriangles(ray, positions, indices, fastCheck);
+            return this._intersectTriangles(ray, positions, indices, fastCheck, trianglePredicate);
+        }
     }
 
     /** @hidden */
@@ -393,13 +411,78 @@ export class SubMesh extends BaseSubMesh implements ICullable {
     }
 
     /** @hidden */
-    private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
+    private _intersectUnIndexedLines(ray: Ray, positions: Vector3[], indices: IndicesArray, intersectionThreshold: number, fastCheck?: boolean): Nullable<IntersectionInfo> {
+        var intersectInfo: Nullable<IntersectionInfo> = null;
+
+        // Line test
+        for (var index = this.verticesStart; index < this.verticesStart + this.verticesCount; index += 2) {
+            var p0 = positions[index];
+            var p1 = positions[index + 1];
+
+            var length = ray.intersectionSegment(p0, p1, intersectionThreshold);
+            if (length < 0) {
+                continue;
+            }
+
+            if (fastCheck || !intersectInfo || length < intersectInfo.distance) {
+                intersectInfo = new IntersectionInfo(null, null, length);
+                intersectInfo.faceId = index / 2;
+                if (fastCheck) {
+                    break;
+                }
+            }
+        }
+
+        return intersectInfo;
+    }
+
+    /** @hidden */
+    private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray,
+        fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo> {
         var intersectInfo: Nullable<IntersectionInfo> = null;
         // Triangles test
         for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
             var p0 = positions[indices[index]];
             var p1 = positions[indices[index + 1]];
             var p2 = positions[indices[index + 2]];
+
+            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
+                continue;
+            }
+
+            var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
+
+            if (currentIntersectInfo) {
+                if (currentIntersectInfo.distance < 0) {
+                    continue;
+                }
+
+                if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
+                    intersectInfo = currentIntersectInfo;
+                    intersectInfo.faceId = index / 3;
+
+                    if (fastCheck) {
+                        break;
+                    }
+                }
+            }
+        }
+        return intersectInfo;
+    }
+
+    /** @hidden */
+    private _intersectUnIndexedTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray,
+        fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo> {
+        var intersectInfo: Nullable<IntersectionInfo> = null;
+        // Triangles test
+        for (var index = this.verticesStart; index < this.verticesStart + this.verticesCount; index += 3) {
+            var p0 = positions[index];
+            var p1 = positions[index + 1];
+            var p2 = positions[index + 2];
+
+            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
+                continue;
+            }
 
             var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
 

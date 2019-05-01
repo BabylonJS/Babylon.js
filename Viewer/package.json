@@ -29,7 +29,7 @@
         "base64-image-loader": "^1.2.1",
         "base64-inline-loader": "^1.1.1",
         "deepmerge": "~2.1.1",
-        "handlebars": "^4.0.11",
+        "handlebars": "^4.1.0",
         "html-loader": "^0.5.5",
         "json-loader": "^0.5.7",
         "ts-loader": "^4.4.0",
@@ -39,6 +39,8 @@
         "webpack-dev-server": "^3.1.4"
     },
     "dependencies": {
+        "@babylonjs/core": "^4.0.0-alpha.18",
+        "@babylonjs/loaders": "^4.0.0-alpha.18",
         "pepjs": "^0.4.3"
     }
 }

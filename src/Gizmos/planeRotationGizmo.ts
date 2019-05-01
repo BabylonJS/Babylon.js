@@ -46,31 +46,25 @@ export class PlaneRotationGizmo extends Gizmo {
 
         // Create Material
         var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        coloredMaterial.disableLighting = true;
-        coloredMaterial.emissiveColor = color;
+        coloredMaterial.diffuseColor = color;
+        coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        hoverMaterial.disableLighting = true;
-        hoverMaterial.emissiveColor = color.add(new Color3(0.3, 0.3, 0.3));
+        hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build mesh on root node
         var parentMesh = new AbstractMesh("", gizmoLayer.utilityLayerScene);
 
-        // Create circle out of lines
-        var radius = 0.8;
-        var points = new Array<Vector3>();
-        for (var i = 0; i < tessellation; i++) {
-            var radian = (2 * Math.PI) * (i / (tessellation - 1));
-            points.push(new Vector3(radius * Math.sin(radian), 0, radius * Math.cos(radian)));
-        }
-        let rotationMesh = Mesh.CreateLines("", points, gizmoLayer.utilityLayerScene);
-        rotationMesh.color = coloredMaterial.emissiveColor;
+        let drag = Mesh.CreateTorus("", 0.6, 0.03, tessellation, gizmoLayer.utilityLayerScene);
+        drag.visibility = 0;
+        let rotationMesh = Mesh.CreateTorus("", 0.6, 0.005, tessellation, gizmoLayer.utilityLayerScene);
+        rotationMesh.material = coloredMaterial;
 
         // Position arrow pointing in its drag axis
-        rotationMesh.scaling.scaleInPlace(0.26);
-        rotationMesh.material = coloredMaterial;
         rotationMesh.rotation.x = Math.PI / 2;
+        drag.rotation.x = Math.PI / 2;
         parentMesh.addChild(rotationMesh);
+        parentMesh.addChild(drag);
         parentMesh.lookAt(this._rootMesh.position.add(planeNormal));
 
         this._rootMesh.addChild(parentMesh);
@@ -104,6 +98,13 @@ export class PlaneRotationGizmo extends Gizmo {
                 if (!this.attachedMesh.rotationQuaternion) {
                     this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
                 }
+
+                // Remove parent priort to rotating
+                var attachedMeshParent = this.attachedMesh.parent;
+                if (attachedMeshParent) {
+                    this.attachedMesh.setParent(null);
+                }
+
                 // Calc angle over full 360 degree (https://stackoverflow.com/questions/43493711/the-angle-between-two-3d-vectors-with-a-result-range-0-360)
                 var newVector = event.dragPlanePoint.subtract(this.attachedMesh.absolutePosition).normalize();
                 var originalVector = lastDragPosition.subtract(this.attachedMesh.absolutePosition).normalize();
@@ -175,6 +176,11 @@ export class PlaneRotationGizmo extends Gizmo {
                     tmpSnapEvent.snapDistance = angle;
                     this.onSnapObservable.notifyObservers(tmpSnapEvent);
                 }
+
+                // Restore parent
+                if (attachedMeshParent) {
+                    this.attachedMesh.setParent(attachedMeshParent);
+                }
             }
         });
 
@@ -187,10 +193,13 @@ export class PlaneRotationGizmo extends Gizmo {
             this._rootMesh.getChildMeshes().forEach((m) => {
                 m.material = material;
                 if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = material.emissiveColor;
+                    (<LinesMesh>m).color = material.diffuseColor;
                 }
             });
         });
+
+        var light = gizmoLayer._getSharedGizmoLight();
+        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
     }
 
     protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {

@@ -15,6 +15,9 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
 
+import "../../Engines/Extensions/engine.renderTarget";
+import { InstancedMesh } from '../../Meshes/instancedMesh';
+
 declare type Engine = import("../../Engines/engine").Engine;
 
 /**
@@ -556,6 +559,8 @@ export class RenderTargetTexture extends Texture {
      *   - or an object containing a ratio { ratio: number }
      */
     public resize(size: number | { width: number, height: number } | { ratio: number }): void {
+        var wasCube = this.isCube;
+
         this.releaseInternalTexture();
         let scene = this.getScene();
 
@@ -565,7 +570,7 @@ export class RenderTargetTexture extends Texture {
 
         this._processSizeParameter(size);
 
-        if (this.isCube) {
+        if (wasCube) {
             this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
         } else {
             this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
@@ -672,12 +677,19 @@ export class RenderTargetTexture extends Texture {
                 }
 
                 if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && !isMasked) {
-                    mesh._activate(sceneRenderId);
+                    if (mesh._activate(sceneRenderId, true)) {
+                        if (!mesh.isAnInstance) {
+                            mesh._internalAbstractMeshDataInfo._onlyForInstancesIntermediate = false;
+                        } else {
+                            mesh = (mesh as InstancedMesh).sourceMesh;
+                        }
+                        mesh._internalAbstractMeshDataInfo._isActiveIntermediate = true;
 
-                    for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                        var subMesh = mesh.subMeshes[subIndex];
-                        scene._activeIndices.addCount(subMesh.indexCount, false);
-                        this._renderingManager.dispatch(subMesh, mesh);
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
+                            scene._activeIndices.addCount(subMesh.indexCount, false);
+                            this._renderingManager.dispatch(subMesh, mesh);
+                        }
                     }
                 }
             }
@@ -727,6 +739,22 @@ export class RenderTargetTexture extends Texture {
         return Math.min(Tools.FloorPOT(renderDimension), curved);
     }
 
+    /**
+     * @hidden
+     * @param faceIndex face index to bind to if this is a cubetexture
+     */
+    public _bindFrameBuffer(faceIndex: number = 0) {
+        var scene = this.getScene();
+        if (!scene) {
+            return;
+        }
+
+        var engine = scene.getEngine();
+        if (this._texture) {
+            engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport, this.depthStencilTexture ? this.depthStencilTexture : undefined);
+        }
+    }
+
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
         if (!this._texture) {
             return;
@@ -754,9 +782,7 @@ export class RenderTargetTexture extends Texture {
             this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
         }
         else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-            if (this._texture) {
-                engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport, this.depthStencilTexture ? this.depthStencilTexture : undefined);
-            }
+            this._bindFrameBuffer(faceIndex);
         }
 
         this.onBeforeRenderObservable.notifyObservers(faceIndex);
@@ -974,6 +1000,14 @@ export class RenderTargetTexture extends Texture {
         if (this._renderingManager) {
             this._renderingManager.freeRenderingGroups();
         }
+    }
+
+    /**
+     * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+     * @returns the view count
+     */
+    public getViewCount() {
+        return 1;
     }
 }
 

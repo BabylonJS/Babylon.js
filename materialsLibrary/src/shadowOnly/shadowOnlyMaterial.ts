@@ -90,17 +90,17 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
         // Ensure that active light is the first shadow light
         if (this._activeLight) {
-            for (var light of mesh._lightSources) {
+            for (var light of mesh.lightSources) {
                 if (light.shadowEnabled) {
                     if (this._activeLight === light) {
                         break; // We are good
                     }
 
-                    var lightPosition = mesh._lightSources.indexOf(this._activeLight);
+                    var lightPosition = mesh.lightSources.indexOf(this._activeLight);
 
                     if (lightPosition !== -1) {
-                        mesh._lightSources.splice(lightPosition, 1);
-                        mesh._lightSources.splice(0, 0, this._activeLight);
+                        mesh.lightSources.splice(lightPosition, 1);
+                        mesh.lightSources.splice(0, 0, this._activeLight);
                     }
                     break;
                 }

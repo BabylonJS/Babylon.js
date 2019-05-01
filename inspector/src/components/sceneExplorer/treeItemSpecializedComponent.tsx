@@ -26,6 +26,10 @@ import { GlobalState } from "../globalState";
 import { PostProcessItemComponent } from './entities/postProcessTreeItemComponent';
 import { RenderingPipelineItemComponent } from './entities/renderingPipelineTreeItemComponent';
 import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
+import { SkeletonTreeItemComponent } from './entities/skeletonTreeItemComponent';
+import { Skeleton } from 'babylonjs/Bones/skeleton';
+import { BoneTreeItemComponent } from './entities/boneTreeItemComponent';
+import { Bone } from 'babylonjs/Bones/bone';
 
 
 interface ITreeItemSpecializedComponentProps {
@@ -62,6 +66,14 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
                 } else {
                     return (<TransformNodeItemComponent extensibilityGroups={this.props.extensibilityGroups} transformNode={entity as TransformNode} onClick={() => this.onClick()} />);
                 }
+            }
+
+            if (className.indexOf("Skeleton") !== -1) {
+                return (<SkeletonTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} skeleton={entity as Skeleton} onClick={() => this.onClick()} />);
+            }
+
+            if (className.indexOf("Bone") !== -1) {
+                return (<BoneTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} bone={entity as Bone} onClick={() => this.onClick()} />);
             }
 
             if (className.indexOf("TransformNode") !== -1) {

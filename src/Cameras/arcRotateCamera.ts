@@ -64,6 +64,56 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
+     * Define the current local position of the camera in the scene
+     */
+    public get position(): Vector3 {
+        return this._position;
+    }
+
+    public set position(newPosition: Vector3) {
+        this.setPosition(newPosition);
+    }
+
+    @serializeAsVector3("upVector")
+    protected _upVector = Vector3.Up();
+
+    protected _upToYMatrix: Matrix;
+    protected _YToUpMatrix: Matrix;
+
+    /**
+     * The vector the camera should consider as up. (default is Vector3(0, 1, 0) as returned by Vector3.Up())
+     * Setting this will copy the given vector to the camera's upVector, and set rotation matrices to and from Y up.
+     * DO NOT set the up vector using copyFrom or copyFromFloats, as this bypasses setting the above matrices.
+     */
+    set upVector(vec: Vector3) {
+        if (!this._upToYMatrix) {
+            this._YToUpMatrix = new Matrix();
+            this._upToYMatrix = new Matrix();
+
+            this._upVector = Vector3.Zero();
+        }
+
+        vec.normalize();
+        this._upVector.copyFrom(vec);
+        this.setMatUp();
+    }
+
+    get upVector() {
+        return this._upVector;
+    }
+
+    /**
+     * Sets the Y-up to camera up-vector rotation matrix, and the up-vector to Y-up rotation matrix.
+     */
+    public setMatUp() {
+        // from y-up to custom-up (used in _getViewMatrix)
+        Matrix.RotationAlignToRef(Vector3.UpReadOnly, this._upVector, this._YToUpMatrix);
+
+        // from custom-up to y-up (used in rebuildAnglesAndRadius)
+        Matrix.RotationAlignToRef(this._upVector, Vector3.UpReadOnly, this._upToYMatrix);
+    }
+
+    /**
      * Current inertia value on the longitudinal axis.
      * The bigger this number the longer it will take for the camera to stop.
      */
@@ -563,8 +613,6 @@ export class ArcRotateCamera extends TargetCamera {
     protected _targetBoundingCenter: Nullable<Vector3>;
 
     private _computationVector: Vector3 = Vector3.Zero();
-    private _tempAxisVector: Vector3;
-    private _tempAxisRotationMatrix: Matrix;
 
     /**
      * Instantiates a new ArcRotateCamera in a given scene
@@ -845,14 +893,15 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Rebuilds angles (alpha, beta) and radius from the give position and target
-     * @param updateView defines a boolean forcing the camera to update its position with a view matrix computation first (default is true)
      */
-    public rebuildAnglesAndRadius(updateView = true): void {
-        if (updateView) {
-            this.getViewMatrix(); // Force position update
+    public rebuildAnglesAndRadius(): void {
+        this._position.subtractToRef(this._getTargetPosition(), this._computationVector);
+
+        // need to rotate to Y up equivalent if up vector not Axis.Y
+        if (this._upVector.x !== 0 || this._upVector.y !== 1.0 || this._upVector.z !== 0) {
+            Vector3.TransformCoordinatesToRef(this._computationVector, this._upToYMatrix, this._computationVector);
         }
 
-        this.position.subtractToRef(this._getTargetPosition(), this._computationVector);
         this.radius = this._computationVector.length();
 
         if (this.radius === 0) {
@@ -860,7 +909,11 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         // Alpha
-        this.alpha = Math.acos(this._computationVector.x / Math.sqrt(Math.pow(this._computationVector.x, 2) + Math.pow(this._computationVector.z, 2)));
+        if (this._computationVector.x === 0 && this._computationVector.z === 0) {
+            this.alpha = Math.PI / 2; // avoid division by zero when looking along up axis, and set to acos(0)
+        } else {
+            this.alpha = Math.acos(this._computationVector.x / Math.sqrt(Math.pow(this._computationVector.x, 2) + Math.pow(this._computationVector.z, 2)));
+        }
 
         if (this._computationVector.z < 0) {
             this.alpha = 2 * Math.PI - this.alpha;
@@ -877,12 +930,12 @@ export class ArcRotateCamera extends TargetCamera {
      * @param position Defines the position to set the camera at
      */
     public setPosition(position: Vector3): void {
-        if (this.position.equals(position)) {
+        if (this._position.equals(position)) {
             return;
         }
-        this.position.copyFrom(position);
+        this._position.copyFrom(position);
 
-        this.rebuildAnglesAndRadius(false);
+        this.rebuildAnglesAndRadius();
     }
 
     /**
@@ -900,6 +953,7 @@ export class ArcRotateCamera extends TargetCamera {
             } else {
                 this._targetBoundingCenter = null;
             }
+            (<AbstractMesh>target).computeWorldMatrix();
             this._targetHost = <AbstractMesh>target;
             this._target = this._getTargetPosition();
 
@@ -935,22 +989,8 @@ export class ArcRotateCamera extends TargetCamera {
         this._computationVector.copyFromFloats(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb);
 
         // Rotate according to up vector
-        if (this.upVector.x !== 0 || this.upVector.y !== 1.0 || this.upVector.z !== 0) {
-
-            if (!this._tempAxisVector) {
-                this._tempAxisVector = new Vector3();
-                this._tempAxisRotationMatrix = new Matrix();
-            }
-
-            Vector3.CrossToRef(Vector3.Up(), this.upVector, this._tempAxisVector);
-            this._tempAxisVector.normalize();
-
-            let angle = Math.acos(Vector3.Dot(Vector3.UpReadOnly, this.upVector));
-
-            Matrix.RotationAxisToRef(this._tempAxisVector, angle, this._tempAxisRotationMatrix);
-
-            this._tempAxisVector.copyFrom(this._computationVector);
-            Vector3.TransformCoordinatesToRef(this._tempAxisVector, this._tempAxisRotationMatrix, this._computationVector);
+        if (this._upVector.x !== 0 || this._upVector.y !== 1.0 || this._upVector.z !== 0) {
+            Vector3.TransformCoordinatesToRef(this._computationVector, this._YToUpMatrix, this._computationVector);
         }
 
         target.addToRef(this._computationVector, this._newPosition);
@@ -960,11 +1000,11 @@ export class ArcRotateCamera extends TargetCamera {
                 this._collider = coordinator.createCollider();
             }
             this._collider._radius = this.collisionRadius;
-            this._newPosition.subtractToRef(this.position, this._collisionVelocity);
+            this._newPosition.subtractToRef(this._position, this._collisionVelocity);
             this._collisionTriggered = true;
-            coordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            coordinator.getNewPosition(this._position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
         } else {
-            this.position.copyFrom(this._newPosition);
+            this._position.copyFrom(this._newPosition);
 
             var up = this.upVector;
             if (this.allowUpsideDown && sinb < 0) {
@@ -972,7 +1012,7 @@ export class ArcRotateCamera extends TargetCamera {
                 up = up.negate();
             }
 
-            this._computeViewMatrix(this.position, target, up);
+            this._computeViewMatrix(this._position, target, up);
 
             this._viewMatrix.addAtIndex(12, this.targetScreenOffset.x);
             this._viewMatrix.addAtIndex(13, this.targetScreenOffset.y);
@@ -984,7 +1024,7 @@ export class ArcRotateCamera extends TargetCamera {
     protected _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
 
         if (!collidedMesh) {
-            this._previousPosition.copyFrom(this.position);
+            this._previousPosition.copyFrom(this._position);
         } else {
             this.setPosition(newPosition);
 
@@ -1006,7 +1046,7 @@ export class ArcRotateCamera extends TargetCamera {
         var target = this._getTargetPosition();
         this._computationVector.copyFromFloats(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb);
         target.addToRef(this._computationVector, this._newPosition);
-        this.position.copyFrom(this._newPosition);
+        this._position.copyFrom(this._newPosition);
 
         var up = this.upVector;
         if (this.allowUpsideDown && this.beta < 0) {
@@ -1014,7 +1054,7 @@ export class ArcRotateCamera extends TargetCamera {
             up = up.negate();
         }
 
-        this._computeViewMatrix(this.position, target, up);
+        this._computeViewMatrix(this._position, target, up);
         this._viewMatrix.addAtIndex(12, this.targetScreenOffset.x);
         this._viewMatrix.addAtIndex(13, this.targetScreenOffset.y);
 

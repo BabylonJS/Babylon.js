@@ -47,7 +47,7 @@ export class ToolsTabComponent extends PaneComponent {
     captureScreenshot() {
         const scene = this.props.scene;
         if (scene.activeCamera) {
-            Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, { precision: 1.0 }, undefined, undefined, 4, true);
+            Tools.CreateScreenshot(scene.getEngine(), scene.activeCamera, { precision: 1.0 });
         }
     }
 
@@ -116,6 +116,14 @@ export class ToolsTabComponent extends PaneComponent {
             });
     }
 
+    resetReplay() {
+        this.props.globalState.recorder.reset();
+    }
+
+    exportReplay() {
+        this.props.globalState.recorder.export();
+    }
+
     render() {
         const scene = this.props.scene;
 
@@ -125,15 +133,19 @@ export class ToolsTabComponent extends PaneComponent {
 
         return (
             <div className="pane">
-                <LineContainerComponent title="CAPTURE">
+                <LineContainerComponent globalState={this.props.globalState} title="CAPTURE">
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
                 </LineContainerComponent>
-                <LineContainerComponent title="SCENE EXPORT">
+                <LineContainerComponent globalState={this.props.globalState} title="REPLAY">
+                    <ButtonLineComponent label="Generate replay code" onClick={() => this.exportReplay()} />
+                    <ButtonLineComponent label="Reset" onClick={() => this.resetReplay()} />
+                </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="SCENE EXPORT">
                     <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                     <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
                     {
-                        !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.activeCamera &&
+                        !scene.getEngine().premultipliedAlpha && scene.environmentTexture && (scene.environmentTexture as CubeTexture).isPrefiltered && scene.activeCamera &&
                         <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
                     }
                 </LineContainerComponent>

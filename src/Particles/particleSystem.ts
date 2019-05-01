@@ -27,6 +27,7 @@ import { _TypeStore } from '../Misc/typeStore';
 
 import "../Shaders/particles.fragment";
 import "../Shaders/particles.vertex";
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 /**
  * This represents a particle system in Babylon.
@@ -98,7 +99,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _vertexBuffer: Nullable<Buffer>;
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
     private _spriteBuffer: Nullable<Buffer>;
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
     private _customEffect: Nullable<Effect>;
     private _cachedDefines: string;
@@ -1121,9 +1122,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
         var offset = index * this._vertexBufferSize;
 
-        this._vertexData[offset++] = particle.position.x;
-        this._vertexData[offset++] = particle.position.y;
-        this._vertexData[offset++] = particle.position.z;
+        this._vertexData[offset++] = particle.position.x + this.worldOffset.x;
+        this._vertexData[offset++] = particle.position.y + this.worldOffset.y;
+        this._vertexData[offset++] = particle.position.z + this.worldOffset.z;
         this._vertexData[offset++] = particle.color.r;
         this._vertexData[offset++] = particle.color.g;
         this._vertexData[offset++] = particle.color.b;

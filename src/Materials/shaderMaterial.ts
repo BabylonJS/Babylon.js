@@ -3,6 +3,7 @@ import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
+import { BaseSubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
@@ -107,6 +108,14 @@ export class ShaderMaterial extends Material {
             defines: [],
             ...options
         };
+    }
+
+    /**
+     * Gets the options used to compile the shader.
+     * They can be modified to trigger a new compilation
+     */
+    public get options(): IShaderMaterialOptions {
+        return this._options;
     }
 
     /**
@@ -367,6 +376,17 @@ export class ShaderMaterial extends Material {
         }
 
         return false;
+    }
+
+    /**
+     * Specifies that the submesh is ready to be used
+     * @param mesh defines the mesh to check
+     * @param subMesh defines which submesh to check
+     * @param useInstances specifies that instances should be used
+     * @returns a boolean indicating that the submesh is ready or not
+     */
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+        return this.isReady(mesh, useInstances);
     }
 
     /**
@@ -713,7 +733,7 @@ export class ShaderMaterial extends Material {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
-        serializationObject.customType = "ShaderMaterial";
+        serializationObject.customType = "BABYLON.ShaderMaterial";
 
         serializationObject.options = this._options;
         serializationObject.shaderPath = this._shaderPath;

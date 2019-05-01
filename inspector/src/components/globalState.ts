@@ -8,6 +8,7 @@ import { Scene } from "babylonjs/scene";
 import { Light } from "babylonjs/Lights/light";
 import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
+import { ReplayRecorder } from './replayRecorder';
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -24,6 +25,17 @@ export class GlobalState {
     public glTFLoaderDefaults: { [key: string]: any } = { "validate": true };
 
     public blockMutationUpdates = false;
+    public selectedLineContainerTitle = "";
+
+    public recorder = new ReplayRecorder();
+
+    public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
+        this.onPropertyChangedObservable = propertyChangedObservable;
+
+        propertyChangedObservable.add(event => {
+            this.recorder.record(event);
+        })
+    }
 
     public prepareGLTFPlugin(loader: GLTFFileLoader) {
         var loaderState = this.glTFLoaderDefaults;

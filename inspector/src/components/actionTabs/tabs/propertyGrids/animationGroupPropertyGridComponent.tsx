@@ -11,8 +11,10 @@ import { LineContainerComponent } from "../../lineContainerComponent";
 import { TextLineComponent } from "../../lines/textLineComponent";
 import { SliderLineComponent } from "../../lines/sliderLineComponent";
 import { LockObject } from "./lockObject";
+import { GlobalState } from '../../../globalState';
 
 interface IAnimationGroupGridComponentProps {
+    globalState: GlobalState;
     animationGroup: AnimationGroup,
     scene: Scene,
     lockObject: LockObject,
@@ -127,12 +129,12 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
 
         return (
             <div className="pane">
-                <LineContainerComponent title="CONTROLS">
+                <LineContainerComponent globalState={this.props.globalState} title="CONTROLS">
                     <ButtonLineComponent label={playButtonText} onClick={() => this.playOrPause()} />
                     <SliderLineComponent label="Speed ratio" minimum={0} maximum={10} step={0.1} target={animationGroup} propertyName="speedRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent ref="timeline" label="Current frame" minimum={animationGroup.from} maximum={animationGroup.to} step={(animationGroup.to - animationGroup.from) / 1000.0} directValue={this.state.currentFrame} onInput={value => this.onCurrentFrameChange(value)} />
                 </LineContainerComponent>
-                <LineContainerComponent title="INFOS">
+                <LineContainerComponent globalState={this.props.globalState} title="INFOS">
                     <TextLineComponent label="Animation count" value={animationGroup.targetedAnimations.length.toString()} />
                     <TextLineComponent label="From" value={animationGroup.from.toFixed(2)} />
                     <TextLineComponent label="To" value={animationGroup.to.toFixed(2)} />

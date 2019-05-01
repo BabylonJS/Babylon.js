@@ -49,7 +49,16 @@ function processUMDViewer(module, version) {
     packageJson.main = "babylon.viewer.js";
     packageJson.typings = "index.d.ts";
 
-    fs.writeFileSync(buildPath + 'package.json', JSON.stringify(packageJson, null, 4));
+    // Package dependencies version
+    if (packageJson.dependencies) {
+        Object.keys(packageJson.dependencies).forEach(key => {
+            if (key.indexOf("babylonjs") !== -1) {
+                packageJson.dependencies[key] = version;
+            }
+        });
+    }
+
+    fs.writeFileSync(path.join(buildPath, 'package.json'), JSON.stringify(packageJson, null, 4));
 
     publish(version, "viewer", buildPath);
     colorConsole.emptyLine();

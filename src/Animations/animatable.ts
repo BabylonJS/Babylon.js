@@ -20,7 +20,7 @@ export class Animatable {
     private _scene: Scene;
     private _speedRatio = 1;
     private _weight = -1.0;
-    private _syncRoot: Animatable;
+    private _syncRoot: Nullable<Animatable> = null;
 
     /**
      * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
@@ -46,7 +46,7 @@ export class Animatable {
     /**
      * Gets the root Animatable used to synchronize and normalize animations
      */
-    public get syncRoot(): Animatable {
+    public get syncRoot(): Nullable<Animatable> {
         return this._syncRoot;
     }
 
@@ -170,7 +170,15 @@ export class Animatable {
         for (var index = 0; index < animations.length; index++) {
             var animation = animations[index];
 
-            this._runtimeAnimations.push(new RuntimeAnimation(target, animation, this._scene, this));
+            let newRuntimeAnimation = new RuntimeAnimation(target, animation, this._scene, this);
+            newRuntimeAnimation._onLoop = () => {
+                this.onAnimationLoopObservable.notifyObservers(this);
+                if (this.onAnimationLoop) {
+                    this.onAnimationLoop();
+                }
+            };
+
+            this._runtimeAnimations.push(newRuntimeAnimation);
         }
     }
 
@@ -259,7 +267,7 @@ export class Animatable {
             var fps = runtimeAnimations[0].animation.framePerSecond;
             var currentFrame = runtimeAnimations[0].currentFrame;
             var adjustTime = frame - currentFrame;
-            var delay = adjustTime * 1000 / (fps * this.speedRatio);
+            var delay = this.speedRatio !== 0 ? adjustTime * 1000 / (fps * this.speedRatio) : 0;
             if (this._localDelayOffset === null) {
                 this._localDelayOffset = 0;
             }
@@ -387,13 +395,7 @@ export class Animatable {
         for (index = 0; index < runtimeAnimations.length; index++) {
             var animation = runtimeAnimations[index];
             var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame,
-                this.toFrame, this.loopAnimation, this._speedRatio, this._weight,
-                () => {
-                    this.onAnimationLoopObservable.notifyObservers(this);
-                    if (this.onAnimationLoop) {
-                        this.onAnimationLoop();
-                    }
-                }
+                this.toFrame, this.loopAnimation, this._speedRatio, this._weight
             );
             running = running || isRunning;
         }
@@ -546,14 +548,6 @@ declare module "../scene" {
         getAllAnimatablesByTarget(target: any): Array<Animatable>;
 
         /**
-         * Will stop the animation of the given target
-         * @param target - the target
-         * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
-         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
-         */
-        stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void;
-
-        /**
         * Stops and removes all animations that have been applied to the scene
         */
         stopAllAnimations(): void;
@@ -561,7 +555,12 @@ declare module "../scene" {
 }
 
 Scene.prototype._animate = function(): void {
-    if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
+    if (!this.animationsEnabled) {
+        return;
+    }
+
+    const animatables = this._activeAnimatables;
+    if (animatables.length === 0) {
         return;
     }
 
@@ -573,11 +572,14 @@ Scene.prototype._animate = function(): void {
         }
         this._animationTimeLast = now;
     }
+
     var deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
     this._animationTime += deltaTime;
+    const animationTime = this._animationTime;
     this._animationTimeLast = now;
-    for (var index = 0; index < this._activeAnimatables.length; index++) {
-        this._activeAnimatables[index]._animate(this._animationTime);
+
+    for (let index = 0; index < animatables.length; index++) {
+        animatables[index]._animate(animationTime);
     }
 
     // Late animation bindings
@@ -781,9 +783,9 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
         currentQuaternion.scaleAndAddToRef(scale, finalQuaternion);
         currentPosition.scaleAndAddToRef(scale, finalPosition);
     }
-
-    Matrix.ComposeToRef(finalScaling, finalQuaternion, finalPosition, originalAnimation._workValue);
-    return originalAnimation._workValue;
+    let workValue = originalAnimation._animationState.workValue;
+    Matrix.ComposeToRef(finalScaling, finalQuaternion, finalPosition, workValue);
+    return workValue;
 };
 
 Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {

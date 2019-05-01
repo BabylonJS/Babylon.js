@@ -8,6 +8,7 @@ export interface ICheckBoxLineComponentProps {
     propertyName?: string;
     isSelected?: () => boolean;
     onSelect?: (value: boolean) => void;
+    onValueChanged?: () => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
@@ -23,7 +24,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         if (this.props.isSelected) {
             this.state = { isSelected: this.props.isSelected() };
         } else {
-            this.state = { isSelected: this.props.target[this.props.propertyName!] };
+            this.state = { isSelected: this.props.target[this.props.propertyName!] === true };
         }
     }
 
@@ -33,7 +34,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         if (this.props.isSelected) {
             currentState = nextProps.isSelected!();
         } else {
-            currentState = nextProps.target[nextProps.propertyName!];
+            currentState = nextProps.target[nextProps.propertyName!] === true;
         }
 
         if (currentState !== nextState.isSelected || this._localChange) {
@@ -60,6 +61,11 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
 
             this.props.target[this.props.propertyName!] = !this.state.isSelected;
         }
+
+        if (this.props.onValueChanged) {
+            this.props.onValueChanged();
+        }
+
         this.setState({ isSelected: !this.state.isSelected });
     }
 

@@ -29,7 +29,7 @@ export class GearVRController extends WebVRController {
     public static readonly GAMEPAD_ID_PREFIX: string = 'Gear VR'; // id is 'Gear VR Controller'
 
     private readonly _buttonIndexToObservableNameMap = [
-        'onTrackpadChangedObservable', // Trackpad
+        'onPadStateChangedObservable', // Pad
         'onTriggerStateChangedObservable' // Trigger
     ];
 

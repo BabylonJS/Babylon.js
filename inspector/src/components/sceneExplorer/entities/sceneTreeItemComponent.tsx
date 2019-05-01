@@ -6,7 +6,7 @@ import { GizmoManager } from "babylonjs/Gizmos/gizmoManager";
 import { Scene } from "babylonjs/scene";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare } from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
@@ -41,6 +41,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 gizmoMode = 2;
             } else if (manager.scaleGizmoEnabled) {
                 gizmoMode = 3;
+            } else if (manager.boundingBoxGizmoEnabled) {
+                gizmoMode = 4;
             }
         }
 
@@ -75,8 +77,14 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(entity);
-                }else if(className.indexOf("Light") !== -1 && this._selectedEntity.reservedDataStore && this._selectedEntity.reservedDataStore.lightGizmo){
+                }else if (className.indexOf("Light") !== -1) {
+                    if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.lightGizmo) {
+                        this.props.globalState.enableLightGizmo(this._selectedEntity, true);
+                        this.forceUpdate();
+                    }
                     manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
+                }else{
+                    manager.attachToMesh(null);
                 }
             }
         });
@@ -182,6 +190,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             }
         })
 
+        manager.boundingBoxGizmoEnabled = false;
         manager.positionGizmoEnabled = false;
         manager.rotationGizmoEnabled = false;
         manager.scaleGizmoEnabled = false;
@@ -201,6 +210,12 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 case 3:
                     manager.scaleGizmoEnabled = true;
                     break;
+                case 4:
+                    manager.boundingBoxGizmoEnabled = true;
+                    if (manager.gizmos.boundingBoxGizmo) {
+                        manager.gizmos.boundingBoxGizmo.fixedDragMeshScreenSize = true;
+                    }
+                    break;
             }
 
             if (this._selectedEntity && this._selectedEntity.getClassName) {
@@ -208,7 +223,11 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(this._selectedEntity);
-                } else if(className.indexOf("Light") !== -1 && this._selectedEntity.reservedDataStore && this._selectedEntity.reservedDataStore.lightGizmo){
+                } else if(className.indexOf("Light") !== -1){
+                    if(!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.lightGizmo){
+                        this.props.globalState.enableLightGizmo(this._selectedEntity, true);
+                        this.forceUpdate();
+                    }
                     manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 }
             }
@@ -233,6 +252,9 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     <div className={this.state.gizmoMode === 3 ? "scaling selected icon" : "scaling icon"} onClick={() => this.setGizmoMode(3)} title="Enable/Disable scaling mode">
                         <FontAwesomeIcon icon={faCompress} />
                     </div>
+                    <div className={this.state.gizmoMode === 4 ? "bounding selected icon" : "bounding icon"} onClick={() => this.setGizmoMode(4)} title="Enable/Disable bounding box mode">
+                        <FontAwesomeIcon icon={faVectorSquare} />
+                    </div>                    
                     <div className="separator" />
                     <div className={this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon"} onClick={() => this.onPickingMode()} title="Turn picking mode on/off">
                         <FontAwesomeIcon icon={faCrosshairs} />

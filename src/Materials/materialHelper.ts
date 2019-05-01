@@ -13,6 +13,7 @@ import { Light } from "../Lights/light";
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for
@@ -34,7 +35,12 @@ export class MaterialHelper {
             effect.setVector3("vEyePosition", scene._forcedViewPosition);
             return;
         }
-        effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera!.globalPosition);
+        var globalPosition = scene.activeCamera!.globalPosition;
+        if (!globalPosition) {
+            // Use WebVRFreecamera's device position as global position is not it's actual position in babylon space
+            globalPosition = (scene.activeCamera! as WebVRFreeCamera).devicePosition;
+        }
+        effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
     }
 
     /**
@@ -223,6 +229,21 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the defines related to multiview
+     * @param scene The scene we are intending to draw
+     * @param defines The defines to update
+     */
+    public static PrepareDefinesForMultiview(scene: Scene, defines: any) {
+        if (scene.activeCamera) {
+            var previousMultiview = defines.MULTIVIEW;
+            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
+            if (defines.MULTIVIEW != previousMultiview) {
+                defines.markAsUnprocessed();
+            }
+        }
+    }
+
+    /**
      * Prepares the defines related to the light information passed in parameter
      * @param scene The scene we are intending to draw
      * @param mesh The mesh the effect is compiling for
@@ -245,7 +266,7 @@ export class MaterialHelper {
         var specularEnabled = false;
 
         if (scene.lightsEnabled && !disableLighting) {
-            for (var light of mesh._lightSources) {
+            for (var light of mesh.lightSources) {
                 needNormals = true;
 
                 if (defines["LIGHT" + lightIndex] === undefined) {
@@ -573,11 +594,11 @@ export class MaterialHelper {
      * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      */
     public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false): void {
-        let len = Math.min(mesh._lightSources.length, maxSimultaneousLights);
+        let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
-            let light = mesh._lightSources[i];
+            let light = mesh.lightSources[i];
             let iAsString = i.toString();
 
             let scaledIntensity = light.getScaledIntensity();
