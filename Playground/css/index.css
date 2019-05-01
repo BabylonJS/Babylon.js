@@ -1,5 +1,4 @@
-﻿@import url("https://fonts.googleapis.com/css?family=Montserrat:300,400");
-@import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css");
+﻿@import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css");
 html,
 body {
     width: 100%;
@@ -7,7 +6,7 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    font-family: sans-serif;
+    font-family: "acumin-pro";
 }
 #waitDiv {
     position: absolute;
@@ -24,12 +23,27 @@ body {
     flex-direction: column;
 }
 
+#logo-part {
+    width: 20vw;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+}
+
 #waitLogo {
-    -webkit-animation: spin1 2s infinite ease-in-out;
-    -moz-animation: spin1 2s infinite ease-in-out;
-    -o-animation: spin1 2s infinite ease-in-out;
-    -ms-animation: spin1 2s infinite ease-in-out;
-    animation: spin1 2s infinite ease-in-out;
+    grid-column: 1;
+    grid-row: 1;
+    margin: 25%;
+}
+
+#waitSpinner {
+    grid-column: 1;
+    grid-row: 1;
+    -webkit-animation: spin1 0.5s infinite linear;
+    -moz-animation: spin1 0.5s infinite linear;
+    -o-animation: spin1 0.5s infinite linear;
+    -ms-animation: spin1 0.5s infinite linear;
+    animation: spin1 0.5s infinite linear;
     -webkit-transform-origin: 50% 50%;
     -moz-transform-origin: 50% 50%;
     -o-transform-origin: 50% 50%;
@@ -60,7 +74,7 @@ body {
 #waitTitle {
     text-align: center;
     font-size: 38px;
-    color: #15A4FA;
+    color: #BB464B;
 }
 .wrapper {
     height: calc(100% - 40px - 30px); /* nvabar top and bottom*/
@@ -132,8 +146,7 @@ body {
     border-right: 1px solid #efefef;
 }
 #exampleList #exampleBanner {
-    background-image: url("../css/pattern_ban_1.png");
-    background-repeat: repeat;
+    background-color: #E0684B;
     text-align: center;
     padding: 10px 0;
     margin-left: 2px;
@@ -141,7 +154,7 @@ body {
 #exampleList #exampleBanner h1 {
     text-align: center;
     font-weight: 700;
-    color: #00aeef;
+    color: #BB464B;
     font-size: 2em;
     margin: .67em 0;
 }
@@ -149,7 +162,6 @@ body {
     width: 80%;
     height: 0;
     display: block;
-    border-top: 1px solid #00aeef;
     margin: 0 auto 20px auto;
 }
 #exampleList #filterBar {
@@ -215,7 +227,7 @@ body {
     bottom: 20px;
     font-size: 15px;
     text-decoration: underline;
-    color: #00aeef;
+    color: #BB464B;
 }
 #exampleList .categoryContainer .itemLine .itemContent .itemLinePGLink {
     display: none;
@@ -225,7 +237,7 @@ body {
     text-align: right;
     font-size: 15px;
     text-decoration: underline;
-    color: #00aeef;
+    color: #BB464B;
 }
 
 .wrapper #jsEditor {
@@ -255,18 +267,16 @@ body {
     top: 50px;
     cursor: default;
     z-index:10;
-    background-color: #7283a0;
+    background-color: #E0684B;
     color:white;
     padding:5px;
     border-radius: 3px;
-    font-family: 'Montserrat';
     pointer-events: none;
     user-select: none;
 }
 .navbar {
     height: 40px;
     width: 100%;
-    font-family: "Montserrat";
     font-weight: 400;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -287,13 +297,13 @@ body {
 .navbar .title {
     height: 40px;
     padding-left: 10px;
-    color: #15A4FA;
+    color: #BB464B;
     display: inline-block;
 }
 .navbar .version {
     height: 40px;
     display: inline-block;
-    color: #7283a0;
+    color: #E0684B;
     margin-right: 20px;
 }
 .navbar .category {
@@ -309,9 +319,9 @@ body {
 .button {
     display: inline-block;
     height: 25px;
-    line-height: 25px;
+    line-height: 23px;
     color: white;
-    background-color: #7283a0;
+    background-color: #E0684B;
     margin: 0 2px 0 2px;
     padding: 0 10px 0 10px;
     font-size: 0.85em;
@@ -323,12 +333,12 @@ body {
 }
 .button:hover {
     cursor: pointer;
-    background-color: #15A4FA;
+    background-color: #BB464B;
 }
 .navbar .button.run {
     height: 30px;
-    line-height: 30px;
-    background-color: #15A4FA;
+    line-height: 28px;
+    background-color: #BB464B;
     font-size: 1.0em;
 }
 .navbar .select {
@@ -343,7 +353,7 @@ body {
     content: "\00a0 \00a0 \00a0 \f078";
 }
 .navbar .select .toDisplay {
-    border: 1px solid #7283a0;
+    border: 1px solid #E0684B;
     position: absolute;
     z-index: 10;
     left: 0;
@@ -354,7 +364,7 @@ body {
 }
 
 .navbar .select .subSelect .toDisplaySub {
-    border: 1px solid #7283a0;
+    border: 1px solid #E0684B;
     position: absolute;
     z-index: 10;
     left: 100%;
@@ -384,7 +394,7 @@ body {
 }
 .navbar .select .toDisplay .option.light {
     background-color: white;
-    color: #7283a0;
+    color: #E0684B;
 }
 .navbar .select .toDisplay .option.dark:hover {
     cursor: pointer;
@@ -392,7 +402,7 @@ body {
 }
 
 .navbar .select .toDisplayBig {
-    border: 1px solid #7283a0;
+    border: 1px solid #E0684B;
     border-radius: 5px;
     position: absolute;
     z-index: 10;
@@ -409,7 +419,7 @@ body {
 
 .navbar .select .toDisplayBig.light {
     background-color: white;    
-    color: #15A4FA;
+    color: #BB464B;
 }
 
 .navbar .select .toDisplayBig.dark {
@@ -448,7 +458,7 @@ body {
 }
 
 .navbar .select .toDisplayBig a.light {
-    color: #7283a0;
+    color: #E0684B;
 }
 
 
@@ -497,7 +507,6 @@ body {
     width:100%;
     line-height:30px;
     position:relative;
-    font-family: 'Montserrat';
 }
 .navbarBottom.dark {
     background-color: #333;
@@ -567,7 +576,6 @@ body {
     background-color: rgba(27, 27, 27, 0.75);
     border-color: #252525;
     color: white;
-    font-family: "Montserrat";
     font-size: 14px;
 }
 .save-layer .save-form .separator {
@@ -582,7 +590,6 @@ body {
     width: 350px;
     margin:auto;
     margin-bottom: 20px;
-    font-family: "Montserrat";
     padding:5px;
 }
 

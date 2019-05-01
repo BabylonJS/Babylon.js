@@ -9,10 +9,17 @@ import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Scene } from "../scene";
+import { AbstractMesh } from "../Meshes/abstractMesh";
 
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { _DevTools } from '../Misc/devTools';
+
+/** @hidden */
+interface ISavedTransformationMatrix {
+    world: Matrix;
+    viewProjection: Matrix;
+}
 
 /**
  * This renderer is helpfull to fill one of the render target with a geometry buffer.
@@ -34,7 +41,18 @@ export class GeometryBufferRenderer {
      * in order to compute objects velocities when enableVelocity is set to "true"
      * @hidden
      */
-    public _previousTransformationMatrices: { [index: number]: Matrix } = {};
+    public _previousTransformationMatrices: { [index: number]: ISavedTransformationMatrix } = {};
+    /**
+     * Dictionary used to store the previous bones transformation matrices of each rendered mesh
+     * in order to compute objects velocities when enableVelocity is set to "true"
+     * @hidden
+     */
+    public _previousBonesTransformationMatrices: { [index: number]: Float32Array } = {};
+    /**
+     * Array used to store the ignored skinned meshes while computing velocity map (typically used by the motion blur post-process).
+     * Avoids computing bones velocities and computes only mesh's velocity itself (position, rotation, scaling).
+     */
+    public excludedSkinnedMeshesFromVelocity: AbstractMesh[] = [];
 
     private _scene: Scene;
     private _multiRenderTarget: MultiRenderTarget;
@@ -189,6 +207,9 @@ export class GeometryBufferRenderer {
         if (this._enableVelocity) {
             defines.push("#define VELOCITY");
             defines.push("#define VELOCITY_INDEX " + this._velocityIndex);
+            if (this.excludedSkinnedMeshesFromVelocity.indexOf(mesh) === -1) {
+                defines.push("#define BONES_VELOCITY_ENABLED");
+            }
         }
 
         // Bones
@@ -223,7 +244,7 @@ export class GeometryBufferRenderer {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("geometry",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorldViewProjection", "currentWorldViewProjection"],
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones"],
                 ["diffuseSampler"], join,
                 undefined, undefined, undefined,
                 { buffersCount: this._enablePosition ? 3 : 2 });
@@ -305,7 +326,15 @@ export class GeometryBufferRenderer {
 
             // Velocity
             if (this._enableVelocity && !this._previousTransformationMatrices[mesh.uniqueId]) {
-                this._previousTransformationMatrices[mesh.uniqueId] = Matrix.Identity();
+                this._previousTransformationMatrices[mesh.uniqueId] = {
+                    world: Matrix.Identity(),
+                    viewProjection: scene.getTransformMatrix()
+                };
+
+                if (mesh.skeleton) {
+                    const bonesTransformations = mesh.skeleton.getTransformMatrices(mesh);
+                    this._previousBonesTransformationMatrices[mesh.uniqueId] = this._copyBonesTransformationMatrices(bonesTransformations, new Float32Array(bonesTransformations.length));
+                }
             }
 
             // Culling
@@ -340,12 +369,15 @@ export class GeometryBufferRenderer {
                 // Bones
                 if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                    if (this._enableVelocity) {
+                        this._effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[mesh.uniqueId]);
+                    }
                 }
 
                 // Velocity
                 if (this._enableVelocity) {
-                    this._effect.setMatrix("currentWorldViewProjection", mesh.getWorldMatrix().multiply(this._scene.getTransformMatrix()));
-                    this._effect.setMatrix("previousWorldViewProjection", this._previousTransformationMatrices[mesh.uniqueId]);
+                    this._effect.setMatrix("previousWorld", this._previousTransformationMatrices[mesh.uniqueId].world);
+                    this._effect.setMatrix("previousViewProjection", this._previousTransformationMatrices[mesh.uniqueId].viewProjection);
                 }
 
                 // Draw
@@ -355,7 +387,11 @@ export class GeometryBufferRenderer {
 
             // Velocity
             if (this._enableVelocity) {
-                this._previousTransformationMatrices[mesh.uniqueId] = mesh.getWorldMatrix().multiply(this._scene.getTransformMatrix());
+                this._previousTransformationMatrices[mesh.uniqueId].world = mesh.getWorldMatrix().clone();
+                this._previousTransformationMatrices[mesh.uniqueId].viewProjection = this._scene.getTransformMatrix().clone();
+                if (mesh.skeleton) {
+                    this._copyBonesTransformationMatrices(mesh.skeleton.getTransformMatrices(mesh), this._previousBonesTransformationMatrices[mesh.uniqueId]);
+                }
             }
         };
 
@@ -378,5 +414,14 @@ export class GeometryBufferRenderer {
                 renderSubMesh(alphaTestSubMeshes.data[index]);
             }
         };
+    }
+
+    // Copies the bones transformation matrices into the target array and returns the target's reference
+    private _copyBonesTransformationMatrices(source: Float32Array, target: Float32Array): Float32Array {
+        for (let i = 0; i < source.length; i++) {
+            target[i] = source[i];
+        }
+
+        return target;
     }
 }
