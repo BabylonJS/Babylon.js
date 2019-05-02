@@ -455,6 +455,7 @@ export class PatchRenderer {
                     generateMipMaps: true
                 }
             );
+            // TODO : prettify these <any>)
             (<any>mesh).residualTexture = residualTexture;
             residualTexture.renderList = [mesh];
             residualTexture.refreshRate = 1;
@@ -462,6 +463,7 @@ export class PatchRenderer {
             (<any>residualTexture).patchOffset = this._patchOffset;
             meshes[i].subMeshes[0].surfaceId = this._patchOffset;
             this._submeshMap[this._patchOffset] = meshes[i].subMeshes[0];
+            (<any>meshes[i]).__lightMapId = this.encodeId(this._patchOffset).scaleInPlace(1 / 255);
 
             // TODO : merge functions ?
             var uniformCb = (effect: Effect, data: any[]): void => {
@@ -505,8 +507,8 @@ export class PatchRenderer {
 
             this._scene.customRenderTargets.push(residualTexture);
 
-            // Upper bound of what indexes could be taken by patch filling
-            this._patchOffset += size.width * size.height;
+            console.log(`Offset ${this._patchOffset} is for mesh : ${mesh.name}.`);
+            this._patchOffset += 1;
 
             this.buildVisibilityMap();
         }
@@ -648,7 +650,7 @@ export class PatchRenderer {
         }
 
         var energyLeft = this.updatePatches(shooter);
-        if (energyLeft < 10) {
+        if (energyLeft < 0.01) {
             return false;
         }
 
@@ -720,19 +722,20 @@ export class PatchRenderer {
             }
 
             var unshotTexture: Texture = mrt.textures[3];
-            var idTexture: Texture = mrt.textures[2];
-
-            this._nextShooterEffect.setTexture("polygonIdSampler", idTexture);
+            var id = (<any>mesh).__lightMapId; // TODO : prettify
+            var lod = Math.round(Math.log(mrt.getRenderWidth()) / Math.log(2));
+            this._nextShooterEffect.setVector3("polygonId", id);
             this._nextShooterEffect.setTexture("unshotRadiositySampler", unshotTexture);
-            this._nextShooterEffect.setFloat("lod", Math.round(Math.log(mrt.getRenderWidth()) / Math.log(2)));
+            this._nextShooterEffect.setFloat("lod", lod);
             this._nextShooterEffect.setFloat("area", mrt.getRenderWidth() * mrt.getRenderHeight()); // TODO : REAL POLYGON AREA
 
             engine.setDirectViewport(0, 0, 1, 1);
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
+            console.log(`Mesh ${mesh.name} has for Lod ${lod} and dimensions : ${mrt.getRenderWidth()} x ${mrt.getRenderWidth()}`)
+            console.log(engine.readPixelsFloat(0, 0, 1, 1));
         }
         // Read result directly after render
         var pixels = engine.readPixelsFloat(0, 0, 1, 1);
-
         let id = Math.round(this.decodeId(Vector3.FromArray(pixels)) * 255);
         let shaderValue = (1 / (pixels[3] / 255) - 1) / 3;
         console.log("Next shooter ID : " + id);
@@ -908,8 +911,8 @@ export class PatchRenderer {
     public isNextShooterEffectReady(): boolean {
         this._nextShooterEffect = this._scene.getEngine().createEffect("nextShooter",
             [VertexBuffer.PositionKind],
-            ["lod", "area"],
-            ["polygonIdSampler", "unshotRadiositySampler"], "");
+            ["lod", "area", "polygonId"],
+            ["unshotRadiositySampler"], "");
 
         return this._nextShooterEffect.isReady();
     }

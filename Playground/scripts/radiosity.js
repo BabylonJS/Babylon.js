@@ -79,7 +79,7 @@ var createScene = function() {
 
     lamp.rotation.x = -3 * Math.PI / 4;
     lamp.position.copyFromFloats(-5, 10, 5);
-    lamp.color = new BABYLON.Vector3(500, 500, 500);
+    lamp.color = new BABYLON.Vector3(100, 100, 100);
 
     // ceiling.position.y += 5;
     // ceiling.rotation.x = -Math.PI;
@@ -180,9 +180,9 @@ var createScene = function() {
         if (!pi.hit) {
             return;
         }
-        console.log(pi.bu, pi.bv);
+        console.log(pi.getTextureCoordinates());
         console.log(pi.pickedMesh);
-        console.log(pi.pickedMesh.getVerticesData("normal"));
+        console.log(pi.getNormal());
     };
 
     return scene;

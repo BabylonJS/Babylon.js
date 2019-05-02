@@ -632,9 +632,12 @@ export class Tools {
             v1.copyFromFloats(positions[indices[i + 1] * 3], positions[indices[i + 1] * 3 + 1], positions[indices[i + 1] * 3 + 2]);
             uv0.copyFromFloats(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
             uv1.copyFromFloats(uvs[indices[i + 1] * 2], uvs[indices[i + 1] * 2 + 1]);
-            faceWorldToUvRatio = v1.subtract(v0).multiply(scale).length() / uv1.subtract(uv0).length();
-            averageWorldToUvRatio += faceWorldToUvRatio;
-            numberOfFaces++;
+            let uvDiff = uv1.subtract(uv0).length();
+            if (uvDiff > 1e-5) {
+                faceWorldToUvRatio = v1.subtract(v0).multiply(scale).length() / uvDiff;
+                averageWorldToUvRatio += faceWorldToUvRatio;
+                numberOfFaces++;
+            }
         }
 
         averageWorldToUvRatio /= numberOfFaces
