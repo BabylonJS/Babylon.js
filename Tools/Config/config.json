@@ -68,8 +68,8 @@
         "gui"
     ],
     "viewerModules": [
-        "viewer",
-        "viewer-assets"
+        "viewer-assets",
+        "viewer"
     ],
     "additionalNpmPackages": [
         {

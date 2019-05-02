@@ -3864,6 +3864,10 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.beforeRender = null;
         this.afterRender = null;
 
+        if (EngineStore._LastCreatedScene === this) {
+            EngineStore._LastCreatedScene = null;
+        }
+
         this.skeletons = [];
         this.morphTargetManagers = [];
         this._transientComponents = [];
