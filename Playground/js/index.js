@@ -850,7 +850,9 @@ function showError(errorMessage, errorEvent) {
 
         showQRCode = function() {
             $("#qrCodeImage").empty();
-            $("#qrCodeImage").qrcode({text: window.location.href});
+            var playgroundCode = window.location.href.split("#");
+            playgroundCode.shift();
+            $("#qrCodeImage").qrcode({text: "https://playground.babylonjs.com/frame.html#"+(playgroundCode.join("#"))});
         };
 
         // Fullscreen
