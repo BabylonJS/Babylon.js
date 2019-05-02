@@ -97,6 +97,12 @@
                     <div class="option" id="minimapToggle1600">Minimap
                         <i class="far fa-square" aria-hidden="true"></i>
                     </div>
+                    <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                        <div class="toDisplaySub">
+                            <div class="option" style="height:auto;padding: 20px;" id="qrCodeImage">QR Code Image</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -443,6 +449,9 @@
     </div>
 
     <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="js/jquery.qrcode.js"></script>
+    <script src="js/qrcode.js"></script>
+    
 
     <script src="js/actions.js"></script>
     <script src="js/pbt.js"></script>

@@ -39798,7 +39798,7 @@ var HeaderComponent = /** @class */ (function (_super) {
             return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { id: "back", onClick: function () { return _this.goBack(); } },
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faArrowLeft"] })));
         }
-        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }));
+        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { id: "logo", style: { top: "0%" }, src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }));
     };
     HeaderComponent.prototype.render = function () {
         var _this = this;

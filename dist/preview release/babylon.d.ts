@@ -20878,6 +20878,54 @@ declare module BABYLON {
          */
         static readonly CAP_ALL: number;
         /**
+         * Mesh pattern setting : no flip or rotate
+         */
+        static readonly NO_FLIP: number;
+        /**
+         * Mesh pattern setting : flip (reflect in y axis) alternate tiles on each row or column
+         */
+        static readonly FLIP_TILE: number;
+        /**
+         * Mesh pattern setting : rotate (180degs) alternate tiles on each row or column
+         */
+        static readonly ROTATE_TILE: number;
+        /**
+         * Mesh pattern setting : flip (reflect in y axis) all tiles on alternate rows
+         */
+        static readonly FLIP_ROW: number;
+        /**
+         * Mesh pattern setting : rotate (180degs) all tiles on alternate rows
+         */
+        static readonly ROTATE_ROW: number;
+        /**
+         * Mesh pattern setting : flip and rotate alternate tiles on each row or column
+         */
+        static readonly FLIP_N_ROTATE_TILE: number;
+        /**
+         * Mesh pattern setting : rotate pattern and rotate
+         */
+        static readonly FLIP_N_ROTATE_ROW: number;
+        /**
+         * Mesh tile positioning : part tiles same on left/right or top/bottom
+         */
+        static readonly CENTER: number;
+        /**
+         * Mesh tile positioning : part tiles on left
+         */
+        static readonly LEFT: number;
+        /**
+         * Mesh tile positioning : part tiles on right
+         */
+        static readonly RIGHT: number;
+        /**
+         * Mesh tile positioning : part tiles on top
+         */
+        static readonly TOP: number;
+        /**
+         * Mesh tile positioning : part tiles on bottom
+         */
+        static readonly BOTTOM: number;
+        /**
          * Gets the default side orientation.
          * @param orientation the orientation to value to attempt to get
          * @returns the default orientation
@@ -23276,6 +23324,55 @@ declare module BABYLON {
             depth?: number;
             faceUV?: Vector4[];
             faceColors?: Color4[];
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+        }): VertexData;
+        /**
+         * Creates the VertexData for a tiled box
+         * @param options an object used to set the following optional parameters for the box, required but can be empty
+          * * faceTiles sets the pattern, tile size and number of tiles for a face
+          * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+          * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+          * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         * @returns the VertexData of the box
+         */
+        static CreateTiledBox(options: {
+            pattern?: number;
+            width?: number;
+            height?: number;
+            depth?: number;
+            tileSize?: number;
+            tileWidth?: number;
+            tileHeight?: number;
+            alignHorizontal?: number;
+            alignVertical?: number;
+            faceUV?: Vector4[];
+            faceColors?: Color4[];
+            sideOrientation?: number;
+        }): VertexData;
+        /**
+         * Creates the VertexData for a tiled plane
+         * @param options an object used to set the following optional parameters for the box, required but can be empty
+          * * pattern a limited pattern arrangement depending on the number
+          * * tileSize sets the width, height and depth of the tile to the value of size, optional default 1
+          * * tileWidth sets the width (x direction) of the tile, overwrites the width set by size, optional, default size
+          * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
+          * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @returns the VertexData of the tiled plane
+         */
+        static CreateTiledPlane(options: {
+            pattern?: number;
+            tileSize?: number;
+            tileWidth?: number;
+            tileHeight?: number;
+            size?: number;
+            width?: number;
+            height?: number;
+            alignHorizontal?: number;
+            alignVertical?: number;
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
@@ -31951,6 +32048,8 @@ declare module BABYLON {
          * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
          */
         useClonedMeshhMap?: boolean;
+        /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
+        virtual?: boolean;
     }
     /**
      * Represents a scene to be rendered by the engine.
@@ -50067,6 +50166,40 @@ declare module BABYLON {
     /**
      * Class containing static functions to help procedurally build meshes
      */
+    export class TiledBoxBuilder {
+        /**
+         * Creates a box mesh
+         * faceTiles sets the pattern, tile size and number of tiles for a face     * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements)
+         * * Please read this tutorial : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
+         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the box mesh
+         */
+        static CreateTiledBox(name: string, options: {
+            pattern?: number;
+            width?: number;
+            height?: number;
+            depth?: number;
+            tileSize?: number;
+            tileWidth?: number;
+            tileHeight?: number;
+            alignHorizontal?: number;
+            alignVertical?: number;
+            faceUV?: Vector4[];
+            faceColors?: Color4[];
+            sideOrientation?: number;
+            updatable?: boolean;
+        }, scene?: Nullable<Scene>): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
     export class TorusKnotBuilder {
         /**
          * Creates a torus knot mesh
@@ -50291,6 +50424,49 @@ declare module BABYLON {
     /**
      * Class containing static functions to help procedurally build meshes
      */
+    export class TiledPlaneBuilder {
+        /**
+         * Creates a tiled plane mesh
+         * * The parameter `pattern` will, depending on value, do nothing or
+         * * * flip (reflect about central vertical) alternate tiles across and up
+         * * * flip every tile on alternate rows
+         * * * rotate (180 degs) alternate tiles across and up
+         * * * rotate every tile on alternate rows
+         * * * flip and rotate alternate tiles across and up
+         * * * flip and rotate every tile on alternate rows
+         * * The parameter `tileSize` sets the size (float) of each tile side (default 1)
+         * * You can set some different tile dimensions by using the parameters `tileWidth` and `tileHeight` (both by default have the same value of `tileSize`)
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+         * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+         * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @see https://doc.babylonjs.com/how_to/set_shapes#box
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the box mesh
+         */
+        static CreateTiledPlane(name: string, options: {
+            pattern?: number;
+            tileSize?: number;
+            tileWidth?: number;
+            tileHeight?: number;
+            size?: number;
+            width?: number;
+            height?: number;
+            alignHorizontal?: number;
+            alignVertical?: number;
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+            updatable?: boolean;
+        }, scene?: Nullable<Scene>): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
     export class TubeBuilder {
         /**
          * Creates a tube mesh.
@@ -50423,6 +50599,31 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
+            updatable?: boolean;
+        }, scene?: Nullable<Scene>): Mesh;
+        /**
+         * Creates a tiled box mesh
+         * * faceTiles sets the pattern, tile size and number of tiles for a face
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the tiled box mesh
+         */
+        static CreateTiledBox(name: string, options: {
+            pattern?: number;
+            size?: number;
+            width?: number;
+            height?: number;
+            depth: number;
+            tileSize?: number;
+            tileWidth?: number;
+            tileHeight?: number;
+            faceUV?: Vector4[];
+            faceColors?: Color4[];
+            alignHorizontal?: number;
+            alignVertical?: number;
+            sideOrientation?: number;
             updatable?: boolean;
         }, scene?: Nullable<Scene>): Mesh;
         /**
@@ -50814,6 +51015,33 @@ declare module BABYLON {
             backUVs?: Vector4;
             cap?: number;
             invertUV?: boolean;
+        }, scene?: Nullable<Scene>): Mesh;
+        /**
+         * Creates a tiled plane mesh
+         * * You can set a limited pattern arrangement with the tiles
+         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the plane mesh
+         * @see https://doc.babylonjs.com/how_to/set_shapes#plane
+         */
+        static CreateTiledPlane(name: string, options: {
+            pattern?: number;
+            tileSize?: number;
+            tileWidth?: number;
+            tileHeight?: number;
+            size?: number;
+            width?: number;
+            height?: number;
+            alignHorizontal?: number;
+            alignVertical?: number;
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+            updatable?: boolean;
         }, scene?: Nullable<Scene>): Mesh;
         /**
          * Creates a plane mesh
