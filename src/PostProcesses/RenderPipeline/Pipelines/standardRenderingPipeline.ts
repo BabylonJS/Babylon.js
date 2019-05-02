@@ -19,6 +19,7 @@ import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRendere
 import { Scene } from "../../../scene";
 import { Constants } from "../../../Engines/constants";
 import { _TypeStore } from '../../../Misc/typeStore';
+import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
 
 declare type Animation = import("../../../Animations/animation").Animation;
 
@@ -275,10 +276,41 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     public depthOfFieldBlurWidth: number = 64.0;
 
     /**
-     * For motion blur, defines how much the image is blurred by the movement
+     * Gets how much the image is blurred by the movement while using the motion blur post-process
      */
     @serialize()
-    public motionStrength: number = 1.0;
+    public get motionStrength(): number {
+        return this._motionStrength;
+    }
+    /**
+     * Sets how much the image is blurred by the movement while using the motion blur post-process
+     */
+    public set motionStrength(strength: number) {
+        this._motionStrength = strength;
+
+        if (this._isObjectBasedMotionBlur && this.motionBlurPostProcess) {
+            (this.motionBlurPostProcess as MotionBlurPostProcess).motionStrength = strength;
+        }
+    }
+
+    /**
+     * Gets wether or not the motion blur post-process is object based or screen based.
+     */
+    @serialize()
+    public get objectBasedMotionBlur(): boolean {
+        return this._isObjectBasedMotionBlur;
+    }
+    /**
+     * Sets wether or not the motion blur post-process should be object based or screen based
+     */
+    public set objectBasedMotionBlur(value: boolean) {
+        const shouldRebuild = this._isObjectBasedMotionBlur !== value;
+        this._isObjectBasedMotionBlur = value;
+
+        if (shouldRebuild) {
+            this._buildPipeline();
+        }
+    }
 
     /**
      * List of animations for the pipeline (IAnimatable implementation)
@@ -296,6 +328,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     private _currentExposure: number = 1.0;
     private _hdrAutoExposure: boolean = false;
     private _hdrCurrentLuminance: number = 1.0;
+    private _motionStrength: number = 1.0;
+    private _isObjectBasedMotionBlur: boolean = false;
 
     private _floatTextureType: number;
 
@@ -476,7 +510,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     public set motionBlurSamples(samples: number) {
         if (this.motionBlurPostProcess) {
-            this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
+            if (this._isObjectBasedMotionBlur) {
+                (this.motionBlurPostProcess as MotionBlurPostProcess).motionBlurSamples = samples;
+            } else {
+                this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
+            }
         }
 
         this._motionBlurSamples = samples;
@@ -991,36 +1029,43 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     // Create motion blur post-process
     private _createMotionBlurPostProcess(scene: Scene, ratio: number): void {
-        this.motionBlurPostProcess = new PostProcess("HDRMotionBlur", "standard",
-            ["inverseViewProjection", "prevViewProjection", "screenSize", "motionScale", "motionStrength"],
-            ["depthSampler"],
-            ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + this.motionBlurSamples.toFixed(1), Constants.TEXTURETYPE_UNSIGNED_INT);
+        if (this._isObjectBasedMotionBlur) {
+            const mb = new MotionBlurPostProcess("HDRMotionBlur", scene, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Constants.TEXTURETYPE_UNSIGNED_INT);
+            mb.motionStrength = this.motionStrength;
+            mb.motionBlurSamples = this.motionBlurSamples;
+            this.motionBlurPostProcess = mb;
+        } else {
+            this.motionBlurPostProcess = new PostProcess("HDRMotionBlur", "standard",
+                ["inverseViewProjection", "prevViewProjection", "screenSize", "motionScale", "motionStrength"],
+                ["depthSampler"],
+                ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + this.motionBlurSamples.toFixed(1), Constants.TEXTURETYPE_UNSIGNED_INT);
 
-        var motionScale: number = 0;
-        var prevViewProjection = Matrix.Identity();
-        var invViewProjection = Matrix.Identity();
-        var viewProjection = Matrix.Identity();
-        var screenSize = Vector2.Zero();
+            var motionScale: number = 0;
+            var prevViewProjection = Matrix.Identity();
+            var invViewProjection = Matrix.Identity();
+            var viewProjection = Matrix.Identity();
+            var screenSize = Vector2.Zero();
 
-        this.motionBlurPostProcess.onApply = (effect: Effect) => {
-            viewProjection = scene.getProjectionMatrix().multiply(scene.getViewMatrix());
+            this.motionBlurPostProcess.onApply = (effect: Effect) => {
+                viewProjection = scene.getProjectionMatrix().multiply(scene.getViewMatrix());
 
-            viewProjection.invertToRef(invViewProjection);
-            effect.setMatrix("inverseViewProjection", invViewProjection);
+                viewProjection.invertToRef(invViewProjection);
+                effect.setMatrix("inverseViewProjection", invViewProjection);
 
-            effect.setMatrix("prevViewProjection", prevViewProjection);
-            prevViewProjection = viewProjection;
+                effect.setMatrix("prevViewProjection", prevViewProjection);
+                prevViewProjection = viewProjection;
 
-            screenSize.x = (<PostProcess>this.motionBlurPostProcess).width;
-            screenSize.y = (<PostProcess>this.motionBlurPostProcess).height;
-            effect.setVector2("screenSize", screenSize);
+                screenSize.x = (<PostProcess>this.motionBlurPostProcess).width;
+                screenSize.y = (<PostProcess>this.motionBlurPostProcess).height;
+                effect.setVector2("screenSize", screenSize);
 
-            motionScale = scene.getEngine().getFps() / 60.0;
-            effect.setFloat("motionScale", motionScale);
-            effect.setFloat("motionStrength", this.motionStrength);
+                motionScale = scene.getEngine().getFps() / 60.0;
+                effect.setFloat("motionScale", motionScale);
+                effect.setFloat("motionStrength", this.motionStrength);
 
-            effect.setTexture("depthSampler", this._getDepthTexture());
-        };
+                effect.setTexture("depthSampler", this._getDepthTexture());
+            };
+        }
 
         this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRMotionBlur", () => { return this.motionBlurPostProcess; }, true));
     }
