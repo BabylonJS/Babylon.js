@@ -54711,9 +54711,19 @@ declare module BABYLON {
          */
         depthOfFieldBlurWidth: number;
         /**
-         * For motion blur, defines how much the image is blurred by the movement
+         * Gets how much the image is blurred by the movement while using the motion blur post-process
          */
+        /**
+        * Sets how much the image is blurred by the movement while using the motion blur post-process
+        */
         motionStrength: number;
+        /**
+         * Gets wether or not the motion blur post-process is object based or screen based.
+         */
+        /**
+        * Sets wether or not the motion blur post-process should be object based or screen based
+        */
+        objectBasedMotionBlur: boolean;
         /**
          * List of animations for the pipeline (IAnimatable implementation)
          */
@@ -54728,6 +54738,8 @@ declare module BABYLON {
         private _currentExposure;
         private _hdrAutoExposure;
         private _hdrCurrentLuminance;
+        private _motionStrength;
+        private _isObjectBasedMotionBlur;
         private _floatTextureType;
         private _ratio;
         private _bloomEnabled;

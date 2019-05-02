@@ -282,7 +282,7 @@ export class InstancedMesh extends AbstractMesh {
     /** @hidden */
     public _activate(renderId: number, intermediateRendering: boolean): boolean {
         if (this._currentLOD) {
-            this._currentLOD._registerInstanceForRenderId(this, renderId); 
+            this._currentLOD._registerInstanceForRenderId(this, renderId);
 
             if (intermediateRendering) {
                 if (!this._currentLOD._internalAbstractMeshDataInfo._isActiveIntermediate) {
