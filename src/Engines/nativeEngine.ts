@@ -7,7 +7,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { VideoTexture } from "../Materials/Textures/videoTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Effect } from "../Materials/effect";
+import { Effect, EffectCreationOptions, EffectFallbacks } from "../Materials/effect";
 import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
 import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
@@ -406,6 +406,40 @@ export class NativeEngine extends Engine {
         // } else {
         this._native.draw(fillMode, verticesStart, verticesCount);
         // }
+    }
+
+    /**
+     * Create a new effect (used to store vertex/fragment shaders)
+     * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
+     * @param attributesNamesOrOptions defines either a list of attribute names or an EffectCreationOptions object
+     * @param uniformsNamesOrEngine defines either a list of uniform names or the engine to use
+     * @param samplers defines an array of string used to represent textures
+     * @param defines defines the string containing the defines to use to compile the shaders
+     * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
+     * @param onCompiled defines a function to call when the effect creation is successful
+     * @param onError defines a function to call when the effect creation has failed
+     * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
+     * @returns the new Effect
+     */
+    public createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks,
+        onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect {
+        var vertex = baseName.vertexElement || baseName.vertex || baseName;
+        var fragment = baseName.fragmentElement || baseName.fragment || baseName;
+
+        var name = vertex + "+" + fragment + "@" + (defines ? defines : (<EffectCreationOptions>attributesNamesOrOptions).defines);
+        if (this._compiledEffects[name]) {
+            var compiledEffect = <Effect>this._compiledEffects[name];
+            if (onCompiled && compiledEffect.isReady()) {
+                onCompiled(compiledEffect);
+            }
+
+            return compiledEffect;
+        }
+        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, false);
+        effect._key = name;
+        this._compiledEffects[name] = effect;
+
+        return effect;
     }
 
     /**
