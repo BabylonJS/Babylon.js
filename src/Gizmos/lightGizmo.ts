@@ -67,6 +67,11 @@ export class LightGizmo extends Gizmo {
 
             this._lightMesh.rotationQuaternion = new Quaternion();
 
+            if (!this.attachedMesh!.reservedDataStore) {
+                this.attachedMesh!.reservedDataStore = {};
+            }
+            this.attachedMesh!.reservedDataStore.lightGizmo = this;
+
             // Get update position and direction if the light has it
             if ((light as any).position) {
                 this.attachedMesh!.position.copyFrom((light as any).position);
