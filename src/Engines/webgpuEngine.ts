@@ -1098,6 +1098,8 @@ export class WebGPUEngine extends Engine {
                 aspect: "all",
             });
             webglEngineTexture.dispose();
+
+            onLoad && onLoad();
         };
         webglEngineTexture = this._decodeEngine.createCubeTexture(rootUrl, scene, files, noMipmap, onLoadInternal, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback, excludeLoaders);
 
