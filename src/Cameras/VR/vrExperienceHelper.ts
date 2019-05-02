@@ -822,10 +822,10 @@ export class VRExperienceHelper {
         // Allow clicking in the vrDeviceOrientationCamera
         scene.onPointerObservable.add((e) => {
             if (this._interactionsEnabled) {
-                if (scene.activeCamera == this.vrDeviceOrientationCamera && (e.event as PointerEvent).pointerType == "mouse") {
-                    if (e.type == PointerEventTypes.POINTERDOWN) {
+                if (scene.activeCamera === this.vrDeviceOrientationCamera && (e.event as PointerEvent).pointerType === "mouse") {
+                    if (e.type === PointerEventTypes.POINTERDOWN) {
                         this._cameraGazer._selectionPointerDown();
-                    }else if (e.type == PointerEventTypes.POINTERUP) {
+                    }else if (e.type === PointerEventTypes.POINTERUP) {
                         this._cameraGazer._selectionPointerUp();
                     }
                 }
