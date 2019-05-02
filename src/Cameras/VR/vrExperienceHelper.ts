@@ -819,6 +819,19 @@ export class VRExperienceHelper {
         this._circleEase = new CircleEase();
         this._circleEase.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
 
+        // Allow clicking in the vrDeviceOrientationCamera
+        scene.onPointerObservable.add((e) => {
+            if (this._interactionsEnabled) {
+                if (scene.activeCamera == this.vrDeviceOrientationCamera && (e.event as PointerEvent).pointerType == "mouse") {
+                    if (e.type == PointerEventTypes.POINTERDOWN) {
+                        this._cameraGazer._selectionPointerDown();
+                    }else if (e.type == PointerEventTypes.POINTERUP) {
+                        this._cameraGazer._selectionPointerUp();
+                    }
+                }
+            }
+        });
+
         if (this.webVROptions.floorMeshes) {
             this.enableTeleportation({ floorMeshes: this.webVROptions.floorMeshes });
         }
