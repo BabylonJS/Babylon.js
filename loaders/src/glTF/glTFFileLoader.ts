@@ -12,54 +12,12 @@ import { SceneLoader, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoade
 import { AssetContainer } from "babylonjs/assetContainer";
 import { Scene, IDisposable } from "babylonjs/scene";
 
-/**
- * Interface for glTF validation results
- */
-interface IGLTFValidationResults {
-    info: {
-        generator: string;
-        hasAnimations: boolean;
-        hasDefaultScene: boolean;
-        hasMaterials: boolean;
-        hasMorphTargets: boolean;
-        hasSkins: boolean;
-        hasTextures: boolean;
-        maxAttributesUsed: number;
-        primitivesCount: number
-    };
-    issues: {
-        messages: Array<string>;
-        numErrors: number;
-        numHints: number;
-        numInfos: number;
-        numWarnings: number;
-        truncated: boolean
-    };
-    mimeType: string;
-    uri: string;
-    validatedAt: string;
-    validatorVersion: string;
-}
-
-/**
- * Interface for glTF validation options
- */
-interface IGLTFValidationOptions {
-    uri?: string;
-    externalResourceFunction?: (uri: string) => Promise<Uint8Array>;
-    validateAccessorData?: boolean;
-    maxIssues?: number;
-    ignoredIssues?: Array<string>;
-    severityOverrides?: Object;
-}
+import * as GLTF2 from "babylonjs-gltf2interface";
 
 /**
  * glTF validator object
  */
-declare var GLTFValidator: {
-    validateBytes: (data: Uint8Array, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
-    validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
-};
+declare var GLTFValidator: GLTF2.IGLTFValidator;
 
 /**
  * Mode that determines the coordinate system to use.
@@ -439,14 +397,14 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /**
      * Observable raised after validation when validate is set to true. The event data is the result of the validation.
      */
-    public readonly onValidatedObservable = new Observable<IGLTFValidationResults>();
+    public readonly onValidatedObservable = new Observable<GLTF2.IGLTFValidationResults>();
 
-    private _onValidatedObserver: Nullable<Observer<IGLTFValidationResults>>;
+    private _onValidatedObserver: Nullable<Observer<GLTF2.IGLTFValidationResults>>;
 
     /**
      * Callback raised after a loader extension is created.
      */
-    public set onValidated(callback: (results: IGLTFValidationResults) => void) {
+    public set onValidated(callback: (results: GLTF2.IGLTFValidationResults) => void) {
         if (this._onValidatedObserver) {
             this.onValidatedObservable.remove(this._onValidatedObserver);
         }
@@ -642,7 +600,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
         this._startPerformanceCounter("Validate JSON");
 
-        const options: IGLTFValidationOptions = {
+        const options: GLTF2.IGLTFValidationOptions = {
             externalResourceFunction: (uri) => {
                 return this.preprocessUrlAsync(rootUrl + uri)
                     .then((url) => scene._loadFileAsync(url, true, true))

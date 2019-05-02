@@ -32,6 +32,8 @@ export class InstancedMesh extends AbstractMesh {
 
         this._sourceMesh = source;
 
+        this._unIndexed = source._unIndexed;
+
         this.position.copyFrom(source.position);
         this.rotation.copyFrom(source.rotation);
         this.scaling.copyFrom(source.scaling);

@@ -563,6 +563,7 @@ export class EnvironmentTextureTools {
             // Release temp RTT.
             if (cubeRtt) {
                 engine._releaseFramebufferObjects(cubeRtt);
+                engine._releaseTexture(texture);
                 cubeRtt._swapAndDie(texture);
             }
             // Release temp Post Process.

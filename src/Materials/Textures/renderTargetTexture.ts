@@ -979,6 +979,10 @@ export class RenderTargetTexture extends Texture {
             }
         }
 
+        if (this.depthStencilTexture) {
+            this.getScene()!.getEngine()._releaseTexture(this.depthStencilTexture);
+        }
+
         super.dispose();
     }
 
