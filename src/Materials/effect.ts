@@ -264,6 +264,7 @@ export class Effect {
      * @hidden
      */
     public _program: WebGLProgram;
+    private _enableMatrixCaching: boolean;
     private _valueCache: { [key: string]: any };
     private static _baseCache: { [key: number]: WebGLBuffer } = {};
 
@@ -282,8 +283,9 @@ export class Effect {
      * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
      */
     constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers: Nullable<string[]> = null, engine?: Engine, defines: Nullable<string> = null,
-        fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
+        fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, enableMatrixCaching: boolean = true) {
         this.name = baseName;
+        this._enableMatrixCaching = enableMatrixCaching;
 
         if ((<EffectCreationOptions>attributesNamesOrOptions).attributes) {
             var options = <EffectCreationOptions>attributesNamesOrOptions;
@@ -1287,7 +1289,7 @@ export class Effect {
      * @returns this effect.
      */
     public setMatrix(uniformName: string, matrix: Matrix): Effect {
-        if (this._cacheMatrix(uniformName, matrix)) {
+        if (!this._enableMatrixCaching || this._cacheMatrix(uniformName, matrix)) {
             this._engine.setMatrix(this.getUniform(uniformName), matrix);
         }
         return this;
