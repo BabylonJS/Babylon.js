@@ -70,7 +70,7 @@ interface INativeEngine {
     setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
     setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number): void; // addressModes are NativeAddressMode.XXXX values.
     setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
-    setTexture(channel: number, uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
+    setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
 
     drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
@@ -1224,7 +1224,7 @@ export class NativeEngine extends Engine {
         if (!texture) {
             if (this._boundTexturesCache[channel] != null) {
                 this._activeChannel = channel;
-                this._native.setTexture(channel, uniform, null);
+                this._native.setTexture(uniform, null);
             }
             return false;
         }
@@ -1265,7 +1265,7 @@ export class NativeEngine extends Engine {
             this._getAddressMode(texture.wrapR));
         this._updateAnisotropicLevel(texture);
 
-        this._native.setTexture(channel, uniform, internalTexture._webGLTexture);
+        this._native.setTexture(uniform, internalTexture._webGLTexture);
 
         return true;
     }
