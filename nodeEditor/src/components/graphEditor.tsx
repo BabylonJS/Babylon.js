@@ -13,8 +13,8 @@ import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/
 import { GenericNodeModel } from './customDiragramNodes/generic/genericNodeModel';
 import { GenericPortModel } from './customDiragramNodes/generic/genericPortModel';
 import { Engine } from 'babylonjs/Engines/engine';
-import { LineContainerComponent } from "../../../inspector/src/components/actionTabs/lineContainerComponent"
-import { ButtonLineComponent } from '../../../inspector/src/components/actionTabs/lines/buttonLineComponent';
+import { LineContainerComponent } from "../sharedComponents/lineContainerComponent"
+import { ButtonLineComponent } from '../sharedComponents/buttonLineComponent';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
@@ -37,7 +37,7 @@ import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
 import { Vector2TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector2TransformBlock';
 import { Vector3TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector3TransformBlock';
 import { Vector4TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector4TransformBlock';
-require("../../../inspector/src/components/actionTabs/actionTabs.scss");
+//require("../../../inspector/src/components/actionTabs/actionTabs.scss");
 require("storm-react-diagrams/dist/style.min.css");
 /*
 Data vs View
