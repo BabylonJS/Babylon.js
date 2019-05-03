@@ -101,12 +101,12 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Gets or sets the root nodes of the material vertex shader
      */
-    private _vertexOutputNodes = new Array<NodeMaterialBlock>();
+    public _vertexOutputNodes = new Array<NodeMaterialBlock>();
 
     /**
      * Gets or sets the root nodes of the material fragment (pixel) shader
      */
-    private _fragmentOutputNodes = new Array<NodeMaterialBlock>();
+    public _fragmentOutputNodes = new Array<NodeMaterialBlock>();
 
     /** Gets or sets options to control the node material overall behavior */
     public get options() {
@@ -447,6 +447,8 @@ export class NodeMaterial extends PushMaterial {
 
         this._buildWasSuccessful = true;
         this.onBuildObservable.notifyObservers(this);
+
+        this._markAllSubMeshesAsAllDirty();
     }
 
     /**

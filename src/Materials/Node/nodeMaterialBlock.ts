@@ -17,9 +17,9 @@ export class NodeMaterialBlock {
     private _isFinalMerger = false;
 
     /** @hidden */
-    protected _inputs = new Array<NodeMaterialConnectionPoint>();
+    public _inputs = new Array<NodeMaterialConnectionPoint>();
     /** @hidden */
-    protected _outputs = new Array<NodeMaterialConnectionPoint>();
+    public _outputs = new Array<NodeMaterialConnectionPoint>();
 
     /**
      * Gets or sets the name of the block
