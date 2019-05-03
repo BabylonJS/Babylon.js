@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Color3 } from "../Maths/math";
+import { Color3, Vector3, Quaternion } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
@@ -20,6 +20,8 @@ import { SpotLight } from '../Lights/spotLight';
 export class LightGizmo extends Gizmo {
     private _lightMesh: Mesh;
     private _material: StandardMaterial;
+    private cachedPosition = new Vector3();
+    private cachedForward = new Vector3(0, 0, 1);
 
     /**
      * Creates a LightGizmo
@@ -63,13 +65,22 @@ export class LightGizmo extends Gizmo {
             var gizmoLight = this.gizmoLayer._getSharedGizmoLight();
             gizmoLight.includedOnlyMeshes = gizmoLight.includedOnlyMeshes.concat(this._lightMesh.getChildMeshes(false));
 
+            this._lightMesh.rotationQuaternion = new Quaternion();
+
+            if (!this.attachedMesh!.reservedDataStore) {
+                this.attachedMesh!.reservedDataStore = {};
+            }
+            this.attachedMesh!.reservedDataStore.lightGizmo = this;
+
             // Get update position and direction if the light has it
             if ((light as any).position) {
                 this.attachedMesh!.position.copyFrom((light as any).position);
             }
             if ((light as any).direction) {
-                this._lightMesh.setDirection((light as any).direction);
+                this.attachedMesh!.setDirection((light as any).direction);
             }
+
+            this._update();
         }
     }
     public get light() {
@@ -86,10 +97,28 @@ export class LightGizmo extends Gizmo {
             return;
         }
         if ((this._light as any).position) {
-            (this._light as any).position.copyFrom(this.attachedMesh!.position);
+            // If the gizmo is moved update the light otherwise update the gizmo to match the light
+            if (!this.attachedMesh!.position.equals(this.cachedPosition)) {
+                // update light to match gizmo
+                (this._light as any).position.copyFrom(this.attachedMesh!.position);
+                this.cachedPosition.copyFrom(this.attachedMesh!.position);
+            }else {
+                // update gizmo to match light
+                this.attachedMesh!.position.copyFrom((this._light as any).position);
+            }
+
         }
         if ((this._light as any).direction) {
-            (this._light as any).direction.copyFrom(this._lightMesh.forward);
+            // If the gizmo is moved update the light otherwise update the gizmo to match the light
+            if (Vector3.DistanceSquared(this.attachedMesh!.forward, this.cachedForward) > 0.0001) {
+                // update light to match gizmo
+                (this._light as any).direction.copyFrom(this.attachedMesh!.forward);
+                this.cachedForward.copyFrom(this.attachedMesh!.forward);
+            }else if (Vector3.DistanceSquared(this.attachedMesh!.forward, (this._light as any).direction) > 0.0001) {
+                // update gizmo to match light
+                this.attachedMesh!.setDirection((this._light as any).direction);
+                this.cachedForward.copyFrom(this._lightMesh.forward);
+            }
         }
         if (!this._light.isEnabled()) {
             this._material.diffuseColor.set(0, 0, 0);
@@ -159,6 +188,14 @@ export class LightGizmo extends Gizmo {
         l.rotation.z = Math.PI;
 
         return root;
+    }
+
+    /**
+     * Disposes of the light gizmo
+     */
+    public dispose() {
+        this._material.dispose();
+        super.dispose();
     }
 
     private static _CreateHemisphericLightMesh(scene: Scene) {

@@ -736,7 +736,7 @@ export class ShaderMaterial extends Material {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
-        serializationObject.customType = "ShaderMaterial";
+        serializationObject.customType = "BABYLON.ShaderMaterial";
 
         serializationObject.options = this._options;
         serializationObject.shaderPath = this._shaderPath;

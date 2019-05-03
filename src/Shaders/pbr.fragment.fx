@@ -191,7 +191,9 @@ void main(void) {
             metallicRoughness.g *= microSurfaceTexel.r;
         #endif
 
-        // Compute microsurface form roughness.
+        #define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS
+		
+        // Compute microsurface from roughness.
         microSurface = 1.0 - metallicRoughness.g;
 
         // Diffuse is used as the base of the reflectivity.
@@ -239,11 +241,14 @@ void main(void) {
                     vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
                     microSurface *= microSurfaceTexel.r;
                 #endif
+				
+                #define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE
+				
             #endif
         #endif
     #endif
-
-    // Adapt microSurface.
+	
+	// Adapt microSurface.
     microSurface = saturate(microSurface);
     // Compute roughness.
     float roughness = 1. - microSurface;
@@ -491,7 +496,7 @@ void main(void) {
                     irradianceVector.z *= -1.0;
                 #endif
 
-                environmentIrradiance = environmentIrradianceJones(irradianceVector);
+                environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
             #endif
         #endif
 
@@ -950,7 +955,9 @@ void main(void) {
             // Tint reflectance
             environmentRefraction.rgb *= volumeAlbedo;
         #else
-            // Nothing to change for refraction.
+            // Compute tint from min distance only.
+            vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
+            refractionTransmittance *= cocaLambert(volumeAlbedo, vThicknessParam.y);
         #endif
 
         // Decrease Albedo Contribution
@@ -976,7 +983,7 @@ void main(void) {
             #endif
         #endif
 
-        vec3 refractionIrradiance = environmentIrradianceJones(-irradianceVector);
+        vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
         refractionIrradiance *= transmittance;
     #endif
 
@@ -1105,6 +1112,10 @@ void main(void) {
     finalDiffuse *= surfaceAlbedo.rgb;
     finalDiffuse = max(finalDiffuse, 0.0);
 
+// _____________________________ Ambient ________________________________________
+    vec3 finalAmbient = vAmbientColor;
+    finalAmbient *= surfaceAlbedo.rgb;
+
 // _____________________________ Emissive ________________________________________
     vec3 finalEmissive = vEmissiveColor;
 #ifdef EMISSIVE
@@ -1124,7 +1135,7 @@ void main(void) {
 // _____________________________ Composition _____________________________________
     // Reflection already includes the environment intensity.
     vec4 finalColor = vec4(
-        vAmbientColor			* ambientOcclusionColor +
+        finalAmbient			* ambientOcclusionColor +
         finalDiffuse			* ambientOcclusionForDirectDiffuse * vLightingIntensity.x +
 #ifndef UNLIT
     #ifdef REFLECTION

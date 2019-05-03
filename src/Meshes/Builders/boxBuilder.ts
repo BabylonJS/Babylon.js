@@ -1,28 +1,59 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Vector4, Color4, Vector3 } from "../../Maths/math";
+import { Vector4, Color4 } from "../../Maths/math";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
-VertexData.CreateBox = function(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-    var normalsSource = [
-        new Vector3(0, 0, 1),
-        new Vector3(0, 0, -1),
-        new Vector3(1, 0, 0),
-        new Vector3(-1, 0, 0),
-        new Vector3(0, 1, 0),
-        new Vector3(0, -1, 0)
-    ];
-
-    var indices = [];
-    var positions = [];
-    var normals = [];
+VertexData.CreateBox = function(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean, topBaseAt?: number, bottomBaseAt?: number }): VertexData {
+    var nbFaces = 6;
+    var indices = [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23];
+    var normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0];
     var uvs = [];
-
+    var positions = [];
     var width = options.width || options.size || 1;
     var height = options.height || options.size || 1;
     var depth = options.depth || options.size || 1;
+    var wrap = options.wrap || false;
+    var topBaseAt = (options.topBaseAt === void 0) ? 1 : options.topBaseAt;
+    var bottomBaseAt = (options.bottomBaseAt === void 0) ? 0 : options.bottomBaseAt;
+    topBaseAt = (topBaseAt + 4) % 4; // places values as 0 to 3
+    bottomBaseAt = (bottomBaseAt + 4) % 4; // places values as 0 to 3
+    var topOrder = [2, 0, 3, 1];
+    var bottomOrder = [2, 0, 1, 3];
+    var topIndex = topOrder[topBaseAt];
+    var bottomIndex = bottomOrder[bottomBaseAt];
+    var basePositions = [1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1];
+    if (wrap) {
+        indices = [2, 3, 0, 2, 0, 1, 4, 5, 6, 4, 6, 7, 9, 10, 11, 9, 11, 8, 12, 14, 15, 12, 13, 14];
+        basePositions = [-1, 1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1,  -1, -1, -1,  1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1];
+        var topFaceBase: any = [[1, 1, 1], [-1, 1, 1], [-1, 1, -1], [1, 1, -1]];
+        var bottomFaceBase: any = [[-1, -1, 1], [1, -1, 1], [1, -1, -1], [-1, -1, -1]];
+        var topFaceOrder: any = [17, 18, 19, 16];
+        var bottomFaceOrder: any = [22, 23, 20, 21];
+        while (topIndex > 0) {
+            topFaceBase.unshift(topFaceBase.pop());
+            topFaceOrder.unshift(topFaceOrder.pop());
+            topIndex--;
+        }
+        while (bottomIndex > 0) {
+            bottomFaceBase.unshift(bottomFaceBase.pop());
+            bottomFaceOrder.unshift(bottomFaceOrder.pop());
+            bottomIndex--;
+        }
+        topFaceBase = topFaceBase.flat();
+        bottomFaceBase = bottomFaceBase.flat();
+        basePositions = basePositions.concat(topFaceBase).concat(bottomFaceBase);
+        indices.push(topFaceOrder[0], topFaceOrder[2], topFaceOrder[3], topFaceOrder[0], topFaceOrder[1], topFaceOrder[2]);
+        indices.push(bottomFaceOrder[0], bottomFaceOrder[2], bottomFaceOrder[3], bottomFaceOrder[0], bottomFaceOrder[1], bottomFaceOrder[2]);
+    }
+    var scaleArray = [width / 2, height / 2, depth / 2];
+    positions = basePositions.reduce(
+        (accumulator: Array<number>, currentValue, currentIndex) => accumulator.concat(currentValue * scaleArray[currentIndex % 3]),
+        []
+    );
+
     var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
+
     var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
     var faceColors = options.faceColors;
     var colors = [];
@@ -37,57 +68,16 @@ VertexData.CreateBox = function(options: { size?: number, width?: number, height
         }
     }
 
-    var scaleVector = new Vector3(width / 2, height / 2, depth / 2);
-
     // Create each face in turn.
-    for (var index = 0; index < normalsSource.length; index++) {
-        var normal = normalsSource[index];
-
-        // Get two vectors perpendicular to the face normal and to each other.
-        var side1 = new Vector3(normal.y, normal.z, normal.x);
-        var side2 = Vector3.Cross(normal, side1);
-
-        // Six indices (two triangles) per face.
-        var verticesLength = positions.length / 3;
-        indices.push(verticesLength);
-        indices.push(verticesLength + 1);
-        indices.push(verticesLength + 2);
-
-        indices.push(verticesLength);
-        indices.push(verticesLength + 2);
-        indices.push(verticesLength + 3);
-
-        // Four vertices per face.
-        var vertex = normal.subtract(side1).subtract(side2).multiply(scaleVector);
-        positions.push(vertex.x, vertex.y, vertex.z);
-        normals.push(normal.x, normal.y, normal.z);
+    for (var index = 0; index < nbFaces; index++) {
         uvs.push(faceUV[index].z, faceUV[index].w);
-        if (faceColors) {
-            colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
-        }
-
-        vertex = normal.subtract(side1).add(side2).multiply(scaleVector);
-        positions.push(vertex.x, vertex.y, vertex.z);
-        normals.push(normal.x, normal.y, normal.z);
         uvs.push(faceUV[index].x, faceUV[index].w);
-        if (faceColors) {
-            colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
-        }
-
-        vertex = normal.add(side1).add(side2).multiply(scaleVector);
-        positions.push(vertex.x, vertex.y, vertex.z);
-        normals.push(normal.x, normal.y, normal.z);
         uvs.push(faceUV[index].x, faceUV[index].y);
-        if (faceColors) {
-            colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
-        }
-
-        vertex = normal.add(side1).subtract(side2).multiply(scaleVector);
-        positions.push(vertex.x, vertex.y, vertex.z);
-        normals.push(normal.x, normal.y, normal.z);
         uvs.push(faceUV[index].z, faceUV[index].y);
         if (faceColors) {
-            colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
+            for (var c = 0; c < 4; c++) {
+                colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
+            }
         }
     }
 
@@ -139,7 +129,7 @@ export class BoxBuilder {
      * @param scene defines the hosting scene
      * @returns the box mesh
      */
-    public static CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
+    public static CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean, topBaseAt?: number, bottomBaseAt?: number , updatable?: boolean}, scene: Nullable<Scene> = null): Mesh {
         var box = new Mesh(name, scene);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

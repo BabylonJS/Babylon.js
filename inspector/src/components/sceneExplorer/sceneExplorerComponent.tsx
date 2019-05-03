@@ -13,6 +13,10 @@ import { SceneTreeItemComponent } from "./entities/sceneTreeItemComponent";
 import { Tools } from "../../tools";
 import { GlobalState } from "../../components/globalState";
 import { DefaultRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
+import { Vector3 } from 'babylonjs/Maths/math';
+import { PointLight } from 'babylonjs/Lights/pointLight';
+import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
+import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 
 require("./sceneExplorer.scss");
 
@@ -53,6 +57,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
 
     private _once = true;
+    private _hooked = false;
 
     private sceneMutationFunc: () => void;
 
@@ -91,6 +96,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         const scene = this.state.scene;
 
+        scene.onNewSkeletonAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewCameraAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewLightAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewMaterialAddedObservable.removeCallback(this.sceneMutationFunc);
@@ -98,6 +104,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         scene.onNewTextureAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewTransformNodeAddedObservable.removeCallback(this.sceneMutationFunc);
 
+        scene.onSkeletonRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onMeshRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onCameraRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onLightRemovedObservable.removeCallback(this.sceneMutationFunc);
@@ -202,11 +209,31 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             return null;
         }
 
+        if (!this._hooked) {
+            this._hooked = true;
+            scene.onNewSkeletonAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
+
+            scene.onSkeletonRemovedObservable.add(this.sceneMutationFunc);
+            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
+            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
+            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
+            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
+        }
+
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
         let textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
         let postProcessses = scene.postProcesses;
         let pipelines = scene.postProcessRenderPipelineManager.supportedPipelines;
 
+        // Context menus
         let pipelineContextMenus: { label: string, action: () => void }[] = [];
 
         if (scene.activeCamera) {
@@ -217,15 +244,41 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                         let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, [scene.activeCamera!]);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
-                })
+                });
             }
         }
 
+        let nodeContextMenus: { label: string, action: () => void }[] = [];
+        nodeContextMenus.push({
+            label: "Add new point light",
+            action: () => {
+                let newPointLight = new PointLight("point light", Vector3.Zero(), scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newPointLight);
+            }
+        });
+        nodeContextMenus.push({
+            label: "Add new directional light",
+            action: () => {
+                let newDirectionalLight = new DirectionalLight("directional light", new Vector3(1, -1, 1), scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newDirectionalLight);
+            }
+        });
+        nodeContextMenus.push({
+            label: "Add new free camera",
+            action: () => {
+                let newFreeCamera = new FreeCamera("free camera", scene.activeCamera ? scene.activeCamera.globalPosition : new Vector3(0, 0, -5), scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
+            }
+        });
+
         return (
-            <div id="tree">
+            <div id="tree" onContextMenu={e => e.preventDefault()}>
                 <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
-                <SceneTreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
-                <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.rootNodes} label="Nodes" offset={1} filter={this.state.filter} />
+                <SceneTreeItemComponent globalState={this.props.globalState}
+                    extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
+                <TreeItemComponent globalState={this.props.globalState}
+                    contextMenuItems={nodeContextMenus}
+                    extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.rootNodes} label="Nodes" offset={1} filter={this.state.filter} />
                 {
                     scene.skeletons.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.skeletons} label="Skeletons" offset={1} filter={this.state.filter} />
@@ -282,22 +335,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         if (this._once) {
             this._once = false;
-            const scene = this.state.scene;
-
-            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
-
-            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
-            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
-            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
-            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
-
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(() => {
                 const element = document.getElementById("sceneExplorer");

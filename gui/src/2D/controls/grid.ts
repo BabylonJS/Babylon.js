@@ -4,6 +4,7 @@ import { Container } from "./container";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
 import { Measure } from "../measure";
+import { Tools } from 'babylonjs/Misc/tools';
 
 /**
  * Class used to create a 2D grid container
@@ -31,6 +32,11 @@ export class Grid extends Container {
     /** Gets the list of children */
     public get children(): Control[] {
         return this._childControls;
+    }
+
+    /** Gets the list of cells (e.g. the containers) */
+    public get cells(): { [key: string]: Container } {
+        return this._cells;
     }
 
     /**
@@ -276,6 +282,11 @@ export class Grid extends Container {
             this.addColumnDefinition(1, false);
         }
 
+        if (this._childControls.indexOf(control) !== -1) {
+            Tools.Warn(`Control (Name:${control.name}, UniqueId:${control.uniqueId}) is already associated with this grid. You must remove it before reattaching it`);
+            return this;
+        }
+
         let x = Math.min(row, this._rowDefinitions.length - 1);
         let y = Math.min(column, this._columnDefinitions.length - 1);
         let key = `${x}:${y}`;
@@ -315,6 +326,7 @@ export class Grid extends Container {
 
         if (cell) {
             cell.removeControl(control);
+            control._tag = null;
         }
 
         this._markAsDirty();

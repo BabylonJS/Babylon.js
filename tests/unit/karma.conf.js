@@ -1,4 +1,4 @@
-module.exports = function (config) {
+module.exports = function(config) {
     config.set({
         basePath: '../../',
         captureTimeout: 3e5,
@@ -23,6 +23,7 @@ module.exports = function (config) {
             './tests/unit/babylon/src/Loading/babylon.sceneLoader.tests.js',
             './tests/unit/babylon/src/PostProcess/babylon.postProcess.tests.js',
             './tests/unit/babylon/src/Material/babylon.material.tests.js',
+            './tests/unit/babylon/src/Mesh/babylon.dictionaryMode.tests.js',
             './tests/unit/babylon/src/Mesh/babylon.geometry.tests.js',
             './tests/unit/babylon/src/Mesh/babylon.mesh.vertexData.tests.js',
             './tests/unit/babylon/src/Tools/babylon.promise.tests.js',
@@ -47,6 +48,28 @@ module.exports = function (config) {
         // level of logging
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
         logLevel: config.LOG_INFO,
+
+        reporters: ['progress', 'junit'],
+
+        plugins: [
+            'karma-mocha',
+            'karma-chai',
+            'karma-sinon',
+            'karma-chrome-launcher',
+            'karma-firefox-launcher',
+
+            require('../../Tools/Gulp/helpers/gulp-karmaJunitPlugin')
+        ],
+
+        junitReporter: {
+            outputDir: '.temp/testResults', // results will be saved as $outputDir/$browserName.xml
+            outputFile: 'UnitTests.xml', // if included, results will be saved as $outputDir/$browserName/$outputFile
+            suite: 'Unit Tests', // suite will become the package name attribute in xml testsuite element
+            useBrowserName: false, // add browser name to report and classes names
+            nameFormatter: undefined, // function (browser, result) to customize the name attribute in xml testcase element
+            classNameFormatter: undefined, // function (browser, result) to customize the classname attribute in xml testcase element
+            properties: {} // key value pair of properties to add to the <properties> section of the report
+        },
 
         browsers: ['ChromeHeadless']
     })

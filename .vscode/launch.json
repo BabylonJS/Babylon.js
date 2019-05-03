@@ -15,12 +15,6 @@
             ]
         },
         {
-            "name": "Launch nullEngine",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceFolder}/tests/nullEngine/app.js"
-        },
-        {
             "name": "Launch sandbox (Chrome)",
             "type": "chrome",
             "request": "launch",

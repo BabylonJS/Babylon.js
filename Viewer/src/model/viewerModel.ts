@@ -264,7 +264,7 @@ export class ViewerModel implements IDisposable {
                 let ag = new AnimationGroup("animation-" + idx, this._configurationContainer && this._configurationContainer.scene);
                 let add = false;
                 skeleton.getAnimatables().forEach((a) => {
-                    if (a.animations[0]) {
+                    if (a.animations && a.animations[0]) {
                         ag.addTargetedAnimation(a.animations[0], a);
                         add = true;
                     }

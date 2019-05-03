@@ -65,7 +65,7 @@
         gl_FragColor.rgb = surfaceReflectivityColorMap.rgb;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 27 && defined(CLEARCOAT) && defined(CLEARCOAT_TEXTURE)
-        gl_FragColor.rgb = clearCoatMapData.rgb;
+        gl_FragColor.rgb = vec3(clearCoatMapData.rg, 0.0);
     #elif DEBUGMODE == 28 && defined(CLEARCOAT) && defined(CLEARCOAT_TINT) && defined(CLEARCOAT_TINT_TEXTURE)
         gl_FragColor.rgb = clearCoatTintMapData.rgb;
     #elif DEBUGMODE == 29 && defined(SHEEN) && defined(SHEEN_TEXTURE)

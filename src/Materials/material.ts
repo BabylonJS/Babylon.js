@@ -20,6 +20,7 @@ import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
 
 declare type Animation = import("../Animations/animation").Animation;
+declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
 
 declare var BABYLON: any;
 
@@ -213,17 +214,17 @@ export class Material implements IAnimatable {
     /**
      * Callback triggered when the material is compiled
      */
-    public onCompiled: (effect: Effect) => void;
+    public onCompiled: Nullable<(effect: Effect) => void> = null;
 
     /**
      * Callback triggered when an error occurs
      */
-    public onError: (effect: Effect, errors: string) => void;
+    public onError: Nullable<(effect: Effect, errors: string) => void> = null;
 
     /**
      * Callback triggered to get the render target textures
      */
-    public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
+    public getRenderTargetTextures: Nullable<() => SmartArray<RenderTargetTexture>> = null;
 
     /**
      * Gets a boolean indicating that current material needs to register RTT
@@ -245,7 +246,7 @@ export class Material implements IAnimatable {
     /**
      * Stores the animations for the material
      */
-    public animations: Array<Animation>;
+    public animations: Nullable<Array<Animation>> = null;
 
     /**
     * An event triggered when the material is disposed
@@ -255,8 +256,8 @@ export class Material implements IAnimatable {
     /**
      * An observer which watches for dispose events
      */
-    private _onDisposeObserver: Nullable<Observer<Material>>;
-    private _onUnBindObservable: Nullable<Observable<Material>>;
+    private _onDisposeObserver: Nullable<Observer<Material>> = null;
+    private _onUnBindObservable: Nullable<Observable<Material>> = null;
 
     /**
      * Called during a dispose event
@@ -284,7 +285,7 @@ export class Material implements IAnimatable {
     /**
      * An observer which watches for bind events
      */
-    private _onBindObserver: Nullable<Observer<AbstractMesh>>;
+    private _onBindObserver: Nullable<Observer<AbstractMesh>> = null;
 
     /**
      * Called during a bind event
@@ -494,7 +495,7 @@ export class Material implements IAnimatable {
      * @hidden
      * Stores the effects for the material
      */
-    public _effect: Nullable<Effect>;
+    public _effect: Nullable<Effect> = null;
 
     /**
      * @hidden
@@ -505,7 +506,7 @@ export class Material implements IAnimatable {
     /**
      * Specifies if uniform buffers should be used
      */
-    private _useUBO: boolean;
+    private _useUBO: boolean = false;
 
     /**
      * Stores a reference to the scene
@@ -520,7 +521,7 @@ export class Material implements IAnimatable {
     /**
      * Specifies if the depth write state should be cached
      */
-    private _cachedDepthWriteState: boolean;
+    private _cachedDepthWriteState: boolean = false;
 
     /**
      * Stores the uniform buffer
@@ -531,7 +532,7 @@ export class Material implements IAnimatable {
     public _indexInSceneMaterialArray = -1;
 
     /** @hidden */
-    public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }>;
+    public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }> = null;
 
     /**
      * Creates a material instance
@@ -1091,7 +1092,7 @@ export class Material implements IAnimatable {
             else {
                 const meshes = scene.meshes;
                 for (let mesh of meshes) {
-                    if (mesh.material === this) {
+                    if (mesh.material === this && !(mesh as InstancedMesh).sourceMesh) {
                         mesh.material = null;
                         this.releaseVertexArrayObject(mesh, forceDisposeEffect);
                     }
@@ -1104,7 +1105,7 @@ export class Material implements IAnimatable {
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
         if (forceDisposeEffect && this._effect) {
             if (!this._storeEffectOnSubMeshes) {
-                scene.getEngine()._releaseEffect(this._effect);
+                this._effect.dispose();
             }
 
             this._effect = null;
@@ -1127,12 +1128,11 @@ export class Material implements IAnimatable {
     private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
         if ((<Mesh>mesh).geometry) {
             var geometry = <Geometry>((<Mesh>mesh).geometry);
-            const scene = this.getScene();
             if (this._storeEffectOnSubMeshes) {
                 for (var subMesh of mesh.subMeshes) {
                     geometry._releaseVertexArrayObject(subMesh._materialEffect);
                     if (forceDisposeEffect && subMesh._materialEffect) {
-                        scene.getEngine()._releaseEffect(subMesh._materialEffect);
+                        subMesh._materialEffect.dispose();
                     }
                 }
             } else {

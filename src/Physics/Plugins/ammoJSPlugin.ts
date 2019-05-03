@@ -87,6 +87,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         this._tmpAmmoConcreteContactResultCallback = new this.bjsAMMO.ConcreteContactResultCallback();
         this._tmpAmmoConcreteContactResultCallback.addSingleResult = () => { this._tmpContactCallbackResult = true; };
 
+        this._raycastResult = new PhysicsRaycastResult();
+
         // Create temp ammo variables
         this._tmpAmmoTransform = new this.bjsAMMO.btTransform();
         this._tmpAmmoTransform.setIdentity();
@@ -408,7 +410,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 colShape.setActivationState(AmmoJSPlugin.DISABLE_DEACTIVATION_FLAG);
                 this.world.addSoftBody(colShape, 1, -1);
                 impostor.physicsBody = colShape;
-                impostor._pluginData.toDispose.concat([colShape]);
+                impostor._pluginData.toDispose.push(colShape);
                 this.setBodyPressure(impostor, 0);
                 if (impostor.type === PhysicsImpostor.SoftbodyImpostor) {
                     this.setBodyPressure(impostor, impostor.getParam("pressure"));
@@ -445,7 +447,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
                 this.world.addRigidBody(body);
                 impostor.physicsBody = body;
-                impostor._pluginData.toDispose.concat([body, rbInfo, myMotionState, startTransform, localInertia, colShape]);
+                impostor._pluginData.toDispose = impostor._pluginData.toDispose.concat([body, rbInfo, myMotionState, startTransform, localInertia, colShape]);
             }
             this.setBodyRestitution(impostor, impostor.getParam("restitution"));
             this.setBodyFriction(impostor, impostor.getParam("friction"));
@@ -856,6 +858,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             meshChildren.forEach((childMesh) => {
                 var childImpostor = childMesh.getPhysicsImpostor();
                 if (childImpostor) {
+                    if (childImpostor.type == PhysicsImpostor.MeshImpostor) {
+                        throw "A child MeshImpostor is not supported. Only primitive impostors are supported as children (eg. box or sphere)";
+                    }
                     var shape = this._createShape(childImpostor);
 
                     // Position needs to be scaled based on parent's scaling
@@ -910,7 +915,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     // Only create btBvhTriangleMeshShape impostor is static
                     // See https://pybullet.org/Bullet/phpBB3/viewtopic.php?t=7283
                     var tetraMesh = new Ammo.btTriangleMesh();
-                    impostor._pluginData.toDispose.concat([tetraMesh]);
+                    impostor._pluginData.toDispose.push(tetraMesh);
                     var triangeCount = this._addMeshVerts(tetraMesh, object, object);
                     if (triangeCount == 0) {
                         returnValue = new Ammo.btCompoundShape();
@@ -925,7 +930,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 var triangeCount = this._addHullVerts(convexMesh, object, object);
                 if (triangeCount == 0) {
                     // Cleanup Unused Convex Hull Shape
-                    impostor._pluginData.toDispose.concat([convexMesh]);
+                    impostor._pluginData.toDispose.push(convexMesh);
                     returnValue = new Ammo.btCompoundShape();
                 } else {
                     returnValue = convexMesh;
@@ -1064,7 +1069,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         if (!v) {
             return null;
         }
-        return new Vector3(v.x(), v.y(), v.z());
+        var result = new Vector3(v.x(), v.y(), v.z());
+        Ammo.destroy(v);
+        return result;
     }
 
     /**
@@ -1082,7 +1089,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         if (!v) {
             return null;
         }
-        return new Vector3(v.x(), v.y(), v.z());
+        var result = new Vector3(v.x(), v.y(), v.z());
+        Ammo.destroy(v);
+        return result;
     }
 
     /**
@@ -1455,7 +1464,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             );
             this._raycastResult.calculateHitDistance();
         }
-
+        Ammo.destroy(rayCallback);
+        Ammo.destroy(this._tmpAmmoVectorRCA);
+        Ammo.destroy(this._tmpAmmoVectorRCB);
         return this._raycastResult;
     }
 }

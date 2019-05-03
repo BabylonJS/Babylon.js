@@ -294,7 +294,7 @@ export class MaterialHelper {
         var specularEnabled = false;
 
         if (scene.lightsEnabled && !disableLighting) {
-            for (var light of mesh._lightSources) {
+            for (var light of mesh.lightSources) {
                 needNormals = true;
 
                 if (defines["LIGHT" + lightIndex] === undefined) {
@@ -622,11 +622,11 @@ export class MaterialHelper {
      * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      */
     public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false): void {
-        let len = Math.min(mesh._lightSources.length, maxSimultaneousLights);
+        let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
-            let light = mesh._lightSources[i];
+            let light = mesh.lightSources[i];
             let iAsString = i.toString();
 
             let scaledIntensity = light.getScaledIntensity();

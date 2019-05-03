@@ -2,6 +2,7 @@ import { Scene } from "../../scene";
 import { Vector3, Vector4 } from "../../Maths/math";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { RibbonBuilder } from "./ribbonBuilder";
+import { Nullable } from '../../types';
 
 Mesh.CreateLathe = (name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
     var options = {
@@ -39,7 +40,7 @@ export class LatheBuilder {
      * @returns the lathe mesh
      * @see https://doc.babylonjs.com/how_to/parametric_shapes#lathe
      */
-    public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, clip?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, cap?: number, invertUV?: boolean }, scene: Scene): Mesh {
+    public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, clip?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, cap?: number, invertUV?: boolean }, scene: Nullable<Scene> = null): Mesh {
         var arc: number = options.arc ? ((options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc) : 1.0;
         var closed: boolean = (options.closed === undefined) ? true : options.closed;
         var shape = options.shape;
