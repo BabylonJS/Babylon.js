@@ -90,7 +90,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ILineContainerComponentProps {
-        globalState: GlobalState;
+        globalState?: GlobalState;
         title: string;
         children: any[] | any;
         closed?: boolean;
@@ -439,7 +439,8 @@ declare module INSPECTOR {
         texture: BABYLON.BaseTexture;
         width: number;
         height: number;
-        globalState: GlobalState;
+        globalState?: GlobalState;
+        hideChannelSelect?: boolean;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
         displayRed: boolean;
@@ -1287,7 +1288,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IActionTabsComponentProps {
-        scene: BABYLON.Scene;
+        scene?: BABYLON.Scene;
         noCommands?: boolean;
         noHeader?: boolean;
         noExpand?: boolean;
@@ -1295,7 +1296,7 @@ declare module INSPECTOR {
         popupMode?: boolean;
         onPopup?: () => void;
         onClose?: () => void;
-        globalState: GlobalState;
+        globalState?: GlobalState;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;
@@ -1308,7 +1309,7 @@ declare module INSPECTOR {
         componentWillMount(): void;
         componentWillUnmount(): void;
         changeSelectedTab(index: number): void;
-        renderContent(): JSX.Element;
+        renderContent(): JSX.Element | null;
         onClose(): void;
         onPopup(): void;
         render(): JSX.Element;
@@ -1611,6 +1612,9 @@ declare module INSPECTOR {
         private _onPointerObserver;
         private _onSelectionChangeObserver;
         private _selectedEntity;
+        private _posDragEnd;
+        private _scaleDragEnd;
+        private _rotateDragEnd;
         constructor(props: ISceneTreeItemComponentProps);
         shouldComponentUpdate(nextProps: ISceneTreeItemComponentProps, nextState: {
             isSelected: boolean;
@@ -1708,11 +1712,11 @@ declare module INSPECTOR {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        private static _CreatePopup;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         static readonly IsVisible: boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
-        private static _CreateCanvasContainer;
+        static _CreateCanvasContainer(parentControl: HTMLElement): void;
         private static _DestroyCanvasContainer;
         private static _Cleanup;
         private static _RemoveElementFromDOM;

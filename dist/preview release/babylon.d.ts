@@ -22484,6 +22484,7 @@ declare module BABYLON {
         forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{
             clipPlane: boolean;
         }>): Promise<void>;
+        private static readonly _AllDirtyCallBack;
         private static readonly _ImageProcessingDirtyCallBack;
         private static readonly _TextureDirtyCallBack;
         private static readonly _FresnelDirtyCallBack;
@@ -22504,6 +22505,10 @@ declare module BABYLON {
          * @param func defines a function which checks material defines against the submeshes
          */
         protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void): void;
+        /**
+     * Indicates that we need to re-calculated for all submeshes
+     */
+        protected _markAllSubMeshesAsAllDirty(): void;
         /**
          * Indicates that image processing needs to be re-calculated for all submeshes
          */
@@ -49816,7 +49821,68 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-<<<<<<< HEAD
+     * Defines the options related to the creation of an HtmlElementTexture
+     */
+    export interface IHtmlElementTextureOptions {
+        /**
+         * Defines wether mip maps should be created or not.
+         */
+        generateMipMaps?: boolean;
+        /**
+         * Defines the sampling mode of the texture.
+         */
+        samplingMode?: number;
+        /**
+         * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
+         */
+        engine: Nullable<Engine>;
+        /**
+         * Defines the scene the texture belongs to. It is not mandatory if you define an engine.
+         */
+        scene: Nullable<Scene>;
+    }
+    /**
+     * This represents the smallest workload to use an already existing element (Canvas or Video) as a texture.
+     * To be as efficient as possible depending on your constraints nothing aside the first upload
+     * is automatically managed.
+     * It is a cheap VideoTexture or DynamicTexture if you prefer to keep full control of the elements
+     * in your application.
+     *
+     * As the update is not automatic, you need to call them manually.
+     */
+    export class HtmlElementTexture extends BaseTexture {
+        /**
+         * The texture URL.
+         */
+        element: HTMLVideoElement | HTMLCanvasElement;
+        private static readonly DefaultOptions;
+        private _textureMatrix;
+        private _engine;
+        private _isVideo;
+        private _generateMipMaps;
+        private _samplingMode;
+        /**
+         * Instantiates a HtmlElementTexture from the following parameters.
+         *
+         * @param name Defines the name of the texture
+         * @param element Defines the video or canvas the texture is filled with
+         * @param options Defines the other none mandatory texture creation options
+         */
+        constructor(name: string, element: HTMLVideoElement | HTMLCanvasElement, options: IHtmlElementTextureOptions);
+        private _createInternalTexture;
+        /**
+         * Returns the texture matrix used in most of the material.
+         */
+        getTextureMatrix(): Matrix;
+        /**
+         * Updates the content of the texture.
+         * @param invertY Defines wether the texture should be inverted on Y (false by default on video and true on canvas)
+         */
+        update(invertY?: Nullable<boolean>): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Enum used to define the target of a block
      */
     export enum NodeMaterialBlockTargets {
@@ -50128,11 +50194,11 @@ declare module BABYLON {
         /**
          * Gets or sets the root nodes of the material vertex shader
          */
-        private _vertexOutputNodes;
+        _vertexOutputNodes: NodeMaterialBlock[];
         /**
          * Gets or sets the root nodes of the material fragment (pixel) shader
          */
-        private _fragmentOutputNodes;
+        _fragmentOutputNodes: NodeMaterialBlock[];
         /** Gets or sets options to control the node material overall behavior */
         options: INodeMaterialOptions;
         /**
@@ -50269,9 +50335,9 @@ declare module BABYLON {
         private _target;
         private _isFinalMerger;
         /** @hidden */
-        protected _inputs: NodeMaterialConnectionPoint[];
+        _inputs: NodeMaterialConnectionPoint[];
         /** @hidden */
-        protected _outputs: NodeMaterialConnectionPoint[];
+        _outputs: NodeMaterialConnectionPoint[];
         /**
          * Gets or sets the name of the block
          */
@@ -50422,8 +50488,8 @@ declare module BABYLON {
      * Defines a connection point for a block
      */
     export class NodeMaterialConnectionPoint {
-        private _ownerBlock;
-        private _connectedPoint;
+        _ownerBlock: NodeMaterialBlock;
+        _connectedPoint: Nullable<NodeMaterialConnectionPoint>;
         private _associatedVariableName;
         private _endpoints;
         private _storedValue;
@@ -50869,71 +50935,10 @@ declare module BABYLON {
          */
         readonly input: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-=======
-     * Defines the options related to the creation of an HtmlElementTexture
-     */
-    export interface IHtmlElementTextureOptions {
-        /**
-         * Defines wether mip maps should be created or not.
-         */
-        generateMipMaps?: boolean;
-        /**
-         * Defines the sampling mode of the texture.
-         */
-        samplingMode?: number;
-        /**
-         * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
-         */
-        engine: Nullable<Engine>;
-        /**
-         * Defines the scene the texture belongs to. It is not mandatory if you define an engine.
-         */
-        scene: Nullable<Scene>;
-    }
-    /**
-     * This represents the smallest workload to use an already existing element (Canvas or Video) as a texture.
-     * To be as efficient as possible depending on your constraints nothing aside the first upload
-     * is automatically managed.
-     * It is a cheap VideoTexture or DynamicTexture if you prefer to keep full control of the elements
-     * in your application.
-     *
-     * As the update is not automatic, you need to call them manually.
-     */
-    export class HtmlElementTexture extends BaseTexture {
-        /**
-         * The texture URL.
-         */
-        element: HTMLVideoElement | HTMLCanvasElement;
-        private static readonly DefaultOptions;
-        private _textureMatrix;
-        private _engine;
-        private _isVideo;
-        private _generateMipMaps;
-        private _samplingMode;
-        /**
-         * Instantiates a HtmlElementTexture from the following parameters.
-         *
-         * @param name Defines the name of the texture
-         * @param element Defines the video or canvas the texture is filled with
-         * @param options Defines the other none mandatory texture creation options
-         */
-        constructor(name: string, element: HTMLVideoElement | HTMLCanvasElement, options: IHtmlElementTextureOptions);
-        private _createInternalTexture;
-        /**
-         * Returns the texture matrix used in most of the material.
-         */
-        getTextureMatrix(): Matrix;
-        /**
-         * Updates the content of the texture.
-         * @param invertY Defines wether the texture should be inverted on Y (false by default on video and true on canvas)
-         */
-        update(invertY?: Nullable<boolean>): void;
->>>>>>> e0d205794def4ad96793ee06bf383169b9adecd1
     }
 }
 declare module BABYLON {
     /**
-<<<<<<< HEAD
      * Block used to read a texture from a sampler
      */
     export class TextureBlock extends NodeMaterialBlock {
@@ -51251,7 +51256,10 @@ declare module BABYLON {
          */
         getClassName(): string;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-=======
+    }
+}
+declare module BABYLON {
+    /**
      * Helper class to push actions to a pool of workers.
      */
     export class WorkerPool implements IDisposable {
@@ -51273,7 +51281,6 @@ declare module BABYLON {
          */
         push(action: (worker: Worker, onComplete: () => void) => void): void;
         private _execute;
->>>>>>> e0d205794def4ad96793ee06bf383169b9adecd1
     }
 }
 declare module BABYLON {
