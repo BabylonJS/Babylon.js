@@ -13,6 +13,11 @@ const config = require("../../Config/config.js");
  */
 function prepareEs6DevPackages() {
     config.es6modules.forEach(moduleName => {
+        if (moduleName === "viewer") {
+            // Do not publish locally as an es6 npm linked module
+            return;
+        }
+
         const module = config[moduleName];
 
         colorConsole.log("Prepare " + "ES6Dev".magenta + " Package: " + moduleName.blue.bold);
