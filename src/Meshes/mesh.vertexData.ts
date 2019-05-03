@@ -791,6 +791,35 @@ export class VertexData {
     }
 
     /**
+     * Creates the VertexData for a tiled box
+     * @param options an object used to set the following optional parameters for the box, required but can be empty
+      * * faceTiles sets the pattern, tile size and number of tiles for a face
+      * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+      * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * @returns the VertexData of the box
+     */
+    public static CreateTiledBox(options: { pattern?: number, width?: number, height?: number, depth?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, alignHorizontal?: number, alignVertical?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData {
+        throw _DevTools.WarnImport("tiledBoxBuilder");
+    }
+
+    /**
+     * Creates the VertexData for a tiled plane
+     * @param options an object used to set the following optional parameters for the box, required but can be empty
+      * * pattern a limited pattern arrangement depending on the number
+      * * tileSize sets the width, height and depth of the tile to the value of size, optional default 1
+      * * tileWidth sets the width (x direction) of the tile, overwrites the width set by size, optional, default size
+      * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
+      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @returns the VertexData of the tiled plane
+     */
+    public static CreateTiledPlane(options: { pattern?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, size?: number, width?: number, height?: number, alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+        throw _DevTools.WarnImport("tiledPlaneBuilder");
+    }
+
+    /**
      * Creates the VertexData for an ellipsoid, defaults to a sphere
      * @param options an object used to set the following optional parameters for the box, required but can be empty
       * * segments sets the number of horizontal strips optional, default 32

@@ -104,7 +104,7 @@ export class Texture extends BaseTexture {
      * Define the url of the texture.
      */
     @serialize()
-    public url: Nullable<string>;
+    public url: Nullable<string> = null;
 
     /**
      * Define an offset on the texture to offset the u coordinates of the UVs
@@ -184,37 +184,37 @@ export class Texture extends BaseTexture {
      * List of inspectable custom properties (used by the Inspector)
      * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
      */
-    public inspectableCustomProperties: IInspectable[];
+    public inspectableCustomProperties: Nullable<IInspectable[]> = null;
 
-    private _noMipmap: boolean;
+    private _noMipmap: boolean = false;
     /** @hidden */
-    public _invertY: boolean;
-    private _rowGenerationMatrix: Matrix;
-    private _cachedTextureMatrix: Matrix;
-    private _projectionModeMatrix: Matrix;
-    private _t0: Vector3;
-    private _t1: Vector3;
-    private _t2: Vector3;
+    public _invertY: boolean = false;
+    private _rowGenerationMatrix: Nullable<Matrix> = null;
+    private _cachedTextureMatrix: Nullable<Matrix> = null;
+    private _projectionModeMatrix: Nullable<Matrix> = null;
+    private _t0: Nullable<Vector3> = null;
+    private _t1: Nullable<Vector3> = null;
+    private _t2: Nullable<Vector3> = null;
 
-    private _cachedUOffset: number;
-    private _cachedVOffset: number;
-    private _cachedUScale: number;
-    private _cachedVScale: number;
-    private _cachedUAng: number;
-    private _cachedVAng: number;
-    private _cachedWAng: number;
-    private _cachedProjectionMatrixId: number;
-    private _cachedCoordinatesMode: number;
+    private _cachedUOffset: number = -1;
+    private _cachedVOffset: number = -1;
+    private _cachedUScale: number = 0;
+    private _cachedVScale: number = 0;
+    private _cachedUAng: number = -1;
+    private _cachedVAng: number = -1;
+    private _cachedWAng: number = -1;
+    private _cachedProjectionMatrixId: number = -1;
+    private _cachedCoordinatesMode: number = -1;
 
     /** @hidden */
     protected _initialSamplingMode = Texture.BILINEAR_SAMPLINGMODE;
 
     /** @hidden */
-    public _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
-    private _deleteBuffer: boolean;
-    protected _format: Nullable<number>;
-    private _delayedOnLoad: Nullable<() => void>;
-    private _delayedOnError: Nullable<() => void>;
+    public _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null;
+    private _deleteBuffer: boolean = false;
+    protected _format: Nullable<number> = null;
+    private _delayedOnLoad: Nullable<() => void> = null;
+    private _delayedOnError: Nullable<() => void> = null;
 
     /**
      * Observable triggered once the texture has been loaded.
@@ -400,7 +400,7 @@ export class Texture extends BaseTexture {
         y -= this.vRotationCenter * this.vScale;
         z -= this.wRotationCenter;
 
-        Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, this._rowGenerationMatrix, t);
+        Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, this._rowGenerationMatrix!, t);
 
         t.x += this.uRotationCenter * this.uScale + this.uOffset;
         t.y += this.vRotationCenter * this.vScale + this.vOffset;
@@ -420,7 +420,7 @@ export class Texture extends BaseTexture {
             this.uAng === this._cachedUAng &&
             this.vAng === this._cachedVAng &&
             this.wAng === this._cachedWAng) {
-            return this._cachedTextureMatrix;
+            return this._cachedTextureMatrix!;
         }
 
         this._cachedUOffset = this.uOffset;
@@ -439,19 +439,19 @@ export class Texture extends BaseTexture {
             this._t2 = Vector3.Zero();
         }
 
-        Matrix.RotationYawPitchRollToRef(this.vAng, this.uAng, this.wAng, this._rowGenerationMatrix);
+        Matrix.RotationYawPitchRollToRef(this.vAng, this.uAng, this.wAng, this._rowGenerationMatrix!);
 
-        this._prepareRowForTextureGeneration(0, 0, 0, this._t0);
-        this._prepareRowForTextureGeneration(1.0, 0, 0, this._t1);
-        this._prepareRowForTextureGeneration(0, 1.0, 0, this._t2);
+        this._prepareRowForTextureGeneration(0, 0, 0, this._t0!);
+        this._prepareRowForTextureGeneration(1.0, 0, 0, this._t1!);
+        this._prepareRowForTextureGeneration(0, 1.0, 0, this._t2!);
 
-        this._t1.subtractInPlace(this._t0);
-        this._t2.subtractInPlace(this._t0);
+        this._t1!.subtractInPlace(this._t0!);
+        this._t2!.subtractInPlace(this._t0!);
 
         Matrix.FromValuesToRef(
-            this._t1.x, this._t1.y, this._t1.z, 0.0,
-            this._t2.x, this._t2.y, this._t2.z, 0.0,
-            this._t0.x, this._t0.y, this._t0.z, 0.0,
+            this._t1!.x, this._t1!.y, this._t1!.z, 0.0,
+            this._t2!.x, this._t2!.y, this._t2!.z, 0.0,
+            this._t0!.x, this._t0!.y, this._t0!.z, 0.0,
             0.0, 0.0, 0.0, 1.0,
             this._cachedTextureMatrix
         );
@@ -477,7 +477,7 @@ export class Texture extends BaseTexture {
         let scene = this.getScene();
 
         if (!scene) {
-            return this._cachedTextureMatrix;
+            return this._cachedTextureMatrix!;
         }
 
         if (
@@ -488,10 +488,10 @@ export class Texture extends BaseTexture {
             this.coordinatesMode === this._cachedCoordinatesMode) {
             if (this.coordinatesMode === Texture.PROJECTION_MODE) {
                 if (this._cachedProjectionMatrixId === scene.getProjectionMatrix().updateFlag) {
-                    return this._cachedTextureMatrix;
+                    return this._cachedTextureMatrix!;
                 }
             } else {
-                return this._cachedTextureMatrix;
+                return this._cachedTextureMatrix!;
             }
         }
 

@@ -4,13 +4,13 @@ import { PropertyChangedEvent } from "../../../components/propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface ITextInputLineComponentProps {
-    label: string,
-    lockObject: LockObject,
-    target?: any,
-    propertyName?: string,
-    value?: string,
-    onChange?: (value: string) => void,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    label: string;
+    lockObject: LockObject;
+    target?: any;
+    propertyName?: string;
+    value?: string;
+    onChange?: (value: string) => void;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string }> {

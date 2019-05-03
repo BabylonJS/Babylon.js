@@ -6,6 +6,7 @@ import { SerializationHelper, serialize, expandToProperty } from "../../Misc/dec
 export interface IMaterialBRDFDefines {
     BRDF_V_HEIGHT_CORRELATED: boolean;
     MS_BRDF_ENERGY_CONSERVATION: boolean;
+    SPHERICAL_HARMONICS: boolean;
 
     /** @hidden */
     _areMiscDirty: boolean;
@@ -28,6 +29,13 @@ export class PBRBRDFConfiguration {
      */
     public static DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED = true;
 
+    /**
+     * Default value used for the IBL diffuse part.
+     * This can help switching back to the polynomials mode globally which is a tiny bit
+     * less GPU intensive at the drawback of a lower quality.
+     */
+    public static DEFAULT_USE_SPHERICAL_HARMONICS = true;
+
     @serialize()
     private _useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
     /**
@@ -48,6 +56,18 @@ export class PBRBRDFConfiguration {
      */
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
     public useSmithVisibilityHeightCorrelated = PBRBRDFConfiguration.DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED;
+
+    @serialize()
+    private _useSphericalHarmonics = PBRBRDFConfiguration.DEFAULT_USE_SPHERICAL_HARMONICS;
+    /**
+     * LEGACY Mode set to false
+     * Defines if the material uses spherical harmonics vs spherical polynomials for the
+     * diffuse part of the IBL.
+     * The harmonics despite a tiny bigger cost has been proven to provide closer results
+     * to the ground truth.
+     */
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public useSphericalHarmonics = PBRBRDFConfiguration.DEFAULT_USE_SPHERICAL_HARMONICS;
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsMiscDirty: () => void;
@@ -72,6 +92,7 @@ export class PBRBRDFConfiguration {
     public prepareDefines(defines: IMaterialBRDFDefines): void {
         defines.BRDF_V_HEIGHT_CORRELATED = this._useSmithVisibilityHeightCorrelated;
         defines.MS_BRDF_ENERGY_CONSERVATION = this._useEnergyConservation && this._useSmithVisibilityHeightCorrelated;
+        defines.SPHERICAL_HARMONICS = this._useSphericalHarmonics;
     }
 
     /**
@@ -79,7 +100,7 @@ export class PBRBRDFConfiguration {
     * @returns "PBRClearCoatConfiguration"
     */
     public getClassName(): string {
-        return "PBRClearCoatConfiguration";
+        return "PBRBRDFConfiguration";
     }
 
     /**

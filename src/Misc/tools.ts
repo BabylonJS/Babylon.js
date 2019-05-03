@@ -44,7 +44,7 @@ export interface IAnimatable {
     /**
      * Array of animations
      */
-    animations: Array<Animation>;
+    animations: Nullable<Array<Animation>>;
 }
 
 /** Interface used by value gradients (color, factor, ...) */
@@ -1460,6 +1460,17 @@ export class Tools {
         }
 
         return bufferView.buffer;
+    }
+
+    /**
+     * Gets the absolute url.
+     * @param url the input url
+     * @return the absolute url
+     */
+    public static GetAbsoluteUrl(url: string): string {
+        const a = document.createElement("a");
+        a.href = url;
+        return a.href;
     }
 
     // Logs

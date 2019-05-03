@@ -34,7 +34,7 @@ export class DeviceOrientationCamera extends FreeCamera {
         // When the orientation sensor fires it's first event, disable mouse input
         if (this.inputs._deviceOrientationInput) {
             this.inputs._deviceOrientationInput._onDeviceOrientationChangedObservable.addOnce(() => {
-                if (this.disablePointerInputWhenUsingDeviceOrientation) {
+                if (this._disablePointerInputWhenUsingDeviceOrientation) {
                     if (this.inputs._mouseInput) {
                         this.inputs._mouseInput._allowCameraRotation = false;
                         this.inputs._mouseInput.onPointerMovedObservable.add((e) => {
@@ -54,9 +54,10 @@ export class DeviceOrientationCamera extends FreeCamera {
     }
 
     /**
+     * @hidden
      * Disabled pointer input on first orientation sensor update (Default: true)
      */
-    public disablePointerInputWhenUsingDeviceOrientation = true;
+    public _disablePointerInputWhenUsingDeviceOrientation = true;
     private _dragFactor = 0;
     /**
      * Enabled turning on the y axis when the orientation sensor is active

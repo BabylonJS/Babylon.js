@@ -11,6 +11,8 @@ import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
 
+import "../Engines/Extensions/engine.renderTarget";
+
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
 
@@ -561,6 +563,7 @@ export class EnvironmentTextureTools {
             // Release temp RTT.
             if (cubeRtt) {
                 engine._releaseFramebufferObjects(cubeRtt);
+                engine._releaseTexture(texture);
                 cubeRtt._swapAndDie(texture);
             }
             // Release temp Post Process.

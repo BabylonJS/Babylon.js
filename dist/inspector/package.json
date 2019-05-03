@@ -1,0 +1,43 @@
+{
+    "author": {
+        "name": "David CATUHE"
+    },
+    "name": "babylonjs-inspector",
+    "description": "The Babylon.js inspector.",
+    "version": "4.0.3",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "main": "babylon.inspector.bundle.js",
+    "files": [
+        "babylon.inspector.bundle.max.js",
+        "babylon.inspector.bundle.max.js.map",
+        "babylon.inspector.bundle.js",
+        "babylon.inspector.module.d.ts",
+        "readme.md",
+        "package.json"
+    ],
+    "typings": "babylon.inspector.module.d.ts",
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylonjs",
+        "inspector"
+    ],
+    "license": "Apache-2.0",
+    "dependencies": {
+        "@types/react": "~16.7.3",
+        "@types/react-dom": "~16.0.9",
+        "babylonjs": "4.0.3",
+        "babylonjs-gui": "4.0.3",
+        "babylonjs-loaders": "4.0.3",
+        "babylonjs-serializers": "4.0.3",
+        "babylonjs-gltf2interface": "4.0.3"
+    },
+    "engines": {
+        "node": "*"
+    }
+}

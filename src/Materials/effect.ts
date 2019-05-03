@@ -4,6 +4,9 @@ import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math
 import { Constants } from "../Engines/constants";
 import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
+import { IDisposable } from '../scene';
+import { IPipelineContext } from '../Engines/IPipelineContext';
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -21,7 +24,7 @@ export class EffectFallbacks {
     private _currentRank = 32;
     private _maxRank = -1;
 
-    private _mesh: Nullable<AbstractMesh>;
+    private _mesh: Nullable<AbstractMesh> = null;
 
     /**
      * Removes the fallback from the bound mesh.
@@ -181,7 +184,7 @@ export class EffectCreationOptions {
 /**
  * Effect containing vertex and fragment shader that can be executed on an object.
  */
-export class Effect {
+export class Effect implements IDisposable {
     /**
      * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
      */
@@ -189,23 +192,23 @@ export class Effect {
     /**
      * Name of the effect.
      */
-    public name: any;
+    public name: any = null;
     /**
      * String container all the define statements that should be set on the shader.
      */
-    public defines: string;
+    public defines: string = "";
     /**
      * Callback that will be called when the shader is compiled.
      */
-    public onCompiled: Nullable<(effect: Effect) => void>;
+    public onCompiled: Nullable<(effect: Effect) => void> = null;
     /**
      * Callback that will be called if an error occurs during shader compilation.
      */
-    public onError: Nullable<(effect: Effect, errors: string) => void>;
+    public onError: Nullable<(effect: Effect, errors: string) => void> = null;
     /**
      * Callback that will be called when effect is bound.
      */
-    public onBind: Nullable<(effect: Effect) => void>;
+    public onBind: Nullable<(effect: Effect) => void> = null;
     /**
      * Unique ID of the effect.
      */
@@ -221,7 +224,7 @@ export class Effect {
     public onErrorObservable = new Observable<Effect>();
 
     /** @hidden */
-    public _onBindObservable: Nullable<Observable<Effect>>;
+    public _onBindObservable: Nullable<Observable<Effect>> = null;
 
     /**
      * Observable that will be called when effect is bound.
@@ -241,31 +244,32 @@ export class Effect {
     private _engine: Engine;
     private _uniformBuffersNames: { [key: string]: number } = {};
     private _uniformsNames: string[];
-    private _samplers: string[];
+    private _samplerList: string[];
+    private _samplers: { [key: string]: number } = {};
     private _isReady = false;
     private _compilationError = "";
     private _attributesNames: string[];
     private _attributes: number[];
-    private _uniforms: Nullable<WebGLUniformLocation>[];
+    private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> } = {};
     /**
      * Key for the effect.
      * @hidden
      */
-    public _key: string;
+    public _key: string = "";
     private _indexParameters: any;
-    private _fallbacks: Nullable<EffectFallbacks>;
-    private _vertexSourceCode: string;
-    private _fragmentSourceCode: string;
-    private _vertexSourceCodeOverride: string;
-    private _fragmentSourceCodeOverride: string;
-    private _transformFeedbackVaryings: Nullable<string[]>;
+    private _fallbacks: Nullable<EffectFallbacks> = null;
+    private _vertexSourceCode: string = "";
+    private _fragmentSourceCode: string = "";
+    private _vertexSourceCodeOverride: string = "";
+    private _fragmentSourceCodeOverride: string = "";
+    private _transformFeedbackVaryings: Nullable<string[]> = null;
     /**
      * Compiled shader to webGL program.
      * @hidden
      */
-    public _program: WebGLProgram;
-    private _valueCache: { [key: string]: any };
-    private static _baseCache: { [key: number]: WebGLBuffer } = {};
+    public _pipelineContext: Nullable<IPipelineContext> = null;
+    private _valueCache: { [key: string]: any } = {};
+    private static _baseCache: { [key: number]: DataBuffer } = {};
 
     /**
      * Instantiates an effect.
@@ -291,7 +295,7 @@ export class Effect {
 
             this._attributesNames = options.attributes;
             this._uniformsNames = options.uniformsNames.concat(options.samplers);
-            this._samplers = options.samplers.slice();
+            this._samplerList = options.samplers.slice();
             this.defines = options.defines;
             this.onError = options.onError;
             this.onCompiled = options.onCompiled;
@@ -308,7 +312,7 @@ export class Effect {
             this._engine = <Engine>engine;
             this.defines = (defines == null ? "" : defines);
             this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
-            this._samplers = samplers ? <string[]>samplers.slice() : [];
+            this._samplerList = samplers ? <string[]>samplers.slice() : [];
             this._attributesNames = (<string[]>attributesNamesOrOptions);
 
             this.onError = onError;
@@ -384,10 +388,13 @@ export class Effect {
      * @returns if the effect is compiled and prepared.
      */
     public isReady(): boolean {
-        if (!this._isReady && this._program && this._program.isParallelCompiled) {
-            return this._engine._isProgramCompiled(this._program);
+        if (this._isReady) {
+            return true;
         }
-        return this._isReady;
+        if (this._pipelineContext) {
+            return this._pipelineContext.isReady;
+        }
+        return false;
     }
 
     /**
@@ -399,11 +406,11 @@ export class Effect {
     }
 
     /**
-     * The compiled webGL program for the effect
-     * @returns the webGL program.
+     * The pipeline context for this effect
+     * @returns the associated pipeline context
      */
-    public getProgram(): WebGLProgram {
-        return this._program;
+    public getPipelineContext(): Nullable<IPipelineContext> {
+        return this._pipelineContext;
     }
 
     /**
@@ -457,7 +464,7 @@ export class Effect {
      * @returns the location of the uniform.
      */
     public getUniform(uniformName: string): Nullable<WebGLUniformLocation> {
-        return this._uniforms[this._uniformsNames.indexOf(uniformName)];
+        return this._uniforms[uniformName];
     }
 
     /**
@@ -465,7 +472,7 @@ export class Effect {
      * @returns The array of sampler variable neames.
      */
     public getSamplers(): string[] {
-        return this._samplers;
+        return this._samplerList;
     }
 
     /**
@@ -490,7 +497,7 @@ export class Effect {
             func(effect);
         });
 
-        if (!this._program || this._program.isParallelCompiled) {
+        if (!this._pipelineContext || this._pipelineContext.isAsync) {
             setTimeout(() => {
                 this._checkIsReady();
             }, 16);
@@ -645,7 +652,7 @@ export class Effect {
         // #extension GL_EXT_shader_texture_lod : enable
         // #extension GL_EXT_frag_depth : enable
         // #extension GL_EXT_draw_buffers : require
-        var regex = /#extension.+(GL_OVR_multiview|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
+        var regex = /#extension.+(GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
         var result = preparedSourceCode.replace(regex, "");
 
         // Migrate to GLSL v300
@@ -667,7 +674,7 @@ export class Effect {
         // Add multiview setup to top of file when defined
         var hasMultiviewExtension = this.defines.indexOf("#define MULTIVIEW\n") !== -1;
         if (hasMultiviewExtension && !isFragment) {
-            result = "#extension GL_OVR_multiview : require\nlayout (num_views = 2) in;\n" + result;
+            result = "#extension GL_OVR_multiview2 : require\nlayout (num_views = 2) in;\n" + result;
         }
 
         callback(result);
@@ -784,7 +791,7 @@ export class Effect {
      * @param onError Callback called on error.
      * @hidden
      */
-    public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) {
+    public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) {
         this._isReady = false;
 
         this._vertexSourceCodeOverride = vertexSourceCode;
@@ -800,22 +807,10 @@ export class Effect {
                 scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
             }
 
-            if (onCompiled) {
-                onCompiled(this._program);
-            }
+            this._pipelineContext!._handlesSpectorRebuildCallback(onCompiled);
         };
         this._fallbacks = null;
         this._prepareEffect();
-    }
-
-    /**
-     * Gets the uniform locations of the the specified variable names
-     * @param names THe names of the variables to lookup.
-     * @returns Array of locations in the same order as variable names.
-     */
-    public getSpecificUniformLocations(names: string[]): Nullable<WebGLUniformLocation>[] {
-        let engine = this._engine;
-        return engine.getUniforms(this._program, names);
     }
 
     /**
@@ -828,38 +823,48 @@ export class Effect {
         let fallbacks = this._fallbacks;
         this._valueCache = {};
 
-        var previousProgram = this._program;
+        var previousPipelineContext = this._pipelineContext;
 
         try {
             let engine = this._engine;
 
+            this._pipelineContext = engine.createPipelineContext();
+
+            let rebuildRebind = this._rebuildProgram.bind(this);
             if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
-                this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
+                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, true, rebuildRebind, null, this._transformFeedbackVaryings);
             }
             else {
-                this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines, undefined, this._transformFeedbackVaryings);
+                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCode, this._fragmentSourceCode, false, rebuildRebind, defines, this._transformFeedbackVaryings);
             }
-            this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
 
-            engine._executeWhenProgramIsCompiled(this._program, () => {
+            engine._executeWhenRenderingStateIsCompiled(this._pipelineContext, () => {
                 if (engine.supportsUniformBuffers) {
                     for (var name in this._uniformBuffersNames) {
                         this.bindUniformBlock(name, this._uniformBuffersNames[name]);
                     }
                 }
 
-                this._uniforms = engine.getUniforms(this._program, this._uniformsNames);
-                this._attributes = engine.getAttributes(this._program, attributesNames);
+                let uniforms = engine.getUniforms(this._pipelineContext!, this._uniformsNames);
+                uniforms.forEach((uniform, index) => {
+                    this._uniforms[this._uniformsNames[index]] = uniform;
+                });
+
+                this._attributes = engine.getAttributes(this._pipelineContext!, attributesNames);
 
                 var index: number;
-                for (index = 0; index < this._samplers.length; index++) {
-                    var sampler = this.getUniform(this._samplers[index]);
+                for (index = 0; index < this._samplerList.length; index++) {
+                    var sampler = this.getUniform(this._samplerList[index]);
 
                     if (sampler == null) {
-                        this._samplers.splice(index, 1);
+                        this._samplerList.splice(index, 1);
                         index--;
                     }
                 }
+
+                this._samplerList.forEach((name, index) => {
+                    this._samplers[name] = index;
+                });
 
                 engine.bindSamplers(this);
 
@@ -876,12 +881,12 @@ export class Effect {
                     this._fallbacks.unBindMesh();
                 }
 
-                if (previousProgram) {
-                    this.getEngine()._deleteProgram(previousProgram);
+                if (previousPipelineContext) {
+                    this.getEngine()._deletePipelineContext(previousPipelineContext);
                 }
             });
 
-            if (this._program.isParallelCompiled) {
+            if (this._pipelineContext.isAsync) {
                 this._checkIsReady();
             }
 
@@ -897,8 +902,8 @@ export class Effect {
                 return " " + attribute;
             }));
             Logger.Error("Error: " + this._compilationError);
-            if (previousProgram) {
-                this._program = previousProgram;
+            if (previousPipelineContext) {
+                this._pipelineContext = previousPipelineContext;
                 this._isReady = true;
                 if (this.onError) {
                     this.onError(this, this._compilationError);
@@ -940,7 +945,7 @@ export class Effect {
      * @hidden
      */
     public _bindTexture(channel: string, texture: InternalTexture): void {
-        this._engine._bindTexture(this._samplers.indexOf(channel), texture);
+        this._engine._bindTexture(this._samplers[channel], texture);
     }
 
     /**
@@ -949,7 +954,7 @@ export class Effect {
      * @param texture Texture to set.
      */
     public setTexture(channel: string, texture: Nullable<BaseTexture>): void {
-        this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
+        this._engine.setTexture(this._samplers[channel], this._uniforms[channel], texture);
     }
 
     /**
@@ -958,7 +963,7 @@ export class Effect {
      * @param texture Texture to set.
      */
     public setDepthStencilTexture(channel: string, texture: Nullable<RenderTargetTexture>): void {
-        this._engine.setDepthStencilTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
+        this._engine.setDepthStencilTexture(this._samplers[channel], this._uniforms[channel], texture);
     }
 
     /**
@@ -967,14 +972,16 @@ export class Effect {
      * @param textures Textures to set.
      */
     public setTextureArray(channel: string, textures: BaseTexture[]): void {
-        if (this._samplers.indexOf(channel + "Ex") === -1) {
-            var initialPos = this._samplers.indexOf(channel);
+        let exName = channel + "Ex";
+        if (this._samplerList.indexOf(exName) === -1) {
+            var initialPos = this._samplers[channel];
             for (var index = 1; index < textures.length; index++) {
-                this._samplers.splice(initialPos + index, 0, channel + "Ex");
+                this._samplerList.splice(initialPos + index, 0, exName);
+                this._samplers[exName] = initialPos + index;
             }
         }
 
-        this._engine.setTextureArray(this._samplers.indexOf(channel), this.getUniform(channel), textures);
+        this._engine.setTextureArray(this._samplers[channel], this._uniforms[channel], textures);
     }
 
     /**
@@ -983,7 +990,7 @@ export class Effect {
      * @param postProcess Post process to get the input texture from.
      */
     public setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void {
-        this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
+        this._engine.setTextureFromPostProcess(this._samplers[channel], postProcess);
     }
 
     /**
@@ -993,7 +1000,7 @@ export class Effect {
      * @param postProcess Post process to get the output texture from.
      */
     public setTextureFromPostProcessOutput(channel: string, postProcess: Nullable<PostProcess>): void {
-        this._engine.setTextureFromPostProcessOutput(this._samplers.indexOf(channel), postProcess);
+        this._engine.setTextureFromPostProcessOutput(this._samplers[channel], postProcess);
     }
 
     /** @hidden */
@@ -1092,7 +1099,7 @@ export class Effect {
      * @param buffer Buffer to bind.
      * @param name Name of the uniform variable to bind to.
      */
-    public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
+    public bindUniformBuffer(buffer: DataBuffer, name: string): void {
         let bufferName = this._uniformBuffersNames[name];
         if (bufferName === undefined || Effect._baseCache[bufferName] === buffer) {
             return;
@@ -1107,7 +1114,7 @@ export class Effect {
      * @param index Index to bind.
      */
     public bindUniformBlock(blockName: string, index: number): void {
-        this._engine.bindUniformBlock(this._program, blockName, index);
+        this._engine.bindUniformBlock(this._pipelineContext!, blockName, index);
     }
 
     /**
@@ -1124,7 +1131,7 @@ export class Effect {
 
         this._valueCache[uniformName] = value;
 
-        this._engine.setInt(this.getUniform(uniformName), value);
+        this._engine.setInt(this._uniforms[uniformName], value);
 
         return this;
     }
@@ -1137,7 +1144,7 @@ export class Effect {
      */
     public setIntArray(uniformName: string, array: Int32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setIntArray(this.getUniform(uniformName), array);
+        this._engine.setIntArray(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1150,7 +1157,7 @@ export class Effect {
      */
     public setIntArray2(uniformName: string, array: Int32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setIntArray2(this.getUniform(uniformName), array);
+        this._engine.setIntArray2(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1163,7 +1170,7 @@ export class Effect {
      */
     public setIntArray3(uniformName: string, array: Int32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setIntArray3(this.getUniform(uniformName), array);
+        this._engine.setIntArray3(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1176,7 +1183,7 @@ export class Effect {
      */
     public setIntArray4(uniformName: string, array: Int32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setIntArray4(this.getUniform(uniformName), array);
+        this._engine.setIntArray4(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1189,7 +1196,7 @@ export class Effect {
      */
     public setFloatArray(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray(this.getUniform(uniformName), array);
+        this._engine.setFloatArray(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1202,7 +1209,7 @@ export class Effect {
      */
     public setFloatArray2(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray2(this.getUniform(uniformName), array);
+        this._engine.setFloatArray2(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1215,7 +1222,7 @@ export class Effect {
      */
     public setFloatArray3(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray3(this.getUniform(uniformName), array);
+        this._engine.setFloatArray3(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1228,7 +1235,7 @@ export class Effect {
      */
     public setFloatArray4(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray4(this.getUniform(uniformName), array);
+        this._engine.setFloatArray4(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1241,7 +1248,7 @@ export class Effect {
      */
     public setArray(uniformName: string, array: number[]): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setArray(this.getUniform(uniformName), array);
+        this._engine.setArray(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1254,7 +1261,7 @@ export class Effect {
      */
     public setArray2(uniformName: string, array: number[]): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setArray2(this.getUniform(uniformName), array);
+        this._engine.setArray2(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1267,7 +1274,7 @@ export class Effect {
      */
     public setArray3(uniformName: string, array: number[]): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setArray3(this.getUniform(uniformName), array);
+        this._engine.setArray3(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1280,7 +1287,7 @@ export class Effect {
      */
     public setArray4(uniformName: string, array: number[]): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setArray4(this.getUniform(uniformName), array);
+        this._engine.setArray4(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1297,7 +1304,7 @@ export class Effect {
         }
 
         this._valueCache[uniformName] = null;
-        this._engine.setMatrices(this.getUniform(uniformName), matrices);
+        this._engine.setMatrices(this._uniforms[uniformName], matrices);
 
         return this;
     }
@@ -1310,7 +1317,7 @@ export class Effect {
      */
     public setMatrix(uniformName: string, matrix: Matrix): Effect {
         if (this._cacheMatrix(uniformName, matrix)) {
-            this._engine.setMatrix(this.getUniform(uniformName), matrix);
+            this._engine.setMatrix(this._uniforms[uniformName], matrix);
         }
         return this;
     }
@@ -1323,7 +1330,7 @@ export class Effect {
      */
     public setMatrix3x3(uniformName: string, matrix: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setMatrix3x3(this.getUniform(uniformName), matrix);
+        this._engine.setMatrix3x3(this._uniforms[uniformName], matrix);
 
         return this;
     }
@@ -1336,7 +1343,7 @@ export class Effect {
      */
     public setMatrix2x2(uniformName: string, matrix: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setMatrix2x2(this.getUniform(uniformName), matrix);
+        this._engine.setMatrix2x2(this._uniforms[uniformName], matrix);
 
         return this;
     }
@@ -1355,7 +1362,7 @@ export class Effect {
 
         this._valueCache[uniformName] = value;
 
-        this._engine.setFloat(this.getUniform(uniformName), value);
+        this._engine.setFloat(this._uniforms[uniformName], value);
 
         return this;
     }
@@ -1374,7 +1381,7 @@ export class Effect {
 
         this._valueCache[uniformName] = bool;
 
-        this._engine.setBool(this.getUniform(uniformName), bool ? 1 : 0);
+        this._engine.setBool(this._uniforms[uniformName], bool ? 1 : 0);
 
         return this;
     }
@@ -1387,7 +1394,7 @@ export class Effect {
      */
     public setVector2(uniformName: string, vector2: Vector2): Effect {
         if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
-            this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
+            this._engine.setFloat2(this._uniforms[uniformName], vector2.x, vector2.y);
         }
         return this;
     }
@@ -1401,7 +1408,7 @@ export class Effect {
      */
     public setFloat2(uniformName: string, x: number, y: number): Effect {
         if (this._cacheFloat2(uniformName, x, y)) {
-            this._engine.setFloat2(this.getUniform(uniformName), x, y);
+            this._engine.setFloat2(this._uniforms[uniformName], x, y);
         }
         return this;
     }
@@ -1414,7 +1421,7 @@ export class Effect {
      */
     public setVector3(uniformName: string, vector3: Vector3): Effect {
         if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
-            this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
+            this._engine.setFloat3(this._uniforms[uniformName], vector3.x, vector3.y, vector3.z);
         }
         return this;
     }
@@ -1429,7 +1436,7 @@ export class Effect {
      */
     public setFloat3(uniformName: string, x: number, y: number, z: number): Effect {
         if (this._cacheFloat3(uniformName, x, y, z)) {
-            this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
+            this._engine.setFloat3(this._uniforms[uniformName], x, y, z);
         }
         return this;
     }
@@ -1442,7 +1449,7 @@ export class Effect {
      */
     public setVector4(uniformName: string, vector4: Vector4): Effect {
         if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
-            this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
+            this._engine.setFloat4(this._uniforms[uniformName], vector4.x, vector4.y, vector4.z, vector4.w);
         }
         return this;
     }
@@ -1458,7 +1465,7 @@ export class Effect {
      */
     public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
         if (this._cacheFloat4(uniformName, x, y, z, w)) {
-            this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
+            this._engine.setFloat4(this._uniforms[uniformName], x, y, z, w);
         }
         return this;
     }
@@ -1472,7 +1479,7 @@ export class Effect {
     public setColor3(uniformName: string, color3: Color3): Effect {
 
         if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
-            this._engine.setColor3(this.getUniform(uniformName), color3);
+            this._engine.setColor3(this._uniforms[uniformName], color3);
         }
         return this;
     }
@@ -1486,7 +1493,7 @@ export class Effect {
      */
     public setColor4(uniformName: string, color3: Color3, alpha: number): Effect {
         if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
-            this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
+            this._engine.setColor4(this._uniforms[uniformName], color3, alpha);
         }
         return this;
     }
@@ -1499,9 +1506,14 @@ export class Effect {
      */
     public setDirectColor4(uniformName: string, color4: Color4): Effect {
         if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
-            this._engine.setDirectColor4(this.getUniform(uniformName), color4);
+            this._engine.setDirectColor4(this._uniforms[uniformName], color4);
         }
         return this;
+    }
+
+    /** Release all associated resources */
+    public dispose() {
+        this._engine._releaseEffect(this);
     }
 
     /**

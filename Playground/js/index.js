@@ -626,14 +626,14 @@ function showError(errorMessage, errorEvent) {
 
                     if (scene) {
                         if (showInspector) {
-                            if(scene.then){
+                            if (scene.then) {
                                 // Handle if scene is a promise
-                                scene.then((s)=>{
+                                scene.then(function(s) {
                                     if (!s.debugLayer.isVisible()) {
                                         s.debugLayer.show({ embedMode: true });
                                     }
                                 })
-                            }else{
+                            } else {
                                 if (!scene.debugLayer.isVisible()) {
                                     scene.debugLayer.show({ embedMode: true });
                                 }
@@ -848,6 +848,13 @@ function showError(errorMessage, errorEvent) {
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 
+        showQRCode = function() {
+            $("#qrCodeImage").empty();
+            var playgroundCode = window.location.href.split("#");
+            playgroundCode.shift();
+            $("#qrCodeImage").qrcode({text: "https://playground.babylonjs.com/frame.html#"+(playgroundCode.join("#"))});
+        };
+
         // Fullscreen
         document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function() {
             if (document.webkitIsFullScreen) goFullPage();
@@ -976,7 +983,7 @@ function showError(errorMessage, errorEvent) {
         }
 
         var formatCode = function() {
-            jsEditor.getAction('editor.action.format').run();
+            jsEditor.getAction('editor.action.formatDocument').run();
         }
 
         var toggleMinimap = function() {

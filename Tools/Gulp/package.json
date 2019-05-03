@@ -1,6 +1,6 @@
 {
     "name": "babylonjs",
-    "version": "3.3.0",
+    "version": "0.0.0",
     "description": "Babylon.js is a 3D engine based on webgl and javascript",
     "main": "",
     "repository": {
@@ -12,8 +12,5 @@
         "install": "cd ../../ && npm install && cd Playground/ && npm install && cd ../Viewer && npm install && cd ../Tools/Gulp/",
         "build": "gulp --max-old-space-size=8192 --tsLintFix",
         "start": "gulp run --max-old-space-size=8192"
-    },
-    "dependencies": {
-        "typescript": "^3.3.3333"
     }
 }
