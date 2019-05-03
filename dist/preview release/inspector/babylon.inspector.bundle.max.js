@@ -39820,6 +39820,26 @@ var HeaderComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/propertyChangedEvent.ts":
+/*!********************************************!*\
+  !*** ./components/propertyChangedEvent.ts ***!
+  \********************************************/
+/*! exports provided: PropertyChangedEvent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PropertyChangedEvent", function() { return PropertyChangedEvent; });
+var PropertyChangedEvent = /** @class */ (function () {
+    function PropertyChangedEvent() {
+    }
+    return PropertyChangedEvent;
+}());
+
+
+
+/***/ }),
+
 /***/ "./components/replayRecorder.ts":
 /*!**************************************!*\
   !*** ./components/replayRecorder.ts ***!
@@ -40458,6 +40478,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../components/propertyChangedEvent */ "./components/propertyChangedEvent.ts");
+
 
 
 
@@ -40470,6 +40492,9 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneTreeItemComponent, _super);
     function SceneTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._posDragEnd = null;
+        _this._scaleDragEnd = null;
+        _this._rotateDragEnd = null;
         var scene = _this.props.scene;
         var gizmoMode = 0;
         if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
@@ -40630,12 +40655,74 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
             switch (mode) {
                 case 1:
                     manager.positionGizmoEnabled = true;
+                    if (!this._posDragEnd) {
+                        // Record movement for generating replay code
+                        this._posDragEnd = manager.gizmos.positionGizmo.onDragEndObservable.add(function () {
+                            if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedMesh) {
+                                var lightGizmo = manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var obj = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedMesh;
+                                if (obj.position) {
+                                    var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
+                                    e.object = obj;
+                                    e.property = "position";
+                                    e.value = obj.position;
+                                    _this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                            }
+                        });
+                    }
                     break;
                 case 2:
                     manager.rotationGizmoEnabled = true;
+                    if (!this._rotateDragEnd) {
+                        // Record movement for generating replay code
+                        this._rotateDragEnd = manager.gizmos.rotationGizmo.onDragEndObservable.add(function () {
+                            if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedMesh) {
+                                var lightGizmo = manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var obj = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedMesh;
+                                if (obj.rotationQuaternion) {
+                                    var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
+                                    e.object = obj;
+                                    e.property = "rotationQuaternion";
+                                    e.value = obj.rotationQuaternion;
+                                    _this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                                else if (obj.rotation) {
+                                    var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
+                                    e.object = obj;
+                                    e.property = "rotation";
+                                    e.value = obj.rotation;
+                                    _this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                                else if (obj.direction) {
+                                    var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
+                                    e.object = obj;
+                                    e.property = "direction";
+                                    e.value = obj.direction;
+                                    _this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                            }
+                        });
+                    }
                     break;
                 case 3:
                     manager.scaleGizmoEnabled = true;
+                    if (!this._scaleDragEnd) {
+                        // Record movement for generating replay code
+                        this._scaleDragEnd = manager.gizmos.scaleGizmo.onDragEndObservable.add(function () {
+                            if (manager.gizmos.scaleGizmo && manager.gizmos.scaleGizmo.attachedMesh) {
+                                var lightGizmo = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var obj = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.scaleGizmo.attachedMesh;
+                                if (obj.scaling) {
+                                    var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
+                                    e.object = obj;
+                                    e.property = "scaling";
+                                    e.value = obj.scaling;
+                                    _this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                            }
+                        });
+                    }
                     break;
                 case 4:
                     manager.boundingBoxGizmoEnabled = true;
@@ -41134,7 +41221,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         nodeContextMenus.push({
             label: "Add new directional light",
             action: function () {
-                var newDirectionalLight = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["DirectionalLight"]("directional light", new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"](1, -1, 1), scene);
+                var newDirectionalLight = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["DirectionalLight"]("directional light", new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"](-1, -1, -0.5), scene);
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newDirectionalLight);
             }
         });

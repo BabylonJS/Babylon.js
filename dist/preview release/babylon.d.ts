@@ -460,6 +460,16 @@ declare module BABYLON {
          */
         toLinearSpace(): Color3;
         /**
+         * Converts current color in rgb space to HSV values
+         * @returns a new color3 representing the HSV values
+         */
+        toHSV(): Color3;
+        /**
+         * Converts current color in rgb space to HSV values
+         * @param result defines the Color3 where to store the HSV values
+         */
+        toHSVToRef(result: Color3): void;
+        /**
          * Converts the Color3 values to linear space and stores the result in "convertedColor"
          * @param convertedColor defines the Color3 object where to store the linear space version
          * @returns the unmodified Color3
@@ -477,6 +487,14 @@ declare module BABYLON {
          */
         toGammaSpaceToRef(convertedColor: Color3): Color3;
         private static _BlackReadOnly;
+        /**
+         * Convert Hue, saturation and value to a Color3 (RGB)
+         * @param hue defines the hue
+         * @param saturation defines the saturation
+         * @param value defines the value
+         * @param result defines the Color3 where to store the RGB values
+         */
+        static HSVtoRGBToRef(hue: number, saturation: number, value: number, result: Color3): void;
         /**
          * Creates a new Color3 from the string containing valid hexadecimal values
          * @param hex defines a string containing valid hexadecimal values
@@ -54711,9 +54729,19 @@ declare module BABYLON {
          */
         depthOfFieldBlurWidth: number;
         /**
-         * For motion blur, defines how much the image is blurred by the movement
+         * Gets how much the image is blurred by the movement while using the motion blur post-process
          */
+        /**
+        * Sets how much the image is blurred by the movement while using the motion blur post-process
+        */
         motionStrength: number;
+        /**
+         * Gets wether or not the motion blur post-process is object based or screen based.
+         */
+        /**
+        * Sets wether or not the motion blur post-process should be object based or screen based
+        */
+        objectBasedMotionBlur: boolean;
         /**
          * List of animations for the pipeline (IAnimatable implementation)
          */
@@ -54728,6 +54756,8 @@ declare module BABYLON {
         private _currentExposure;
         private _hdrAutoExposure;
         private _hdrCurrentLuminance;
+        private _motionStrength;
+        private _isObjectBasedMotionBlur;
         private _floatTextureType;
         private _ratio;
         private _bloomEnabled;
