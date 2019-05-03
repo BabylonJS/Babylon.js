@@ -13,7 +13,8 @@ interface ITextureLineComponentProps {
     texture: BaseTexture;
     width: number;
     height: number;
-    globalState: GlobalState;
+    globalState?: GlobalState;
+    hideChannelSelect?:boolean;
 }
 
 export class TextureLineComponent extends React.Component<ITextureLineComponentProps, { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }> {
@@ -43,6 +44,11 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
     updatePreview() {
         var texture = this.props.texture;
+        if(!texture.isReady() && texture._texture){
+            texture._texture.onLoadedObservable.addOnce(()=>{
+                this.updatePreview();
+            })
+        }
         var scene = texture.getScene()!;
         var engine = scene.getEngine();
         var size = texture.getSize();
@@ -72,7 +78,10 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
         const previewCanvas = this.refs.canvas as HTMLCanvasElement;
 
-        this.props.globalState.blockMutationUpdates = true;
+        if(this.props.globalState){
+            this.props.globalState.blockMutationUpdates = true;
+        }
+        
         let rtt = new RenderTargetTexture(
             "temp",
             { width: width, height: height },
@@ -156,7 +165,10 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         passPostProcess.dispose();
 
         previewCanvas.style.height = height + "px";
-        this.props.globalState.blockMutationUpdates = false;
+        if(this.props.globalState){
+            this.props.globalState.blockMutationUpdates = false;
+        }
+        
     }
 
     render() {
@@ -165,7 +177,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         return (
             <div className="textureLine">
                 {
-                    texture.isCube &&
+                    !this.props.hideChannelSelect && texture.isCube &&
                     <div className="control3D">
                         <button className={this.state.face === 0 ? "px command selected" : "px command"} onClick={() => this.setState({ face: 0 })}>PX</button>
                         <button className={this.state.face === 1 ? "nx command selected" : "nx command"} onClick={() => this.setState({ face: 1 })}>NX</button>
@@ -176,7 +188,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                     </div>
                 }
                 {
-                    !texture.isCube &&
+                    !this.props.hideChannelSelect && !texture.isCube &&
                     <div className="control">
                         <button className={this.state.displayRed && !this.state.displayGreen ? "red command selected" : "red command"} onClick={() => this.setState({ displayRed: true, displayGreen: false, displayBlue: false, displayAlpha: false })}>R</button>
                         <button className={this.state.displayGreen && !this.state.displayBlue ? "green command selected" : "green command"} onClick={() => this.setState({ displayRed: false, displayGreen: true, displayBlue: false, displayAlpha: false })}>G</button>
