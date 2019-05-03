@@ -3,28 +3,26 @@ import { Nullable } from 'babylonjs/types';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { GenericNodeModel } from './genericNodeModel';
 
-
+/**
+ * Port model for the generic node
+ */
 export class GenericPortModel extends PortModel {
-	position: string | "input" | "output";
-	connection: Nullable<NodeMaterialConnectionPoint> = null;
+	/**
+	 * If the port is input or output
+	 */
+	public position: string | "input" | "output";
+	/**
+	 * What the port is connected to
+	 */
+	public connection: Nullable<NodeMaterialConnectionPoint> = null;
+
+	
 	static idCounter = 0;
 
 	constructor(name:string, type: string = "input") {
-		//(""+GenericPortModel.idCounter)
 		super(name, "generic");
 		this.position = type;
 		GenericPortModel.idCounter++;
-		// this.addListener({
-		// 	selectionChanged: ()=>{
-		// 		console.log("change")
-		// 	},
-		// 	lockChanged: ()=>{
-		// 		console.log("lock")
-		// 	},
-		// 	entityRemoved: ()=>{
-		// 		console.log("rem")
-		// 	}
-		// })
 	}
 
 	syncWithNodeMaterialConnectionPoint(connection:NodeMaterialConnectionPoint){
@@ -36,24 +34,8 @@ export class GenericPortModel extends PortModel {
 		return this.parent as GenericNodeModel
 	}
 
-	// serialize() {
-	// 	return _.merge(super.serialize(), {
-	// 		position: this.position
-	// 	});
-	// }
-
-	// deSerialize(data: any, engine: DiagramEngine) {
-	// 	super.deSerialize(data, engine);
-	// 	this.position = data.position;
-	// }
-
 	link(outPort:GenericPortModel){
 		var link = this.createLinkModel()
-		// link.addListener({
-		// 	selectionChanged: ()=>{
-		// 		console.log("hit")
-		// 	}
-		// })
 		link.setSourcePort(this)
 		link.setTargetPort(outPort)
 		return link;
