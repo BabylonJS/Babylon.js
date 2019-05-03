@@ -2,10 +2,10 @@ import * as React from "react";
 import { PortWidget } from "storm-react-diagrams";
 import { GenericNodeModel } from './genericNodeModel';
 import { GenericPortModel } from './genericPortModel';
-import {TextureLineComponent} from "../../../../../inspector/src/components/actionTabs/lines/textureLineComponent"
-import {FileButtonLineComponent} from "../../../../../inspector/src/components/actionTabs/lines/fileButtonLineComponent"
-import { Vector2LineComponent } from '../../../../../inspector/src/components/actionTabs/lines/vector2LineComponent';
-import { Vector3LineComponent } from '../../../../../inspector/src/components/actionTabs/lines/vector3LineComponent';
+import {TextureLineComponent} from "../../../sharedComponents/textureLineComponent"
+import {FileButtonLineComponent} from "../../../sharedComponents/fileButtonLineComponent"
+import { Vector2LineComponent } from '../../../sharedComponents/vector2LineComponent';
+import { Vector3LineComponent } from '../../../sharedComponents/vector3LineComponent';
 import { Nullable } from 'babylonjs/types';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { Engine } from 'babylonjs/Engines/engine';
