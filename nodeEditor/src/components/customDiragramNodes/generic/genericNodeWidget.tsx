@@ -11,38 +11,46 @@ import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { Engine } from 'babylonjs/Engines/engine';
 import { Tools } from 'babylonjs/Misc/tools';
 
+/**
+ * GenericNodeWidgetProps
+ */
 export interface GenericNodeWidgetProps {
 	node: Nullable<GenericNodeModel>;
 }
 
+/**
+ * GenericNodeWidgetState
+ */
 export interface GenericNodeWidgetState {}
 
-
+/**
+ * Used to display a node block for the node editor
+ */
 export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, GenericNodeWidgetState> {
-
+	/**
+	 * Creates a GenericNodeWidget
+	 * @param props 
+	 */
 	constructor(props: GenericNodeWidgetProps) {
 		super(props);
 		this.state = {}
 	}
 
-	// componentDidUpdate() {
-	// 	this.updateTexture()
-	// }
-
-	// componentDidMount() {
-	// 	this.updateTexture()
-	// }
-
-
+	/**
+	 * Replaces the texture of the node
+	 * @param file the file of the texture to use
+	 */
 	replaceTexture(file: File) {
 		if(!this.props.node){
 			return;
 		}
+
 		let texture = this.props.node.texture as Texture;
 		if(!texture){
 			this.props.node.texture = new Texture(null, Engine.LastCreatedScene)
 			texture = this.props.node.texture;
 		}
+
         Tools.ReadFile(file, (data) => {
             var blob = new Blob([data], { type: "octet/stream" });
             var url = URL.createObjectURL(blob);
@@ -80,6 +88,7 @@ export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, G
 				if(port.position == "input"){
 					var control = <div></div>
 
+					// Color of the connection
 					var color = "black"
 					if(port.connection){
 						if(port.connection.isAttribute){
@@ -118,6 +127,7 @@ export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, G
 				
 			}
 
+			// Display the view depending on the value type of the node
 			if(this.props.node.texture){
 				value = (
 					<div>
