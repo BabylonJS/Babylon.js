@@ -37,33 +37,37 @@ import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
 import { Vector2TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector2TransformBlock';
 import { Vector3TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector3TransformBlock';
 import { Vector4TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector4TransformBlock';
-//require("../../../inspector/src/components/actionTabs/actionTabs.scss");
+
 require("storm-react-diagrams/dist/style.min.css");
+
 /*
-Data vs View
-NodeMaterialBlock = GenericNodeModel
-NodeMaterialConnectionPoint = GenericPortModel (Connection is a LinkModel, which is a built in react-storm type)
+Graph Editor Overview
 
-You can only access data from view, view is not accessible from data
+Storm React setup:
+GenericNodeModel - Represents the nodes in the graph and can be any node type (eg. texture, vector2, etc)
+GenericNodeWidget - Renders the node model in the graph 
+GenericPortModel - Represents the input/output of a node (contained within each GenericNodeModel)
 
-Traversing data to create view is done in createNodeFromObject method
+Generating/modifying the graph:
+Generating node graph - the createNodeFromObject method is used to recursively create the graph
+Modifications to the graph - The listener in the constructor of GraphEditor listens for port changes and updates the node material based on changes
+Saving the graph/generating code - Not yet done
 */
-
-
-
-
 
 interface IGraphEditorProps {
     globalState: GlobalState;
 }
 
 export class GraphEditor extends React.Component<IGraphEditorProps> {
-    engine:DiagramEngine;
-    model: DiagramModel;
+    private _engine:DiagramEngine;
+    private _model: DiagramModel;
 
-    nodes = new Array<any>();
+    private _nodes = new Array<GenericNodeModel>();
 
-    rowPos = new Array<number>()
+    /**
+     * Current row/column position used when adding new nodes
+     */
+    private _rowPos = new Array<number>()
     
     /**
      * Creates a node and recursivly creates its parent nodes from it's input
@@ -76,17 +80,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
     ){
         // Update rows/columns
-        if(this.rowPos[options.column] == undefined){
-            this.rowPos[options.column] = 0;
+        if(this._rowPos[options.column] == undefined){
+            this._rowPos[options.column] = 0;
         }else{
-            this.rowPos[options.column]++;
+            this._rowPos[options.column]++;
         }
 
         // Create new node in the graph
         var outputNode = new GenericNodeModel();
-        this.nodes.push(outputNode)
-        outputNode.setPosition(1600-(300*options.column), 200*this.rowPos[options.column])
-        this.model.addAll(outputNode);
+        this._nodes.push(outputNode)
+        outputNode.setPosition(1600-(300*options.column), 200*this._rowPos[options.column])
+        this._model.addAll(outputNode);
 
         if(options.nodeMaterialBlock){
             outputNode.block = options.nodeMaterialBlock
@@ -108,7 +112,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 if(connection._connectedPoint){
                     // Block is not a leaf node, create node for the given block type
                     var connectedNode;
-                    var existingNodes = this.nodes.filter((n)=>{return n.block == (connection as any)._connectedPoint._ownerBlock});
+                    var existingNodes = this._nodes.filter((n)=>{return n.block == (connection as any)._connectedPoint._ownerBlock});
                     if(existingNodes.length == 0){
                         connectedNode = this.createNodeFromObject({column: options.column+1, nodeMaterialBlock: connection._connectedPoint._ownerBlock});
                     }else{
@@ -116,7 +120,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     }
            
                     let link = connectedNode.ports[connection._connectedPoint.name].link(inputPort);
-                    this.model.addAll(link);
+                    this._model.addAll(link);
                     
                 }else {
                     // Create value node for the connection
@@ -138,14 +142,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     var ports = localNode.getPorts()
                     for(var key in ports){
                         let link = (ports[key] as GenericPortModel).link(inputPort);
-                        this.model.addAll(link);
+                        this._model.addAll(link);
                     }
                 }
             })
         }
         
-        
-    
         return outputNode;
     }
 
@@ -166,18 +168,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
     constructor(props: IGraphEditorProps) {
         super(props);
-        
 
         // setup the diagram engine
-        this.engine = new DiagramEngine();
-        this.engine.installDefaultFactories()
-        this.engine.registerNodeFactory(new GenericNodeFactory());
+        this._engine = new DiagramEngine();
+        this._engine.installDefaultFactories()
+        this._engine.registerNodeFactory(new GenericNodeFactory());
 
         // setup the diagram model
-        this.model = new DiagramModel();
+        this._model = new DiagramModel();
 
         // Listen to events to connect/disconnect blocks or
-        this.model.addListener({
+        this._model.addListener({
             linksUpdated: (e)=>{
                 if(!e.isCreated){
                     // Link is deleted
@@ -250,10 +251,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         // Zoom out a bit at the start
-        this.model.setZoomLevel(20)
+        this._model.setZoomLevel(20)
 
         // load model into engine
-        this.engine.setDiagramModel(this.model);
+        this._engine.setDiagramModel(this._model);
     }
 
     addNodeFromClass(ObjectClass:typeof NodeMaterialBlock){
@@ -266,7 +267,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         // This is needed to fix link offsets when created, (eg. create a fog block)
         // Todo figure out how to correct this without this
         setTimeout(() => {
-            widget.startFiringAction(new MoveCanvasAction(1,0, this.model));
+            widget.startFiringAction(new MoveCanvasAction(1,0, this._model));
         }, 500);
 
         return localNode
@@ -375,7 +376,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 </div>
                 
                 {/* The node graph diagram */}
-                <DiagramWidget deleteKeys={[46]} ref={"test"} inverseZoom={true} className="srd-demo-canvas" diagramEngine={this.engine} maxNumberPointsPerLink={0} />
+                <DiagramWidget deleteKeys={[46]} ref={"test"} inverseZoom={true} className="srd-demo-canvas" diagramEngine={this._engine} maxNumberPointsPerLink={0} />
             </div>
         );
 
