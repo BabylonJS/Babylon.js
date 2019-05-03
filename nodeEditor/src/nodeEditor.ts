@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { GlobalState } from './globalState';
 import { GraphEditor } from './components/graphEditor';
-import {NodeMaterial} from "babylonjs"
+import {NodeMaterial} from "babylonjs/Materials/Node/nodeMaterial"
 import {Inspector} from "../../inspector/src"
 /**
  * Interface used to specify creation options for the node editor
