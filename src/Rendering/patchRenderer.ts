@@ -75,7 +75,7 @@ declare module "../meshes/submesh" {
 // Scene.prototype.disableGeometryBufferRenderer = function(): void {
 
 export class PatchRenderer {
-    public static PERFORMANCE_LOGS_LEVEL : number = 2;
+    public static PERFORMANCE_LOGS_LEVEL : number = 1;
     public static RADIOSITY_INFO_LOGS_LEVEL : number = 1;
     public static WARNING_LOGS : number = 1;
 
@@ -91,6 +91,8 @@ export class PatchRenderer {
     private _near: number;
     private _far: number;
     private _texelSize: number;
+    private _frameBuffer0: WebGLFramebuffer;
+    private _frameBuffer1: WebGLFramebuffer;
 
     // private _patches: Patch[] = [];
     private _patchOffset: number = 0;
@@ -144,6 +146,8 @@ export class PatchRenderer {
         // this.createMaps();
 
         scene.getEngine().disableTextureBindingOptimization = true;
+        this._frameBuffer0 = <WebGLFramebuffer>(scene.getEngine()._gl.createFramebuffer());
+        this._frameBuffer1 = <WebGLFramebuffer>(scene.getEngine()._gl.createFramebuffer());
 
         // this.createHTScene();
     }
@@ -453,7 +457,7 @@ export class PatchRenderer {
                 7,
                 this._scene,
                 {
-                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST],
+                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST],
                     types: [Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT],
                     generateMipMaps: true
                 }
@@ -551,7 +555,7 @@ export class PatchRenderer {
         engine.setDirectViewport(0, 0, destResidualTexture.width, destResidualTexture.height);
         engine.setState(false); // TODO : no BFC ?
         var gl = engine._gl;
-        let fb = gl.createFramebuffer();
+        let fb = this._frameBuffer0;
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
         gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, destResidualTexture._webGLTexture, 0);
@@ -843,7 +847,7 @@ export class PatchRenderer {
         engine.enableEffect(this._dilateEffect);
         engine.setState(false);
         let gl = engine._gl;
-        let fb = gl.createFramebuffer();
+        let fb = this._frameBuffer1;
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb)
         gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, (<InternalTexture>dest._texture)._webGLTexture, 0);
 

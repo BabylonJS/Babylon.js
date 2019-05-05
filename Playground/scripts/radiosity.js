@@ -144,12 +144,12 @@ var createScene = function() {
         var observer;
         observer = scene.onAfterRenderTargetsRenderObservable.add(() => {
             frameCount++;
-            if (false && (frameCount % 60) === 0) {
+            if (true && (frameCount % 60) === 0) {
                 engine.stopRenderLoop();
                 var energyLeft = pr.gatherRadiosity();
                 engine.runRenderLoop(renderLoop);
 
-                if (!energyLeft || passes > 10) {
+                if (!energyLeft || passes > 6) {
                     console.log("Converged ! ");
                     scene.onAfterRenderTargetsRenderObservable.remove(observer);
                 }
