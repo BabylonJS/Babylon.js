@@ -117,7 +117,9 @@
                             "namespace": "BABYLON.Debug"
                         }
                     ],
-                    "hiddenConsts": ["Debug"]
+                    "hiddenConsts": [
+                        "Debug"
+                    ]
                 },
                 "requiredFiles": [
                     "readme.md"
