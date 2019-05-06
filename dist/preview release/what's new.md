@@ -12,6 +12,9 @@
 ### Meshes
 - Added new CreateTiledPlane and CreateTiledBox ([JohnK](https://github.com/BabylonJSGuide/))
 
+### Tools
+- Added `ShadowGenerator.onAfterShadowMapRenderObservable` and `ShadowGenerator.onAfterShadowMapMeshRenderObservable` ([Deltakosh](https://github.com/deltakosh/))
+
 ## Bug fixes
 
 ## Breaking changes
