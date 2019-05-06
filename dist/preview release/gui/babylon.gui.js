@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -1859,7 +1859,7 @@ var ColorPicker = /** @class */ (function (_super) {
                 return;
             }
             this._value.copyFrom(value);
-            this._RGBtoHSV(this._value, this._tmpColor);
+            this._value.toHSVToRef(this._tmpColor);
             this._h = this._tmpColor.r;
             this._s = Math.max(this._tmpColor.g, 0.00001);
             this._v = Math.max(this._tmpColor.b, 0.00001);
@@ -2004,7 +2004,7 @@ var ColorPicker = /** @class */ (function (_super) {
                 }
                 var dist = Math.sqrt(distSq);
                 var ang = Math.atan2(y, x);
-                this._HSVtoRGB(ang * 180 / Math.PI + 180, dist / radius, 1, color);
+                babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].HSVtoRGBToRef(ang * 180 / Math.PI + 180, dist / radius, 1, color);
                 var index = ((x + radius) + ((y + radius) * 2 * radius)) * 4;
                 data[index] = color.r * 255;
                 data[index + 1] = color.g * 255;
@@ -2039,72 +2039,6 @@ var ColorPicker = /** @class */ (function (_super) {
         }
         context.putImageData(image, 0, 0);
         return canvas;
-    };
-    ColorPicker.prototype._RGBtoHSV = function (color, result) {
-        var r = color.r;
-        var g = color.g;
-        var b = color.b;
-        var max = Math.max(r, g, b);
-        var min = Math.min(r, g, b);
-        var h = 0;
-        var s = 0;
-        var v = max;
-        var dm = max - min;
-        if (max !== 0) {
-            s = dm / max;
-        }
-        if (max != min) {
-            if (max == r) {
-                h = (g - b) / dm;
-                if (g < b) {
-                    h += 6;
-                }
-            }
-            else if (max == g) {
-                h = (b - r) / dm + 2;
-            }
-            else if (max == b) {
-                h = (r - g) / dm + 4;
-            }
-            h *= 60;
-        }
-        result.r = h;
-        result.g = s;
-        result.b = v;
-    };
-    ColorPicker.prototype._HSVtoRGB = function (hue, saturation, value, result) {
-        var chroma = value * saturation;
-        var h = hue / 60;
-        var x = chroma * (1 - Math.abs((h % 2) - 1));
-        var r = 0;
-        var g = 0;
-        var b = 0;
-        if (h >= 0 && h <= 1) {
-            r = chroma;
-            g = x;
-        }
-        else if (h >= 1 && h <= 2) {
-            r = x;
-            g = chroma;
-        }
-        else if (h >= 2 && h <= 3) {
-            g = chroma;
-            b = x;
-        }
-        else if (h >= 3 && h <= 4) {
-            g = x;
-            b = chroma;
-        }
-        else if (h >= 4 && h <= 5) {
-            r = x;
-            b = chroma;
-        }
-        else if (h >= 5 && h <= 6) {
-            r = chroma;
-            b = x;
-        }
-        var m = value - chroma;
-        result.set((r + m), (g + m), (b + m));
     };
     /** @hidden */
     ColorPicker.prototype._draw = function (context) {
@@ -2157,7 +2091,7 @@ var ColorPicker = /** @class */ (function (_super) {
             this._v = Math.min(this._v, 1);
             this._v = Math.max(this._v, ColorPicker._Epsilon);
         }
-        this._HSVtoRGB(this._h, this._s, this._v, this._tmpColor);
+        babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].HSVtoRGBToRef(this._h, this._s, this._v, this._tmpColor);
         this.value = this._tmpColor;
     };
     ColorPicker.prototype._isPointOnSquare = function (x, y) {

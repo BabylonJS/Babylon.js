@@ -48,7 +48,7 @@ export class ColorPicker extends Control {
 
         this._value.copyFrom(value);
 
-        this._RGBtoHSV(this._value, this._tmpColor);
+        this._value.toHSVToRef(this._tmpColor);
 
         this._h = this._tmpColor.r;
         this._s = Math.max(this._tmpColor.g, 0.00001);
@@ -222,7 +222,7 @@ export class ColorPicker extends Control {
                 var dist = Math.sqrt(distSq);
                 var ang = Math.atan2(y, x);
 
-                this._HSVtoRGB(ang * 180 / Math.PI + 180, dist / radius, 1, color);
+                Color3.HSVtoRGBToRef(ang * 180 / Math.PI + 180, dist / radius, 1, color);
 
                 var index = ((x + radius) + ((y + radius) * 2 * radius)) * 4;
 
@@ -262,74 +262,6 @@ export class ColorPicker extends Control {
         context.putImageData(image, 0, 0);
 
         return canvas;
-    }
-
-    private _RGBtoHSV(color: Color3, result: Color3) {
-        var r = color.r;
-        var g = color.g;
-        var b = color.b;
-
-        var max = Math.max(r, g, b);
-        var min = Math.min(r, g, b);
-        var h = 0;
-        var s = 0;
-        var v = max;
-
-        var dm = max - min;
-
-        if (max !== 0) {
-            s = dm / max;
-        }
-
-        if (max != min) {
-            if (max == r) {
-                h = (g - b) / dm;
-                if (g < b) {
-                    h += 6;
-                }
-            } else if (max == g) {
-                h = (b - r) / dm + 2;
-            } else if (max == b) {
-                h = (r - g) / dm + 4;
-            }
-            h *= 60;
-        }
-
-        result.r = h;
-        result.g = s;
-        result.b = v;
-    }
-
-    private _HSVtoRGB(hue: number, saturation: number, value: number, result: Color3) {
-        var chroma = value * saturation;
-        var h = hue / 60;
-        var x = chroma * (1 - Math.abs((h % 2) - 1));
-        var r = 0;
-        var g = 0;
-        var b = 0;
-
-        if (h >= 0 && h <= 1) {
-            r = chroma;
-            g = x;
-        } else if (h >= 1 && h <= 2) {
-            r = x;
-            g = chroma;
-        } else if (h >= 2 && h <= 3) {
-            g = chroma;
-            b = x;
-        } else if (h >= 3 && h <= 4) {
-            g = x;
-            b = chroma;
-        } else if (h >= 4 && h <= 5) {
-            r = x;
-            b = chroma;
-        } else if (h >= 5 && h <= 6) {
-            r = chroma;
-            b = x;
-        }
-
-        var m = value - chroma;
-        result.set((r + m), (g + m), (b + m));
     }
 
     /** @hidden */
@@ -406,7 +338,7 @@ export class ColorPicker extends Control {
             this._v = Math.max(this._v, ColorPicker._Epsilon);
         }
 
-        this._HSVtoRGB(this._h, this._s, this._v, this._tmpColor);
+        Color3.HSVtoRGBToRef(this._h, this._s, this._v, this._tmpColor);
 
         this.value = this._tmpColor;
     }

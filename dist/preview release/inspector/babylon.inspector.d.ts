@@ -1611,6 +1611,9 @@ declare module INSPECTOR {
         private _onPointerObserver;
         private _onSelectionChangeObserver;
         private _selectedEntity;
+        private _posDragEnd;
+        private _scaleDragEnd;
+        private _rotateDragEnd;
         constructor(props: ISceneTreeItemComponentProps);
         shouldComponentUpdate(nextProps: ISceneTreeItemComponentProps, nextState: {
             isSelected: boolean;
