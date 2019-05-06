@@ -167,12 +167,13 @@ export class GamepadManager {
         }
 
         var newGamepad;
+        var dualShock: boolean = ((<string>gamepad.id).search("054c") !== -1);
         var xboxOne: boolean = ((<string>gamepad.id).search("Xbox One") !== -1);
         if (xboxOne || (<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1) {
             newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
         }
-        // if pose is supported, use the (WebVR) pose enabled controller
-        else if (gamepad.pose) {
+        // if pose is supported, use the (WebVR) pose enabled controller, ignore DualShock (ps4) as they have a pose but should not be used for webVR
+        else if (gamepad.pose && !dualShock) {
             newGamepad = PoseEnabledControllerHelper.InitiateController(gamepad);
         }
         else {
