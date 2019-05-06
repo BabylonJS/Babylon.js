@@ -222,10 +222,21 @@ export class ShadowGenerator implements IShadowGenerator {
     public onBeforeShadowMapRenderObservable = new Observable<Effect>();
 
     /**
+     * Observable triggered after the shadow is rendered. Can be used to restore internal effect state
+     */
+    public onAfterShadowMapRenderObservable = new Observable<Effect>();
+
+    /**
      * Observable triggered before a mesh is rendered in the shadow map.
      * Can be used to update internal effect state (that you can get from the onBeforeShadowMapRenderObservable)
      */
     public onBeforeShadowMapRenderMeshObservable = new Observable<Mesh>();
+
+    /**
+     * Observable triggered after a mesh is rendered in the shadow map.
+     * Can be used to update internal effect state (that you can get from the onAfterShadowMapRenderObservable)
+     */
+    public onAfterShadowMapRenderMeshObservable = new Observable<Mesh>();
 
     private _bias = 0.00005;
     /**
@@ -985,6 +996,11 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, false);
             }
+
+            // Observables
+            this.onAfterShadowMapRenderObservable.notifyObservers(this._effect);
+            this.onAfterShadowMapRenderMeshObservable.notifyObservers(mesh);
+
         } else {
             // Need to reset refresh rate of the shadowMap
             if (this._shadowMap) {
@@ -1464,6 +1480,11 @@ export class ShadowGenerator implements IShadowGenerator {
             this._light._shadowGenerator = null;
             this._light._markMeshesAsLightDirty();
         }
+
+        this.onBeforeShadowMapRenderMeshObservable.clear();
+        this.onBeforeShadowMapRenderObservable.clear();
+        this.onAfterShadowMapRenderMeshObservable.clear();
+        this.onAfterShadowMapRenderObservable.clear();
     }
 
     /**
