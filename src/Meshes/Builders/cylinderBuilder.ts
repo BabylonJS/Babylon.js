@@ -238,11 +238,13 @@ VertexData.CreateCylinder = function(options: { height?: number, diameterTop?: n
 
     // add caps to geometry based on cap parameter
     if ((cap === Mesh.CAP_START)
-        || (cap === Mesh.CAP_ALL))
+        || (cap === Mesh.CAP_ALL)) {
         createCylinderCap(false);
+    }
     if ((cap === Mesh.CAP_END)
-        || (cap === Mesh.CAP_ALL))
+        || (cap === Mesh.CAP_ALL)) {
         createCylinderCap(true);
+    }
 
     // Sides
     VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
