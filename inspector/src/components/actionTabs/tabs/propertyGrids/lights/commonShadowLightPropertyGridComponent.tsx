@@ -85,6 +85,10 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                         }
                         {
                             (filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP || filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
+                            !generator.useKernelBlur &&
+                            <SliderLineComponent label="Blur box offset" target={generator} propertyName="blurBoxOffset" minimum={1} maximum={64} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />}
+                        {
+                            (filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP || filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
                             generator.useKernelBlur &&
                             <SliderLineComponent label="Blur kernel" target={generator} propertyName="blurKernel" minimum={1} maximum={64} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         }
@@ -92,7 +96,10 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                             (filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP || filter === ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP) &&
                             <FloatLineComponent lockObject={this.props.lockObject} label="Depth scale" target={generator} propertyName="depthScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         }
-                        <SliderLineComponent label="Blur scale" target={generator} propertyName="blurScale" minimum={1} maximum={4} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        {
+                            (filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP || filter === ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP) &&
+                            <SliderLineComponent label="Blur scale" target={generator} propertyName="blurScale" minimum={1} maximum={4} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        }
                     </LineContainerComponent>
                 }
             </div>
