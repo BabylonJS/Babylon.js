@@ -110,12 +110,10 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         }
 
         imgBack.style.position = "absolute";
-        imgBack.style.left = "50%";
-        imgBack.style.top = "50%";
-        imgBack.style.width = "10vw";
-        imgBack.style.height = "10vw";
-        imgBack.style.marginLeft = "-5vw";
-        imgBack.style.marginTop = "-5vw";
+        imgBack.style.left = "40%";
+        imgBack.style.top = "40%";
+        imgBack.style.width = "20%";
+        imgBack.style.height = "20%";
 
         // Loading spinner
         var imgSpinner = new Image();
