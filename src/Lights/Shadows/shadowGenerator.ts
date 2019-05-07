@@ -527,7 +527,15 @@ export class ShadowGenerator implements IShadowGenerator {
      * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
      */
     public set filteringQuality(filteringQuality: number) {
+        if (this._filteringQuality === filteringQuality) {
+            return;
+        }
+
         this._filteringQuality = filteringQuality;
+
+        this._disposeBlurPostProcesses();
+        this._applyFilterValues();
+        this._light._markMeshesAsLightDirty();
     }
 
     /**
@@ -573,6 +581,16 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     private _darkness = 0;
+
+    /** Gets or sets the actual darkness of a shadow */
+    public get darkness() {
+        return this._darkness;
+    }
+
+    public set darkness(value: number) {
+        this.setDarkness(value);
+    }
+
     /**
      * Returns the darkness value (float). This can only decrease the actual darkness of a shadow.
      * 0 means strongest and 1 would means no shadow.
@@ -600,6 +618,16 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     private _transparencyShadow = false;
+
+    /** Gets or sets the ability to have transparent shadow  */
+    public get transparencyShadow() {
+        return this._transparencyShadow;
+    }
+
+    public set transparencyShadow(value: boolean) {
+        this.setTransparencyShadow(value);
+    }
+
     /**
      * Sets the ability to have transparent shadow (boolean).
      * @param transparent True if transparent else False
@@ -629,6 +657,14 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         return this._shadowMap;
+    }
+
+    /**
+     * Gets the class name of that object
+     * @returns "ShadowGenerator"
+     */
+    public getClassName(): string {
+        return "ShadowGenerator";
     }
 
     /**

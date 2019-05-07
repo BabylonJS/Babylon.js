@@ -9930,6 +9930,8 @@ declare module BABYLON {
         */
         contactHardeningLightSizeUVRatio: number;
         private _darkness;
+        /** Gets or sets the actual darkness of a shadow */
+        darkness: number;
         /**
          * Returns the darkness value (float). This can only decrease the actual darkness of a shadow.
          * 0 means strongest and 1 would means no shadow.
@@ -9943,6 +9945,8 @@ declare module BABYLON {
          */
         setDarkness(darkness: number): ShadowGenerator;
         private _transparencyShadow;
+        /** Gets or sets the ability to have transparent shadow  */
+        transparencyShadow: boolean;
         /**
          * Sets the ability to have transparent shadow (boolean).
          * @param transparent True if transparent else False
@@ -9961,6 +9965,11 @@ declare module BABYLON {
          * @returns The render target texture if the shadow map is present otherwise, null
          */
         getShadowMapForRendering(): Nullable<RenderTargetTexture>;
+        /**
+         * Gets the class name of that object
+         * @returns "ShadowGenerator"
+         */
+        getClassName(): string;
         /**
          * Helper function to add a mesh and its descendants to the list of shadow casters.
          * @param mesh Mesh to add
@@ -35030,7 +35039,10 @@ declare module BABYLON {
      */
     export class PointerDragBehavior implements Behavior<AbstractMesh> {
         private static _AnyMouseID;
-        private _attachedNode;
+        /**
+         * Abstract mesh the behavior is set on
+         */
+        attachedNode: AbstractMesh;
         private _dragPlane;
         private _scene;
         private _pointerObserver;
@@ -38906,6 +38918,7 @@ declare module BABYLON {
          * * The parameter `subdivisions` sets the number of rings along the cylinder height (positive integer, default 1).
          * * The parameter `hasRings` (boolean, default false) makes the subdivisions independent from each other, so they become different faces.
          * * The parameter `enclose`  (boolean, default false) adds two extra faces per subdivision to a sliced cylinder to close it around its height axis.
+         * * The parameter `cap` sets the way the cylinder is capped. Possible values : BABYLON.Mesh.NO_CAP, BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL (default).
          * * The parameter `arc` (float, default 1) is the ratio (max 1) to apply to the circumference to slice the cylinder.
          * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of n Color3 elements) and `faceUV` (an array of n Vector4 elements).
          * * The value of n is the number of cylinder faces. If the cylinder has only 1 subdivisions, n equals : top face + cylinder surface + bottom face = 3
@@ -38937,6 +38950,7 @@ declare module BABYLON {
             updatable?: boolean;
             hasRings?: boolean;
             enclose?: boolean;
+            cap?: number;
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
@@ -44324,7 +44338,7 @@ declare module BABYLON {
      *
      * This offers the main features of a standard PBR material.
      * For more information, please refer to the documentation :
-     * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
+     * https://doc.babylonjs.com/how_to/physically_based_rendering
      */
     export abstract class PBRBaseMaterial extends PushMaterial {
         /**
@@ -44826,7 +44840,7 @@ declare module BABYLON {
      *
      * This offers the main features of a standard PBR material.
      * For more information, please refer to the documentation :
-     * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
+     * https://doc.babylonjs.com/how_to/physically_based_rendering
      */
     export class PBRMaterial extends PBRBaseMaterial {
         /**
@@ -50009,6 +50023,7 @@ declare module BABYLON {
          * * The parameter `subdivisions` sets the number of rings along the cylinder height (positive integer, default 1).
          * * The parameter `hasRings` (boolean, default false) makes the subdivisions independent from each other, so they become different faces.
          * * The parameter `enclose`  (boolean, default false) adds two extra faces per subdivision to a sliced cylinder to close it around its height axis.
+         * * The parameter `cap` sets the way the cylinder is capped. Possible values : BABYLON.Mesh.NO_CAP, BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL (default).
          * * The parameter `arc` (float, default 1) is the ratio (max 1) to apply to the circumference to slice the cylinder.
          * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of n Color3 elements) and `faceUV` (an array of n Vector4 elements).
          * * The value of n is the number of cylinder faces. If the cylinder has only 1 subdivisions, n equals : top face + cylinder surface + bottom face = 3
@@ -50040,6 +50055,7 @@ declare module BABYLON {
             updatable?: boolean;
             hasRings?: boolean;
             enclose?: boolean;
+            cap?: number;
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
