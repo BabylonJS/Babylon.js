@@ -10054,6 +10054,8 @@ declare module BABYLON {
         */
         contactHardeningLightSizeUVRatio: number;
         private _darkness;
+        /** Gets or sets the actual darkness of a shadow */
+        darkness: number;
         /**
          * Returns the darkness value (float). This can only decrease the actual darkness of a shadow.
          * 0 means strongest and 1 would means no shadow.
@@ -10067,6 +10069,8 @@ declare module BABYLON {
          */
         setDarkness(darkness: number): ShadowGenerator;
         private _transparencyShadow;
+        /** Gets or sets the ability to have transparent shadow  */
+        transparencyShadow: boolean;
         /**
          * Sets the ability to have transparent shadow (boolean).
          * @param transparent True if transparent else False
@@ -35720,7 +35724,10 @@ declare module BABYLON {
      */
     export class PointerDragBehavior implements Behavior<AbstractMesh> {
         private static _AnyMouseID;
-        private _attachedNode;
+        /**
+         * Abstract mesh the behavior is set on
+         */
+        attachedNode: AbstractMesh;
         private _dragPlane;
         private _scene;
         private _pointerObserver;
@@ -45084,7 +45091,7 @@ declare module BABYLON {
      *
      * This offers the main features of a standard PBR material.
      * For more information, please refer to the documentation :
-     * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
+     * https://doc.babylonjs.com/how_to/physically_based_rendering
      */
     export abstract class PBRBaseMaterial extends PushMaterial {
         /**
@@ -45586,7 +45593,7 @@ declare module BABYLON {
      *
      * This offers the main features of a standard PBR material.
      * For more information, please refer to the documentation :
-     * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
+     * https://doc.babylonjs.com/how_to/physically_based_rendering
      */
     export class PBRMaterial extends PBRBaseMaterial {
         /**
