@@ -104,6 +104,18 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             { label: "Spherical", value: Texture.SPHERICAL_MODE },
         ];
 
+        let extension = "";
+        let url = (texture as Texture).url;
+
+        if (url) {
+            for (var index = url.length - 1; index >= 0; index--) {
+                if (url[index] === ".") {
+                    break;
+                }
+                extension = url[index] + extension;
+            }
+        }
+
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
@@ -115,6 +127,10 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Width" value={texture.getSize().width.toString()} />
                     <TextLineComponent label="Height" value={texture.getSize().height.toString()} />
+                    {
+                        extension &&
+                        <TextLineComponent label="File format" value={extension} />
+                    }
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={texture.getClassName()} />
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
