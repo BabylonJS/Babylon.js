@@ -110,7 +110,15 @@ export class WebGPUEngine extends Engine {
     private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
 
     // Caches
-    private _compiledStages: { [key: string]: GPURenderPipelineStageDescriptor } = {};
+    private _compiledShaders: { [key: string]: {
+        stages: GPURenderPipelineStageDescriptor,
+        availableAttributes: { [key: string]: number },
+        availableUBOs: { [key: string]: number }
+        sources: {
+            vertex: string
+            fragment: string,
+        }
+    } } = {};
 
     // Temporary...
     private _decodeCanvas = document.createElement("canvas");
@@ -678,8 +686,13 @@ export class WebGPUEngine extends Engine {
         const fragment = baseName.fragmentElement || baseName.fragment || baseName;
 
         const name = vertex + "+" + fragment + "@" + (defines ? defines : (<EffectCreationOptions>attributesNamesOrOptions).defines);
-        const effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name);
-        return effect;
+        const shader = this._compiledShaders[name];
+        if (shader) {
+            return new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name, shader.sources);
+        }
+        else {
+            return new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name);
+        }
     }
 
     private _compileRawShaderToSpirV(source: string, type: string): Uint32Array {
@@ -762,12 +775,13 @@ export class WebGPUEngine extends Engine {
         transformFeedbackVaryings: Nullable<string[]>,
         key: string) {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
-        webGpuContext.vertexShaderCode = vertexSourceCode;
-        webGpuContext.fragmentShaderCode = fragmentSourceCode;
 
-        const stages = this._compiledStages[key];
-        if (stages) {
-            webGpuContext.stages = stages;
+        const shader = this._compiledShaders[key];
+        if (shader) {
+            webGpuContext.stages = shader.stages;
+            webGpuContext.availableAttributes = shader.availableAttributes;
+            webGpuContext.availableUBOs = shader.availableUBOs;
+            webGpuContext.sources = shader.sources;
         }
         else {
             if (createAsRaw) {
@@ -776,29 +790,74 @@ export class WebGPUEngine extends Engine {
             else {
                 webGpuContext.stages = this._compilePipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, defines);
             }
-            this._compiledStages[key] = webGpuContext.stages;
+
+            this._findAttributes(webGpuContext, vertexSourceCode);
+            this._findUBOs(webGpuContext, fragmentSourceCode);
+
+            this._compiledShaders[key] = {
+                stages: webGpuContext.stages,
+                availableAttributes: webGpuContext.availableAttributes,
+                availableUBOs: webGpuContext.availableUBOs,
+                sources: {
+                    fragment: fragmentSourceCode,
+                    vertex: vertexSourceCode
+                }
+            };
         }
     }
 
-    public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
-        const results = new Array(attributesNames.length);
-
+    private _findAttributes(pipelineContext: WebGPUPipelineContext, vertexSourceCode: string): void {
         // TODO.
         // Hard coded for WebGPU until an introspection lib is available.
 
-        const vertexShaderCode = (pipelineContext as WebGPUPipelineContext).vertexShaderCode;
+        const results: { [key: string]: number } = { };
+
+        const vertexShaderCode = vertexSourceCode;
         const attributesRegex = /layout\(location\s*=\s*([0-9]*)\)\s*in\s*\S*\s*(\S*);/gm;
         let matches: RegExpExecArray | null;
         while (matches = attributesRegex.exec(vertexShaderCode)) {
             const location = matches[1];
             const name = matches[2];
 
-            const shaderLocation = attributesNames.indexOf(name);
-            if (shaderLocation === -1) {
+            results[name] = +location;
+        }
+
+        pipelineContext.availableAttributes = results;
+    }
+
+    private _findUBOs(pipelineContext: WebGPUPipelineContext, fragmentSourceCode: string): void {
+        // TODO.
+        // Hard coded for WebGPU until an introspection lib is available.
+
+        const samplersRegex = /layout\(set\s*=\s*(\d+)\s*,\s*binding\s*=\s*(\d+).*\)\s*uniform\s*(texture\S*)\s*(\S*)\s*;/gm;
+        const results: { [key: string]: number } = { };
+        let matches: RegExpExecArray | null;
+        while (matches = samplersRegex.exec(fragmentSourceCode)) {
+            // const set = matches[1];
+            const binding = matches[2];
+            // const type = matches[3];
+            const name = matches[4].replace("Texture", "");
+
+            results[name] = +binding;
+        }
+
+        pipelineContext.availableUBOs = results;
+    }
+
+    public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
+        const results = new Array(attributesNames.length);
+        const gpuPipelineContext = (pipelineContext as WebGPUPipelineContext);
+
+        // TODO.
+        // Hard coded for WebGPU until an introspection lib is available.
+        for (let i = 0; i < attributesNames.length; i++) {
+            const attributeName = attributesNames[i];
+            const attributeLocation = gpuPipelineContext.availableAttributes[attributeName];
+            if (attributeLocation === undefined) {
                 continue;
             }
 
-            results[shaderLocation] = +location;
+            results[i] = attributeLocation;
         }
 
         return results;
@@ -1961,7 +2020,7 @@ export class WebGPUEngine extends Engine {
      */
     public dispose(): void {
         this._decodeEngine.dispose();
-        this._compiledStages = { };
+        this._compiledShaders = { };
         super.dispose();
     }
 

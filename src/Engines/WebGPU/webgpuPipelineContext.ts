@@ -26,8 +26,13 @@ export interface IWebGPUPipelineContextVertexInputsCache {
 export class WebGPUPipelineContext implements IPipelineContext {
     public engine: WebGPUEngine;
 
-    public vertexShaderCode: string;
-    public fragmentShaderCode: string;
+    public availableAttributes: { [key: string]: number };
+    public availableUBOs: { [key: string]: number };
+    public sources: {
+        vertex: string
+        fragment: string,
+    };
+
     public stages: Nullable<GPURenderPipelineStageDescriptor>;
 
     public samplers: { [name: string]: Nullable<IWebGPUPipelineContextSamplerCache> } = { };
