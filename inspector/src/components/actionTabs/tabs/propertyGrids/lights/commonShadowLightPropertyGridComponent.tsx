@@ -70,7 +70,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                 {
                     generator == null &&
                     <LineContainerComponent globalState={this.props.globalState} title="SHADOW GENERATOR">
-                        <ButtonLineComponent label="Normalize scene" onClick={() => this.createShadowGenerator()} />
+                        <ButtonLineComponent label="Create generator" onClick={() => this.createShadowGenerator()} />
                     </LineContainerComponent>
                 }
                 {
