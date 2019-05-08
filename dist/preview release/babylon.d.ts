@@ -10616,6 +10616,13 @@ declare module BABYLON {
          * @hidden
          */
         _actionManager: AbstractActionManager;
+        /**
+         * Adds action to chain of actions, may be a DoNothingAction
+         * @param action defines the next action to execute
+         * @returns The action passed in
+         * @see https://www.babylonjs-playground.com/#1T30HR#0
+         */
+        then(action: IAction): IAction;
     }
     /**
      * The action to be carried out following a trigger
@@ -20965,6 +20972,7 @@ declare module BABYLON {
          * Returns the mesh VertexBuffer object from the requested `kind`
          * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
          * - VertexBuffer.PositionKind
+         * - VertexBuffer.NormalKind
          * - VertexBuffer.UVKind
          * - VertexBuffer.UV2Kind
          * - VertexBuffer.UV3Kind
@@ -20983,6 +20991,7 @@ declare module BABYLON {
          * Tests if a specific vertex buffer is associated with this mesh
          * @param kind defines which buffer to check (positions, indices, normals, etc). Possible `kind` values :
          * - VertexBuffer.PositionKind
+         * - VertexBuffer.NormalKind
          * - VertexBuffer.UVKind
          * - VertexBuffer.UV2Kind
          * - VertexBuffer.UV3Kind
@@ -21019,6 +21028,7 @@ declare module BABYLON {
          * Returns a string which contains the list of existing `kinds` of Vertex Data associated with this mesh.
          * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
          * - VertexBuffer.PositionKind
+         * - VertexBuffer.NormalKind
          * - VertexBuffer.UVKind
          * - VertexBuffer.UV2Kind
          * - VertexBuffer.UV3Kind
