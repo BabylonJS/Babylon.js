@@ -1,4 +1,6 @@
-﻿#ifdef EXPOSURE
+﻿#ifndef WEBGPU
+
+#ifdef EXPOSURE
 	uniform float exposureLinear;
 #endif
 
@@ -25,4 +27,6 @@
 		uniform sampler2D txColorTransform;
 	#endif
 	uniform vec4 colorTransformSettings;
+#endif
+
 #endif
