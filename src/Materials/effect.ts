@@ -7,6 +7,7 @@ import { Logger } from "../Misc/logger";
 import { IDisposable } from '../scene';
 import { IPipelineContext } from '../Engines/IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { WebGPUPipelineContext } from '../Engines/WebGPU/webgpuPipelineContext';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -287,9 +288,14 @@ export class Effect implements IDisposable {
      * @param onError Callback that will be called if an error occurs during shader compilation.
      * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
      * @param key Effect Key identifying uniquely compiled shader variants
+     * @param sources Already processed sources for the current key.
      */
     constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers: Nullable<string[]> = null, engine?: Engine, defines: Nullable<string> = null,
-        fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "") {
+        fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "",
+        sources?: {
+            vertex: string
+            fragment: string,
+        }) {
         this.name = baseName;
         this._key = key;
 
@@ -327,6 +333,13 @@ export class Effect implements IDisposable {
         }
 
         this.uniqueId = Effect._uniqueIdSeed++;
+
+        if (sources) {
+            this._fragmentSourceCode = sources.fragment;
+            this._vertexSourceCode = sources.vertex;
+            this._prepareEffect();
+            return;
+        }
 
         var vertexSource: any;
         var fragmentSource: any;
@@ -862,18 +875,12 @@ export class Effect implements IDisposable {
                 }
                 else {
                     // TODO. CLEANUP THIS STUFF (FOR SEB) !!!
-                    const samplersRegex = /layout\(set\s*=\s*(\d+)\s*,\s*binding\s*=\s*(\d+).*\)\s*uniform\s*(texture\S*)\s*(\S*)\s*;/gm;
-                    const foundSamplers: { [key: string]: number } = { };
-                    let matches: RegExpExecArray | null;
-                    while (matches = samplersRegex.exec(this._fragmentSourceCode)) {
-                        // const set = matches[1];
-                        const binding = matches[2];
-                        // const type = matches[3];
-                        const name = matches[4].replace("Texture", "");
+                    this._fragmentSourceCode = "";
+                    // this._fragmentSourceCodeOverride = "";
+                    this._vertexSourceCode = "";
+                    // this._vertexSourceCodeOverride = "";
 
-                        foundSamplers[name] = +binding;
-                    }
-
+                    const foundSamplers = (this._pipelineContext as WebGPUPipelineContext).availableUBOs;
                     let index: number;
                     for (index = 0; index < this._samplerList.length; index++) {
                         const name = this._samplerList[index];
