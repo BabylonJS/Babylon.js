@@ -737,6 +737,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Returns the mesh VertexBuffer object from the requested `kind`
      * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
      * - VertexBuffer.UVKind
      * - VertexBuffer.UV2Kind
      * - VertexBuffer.UV3Kind
@@ -761,6 +762,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Tests if a specific vertex buffer is associated with this mesh
      * @param kind defines which buffer to check (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
      * - VertexBuffer.UVKind
      * - VertexBuffer.UV2Kind
      * - VertexBuffer.UV3Kind
