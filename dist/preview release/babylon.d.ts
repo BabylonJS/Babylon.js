@@ -17073,11 +17073,11 @@ declare module BABYLON {
         /**
          * If vertex color should be applied to the mesh
          */
-        useVertexColor?: boolean | undefined;
+        readonly useVertexColor?: boolean | undefined;
         /**
          * If vertex alpha should be applied to the mesh
          */
-        useVertexAlpha?: boolean | undefined;
+        readonly useVertexAlpha?: boolean | undefined;
         /**
          * Color of the line (Default: White)
          */
@@ -17093,6 +17093,7 @@ declare module BABYLON {
          */
         intersectionThreshold: number;
         private _colorShader;
+        private color4;
         /**
          * Creates a new LinesMesh
          * @param name defines the name
@@ -17333,6 +17334,7 @@ declare module BABYLON {
      */
     export class RenderingGroup {
         index: number;
+        private static _zeroVector;
         private _scene;
         private _opaqueSubMeshes;
         private _transparentSubMeshes;

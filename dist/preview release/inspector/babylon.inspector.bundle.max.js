@@ -36909,7 +36909,7 @@ var CommonShadowLightPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Shadows far plane", target: light, propertyName: "shadowMaxZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             generator == null &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOW GENERATOR" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: "Normalize scene", onClick: function () { return _this.createShadowGenerator(); } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: "Create generator", onClick: function () { return _this.createShadowGenerator(); } })),
             generator !== null &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOW GENERATOR" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Bias", target: generator, propertyName: "bias", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
