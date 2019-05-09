@@ -16,6 +16,7 @@ import { WebRequest } from './webRequest';
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
 declare type Animation = import("../Animations/animation").Animation;
+declare type AnimationGroup = import("../Animations/animationGroup").AnimationGroup;
 
 /**
  * Interface for any object that can request an animation frame
@@ -45,6 +46,7 @@ export interface IAnimatable {
      * Array of animations
      */
     animations: Nullable<Array<Animation>>;
+    animationGroups: Nullable<Array<AnimationGroup>>;
 }
 
 /** Interface used by value gradients (color, factor, ...) */
