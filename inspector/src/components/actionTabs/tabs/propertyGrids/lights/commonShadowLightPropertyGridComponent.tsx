@@ -10,6 +10,7 @@ import { GlobalState } from '../../../../globalState';
 import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 import { ShadowGenerator } from 'babylonjs/Lights/Shadows/shadowGenerator';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 
 interface ICommonShadowLightPropertyGridComponentProps {
     globalState: GlobalState,
@@ -21,6 +22,19 @@ interface ICommonShadowLightPropertyGridComponentProps {
 export class CommonShadowLightPropertyGridComponent extends React.Component<ICommonShadowLightPropertyGridComponentProps> {
     constructor(props: ICommonShadowLightPropertyGridComponentProps) {
         super(props);
+    }
+
+    createShadowGenerator() {
+        const light = this.props.light;
+        const scene = light.getScene();
+        let generator = new ShadowGenerator(512, light);
+
+        scene.meshes.forEach(m => {
+            generator.addShadowCaster(m);
+            m.receiveShadows = true;
+        });
+
+        this.forceUpdate();
     }
 
     render() {
@@ -53,6 +67,12 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                     <FloatLineComponent lockObject={this.props.lockObject} label="Shadows near plane" target={light} propertyName="shadowMinZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Shadows far plane" target={light} propertyName="shadowMaxZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
+                {
+                    generator == null &&
+                    <LineContainerComponent globalState={this.props.globalState} title="SHADOW GENERATOR">
+                        <ButtonLineComponent label="Create generator" onClick={() => this.createShadowGenerator()} />
+                    </LineContainerComponent>
+                }
                 {
                     generator !== null &&
                     <LineContainerComponent globalState={this.props.globalState} title="SHADOW GENERATOR">
