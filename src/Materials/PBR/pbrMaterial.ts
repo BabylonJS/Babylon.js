@@ -16,7 +16,7 @@ import { _TypeStore } from '../../Misc/typeStore';
  *
  * This offers the main features of a standard PBR material.
  * For more information, please refer to the documentation :
- * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
+ * https://doc.babylonjs.com/how_to/physically_based_rendering
  */
 export class PBRMaterial extends PBRBaseMaterial {
     /**
