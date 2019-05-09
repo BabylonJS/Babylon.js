@@ -86,7 +86,8 @@ export class GearVRController extends WebVRController {
 PoseEnabledControllerHelper._ControllerFactories.push({
     canCreate: (gamepadInfo) => {
         return gamepadInfo.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0 ||
-            gamepadInfo.id.indexOf('Oculus Go') !== -1;
+            gamepadInfo.id.indexOf('Oculus Go') !== -1 ||
+            gamepadInfo.id.indexOf('Vive Focus') !== -1;
     },
     create: (gamepadInfo) => {
         return new GearVRController(gamepadInfo);

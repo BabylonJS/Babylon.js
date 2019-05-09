@@ -105,6 +105,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         var normalLines = LinesBuilder.CreateLineSystem("normalLines", { lines: lines }, scene);
         normalLines.color = color;
         normalLines.parent = mesh;
+        normalLines.reservedDataStore = { hidden: true };
 
         if (!mesh.reservedDataStore) {
             mesh.reservedDataStore = {};
