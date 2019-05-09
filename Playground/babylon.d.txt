@@ -1235,6 +1235,7 @@ declare module BABYLON {
          */
         z: number;
         private static _UpReadOnly;
+        private static _ZeroReadOnly;
         /**
          * Creates a new Vector3 object from the given x, y, z (floats) coordinates.
          * @param x defines the first coordinates (on X axis)
@@ -1658,6 +1659,10 @@ declare module BABYLON {
          * Gets a up Vector3 that must not be updated
          */
         static readonly UpReadOnly: DeepImmutable<Vector3>;
+        /**
+         * Gets a zero Vector3 that must not be updated
+         */
+        static readonly ZeroReadOnly: DeepImmutable<Vector3>;
         /**
          * Returns a new Vector3 set to (0.0, -1.0, 0.0)
          * @returns a new down Vector3
