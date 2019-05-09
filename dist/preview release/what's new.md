@@ -20,5 +20,6 @@
 - Added `ShadowGenerator.onAfterShadowMapRenderObservable` and `ShadowGenerator.onAfterShadowMapMeshRenderObservable` ([Deltakosh](https://github.com/deltakosh/))
 
 ## Bug fixes
+- Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 
 ## Breaking changes
