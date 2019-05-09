@@ -21,6 +21,19 @@ export class TargetedAnimation {
      * Target to animate
      */
     public target: any;
+
+    public constructor(animation: Animation, target: any){
+        this.animation = animation;
+        this.target = target;
+    }
+
+    public serialize(): any {
+        var serializationObject: any = {};
+        serializationObject.animation = this.animation.serialize();
+        serializationObject.targetId = this.target.id;
+
+        return serializationObject;
+    }
 }
 
 /**
@@ -177,10 +190,7 @@ export class AnimationGroup implements IDisposable {
      * @returns the TargetedAnimation object
      */
     public addTargetedAnimation(animation: Animation, target: any): TargetedAnimation {
-        let targetedAnimation = {
-            animation: animation,
-            target: target
-        };
+        let targetedAnimation = new TargetedAnimation (animation, target);
 
         let keys = animation.getKeys();
         if (this._from > keys[0].frame) {
@@ -485,6 +495,27 @@ export class AnimationGroup implements IDisposable {
 
         return newGroup;
     }
+
+    /**
+     * Serializes the animationGroup to an object
+     * @returns Serialized object
+     */
+    public serialize(): any {
+        var serializationObject: any = {};
+
+        serializationObject.name = this.name;
+        serializationObject.from = this.from;
+        serializationObject.to = this.to;
+        serializationObject.targetedAnimations = []
+        for(var targetedAnimationIndex = 0; targetedAnimationIndex < this.targetedAnimations.length; targetedAnimationIndex++)
+        {
+            var targetedAnimation = this.targetedAnimations[targetedAnimationIndex];
+            serializationObject.targetedAnimations[targetedAnimationIndex] = targetedAnimation.serialize();
+        }
+
+        return serializationObject;
+    }
+
 
     // Statics
     /**
