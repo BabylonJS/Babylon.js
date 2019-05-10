@@ -20,5 +20,6 @@
 - Added `ShadowGenerator.onAfterShadowMapRenderObservable` and `ShadowGenerator.onAfterShadowMapMeshRenderObservable` ([Deltakosh](https://github.com/deltakosh/))
 
 ## Bug fixes
+- Removing assetContainer from scene will also remove gui layers ([TrevorDev](https://github.com/TrevorDev))
 
 ## Breaking changes
