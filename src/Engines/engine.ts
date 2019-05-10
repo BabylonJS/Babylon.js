@@ -491,14 +491,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.0";
+        return "babylonjs@4.1.0-alpha.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.0";
+        return "4.1.0-alpha.1";
     }
 
     /**
