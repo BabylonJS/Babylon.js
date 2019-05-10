@@ -259,7 +259,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         nodeContextMenus.push({
             label: "Add new directional light",
             action: () => {
-                let newDirectionalLight = new DirectionalLight("directional light", new Vector3(1, -1, 1), scene);
+                let newDirectionalLight = new DirectionalLight("directional light", new Vector3(-1, -1, -0.5), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newDirectionalLight);
             }
         });
