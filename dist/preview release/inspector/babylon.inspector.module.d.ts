@@ -706,6 +706,17 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/fog
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/buttonLineComponent" {
+    import * as React from "react";
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -730,6 +741,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/sce
         updateEnvironmentTexture(file: File): void;
         updateGravity(newValue: Vector3): void;
         updateTimeStep(newValue: number): void;
+        normalizeScene(): void;
         render(): JSX.Element;
     }
 }
@@ -784,6 +796,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lig
     }
     export class CommonShadowLightPropertyGridComponent extends React.Component<ICommonShadowLightPropertyGridComponentProps> {
         constructor(props: ICommonShadowLightPropertyGridComponentProps);
+        createShadowGenerator(): void;
         render(): JSX.Element;
     }
 }
@@ -1043,17 +1056,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/gui
     }
     export class ColorPickerPropertyGridComponent extends React.Component<IColorPickerPropertyGridComponentProps> {
         constructor(props: IColorPickerPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/actionTabs/lines/buttonLineComponent" {
-    import * as React from "react";
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -2151,6 +2153,7 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
 }
 declare module "babylonjs-inspector/inspector" {
     import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
+    import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
     import { Scene } from "babylonjs/scene";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
@@ -2173,7 +2176,7 @@ declare module "babylonjs-inspector/inspector" {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): Nullable<HTMLDivElement>;
         static readonly IsVisible: boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: Scene, userOptions: Partial<IInspectorOptions>): void;
@@ -2791,6 +2794,16 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IScenePropertyGridComponentProps {
         globalState: GlobalState;
         scene: BABYLON.Scene;
@@ -2807,6 +2820,7 @@ declare module INSPECTOR {
         updateEnvironmentTexture(file: File): void;
         updateGravity(newValue: BABYLON.Vector3): void;
         updateTimeStep(newValue: number): void;
+        normalizeScene(): void;
         render(): JSX.Element;
     }
 }
@@ -2843,6 +2857,7 @@ declare module INSPECTOR {
     }
     export class CommonShadowLightPropertyGridComponent extends React.Component<ICommonShadowLightPropertyGridComponentProps> {
         constructor(props: ICommonShadowLightPropertyGridComponentProps);
+        createShadowGenerator(): void;
         render(): JSX.Element;
     }
 }
@@ -3026,16 +3041,6 @@ declare module INSPECTOR {
     }
     export class ColorPickerPropertyGridComponent extends React.Component<IColorPickerPropertyGridComponentProps> {
         constructor(props: IColorPickerPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -3907,7 +3912,7 @@ declare module INSPECTOR {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): BABYLON.Nullable<HTMLDivElement>;
         static readonly IsVisible: boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;

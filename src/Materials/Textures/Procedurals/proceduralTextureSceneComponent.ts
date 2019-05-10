@@ -3,7 +3,6 @@ import { Scene } from "../../../scene";
 import { SceneComponentConstants, ISceneComponent } from "../../../sceneComponent";
 import { _TimeToken } from "../../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
-import { Layer } from "../../../Layers/layer";
 
 import { ProceduralTexture } from "./proceduralTexture";
 
@@ -38,7 +37,6 @@ export class ProceduralTextureSceneComponent implements ISceneComponent {
     constructor(scene: Scene) {
         this.scene = scene;
         this.scene.proceduralTextures = new Array<ProceduralTexture>();
-        scene.layers = new Array<Layer>();
     }
 
     /**
