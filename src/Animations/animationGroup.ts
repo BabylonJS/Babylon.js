@@ -22,11 +22,6 @@ export class TargetedAnimation {
      */
     public target: any;
 
-    public constructor(animation: Animation, target: any){
-        this.animation = animation;
-        this.target = target;
-    }
-
     public serialize(): any {
         var serializationObject: any = {};
         serializationObject.animation = this.animation.serialize();
@@ -190,7 +185,9 @@ export class AnimationGroup implements IDisposable {
      * @returns the TargetedAnimation object
      */
     public addTargetedAnimation(animation: Animation, target: any): TargetedAnimation {
-        let targetedAnimation = new TargetedAnimation (animation, target);
+        let targetedAnimation = new TargetedAnimation ();
+        targetedAnimation.animation = animation;
+        targetedAnimation.target = target;
 
         let keys = animation.getKeys();
         if (this._from > keys[0].frame) {
