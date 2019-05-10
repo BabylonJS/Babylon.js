@@ -1,13 +1,40 @@
-import { Effect } from '../../Materials/effect';
 import { Tools } from '../../Misc/tools';
 
+/** @hidden */
 interface ProcessingOptions {
-    defines: string,
-    indexParameters: any,
-    isFragment: boolean,
-    shouldUseHighPrecisionShader: boolean,
-    needProcessing: boolean,
-    supportsUniformBuffers: boolean
+    defines: string;
+    indexParameters: any;
+    isFragment: boolean;
+    shouldUseHighPrecisionShader: boolean;
+    needProcessing: boolean;
+    supportsUniformBuffers: boolean;
+    shadersRepository: string;
+    includesShadersStore: { [key: string]: string };
+}
+
+/** @hidden */
+class ShaderCodeNode {
+    line: string;
+    next: ShaderCodeNode;
+    parent?: ShaderCodeNode;
+    defineCondition?: string;
+    child?: ShaderCodeNode;
+}
+
+/** @hidden */
+class ShaderCodeCursor {
+    lines: string[];
+    lineIndex: number;
+    currentNode?: ShaderCodeNode;
+    parentNode?: ShaderCodeNode;
+
+    get currentLine(): string {
+        return this.lines[this.lineIndex].trim();
+    }
+
+    get eof(): boolean {
+        return this.lineIndex >= this.lines.length;
+    }
 }
 
 /** @hidden */
@@ -37,6 +64,68 @@ export class ShaderProcessor {
         return source;
     }
 
+    private static _EvaluatePreProcessors(sourceCode: string, preprocessors: string[]): string {
+        const rootNode = new ShaderCodeNode();
+        let cursor = new ShaderCodeCursor();
+
+        cursor.lineIndex = 0;
+        cursor.currentNode = rootNode;
+        cursor.lines = sourceCode.split("\n");
+
+        // Decompose
+        while (!cursor.eof) {
+            let line = cursor.currentLine;
+            if (line[0] === "#") {
+                let first5 = line.substring(0, 5).toLowerCase();
+                if (first5 === "#ifdef") {
+                    let newNode = new ShaderCodeNode();
+                    newNode.defineCondition = line.substring(5);
+                    newNode.parent = cursor.parentNode;
+                    newNode.child = new ShaderCodeNode();
+
+                    cursor.parentNode = newNode;
+                    if (cursor.currentNode) {
+                        cursor.currentNode.next = newNode;
+                    }
+                    cursor.currentNode = newNode.child;
+                } else if (first5 === "#endif") {
+                    cursor.parentNode = cursor.parentNode!.parent;
+                    cursor.currentNode = cursor.parentNode;
+                }
+            } else {
+                let newNode = new ShaderCodeNode();
+                newNode.line = line;
+                newNode.parent = cursor.parentNode;
+
+                if (cursor.currentNode) {
+                    cursor.currentNode.next = newNode;
+                }
+                cursor.currentNode = newNode;
+            }
+
+            cursor.lineIndex++;
+        }
+
+        // Recompose
+
+        let currentNode = rootNode;
+        let processedCode = "";
+
+        while (currentNode) {
+            if (currentNode.defineCondition) {
+                if (preprocessors.indexOf(currentNode.defineCondition)) {
+                    currentNode = currentNode.child!;
+                }
+            } else {
+                processedCode += currentNode.line + "\r\n";
+                currentNode = currentNode.next;
+            }
+        }
+
+
+        return processedCode;
+    }
+
     private static _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions): string {
 
         var preparedSourceCode = this._ProcessPrecision(sourceCode, options);
@@ -51,6 +140,8 @@ export class ShaderProcessor {
         }
 
         let preprocessors = options.defines.split("\n");
+
+        preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors);
 
         var hasDrawBuffersExtension = preparedSourceCode.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
@@ -107,9 +198,9 @@ export class ShaderProcessor {
                 includeFile = includeFile + "Declaration";
             }
 
-            if (Effect.IncludesShadersStore[includeFile]) {
+            if (options.includesShadersStore[includeFile]) {
                 // Substitution
-                var includeContent = Effect.IncludesShadersStore[includeFile];
+                var includeContent = options.includesShadersStore[includeFile];
                 if (match[2]) {
                     var splits = match[3].split(",");
 
@@ -158,10 +249,10 @@ export class ShaderProcessor {
                 // Replace
                 returnValue = returnValue.replace(match[0], includeContent);
             } else {
-                var includeShaderUrl = Effect.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
+                var includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
                 Tools.LoadFile(includeShaderUrl, (fileContent) => {
-                    Effect.IncludesShadersStore[includeFile] = fileContent as string;
+                    options.includesShadersStore[includeFile] = fileContent as string;
                     this._ProcessIncludes(<string>returnValue, options, callback);
                 });
                 return;
