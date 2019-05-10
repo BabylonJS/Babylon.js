@@ -579,7 +579,11 @@ Scene.prototype._animate = function(): void {
     this._animationTimeLast = now;
 
     for (let index = 0; index < animatables.length; index++) {
-        animatables[index]._animate(animationTime);
+        let animatable = animatables[index];
+
+        if (!animatable._animate(animationTime) && animatable.disposeOnEnd) {
+            index--; // Array was updated
+        }
     }
 
     // Late animation bindings
