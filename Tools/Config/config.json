@@ -13,6 +13,7 @@
         "packageES6DevFolderName": "packageES6Dev",
         "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",
+        "documentationFile": "documentation.d.ts",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
             "../../dist/preview release/gui/babylon.gui.d.ts",
