@@ -400,12 +400,25 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export interface ITextureLinkLineComponentProps {
         label: string;
         texture: BABYLON.Nullable<BABYLON.BaseTexture>;
         material?: BABYLON.Material;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
         onDebugSelectionChangeObservable?: BABYLON.Observable<BABYLON.BaseTexture>;
+        propertyName?: string;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
         isDebugSelected: boolean;
@@ -416,6 +429,7 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         debugTexture(): void;
         onLink(): void;
+        updateTexture(file: File): void;
         render(): JSX.Element | null;
     }
 }
@@ -430,7 +444,7 @@ declare module INSPECTOR {
     export class StandardMaterialPropertyGridComponent extends React.Component<IStandardMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -491,18 +505,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
     interface ITexturePropertyGridComponentProps {
         texture: BABYLON.BaseTexture;
         lockObject: LockObject;
@@ -558,7 +560,7 @@ declare module INSPECTOR {
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMaterialPropertyGridComponentProps);
-        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element | null;
+        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -1006,7 +1008,7 @@ declare module INSPECTOR {
     export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Component<IPBRMetallicRoughnessMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMetallicRoughnessMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -1021,7 +1023,7 @@ declare module INSPECTOR {
     export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Component<IPBRSpecularGlossinessMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRSpecularGlossinessMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
