@@ -22,6 +22,10 @@ export class TargetedAnimation {
      */
     public target: any;
 
+    /**
+     * Serialize the object
+     * @returns the JSON object representing the current entity
+     */
     public serialize(): any {
         var serializationObject: any = {};
         serializationObject.animation = this.animation.serialize();
@@ -185,7 +189,7 @@ export class AnimationGroup implements IDisposable {
      * @returns the TargetedAnimation object
      */
     public addTargetedAnimation(animation: Animation, target: any): TargetedAnimation {
-        let targetedAnimation = new TargetedAnimation ();
+        let targetedAnimation = new TargetedAnimation();
         targetedAnimation.animation = animation;
         targetedAnimation.target = target;
 
@@ -503,9 +507,8 @@ export class AnimationGroup implements IDisposable {
         serializationObject.name = this.name;
         serializationObject.from = this.from;
         serializationObject.to = this.to;
-        serializationObject.targetedAnimations = []
-        for(var targetedAnimationIndex = 0; targetedAnimationIndex < this.targetedAnimations.length; targetedAnimationIndex++)
-        {
+        serializationObject.targetedAnimations = [];
+        for (var targetedAnimationIndex = 0; targetedAnimationIndex < this.targetedAnimations.length; targetedAnimationIndex++) {
             var targetedAnimation = this.targetedAnimations[targetedAnimationIndex];
             serializationObject.targetedAnimations[targetedAnimationIndex] = targetedAnimation.serialize();
         }

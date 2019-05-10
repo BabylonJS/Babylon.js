@@ -31706,6 +31706,11 @@ declare module BABYLON {
          * Target to animate
          */
         target: any;
+        /**
+         * Serialize the object
+         * @returns the JSON object representing the current entity
+         */
+        serialize(): any;
     }
     /**
      * Use this class to create coordinated animations on multiple targets
@@ -31874,6 +31879,11 @@ declare module BABYLON {
          * @returns the new aniamtion group
          */
         clone(newName: string, targetConverter?: (oldTarget: any) => any): AnimationGroup;
+        /**
+         * Serializes the animationGroup to an object
+         * @returns Serialized object
+         */
+        serialize(): any;
         /**
          * Returns a new AnimationGroup object parsed from the source provided.
          * @param parsedAnimationGroup defines the source

@@ -191,7 +191,7 @@ export class SceneSerializer {
         SerializationHelper.AppendSerializedAnimations(scene, serializationObject);
 
         // Animation Groups
-        if(scene.animationGroups && scene.animationGroups.length > 0){
+        if (scene.animationGroups && scene.animationGroups.length > 0) {
             serializationObject.animationGroups = [];
             for (var animationGroupIndex = 0; animationGroupIndex < scene.animationGroups.length; animationGroupIndex++) {
                 var animationGroup = scene.animationGroups[animationGroupIndex];
