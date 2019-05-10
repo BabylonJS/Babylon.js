@@ -190,6 +190,16 @@ export class SceneSerializer {
         // Animations
         SerializationHelper.AppendSerializedAnimations(scene, serializationObject);
 
+        // Animation Groups
+        if(scene.animationGroups && scene.animationGroups.length > 0){
+            serializationObject.animationGroups = [];
+            for (var animationGroupIndex = 0; animationGroupIndex < scene.animationGroups.length; animationGroupIndex++) {
+                var animationGroup = scene.animationGroups[animationGroupIndex];
+
+                serializationObject.animationGroups.push(animationGroup.serialize());
+            }
+        }
+
         // Reflection probes
         if (scene.reflectionProbes && scene.reflectionProbes.length > 0) {
             serializationObject.reflectionProbes = [];
