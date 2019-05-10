@@ -21,5 +21,6 @@
 
 ## Bug fixes
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
+- Removing assetContainer from scene will also remove gui layers ([TrevorDev](https://github.com/TrevorDev))
 
 ## Breaking changes

@@ -1645,6 +1645,7 @@ export class Vector2 {
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
+    private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
 
     /**
      * Creates a new Vector3 object from the given x, y, z (floats) coordinates.
@@ -2361,6 +2362,13 @@ export class Vector3 {
      */
     public static get UpReadOnly(): DeepImmutable<Vector3> {
         return Vector3._UpReadOnly;
+    }
+
+    /**
+     * Gets a zero Vector3 that must not be updated
+     */
+    public static get ZeroReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._ZeroReadOnly;
     }
 
     /**
