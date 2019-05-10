@@ -12,7 +12,9 @@ declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock
  * Defines a connection point for a block
  */
 export class NodeMaterialConnectionPoint {
+    /** @hidden */
     public _ownerBlock: NodeMaterialBlock;
+    /** @hidden */
     public _connectedPoint: Nullable<NodeMaterialConnectionPoint>;
     private _associatedVariableName: string;
     private _endpoints = new Array<NodeMaterialConnectionPoint>();
