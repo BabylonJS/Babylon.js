@@ -513,7 +513,6 @@ export class AnimationGroup implements IDisposable {
         return serializationObject;
     }
 
-
     // Statics
     /**
      * Returns a new AnimationGroup object parsed from the source provided.
