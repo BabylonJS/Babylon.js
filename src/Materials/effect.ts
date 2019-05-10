@@ -354,7 +354,9 @@ export class Effect implements IDisposable {
             isFragment: false,
             shouldUseHighPrecisionShader: this._engine._shouldUseHighPrecisionShader,
             needProcessing: this._engine.webGLVersion > 1,
-            supportsUniformBuffers: this._engine.supportsUniformBuffers
+            supportsUniformBuffers: this._engine.supportsUniformBuffers,
+            shadersRepository: Effect.ShadersRepository,
+            includesShadersStore: Effect.IncludesShadersStore,
         };
 
         this._loadVertexShader(vertexSource, (vertexCode) => {
