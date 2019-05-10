@@ -11687,7 +11687,7 @@ declare module BABYLON {
      */
     export interface ISceneSerializableComponent extends ISceneComponent {
         /**
-         * Adds all the element from the container to the scene
+         * Adds all the elements from the container to the scene
          * @param container the container holding the elements
          */
         addFromContainer(container: AbstractScene): void;
@@ -31706,6 +31706,11 @@ declare module BABYLON {
          * Target to animate
          */
         target: any;
+        /**
+         * Serialize the object
+         * @returns the JSON object representing the current entity
+         */
+        serialize(): any;
     }
     /**
      * Use this class to create coordinated animations on multiple targets
@@ -31874,6 +31879,11 @@ declare module BABYLON {
          * @returns the new aniamtion group
          */
         clone(newName: string, targetConverter?: (oldTarget: any) => any): AnimationGroup;
+        /**
+         * Serializes the animationGroup to an object
+         * @returns Serialized object
+         */
+        serialize(): any;
         /**
          * Returns a new AnimationGroup object parsed from the source provided.
          * @param parsedAnimationGroup defines the source
@@ -34433,7 +34443,7 @@ declare module BABYLON {
          */
         serialize(serializationObject: any): void;
         /**
-         * Adds all the element from the container to the scene
+         * Adds all the elements from the container to the scene
          * @param container the container holding the elements
          */
         addFromContainer(container: AbstractScene): void;
@@ -47147,7 +47157,7 @@ declare module BABYLON {
          */
         serialize(serializationObject: any): void;
         /**
-         * Adds all the element from the container to the scene
+         * Adds all the elements from the container to the scene
          * @param container the container holding the elements
          */
         addFromContainer(container: AbstractScene): void;
@@ -47678,6 +47688,17 @@ declare module BABYLON {
         private _drawRenderTargetPredicate;
         private _drawRenderTargetBackground;
         private _drawRenderTargetForeground;
+        /**
+         * Adds all the elements from the container to the scene
+         * @param container the container holding the elements
+         */
+        addFromContainer(container: AbstractScene): void;
+        /**
+         * Removes all the elements in the container from the scene
+         * @param container contains the elements to remove
+         * @param dispose if the removed element should be disposed (default: false)
+         */
+        removeFromContainer(container: AbstractScene, dispose?: boolean): void;
     }
 }
 declare module BABYLON {
@@ -48068,7 +48089,7 @@ declare module BABYLON {
          */
         rebuild(): void;
         /**
-         * Adds all the element from the container to the scene
+         * Adds all the elements from the container to the scene
          * @param container the container holding the elements
          */
         addFromContainer(container: AbstractScene): void;
@@ -48124,7 +48145,7 @@ declare module BABYLON {
          */
         serialize(serializationObject: any): void;
         /**
-         * Adds all the element from the container to the scene
+         * Adds all the elements from the container to the scene
          * @param container the container holding the elements
          */
         addFromContainer(container: AbstractScene): void;
