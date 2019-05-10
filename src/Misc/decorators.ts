@@ -247,16 +247,6 @@ export class SerializationHelper {
                 destination.animations.push(animation.serialize());
             }
         }
-
-        if (source.animationGroups)
-        {
-            destination.animationGroups = [];
-            for (var animationGroupIndex = 0; animationGroupIndex < source.animationGroups.length; animationGroupIndex++) {
-                var animationGroup = source.animationGroups[animationGroupIndex];
-
-                destination.animationGroups.push(animationGroup.serialize());
-            }
-        }
     }
 
     /**
