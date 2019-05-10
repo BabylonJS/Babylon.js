@@ -7,13 +7,11 @@ import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTe
 import { PostProcess } from "babylonjs/PostProcesses/postProcess";
 import { PassPostProcess, PassCubePostProcess } from "babylonjs/PostProcesses/passPostProcess";
 
-//import { GlobalState } from "../../../components/globalState";
-
 interface ITextureLineComponentProps {
     texture: BaseTexture;
     width: number;
     height: number;
-    globalState?: any; //
+    globalState?: any;
     hideChannelSelect?:boolean;
 }
 
