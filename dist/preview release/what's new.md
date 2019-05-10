@@ -9,6 +9,8 @@
 
 ### Inspector
 - Added support for `ShadowGenerator` ([Deltakosh](https://github.com/deltakosh/))
+- Added support for scene normalization ([Deltakosh](https://github.com/deltakosh/))
+- Added support for texture creation and assignments per material ([Deltakosh](https://github.com/deltakosh/))
 
 ### Tools
 - Added `Color3.toHSV()`, `Color3.toHSVToRef()` and `Color3.HSVtoRGBToRef()` ([Deltakosh](https://github.com/deltakosh/))
