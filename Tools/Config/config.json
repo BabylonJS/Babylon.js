@@ -599,7 +599,7 @@
                 "glTF"
             ],
             "umd": {
-                "packageName": "babylonjs-nodeEditor",
+                "packageName": "babylonjs-node-editor",
                 "webpackRoot": "NODEEDITOR",
                 "processDeclaration": {
                     "filename": "babylon.nodeEditor.module.d.ts",
@@ -620,7 +620,7 @@
                     "node_modules/re-resizable/lib/index.es5.js",
                     "Tools/**/*"
                 ],
-                "packageName": "@babylonjs/nodeEditor",
+                "packageName": "@babylonjs/node-editor",
                 "readme": "dist/preview release/nodeEditor/readme-es6.md",
                 "packagesFiles": [
                     "babylon.nodeEditor.max.js",

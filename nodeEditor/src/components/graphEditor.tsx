@@ -39,6 +39,7 @@ import { Vector3TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector3Tr
 import { Vector4TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector4TransformBlock';
 
 require("storm-react-diagrams/dist/style.min.css");
+require("./main.scss");
 
 /*
 Graph Editor Overview
@@ -358,7 +359,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         return (
-            <div style={{
+            <div id="node-editor-graph-root" style={{
                 display: "flex",
                 height: "100%",
                 background: "#464646",
