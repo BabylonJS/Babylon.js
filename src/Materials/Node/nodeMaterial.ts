@@ -12,7 +12,7 @@ import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint'
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
 import { Observable, Observer } from '../../Misc/observable';
 import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
-import { NodeMaterialBuildStateSharedData } from './NodeMaterialBuildStateSharedData';
+import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { SubMesh } from '../../Meshes/subMesh';
 import { MaterialDefines } from '../../Materials/materialDefines';
 import { NodeMaterialOptimizer } from './Optimizers/nodeMaterialOptimizer';
