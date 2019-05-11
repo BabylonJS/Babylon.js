@@ -2,7 +2,7 @@ import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint'
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialWellKnownValues } from './nodeMaterialWellKnownValues';
 import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
-import { NodeMaterialBuildStateSharedData } from './NodeMaterialBuildStateSharedData';
+import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { Effect } from '../effect';
 
 /**
