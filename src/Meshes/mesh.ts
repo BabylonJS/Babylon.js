@@ -2459,7 +2459,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
 
-        vertex_data.applyToMesh(this);
+        vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
         return this;
     }
 
@@ -2665,7 +2665,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             vertex_data.normals = normals;
             vertex_data.uvs = uvs;
 
-            vertex_data.applyToMesh(this);
+            vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
         }
     }
 
