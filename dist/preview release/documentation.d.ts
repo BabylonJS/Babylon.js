@@ -5160,7 +5160,8 @@ declare module BABYLON {
      * Manages the defines for the Material
      */
     export class MaterialDefines {
-        private _keys;
+        /** @hidden */
+        protected _keys: string[];
         private _isDirty;
         /** @hidden */
         _renderId: number;
@@ -5184,6 +5185,7 @@ declare module BABYLON {
         _needNormals: boolean;
         /** @hidden */
         _needUVs: boolean;
+        [id: string]: any;
         /**
          * Specifies if the material needs to be re-calculated
          */
@@ -9360,6 +9362,13 @@ declare module BABYLON {
          */
         static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void;
         /**
+         * Gets the current status of the fog (should it be enabled?)
+         * @param mesh defines the mesh to evaluate for fog support
+         * @param scene defines the hosting scene
+         * @returns true if fog must be enabled
+         */
+        static GetFogState(mesh: AbstractMesh, scene: Scene): boolean;
+        /**
          * Helper used to prepare the list of defines associated with misc. values for shader compilation
          * @param mesh defines the current mesh
          * @param scene defines the current scene
@@ -9379,6 +9388,18 @@ declare module BABYLON {
          * @param useClipPlane defines if clip plane have to be turned on
          */
         static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane?: Nullable<boolean>): void;
+        /**
+         * Prepares the defines for bones
+         * @param mesh The mesh containing the geometry data we will draw
+         * @param defines The defines to update
+         */
+        static PrepareDefinesForBones(mesh: AbstractMesh, defines: any): void;
+        /**
+         * Prepares the defines for morph targets
+         * @param mesh The mesh containing the geometry data we will draw
+         * @param defines The defines to update
+         */
+        static PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any): void;
         /**
          * Prepares the defines used in the shader depending on the attributes data available in the mesh
          * @param mesh The mesh containing the geometry data we will draw
@@ -16840,6 +16861,7 @@ declare module BABYLON {
         private _vectors2Arrays;
         private _vectors3Arrays;
         private _cachedWorldViewMatrix;
+        private _cachedWorldViewProjectionMatrix;
         private _renderId;
         /**
          * Instantiate a new shader material.
@@ -22335,6 +22357,7 @@ declare module BABYLON {
         forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{
             clipPlane: boolean;
         }>): Promise<void>;
+        private static readonly _AllDirtyCallBack;
         private static readonly _ImageProcessingDirtyCallBack;
         private static readonly _TextureDirtyCallBack;
         private static readonly _FresnelDirtyCallBack;
@@ -22355,6 +22378,10 @@ declare module BABYLON {
          * @param func defines a function which checks material defines against the submeshes
          */
         protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void): void;
+        /**
+     * Indicates that we need to re-calculated for all submeshes
+     */
+        protected _markAllSubMeshesAsAllDirty(): void;
         /**
          * Indicates that image processing needs to be re-calculated for all submeshes
          */
@@ -49931,6 +49958,1385 @@ declare module BABYLON {
          * @param invertY Defines wether the texture should be inverted on Y (false by default on video and true on canvas)
          */
         update(invertY?: Nullable<boolean>): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Enum used to define the target of a block
+     */
+    export enum NodeMaterialBlockTargets {
+        /** Vertex shader */
+        Vertex = 1,
+        /** Fragment shader */
+        Fragment = 2,
+        /** Vertex and Fragment */
+        VertexAndFragment = 3
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the kind of connection point for node based material
+     */
+    export enum NodeMaterialBlockConnectionPointTypes {
+        /** Float */
+        Float = 1,
+        /** Int */
+        Int = 2,
+        /** Vector2 */
+        Vector2 = 4,
+        /** Vector3 */
+        Vector3 = 8,
+        /** Vector4 */
+        Vector4 = 16,
+        /** Color3 */
+        Color3 = 32,
+        /** Color4 */
+        Color4 = 64,
+        /** Matrix */
+        Matrix = 128,
+        /** Texture */
+        Texture = 256,
+        /** Texture3D */
+        Texture3D = 512,
+        /** Vector3 or Color3 */
+        Vector3OrColor3 = 40,
+        /** Vector3 or Vector4 */
+        Vector3OrVector4 = 24,
+        /** Vector4 or Color4 */
+        Vector4OrColor4 = 80,
+        /** Color3 or Color4 */
+        Color3OrColor4 = 96,
+        /** Vector3 or Color3 */
+        Vector3OrColor3OrVector4OrColor4 = 120
+    }
+}
+declare module BABYLON {
+    /**
+     * Enum used to define well known values e.g. values automatically provided by the system
+     */
+    export enum NodeMaterialWellKnownValues {
+        /** World */
+        World = 1,
+        /** View */
+        View = 2,
+        /** Projection */
+        Projection = 3,
+        /** ViewProjection */
+        ViewProjection = 4,
+        /** WorldView */
+        WorldView = 5,
+        /** WorldViewProjection */
+        WorldViewProjection = 6,
+        /** Will be filled by the block itself */
+        BlockBased = 7
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store shared data between 2 NodeMaterialBuildState
+     */
+    export class NodeMaterialBuildStateSharedData {
+        /**
+         * Gets the list of emitted varyings
+         */
+        varyings: string[];
+        /**
+         * Gets the varying declaration string
+         */
+        varyingDeclaration: string;
+        /**
+         * Uniform connection points
+         */
+        uniformConnectionPoints: NodeMaterialConnectionPoint[];
+        /**
+         * Bindable blocks (Blocks that need to set data to the effect)
+         */
+        bindableBlocks: NodeMaterialBlock[];
+        /**
+         * List of blocks that can provide a compilation fallback
+         */
+        blocksWithFallbacks: NodeMaterialBlock[];
+        /**
+         * List of blocks that can provide a define update
+         */
+        blocksWithDefines: NodeMaterialBlock[];
+        /**
+        * List of blocks that can provide a repeatable content
+        */
+        repeatableContentBlocks: NodeMaterialBlock[];
+        /**
+         * List of blocks that can block the isReady function for the material
+         */
+        blockingBlocks: NodeMaterialBlock[];
+        /**
+         * Build Id used to avoid multiple recompilations
+         */
+        buildId: number;
+        /** List of emitted variables */
+        variableNames: {
+            [key: string]: number;
+        };
+        /** List of emitted defines */
+        defineNames: {
+            [key: string]: number;
+        };
+        /** Should emit comments? */
+        emitComments: boolean;
+        /** Emit build activity */
+        verbose: boolean;
+        /**
+         * Gets the compilation hints emitted at compilation time
+         */
+        hints: {
+            needWorldViewMatrix: boolean;
+            needWorldViewProjectionMatrix: boolean;
+            needAlphaBlending: boolean;
+            needAlphaTesting: boolean;
+        };
+        /**
+         * List of compilation checks
+         */
+        checks: {
+            emitVertex: boolean;
+            emitFragment: boolean;
+            notConnectedNonOptionalInputs: NodeMaterialConnectionPoint[];
+        };
+        /** Creates a new shared data */
+        constructor();
+        /**
+         * Emits console errors and exceptions if there is a failing check
+         */
+        emitErrors(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store node based material build state
+     */
+    export class NodeMaterialBuildState {
+        /**
+         * Gets the list of emitted attributes
+         */
+        attributes: string[];
+        /**
+         * Gets the list of emitted uniforms
+         */
+        uniforms: string[];
+        /**
+         * Gets the list of emitted samplers
+         */
+        samplers: string[];
+        /**
+         * Gets the list of emitted functions
+         */
+        functions: {
+            [key: string]: string;
+        };
+        /**
+         * Gets the target of the compilation state
+         */
+        target: NodeMaterialBlockTargets;
+        /**
+         * Shared data between multiple NodeMaterialBuildState instances
+         */
+        sharedData: NodeMaterialBuildStateSharedData;
+        /** @hidden */
+        _vertexState: NodeMaterialBuildState;
+        private _attributeDeclaration;
+        private _uniformDeclaration;
+        private _samplerDeclaration;
+        private _varyingTransfer;
+        private _repeatableContentAnchorIndex;
+        /** @hidden */
+        _builtCompilationString: string;
+        /**
+         * Gets the emitted compilation strings
+         */
+        compilationString: string;
+        /**
+         * Finalize the compilation strings
+         * @param state defines the current compilation state
+         */
+        finalize(state: NodeMaterialBuildState): void;
+        /** @hidden */
+        readonly _repeatableContentAnchor: string;
+        /** @hidden */
+        _getFreeVariableName(prefix: string): string;
+        /** @hidden */
+        _getFreeDefineName(prefix: string): string;
+        /** @hidden */
+        _excludeVariableName(name: string): void;
+        /** @hidden */
+        _getGLType(type: NodeMaterialBlockConnectionPointTypes): string;
+        /** @hidden */
+        _emitFunction(name: string, code: string, comments: string): void;
+        /** @hidden */
+        _emitCodeFromInclude(includeName: string, comments: string, options?: {
+            replaceStrings?: {
+                search: RegExp;
+                replace: string;
+            }[];
+        }): string;
+        /** @hidden */
+        _emitFunctionFromInclude(includeName: string, comments: string, options?: {
+            repeatKey?: string;
+            removeAttributes?: boolean;
+            removeUniforms?: boolean;
+            removeVaryings?: boolean;
+            removeIfDef?: boolean;
+            replaceStrings?: {
+                search: RegExp;
+                replace: string;
+            }[];
+        }): void;
+        /** @hidden */
+        _emitVaryings(point: NodeMaterialConnectionPoint, define?: string, force?: boolean, fromFragment?: boolean, replacementName?: string): void;
+        private _emitDefine;
+        /** @hidden */
+        _emitUniformOrAttributes(point: NodeMaterialConnectionPoint, define?: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Root class for all node material optimizers
+     */
+    export class NodeMaterialOptimizer {
+        /**
+         * Function used to optimize a NodeMaterial graph
+         * @param vertexOutputNodes defines the list of output nodes for the vertex shader
+         * @param fragmentOutputNodes defines the list of output nodes for the fragment shader
+         */
+        optimize(vertexOutputNodes: NodeMaterialBlock[], fragmentOutputNodes: NodeMaterialBlock[]): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+        /** BONES */
+        NUM_BONE_INFLUENCERS: number;
+        BonesPerMesh: number;
+        BONETEXTURE: boolean;
+        /** MORPH TARGETS */
+        MORPHTARGETS: boolean;
+        MORPHTARGETS_NORMAL: boolean;
+        MORPHTARGETS_TANGENT: boolean;
+        NUM_MORPH_INFLUENCERS: number;
+        /** IMAGE PROCESSING */
+        IMAGEPROCESSING: boolean;
+        VIGNETTE: boolean;
+        VIGNETTEBLENDMODEMULTIPLY: boolean;
+        VIGNETTEBLENDMODEOPAQUE: boolean;
+        TONEMAPPING: boolean;
+        TONEMAPPING_ACES: boolean;
+        CONTRAST: boolean;
+        EXPOSURE: boolean;
+        COLORCURVES: boolean;
+        COLORGRADING: boolean;
+        COLORGRADING3D: boolean;
+        SAMPLER3DGREENDEPTH: boolean;
+        SAMPLER3DBGRMAP: boolean;
+        IMAGEPROCESSINGPOSTPROCESS: boolean;
+        constructor();
+        setValue(name: string, value: boolean): void;
+    }
+    /**
+     * Class used to configure NodeMaterial
+     */
+    export interface INodeMaterialOptions {
+        /**
+         * Defines if blocks should emit comments
+         */
+        emitComments: boolean;
+    }
+    /**
+     * Class used to create a node based material built by assembling shader blocks
+     */
+    export class NodeMaterial extends PushMaterial {
+        private _options;
+        private _vertexCompilationState;
+        private _fragmentCompilationState;
+        private _sharedData;
+        private _buildId;
+        private _buildWasSuccessful;
+        private _cachedWorldViewMatrix;
+        private _cachedWorldViewProjectionMatrix;
+        private _textureConnectionPoints;
+        private _optimizers;
+        /**
+        * Defines the maximum number of lights that can be used in the material
+        */
+        maxSimultaneousLights: number;
+        /**
+         * Observable raised when the material is built
+         */
+        onBuildObservable: Observable<NodeMaterial>;
+        /**
+         * Gets or sets the root nodes of the material vertex shader
+         */
+        _vertexOutputNodes: NodeMaterialBlock[];
+        /**
+         * Gets or sets the root nodes of the material fragment (pixel) shader
+         */
+        _fragmentOutputNodes: NodeMaterialBlock[];
+        /** Gets or sets options to control the node material overall behavior */
+        options: INodeMaterialOptions;
+        /**
+         * Default configuration related to image processing available in the standard Material.
+         */
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+        /**
+         * Gets the image processing configuration used either in this material.
+         */
+        /**
+        * Sets the Default image processing configuration used either in the this material.
+        *
+        * If sets to null, the scene one is in use.
+        */
+        imageProcessingConfiguration: ImageProcessingConfiguration;
+        /**
+         * Create a new node based material
+         * @param name defines the material name
+         * @param scene defines the hosting scene
+         * @param options defines creation option
+         */
+        constructor(name: string, scene?: Scene, options?: Partial<INodeMaterialOptions>);
+        /**
+         * Gets the current class name of the material e.g. "NodeMaterial"
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Keep track of the image processing observer to allow dispose and replace.
+         */
+        private _imageProcessingObserver;
+        /**
+         * Attaches a new image processing configuration to the Standard Material.
+         * @param configuration
+         */
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
+        /**
+         * Adds a new optimizer to the list of optimizers
+         * @param optimizer defines the optimizers to add
+         * @returns the current material
+         */
+        registerOptimizer(optimizer: NodeMaterialOptimizer): this | undefined;
+        /**
+         * Remove an optimizer from the list of optimizers
+         * @param optimizer defines the optimizers to remove
+         * @returns the current material
+         */
+        unregisterOptimizer(optimizer: NodeMaterialOptimizer): this | undefined;
+        /**
+         * Add a new block to the list of output nodes
+         * @param node defines the node to add
+         * @returns the current material
+         */
+        addOutputNode(node: NodeMaterialBlock): this;
+        /**
+         * Remove a block from the list of root nodes
+         * @param node defines the node to remove
+         * @returns the current material
+         */
+        removeOutputNode(node: NodeMaterialBlock): this;
+        private _addVertexOutputNode;
+        private _removeVertexOutputNode;
+        private _addFragmentOutputNode;
+        private _removeFragmentOutputNode;
+        /**
+         * Specifies if the material will require alpha blending
+         * @returns a boolean specifying if alpha blending is needed
+         */
+        needAlphaBlending(): boolean;
+        /**
+         * Specifies if this material should be rendered in alpha test mode
+         * @returns a boolean specifying if an alpha test is needed.
+         */
+        needAlphaTesting(): boolean;
+        private _initializeBlock;
+        private _resetDualBlocks;
+        /**
+         * Build the material and generates the inner effect
+         * @param verbose defines if the build should log activity
+         */
+        build(verbose?: boolean): void;
+        /**
+         * Runs an otpimization phase to try to improve the shader code
+         */
+        optimize(): void;
+        private _prepareDefinesForAttributes;
+        /**
+          * Get if the submesh is ready to be used and all its information available.
+          * Child classes can use it to update shaders
+          * @param mesh defines the mesh to check
+          * @param subMesh defines which submesh to check
+          * @param useInstances specifies that instances should be used
+          * @returns a boolean indicating that the submesh is ready or not
+          */
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        /**
+         * Binds the world matrix to the material
+         * @param world defines the world transformation matrix
+         */
+        bindOnlyWorldMatrix(world: Matrix): void;
+        /**
+         * Binds the submesh to this material by preparing the effect and shader to draw
+         * @param world defines the world transformation matrix
+         * @param mesh defines the mesh containing the submesh
+         * @param subMesh defines the submesh to bind the material to
+         */
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        /**
+         * Gets the active textures from the material
+         * @returns an array of textures
+         */
+        getActiveTextures(): BaseTexture[];
+        /**
+         * Specifies if the material uses a texture
+         * @param texture defines the texture to check against the material
+         * @returns a boolean specifying if the material uses the texture
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Disposes the material
+         * @param forceDisposeEffect specifies if effects should be forcefully disposed
+         * @param forceDisposeTextures specifies if textures should be forcefully disposed
+         * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
+         */
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines a block that can be used inside a node based material
+     */
+    export class NodeMaterialBlock {
+        private _buildId;
+        private _target;
+        private _isFinalMerger;
+        /** @hidden */
+        _inputs: NodeMaterialConnectionPoint[];
+        /** @hidden */
+        _outputs: NodeMaterialConnectionPoint[];
+        /**
+         * Gets or sets the name of the block
+         */
+        name: string;
+        /**
+         * Gets a boolean indicating that this block is an end block (e.g. it is generating a system value)
+         */
+        readonly isFinalMerger: boolean;
+        /**
+         * Gets or sets the build Id
+         */
+        buildId: number;
+        /**
+         * Gets or sets the target of the block
+         */
+        target: NodeMaterialBlockTargets;
+        /**
+         * Gets the list of input points
+         */
+        readonly inputs: NodeMaterialConnectionPoint[];
+        /** Gets the list of output points */
+        readonly outputs: NodeMaterialConnectionPoint[];
+        /**
+         * Find an input by its name
+         * @param name defines the name of the input to look for
+         * @returns the input or null if not found
+         */
+        getInputByName(name: string): Nullable<NodeMaterialConnectionPoint>;
+        /**
+         * Find an output by its name
+         * @param name defines the name of the outputto look for
+         * @returns the output or null if not found
+         */
+        getOutputByName(name: string): Nullable<NodeMaterialConnectionPoint>;
+        /**
+         * Creates a new NodeMaterialBlock
+         * @param name defines the block name
+         * @param target defines the target of that block (Vertex by default)
+         * @param isFinalMerger defines a boolean indicating that this block is an end block (e.g. it is generating a system value). Default is false
+         */
+        constructor(name: string, target?: NodeMaterialBlockTargets, isFinalMerger?: boolean);
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Bind data to effect. Will only be called for blocks with isBindable === true
+         * @param effect defines the effect to bind data to
+         * @param nodeMaterial defines the hosting NodeMaterial
+         * @param mesh defines the mesh that will be rendered
+         */
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected _declareOutput(output: NodeMaterialConnectionPoint, state: NodeMaterialBuildState): string;
+        protected _writeVariable(currentPoint: NodeMaterialConnectionPoint): string;
+        protected _writeFloat(value: number): string;
+        /**
+         * Gets the current class name e.g. "NodeMaterialBlock"
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Register a new input. Must be called inside a block constructor
+         * @param name defines the connection point name
+         * @param type defines the connection point type
+         * @param isOptional defines a boolean indicating that this input can be omitted
+         * @param target defines the target to use to limit the connection point (will be VetexAndFragment by default)
+         * @returns the current block
+         */
+        registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional?: boolean, target?: NodeMaterialBlockTargets): this;
+        /**
+         * Register a new output. Must be called inside a block constructor
+         * @param name defines the connection point name
+         * @param type defines the connection point type
+         * @param target defines the target to use to limit the connection point (will be VetexAndFragment by default)
+         * @returns the current block
+         */
+        registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets): this;
+        /**
+         * Will return the first available input e.g. the first one which is not an uniform or an attribute
+         * @param forOutput defines an optional connection point to check compatibility with
+         * @returns the first available input or null
+         */
+        getFirstAvailableInput(forOutput?: Nullable<NodeMaterialConnectionPoint>): Nullable<NodeMaterialConnectionPoint>;
+        /**
+         * Will return the first available output e.g. the first one which is not yet connected and not a varying
+         * @param forBlock defines an optional block to check compatibility with
+         * @returns the first available input or null
+         */
+        getFirstAvailableOutput(forBlock?: Nullable<NodeMaterialBlock>): Nullable<NodeMaterialConnectionPoint>;
+        /**
+         * Connect current block with another block
+         * @param other defines the block to connect with
+         * @param options define the various options to help pick the right connections
+         * @returns the current block
+         */
+        connectTo(other: NodeMaterialBlock, options?: {
+            input?: string;
+            output?: string;
+            outputSwizzle?: string;
+        }): this | undefined;
+        protected _buildBlock(state: NodeMaterialBuildState): void;
+        /**
+         * Add potential fallbacks if shader compilation fails
+         * @param mesh defines the mesh to be rendered
+         * @param fallbacks defines the current prioritized list of fallbacks
+         */
+        provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks): void;
+        /**
+         * Update defines for shader compilation
+         * @param mesh defines the mesh to be rendered
+         * @param nodeMaterial defines the node material requesting the update
+         * @param defines defines the material defines to update
+         * @param useInstances specifies that instances should be used
+         */
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        /**
+         * Lets the block try to connect some inputs automatically
+         */
+        autoConfigure(): void;
+        /**
+         * Function called when a block is declared as repeatable content generator
+         * @param vertexShaderState defines the current compilation state for the vertex shader
+         * @param fragmentShaderState defines the current compilation state for the fragment shader
+         * @param mesh defines the mesh to be rendered
+         * @param defines defines the material defines to update
+         */
+        replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines): void;
+        /**
+         * Checks if the block is ready
+         * @param mesh defines the mesh to be rendered
+         * @param nodeMaterial defines the node material requesting the update
+         * @param defines defines the material defines to update
+         * @param useInstances specifies that instances should be used
+         * @returns true if the block is ready
+         */
+        isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): boolean;
+        /**
+         * Compile the current node and generate the shader code
+         * @param state defines the current compilation state (uniforms, samplers, current string)
+         * @returns the current block
+         */
+        build(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines a connection point for a block
+     */
+    export class NodeMaterialConnectionPoint {
+        /** @hidden */
+        _ownerBlock: NodeMaterialBlock;
+        /** @hidden */
+        _connectedPoint: Nullable<NodeMaterialConnectionPoint>;
+        private _associatedVariableName;
+        private _endpoints;
+        private _storedValue;
+        private _valueCallback;
+        private _isVarying;
+        /** @hidden */
+        _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        /**
+         * Gets or sets the connection point type (default is float)
+         */
+        type: NodeMaterialBlockConnectionPointTypes;
+        /**
+         * Gets or sets the connection point name
+         */
+        name: string;
+        /**
+         * Gets or sets the swizzle to apply to this connection point when reading or writing
+         */
+        swizzle: string;
+        /**
+         * Gets or sets a boolean indicating that this connection point can be omitted
+         */
+        isOptional: boolean;
+        /**
+         * Gets or sets a string indicating that this uniform must be defined under a #ifdef
+         */
+        define: string;
+        /** Gets or sets the target of that connection point */
+        target: NodeMaterialBlockTargets;
+        /**
+         * Gets or sets the value of that point.
+         * Please note that this value will be ignored if valueCallback is defined
+         */
+        value: any;
+        /**
+         * Gets or sets a callback used to get the value of that point.
+         * Please note that setting this value will force the connection point to ignore the value property
+         */
+        valueCallback: () => any;
+        /**
+         * Gets or sets the associated variable name in the shader
+         */
+        associatedVariableName: string;
+        /**
+         * Gets or sets a boolean indicating that this connection point is coming from an uniform.
+         * In this case the connection point name must be the name of the uniform to use.
+         * Can only be set on inputs
+         */
+        isUniform: boolean;
+        /**
+         * Gets or sets a boolean indicating that this connection point is coming from an attribute.
+         * In this case the connection point name must be the name of the attribute to use
+         * Can only be set on inputs
+         */
+        isAttribute: boolean;
+        /**
+         * Gets or sets a boolean indicating that this connection point is generating a varying variable.
+         * Can only be set on exit points
+         */
+        isVarying: boolean;
+        /** Get the other side of the connection (if any) */
+        readonly connectedPoint: Nullable<NodeMaterialConnectionPoint>;
+        /** Get the block that owns this connection point */
+        readonly ownerBlock: NodeMaterialBlock;
+        /** Get the block connected on the other side of this connection (if any) */
+        readonly sourceBlock: Nullable<NodeMaterialBlock>;
+        /** Get the block connected on the endpoints of this connection (if any) */
+        readonly connectedBlocks: Array<NodeMaterialBlock>;
+        /**
+         * Creates a new connection point
+         * @param name defines the connection point name
+         * @param ownerBlock defines the block hosting this connection point
+         */
+        constructor(name: string, ownerBlock: NodeMaterialBlock);
+        /**
+         * Gets the current class name e.g. "NodeMaterialConnectionPoint"
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Set the source of this connection point to a vertex attribute
+         * @param attributeName defines the attribute name (position, uv, normal, etc...). If not specified it will take the connection point name
+         * @returns the current connection point
+         */
+        setAsAttribute(attributeName?: string): NodeMaterialConnectionPoint;
+        /**
+         * Set the source of this connection point to a well known value
+         * @param value define the well known value to use (world, view, etc...)
+         * @returns the current connection point
+         */
+        setAsWellKnownValue(value: NodeMaterialWellKnownValues): NodeMaterialConnectionPoint;
+        private _getTypeLength;
+        /**
+         * Connect this point to another connection point
+         * @param connectionPoint defines the other connection point
+         * @returns the current connection point
+         */
+        connectTo(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint;
+        /**
+         * Disconnect this point from one of his endpoint
+         * @param endpoint defines the other connection point
+         * @returns the current connection point
+         */
+        disconnectFrom(endpoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint;
+        /**
+         * When connection point is an uniform, this function will send its value to the effect
+         * @param effect defines the effect to transmit value to
+         * @param world defines the world matrix
+         * @param worldView defines the worldxview matrix
+         * @param worldViewProjection defines the worldxviewxprojection matrix
+         */
+        transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix): void;
+        /**
+         * When connection point is an uniform, this function will send its value to the effect
+         * @param effect defines the effect to transmit value to
+         * @param scene defines the hosting scene
+         */
+        transmit(effect: Effect, scene: Scene): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to output the vertex position
+     */
+    export class VertexOutputBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new VertexOutputBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the vector input component
+         */
+        readonly vector: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to add support for vertex skinning (bones)
+     */
+    export class BonesBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new BonesBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the matrix indices input component
+         */
+        readonly matricesIndices: NodeMaterialConnectionPoint;
+        /**
+         * Gets the matrix weights input component
+         */
+        readonly matricesWeights: NodeMaterialConnectionPoint;
+        /**
+         * Gets the extra matrix indices input component
+         */
+        readonly matricesIndicesExtra: NodeMaterialConnectionPoint;
+        /**
+         * Gets the extra matrix weights input component
+         */
+        readonly matricesWeightsExtra: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world input component
+         */
+        readonly world: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
+        provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to add support for instances
+     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     */
+    export class InstancesBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new InstancesBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the first world row input component
+         */
+        readonly world0: NodeMaterialConnectionPoint;
+        /**
+         * Gets the second world row input component
+         */
+        readonly world1: NodeMaterialConnectionPoint;
+        /**
+         * Gets the third world row input component
+         */
+        readonly world2: NodeMaterialConnectionPoint;
+        /**
+         * Gets the forth world row input component
+         */
+        readonly world3: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world input component
+         */
+        readonly world: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to add morph targets support to vertex shader
+     */
+    export class MorphTargetsBlock extends NodeMaterialBlock {
+        private _repeatableContentAnchor;
+        private _repeatebleContentGenerated;
+        /**
+         * Create a new MorphTargetsBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the position input component
+         */
+        readonly position: NodeMaterialConnectionPoint;
+        /**
+         * Gets the normal input component
+         */
+        readonly normal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the tangent input component
+         */
+        readonly tangent: NodeMaterialConnectionPoint;
+        /**
+         * Gets the position output component
+         */
+        readonly positionOutput: NodeMaterialConnectionPoint;
+        /**
+         * Gets the normal output component
+         */
+        readonly normalOutput: NodeMaterialConnectionPoint;
+        /**
+         * Gets the tangent output component
+         */
+        readonly tangentOutput: NodeMaterialConnectionPoint;
+        initialize(state: NodeMaterialBuildState): void;
+        autoConfigure(): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to output the final color
+     */
+    export class FragmentOutputBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets a boolean indicating if this block will output an alpha value
+         */
+        alphaBlendingEnabled: boolean;
+        /**
+         * Create a new FragmentOutputBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the color input component
+         */
+        readonly color: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to add an alpha test in the fragment shader
+     */
+    export class AlphaTestBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the alpha value where alpha testing happens
+         */
+        alphaCutOff: number;
+        /**
+         * Create a new AlphaTestBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the color input component
+         */
+        readonly color: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to create a Color4 out of 4 inputs (one for each component)
+     */
+    export class RGBAMergerBlock extends NodeMaterialBlock {
+        /**
+         * Create a new RGBAMergerBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the R input component
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the G input component
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the B input component
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        /**
+         * Gets the RGB input component
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        /**
+         * Gets the R input component
+         */
+        readonly a: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to create a Color3 out of 3 inputs (one for each component)
+     */
+    export class RGBMergerBlock extends NodeMaterialBlock {
+        /**
+         * Create a new RGBMergerBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the R component input
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the G component input
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the B component input
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to expand a Color4 or a Vector4 into 4 outputs (one for each component)
+     */
+    export class RGBASplitterBlock extends NodeMaterialBlock {
+        /**
+         * Create a new RGBASplitterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to expand a Color3 or a Vector3 into 3 outputs (one for each component)
+     */
+    export class RGBSplitterBlock extends NodeMaterialBlock {
+        /**
+         * Create a new RGBSplitterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to read a texture from a sampler
+     */
+    export class TextureBlock extends NodeMaterialBlock {
+        private _defineName;
+        /**
+         * Gets or sets a boolean indicating that the block can automatically fetch the texture matrix
+         */
+        autoConnectTextureMatrix: boolean;
+        /**
+         * Gets or sets a boolean indicating that the block can automatically select the uv channel based on texture
+         */
+        autoSelectUV: boolean;
+        /**
+         * Create a new TextureBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the uv input component
+         */
+        readonly uv: NodeMaterialConnectionPoint;
+        /**
+         * Gets the texture information input component
+         */
+        readonly textureInfo: NodeMaterialConnectionPoint;
+        /**
+         * Gets the transformed uv input component
+         */
+        readonly transformedUV: NodeMaterialConnectionPoint;
+        /**
+         * Gets the texture input component
+         */
+        readonly texture: NodeMaterialConnectionPoint;
+        /**
+         * Gets the texture transform input component
+         */
+        readonly textureTransform: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
+        initialize(state: NodeMaterialBuildState): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        isReady(): boolean;
+        private _injectVertexCode;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to add image processing support to fragment shader
+     */
+    export class ImageProcessingBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ImageProcessingBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the color input component
+         */
+        readonly color: NodeMaterialConnectionPoint;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): boolean;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to add support for scene fog
+     */
+    export class FogBlock extends NodeMaterialBlock {
+        /**
+         * Create a new FogBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position input component
+         */
+        readonly worldPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the view input component
+         */
+        readonly view: NodeMaterialConnectionPoint;
+        /**
+         * Gets the color input component
+         */
+        readonly color: NodeMaterialConnectionPoint;
+        /**
+         * Gets the fog color input component
+         */
+        readonly fogColor: NodeMaterialConnectionPoint;
+        /**
+         * Gets the for parameter input component
+         */
+        readonly fogParameters: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to multiply 2 vector4
+     */
+    export class MultiplyBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new MultiplyBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        readonly left: NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        readonly right: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to add 2 vector4
+     */
+    export class AddBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new AddBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        readonly left: NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        readonly right: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to clamp a float
+     */
+    export class ClampBlock extends NodeMaterialBlock {
+        /** Gets or sets the minimum range */
+        minimum: number;
+        /** Gets or sets the maximum range */
+        maximum: number;
+        /**
+         * Creates a new ClampBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the value input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to transform a vector2 with a matrix
+     */
+    export class Vector2TransformBlock extends NodeMaterialBlock {
+        /**
+         * Defines the value to use to complement Vector2 to transform it to a Vector4
+         */
+        complementZ: number;
+        /**
+         * Defines the value to use to complement Vector2 to transform it to a Vector4
+         */
+        complementW: number;
+        /**
+         * Creates a new Vector2TransformBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the vector input
+         */
+        readonly vector: NodeMaterialConnectionPoint;
+        /**
+         * Gets the matrix transform input
+         */
+        readonly transform: NodeMaterialConnectionPoint;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to transform a vector3 with a matrix
+     */
+    export class Vector3TransformBlock extends NodeMaterialBlock {
+        /**
+         * Defines the value to use to complement Vector3 to transform it to a Vector4
+         */
+        complement: number;
+        /**
+         * Creates a new Vector3TransformBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the vector input
+         */
+        readonly vector: NodeMaterialConnectionPoint;
+        /**
+         * Gets the matrix transform input
+         */
+        readonly transform: NodeMaterialConnectionPoint;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to transform a vector4 with a matrix
+     */
+    export class Vector4TransformBlock extends NodeMaterialBlock {
+        /**
+         * Defines the value to use to complement Vector3 to transform it to a Vector4
+         */
+        complementW: number;
+        /**
+         * Creates a new Vector4TransformBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the vector input
+         */
+        readonly vector: NodeMaterialConnectionPoint;
+        /**
+         * Gets the matrix transform input
+         */
+        readonly transform: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to multiply two matrices
+     */
+    export class MatrixMultiplicationBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new MatrixMultiplicationBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the left operand
+         */
+        readonly left: NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand
+         */
+        readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {

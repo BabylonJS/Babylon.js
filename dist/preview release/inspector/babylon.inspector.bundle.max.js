@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_control__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -5672,25 +5672,6 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 // module
 exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #222222; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #555555; }\n\n.react-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .bounding-box {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .bounding-box.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .postProcessTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .postProcessTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .renderingPipelineTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .renderingPipelineTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .skeletonTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .skeletonTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
-
-// exports
-
-
-/***/ }),
-
-/***/ "../../node_modules/css-loader/index.js!./index.css":
-/*!***************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/css-loader!./index.css ***!
-  \***************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
 
 // exports
 
@@ -33188,10 +33169,12 @@ var ActionTabsComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._once = true;
         var initialIndex = 0;
-        var validationResutls = _this.props.globalState.validationResults;
-        if (validationResutls) {
-            if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
-                initialIndex = 3;
+        if (_this.props.globalState) {
+            var validationResutls = _this.props.globalState.validationResults;
+            if (validationResutls) {
+                if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
+                    initialIndex = 3;
+                }
             }
         }
         _this.state = { selectedEntity: null, selectedIndex: initialIndex };
@@ -33199,31 +33182,42 @@ var ActionTabsComponent = /** @class */ (function (_super) {
     }
     ActionTabsComponent.prototype.componentWillMount = function () {
         var _this = this;
-        this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add(function (entity) {
-            _this.setState({ selectedEntity: entity, selectedIndex: 0 });
-        });
-        this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add(function (index) {
-            _this.setState({ selectedIndex: index });
-        });
+        if (this.props.globalState) {
+            this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add(function (entity) {
+                _this.setState({ selectedEntity: entity, selectedIndex: 0 });
+            });
+            this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add(function (index) {
+                _this.setState({ selectedIndex: index });
+            });
+        }
     };
     ActionTabsComponent.prototype.componentWillUnmount = function () {
-        if (this._onSelectionChangeObserver) {
-            this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
-        }
-        if (this._onTabChangedObserver) {
-            this.props.globalState.onTabChangedObservable.remove(this._onTabChangedObserver);
+        if (this.props.globalState) {
+            if (this._onSelectionChangeObserver) {
+                this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
+            }
+            if (this._onTabChangedObserver) {
+                this.props.globalState.onTabChangedObservable.remove(this._onTabChangedObserver);
+            }
         }
     };
     ActionTabsComponent.prototype.changeSelectedTab = function (index) {
-        this.props.globalState.onTabChangedObservable.notifyObservers(index);
+        if (this.props.globalState) {
+            this.props.globalState.onTabChangedObservable.notifyObservers(index);
+        }
     };
     ActionTabsComponent.prototype.renderContent = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabsComponent__WEBPACK_IMPORTED_MODULE_2__["TabsComponent"], { selectedIndex: this.state.selectedIndex, onSelectedIndexChange: function (value) { return _this.changeSelectedTab(value); } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_propertyGridTabComponent__WEBPACK_IMPORTED_MODULE_7__["PropertyGridTabComponent"], { title: "Properties", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faFileAlt"], scene: this.props.scene, selectedEntity: this.state.selectedEntity, globalState: this.props.globalState, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_debugTabComponent__WEBPACK_IMPORTED_MODULE_5__["DebugTabComponent"], { title: "Debug", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faBug"], scene: this.props.scene, globalState: this.props.globalState }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_statisticsTabComponent__WEBPACK_IMPORTED_MODULE_4__["StatisticsTabComponent"], { title: "Statistics", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faChartBar"], scene: this.props.scene, globalState: this.props.globalState }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_toolsTabComponent__WEBPACK_IMPORTED_MODULE_9__["ToolsTabComponent"], { title: "Tools", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faWrench"], scene: this.props.scene, globalState: this.props.globalState })));
+        if (this.props.globalState && this.props.scene) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabsComponent__WEBPACK_IMPORTED_MODULE_2__["TabsComponent"], { selectedIndex: this.state.selectedIndex, onSelectedIndexChange: function (value) { return _this.changeSelectedTab(value); } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_propertyGridTabComponent__WEBPACK_IMPORTED_MODULE_7__["PropertyGridTabComponent"], { title: "Properties", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faFileAlt"], scene: this.props.scene, selectedEntity: this.state.selectedEntity, globalState: this.props.globalState, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_debugTabComponent__WEBPACK_IMPORTED_MODULE_5__["DebugTabComponent"], { title: "Debug", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faBug"], scene: this.props.scene, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_statisticsTabComponent__WEBPACK_IMPORTED_MODULE_4__["StatisticsTabComponent"], { title: "Statistics", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faChartBar"], scene: this.props.scene, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_toolsTabComponent__WEBPACK_IMPORTED_MODULE_9__["ToolsTabComponent"], { title: "Tools", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faWrench"], scene: this.props.scene, globalState: this.props.globalState })));
+        }
+        else {
+            return null;
+        }
     };
     ActionTabsComponent.prototype.onClose = function () {
         if (!this.props.onClose) {
@@ -33242,7 +33236,7 @@ var ActionTabsComponent = /** @class */ (function (_super) {
         if (this.props.popupMode) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "actionTabs" },
                 !this.props.noHeader &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_8__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_8__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined }),
                 this.renderContent()));
         }
         if (this._once) {
@@ -33258,7 +33252,7 @@ var ActionTabsComponent = /** @class */ (function (_super) {
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_6___default.a, { id: "actionTabs", minWidth: 300, maxWidth: 600, size: { height: "100%" }, minHeight: "100%", enable: { top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false } },
             !this.props.noHeader &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_8__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_8__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined }),
             this.renderContent()));
     };
     return ActionTabsComponent;
@@ -33329,10 +33323,10 @@ var LineContainerComponent = /** @class */ (function (_super) {
     };
     LineContainerComponent.prototype.componentDidMount = function () {
         var _this = this;
-        if (!this.props.globalState.selectedLineContainerTitle) {
+        if (this.props.globalState && !this.props.globalState.selectedLineContainerTitle) {
             return;
         }
-        if (this.props.globalState.selectedLineContainerTitle === this.props.title) {
+        if (this.props.globalState && this.props.globalState.selectedLineContainerTitle === this.props.title) {
             setTimeout(function () {
                 _this.props.globalState.selectedLineContainerTitle = "";
             });
@@ -34393,6 +34387,11 @@ var TextureLineComponent = /** @class */ (function (_super) {
     TextureLineComponent.prototype.updatePreview = function () {
         var _this = this;
         var texture = this.props.texture;
+        if (!texture.isReady() && texture._texture) {
+            texture._texture.onLoadedObservable.addOnce(function () {
+                _this.updatePreview();
+            });
+        }
         var scene = texture.getScene();
         var engine = scene.getEngine();
         var size = texture.getSize();
@@ -34415,7 +34414,9 @@ var TextureLineComponent = /** @class */ (function (_super) {
             return;
         }
         var previewCanvas = this.refs.canvas;
-        this.props.globalState.blockMutationUpdates = true;
+        if (this.props.globalState) {
+            this.props.globalState.blockMutationUpdates = true;
+        }
         var rtt = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
         passPostProcess.onApply = function (effect) {
             effect.setTexture("textureSampler", texture);
@@ -34479,13 +34480,15 @@ var TextureLineComponent = /** @class */ (function (_super) {
         rtt.dispose();
         passPostProcess.dispose();
         previewCanvas.style.height = height + "px";
-        this.props.globalState.blockMutationUpdates = false;
+        if (this.props.globalState) {
+            this.props.globalState.blockMutationUpdates = false;
+        }
     };
     TextureLineComponent.prototype.render = function () {
         var _this = this;
         var texture = this.props.texture;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textureLine" },
-            texture.isCube &&
+            !this.props.hideChannelSelect && texture.isCube &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control3D" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 0 ? "px command selected" : "px command", onClick: function () { return _this.setState({ face: 0 }); } }, "PX"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 1 ? "nx command selected" : "nx command", onClick: function () { return _this.setState({ face: 1 }); } }, "NX"),
@@ -34493,7 +34496,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 3 ? "ny command selected" : "ny command", onClick: function () { return _this.setState({ face: 3 }); } }, "NY"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 4 ? "pz command selected" : "pz command", onClick: function () { return _this.setState({ face: 4 }); } }, "PZ"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 5 ? "nz command selected" : "nz command", onClick: function () { return _this.setState({ face: 5 }); } }, "NZ")),
-            !texture.isCube &&
+            !this.props.hideChannelSelect && !texture.isCube &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && !this.state.displayGreen ? "red command selected" : "red command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: false, displayBlue: false, displayAlpha: false }); } }, "R"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayGreen && !this.state.displayBlue ? "green command selected" : "green command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: true, displayBlue: false, displayAlpha: false }); } }, "G"),
@@ -36036,7 +36039,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/control");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
@@ -36337,7 +36340,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/control");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
@@ -36751,7 +36754,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/control");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
@@ -37831,7 +37834,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/valueLineComponent */ "./components/actionTabs/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/control");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 
@@ -41825,36 +41828,6 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./index.css":
-/*!*******************!*\
-  !*** ./index.css ***!
-  \*******************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-
-var content = __webpack_require__(/*! !../../node_modules/css-loader!./index.css */ "../../node_modules/css-loader/index.js!./index.css");
-
-if(typeof content === 'string') content = [[module.i, content, '']];
-
-var transform;
-var insertInto;
-
-
-
-var options = {"hmr":true}
-
-options.transform = transform
-options.insertInto = undefined;
-
-var update = __webpack_require__(/*! ../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
-
-if(content.locals) module.exports = content.locals;
-
-if(false) {}
-
-/***/ }),
-
 /***/ "./index.ts":
 /*!******************!*\
   !*** ./index.ts ***!
@@ -41867,7 +41840,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _inspector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./inspector */ "./inspector.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Inspector", function() { return _inspector__WEBPACK_IMPORTED_MODULE_0__["Inspector"]; });
 
-__webpack_require__(/*! ./index.css */ "./index.css");
 
 
 
@@ -41913,20 +41885,25 @@ var Inspector = /** @class */ (function () {
     Inspector._CopyStyles = function (sourceDoc, targetDoc) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
             var styleSheet = sourceDoc.styleSheets[index];
-            if (styleSheet.cssRules) { // for <style> elements
-                var newStyleEl = sourceDoc.createElement('style');
-                for (var _i = 0, _a = styleSheet.cssRules; _i < _a.length; _i++) {
-                    var cssRule = _a[_i];
-                    // write the text of each rule into the body of the style element
-                    newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+            try {
+                if (styleSheet.cssRules) { // for <style> elements
+                    var newStyleEl = sourceDoc.createElement('style');
+                    for (var _i = 0, _a = styleSheet.cssRules; _i < _a.length; _i++) {
+                        var cssRule = _a[_i];
+                        // write the text of each rule into the body of the style element
+                        newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+                    }
+                    targetDoc.head.appendChild(newStyleEl);
                 }
-                targetDoc.head.appendChild(newStyleEl);
+                else if (styleSheet.href) { // for <link> elements loading CSS from a URL
+                    var newLinkEl = sourceDoc.createElement('link');
+                    newLinkEl.rel = 'stylesheet';
+                    newLinkEl.href = styleSheet.href;
+                    targetDoc.head.appendChild(newLinkEl);
+                }
             }
-            else if (styleSheet.href) { // for <link> elements loading CSS from a URL
-                var newLinkEl = sourceDoc.createElement('link');
-                newLinkEl.rel = 'stylesheet';
-                newLinkEl.href = styleSheet.href;
-                targetDoc.head.appendChild(newLinkEl);
+            catch (e) {
+                console.log(e);
             }
         }
     };
@@ -42080,12 +42057,14 @@ var Inspector = /** @class */ (function () {
             react_dom__WEBPACK_IMPORTED_MODULE_2__["render"](embedHostElement, this._EmbedHost);
         }
     };
-    Inspector._CreatePopup = function (title, windowVariableName) {
+    Inspector._CreatePopup = function (title, windowVariableName, width, height) {
+        if (width === void 0) { width = 300; }
+        if (height === void 0) { height = 800; }
         var windowCreationOptionsList = {
-            width: 300,
-            height: 800,
-            top: (window.innerHeight - 800) / 2 + window.screenY,
-            left: (window.innerWidth - 300) / 2 + window.screenX
+            width: width,
+            height: height,
+            top: (window.innerHeight - width) / 2 + window.screenY,
+            left: (window.innerWidth - height) / 2 + window.screenX
         };
         var windowCreationOptions = Object.keys(windowCreationOptionsList)
             .map(function (key) { return key + '=' + windowCreationOptionsList[key]; })
@@ -42398,14 +42377,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/adtInstrumentation":
+/***/ "babylonjs-gui/2D/controls/control":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_control__;
 
 /***/ }),
 
