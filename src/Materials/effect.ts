@@ -333,6 +333,8 @@ export class Effect implements IDisposable {
             if (!vertexSource) {
                 vertexSource = baseName.vertexElement;
             }
+        } else if (baseName.vertexSource) {
+            vertexSource = "source:" + baseName.vertexSource;
         } else {
             vertexSource = baseName.vertex || baseName;
         }
@@ -343,6 +345,8 @@ export class Effect implements IDisposable {
             if (!fragmentSource) {
                 fragmentSource = baseName.fragmentElement;
             }
+        } else if (baseName.fragmentSource) {
+            fragmentSource = "source:" + baseName.fragmentSource;
         } else {
             fragmentSource = baseName.fragment || baseName;
         }
@@ -511,6 +515,11 @@ export class Effect implements IDisposable {
 
     /** @hidden */
     public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
+        if (vertex.substr(0, 7) === "source:") {
+            callback(vertex.substr(7));
+            return;
+        }
+
         if (DomManagement.IsWindowObjectExist()) {
             // DOM element ?
             if (vertex instanceof HTMLElement) {
@@ -547,6 +556,11 @@ export class Effect implements IDisposable {
 
     /** @hidden */
     public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
+        if (fragment.substr(0, 7) === "source:") {
+            callback(fragment.substr(7));
+            return;
+        }
+
         if (DomManagement.IsWindowObjectExist()) {
             // DOM element ?
             if (fragment instanceof HTMLElement) {

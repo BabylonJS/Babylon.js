@@ -37,6 +37,7 @@
     "readmeFilename": "README.md",
     "dependencies": {},
     "devDependencies": {
+        "storm-react-diagrams": "^5.2.1",
         "@fortawesome/fontawesome-svg-core": "~1.2.8",
         "@fortawesome/free-regular-svg-icons": "~5.4.1",
         "@fortawesome/free-solid-svg-icons": "~5.4.1",
