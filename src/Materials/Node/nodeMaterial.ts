@@ -19,6 +19,19 @@ import { NodeMaterialOptimizer } from './Optimizers/nodeMaterialOptimizer';
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from '../imageProcessingConfiguration';
 import { Nullable } from '../../types';
 import { VertexBuffer } from '../../Meshes/buffer';
+import { Tools } from '../../Misc/tools';
+
+// declare NODEEDITOR namespace for compilation issue
+declare var NODEEDITOR: any;
+declare var BABYLON: any;
+
+/**
+ * Interface used to configure the node material editor
+ */
+export interface INodeMaterialEditorOptions {
+    /** Define the URl to load node editor script */
+    editorURL?: string;
+}
 
 /** @hidden */
 export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
@@ -87,6 +100,26 @@ export class NodeMaterial extends PushMaterial {
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _textureConnectionPoints = new Array<NodeMaterialConnectionPoint>();
     private _optimizers = new Array<NodeMaterialOptimizer>();
+
+    /** Define the URl to load node editor script */
+    public static EditorURL = `https://unpkg.com/babylonjs-node-editor@${Engine.Version}/babylon.nodeEditor.js`;
+
+    private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
+
+    /** Get the inspector from bundle or global */
+    private _getGlobalNodeMaterialEditor(): any {
+        // UMD Global name detection from Webpack Bundle UMD Name.
+        if (typeof NODEEDITOR !== 'undefined') {
+            return NODEEDITOR;
+        }
+
+        // In case of module let's check the global emitted from the editor entry point.
+        if (typeof BABYLON !== 'undefined' && typeof BABYLON.NodeEditor !== 'undefined') {
+            return BABYLON;
+        }
+
+        return undefined;
+    }
 
     /**
     * Defines the maximum number of lights that can be used in the material
@@ -717,5 +750,37 @@ export class NodeMaterial extends PushMaterial {
         this.onBuildObservable.clear();
 
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
+    }
+
+    /** Creates the node editor window. */
+    private _createNodeEditor() {
+        this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
+
+        this.BJSNODEMATERIALEDITOR.NodeEditor.Show({
+            nodeMaterial: this
+        });
+    }
+
+    /**
+     * Launch the node material editor
+     * @param config Define the configuration of the editor
+     * @return a promise fulfilled when the node editor is visible
+     */
+    public edit(config?: INodeMaterialEditorOptions): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (typeof this.BJSNODEMATERIALEDITOR == 'undefined') {
+                const editorUrl = config && config.editorURL ? config.editorURL : NodeMaterial.EditorURL;
+
+                // Load editor and add it to the DOM
+                Tools.LoadScript(editorUrl, () => {
+                    this._createNodeEditor();
+                    resolve();
+                });
+            } else {
+                // Otherwise creates the editor
+                this._createNodeEditor();
+                resolve();
+            }
+        });
     }
 }
