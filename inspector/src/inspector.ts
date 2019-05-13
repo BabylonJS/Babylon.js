@@ -48,22 +48,27 @@ export class Inspector {
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
             var styleSheet: any = sourceDoc.styleSheets[index];
-            if (styleSheet.cssRules) { // for <style> elements
-                const newStyleEl = sourceDoc.createElement('style');
-
-                for (var cssRule of styleSheet.cssRules) {
-                    // write the text of each rule into the body of the style element
-                    newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+            try{
+                if (styleSheet.cssRules) { // for <style> elements
+                    const newStyleEl = sourceDoc.createElement('style');
+    
+                    for (var cssRule of styleSheet.cssRules) {
+                        // write the text of each rule into the body of the style element
+                        newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+                    }
+    
+                    targetDoc.head!.appendChild(newStyleEl);
+                } else if (styleSheet.href) { // for <link> elements loading CSS from a URL
+                    const newLinkEl = sourceDoc.createElement('link');
+    
+                    newLinkEl.rel = 'stylesheet';
+                    newLinkEl.href = styleSheet.href;
+                    targetDoc.head!.appendChild(newLinkEl);
                 }
-
-                targetDoc.head!.appendChild(newStyleEl);
-            } else if (styleSheet.href) { // for <link> elements loading CSS from a URL
-                const newLinkEl = sourceDoc.createElement('link');
-
-                newLinkEl.rel = 'stylesheet';
-                newLinkEl.href = styleSheet.href;
-                targetDoc.head!.appendChild(newLinkEl);
+            }catch(e){
+                console.log(e)
             }
+            
         }
     }
 
@@ -250,12 +255,12 @@ export class Inspector {
             ReactDOM.render(embedHostElement, this._EmbedHost);
         }
     }
-    private static _CreatePopup(title: string, windowVariableName: string) {
+    public static _CreatePopup(title: string, windowVariableName: string, width = 300, height = 800) {
         const windowCreationOptionsList = {
-            width: 300,
-            height: 800,
-            top: (window.innerHeight - 800) / 2 + window.screenY,
-            left: (window.innerWidth - 300) / 2 + window.screenX
+            width: width,
+            height: height,
+            top: (window.innerHeight - width) / 2 + window.screenY,
+            left: (window.innerWidth - height) / 2 + window.screenX
         };
 
         var windowCreationOptions = Object.keys(windowCreationOptionsList)
@@ -410,7 +415,7 @@ export class Inspector {
         }
     }
 
-    private static _CreateCanvasContainer(parentControl: HTMLElement) {
+    public static _CreateCanvasContainer(parentControl: HTMLElement) {
         // Create a container for previous elements
         this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
         this._NewCanvasContainer.style.display = parentControl.style.display;

@@ -7,7 +7,7 @@
     ],
     "name": "babylonjs",
     "description": "Babylon.js is a JavaScript 3D engine based on webgl.",
-    "version": "4.1.0-alpha.0",
+    "version": "4.1.0-alpha.1",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -37,6 +37,7 @@
     "readmeFilename": "README.md",
     "dependencies": {},
     "devDependencies": {
+        "storm-react-diagrams": "^5.2.1",
         "@fortawesome/fontawesome-svg-core": "~1.2.8",
         "@fortawesome/free-regular-svg-icons": "~5.4.1",
         "@fortawesome/free-solid-svg-icons": "~5.4.1",

@@ -111,7 +111,7 @@ declare module "babylonjs-inspector/components/actionTabs/lineContainerComponent
     import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ILineContainerComponentProps {
-        globalState: GlobalState;
+        globalState?: GlobalState;
         title: string;
         children: any[] | any;
         closed?: boolean;
@@ -466,6 +466,19 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/fileButtonLineComponent" {
+    import * as React from "react";
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/lines/textureLinkLineComponent" {
     import * as React from "react";
     import { Nullable } from "babylonjs/types";
@@ -478,6 +491,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLinkLineC
         material?: Material;
         onSelectionChangedObservable?: Observable<any>;
         onDebugSelectionChangeObservable?: Observable<BaseTexture>;
+        propertyName?: string;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
         isDebugSelected: boolean;
@@ -488,6 +502,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLinkLineC
         componentWillUnmount(): void;
         debugTexture(): void;
         onLink(): void;
+        updateTexture(file: File): void;
         render(): JSX.Element | null;
     }
 }
@@ -508,7 +523,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     export class StandardMaterialPropertyGridComponent extends React.Component<IStandardMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -520,7 +535,8 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLineCompo
         texture: BaseTexture;
         width: number;
         height: number;
-        globalState: GlobalState;
+        globalState?: GlobalState;
+        hideChannelSelect?: boolean;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
         displayRed: boolean;
@@ -572,19 +588,6 @@ declare module "babylonjs-inspector/components/actionTabs/lines/floatLineCompone
         updateValue(valueString: string): void;
         lock(): void;
         unlock(): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/actionTabs/lines/fileButtonLineComponent" {
-    import * as React from "react";
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
         render(): JSX.Element;
     }
 }
@@ -661,7 +664,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMaterialPropertyGridComponentProps);
-        renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>): JSX.Element | null;
+        renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -1292,7 +1295,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Component<IPBRMetallicRoughnessMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMetallicRoughnessMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -1313,7 +1316,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Component<IPBRSpecularGlossinessMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRSpecularGlossinessMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -1678,7 +1681,7 @@ declare module "babylonjs-inspector/components/actionTabs/actionTabsComponent" {
     import { Scene } from "babylonjs/scene";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface IActionTabsComponentProps {
-        scene: Scene;
+        scene?: Scene;
         noCommands?: boolean;
         noHeader?: boolean;
         noExpand?: boolean;
@@ -1686,7 +1689,7 @@ declare module "babylonjs-inspector/components/actionTabs/actionTabsComponent" {
         popupMode?: boolean;
         onPopup?: () => void;
         onClose?: () => void;
-        globalState: GlobalState;
+        globalState?: GlobalState;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;
@@ -1699,7 +1702,7 @@ declare module "babylonjs-inspector/components/actionTabs/actionTabsComponent" {
         componentWillMount(): void;
         componentWillUnmount(): void;
         changeSelectedTab(index: number): void;
-        renderContent(): JSX.Element;
+        renderContent(): JSX.Element | null;
         onClose(): void;
         onPopup(): void;
         render(): JSX.Element;
@@ -2152,6 +2155,7 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
 }
 declare module "babylonjs-inspector/inspector" {
     import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
+    import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
     import { Scene } from "babylonjs/scene";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
@@ -2174,11 +2178,11 @@ declare module "babylonjs-inspector/inspector" {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        private static _CreatePopup;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): Nullable<HTMLDivElement>;
         static readonly IsVisible: boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: Scene, userOptions: Partial<IInspectorOptions>): void;
-        private static _CreateCanvasContainer;
+        static _CreateCanvasContainer(parentControl: HTMLElement): void;
         private static _DestroyCanvasContainer;
         private static _Cleanup;
         private static _RemoveElementFromDOM;
@@ -2286,7 +2290,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ILineContainerComponentProps {
-        globalState: GlobalState;
+        globalState?: GlobalState;
         title: string;
         children: any[] | any;
         closed?: boolean;
@@ -2596,12 +2600,25 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export interface ITextureLinkLineComponentProps {
         label: string;
         texture: BABYLON.Nullable<BABYLON.BaseTexture>;
         material?: BABYLON.Material;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
         onDebugSelectionChangeObservable?: BABYLON.Observable<BABYLON.BaseTexture>;
+        propertyName?: string;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
         isDebugSelected: boolean;
@@ -2612,6 +2629,7 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         debugTexture(): void;
         onLink(): void;
+        updateTexture(file: File): void;
         render(): JSX.Element | null;
     }
 }
@@ -2626,7 +2644,7 @@ declare module INSPECTOR {
     export class StandardMaterialPropertyGridComponent extends React.Component<IStandardMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -2635,7 +2653,8 @@ declare module INSPECTOR {
         texture: BABYLON.BaseTexture;
         width: number;
         height: number;
-        globalState: GlobalState;
+        globalState?: GlobalState;
+        hideChannelSelect?: boolean;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
         displayRed: boolean;
@@ -2683,18 +2702,6 @@ declare module INSPECTOR {
         updateValue(valueString: string): void;
         lock(): void;
         unlock(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
         render(): JSX.Element;
     }
 }
@@ -2754,7 +2761,7 @@ declare module INSPECTOR {
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMaterialPropertyGridComponentProps);
-        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element | null;
+        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -3202,7 +3209,7 @@ declare module INSPECTOR {
     export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Component<IPBRMetallicRoughnessMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMetallicRoughnessMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -3217,7 +3224,7 @@ declare module INSPECTOR {
     export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Component<IPBRSpecularGlossinessMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRSpecularGlossinessMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -3485,7 +3492,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IActionTabsComponentProps {
-        scene: BABYLON.Scene;
+        scene?: BABYLON.Scene;
         noCommands?: boolean;
         noHeader?: boolean;
         noExpand?: boolean;
@@ -3493,7 +3500,7 @@ declare module INSPECTOR {
         popupMode?: boolean;
         onPopup?: () => void;
         onClose?: () => void;
-        globalState: GlobalState;
+        globalState?: GlobalState;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;
@@ -3506,7 +3513,7 @@ declare module INSPECTOR {
         componentWillMount(): void;
         componentWillUnmount(): void;
         changeSelectedTab(index: number): void;
-        renderContent(): JSX.Element;
+        renderContent(): JSX.Element | null;
         onClose(): void;
         onPopup(): void;
         render(): JSX.Element;
@@ -3909,11 +3916,11 @@ declare module INSPECTOR {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        private static _CreatePopup;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): BABYLON.Nullable<HTMLDivElement>;
         static readonly IsVisible: boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
-        private static _CreateCanvasContainer;
+        static _CreateCanvasContainer(parentControl: HTMLElement): void;
         private static _DestroyCanvasContainer;
         private static _Cleanup;
         private static _RemoveElementFromDOM;

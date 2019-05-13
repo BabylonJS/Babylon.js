@@ -9,6 +9,9 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { TextLineComponent } from "./textLineComponent";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
+import { Texture } from 'babylonjs/Materials/Textures/texture';
+import { FileButtonLineComponent } from './fileButtonLineComponent';
+import { Tools } from 'babylonjs/Misc/tools';
 
 export interface ITextureLinkLineComponentProps {
     label: string;
@@ -16,6 +19,7 @@ export interface ITextureLinkLineComponentProps {
     material?: Material;
     onSelectionChangedObservable?: Observable<any>;
     onDebugSelectionChangeObservable?: Observable<BaseTexture>;
+    propertyName?: string;
 }
 
 export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, { isDebugSelected: boolean }> {
@@ -121,10 +125,31 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         this.props.onSelectionChangedObservable.notifyObservers(texture!);
     }
 
+
+    updateTexture(file: File) {
+        let material = this.props.material!;
+        Tools.ReadFile(file, (data) => {
+            var blob = new Blob([data], { type: "octet/stream" });
+            var url = URL.createObjectURL(blob);
+
+            let texture = new Texture(url, material.getScene());
+
+            (material as any)[this.props.propertyName!] = texture;
+
+            this.forceUpdate();
+
+        }, undefined, true);
+    }
+
     render() {
         const texture = this.props.texture;
 
         if (!texture) {
+            if (this.props.propertyName) {
+                return (
+                    <FileButtonLineComponent label={`Add ${this.props.label} texture`} onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                )
+            }
             return null;
         }
         return (
