@@ -2,7 +2,8 @@
  * Manages the defines for the Material
  */
 export class MaterialDefines {
-    private _keys: string[];
+    /** @hidden */
+    protected _keys: string[];
     private _isDirty = true;
     /** @hidden */
     public _renderId: number;
@@ -29,6 +30,8 @@ export class MaterialDefines {
     public _needNormals = false;
     /** @hidden */
     public _needUVs = false;
+
+    [id: string]: any;
 
     /**
      * Specifies if the material needs to be re-calculated
