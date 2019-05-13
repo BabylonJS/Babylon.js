@@ -11,6 +11,7 @@
 - Added support for `ShadowGenerator` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for scene normalization ([Deltakosh](https://github.com/deltakosh/))
 - Added support for texture creation and assignments per material ([Deltakosh](https://github.com/deltakosh/))
+- Node material editor ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
 
 ### Tools
 - Added `Color3.toHSV()`, `Color3.toHSVToRef()` and `Color3.HSVtoRGBToRef()` ([Deltakosh](https://github.com/deltakosh/))
