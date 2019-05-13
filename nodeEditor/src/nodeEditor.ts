@@ -2,8 +2,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { GlobalState } from './globalState';
 import { GraphEditor } from './components/graphEditor';
-import {NodeMaterial} from "babylonjs/Materials/Node/nodeMaterial"
-import {Popup} from "../src/sharedComponents/popup"
+import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
+import { Popup } from "../src/sharedComponents/popup"
 /**
  * Interface used to specify creation options for the node editor
  */
@@ -24,8 +24,8 @@ export class NodeEditor {
      * @param options defines the options to use to configure the node editor
      */
     public static Show(options: INodeEditorOptions) {
-        if(!options.hostElement){
-            options.hostElement = Popup.CreatePopup("SCENE EXPLORER", "node-editor", 1000, 800)!;
+        if (!options.hostElement) {
+            options.hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800)!;
         }
         let globalState = new GlobalState();
         globalState.nodeMaterial = options.nodeMaterial
@@ -39,15 +39,15 @@ export class NodeEditor {
 
         // Close the popup window when the page is refreshed or scene is disposed
         var popupWindow = (Popup as any)["node-editor"];
-        if(globalState.nodeMaterial && popupWindow){
-            globalState.nodeMaterial.getScene().onDisposeObservable.addOnce(()=>{
-                if(popupWindow){
+        if (globalState.nodeMaterial && popupWindow) {
+            globalState.nodeMaterial.getScene().onDisposeObservable.addOnce(() => {
+                if (popupWindow) {
                     popupWindow.close();
                 }
             })
             window.onbeforeunload = function(event) {
                 var popupWindow = (Popup as any)["node-editor"];
-                if(popupWindow){
+                if (popupWindow) {
                     popupWindow.close();
                 }
             };

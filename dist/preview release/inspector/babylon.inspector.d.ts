@@ -1216,6 +1216,20 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface INodeMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: BABYLON.NodeMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
+        constructor(props: INodeMaterialPropertyGridComponentProps);
+        edit(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;

@@ -85,6 +85,8 @@ import { SpotLight } from 'babylonjs/Lights/spotLight';
 import { SpotLightPropertyGridComponent } from './propertyGrids/lights/spotLightPropertyGridComponent';
 import { LensRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline';
 import { LensRenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent';
+import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+import { NodeMaterialPropertyGridComponent } from './propertyGrids/materials/nodeMaterialPropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -206,6 +208,16 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "StandardMaterial") {
                 const material = entity as StandardMaterial;
                 return (<StandardMaterialPropertyGridComponent
+                    globalState={this.props.globalState}
+                    material={material}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "NodeMaterial") {
+                const material = entity as NodeMaterial;
+                return (<NodeMaterialPropertyGridComponent
                     globalState={this.props.globalState}
                     material={material}
                     lockObject={this._lockObject}

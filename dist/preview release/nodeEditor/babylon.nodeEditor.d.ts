@@ -1,11 +1,5 @@
 /// <reference types="react" />
 declare module NODEEDITOR {
-    export class GlobalState {
-        nodeMaterial?: BABYLON.NodeMaterial;
-        hostDocument?: BABYLON.Nullable<Document>;
-    }
-}
-declare module NODEEDITOR {
     /**
      * Port model for the generic node
      */
@@ -77,6 +71,13 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class GlobalState {
+        nodeMaterial?: BABYLON.NodeMaterial;
+        hostDocument?: BABYLON.Nullable<Document>;
+        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GenericNodeModel>>;
+    }
+}
+declare module NODEEDITOR {
     interface ITextureLineComponentProps {
         texture: BABYLON.BaseTexture;
         width: number;
@@ -106,6 +107,91 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface GenericNodeWidgetProps {
+        node: BABYLON.Nullable<GenericNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * GenericNodeWidgetState
+     */
+    export interface GenericNodeWidgetState {
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, GenericNodeWidgetState> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: GenericNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class GenericNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a GenericNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: GenericNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns generic node model
+         */
+        getNewInstance(): GenericNodeModel;
+    }
+}
+declare module NODEEDITOR {
+    interface ILineContainerComponentProps {
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+    }> {
+        private static _InMemoryStorage;
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface INodeListComponentProps {
+        globalState: GlobalState;
+        onAddValueNode: (b: string) => void;
+        onAddNodeFromClass: (ObjectClass: typeof BABYLON.NodeMaterialBlock) => void;
+    }
+    export class NodeListComponent extends React.Component<INodeListComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface IFileButtonLineComponentProps {
         label: string;
         onClick: (file: File) => void;
@@ -114,6 +200,20 @@ declare module NODEEDITOR {
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ITexturePropertyTabComponentProps {
+        globalState: GlobalState;
+        node: GenericNodeModel;
+    }
+    export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps> {
+        /**
+         * Replaces the texture of the node
+         * @param file the file of the texture to use
+         */
+        replaceTexture(file: File): void;
         render(): JSX.Element;
     }
 }
@@ -177,114 +277,23 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    interface IVector3LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: BABYLON.Vector3) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    interface IVector2PropertyTabComponentProps {
+        globalState: GlobalState;
+        node: GenericNodeModel;
     }
-    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
-        isExpanded: boolean;
-        value: BABYLON.Vector3;
+    export class Vector2PropertyTabComponent extends React.Component<IVector2PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IPropertyTabComponentProps {
+        globalState: GlobalState;
+    }
+    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
+        currentNode: BABYLON.Nullable<GenericNodeModel>;
     }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector3LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: BABYLON.Vector3;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
-        updateVector3(): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        updateStateZ(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    /**
-     * GenericNodeWidgetProps
-     */
-    export interface GenericNodeWidgetProps {
-        node: BABYLON.Nullable<GenericNodeModel>;
-    }
-    /**
-     * GenericNodeWidgetState
-     */
-    export interface GenericNodeWidgetState {
-    }
-    /**
-     * Used to display a node block for the node editor
-     */
-    export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, GenericNodeWidgetState> {
-        /**
-         * Creates a GenericNodeWidget
-         * @param props
-         */
-        constructor(props: GenericNodeWidgetProps);
-        /**
-         * Replaces the texture of the node
-         * @param file the file of the texture to use
-         */
-        replaceTexture(file: File): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    /**
-     * Node factory which creates editor nodes
-     */
-    export class GenericNodeFactory extends SRD.AbstractNodeFactory {
-        /**
-         * Constructs a GenericNodeFactory
-         */
-        constructor();
-        /**
-         * Generates a node widget
-         * @param diagramEngine diagram engine
-         * @param node node to generate
-         * @returns node widget jsx
-         */
-        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: GenericNodeModel): JSX.Element;
-        /**
-         * Gets a new instance of a node model
-         * @returns generic node model
-         */
-        getNewInstance(): GenericNodeModel;
-    }
-}
-declare module NODEEDITOR {
-    interface ILineContainerComponentProps {
-        globalState?: any;
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-        isHighlighted: boolean;
-    }> {
-        private static _InMemoryStorage;
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        componentDidMount(): void;
-        renderHeader(): JSX.Element;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
+        constructor(props: IPropertyTabComponentProps);
+        componentWillMount(): void;
         render(): JSX.Element;
     }
 }
@@ -313,13 +322,6 @@ declare module NODEEDITOR {
         constructor(props: IGraphEditorProps);
         addNodeFromClass(ObjectClass: typeof BABYLON.NodeMaterialBlock): GenericNodeModel;
         addValueNode(type: string, column?: number, connection?: BABYLON.NodeMaterialConnectionPoint): GenericNodeModel;
-        allBlocks: {
-            Fragment: (typeof BABYLON.AlphaTestBlock | typeof BABYLON.FragmentOutputBlock | typeof BABYLON.ImageProcessingBlock | typeof BABYLON.RGBAMergerBlock | typeof BABYLON.RGBASplitterBlock | typeof BABYLON.TextureBlock)[];
-            Vertex: (typeof BABYLON.BonesBlock | typeof BABYLON.InstancesBlock | typeof BABYLON.MorphTargetsBlock | typeof BABYLON.VertexOutputBlock)[];
-            Dual: (typeof BABYLON.FogBlock)[];
-            Other: (typeof BABYLON.AddBlock | typeof BABYLON.ClampBlock | typeof BABYLON.MatrixMultiplicationBlock | typeof BABYLON.MultiplyBlock | typeof BABYLON.Vector2TransformBlock | typeof BABYLON.Vector3TransformBlock | typeof BABYLON.Vector4TransformBlock)[];
-            Value: string[];
-        };
         render(): JSX.Element;
     }
 }
@@ -349,5 +351,36 @@ declare module NODEEDITOR {
          * @param options defines the options to use to configure the node editor
          */
         static Show(options: INodeEditorOptions): void;
+    }
+}
+declare module NODEEDITOR {
+    interface IVector3LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector3) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector3;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector3LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector3;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
+        updateVector3(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        render(): JSX.Element;
     }
 }

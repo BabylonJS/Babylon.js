@@ -7,7 +7,7 @@
 		exports["babylonjs-node-editor"] = factory(require("babylonjs"));
 	else
 		root["NODEEDITOR"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -5079,6 +5079,25 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 
 /***/ }),
 
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss":
+/*!************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss ***!
+  \************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, ".diagramBlock {\n  background: white;\n  width: 200px;\n  border: 4px solid black; }\n  .diagramBlock.input {\n    background: green;\n    color: white; }\n  .diagramBlock.output {\n    background: blue;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    margin: 10px; }\n    .diagramBlock .header .header-labels {\n      font-size: 16px;\n      text-align: center; }\n  .diagramBlock .inputs {\n    text-align: left;\n    padding-left: 10px; }\n  .diagramBlock .outputs {\n    text-align: right;\n    padding-right: 10px; }\n", ""]);
+
+// exports
+
+
+/***/ }),
+
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/main.scss":
 /*!*************************************************************************************************************************************!*\
   !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/main.scss ***!
@@ -5091,7 +5110,45 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#node-editor-graph-root #inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#node-editor-graph-root #__resizable_base__ {\n  display: none; }\n\n#node-editor-graph-root #actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #node-editor-graph-root #actionTabs .hoverIcon:hover {\n    opacity: 0.8; }\n  #node-editor-graph-root #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #node-editor-graph-root #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #node-editor-graph-root #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #node-editor-graph-root #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #node-editor-graph-root #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #node-editor-graph-root #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #node-editor-graph-root #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #node-editor-graph-root #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #node-editor-graph-root #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #node-editor-graph-root #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #node-editor-graph-root #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #node-editor-graph-root #actionTabs .tabs .panes {\n      grid-row: 2;\n      display: grid;\n      grid-template-rows: 100%;\n      overflow: hidden; }\n      #node-editor-graph-root #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #node-editor-graph-root #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: 100%;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            margin-right: 5px;\n            display: grid;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .messageLine {\n          text-align: center;\n          font-size: 12px;\n          font-style: italic;\n          opacity: 0.6; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .iconMessageLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 30px 1fr; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .iconMessageLine .icon {\n            grid-column: 1;\n            display: grid;\n            align-items: center;\n            justify-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .iconMessageLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 140px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            -webkit-user-select: text;\n            -moz-user-select: text;\n            -ms-user-select: text;\n            user-select: text; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .textInputLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textInputLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textInputLine .value {\n            display: flex;\n            align-items: center;\n            grid-column: 2; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textInputLine .value input {\n              width: 110px; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: transparent;\n            border: 1px solid #337ab7;\n            margin: 0px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 1px solid #337ab7;\n            outline: 0px; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 24px; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 2px;\n          display: grid; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 1px solid transparent;\n            background: transparent;\n            color: white; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px;\n            border: 2px solid rgba(255, 255, 255, 0.4); }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .gltf-extension-property {\n          margin-left: 30px;\n          border-left: 1px solid #337ab7; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 2px;\n          display: grid; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine {\n            height: 30px;\n            display: grid;\n            grid-template-columns: 1fr auto 20px 20px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 {\n              grid-column: 2;\n              display: flex;\n              align-items: center; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"] {\n                -webkit-appearance: none;\n                border: 1px solid rgba(255, 255, 255, 0.5);\n                padding: 0;\n                width: 30px;\n                height: 20px; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n                padding: 0; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n                border: none; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input {\n                margin-right: 5px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .copy {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .expand {\n              grid-column: 4;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .listLine .options select {\n              width: 115px; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneList {\n            border-left: 3px solid transparent; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer:hover .paneList {\n            border-left: 3px solid rgba(51, 122, 183, 0.8); }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer:hover .paneContainer-content .header .title {\n            border-left: 3px solid #337ab7; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border {\n            grid-row: 1;\n            grid-column: 1;\n            opacity: 1;\n            border: 3px solid red;\n            transition: opacity 250ms;\n            pointer-events: none; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border.transparent {\n              opacity: 0; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 200px calc(100% - 500px) 300px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1;\n  grid-column: 1; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 2;\n  background: #222222; }\n\n#propertyTab {\n  grid-row: 1;\n  grid-column: 3; }\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss":
+/*!**************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss ***!
+  \**************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 200px;\n  overflow: hidden; }\n  #nodeList .pane {\n    color: white;\n    overflow-x: hidden;\n    overflow-y: auto;\n    height: 100%;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #nodeList .pane .underline {\n      border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n    #nodeList .pane .buttonLine {\n      height: 30px;\n      display: grid;\n      align-items: center;\n      justify-items: stretch; }\n      #nodeList .pane .buttonLine button {\n        background: #222222;\n        border: 1px solid #337ab7;\n        margin: 5px 10px 5px 10px;\n        color: white;\n        padding: 4px 5px;\n        opacity: 0.9; }\n      #nodeList .pane .buttonLine button:hover {\n        opacity: 1.0; }\n      #nodeList .pane .buttonLine button:active {\n        background: #282828; }\n      #nodeList .pane .buttonLine button:focus {\n        border: 1px solid #337ab7;\n        outline: 0px; }\n    #nodeList .pane .paneContainer {\n      margin-top: 3px;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #nodeList .pane .paneContainer .paneList {\n        border-left: 3px solid transparent; }\n      #nodeList .pane .paneContainer:hover .paneList {\n        border-left: 3px solid rgba(51, 122, 183, 0.8); }\n      #nodeList .pane .paneContainer:hover .paneContainer-content .header .title {\n        border-left: 3px solid #337ab7; }\n      #nodeList .pane .paneContainer .paneContainer-content {\n        grid-row: 1;\n        grid-column: 1; }\n        #nodeList .pane .paneContainer .paneContainer-content .header {\n          display: grid;\n          grid-template-columns: 1fr auto;\n          background: #555555;\n          height: 30px;\n          padding-right: 5px;\n          cursor: pointer; }\n          #nodeList .pane .paneContainer .paneContainer-content .header .title {\n            border-left: 3px solid transparent;\n            padding-left: 5px;\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #nodeList .pane .paneContainer .paneContainer-content .header .collapse {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            justify-items: center;\n            transform-origin: center; }\n            #nodeList .pane .paneContainer .paneContainer-content .header .collapse.closed {\n              transform: rotate(180deg); }\n        #nodeList .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n        #nodeList .pane .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss":
+/*!********************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss ***!
+  \********************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "#propertyTab {\n  color: white; }\n  #propertyTab .vector3Line {\n    padding-left: 2px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n", ""]);
 
 // exports
 
@@ -46729,10 +46786,40 @@ module.exports = function(module) {
 
 /***/ }),
 
-/***/ "./components/customDiragramNodes/generic/genericNodeFactory.tsx":
-/*!***********************************************************************!*\
-  !*** ./components/customDiragramNodes/generic/genericNodeFactory.tsx ***!
-  \***********************************************************************/
+/***/ "./components/diagram/diagram.scss":
+/*!*****************************************!*\
+  !*** ./components/diagram/diagram.scss ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./diagram.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./components/diagram/generic/genericNodeFactory.tsx":
+/*!***********************************************************!*\
+  !*** ./components/diagram/generic/genericNodeFactory.tsx ***!
+  \***********************************************************/
 /*! exports provided: GenericNodeFactory */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -46742,8 +46829,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _genericNodeWidget__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./genericNodeWidget */ "./components/customDiragramNodes/generic/genericNodeWidget.tsx");
-/* harmony import */ var _genericNodeModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./genericNodeModel */ "./components/customDiragramNodes/generic/genericNodeModel.ts");
+/* harmony import */ var _genericNodeWidget__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./genericNodeWidget */ "./components/diagram/generic/genericNodeWidget.tsx");
+/* harmony import */ var _genericNodeModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./genericNodeModel */ "./components/diagram/generic/genericNodeModel.ts");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
 
@@ -46759,8 +46846,10 @@ var GenericNodeFactory = /** @class */ (function (_super) {
     /**
      * Constructs a GenericNodeFactory
      */
-    function GenericNodeFactory() {
-        return _super.call(this, "generic") || this;
+    function GenericNodeFactory(globalState) {
+        var _this = _super.call(this, "generic") || this;
+        _this._globalState = globalState;
+        return _this;
     }
     /**
      * Generates a node widget
@@ -46769,7 +46858,7 @@ var GenericNodeFactory = /** @class */ (function (_super) {
      * @returns node widget jsx
      */
     GenericNodeFactory.prototype.generateReactWidget = function (diagramEngine, node) {
-        return react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_genericNodeWidget__WEBPACK_IMPORTED_MODULE_2__["GenericNodeWidget"], { node: node });
+        return react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_genericNodeWidget__WEBPACK_IMPORTED_MODULE_2__["GenericNodeWidget"], { node: node, globalState: this._globalState });
     };
     /**
      * Gets a new instance of a node model
@@ -46785,10 +46874,10 @@ var GenericNodeFactory = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/customDiragramNodes/generic/genericNodeModel.ts":
-/*!********************************************************************!*\
-  !*** ./components/customDiragramNodes/generic/genericNodeModel.ts ***!
-  \********************************************************************/
+/***/ "./components/diagram/generic/genericNodeModel.ts":
+/*!********************************************************!*\
+  !*** ./components/diagram/generic/genericNodeModel.ts ***!
+  \********************************************************/
 /*! exports provided: GenericNodeModel */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -46847,10 +46936,10 @@ var GenericNodeModel = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/customDiragramNodes/generic/genericNodeWidget.tsx":
-/*!**********************************************************************!*\
-  !*** ./components/customDiragramNodes/generic/genericNodeWidget.tsx ***!
-  \**********************************************************************/
+/***/ "./components/diagram/generic/genericNodeWidget.tsx":
+/*!**********************************************************!*\
+  !*** ./components/diagram/generic/genericNodeWidget.tsx ***!
+  \**********************************************************/
 /*! exports provided: GenericNodeWidget */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -46863,17 +46952,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/textureLineComponent */ "./sharedComponents/textureLineComponent.tsx");
-/* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
-/* harmony import */ var _sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/vector2LineComponent */ "./sharedComponents/vector2LineComponent.tsx");
-/* harmony import */ var _sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/vector3LineComponent */ "./sharedComponents/vector3LineComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes");
-/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7__);
-
-
-
-
-
-
 
 
 
@@ -46890,74 +46968,37 @@ var GenericNodeWidget = /** @class */ (function (_super) {
     function GenericNodeWidget(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
+        if (_this.props.node) {
+            _this.props.node.addListener({
+                selectionChanged: function () {
+                    var selected = _this.props.node.selected;
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(selected ? _this.props.node : null);
+                }
+            });
+        }
         return _this;
     }
-    /**
-     * Replaces the texture of the node
-     * @param file the file of the texture to use
-     */
-    GenericNodeWidget.prototype.replaceTexture = function (file) {
-        var _this = this;
-        if (!this.props.node) {
-            return;
-        }
-        var texture = this.props.node.texture;
-        if (!texture) {
-            this.props.node.texture = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7__["Texture"](null, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7__["Engine"].LastCreatedScene);
-            texture = this.props.node.texture;
-        }
-        babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7__["Tools"].ReadFile(file, function (data) {
-            var blob = new Blob([data], { type: "octet/stream" });
-            var url = URL.createObjectURL(blob);
-            if (texture.isCube) {
-                var extension = undefined;
-                if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                    extension = ".dds";
-                }
-                else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                    extension = ".env";
-                }
-                texture.updateURL(url, extension, function () { return _this.forceUpdate(); });
-            }
-            else {
-                texture.updateURL(url, null, function () { return _this.forceUpdate(); });
-            }
-            _this.refs.textureView.updatePreview();
-        }, undefined, true);
-    };
     GenericNodeWidget.prototype.render = function () {
-        var _this = this;
         var headers = new Array();
         var inputPorts = new Array();
         var outputPorts = new Array();
         var value = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null);
         if (this.props.node) {
             // Header labels
-            this.props.node.headerLabels.forEach(function (h, i) {
-                headers.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { fontWeight: "bold", borderBottomStyle: "solid" }, key: i }, h.text));
-            });
+            if (this.props.node.headerLabels.length) {
+                this.props.node.headerLabels.forEach(function (h, i) {
+                    headers.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header-labels", key: i }, h.text));
+                });
+            }
             // Input/Output ports
             for (var key in this.props.node.ports) {
                 var port = this.props.node.ports[key];
                 if (port.position == "input") {
                     var control = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null);
-                    // Color of the connection
-                    var color = "black";
-                    if (port.connection) {
-                        if (port.connection.isAttribute) {
-                            color = "red";
-                        }
-                        else if (port.connection.isUniform) {
-                            color = "brown";
-                        }
-                        else if (port.connection.isVarying) {
-                            color = "purple";
-                        }
-                    }
                     inputPorts.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: key, style: { paddingBottom: "8px" } },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { display: "inline-block", borderStyle: "solid", marginBottom: "-4px", position: "absolute", left: "-17px", background: "#777777" } },
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__["PortWidget"], { key: key, name: port.name, node: this.props.node })),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { display: "inline-block", color: color } }, port.name),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { display: "inline-block" } }, port.name),
                         control));
                 }
                 else {
@@ -46969,23 +47010,15 @@ var GenericNodeWidget = /** @class */ (function (_super) {
             }
             // Display the view depending on the value type of the node
             if (this.props.node.texture) {
-                value = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextureLineComponent"], { ref: "textureView", width: 100, height: 100, texture: this.props.node.texture, hideChannelSelect: true }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_4__["FileButtonLineComponent"], { label: "", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" })));
-            }
-            else if (this.props.node.vector3) {
-                value = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { width: "220px" } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "", target: this.props.node, propertyName: "vector3" })));
-            }
-            else if (this.props.node.vector2) {
-                value = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { width: "220px" } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector2LineComponent"], { label: "", target: this.props.node, propertyName: "vector2" })));
+                value = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextureLineComponent"], { ref: "textureView", width: 200, height: 180, texture: this.props.node.texture, hideChannelSelect: true }));
             }
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { background: "white", borderStyle: "solid", padding: "10px" } },
-            headers,
-            inputPorts,
-            outputPorts,
+        var isInputBlock = this.props.node && this.props.node.headerLabels.length;
+        var isOutputBlock = outputPorts.length === 0;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock" + (isInputBlock ? "" : " input") + (isOutputBlock ? " output" : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, headers),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
             value));
     };
     return GenericNodeWidget;
@@ -46995,10 +47028,10 @@ var GenericNodeWidget = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/customDiragramNodes/generic/genericPortModel.ts":
-/*!********************************************************************!*\
-  !*** ./components/customDiragramNodes/generic/genericPortModel.ts ***!
-  \********************************************************************/
+/***/ "./components/diagram/generic/genericPortModel.ts":
+/*!********************************************************!*\
+  !*** ./components/diagram/generic/genericPortModel.ts ***!
+  \********************************************************/
 /*! exports provided: GenericPortModel */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -47090,31 +47123,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _customDiragramNodes_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./customDiragramNodes/generic/genericNodeFactory */ "./components/customDiragramNodes/generic/genericNodeFactory.tsx");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes");
+/* harmony import */ var _diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./diagram/generic/genericNodeFactory */ "./components/diagram/generic/genericNodeFactory.tsx");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _customDiragramNodes_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./customDiragramNodes/generic/genericNodeModel */ "./components/customDiragramNodes/generic/genericNodeModel.ts");
-/* harmony import */ var _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./customDiragramNodes/generic/genericPortModel */ "./components/customDiragramNodes/generic/genericPortModel.ts");
-/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
-/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* harmony import */ var _diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./diagram/generic/genericNodeModel */ "./components/diagram/generic/genericNodeModel.ts");
+/* harmony import */ var _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./diagram/generic/genericPortModel */ "./components/diagram/generic/genericPortModel.ts");
+/* harmony import */ var _nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./nodeList/nodeListComponent */ "./components/nodeList/nodeListComponent.tsx");
+/* harmony import */ var _propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./propertyTab/propertyTabComponent */ "./components/propertyTab/propertyTabComponent.tsx");
 
 
 
@@ -47129,6 +47144,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! storm-react-diagrams/dist/style.min.css */ "../../node_modules/storm-react-diagrams/dist/style.min.css");
 __webpack_require__(/*! ./main.scss */ "./components/main.scss");
+__webpack_require__(/*! ./diagram/diagram.scss */ "./components/diagram/diagram.scss");
 var GraphEditor = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GraphEditor, _super);
     function GraphEditor(props) {
@@ -47138,18 +47154,10 @@ var GraphEditor = /** @class */ (function (_super) {
          * Current row/column position used when adding new nodes
          */
         _this._rowPos = new Array();
-        // Block types used to create the menu from
-        _this.allBlocks = {
-            Fragment: [babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AlphaTestBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["FragmentOutputBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["ImageProcessingBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["RGBAMergerBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["RGBASplitterBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["TextureBlock"]],
-            Vertex: [babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["BonesBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["InstancesBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["MorphTargetsBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["VertexOutputBlock"]],
-            Dual: [babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["FogBlock"]],
-            Other: [babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AddBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["ClampBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["MatrixMultiplicationBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["MultiplyBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["Vector2TransformBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["Vector3TransformBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["Vector4TransformBlock"]],
-            Value: ["Texture", "Vector2", "Vector3", "Matrix"],
-        };
         // setup the diagram engine
         _this._engine = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramEngine"]();
         _this._engine.installDefaultFactories();
-        _this._engine.registerNodeFactory(new _customDiragramNodes_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__["GenericNodeFactory"]());
+        _this._engine.registerNodeFactory(new _diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__["GenericNodeFactory"](_this.props.globalState));
         // setup the diagram model
         _this._model = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramModel"]();
         // Listen to events to connect/disconnect blocks or
@@ -47158,7 +47166,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 if (!e.isCreated) {
                     // Link is deleted
                     console.log("link deleted");
-                    var link = _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
+                    var link = _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
                     console.log(link);
                     if (link) {
                         if (link.output.connection && link.input.connection) {
@@ -47188,7 +47196,7 @@ var GraphEditor = /** @class */ (function (_super) {
                     targetPortChanged: function () {
                         // Link is created with a target port
                         console.log("Link set to target");
-                        var link = _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
+                        var link = _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
                         if (link) {
                             if (link.output.connection && link.input.connection) {
                                 console.log("link standard blocks");
@@ -47244,7 +47252,7 @@ var GraphEditor = /** @class */ (function (_super) {
             this._rowPos[options.column]++;
         }
         // Create new node in the graph
-        var outputNode = new _customDiragramNodes_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_5__["GenericNodeModel"]();
+        var outputNode = new _diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_5__["GenericNodeModel"]();
         this._nodes.push(outputNode);
         outputNode.setPosition(1600 - (300 * options.column), 200 * this._rowPos[options.column]);
         this._model.addAll(outputNode);
@@ -47253,13 +47261,13 @@ var GraphEditor = /** @class */ (function (_super) {
             outputNode.headerLabels.push({ text: options.nodeMaterialBlock.getClassName() });
             // Create output ports
             options.nodeMaterialBlock._outputs.forEach(function (connection) {
-                var outputPort = new _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](connection.name, "output");
+                var outputPort = new _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](connection.name, "output");
                 outputPort.syncWithNodeMaterialConnectionPoint(connection);
                 outputNode.addPort(outputPort);
             });
             // Create input ports and nodes if they exist
             options.nodeMaterialBlock._inputs.forEach(function (connection) {
-                var inputPort = new _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](connection.name, "input");
+                var inputPort = new _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](connection.name, "input");
                 inputPort.connection = connection;
                 outputNode.addPort(inputPort);
                 if (connection._connectedPoint) {
@@ -47334,7 +47342,7 @@ var GraphEditor = /** @class */ (function (_super) {
     GraphEditor.prototype.addValueNode = function (type, column, connection) {
         if (column === void 0) { column = 0; }
         var localNode = this.createNodeFromObject({ column: column });
-        var outPort = new _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](type, "output");
+        var outPort = new _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](type, "output");
         if (type == "Texture") {
             outPort.getValue = function () {
                 return localNode.texture;
@@ -47399,27 +47407,10 @@ var GraphEditor = /** @class */ (function (_super) {
     };
     GraphEditor.prototype.render = function () {
         var _this = this;
-        // Create node menu
-        var blockMenu = [];
-        for (var key in this.allBlocks) {
-            var blockList = this.allBlocks[key].map(function (b) {
-                var label = typeof b === "string" ? b : b.prototype.getClassName();
-                var onClick = typeof b === "string" ? function () { _this.addValueNode(b); } : function () { _this.addNodeFromClass(b); };
-                return react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: label, onClick: onClick });
-            });
-            blockMenu.push(react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_7__["LineContainerComponent"], { title: key + " blocks" }, blockList));
-        }
-        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "node-editor-graph-root", style: {
-                display: "flex",
-                height: "100%",
-                background: "#464646",
-            } },
-            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "actionTabs", style: { width: "170px", borderRightStyle: "solid", borderColor: "grey", borderWidth: "1px" } },
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "tabs", style: { gridTemplateRows: "0px 1fr" } },
-                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "labels" }),
-                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "panes" },
-                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "pane" }, blockMenu)))),
-            react__WEBPACK_IMPORTED_MODULE_2__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramWidget"], { deleteKeys: [46], ref: "test", inverseZoom: true, className: "srd-demo-canvas", diagramEngine: this._engine, maxNumberPointsPerLink: 0 })));
+        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "node-editor-graph-root" },
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_7__["NodeListComponent"], { globalState: this.props.globalState, onAddValueNode: function (b) { return _this.addValueNode(b); }, onAddNodeFromClass: function (b) { return _this.addNodeFromClass(b); } }),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramWidget"], { deleteKeys: [46], ref: "test", inverseZoom: true, className: "diagram-container", diagramEngine: this._engine, maxNumberPointsPerLink: 0 }),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["PropertyTabComponent"], { globalState: this.props.globalState })));
     };
     return GraphEditor;
 }(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
@@ -47458,6 +47449,297 @@ if(false) {}
 
 /***/ }),
 
+/***/ "./components/nodeList/nodeList.scss":
+/*!*******************************************!*\
+  !*** ./components/nodeList/nodeList.scss ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./nodeList.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./components/nodeList/nodeListComponent.tsx":
+/*!***************************************************!*\
+  !*** ./components/nodeList/nodeListComponent.tsx ***!
+  \***************************************************/
+/*! exports provided: NodeListComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NodeListComponent", function() { return NodeListComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+__webpack_require__(/*! ./nodeList.scss */ "./components/nodeList/nodeList.scss");
+var NodeListComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeListComponent, _super);
+    function NodeListComponent() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    NodeListComponent.prototype.render = function () {
+        var _this = this;
+        // Block types used to create the menu from
+        var allBlocks = {
+            Fragment: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AlphaTestBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FragmentOutputBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ImageProcessingBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBAMergerBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBASplitterBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["TextureBlock"]],
+            Vertex: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["BonesBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["InstancesBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MorphTargetsBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["VertexOutputBlock"]],
+            Dual: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FogBlock"]],
+            Other: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AddBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ClampBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MatrixMultiplicationBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MultiplyBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector2TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector3TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector4TransformBlock"]],
+            Value: ["Texture", "Vector2", "Vector3", "Matrix"],
+        };
+        // Create node menu
+        var blockMenu = [];
+        for (var key in allBlocks) {
+            var blockList = allBlocks[key].map(function (b) {
+                var label = typeof b === "string" ? b : b.prototype.getClassName();
+                var onClick = typeof b === "string" ? function () { _this.props.onAddValueNode(b); } : function () { _this.props.onAddNodeFromClass(b); };
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: label, onClick: onClick });
+            });
+            blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: key + " blocks", closed: false }, blockList));
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "nodeList", style: { borderRightStyle: "solid", borderColor: "grey", borderWidth: "1px" } },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "panes" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" }, blockMenu))));
+    };
+    return NodeListComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/propertyTab/properties/texturePropertyTabComponent.tsx":
+/*!***************************************************************************!*\
+  !*** ./components/propertyTab/properties/texturePropertyTabComponent.tsx ***!
+  \***************************************************************************/
+/*! exports provided: TexturePropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TexturePropertyTabComponent", function() { return TexturePropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
+
+
+
+
+
+
+var TexturePropertyTabComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TexturePropertyTabComponent, _super);
+    function TexturePropertyTabComponent() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     * Replaces the texture of the node
+     * @param file the file of the texture to use
+     */
+    TexturePropertyTabComponent.prototype.replaceTexture = function (file) {
+        var _this = this;
+        if (!this.props.node) {
+            return;
+        }
+        var texture = this.props.node.texture;
+        if (!texture) {
+            this.props.node.texture = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Texture"](null, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Engine"].LastCreatedScene);
+            texture = this.props.node.texture;
+        }
+        babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadFile(file, function (data) {
+            var blob = new Blob([data], { type: "octet/stream" });
+            var url = URL.createObjectURL(blob);
+            if (texture.isCube) {
+                var extension = undefined;
+                if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                    extension = ".dds";
+                }
+                else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                    extension = ".env";
+                }
+                texture.updateURL(url, extension, function () { return _this.forceUpdate(); });
+            }
+            else {
+                texture.updateURL(url, null, function () { return _this.forceUpdate(); });
+            }
+        }, undefined, true);
+    };
+    TexturePropertyTabComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { label: "Replace texture", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }));
+    };
+    return TexturePropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx":
+/*!***************************************************************************!*\
+  !*** ./components/propertyTab/properties/vector2PropertyTabComponent.tsx ***!
+  \***************************************************************************/
+/*! exports provided: Vector2PropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Vector2PropertyTabComponent", function() { return Vector2PropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/vector2LineComponent */ "./sharedComponents/vector2LineComponent.tsx");
+
+
+
+var Vector2PropertyTabComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2PropertyTabComponent, _super);
+    function Vector2PropertyTabComponent() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Vector2PropertyTabComponent.prototype.render = function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector2LineComponent"], { label: "Value", target: this.props.node, propertyName: "vector2" }));
+    };
+    return Vector2PropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/propertyTab/propertyTab.scss":
+/*!*************************************************!*\
+  !*** ./components/propertyTab/propertyTab.scss ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./propertyTab.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./components/propertyTab/propertyTabComponent.tsx":
+/*!*********************************************************!*\
+  !*** ./components/propertyTab/propertyTabComponent.tsx ***!
+  \*********************************************************/
+/*! exports provided: PropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PropertyTabComponent", function() { return PropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./properties/texturePropertyTabComponent */ "./components/propertyTab/properties/texturePropertyTabComponent.tsx");
+/* harmony import */ var _properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./properties/vector2PropertyTabComponent */ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx");
+
+
+
+
+__webpack_require__(/*! ./propertyTab.scss */ "./components/propertyTab/propertyTab.scss");
+var PropertyTabComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PropertyTabComponent, _super);
+    function PropertyTabComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { currentNode: null };
+        return _this;
+    }
+    PropertyTabComponent.prototype.componentWillMount = function () {
+        var _this = this;
+        this.props.globalState.onSelectionChangedObservable.add(function (block) {
+            _this.setState({ currentNode: block });
+        });
+    };
+    PropertyTabComponent.prototype.render = function () {
+        if (this.state.currentNode) {
+            if (this.state.currentNode.texture) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__["TexturePropertyTabComponent"], { globalState: this.props.globalState, node: this.state.currentNode })));
+            }
+            if (this.state.currentNode.vector2) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["Vector2PropertyTabComponent"], { globalState: this.props.globalState, node: this.state.currentNode })));
+            }
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" }));
+    };
+    return PropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./globalState.ts":
 /*!************************!*\
   !*** ./globalState.ts ***!
@@ -47468,8 +47750,12 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+
 var GlobalState = /** @class */ (function () {
     function GlobalState() {
+        this.onSelectionChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     return GlobalState;
 }());
@@ -47553,7 +47839,7 @@ var NodeEditor = /** @class */ (function () {
      */
     NodeEditor.Show = function (options) {
         if (!options.hostElement) {
-            options.hostElement = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"].CreatePopup("SCENE EXPLORER", "node-editor", 1000, 800);
+            options.hostElement = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"].CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800);
         }
         var globalState = new _globalState__WEBPACK_IMPORTED_MODULE_2__["GlobalState"]();
         globalState.nodeMaterial = options.nodeMaterial;
@@ -47697,7 +47983,7 @@ var LineContainerComponent = /** @class */ (function (_super) {
             LineContainerComponent._InMemoryStorage[_this.props.title] = !_this.props.closed;
             initialState = !_this.props.closed;
         }
-        _this.state = { isExpanded: initialState, isHighlighted: false };
+        _this.state = { isExpanded: initialState };
         return _this;
     }
     LineContainerComponent.prototype.switchExpandedState = function () {
@@ -47716,24 +48002,6 @@ var LineContainerComponent = /** @class */ (function (_super) {
         }
         this.setState({ isExpanded: newState });
     };
-    LineContainerComponent.prototype.componentDidMount = function () {
-        var _this = this;
-        if (this.props.globalState && !this.props.globalState.selectedLineContainerTitle) {
-            return;
-        }
-        if (this.props.globalState && this.props.globalState.selectedLineContainerTitle === this.props.title) {
-            setTimeout(function () {
-                _this.props.globalState.selectedLineContainerTitle = "";
-            });
-            this.setState({ isExpanded: true, isHighlighted: true });
-            window.setTimeout(function () {
-                _this.setState({ isHighlighted: false });
-            }, 5000);
-        }
-        else {
-            this.setState({ isExpanded: false });
-        }
-    };
     LineContainerComponent.prototype.renderHeader = function () {
         var _this = this;
         var className = this.state.isExpanded ? "collapse" : "collapse closed";
@@ -47750,8 +48018,7 @@ var LineContainerComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer-content" },
                 this.renderHeader(),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneList" }, this.props.children)),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer-highlight-border" + (!this.state.isHighlighted ? " transparent" : "") })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneList" }, this.props.children))));
     };
     return LineContainerComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47838,6 +48105,7 @@ var Popup = /** @class */ (function () {
     function Popup() {
     }
     Popup.CreatePopup = function (title, windowVariableName, width, height) {
+        var _this = this;
         if (width === void 0) { width = 300; }
         if (height === void 0) { height = 800; }
         var windowCreationOptionsList = {
@@ -47854,6 +48122,11 @@ var Popup = /** @class */ (function () {
             return null;
         }
         var parentDocument = popupWindow.document;
+        // Font
+        var newLinkEl = parentDocument.createElement('link');
+        newLinkEl.rel = 'stylesheet';
+        newLinkEl.href = "https://use.typekit.net/cta4xsb.css";
+        parentDocument.head.appendChild(newLinkEl);
         parentDocument.title = title;
         parentDocument.body.style.width = "100%";
         parentDocument.body.style.height = "100%";
@@ -47866,6 +48139,9 @@ var Popup = /** @class */ (function () {
         parentControl.style.padding = "0";
         popupWindow.document.body.appendChild(parentControl);
         this._CopyStyles(window.document, parentDocument);
+        setTimeout(function () {
+            _this._CopyStyles(window.document, parentDocument);
+        }, 0);
         this[windowVariableName] = popupWindow;
         return parentControl;
     };
@@ -47914,7 +48190,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes");
+/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -48167,115 +48443,14 @@ var Vector2LineComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./sharedComponents/vector3LineComponent.tsx":
-/*!***************************************************!*\
-  !*** ./sharedComponents/vector3LineComponent.tsx ***!
-  \***************************************************/
-/*! exports provided: Vector3LineComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Vector3LineComponent", function() { return Vector3LineComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./numericInputComponent */ "./sharedComponents/numericInputComponent.tsx");
-/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-
-
-
-
-
-var Vector3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3LineComponent, _super);
-    function Vector3LineComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        _this.state = { isExpanded: false, value: _this.props.target[_this.props.propertyName].clone() };
-        return _this;
-    }
-    Vector3LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var nextPropsValue = nextProps.target[nextProps.propertyName];
-        if (!nextPropsValue.equals(nextState.value) || this._localChange) {
-            nextState.value = nextPropsValue.clone();
-            this._localChange = false;
-            return true;
-        }
-        return false;
-    };
-    Vector3LineComponent.prototype.switchExpandState = function () {
-        this._localChange = true;
-        this.setState({ isExpanded: !this.state.isExpanded });
-    };
-    Vector3LineComponent.prototype.raiseOnPropertyChanged = function (previousValue) {
-        if (this.props.onChange) {
-            this.props.onChange(this.state.value);
-        }
-        if (!this.props.onPropertyChangedObservable) {
-            return;
-        }
-        this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.target,
-            property: this.props.propertyName,
-            value: this.state.value,
-            initialValue: previousValue
-        });
-    };
-    Vector3LineComponent.prototype.updateVector3 = function () {
-        var store = this.props.target[this.props.propertyName].clone();
-        this.props.target[this.props.propertyName] = this.state.value;
-        this.setState({ value: store });
-        this.raiseOnPropertyChanged(store);
-    };
-    Vector3LineComponent.prototype.updateStateX = function (value) {
-        this._localChange = true;
-        this.state.value.x = value;
-        this.updateVector3();
-    };
-    Vector3LineComponent.prototype.updateStateY = function (value) {
-        this._localChange = true;
-        this.state.value.y = value;
-        this.updateVector3();
-    };
-    Vector3LineComponent.prototype.updateStateZ = function (value) {
-        this._localChange = true;
-        this.state.value.z = value;
-        this.updateVector3();
-    };
-    Vector3LineComponent.prototype.render = function () {
-        var _this = this;
-        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2)),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }))));
-    };
-    Vector3LineComponent.defaultProps = {
-        step: 0.001,
-    };
-    return Vector3LineComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes":
+/***/ "babylonjs/Misc/observable":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__;
 
 /***/ })
 

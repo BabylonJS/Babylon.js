@@ -1,0 +1,37 @@
+.diagramBlock {
+    background: white;
+    width: 200px;
+    border: 4px solid black;
+
+    &.input {
+        background: green;
+        color:white;
+    }
+
+    &.output {
+        background: blue;
+        color:white;
+
+        .inputs { 
+            color:white;
+        }
+    }
+
+    .header {
+        margin: 10px;
+        .header-labels {
+            font-size: 16px;
+            text-align: center;
+        }
+    }
+
+    .inputs {
+        text-align: left;
+        padding-left: 10px;
+    }
+
+    .outputs {
+        text-align: right;
+        padding-right: 10px;
+    }
+}
