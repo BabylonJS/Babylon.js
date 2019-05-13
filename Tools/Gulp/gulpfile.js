@@ -90,4 +90,4 @@ gulp.task("npmPackages", gulp.series("npmPackages-all"));
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", gulp.series("cleanup", "tsLint", "importLint", "circularDependencies", "typescript-all", "intellisense", "typedoc-all", "tests-all"));
+gulp.task("default", gulp.series("cleanup", "tsLint", "importLint", "circularDependencies", "typescript-all", "intellisense", "documentation", "typedoc-all", "tests-all"));
