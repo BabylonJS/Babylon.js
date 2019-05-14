@@ -5,6 +5,7 @@ import { Nullable } from 'babylonjs/types';
 import { TexturePropertyTabComponent } from './properties/texturePropertyTabComponent';
 import { GenericNodeModel } from '../diagram/generic/genericNodeModel';
 import { Vector2PropertyTabComponent } from './properties/vector2PropertyTabComponent';
+import { Vector3PropertyTabComponent } from './properties/vector3PropertyTabComponent';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -38,6 +39,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 return (
                     <div id="propertyTab">
                         <Vector2PropertyTabComponent globalState={this.props.globalState} node={this.state.currentNode} />
+                    </div>
+                );
+            }
+            if(this.state.currentNode.vector3) {
+                return (
+                    <div id="propertyTab">
+                        <Vector3PropertyTabComponent globalState={this.props.globalState} node={this.state.currentNode} />
                     </div>
                 );
             }
