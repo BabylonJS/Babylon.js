@@ -515,11 +515,6 @@ export class Effect implements IDisposable {
 
     /** @hidden */
     public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
-        if (vertex.substr(0, 7) === "source:") {
-            callback(vertex.substr(7));
-            return;
-        }
-
         if (DomManagement.IsWindowObjectExist()) {
             // DOM element ?
             if (vertex instanceof HTMLElement) {
@@ -527,6 +522,11 @@ export class Effect implements IDisposable {
                 callback(vertexCode);
                 return;
             }
+        }
+
+        if (vertex.substr(0, 7) === "source:") {
+            callback(vertex.substr(7));
+            return;
         }
 
         // Base64 encoded ?
@@ -556,11 +556,6 @@ export class Effect implements IDisposable {
 
     /** @hidden */
     public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
-        if (fragment.substr(0, 7) === "source:") {
-            callback(fragment.substr(7));
-            return;
-        }
-
         if (DomManagement.IsWindowObjectExist()) {
             // DOM element ?
             if (fragment instanceof HTMLElement) {
@@ -568,6 +563,11 @@ export class Effect implements IDisposable {
                 callback(fragmentCode);
                 return;
             }
+        }
+
+        if (fragment.substr(0, 7) === "source:") {
+            callback(fragment.substr(7));
+            return;
         }
 
         // Base64 encoded ?

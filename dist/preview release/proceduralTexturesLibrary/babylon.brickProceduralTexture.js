@@ -98,7 +98,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
+<<<<<<< HEAD
   !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+=======
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+>>>>>>> c561ead7a93fc6094d0854d66d037d358954fe3b
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {

@@ -325,6 +325,44 @@ declare module NODEEDITOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+<<<<<<< HEAD
+=======
+    }
+    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector3;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector3LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector3;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
+        updateVector3(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IVector3PropertyTabComponentProps {
+        globalState: GlobalState;
+        node: GenericNodeModel;
+    }
+    export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IPropertyTabComponentProps {
+        globalState: GlobalState;
+>>>>>>> c561ead7a93fc6094d0854d66d037d358954fe3b
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
