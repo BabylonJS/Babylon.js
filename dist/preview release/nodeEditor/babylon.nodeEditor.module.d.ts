@@ -325,6 +325,53 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/vector2P
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/vector3LineComponent" {
+    import * as React from "react";
+    import { Vector3 } from "babylonjs/Maths/math";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    interface IVector3LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: Vector3) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
+        isExpanded: boolean;
+        value: Vector3;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector3LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: Vector3;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Vector3): void;
+        updateVector3(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/propertyTab/properties/vector3PropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
+    interface IVector3PropertyTabComponentProps {
+        globalState: GlobalState;
+        node: GenericNodeModel;
+    }
+    export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -408,41 +455,6 @@ declare module "babylonjs-node-editor/index" {
 }
 declare module "babylonjs-node-editor/legacy/legacy" {
     export * from "babylonjs-node-editor/index";
-}
-declare module "babylonjs-node-editor/sharedComponents/vector3LineComponent" {
-    import * as React from "react";
-    import { Vector3 } from "babylonjs/Maths/math";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
-    interface IVector3LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: Vector3) => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
-        isExpanded: boolean;
-        value: Vector3;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector3LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: Vector3;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: Vector3): void;
-        updateVector3(): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        updateStateZ(value: number): void;
-        render(): JSX.Element;
-    }
 }
 declare module "babylonjs-node-editor" {
     export * from "babylonjs-node-editor/legacy/legacy";
@@ -735,6 +747,46 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IVector3LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector3) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector3;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector3LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector3;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
+        updateVector3(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IVector3PropertyTabComponentProps {
+        globalState: GlobalState;
+        node: GenericNodeModel;
+    }
+    export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -800,36 +852,5 @@ declare module NODEEDITOR {
          * @param options defines the options to use to configure the node editor
          */
         static Show(options: INodeEditorOptions): void;
-    }
-}
-declare module NODEEDITOR {
-    interface IVector3LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: BABYLON.Vector3) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
-        isExpanded: boolean;
-        value: BABYLON.Vector3;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector3LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: BABYLON.Vector3;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
-        updateVector3(): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        updateStateZ(value: number): void;
-        render(): JSX.Element;
     }
 }
