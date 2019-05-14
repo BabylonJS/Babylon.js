@@ -3,13 +3,13 @@ import * as React from "react";
 import { GlobalState } from '../../../globalState';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { FileButtonLineComponent } from '../../../sharedComponents/fileButtonLineComponent';
-import { GenericNodeModel } from '../../diagram/generic/genericNodeModel';
 import { Tools } from 'babylonjs/Misc/tools';
 import { Engine } from 'babylonjs/Engines/engine';
+import { TextureNodeModel } from '../../../components/diagram/texture/textureNodeModel';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
-    node: GenericNodeModel;
+    node: TextureNodeModel;
 }
 
 export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps> {
