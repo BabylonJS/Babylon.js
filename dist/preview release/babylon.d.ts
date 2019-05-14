@@ -50214,7 +50214,7 @@ declare module BABYLON {
      * Interface used to configure the node material editor
      */
     export interface INodeMaterialEditorOptions {
-        /** Define the URl to load Node Editor resources */
+        /** Define the URl to load node editor script */
         editorURL?: string;
     }
     /** @hidden */
@@ -50269,6 +50269,7 @@ declare module BABYLON {
         private _cachedWorldViewProjectionMatrix;
         private _textureConnectionPoints;
         private _optimizers;
+        /** Define the URl to load node editor script */
         static EditorURL: string;
         private BJSNODEMATERIALEDITOR;
         /** Get the inspector from bundle or global */
