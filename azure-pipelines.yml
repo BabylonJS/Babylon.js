@@ -19,7 +19,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp tests-whatsnew'
+  - script: 'gulp tests-whatsnew --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Whats new'
     env:
@@ -37,7 +37,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp typedoc-check'
+  - script: 'gulp typedoc-check --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typedoc check'
 
@@ -52,7 +52,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp fullLint'
+  - script: 'gulp fullLint --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Full Lint'
 
