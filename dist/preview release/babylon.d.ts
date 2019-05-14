@@ -50210,6 +50210,13 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Interface used to configure the node material editor
+     */
+    export interface INodeMaterialEditorOptions {
+        /** Define the URl to load node editor script */
+        editorURL?: string;
+    }
     /** @hidden */
     export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         /** BONES */
@@ -50262,6 +50269,11 @@ declare module BABYLON {
         private _cachedWorldViewProjectionMatrix;
         private _textureConnectionPoints;
         private _optimizers;
+        /** Define the URl to load node editor script */
+        static EditorURL: string;
+        private BJSNODEMATERIALEDITOR;
+        /** Get the inspector from bundle or global */
+        private _getGlobalNodeMaterialEditor;
         /**
         * Defines the maximum number of lights that can be used in the material
         */
@@ -50403,6 +50415,14 @@ declare module BABYLON {
          * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
          */
         dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void;
+        /** Creates the node editor window. */
+        private _createNodeEditor;
+        /**
+         * Launch the node material editor
+         * @param config Define the configuration of the editor
+         * @return a promise fulfilled when the node editor is visible
+         */
+        edit(config?: INodeMaterialEditorOptions): Promise<void>;
     }
 }
 declare module BABYLON {

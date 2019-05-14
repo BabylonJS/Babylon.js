@@ -4,13 +4,12 @@ import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 
 interface ILineContainerComponentProps {
-    globalState?: any; //
     title: string;
     children: any[] | any;
     closed?: boolean;
 }
 
-export class LineContainerComponent extends React.Component<ILineContainerComponentProps, { isExpanded: boolean, isHighlighted: boolean }> {
+export class LineContainerComponent extends React.Component<ILineContainerComponentProps, { isExpanded: boolean }> {
     private static _InMemoryStorage: { [key: string]: boolean };
 
     constructor(props: ILineContainerComponentProps) {
@@ -33,7 +32,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
             initialState = !this.props.closed;
         }
 
-        this.state = { isExpanded: initialState, isHighlighted: false };
+        this.state = { isExpanded: initialState };
     }
 
     switchExpandedState(): void {
@@ -52,26 +51,6 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         }
 
         this.setState({ isExpanded: newState });
-    }
-
-    componentDidMount() {
-        if (this.props.globalState && !this.props.globalState.selectedLineContainerTitle) {
-            return;
-        }
-
-        if (this.props.globalState && this.props.globalState.selectedLineContainerTitle === this.props.title) {
-            setTimeout(() => {
-                this.props.globalState!.selectedLineContainerTitle = "";
-            });
-
-            this.setState({ isExpanded: true, isHighlighted: true });
-
-            window.setTimeout(() => {
-                this.setState({ isHighlighted: false });
-            }, 5000);
-        } else {
-            this.setState({isExpanded: false});
-        }        
     }
 
     renderHeader() {
@@ -111,8 +90,6 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
                     <div className="paneList">
                         {this.props.children}
                     </div >
-                </div>
-                <div className={"paneContainer-highlight-border" + (!this.state.isHighlighted ? " transparent" : "")}>
                 </div>
             </div>
         );

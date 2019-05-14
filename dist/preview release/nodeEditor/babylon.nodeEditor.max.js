@@ -7,7 +7,7 @@
 		exports["babylonjs-node-editor"] = factory(require("babylonjs"));
 	else
 		root["NODEEDITOR"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -98,14 +98,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
 /*!**************************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
   \**************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "icon", function() { return icon; });
+/* WEBPACK VAR INJECTION */(function(global, setImmediate) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "icon", function() { return icon; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "noAuto", function() { return noAuto; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "config", function() { return config; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toHtml", function() { return toHtml; });
@@ -116,6 +116,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "dom", function() { return dom; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return parse; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findIconDefinition", function() { return findIconDefinition; });
+function _typeof(obj) {
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    _typeof = function (obj) {
+      return typeof obj;
+    };
+  } else {
+    _typeof = function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+
+  return _typeof(obj);
+}
+
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -265,6 +279,7 @@ var DEFAULT_FAMILY_PREFIX = 'fa';
 var DEFAULT_REPLACEMENT_CLASS = 'svg-inline--fa';
 var DATA_FA_I2SVG = 'data-fa-i2svg';
 var DATA_FA_PSEUDO_ELEMENT = 'data-fa-pseudo-element';
+var DATA_FA_PSEUDO_ELEMENT_PENDING = 'data-fa-pseudo-element-pending';
 var DATA_PREFIX = 'data-prefix';
 var DATA_ICON = 'data-icon';
 var HTML_CLASS_I2SVG_BASE_CLASS = 'fontawesome-i2svg';
@@ -276,6 +291,27 @@ var PRODUCTION = function () {
     return false;
   }
 }();
+var PREFIX_TO_STYLE = {
+  'fas': 'solid',
+  'far': 'regular',
+  'fal': 'light',
+  'fab': 'brands',
+  'fa': 'solid'
+};
+var STYLE_TO_PREFIX = {
+  'solid': 'fas',
+  'regular': 'far',
+  'light': 'fal',
+  'brands': 'fab'
+};
+var LAYERS_TEXT_CLASSNAME = 'fa-layers-text';
+var FONT_FAMILY_PATTERN = /Font Awesome 5 (Solid|Regular|Light|Brands|Free|Pro)/;
+var FONT_WEIGHT_TO_PREFIX = {
+  '900': 'fas',
+  '400': 'far',
+  'normal': 'far',
+  '300': 'fal'
+};
 var oneToTen = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 var oneToTwenty = oneToTen.concat([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
 var ATTRIBUTES_WATCHED_FOR_MUTATION = ['class', 'data-prefix', 'data-icon', 'data-fa-transform', 'data-fa-mask'];
@@ -320,7 +356,7 @@ if (DOCUMENT && typeof DOCUMENT.querySelector === 'function') {
   });
 }
 
-var _default = _objectSpread({
+var _default = {
   familyPrefix: DEFAULT_FAMILY_PREFIX,
   replacementClass: DEFAULT_REPLACEMENT_CLASS,
   autoReplaceSvg: true,
@@ -331,11 +367,13 @@ var _default = _objectSpread({
   keepOriginalSource: true,
   measurePerformance: false,
   showMissingIcons: true
-}, initial);
+};
 
-if (!_default.autoReplaceSvg) _default.observeMutations = false;
+var _config = _objectSpread({}, _default, initial);
 
-var config = _objectSpread({}, _default);
+if (!_config.autoReplaceSvg) _config.observeMutations = false;
+
+var config = _objectSpread({}, _config);
 
 WINDOW.FontAwesomeConfig = config;
 
@@ -367,6 +405,295 @@ function domready (fn) {
   if (!IS_DOM) return;
   loaded ? setTimeout(fn, 0) : functions.push(fn);
 }
+
+var PENDING = 'pending';
+var SETTLED = 'settled';
+var FULFILLED = 'fulfilled';
+var REJECTED = 'rejected';
+
+var NOOP = function NOOP() {};
+
+var isNode = typeof global !== 'undefined' && typeof global.process !== 'undefined' && typeof global.process.emit === 'function';
+var asyncSetTimer = typeof setImmediate === 'undefined' ? setTimeout : setImmediate;
+var asyncQueue = [];
+var asyncTimer;
+
+function asyncFlush() {
+  // run promise callbacks
+  for (var i = 0; i < asyncQueue.length; i++) {
+    asyncQueue[i][0](asyncQueue[i][1]);
+  } // reset async asyncQueue
+
+
+  asyncQueue = [];
+  asyncTimer = false;
+}
+
+function asyncCall(callback, arg) {
+  asyncQueue.push([callback, arg]);
+
+  if (!asyncTimer) {
+    asyncTimer = true;
+    asyncSetTimer(asyncFlush, 0);
+  }
+}
+
+function invokeResolver(resolver, promise) {
+  function resolvePromise(value) {
+    resolve(promise, value);
+  }
+
+  function rejectPromise(reason) {
+    reject(promise, reason);
+  }
+
+  try {
+    resolver(resolvePromise, rejectPromise);
+  } catch (e) {
+    rejectPromise(e);
+  }
+}
+
+function invokeCallback(subscriber) {
+  var owner = subscriber.owner;
+  var settled = owner._state;
+  var value = owner._data;
+  var callback = subscriber[settled];
+  var promise = subscriber.then;
+
+  if (typeof callback === 'function') {
+    settled = FULFILLED;
+
+    try {
+      value = callback(value);
+    } catch (e) {
+      reject(promise, e);
+    }
+  }
+
+  if (!handleThenable(promise, value)) {
+    if (settled === FULFILLED) {
+      resolve(promise, value);
+    }
+
+    if (settled === REJECTED) {
+      reject(promise, value);
+    }
+  }
+}
+
+function handleThenable(promise, value) {
+  var resolved;
+
+  try {
+    if (promise === value) {
+      throw new TypeError('A promises callback cannot return that same promise.');
+    }
+
+    if (value && (typeof value === 'function' || _typeof(value) === 'object')) {
+      // then should be retrieved only once
+      var then = value.then;
+
+      if (typeof then === 'function') {
+        then.call(value, function (val) {
+          if (!resolved) {
+            resolved = true;
+
+            if (value === val) {
+              fulfill(promise, val);
+            } else {
+              resolve(promise, val);
+            }
+          }
+        }, function (reason) {
+          if (!resolved) {
+            resolved = true;
+            reject(promise, reason);
+          }
+        });
+        return true;
+      }
+    }
+  } catch (e) {
+    if (!resolved) {
+      reject(promise, e);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+function resolve(promise, value) {
+  if (promise === value || !handleThenable(promise, value)) {
+    fulfill(promise, value);
+  }
+}
+
+function fulfill(promise, value) {
+  if (promise._state === PENDING) {
+    promise._state = SETTLED;
+    promise._data = value;
+    asyncCall(publishFulfillment, promise);
+  }
+}
+
+function reject(promise, reason) {
+  if (promise._state === PENDING) {
+    promise._state = SETTLED;
+    promise._data = reason;
+    asyncCall(publishRejection, promise);
+  }
+}
+
+function publish(promise) {
+  promise._then = promise._then.forEach(invokeCallback);
+}
+
+function publishFulfillment(promise) {
+  promise._state = FULFILLED;
+  publish(promise);
+}
+
+function publishRejection(promise) {
+  promise._state = REJECTED;
+  publish(promise);
+
+  if (!promise._handled && isNode) {
+    global.process.emit('unhandledRejection', promise._data, promise);
+  }
+}
+
+function notifyRejectionHandled(promise) {
+  global.process.emit('rejectionHandled', promise);
+}
+/**
+ * @class
+ */
+
+
+function P(resolver) {
+  if (typeof resolver !== 'function') {
+    throw new TypeError('Promise resolver ' + resolver + ' is not a function');
+  }
+
+  if (this instanceof P === false) {
+    throw new TypeError('Failed to construct \'Promise\': Please use the \'new\' operator, this object constructor cannot be called as a function.');
+  }
+
+  this._then = [];
+  invokeResolver(resolver, this);
+}
+
+P.prototype = {
+  constructor: P,
+  _state: PENDING,
+  _then: null,
+  _data: undefined,
+  _handled: false,
+  then: function then(onFulfillment, onRejection) {
+    var subscriber = {
+      owner: this,
+      then: new this.constructor(NOOP),
+      fulfilled: onFulfillment,
+      rejected: onRejection
+    };
+
+    if ((onRejection || onFulfillment) && !this._handled) {
+      this._handled = true;
+
+      if (this._state === REJECTED && isNode) {
+        asyncCall(notifyRejectionHandled, this);
+      }
+    }
+
+    if (this._state === FULFILLED || this._state === REJECTED) {
+      // already resolved, call callback async
+      asyncCall(invokeCallback, subscriber);
+    } else {
+      // subscribe
+      this._then.push(subscriber);
+    }
+
+    return subscriber.then;
+  },
+  catch: function _catch(onRejection) {
+    return this.then(null, onRejection);
+  }
+};
+
+P.all = function (promises) {
+  if (!Array.isArray(promises)) {
+    throw new TypeError('You must pass an array to Promise.all().');
+  }
+
+  return new P(function (resolve, reject) {
+    var results = [];
+    var remaining = 0;
+
+    function resolver(index) {
+      remaining++;
+      return function (value) {
+        results[index] = value;
+
+        if (! --remaining) {
+          resolve(results);
+        }
+      };
+    }
+
+    for (var i = 0, promise; i < promises.length; i++) {
+      promise = promises[i];
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(resolver(i), reject);
+      } else {
+        results[i] = promise;
+      }
+    }
+
+    if (!remaining) {
+      resolve(results);
+    }
+  });
+};
+
+P.race = function (promises) {
+  if (!Array.isArray(promises)) {
+    throw new TypeError('You must pass an array to Promise.race().');
+  }
+
+  return new P(function (resolve, reject) {
+    for (var i = 0, promise; i < promises.length; i++) {
+      promise = promises[i];
+
+      if (promise && typeof promise.then === 'function') {
+        promise.then(resolve, reject);
+      } else {
+        resolve(promise);
+      }
+    }
+  });
+};
+
+P.resolve = function (value) {
+  if (value && _typeof(value) === 'object' && value.constructor === P) {
+    return value;
+  }
+
+  return new P(function (resolve) {
+    resolve(value);
+  });
+};
+
+P.reject = function (reason) {
+  return new P(function (resolve, reject) {
+    reject(reason);
+  });
+};
+
+var picked = typeof Promise === 'function' ? Promise : P;
 
 var d = UNITS_IN_GRID;
 var meaninglessTransform = {
@@ -840,7 +1167,7 @@ var p = config.measurePerformance && PERFORMANCE && PERFORMANCE.mark && PERFORMA
   mark: noop$1,
   measure: noop$1
 };
-var preamble = "FA \"5.6.3\"";
+var preamble = "FA \"5.7.1\"";
 
 var begin = function begin(name) {
   p.mark("".concat(preamble, " ").concat(name, " begins"));
@@ -907,6 +1234,41 @@ var reduce = function fastReduceObject(subject, fn, initialValue, thisContext) {
   return result;
 };
 
+function defineIcons(prefix, icons) {
+  var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var _params$skipHooks = params.skipHooks,
+      skipHooks = _params$skipHooks === void 0 ? false : _params$skipHooks;
+  var normalized = Object.keys(icons).reduce(function (acc, iconName) {
+    var icon = icons[iconName];
+    var expanded = !!icon.icon;
+
+    if (expanded) {
+      acc[icon.iconName] = icon.icon;
+    } else {
+      acc[iconName] = icon;
+    }
+
+    return acc;
+  }, {});
+
+  if (typeof namespace.hooks.addPack === 'function' && !skipHooks) {
+    namespace.hooks.addPack(prefix, normalized);
+  } else {
+    namespace.styles[prefix] = _objectSpread({}, namespace.styles[prefix] || {}, normalized);
+  }
+  /**
+   * Font Awesome 4 used the prefix of `fa` for all icons. With the introduction
+   * of new styles we needed to differentiate between them. Prefix `fa` is now an alias
+   * for `fas` so we'll easy the upgrade process for our users by automatically defining
+   * this as well.
+   */
+
+
+  if (prefix === 'fas') {
+    defineIcons('fa', icons);
+  }
+}
+
 var styles = namespace.styles,
     shims = namespace.shims;
 var _byUnicode = {};
@@ -921,7 +1283,10 @@ var build = function build() {
   };
 
   _byUnicode = lookup(function (acc, icon, iconName) {
-    acc[icon[3]] = iconName;
+    if (icon[3]) {
+      acc[icon[3]] = iconName;
+    }
+
     return acc;
   });
   _byLigature = lookup(function (acc, icon, iconName) {
@@ -976,6 +1341,8 @@ function getCanonicalIcon(values) {
     var iconName = getIconName(config.familyPrefix, cls);
 
     if (styles$1[cls]) {
+      acc.prefix = cls;
+    } else if (config.autoFetchSvg && ['fas', 'far', 'fal', 'fab', 'fa'].indexOf(cls) > -1) {
       acc.prefix = cls;
     } else if (iconName) {
       var shim = acc.prefix === 'fa' ? byOldName(iconName) : {};
@@ -1096,9 +1463,10 @@ function perform(mutations, callback) {
   }
 }
 var disabled = false;
-function disableObservation(operation) {
+function disableObservation() {
   disabled = true;
-  operation();
+}
+function enableObservation() {
   disabled = false;
 }
 var mo = null;
@@ -1115,7 +1483,7 @@ function observe(options) {
       nodeCallback = options.nodeCallback,
       pseudoElementsCallback = options.pseudoElementsCallback,
       _options$observeMutat = options.observeMutationsRoot,
-      observeMutationsRoot = _options$observeMutat === void 0 ? DOCUMENT.body : _options$observeMutat;
+      observeMutationsRoot = _options$observeMutat === void 0 ? DOCUMENT : _options$observeMutat;
   mo = new MUTATION_OBSERVER(function (objects) {
     if (disabled) return;
     toArray(objects).forEach(function (mutationRecord) {
@@ -1302,6 +1670,7 @@ function attributesParser (node) {
       extraAttributes['aria-labelledby'] = "".concat(config.replacementClass, "-title-").concat(nextUniqueId());
     } else {
       extraAttributes['aria-hidden'] = 'true';
+      extraAttributes['focusable'] = 'false';
     }
   }
 
@@ -1320,19 +1689,21 @@ function maskParser (node) {
   }
 }
 
-var blankMeta = {
-  iconName: null,
-  title: null,
-  prefix: null,
-  transform: meaninglessTransform,
-  symbol: false,
-  mask: null,
-  extra: {
-    classes: [],
-    styles: {},
-    attributes: {}
-  }
-};
+function blankMeta() {
+  return {
+    iconName: null,
+    title: null,
+    prefix: null,
+    transform: meaninglessTransform,
+    symbol: false,
+    mask: null,
+    extra: {
+      classes: [],
+      styles: {},
+      attributes: {}
+    }
+  };
+}
 function parseMeta(node) {
   var _classParser = classParser(node),
       iconName = _classParser.iconName,
@@ -1438,51 +1809,44 @@ var missing = {
 };
 
 var styles$2 = namespace.styles;
-var LAYERS_TEXT_CLASSNAME = 'fa-layers-text';
-var FONT_FAMILY_PATTERN = /Font Awesome 5 (Solid|Regular|Light|Brands|Free|Pro)/;
-var STYLE_TO_PREFIX = {
-  'Solid': 'fas',
-  'Regular': 'far',
-  'Light': 'fal',
-  'Brands': 'fab'
-};
-var FONT_WEIGHT_TO_PREFIX = {
-  '900': 'fas',
-  '400': 'far',
-  '300': 'fal'
-};
-
 function findIcon(iconName, prefix) {
-  var val = {
-    found: false,
-    width: 512,
-    height: 512,
-    icon: missing
-  };
-
-  if (iconName && prefix && styles$2[prefix] && styles$2[prefix][iconName]) {
-    var icon = styles$2[prefix][iconName];
-    var width = icon[0];
-    var height = icon[1];
-    var vectorData = icon.slice(4);
-    val = {
-      found: true,
-      width: width,
-      height: height,
-      icon: {
-        tag: 'path',
-        attributes: {
-          fill: 'currentColor',
-          d: vectorData[0]
-        }
-      }
+  return new picked(function (resolve, reject) {
+    var val = {
+      found: false,
+      width: 512,
+      height: 512,
+      icon: missing
     };
-  } else if (iconName && prefix && !config.showMissingIcons) {
-    throw new MissingIcon("Icon is missing for prefix ".concat(prefix, " with icon name ").concat(iconName));
-  }
 
-  return val;
+    if (iconName && prefix && styles$2[prefix] && styles$2[prefix][iconName]) {
+      var icon = styles$2[prefix][iconName];
+      var width = icon[0];
+      var height = icon[1];
+      var vectorData = icon.slice(4);
+      val = {
+        found: true,
+        width: width,
+        height: height,
+        icon: {
+          tag: 'path',
+          attributes: {
+            fill: 'currentColor',
+            d: vectorData[0]
+          }
+        }
+      };
+      return resolve(val);
+    }
+
+    if (iconName && prefix && !config.showMissingIcons) {
+      reject(new MissingIcon("Icon is missing for prefix ".concat(prefix, " with icon name ").concat(iconName)));
+    } else {
+      resolve(val);
+    }
+  });
 }
+
+var styles$3 = namespace.styles;
 
 function generateSvgReplacementMutation(node, nodeMeta) {
   var iconName = nodeMeta.iconName,
@@ -1492,20 +1856,28 @@ function generateSvgReplacementMutation(node, nodeMeta) {
       symbol = nodeMeta.symbol,
       mask = nodeMeta.mask,
       extra = nodeMeta.extra;
-  return [node, makeInlineSvgAbstract({
-    icons: {
-      main: findIcon(iconName, prefix),
-      mask: findIcon(mask.iconName, mask.prefix)
-    },
-    prefix: prefix,
-    iconName: iconName,
-    transform: transform,
-    symbol: symbol,
-    mask: mask,
-    title: title,
-    extra: extra,
-    watchable: true
-  })];
+  return new picked(function (resolve, reject) {
+    picked.all([findIcon(iconName, prefix), findIcon(mask.iconName, mask.prefix)]).then(function (_ref) {
+      var _ref2 = _slicedToArray(_ref, 2),
+          main = _ref2[0],
+          mask = _ref2[1];
+
+      resolve([node, makeInlineSvgAbstract({
+        icons: {
+          main: main,
+          mask: mask
+        },
+        prefix: prefix,
+        iconName: iconName,
+        transform: transform,
+        symbol: symbol,
+        mask: mask,
+        title: title,
+        extra: extra,
+        watchable: true
+      })]);
+    });
+  });
 }
 
 function generateLayersText(node, nodeMeta) {
@@ -1526,7 +1898,7 @@ function generateLayersText(node, nodeMeta) {
     extra.attributes['aria-hidden'] = 'true';
   }
 
-  return [node, makeLayersTextAbstract({
+  return picked.resolve([node, makeLayersTextAbstract({
     content: node.innerHTML,
     width: width,
     height: height,
@@ -1534,7 +1906,7 @@ function generateLayersText(node, nodeMeta) {
     title: title,
     extra: extra,
     watchable: true
-  })];
+  })]);
 }
 
 function generateMutation(node) {
@@ -1547,69 +1919,6 @@ function generateMutation(node) {
   }
 }
 
-function searchPseudoElements(root) {
-  if (!IS_DOM) return;
-  var end = perf.begin('searchPseudoElements');
-  disableObservation(function () {
-    toArray(root.querySelectorAll('*')).filter(function (n) {
-      return n.parentNode !== document.head && !~TAGNAMES_TO_SKIP_FOR_PSEUDOELEMENTS.indexOf(n.tagName.toUpperCase()) && !n.getAttribute(DATA_FA_PSEUDO_ELEMENT) && (!n.parentNode || n.parentNode.tagName !== 'svg');
-    }).forEach(function (node) {
-      [':before', ':after'].forEach(function (pos) {
-        var children = toArray(node.children);
-        var alreadyProcessedPseudoElement = children.filter(function (c) {
-          return c.getAttribute(DATA_FA_PSEUDO_ELEMENT) === pos;
-        })[0];
-        var styles = WINDOW.getComputedStyle(node, pos);
-        var fontFamily = styles.getPropertyValue('font-family').match(FONT_FAMILY_PATTERN);
-        var fontWeight = styles.getPropertyValue('font-weight');
-
-        if (alreadyProcessedPseudoElement && !fontFamily) {
-          // If we've already processed it but the current computed style does not result in a font-family,
-          // that probably means that a class name that was previously present to make the icon has been
-          // removed. So we now should delete the icon.
-          node.removeChild(alreadyProcessedPseudoElement);
-        } else if (fontFamily) {
-          var content = styles.getPropertyValue('content');
-          var prefix = ~['Light', 'Regular', 'Solid', 'Brands'].indexOf(fontFamily[1]) ? STYLE_TO_PREFIX[fontFamily[1]] : FONT_WEIGHT_TO_PREFIX[fontWeight];
-          var iconName = byUnicode(prefix, toHex(content.length === 3 ? content.substr(1, 1) : content)); // Only convert the pseudo element in this :before/:after position into an icon if we haven't
-          // already done so with the same prefix and iconName
-
-          if (!alreadyProcessedPseudoElement || alreadyProcessedPseudoElement.getAttribute(DATA_PREFIX) !== prefix || alreadyProcessedPseudoElement.getAttribute(DATA_ICON) !== iconName) {
-            if (alreadyProcessedPseudoElement) {
-              // Delete the old one, since we're replacing it with a new one
-              node.removeChild(alreadyProcessedPseudoElement);
-            }
-
-            var extra = blankMeta.extra;
-            extra.attributes[DATA_FA_PSEUDO_ELEMENT] = pos;
-            var abstract = makeInlineSvgAbstract(_objectSpread({}, blankMeta, {
-              icons: {
-                main: findIcon(iconName, prefix),
-                mask: emptyCanonicalIcon()
-              },
-              prefix: prefix,
-              iconName: iconName,
-              extra: extra,
-              watchable: true
-            }));
-            var element = DOCUMENT.createElement('svg');
-
-            if (pos === ':before') {
-              node.insertBefore(element, node.firstChild);
-            } else {
-              node.appendChild(element);
-            }
-
-            element.outerHTML = abstract.map(function (a) {
-              return toHtml(a);
-            }).join('\n');
-          }
-        }
-      });
-    });
-  });
-  end();
-}
 function onTree(root) {
   var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
   if (!IS_DOM) return;
@@ -1623,7 +1932,7 @@ function onTree(root) {
     return htmlClassList.remove("".concat(HTML_CLASS_I2SVG_BASE_CLASS, "-").concat(suffix));
   };
 
-  var prefixes = Object.keys(styles$2);
+  var prefixes = config.autoFetchSvg ? Object.keys(PREFIX_TO_STYLE) : Object.keys(styles$3);
   var prefixesDomQuery = [".".concat(LAYERS_TEXT_CLASSNAME, ":not([").concat(DATA_FA_I2SVG, "])")].concat(prefixes.map(function (p) {
     return ".".concat(p, ":not([").concat(DATA_FA_I2SVG, "])");
   })).join(', ');
@@ -1659,24 +1968,131 @@ function onTree(root) {
 
     return acc;
   }, []);
-  mark();
-  perform(mutations, function () {
-    hclAdd('active');
-    hclAdd('complete');
-    hclRemove('pending');
-    if (typeof callback === 'function') callback();
+  return new picked(function (resolve, reject) {
+    picked.all(mutations).then(function (resolvedMutations) {
+      perform(resolvedMutations, function () {
+        hclAdd('active');
+        hclAdd('complete');
+        hclRemove('pending');
+        if (typeof callback === 'function') callback();
+        mark();
+        resolve();
+      });
+    }).catch(function () {
+      mark();
+      reject();
+    });
   });
 }
 function onNode(node) {
   var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-  var mutation = generateMutation(node);
-
-  if (mutation) {
-    perform([mutation], callback);
-  }
+  generateMutation(node).then(function (mutation) {
+    if (mutation) {
+      perform([mutation], callback);
+    }
+  });
 }
 
-var baseStyles = "svg:not(:root).svg-inline--fa {\n  overflow: visible;\n}\n\n.svg-inline--fa {\n  display: inline-block;\n  font-size: inherit;\n  height: 1em;\n  overflow: visible;\n  vertical-align: -0.125em;\n}\n.svg-inline--fa.fa-lg {\n  vertical-align: -0.225em;\n}\n.svg-inline--fa.fa-w-1 {\n  width: 0.0625em;\n}\n.svg-inline--fa.fa-w-2 {\n  width: 0.125em;\n}\n.svg-inline--fa.fa-w-3 {\n  width: 0.1875em;\n}\n.svg-inline--fa.fa-w-4 {\n  width: 0.25em;\n}\n.svg-inline--fa.fa-w-5 {\n  width: 0.3125em;\n}\n.svg-inline--fa.fa-w-6 {\n  width: 0.375em;\n}\n.svg-inline--fa.fa-w-7 {\n  width: 0.4375em;\n}\n.svg-inline--fa.fa-w-8 {\n  width: 0.5em;\n}\n.svg-inline--fa.fa-w-9 {\n  width: 0.5625em;\n}\n.svg-inline--fa.fa-w-10 {\n  width: 0.625em;\n}\n.svg-inline--fa.fa-w-11 {\n  width: 0.6875em;\n}\n.svg-inline--fa.fa-w-12 {\n  width: 0.75em;\n}\n.svg-inline--fa.fa-w-13 {\n  width: 0.8125em;\n}\n.svg-inline--fa.fa-w-14 {\n  width: 0.875em;\n}\n.svg-inline--fa.fa-w-15 {\n  width: 0.9375em;\n}\n.svg-inline--fa.fa-w-16 {\n  width: 1em;\n}\n.svg-inline--fa.fa-w-17 {\n  width: 1.0625em;\n}\n.svg-inline--fa.fa-w-18 {\n  width: 1.125em;\n}\n.svg-inline--fa.fa-w-19 {\n  width: 1.1875em;\n}\n.svg-inline--fa.fa-w-20 {\n  width: 1.25em;\n}\n.svg-inline--fa.fa-pull-left {\n  margin-right: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-pull-right {\n  margin-left: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-border {\n  height: 1.5em;\n}\n.svg-inline--fa.fa-li {\n  width: 2em;\n}\n.svg-inline--fa.fa-fw {\n  width: 1.25em;\n}\n\n.fa-layers svg.svg-inline--fa {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.fa-layers {\n  display: inline-block;\n  height: 1em;\n  position: relative;\n  text-align: center;\n  vertical-align: -0.125em;\n  width: 1em;\n}\n.fa-layers svg.svg-inline--fa {\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter, .fa-layers-text {\n  display: inline-block;\n  position: absolute;\n  text-align: center;\n}\n\n.fa-layers-text {\n  left: 50%;\n  top: 50%;\n  -webkit-transform: translate(-50%, -50%);\n          transform: translate(-50%, -50%);\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter {\n  background-color: #ff253a;\n  border-radius: 1em;\n  -webkit-box-sizing: border-box;\n          box-sizing: border-box;\n  color: #fff;\n  height: 1.5em;\n  line-height: 1;\n  max-width: 5em;\n  min-width: 1.5em;\n  overflow: hidden;\n  padding: 0.25em;\n  right: 0;\n  text-overflow: ellipsis;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-bottom-right {\n  bottom: 0;\n  right: 0;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom right;\n          transform-origin: bottom right;\n}\n\n.fa-layers-bottom-left {\n  bottom: 0;\n  left: 0;\n  right: auto;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom left;\n          transform-origin: bottom left;\n}\n\n.fa-layers-top-right {\n  right: 0;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-top-left {\n  left: 0;\n  right: auto;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top left;\n          transform-origin: top left;\n}\n\n.fa-lg {\n  font-size: 1.3333333333em;\n  line-height: 0.75em;\n  vertical-align: -0.0667em;\n}\n\n.fa-xs {\n  font-size: 0.75em;\n}\n\n.fa-sm {\n  font-size: 0.875em;\n}\n\n.fa-1x {\n  font-size: 1em;\n}\n\n.fa-2x {\n  font-size: 2em;\n}\n\n.fa-3x {\n  font-size: 3em;\n}\n\n.fa-4x {\n  font-size: 4em;\n}\n\n.fa-5x {\n  font-size: 5em;\n}\n\n.fa-6x {\n  font-size: 6em;\n}\n\n.fa-7x {\n  font-size: 7em;\n}\n\n.fa-8x {\n  font-size: 8em;\n}\n\n.fa-9x {\n  font-size: 9em;\n}\n\n.fa-10x {\n  font-size: 10em;\n}\n\n.fa-fw {\n  text-align: center;\n  width: 1.25em;\n}\n\n.fa-ul {\n  list-style-type: none;\n  margin-left: 2.5em;\n  padding-left: 0;\n}\n.fa-ul > li {\n  position: relative;\n}\n\n.fa-li {\n  left: -2em;\n  position: absolute;\n  text-align: center;\n  width: 2em;\n  line-height: inherit;\n}\n\n.fa-border {\n  border: solid 0.08em #eee;\n  border-radius: 0.1em;\n  padding: 0.2em 0.25em 0.15em;\n}\n\n.fa-pull-left {\n  float: left;\n}\n\n.fa-pull-right {\n  float: right;\n}\n\n.fa.fa-pull-left,\n.fas.fa-pull-left,\n.far.fa-pull-left,\n.fal.fa-pull-left,\n.fab.fa-pull-left {\n  margin-right: 0.3em;\n}\n.fa.fa-pull-right,\n.fas.fa-pull-right,\n.far.fa-pull-right,\n.fal.fa-pull-right,\n.fab.fa-pull-right {\n  margin-left: 0.3em;\n}\n\n.fa-spin {\n  -webkit-animation: fa-spin 2s infinite linear;\n          animation: fa-spin 2s infinite linear;\n}\n\n.fa-pulse {\n  -webkit-animation: fa-spin 1s infinite steps(8);\n          animation: fa-spin 1s infinite steps(8);\n}\n\n@-webkit-keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n\n@keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n.fa-rotate-90 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=1)\";\n  -webkit-transform: rotate(90deg);\n          transform: rotate(90deg);\n}\n\n.fa-rotate-180 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2)\";\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n\n.fa-rotate-270 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=3)\";\n  -webkit-transform: rotate(270deg);\n          transform: rotate(270deg);\n}\n\n.fa-flip-horizontal {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)\";\n  -webkit-transform: scale(-1, 1);\n          transform: scale(-1, 1);\n}\n\n.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(1, -1);\n          transform: scale(1, -1);\n}\n\n.fa-flip-horizontal.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(-1, -1);\n          transform: scale(-1, -1);\n}\n\n:root .fa-rotate-90,\n:root .fa-rotate-180,\n:root .fa-rotate-270,\n:root .fa-flip-horizontal,\n:root .fa-flip-vertical {\n  -webkit-filter: none;\n          filter: none;\n}\n\n.fa-stack {\n  display: inline-block;\n  height: 2em;\n  position: relative;\n  width: 2.5em;\n}\n\n.fa-stack-1x,\n.fa-stack-2x {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.svg-inline--fa.fa-stack-1x {\n  height: 1em;\n  width: 1.25em;\n}\n.svg-inline--fa.fa-stack-2x {\n  height: 2em;\n  width: 2.5em;\n}\n\n.fa-inverse {\n  color: #fff;\n}\n\n.sr-only {\n  border: 0;\n  clip: rect(0, 0, 0, 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\n.sr-only-focusable:active, .sr-only-focusable:focus {\n  clip: auto;\n  height: auto;\n  margin: 0;\n  overflow: visible;\n  position: static;\n  width: auto;\n}";
+function replaceForPosition(node, position) {
+  var pendingAttribute = "".concat(DATA_FA_PSEUDO_ELEMENT_PENDING).concat(position.replace(':', '-'));
+  return new picked(function (resolve, reject) {
+    if (node.getAttribute(pendingAttribute) !== null) {
+      // This node is already being processed
+      return resolve();
+    }
+
+    var children = toArray(node.children);
+    var alreadyProcessedPseudoElement = children.filter(function (c) {
+      return c.getAttribute(DATA_FA_PSEUDO_ELEMENT) === position;
+    })[0];
+    var styles = WINDOW.getComputedStyle(node, position);
+    var fontFamily = styles.getPropertyValue('font-family').match(FONT_FAMILY_PATTERN);
+    var fontWeight = styles.getPropertyValue('font-weight');
+
+    if (alreadyProcessedPseudoElement && !fontFamily) {
+      // If we've already processed it but the current computed style does not result in a font-family,
+      // that probably means that a class name that was previously present to make the icon has been
+      // removed. So we now should delete the icon.
+      node.removeChild(alreadyProcessedPseudoElement);
+      return resolve();
+    } else if (fontFamily) {
+      var content = styles.getPropertyValue('content');
+      var prefix = ~['Light', 'Regular', 'Solid', 'Brands'].indexOf(fontFamily[1]) ? STYLE_TO_PREFIX[fontFamily[1].toLowerCase()] : FONT_WEIGHT_TO_PREFIX[fontWeight];
+      var iconName = byUnicode(prefix, toHex(content.length === 3 ? content.substr(1, 1) : content)); // Only convert the pseudo element in this :before/:after position into an icon if we haven't
+      // already done so with the same prefix and iconName
+
+      if (!alreadyProcessedPseudoElement || alreadyProcessedPseudoElement.getAttribute(DATA_PREFIX) !== prefix || alreadyProcessedPseudoElement.getAttribute(DATA_ICON) !== iconName) {
+        node.setAttribute(pendingAttribute, iconName);
+
+        if (alreadyProcessedPseudoElement) {
+          // Delete the old one, since we're replacing it with a new one
+          node.removeChild(alreadyProcessedPseudoElement);
+        }
+
+        var meta = blankMeta();
+        var extra = meta.extra;
+        extra.attributes[DATA_FA_PSEUDO_ELEMENT] = position;
+        findIcon(iconName, prefix).then(function (main) {
+          var abstract = makeInlineSvgAbstract(_objectSpread({}, meta, {
+            icons: {
+              main: main,
+              mask: emptyCanonicalIcon()
+            },
+            prefix: prefix,
+            iconName: iconName,
+            extra: extra,
+            watchable: true
+          }));
+          var element = DOCUMENT.createElement('svg');
+
+          if (position === ':before') {
+            node.insertBefore(element, node.firstChild);
+          } else {
+            node.appendChild(element);
+          }
+
+          element.outerHTML = abstract.map(function (a) {
+            return toHtml(a);
+          }).join('\n');
+          node.removeAttribute(pendingAttribute);
+          resolve();
+        }).catch(reject);
+      } else {
+        resolve();
+      }
+    } else {
+      resolve();
+    }
+  });
+}
+
+function replace(node) {
+  return picked.all([replaceForPosition(node, ':before'), replaceForPosition(node, ':after')]);
+}
+
+function processable(node) {
+  return node.parentNode !== document.head && !~TAGNAMES_TO_SKIP_FOR_PSEUDOELEMENTS.indexOf(node.tagName.toUpperCase()) && !node.getAttribute(DATA_FA_PSEUDO_ELEMENT) && (!node.parentNode || node.parentNode.tagName !== 'svg');
+}
+
+function searchPseudoElements (root) {
+  if (!IS_DOM) return;
+  return new picked(function (resolve, reject) {
+    var operations = toArray(root.querySelectorAll('*')).filter(processable).map(replace);
+    var end = perf.begin('searchPseudoElements');
+    disableObservation();
+    picked.all(operations).then(function () {
+      end();
+      enableObservation();
+      resolve();
+    }).catch(function () {
+      end();
+      enableObservation();
+      reject();
+    });
+  });
+}
+
+var baseStyles = "svg:not(:root).svg-inline--fa {\n  overflow: visible;\n}\n\n.svg-inline--fa {\n  display: inline-block;\n  font-size: inherit;\n  height: 1em;\n  overflow: visible;\n  vertical-align: -0.125em;\n}\n.svg-inline--fa.fa-lg {\n  vertical-align: -0.225em;\n}\n.svg-inline--fa.fa-w-1 {\n  width: 0.0625em;\n}\n.svg-inline--fa.fa-w-2 {\n  width: 0.125em;\n}\n.svg-inline--fa.fa-w-3 {\n  width: 0.1875em;\n}\n.svg-inline--fa.fa-w-4 {\n  width: 0.25em;\n}\n.svg-inline--fa.fa-w-5 {\n  width: 0.3125em;\n}\n.svg-inline--fa.fa-w-6 {\n  width: 0.375em;\n}\n.svg-inline--fa.fa-w-7 {\n  width: 0.4375em;\n}\n.svg-inline--fa.fa-w-8 {\n  width: 0.5em;\n}\n.svg-inline--fa.fa-w-9 {\n  width: 0.5625em;\n}\n.svg-inline--fa.fa-w-10 {\n  width: 0.625em;\n}\n.svg-inline--fa.fa-w-11 {\n  width: 0.6875em;\n}\n.svg-inline--fa.fa-w-12 {\n  width: 0.75em;\n}\n.svg-inline--fa.fa-w-13 {\n  width: 0.8125em;\n}\n.svg-inline--fa.fa-w-14 {\n  width: 0.875em;\n}\n.svg-inline--fa.fa-w-15 {\n  width: 0.9375em;\n}\n.svg-inline--fa.fa-w-16 {\n  width: 1em;\n}\n.svg-inline--fa.fa-w-17 {\n  width: 1.0625em;\n}\n.svg-inline--fa.fa-w-18 {\n  width: 1.125em;\n}\n.svg-inline--fa.fa-w-19 {\n  width: 1.1875em;\n}\n.svg-inline--fa.fa-w-20 {\n  width: 1.25em;\n}\n.svg-inline--fa.fa-pull-left {\n  margin-right: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-pull-right {\n  margin-left: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-border {\n  height: 1.5em;\n}\n.svg-inline--fa.fa-li {\n  width: 2em;\n}\n.svg-inline--fa.fa-fw {\n  width: 1.25em;\n}\n\n.fa-layers svg.svg-inline--fa {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.fa-layers {\n  display: inline-block;\n  height: 1em;\n  position: relative;\n  text-align: center;\n  vertical-align: -0.125em;\n  width: 1em;\n}\n.fa-layers svg.svg-inline--fa {\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter, .fa-layers-text {\n  display: inline-block;\n  position: absolute;\n  text-align: center;\n}\n\n.fa-layers-text {\n  left: 50%;\n  top: 50%;\n  -webkit-transform: translate(-50%, -50%);\n          transform: translate(-50%, -50%);\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter {\n  background-color: #ff253a;\n  border-radius: 1em;\n  -webkit-box-sizing: border-box;\n          box-sizing: border-box;\n  color: #fff;\n  height: 1.5em;\n  line-height: 1;\n  max-width: 5em;\n  min-width: 1.5em;\n  overflow: hidden;\n  padding: 0.25em;\n  right: 0;\n  text-overflow: ellipsis;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-bottom-right {\n  bottom: 0;\n  right: 0;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom right;\n          transform-origin: bottom right;\n}\n\n.fa-layers-bottom-left {\n  bottom: 0;\n  left: 0;\n  right: auto;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom left;\n          transform-origin: bottom left;\n}\n\n.fa-layers-top-right {\n  right: 0;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-top-left {\n  left: 0;\n  right: auto;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top left;\n          transform-origin: top left;\n}\n\n.fa-lg {\n  font-size: 1.3333333333em;\n  line-height: 0.75em;\n  vertical-align: -0.0667em;\n}\n\n.fa-xs {\n  font-size: 0.75em;\n}\n\n.fa-sm {\n  font-size: 0.875em;\n}\n\n.fa-1x {\n  font-size: 1em;\n}\n\n.fa-2x {\n  font-size: 2em;\n}\n\n.fa-3x {\n  font-size: 3em;\n}\n\n.fa-4x {\n  font-size: 4em;\n}\n\n.fa-5x {\n  font-size: 5em;\n}\n\n.fa-6x {\n  font-size: 6em;\n}\n\n.fa-7x {\n  font-size: 7em;\n}\n\n.fa-8x {\n  font-size: 8em;\n}\n\n.fa-9x {\n  font-size: 9em;\n}\n\n.fa-10x {\n  font-size: 10em;\n}\n\n.fa-fw {\n  text-align: center;\n  width: 1.25em;\n}\n\n.fa-ul {\n  list-style-type: none;\n  margin-left: 2.5em;\n  padding-left: 0;\n}\n.fa-ul > li {\n  position: relative;\n}\n\n.fa-li {\n  left: -2em;\n  position: absolute;\n  text-align: center;\n  width: 2em;\n  line-height: inherit;\n}\n\n.fa-border {\n  border: solid 0.08em #eee;\n  border-radius: 0.1em;\n  padding: 0.2em 0.25em 0.15em;\n}\n\n.fa-pull-left {\n  float: left;\n}\n\n.fa-pull-right {\n  float: right;\n}\n\n.fa.fa-pull-left,\n.fas.fa-pull-left,\n.far.fa-pull-left,\n.fal.fa-pull-left,\n.fab.fa-pull-left {\n  margin-right: 0.3em;\n}\n.fa.fa-pull-right,\n.fas.fa-pull-right,\n.far.fa-pull-right,\n.fal.fa-pull-right,\n.fab.fa-pull-right {\n  margin-left: 0.3em;\n}\n\n.fa-spin {\n  -webkit-animation: fa-spin 2s infinite linear;\n          animation: fa-spin 2s infinite linear;\n}\n\n.fa-pulse {\n  -webkit-animation: fa-spin 1s infinite steps(8);\n          animation: fa-spin 1s infinite steps(8);\n}\n\n@-webkit-keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n\n@keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n.fa-rotate-90 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=1)\";\n  -webkit-transform: rotate(90deg);\n          transform: rotate(90deg);\n}\n\n.fa-rotate-180 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2)\";\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n\n.fa-rotate-270 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=3)\";\n  -webkit-transform: rotate(270deg);\n          transform: rotate(270deg);\n}\n\n.fa-flip-horizontal {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)\";\n  -webkit-transform: scale(-1, 1);\n          transform: scale(-1, 1);\n}\n\n.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(1, -1);\n          transform: scale(1, -1);\n}\n\n.fa-flip-both, .fa-flip-horizontal.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(-1, -1);\n          transform: scale(-1, -1);\n}\n\n:root .fa-rotate-90,\n:root .fa-rotate-180,\n:root .fa-rotate-270,\n:root .fa-flip-horizontal,\n:root .fa-flip-vertical,\n:root .fa-flip-both {\n  -webkit-filter: none;\n          filter: none;\n}\n\n.fa-stack {\n  display: inline-block;\n  height: 2em;\n  position: relative;\n  width: 2.5em;\n}\n\n.fa-stack-1x,\n.fa-stack-2x {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.svg-inline--fa.fa-stack-1x {\n  height: 1em;\n  width: 1.25em;\n}\n.svg-inline--fa.fa-stack-2x {\n  height: 2em;\n  width: 2.5em;\n}\n\n.fa-inverse {\n  color: #fff;\n}\n\n.sr-only {\n  border: 0;\n  clip: rect(0, 0, 0, 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\n.sr-only-focusable:active, .sr-only-focusable:focus {\n  clip: auto;\n  height: auto;\n  margin: 0;\n  overflow: visible;\n  position: static;\n  width: auto;\n}";
 
 function css () {
   var dfp = DEFAULT_FAMILY_PREFIX;
@@ -1692,38 +2108,6 @@ function css () {
   }
 
   return s;
-}
-
-function define(prefix, icons) {
-  var normalized = Object.keys(icons).reduce(function (acc, iconName) {
-    var icon = icons[iconName];
-    var expanded = !!icon.icon;
-
-    if (expanded) {
-      acc[icon.iconName] = icon.icon;
-    } else {
-      acc[iconName] = icon;
-    }
-
-    return acc;
-  }, {});
-
-  if (typeof namespace.hooks.addPack === 'function') {
-    namespace.hooks.addPack(prefix, normalized);
-  } else {
-    namespace.styles[prefix] = _objectSpread({}, namespace.styles[prefix] || {}, normalized);
-  }
-  /**
-   * Font Awesome 4 used the prefix of `fa` for all icons. With the introduction
-   * of new styles we needed to differentiate between them. Prefix `fa` is now an alias
-   * for `fas` so we'll easy the upgrade process for our users by automatically defining
-   * this as well.
-   */
-
-
-  if (prefix === 'fas') {
-    define('fa', icons);
-  }
 }
 
 var Library =
@@ -1747,7 +2131,7 @@ function () {
       var additions = definitions.reduce(this._pullDefinitions, {});
       Object.keys(additions).forEach(function (key) {
         _this.definitions[key] = _objectSpread({}, _this.definitions[key] || {}, additions[key]);
-        define(key, additions[key]);
+        defineIcons(key, additions[key]);
         build();
       });
     }
@@ -1825,10 +2209,10 @@ function apiObject(val, abstractCreator) {
   return val;
 }
 
-function findIconDefinition(params) {
-  var _params$prefix = params.prefix,
-      prefix = _params$prefix === void 0 ? 'fa' : _params$prefix,
-      iconName = params.iconName;
+function findIconDefinition(iconLookup) {
+  var _iconLookup$prefix = iconLookup.prefix,
+      prefix = _iconLookup$prefix === void 0 ? 'fa' : _iconLookup$prefix,
+      iconName = iconLookup.iconName;
   if (!iconName) return;
   return iconFromMapping(library.definitions, prefix, iconName) || iconFromMapping(namespace.styles, prefix, iconName);
 }
@@ -1871,7 +2255,9 @@ var dom = {
         searchPseudoElements(node);
       }
 
-      onTree(node, callback);
+      return onTree(node, callback);
+    } else {
+      return picked.reject('Operation requires a DOM of some kind.');
     }
   },
   css: css,
@@ -1940,6 +2326,7 @@ var icon = resolveIcons(function (iconDefinition) {
         attributes['aria-labelledby'] = "".concat(config.replacementClass, "-title-").concat(nextUniqueId());
       } else {
         attributes['aria-hidden'] = 'true';
+        attributes['focusable'] = 'false';
       }
     }
 
@@ -2059,19 +2446,20 @@ var autoReplace = function autoReplace() {
   var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var _params$autoReplaceSv = params.autoReplaceSvgRoot,
       autoReplaceSvgRoot = _params$autoReplaceSv === void 0 ? DOCUMENT : _params$autoReplaceSv;
-  if (Object.keys(namespace.styles).length > 0 && IS_DOM && config.autoReplaceSvg) api.dom.i2svg({
+  if ((Object.keys(namespace.styles).length > 0 || config.autoFetchSvg) && IS_DOM && config.autoReplaceSvg) api.dom.i2svg({
     node: autoReplaceSvgRoot
   });
 };
 
 
 
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../timers-browserify/main.js */ "../../node_modules/timers-browserify/main.js").setImmediate))
 
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
 /*!**************************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
   \**************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBackspace, faBackward, faBalanceScale, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBinoculars, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookOpen, faBookReader, faBookmark, faBowlingBall, faBox, faBoxOpen, faBoxes, faBraille, faBrain, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCamera, faCameraRetro, faCampground, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCartArrowDown, faCartPlus, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMoon, faCloudSun, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCube, faCubes, faCut, faDatabase, faDeaf, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDungeon, faEdit, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFastBackward, faFastForward, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGlassMartini, faGlassMartiniAlt, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripVertical, faHSquare, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingUsd, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHands, faHandsHelping, faHandshake, faHanukiah, faHashtag, faHatWizard, faHaykal, faHdd, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHome, faHorse, faHospital, faHospitalAlt, faHospitalSymbol, faHotTub, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHryvnia, faICursor, faIdBadge, faIdCard, faIdCardAlt, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMousePointer, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleCarry, faPercent, faPercentage, faPhone, faPhoneSlash, faPhoneSquare, faPhoneVolume, faPiggyBank, faPills, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRandom, faReceipt, faRecycle, faRedo, faRedoAlt, faRegistered, faReply, faReplyAll, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSave, faSchool, faScrewdriver, faScroll, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSitemap, faSkull, faSkullCrossbones, faSlash, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmoking, faSmokingBan, faSnowflake, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaUp, faSortAmountDown, faSortAmountUp, faSortDown, faSortNumericDown, faSortNumericUp, faSortUp, faSpa, faSpaceShuttle, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStore, faStoreAlt, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToiletPaper, faToolbox, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrain, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVrCardboard, faWalking, faWallet, faWarehouse, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -4651,7 +5039,7 @@ var _iconsCache = {
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
 /*!***********************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
   \***********************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -4667,6 +5055,110 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+function _typeof(obj) {
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    _typeof = function (obj) {
+      return typeof obj;
+    };
+  } else {
+    _typeof = function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+
+  return _typeof(obj);
+}
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+function _objectSpread(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {};
+    var ownKeys = Object.keys(source);
+
+    if (typeof Object.getOwnPropertySymbols === 'function') {
+      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
+      }));
+    }
+
+    ownKeys.forEach(function (key) {
+      _defineProperty(target, key, source[key]);
+    });
+  }
+
+  return target;
+}
+
+function _objectWithoutPropertiesLoose(source, excluded) {
+  if (source == null) return {};
+  var target = {};
+  var sourceKeys = Object.keys(source);
+  var key, i;
+
+  for (i = 0; i < sourceKeys.length; i++) {
+    key = sourceKeys[i];
+    if (excluded.indexOf(key) >= 0) continue;
+    target[key] = source[key];
+  }
+
+  return target;
+}
+
+function _objectWithoutProperties(source, excluded) {
+  if (source == null) return {};
+
+  var target = _objectWithoutPropertiesLoose(source, excluded);
+
+  var key, i;
+
+  if (Object.getOwnPropertySymbols) {
+    var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
+
+    for (i = 0; i < sourceSymbolKeys.length; i++) {
+      key = sourceSymbolKeys[i];
+      if (excluded.indexOf(key) >= 0) continue;
+      if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
+      target[key] = source[key];
+    }
+  }
+
+  return target;
+}
+
+function _toConsumableArray(arr) {
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+}
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+}
+
+function _iterableToArray(iter) {
+  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+}
+
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance");
+}
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -4806,63 +5298,6 @@ var humps = createCommonjsModule(function (module) {
 })(commonjsGlobal);
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-var defineProperty = function (obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-};
-
-var _extends = Object.assign || function (target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i];
-
-    for (var key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        target[key] = source[key];
-      }
-    }
-  }
-
-  return target;
-};
-
-var objectWithoutProperties = function (obj, keys) {
-  var target = {};
-
-  for (var i in obj) {
-    if (keys.indexOf(i) >= 0) continue;
-    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
-    target[i] = obj[i];
-  }
-
-  return target;
-};
-
-var toConsumableArray = function (arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
-};
-
 function capitalize(val) {
   return val.charAt(0).toUpperCase() + val.slice(1);
 }
@@ -4876,9 +5311,7 @@ function styleToObject(style) {
     var i = pair.indexOf(':');
     var prop = humps.camelize(pair.slice(0, i));
     var value = pair.slice(i + 1).trim();
-
     prop.startsWith('webkit') ? acc[capitalize(prop)] = value : acc[prop] = value;
-
     return acc;
   }, {});
 }
@@ -4889,8 +5322,10 @@ function convert(createElement, element) {
   if (typeof element === 'string') {
     return element;
   }
-  var children = (element.children || []).map(convert.bind(null, createElement));
 
+  var children = (element.children || []).map(function (child) {
+    return convert(createElement, child);
+  });
   var mixins = Object.keys(element.attributes || {}).reduce(function (acc, key) {
     var val = element.attributes[key];
 
@@ -4899,28 +5334,31 @@ function convert(createElement, element) {
         acc.attrs['className'] = val;
         delete element.attributes['class'];
         break;
+
       case 'style':
         acc.attrs['style'] = styleToObject(val);
         break;
+
       default:
         if (key.indexOf('aria-') === 0 || key.indexOf('data-') === 0) {
           acc.attrs[key.toLowerCase()] = val;
         } else {
           acc.attrs[humps.camelize(key)] = val;
         }
+
     }
 
     return acc;
-  }, { attrs: {} });
+  }, {
+    attrs: {}
+  });
 
   var _extraProps$style = extraProps.style,
-      existingStyle = _extraProps$style === undefined ? {} : _extraProps$style,
-      remaining = objectWithoutProperties(extraProps, ['style']);
+      existingStyle = _extraProps$style === void 0 ? {} : _extraProps$style,
+      remaining = _objectWithoutProperties(extraProps, ["style"]);
 
-
-  mixins.attrs['style'] = _extends({}, mixins.attrs['style'], existingStyle);
-
-  return createElement.apply(undefined, [element.tag, _extends({}, mixins.attrs, remaining)].concat(toConsumableArray(children)));
+  mixins.attrs['style'] = _objectSpread({}, mixins.attrs['style'], existingStyle);
+  return createElement.apply(void 0, [element.tag, _objectSpread({}, mixins.attrs, remaining)].concat(_toConsumableArray(children)));
 }
 
 var PRODUCTION = false;
@@ -4938,7 +5376,7 @@ function log () {
 }
 
 function objectWithKey(key, value) {
-  return Array.isArray(value) && value.length > 0 || !Array.isArray(value) && value ? defineProperty({}, key, value) : {};
+  return Array.isArray(value) && value.length > 0 || !Array.isArray(value) && value ? _defineProperty({}, key, value) : {};
 }
 
 function classList(props) {
@@ -4953,8 +5391,7 @@ function classList(props) {
     'fa-li': props.listItem,
     'fa-flip-horizontal': props.flip === 'horizontal' || props.flip === 'both',
     'fa-flip-vertical': props.flip === 'vertical' || props.flip === 'both'
-  }, defineProperty(_classes, 'fa-' + props.size, props.size !== null), defineProperty(_classes, 'fa-rotate-' + props.rotation, props.rotation !== null), defineProperty(_classes, 'fa-pull-' + props.pull, props.pull !== null), _classes);
-
+  }, _defineProperty(_classes, "fa-".concat(props.size), props.size !== null), _defineProperty(_classes, "fa-rotate-".concat(props.rotation), props.rotation !== null), _defineProperty(_classes, "fa-pull-".concat(props.pull), props.pull !== null), _classes);
   return Object.keys(classes).map(function (key) {
     return classes[key] ? key : null;
   }).filter(function (key) {
@@ -4967,16 +5404,22 @@ function normalizeIconArgs(icon$$1) {
     return null;
   }
 
-  if ((typeof icon$$1 === 'undefined' ? 'undefined' : _typeof(icon$$1)) === 'object' && icon$$1.prefix && icon$$1.iconName) {
+  if (_typeof(icon$$1) === 'object' && icon$$1.prefix && icon$$1.iconName) {
     return icon$$1;
   }
 
   if (Array.isArray(icon$$1) && icon$$1.length === 2) {
-    return { prefix: icon$$1[0], iconName: icon$$1[1] };
+    return {
+      prefix: icon$$1[0],
+      iconName: icon$$1[1]
+    };
   }
 
   if (typeof icon$$1 === 'string') {
-    return { prefix: 'fas', iconName: icon$$1 };
+    return {
+      prefix: 'fas',
+      iconName: icon$$1
+    };
   }
 }
 
@@ -4986,14 +5429,11 @@ function FontAwesomeIcon(props) {
       symbol = props.symbol,
       className = props.className,
       title = props.title;
-
-
   var iconLookup = normalizeIconArgs(iconArgs);
-  var classes = objectWithKey('classes', [].concat(toConsumableArray(classList(props)), toConsumableArray(className.split(' '))));
+  var classes = objectWithKey('classes', [].concat(_toConsumableArray(classList(props)), _toConsumableArray(className.split(' '))));
   var transform = objectWithKey('transform', typeof props.transform === 'string' ? _fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["parse"].transform(props.transform) : props.transform);
   var mask = objectWithKey('mask', normalizeIconArgs(maskArgs));
-
-  var renderedIcon = Object(_fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["icon"])(iconLookup, _extends({}, classes, transform, mask, {
+  var renderedIcon = Object(_fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["icon"])(iconLookup, _objectSpread({}, classes, transform, mask, {
     symbol: symbol,
     title: title
   }));
@@ -5004,54 +5444,33 @@ function FontAwesomeIcon(props) {
   }
 
   var abstract = renderedIcon.abstract;
-
   var extraProps = {};
-
   Object.keys(props).forEach(function (key) {
     if (!FontAwesomeIcon.defaultProps.hasOwnProperty(key)) {
       extraProps[key] = props[key];
     }
   });
-
   return convertCurry(abstract[0], extraProps);
 }
-
 FontAwesomeIcon.displayName = 'FontAwesomeIcon';
-
 FontAwesomeIcon.propTypes = {
   border: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
-
   className: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string,
-
   mask: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.array, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string]),
-
   fixedWidth: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
-
   inverse: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
-
   flip: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOf(['horizontal', 'vertical', 'both']),
-
   icon: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.array, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string]),
-
   listItem: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
-
   pull: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOf(['right', 'left']),
-
   pulse: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
-
   rotation: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOf([90, 180, 270]),
-
   size: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOf(['lg', 'xs', 'sm', '1x', '2x', '3x', '4x', '5x', '6x', '7x', '8x', '9x', '10x']),
-
   spin: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
-
   symbol: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string]),
-
   title: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string,
-
   transform: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object])
 };
-
 FontAwesomeIcon.defaultProps = {
   border: false,
   className: '',
@@ -5070,7 +5489,6 @@ FontAwesomeIcon.defaultProps = {
   title: '',
   transform: null
 };
-
 var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement);
 
 
@@ -5079,9 +5497,28 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 
 /***/ }),
 
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss":
+/*!************************************************************************************************************************************************!*\
+  !*** E:/Repos/Babylon.js/node_modules/css-loader!E:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss ***!
+  \************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, ".diagramBlock {\n  background: white;\n  width: 200px;\n  border: 4px solid black; }\n  .diagramBlock.input {\n    background: green;\n    color: white; }\n  .diagramBlock.output {\n    background: blue;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    margin: 10px; }\n    .diagramBlock .header .header-labels {\n      font-size: 16px;\n      text-align: center; }\n  .diagramBlock .inputs {\n    text-align: left;\n    padding-left: 10px; }\n  .diagramBlock .outputs {\n    text-align: right;\n    padding-right: 10px; }\n", ""]);
+
+// exports
+
+
+/***/ }),
+
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/main.scss":
 /*!*************************************************************************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/main.scss ***!
+  !*** E:/Repos/Babylon.js/node_modules/css-loader!E:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/main.scss ***!
   \*************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -5091,7 +5528,45 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#node-editor-graph-root #inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#node-editor-graph-root #__resizable_base__ {\n  display: none; }\n\n#node-editor-graph-root #actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #node-editor-graph-root #actionTabs .hoverIcon:hover {\n    opacity: 0.8; }\n  #node-editor-graph-root #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #node-editor-graph-root #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #node-editor-graph-root #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #node-editor-graph-root #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #node-editor-graph-root #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #node-editor-graph-root #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #node-editor-graph-root #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #node-editor-graph-root #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #node-editor-graph-root #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #node-editor-graph-root #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #node-editor-graph-root #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #node-editor-graph-root #actionTabs .tabs .panes {\n      grid-row: 2;\n      display: grid;\n      grid-template-rows: 100%;\n      overflow: hidden; }\n      #node-editor-graph-root #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #node-editor-graph-root #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: 100%;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            margin-right: 5px;\n            display: grid;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .messageLine {\n          text-align: center;\n          font-size: 12px;\n          font-style: italic;\n          opacity: 0.6; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .iconMessageLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 30px 1fr; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .iconMessageLine .icon {\n            grid-column: 1;\n            display: grid;\n            align-items: center;\n            justify-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .iconMessageLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 140px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            -webkit-user-select: text;\n            -moz-user-select: text;\n            -ms-user-select: text;\n            user-select: text; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .textInputLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textInputLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textInputLine .value {\n            display: flex;\n            align-items: center;\n            grid-column: 2; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textInputLine .value input {\n              width: 110px; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: transparent;\n            border: 1px solid #337ab7;\n            margin: 0px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 1px solid #337ab7;\n            outline: 0px; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 24px; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 2px;\n          display: grid; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 1px solid transparent;\n            background: transparent;\n            color: white; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px;\n            border: 2px solid rgba(255, 255, 255, 0.4); }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .gltf-extension-property {\n          margin-left: 30px;\n          border-left: 1px solid #337ab7; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 2px;\n          display: grid; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine {\n            height: 30px;\n            display: grid;\n            grid-template-columns: 1fr auto 20px 20px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 {\n              grid-column: 2;\n              display: flex;\n              align-items: center; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"] {\n                -webkit-appearance: none;\n                border: 1px solid rgba(255, 255, 255, 0.5);\n                padding: 0;\n                width: 30px;\n                height: 20px; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n                padding: 0; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n                border: none; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input {\n                margin-right: 5px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .copy {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .firstLine .expand {\n              grid-column: 4;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .listLine .options select {\n              width: 115px; }\n        #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneList {\n            border-left: 3px solid transparent; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer:hover .paneList {\n            border-left: 3px solid rgba(51, 122, 183, 0.8); }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer:hover .paneContainer-content .header .title {\n            border-left: 3px solid #337ab7; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border {\n            grid-row: 1;\n            grid-column: 1;\n            opacity: 1;\n            border: 3px solid red;\n            transition: opacity 250ms;\n            pointer-events: none; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border.transparent {\n              opacity: 0; }\n          #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n            #node-editor-graph-root #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 200px calc(100% - 500px) 300px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1;\n  grid-column: 1; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 2;\n  background: #222222; }\n\n#propertyTab {\n  grid-row: 1;\n  grid-column: 3; }\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss":
+/*!**************************************************************************************************************************************************!*\
+  !*** E:/Repos/Babylon.js/node_modules/css-loader!E:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss ***!
+  \**************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 200px;\n  overflow: hidden; }\n  #nodeList .pane {\n    color: white;\n    overflow-x: hidden;\n    overflow-y: auto;\n    height: 100%;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #nodeList .pane .underline {\n      border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n    #nodeList .pane .buttonLine {\n      height: 30px;\n      display: grid;\n      align-items: center;\n      justify-items: stretch; }\n      #nodeList .pane .buttonLine button {\n        background: #222222;\n        border: 1px solid #337ab7;\n        margin: 5px 10px 5px 10px;\n        color: white;\n        padding: 4px 5px;\n        opacity: 0.9; }\n      #nodeList .pane .buttonLine button:hover {\n        opacity: 1.0; }\n      #nodeList .pane .buttonLine button:active {\n        background: #282828; }\n      #nodeList .pane .buttonLine button:focus {\n        border: 1px solid #337ab7;\n        outline: 0px; }\n    #nodeList .pane .paneContainer {\n      margin-top: 3px;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #nodeList .pane .paneContainer .paneList {\n        border-left: 3px solid transparent; }\n      #nodeList .pane .paneContainer:hover .paneList {\n        border-left: 3px solid rgba(51, 122, 183, 0.8); }\n      #nodeList .pane .paneContainer:hover .paneContainer-content .header .title {\n        border-left: 3px solid #337ab7; }\n      #nodeList .pane .paneContainer .paneContainer-content {\n        grid-row: 1;\n        grid-column: 1; }\n        #nodeList .pane .paneContainer .paneContainer-content .header {\n          display: grid;\n          grid-template-columns: 1fr auto;\n          background: #555555;\n          height: 30px;\n          padding-right: 5px;\n          cursor: pointer; }\n          #nodeList .pane .paneContainer .paneContainer-content .header .title {\n            border-left: 3px solid transparent;\n            padding-left: 5px;\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #nodeList .pane .paneContainer .paneContainer-content .header .collapse {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            justify-items: center;\n            transform-origin: center; }\n            #nodeList .pane .paneContainer .paneContainer-content .header .collapse.closed {\n              transform: rotate(180deg); }\n        #nodeList .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n        #nodeList .pane .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss":
+/*!********************************************************************************************************************************************************!*\
+  !*** E:/Repos/Babylon.js/node_modules/css-loader!E:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss ***!
+  \********************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "#propertyTab {\n  padding: 5px;\n  color: white; }\n  #propertyTab .vector3Line {\n    padding-left: 2px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n", ""]);
 
 // exports
 
@@ -5100,7 +5575,7 @@ exports.push([module.i, "#node-editor-graph-root #inspector-host {\n  position: 
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/storm-react-diagrams/dist/style.min.css":
 /*!****************************************************************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/storm-react-diagrams/dist/style.min.css ***!
+  !*** E:/Repos/Babylon.js/node_modules/css-loader!E:/Repos/Babylon.js/node_modules/storm-react-diagrams/dist/style.min.css ***!
   \****************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -5119,7 +5594,7 @@ exports.push([module.i, ".srd-diagram{position:relative;flex-grow:1;display:flex
 
 /***/ "../../node_modules/css-loader/lib/css-base.js":
 /*!*******************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/css-loader/lib/css-base.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/css-loader/lib/css-base.js ***!
   \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -5206,7 +5681,7 @@ function toComment(sourceMap) {
 
 /***/ "../../node_modules/lodash/lodash.js":
 /*!*********************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/lodash/lodash.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/lodash/lodash.js ***!
   \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -22317,7 +22792,7 @@ function toComment(sourceMap) {
 
 /***/ "../../node_modules/object-assign/index.js":
 /*!***************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -22417,9 +22892,204 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 /***/ }),
 
+/***/ "../../node_modules/process/browser.js":
+/*!***********************************************************!*\
+  !*** E:/Repos/Babylon.js/node_modules/process/browser.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
 /*!*********************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
   \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -22522,7 +23192,7 @@ module.exports = checkPropTypes;
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
 /*!******************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
   \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -23089,7 +23759,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 
 /***/ "../../node_modules/prop-types/index.js":
 /*!************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -23124,7 +23794,7 @@ if (true) {
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
 /*!*******************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
   \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -23148,7 +23818,7 @@ module.exports = ReactPropTypesSecret;
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
 /*!*******************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
   \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -42887,7 +43557,7 @@ module.exports = reactDom;
 
 /***/ "../../node_modules/react-dom/index.js":
 /*!***********************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -42932,7 +43602,7 @@ if (false) {} else {
 
 /***/ "../../node_modules/react/cjs/react.development.js":
 /*!***********************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
   \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -44784,7 +45454,7 @@ module.exports = react;
 
 /***/ "../../node_modules/react/index.js":
 /*!*******************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/react/index.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/react/index.js ***!
   \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -44801,7 +45471,7 @@ if (false) {} else {
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
 /*!***************************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
   \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -45233,7 +45903,7 @@ exports.unstable_unsubscribe = unstable_unsubscribe;
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
 /*!*******************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
   \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -45880,7 +46550,7 @@ exports.unstable_shouldYield = unstable_shouldYield;
 
 /***/ "../../node_modules/scheduler/index.js":
 /*!***********************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -45897,7 +46567,7 @@ if (false) {} else {
 
 /***/ "../../node_modules/scheduler/tracing.js":
 /*!*************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -45912,9 +46582,207 @@ if (false) {} else {
 
 /***/ }),
 
+/***/ "../../node_modules/setimmediate/setImmediate.js":
+/*!*********************************************************************!*\
+  !*** E:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \*********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
+    "use strict";
+
+    if (global.setImmediate) {
+        return;
+    }
+
+    var nextHandle = 1; // Spec says greater than zero
+    var tasksByHandle = {};
+    var currentlyRunningATask = false;
+    var doc = global.document;
+    var registerImmediate;
+
+    function setImmediate(callback) {
+      // Callback can either be a function or a string
+      if (typeof callback !== "function") {
+        callback = new Function("" + callback);
+      }
+      // Copy function arguments
+      var args = new Array(arguments.length - 1);
+      for (var i = 0; i < args.length; i++) {
+          args[i] = arguments[i + 1];
+      }
+      // Store and register the task
+      var task = { callback: callback, args: args };
+      tasksByHandle[nextHandle] = task;
+      registerImmediate(nextHandle);
+      return nextHandle++;
+    }
+
+    function clearImmediate(handle) {
+        delete tasksByHandle[handle];
+    }
+
+    function run(task) {
+        var callback = task.callback;
+        var args = task.args;
+        switch (args.length) {
+        case 0:
+            callback();
+            break;
+        case 1:
+            callback(args[0]);
+            break;
+        case 2:
+            callback(args[0], args[1]);
+            break;
+        case 3:
+            callback(args[0], args[1], args[2]);
+            break;
+        default:
+            callback.apply(undefined, args);
+            break;
+        }
+    }
+
+    function runIfPresent(handle) {
+        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+        // So if we're currently running a task, we'll need to delay this invocation.
+        if (currentlyRunningATask) {
+            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+            // "too much recursion" error.
+            setTimeout(runIfPresent, 0, handle);
+        } else {
+            var task = tasksByHandle[handle];
+            if (task) {
+                currentlyRunningATask = true;
+                try {
+                    run(task);
+                } finally {
+                    clearImmediate(handle);
+                    currentlyRunningATask = false;
+                }
+            }
+        }
+    }
+
+    function installNextTickImplementation() {
+        registerImmediate = function(handle) {
+            process.nextTick(function () { runIfPresent(handle); });
+        };
+    }
+
+    function canUsePostMessage() {
+        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+        // where `global.postMessage` means something completely different and can't be used for this purpose.
+        if (global.postMessage && !global.importScripts) {
+            var postMessageIsAsynchronous = true;
+            var oldOnMessage = global.onmessage;
+            global.onmessage = function() {
+                postMessageIsAsynchronous = false;
+            };
+            global.postMessage("", "*");
+            global.onmessage = oldOnMessage;
+            return postMessageIsAsynchronous;
+        }
+    }
+
+    function installPostMessageImplementation() {
+        // Installs an event handler on `global` for the `message` event: see
+        // * https://developer.mozilla.org/en/DOM/window.postMessage
+        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+        var messagePrefix = "setImmediate$" + Math.random() + "$";
+        var onGlobalMessage = function(event) {
+            if (event.source === global &&
+                typeof event.data === "string" &&
+                event.data.indexOf(messagePrefix) === 0) {
+                runIfPresent(+event.data.slice(messagePrefix.length));
+            }
+        };
+
+        if (global.addEventListener) {
+            global.addEventListener("message", onGlobalMessage, false);
+        } else {
+            global.attachEvent("onmessage", onGlobalMessage);
+        }
+
+        registerImmediate = function(handle) {
+            global.postMessage(messagePrefix + handle, "*");
+        };
+    }
+
+    function installMessageChannelImplementation() {
+        var channel = new MessageChannel();
+        channel.port1.onmessage = function(event) {
+            var handle = event.data;
+            runIfPresent(handle);
+        };
+
+        registerImmediate = function(handle) {
+            channel.port2.postMessage(handle);
+        };
+    }
+
+    function installReadyStateChangeImplementation() {
+        var html = doc.documentElement;
+        registerImmediate = function(handle) {
+            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+            var script = doc.createElement("script");
+            script.onreadystatechange = function () {
+                runIfPresent(handle);
+                script.onreadystatechange = null;
+                html.removeChild(script);
+                script = null;
+            };
+            html.appendChild(script);
+        };
+    }
+
+    function installSetTimeoutImplementation() {
+        registerImmediate = function(handle) {
+            setTimeout(runIfPresent, 0, handle);
+        };
+    }
+
+    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+    // Don't get fooled by e.g. browserify environments.
+    if ({}.toString.call(global.process) === "[object process]") {
+        // For Node.js before 0.9
+        installNextTickImplementation();
+
+    } else if (canUsePostMessage()) {
+        // For non-IE10 modern browsers
+        installPostMessageImplementation();
+
+    } else if (global.MessageChannel) {
+        // For web workers, where supported
+        installMessageChannelImplementation();
+
+    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+        // For IE 6–8
+        installReadyStateChangeImplementation();
+
+    } else {
+        // For older browsers
+        installSetTimeoutImplementation();
+    }
+
+    attachTo.setImmediate = setImmediate;
+    attachTo.clearImmediate = clearImmediate;
+}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../process/browser.js */ "../../node_modules/process/browser.js")))
+
+/***/ }),
+
 /***/ "../../node_modules/storm-react-diagrams/dist/main.js":
 /*!**************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/storm-react-diagrams/dist/main.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/storm-react-diagrams/dist/main.js ***!
   \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -45928,7 +46796,7 @@ DiagramEngine.prototype.getNodeFactories=function(){return this.nodeFactories};D
 
 /***/ "../../node_modules/storm-react-diagrams/dist/style.min.css":
 /*!********************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/storm-react-diagrams/dist/style.min.css ***!
+  !*** E:/Repos/Babylon.js/node_modules/storm-react-diagrams/dist/style.min.css ***!
   \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -45958,7 +46826,7 @@ if(false) {}
 
 /***/ "../../node_modules/style-loader/lib/addStyles.js":
 /*!**********************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/style-loader/lib/addStyles.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/style-loader/lib/addStyles.js ***!
   \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -46349,7 +47217,7 @@ function updateLink (link, options, obj) {
 
 /***/ "../../node_modules/style-loader/lib/urls.js":
 /*!*****************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/style-loader/lib/urls.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/style-loader/lib/urls.js ***!
   \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -46447,9 +47315,84 @@ module.exports = function (css) {
 
 /***/ }),
 
+/***/ "../../node_modules/timers-browserify/main.js":
+/*!******************************************************************!*\
+  !*** E:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
+            (typeof self !== "undefined" && self) ||
+            window;
+var apply = Function.prototype.apply;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, scope, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, scope, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) {
+  if (timeout) {
+    timeout.close();
+  }
+};
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(scope, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// setimmediate attaches itself to the global object
+__webpack_require__(/*! setimmediate */ "../../node_modules/setimmediate/setImmediate.js");
+// On some exotic environments, it's not clear which object `setimmediate` was
+// able to install onto.  Search each possibility in the same order as the
+// `setimmediate` library.
+exports.setImmediate = (typeof self !== "undefined" && self.setImmediate) ||
+                       (typeof global !== "undefined" && global.setImmediate) ||
+                       (this && this.setImmediate);
+exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
+                         (typeof global !== "undefined" && global.clearImmediate) ||
+                         (this && this.clearImmediate);
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -46729,10 +47672,40 @@ module.exports = function(module) {
 
 /***/ }),
 
-/***/ "./components/customDiragramNodes/generic/genericNodeFactory.tsx":
-/*!***********************************************************************!*\
-  !*** ./components/customDiragramNodes/generic/genericNodeFactory.tsx ***!
-  \***********************************************************************/
+/***/ "./components/diagram/diagram.scss":
+/*!*****************************************!*\
+  !*** ./components/diagram/diagram.scss ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./diagram.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./components/diagram/generic/genericNodeFactory.tsx":
+/*!***********************************************************!*\
+  !*** ./components/diagram/generic/genericNodeFactory.tsx ***!
+  \***********************************************************/
 /*! exports provided: GenericNodeFactory */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -46742,8 +47715,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _genericNodeWidget__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./genericNodeWidget */ "./components/customDiragramNodes/generic/genericNodeWidget.tsx");
-/* harmony import */ var _genericNodeModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./genericNodeModel */ "./components/customDiragramNodes/generic/genericNodeModel.ts");
+/* harmony import */ var _genericNodeWidget__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./genericNodeWidget */ "./components/diagram/generic/genericNodeWidget.tsx");
+/* harmony import */ var _genericNodeModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./genericNodeModel */ "./components/diagram/generic/genericNodeModel.ts");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
 
@@ -46759,8 +47732,10 @@ var GenericNodeFactory = /** @class */ (function (_super) {
     /**
      * Constructs a GenericNodeFactory
      */
-    function GenericNodeFactory() {
-        return _super.call(this, "generic") || this;
+    function GenericNodeFactory(globalState) {
+        var _this = _super.call(this, "generic") || this;
+        _this._globalState = globalState;
+        return _this;
     }
     /**
      * Generates a node widget
@@ -46769,7 +47744,7 @@ var GenericNodeFactory = /** @class */ (function (_super) {
      * @returns node widget jsx
      */
     GenericNodeFactory.prototype.generateReactWidget = function (diagramEngine, node) {
-        return react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_genericNodeWidget__WEBPACK_IMPORTED_MODULE_2__["GenericNodeWidget"], { node: node });
+        return react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_genericNodeWidget__WEBPACK_IMPORTED_MODULE_2__["GenericNodeWidget"], { node: node, globalState: this._globalState });
     };
     /**
      * Gets a new instance of a node model
@@ -46785,10 +47760,10 @@ var GenericNodeFactory = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/customDiragramNodes/generic/genericNodeModel.ts":
-/*!********************************************************************!*\
-  !*** ./components/customDiragramNodes/generic/genericNodeModel.ts ***!
-  \********************************************************************/
+/***/ "./components/diagram/generic/genericNodeModel.ts":
+/*!********************************************************!*\
+  !*** ./components/diagram/generic/genericNodeModel.ts ***!
+  \********************************************************/
 /*! exports provided: GenericNodeModel */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -46847,10 +47822,10 @@ var GenericNodeModel = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/customDiragramNodes/generic/genericNodeWidget.tsx":
-/*!**********************************************************************!*\
-  !*** ./components/customDiragramNodes/generic/genericNodeWidget.tsx ***!
-  \**********************************************************************/
+/***/ "./components/diagram/generic/genericNodeWidget.tsx":
+/*!**********************************************************!*\
+  !*** ./components/diagram/generic/genericNodeWidget.tsx ***!
+  \**********************************************************/
 /*! exports provided: GenericNodeWidget */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -46863,17 +47838,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/textureLineComponent */ "./sharedComponents/textureLineComponent.tsx");
-/* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
-/* harmony import */ var _sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/vector2LineComponent */ "./sharedComponents/vector2LineComponent.tsx");
-/* harmony import */ var _sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/vector3LineComponent */ "./sharedComponents/vector3LineComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes");
-/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7__);
-
-
-
-
-
-
 
 
 
@@ -46890,74 +47854,37 @@ var GenericNodeWidget = /** @class */ (function (_super) {
     function GenericNodeWidget(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
+        if (_this.props.node) {
+            _this.props.node.addListener({
+                selectionChanged: function () {
+                    var selected = _this.props.node.selected;
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(selected ? _this.props.node : null);
+                }
+            });
+        }
         return _this;
     }
-    /**
-     * Replaces the texture of the node
-     * @param file the file of the texture to use
-     */
-    GenericNodeWidget.prototype.replaceTexture = function (file) {
-        var _this = this;
-        if (!this.props.node) {
-            return;
-        }
-        var texture = this.props.node.texture;
-        if (!texture) {
-            this.props.node.texture = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7__["Texture"](null, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7__["Engine"].LastCreatedScene);
-            texture = this.props.node.texture;
-        }
-        babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_7__["Tools"].ReadFile(file, function (data) {
-            var blob = new Blob([data], { type: "octet/stream" });
-            var url = URL.createObjectURL(blob);
-            if (texture.isCube) {
-                var extension = undefined;
-                if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                    extension = ".dds";
-                }
-                else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                    extension = ".env";
-                }
-                texture.updateURL(url, extension, function () { return _this.forceUpdate(); });
-            }
-            else {
-                texture.updateURL(url, null, function () { return _this.forceUpdate(); });
-            }
-            _this.refs.textureView.updatePreview();
-        }, undefined, true);
-    };
     GenericNodeWidget.prototype.render = function () {
-        var _this = this;
         var headers = new Array();
         var inputPorts = new Array();
         var outputPorts = new Array();
         var value = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null);
         if (this.props.node) {
             // Header labels
-            this.props.node.headerLabels.forEach(function (h, i) {
-                headers.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { fontWeight: "bold", borderBottomStyle: "solid" }, key: i }, h.text));
-            });
+            if (this.props.node.headerLabels.length) {
+                this.props.node.headerLabels.forEach(function (h, i) {
+                    headers.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header-labels", key: i }, h.text));
+                });
+            }
             // Input/Output ports
             for (var key in this.props.node.ports) {
                 var port = this.props.node.ports[key];
                 if (port.position == "input") {
                     var control = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null);
-                    // Color of the connection
-                    var color = "black";
-                    if (port.connection) {
-                        if (port.connection.isAttribute) {
-                            color = "red";
-                        }
-                        else if (port.connection.isUniform) {
-                            color = "brown";
-                        }
-                        else if (port.connection.isVarying) {
-                            color = "purple";
-                        }
-                    }
                     inputPorts.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: key, style: { paddingBottom: "8px" } },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { display: "inline-block", borderStyle: "solid", marginBottom: "-4px", position: "absolute", left: "-17px", background: "#777777" } },
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__["PortWidget"], { key: key, name: port.name, node: this.props.node })),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { display: "inline-block", color: color } }, port.name),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { display: "inline-block" } }, port.name),
                         control));
                 }
                 else {
@@ -46969,23 +47896,15 @@ var GenericNodeWidget = /** @class */ (function (_super) {
             }
             // Display the view depending on the value type of the node
             if (this.props.node.texture) {
-                value = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextureLineComponent"], { ref: "textureView", width: 100, height: 100, texture: this.props.node.texture, hideChannelSelect: true }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_4__["FileButtonLineComponent"], { label: "", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" })));
-            }
-            else if (this.props.node.vector3) {
-                value = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { width: "220px" } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "", target: this.props.node, propertyName: "vector3" })));
-            }
-            else if (this.props.node.vector2) {
-                value = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { width: "220px" } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector2LineComponent"], { label: "", target: this.props.node, propertyName: "vector2" })));
+                value = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextureLineComponent"], { ref: "textureView", width: 200, height: 180, texture: this.props.node.texture, hideChannelSelect: true }));
             }
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { background: "white", borderStyle: "solid", padding: "10px" } },
-            headers,
-            inputPorts,
-            outputPorts,
+        var isInputBlock = this.props.node && this.props.node.headerLabels.length;
+        var isOutputBlock = outputPorts.length === 0;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock" + (isInputBlock ? "" : " input") + (isOutputBlock ? " output" : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, headers),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
             value));
     };
     return GenericNodeWidget;
@@ -46995,10 +47914,10 @@ var GenericNodeWidget = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/customDiragramNodes/generic/genericPortModel.ts":
-/*!********************************************************************!*\
-  !*** ./components/customDiragramNodes/generic/genericPortModel.ts ***!
-  \********************************************************************/
+/***/ "./components/diagram/generic/genericPortModel.ts":
+/*!********************************************************!*\
+  !*** ./components/diagram/generic/genericPortModel.ts ***!
+  \********************************************************/
 /*! exports provided: GenericPortModel */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -47090,31 +48009,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _customDiragramNodes_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./customDiragramNodes/generic/genericNodeFactory */ "./components/customDiragramNodes/generic/genericNodeFactory.tsx");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes");
+/* harmony import */ var _diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./diagram/generic/genericNodeFactory */ "./components/diagram/generic/genericNodeFactory.tsx");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _customDiragramNodes_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./customDiragramNodes/generic/genericNodeModel */ "./components/customDiragramNodes/generic/genericNodeModel.ts");
-/* harmony import */ var _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./customDiragramNodes/generic/genericPortModel */ "./components/customDiragramNodes/generic/genericPortModel.ts");
-/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
-/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* harmony import */ var _diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./diagram/generic/genericNodeModel */ "./components/diagram/generic/genericNodeModel.ts");
+/* harmony import */ var _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./diagram/generic/genericPortModel */ "./components/diagram/generic/genericPortModel.ts");
+/* harmony import */ var _nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./nodeList/nodeListComponent */ "./components/nodeList/nodeListComponent.tsx");
+/* harmony import */ var _propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./propertyTab/propertyTabComponent */ "./components/propertyTab/propertyTabComponent.tsx");
 
 
 
@@ -47129,6 +48030,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! storm-react-diagrams/dist/style.min.css */ "../../node_modules/storm-react-diagrams/dist/style.min.css");
 __webpack_require__(/*! ./main.scss */ "./components/main.scss");
+__webpack_require__(/*! ./diagram/diagram.scss */ "./components/diagram/diagram.scss");
 var GraphEditor = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GraphEditor, _super);
     function GraphEditor(props) {
@@ -47138,18 +48040,10 @@ var GraphEditor = /** @class */ (function (_super) {
          * Current row/column position used when adding new nodes
          */
         _this._rowPos = new Array();
-        // Block types used to create the menu from
-        _this.allBlocks = {
-            Fragment: [babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AlphaTestBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["FragmentOutputBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["ImageProcessingBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["RGBAMergerBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["RGBASplitterBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["TextureBlock"]],
-            Vertex: [babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["BonesBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["InstancesBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["MorphTargetsBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["VertexOutputBlock"]],
-            Dual: [babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["FogBlock"]],
-            Other: [babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AddBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["ClampBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["MatrixMultiplicationBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["MultiplyBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["Vector2TransformBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["Vector3TransformBlock"], babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["Vector4TransformBlock"]],
-            Value: ["Texture", "Vector2", "Vector3", "Matrix"],
-        };
         // setup the diagram engine
         _this._engine = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramEngine"]();
         _this._engine.installDefaultFactories();
-        _this._engine.registerNodeFactory(new _customDiragramNodes_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__["GenericNodeFactory"]());
+        _this._engine.registerNodeFactory(new _diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__["GenericNodeFactory"](_this.props.globalState));
         // setup the diagram model
         _this._model = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramModel"]();
         // Listen to events to connect/disconnect blocks or
@@ -47158,7 +48052,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 if (!e.isCreated) {
                     // Link is deleted
                     console.log("link deleted");
-                    var link = _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
+                    var link = _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
                     console.log(link);
                     if (link) {
                         if (link.output.connection && link.input.connection) {
@@ -47188,7 +48082,7 @@ var GraphEditor = /** @class */ (function (_super) {
                     targetPortChanged: function () {
                         // Link is created with a target port
                         console.log("Link set to target");
-                        var link = _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
+                        var link = _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
                         if (link) {
                             if (link.output.connection && link.input.connection) {
                                 console.log("link standard blocks");
@@ -47244,7 +48138,7 @@ var GraphEditor = /** @class */ (function (_super) {
             this._rowPos[options.column]++;
         }
         // Create new node in the graph
-        var outputNode = new _customDiragramNodes_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_5__["GenericNodeModel"]();
+        var outputNode = new _diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_5__["GenericNodeModel"]();
         this._nodes.push(outputNode);
         outputNode.setPosition(1600 - (300 * options.column), 200 * this._rowPos[options.column]);
         this._model.addAll(outputNode);
@@ -47253,13 +48147,13 @@ var GraphEditor = /** @class */ (function (_super) {
             outputNode.headerLabels.push({ text: options.nodeMaterialBlock.getClassName() });
             // Create output ports
             options.nodeMaterialBlock._outputs.forEach(function (connection) {
-                var outputPort = new _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](connection.name, "output");
+                var outputPort = new _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](connection.name, "output");
                 outputPort.syncWithNodeMaterialConnectionPoint(connection);
                 outputNode.addPort(outputPort);
             });
             // Create input ports and nodes if they exist
             options.nodeMaterialBlock._inputs.forEach(function (connection) {
-                var inputPort = new _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](connection.name, "input");
+                var inputPort = new _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](connection.name, "input");
                 inputPort.connection = connection;
                 outputNode.addPort(inputPort);
                 if (connection._connectedPoint) {
@@ -47334,7 +48228,7 @@ var GraphEditor = /** @class */ (function (_super) {
     GraphEditor.prototype.addValueNode = function (type, column, connection) {
         if (column === void 0) { column = 0; }
         var localNode = this.createNodeFromObject({ column: column });
-        var outPort = new _customDiragramNodes_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](type, "output");
+        var outPort = new _diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_6__["GenericPortModel"](type, "output");
         if (type == "Texture") {
             outPort.getValue = function () {
                 return localNode.texture;
@@ -47399,27 +48293,10 @@ var GraphEditor = /** @class */ (function (_super) {
     };
     GraphEditor.prototype.render = function () {
         var _this = this;
-        // Create node menu
-        var blockMenu = [];
-        for (var key in this.allBlocks) {
-            var blockList = this.allBlocks[key].map(function (b) {
-                var label = typeof b === "string" ? b : b.prototype.getClassName();
-                var onClick = typeof b === "string" ? function () { _this.addValueNode(b); } : function () { _this.addNodeFromClass(b); };
-                return react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: label, onClick: onClick });
-            });
-            blockMenu.push(react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_7__["LineContainerComponent"], { title: key + " blocks" }, blockList));
-        }
-        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "node-editor-graph-root", style: {
-                display: "flex",
-                height: "100%",
-                background: "#464646",
-            } },
-            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "actionTabs", style: { width: "170px", borderRightStyle: "solid", borderColor: "grey", borderWidth: "1px" } },
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "tabs", style: { gridTemplateRows: "0px 1fr" } },
-                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "labels" }),
-                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "panes" },
-                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "pane" }, blockMenu)))),
-            react__WEBPACK_IMPORTED_MODULE_2__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramWidget"], { deleteKeys: [46], ref: "test", inverseZoom: true, className: "srd-demo-canvas", diagramEngine: this._engine, maxNumberPointsPerLink: 0 })));
+        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "node-editor-graph-root" },
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_7__["NodeListComponent"], { globalState: this.props.globalState, onAddValueNode: function (b) { return _this.addValueNode(b); }, onAddNodeFromClass: function (b) { return _this.addNodeFromClass(b); } }),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramWidget"], { deleteKeys: [46], ref: "test", inverseZoom: true, className: "diagram-container", diagramEngine: this._engine, maxNumberPointsPerLink: 0 }),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["PropertyTabComponent"], { globalState: this.props.globalState })));
     };
     return GraphEditor;
 }(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
@@ -47458,6 +48335,297 @@ if(false) {}
 
 /***/ }),
 
+/***/ "./components/nodeList/nodeList.scss":
+/*!*******************************************!*\
+  !*** ./components/nodeList/nodeList.scss ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./nodeList.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./components/nodeList/nodeListComponent.tsx":
+/*!***************************************************!*\
+  !*** ./components/nodeList/nodeListComponent.tsx ***!
+  \***************************************************/
+/*! exports provided: NodeListComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NodeListComponent", function() { return NodeListComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+__webpack_require__(/*! ./nodeList.scss */ "./components/nodeList/nodeList.scss");
+var NodeListComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeListComponent, _super);
+    function NodeListComponent() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    NodeListComponent.prototype.render = function () {
+        var _this = this;
+        // Block types used to create the menu from
+        var allBlocks = {
+            Fragment: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AlphaTestBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FragmentOutputBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ImageProcessingBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBAMergerBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBASplitterBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["TextureBlock"]],
+            Vertex: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["BonesBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["InstancesBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MorphTargetsBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["VertexOutputBlock"]],
+            Dual: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FogBlock"]],
+            Other: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AddBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ClampBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MatrixMultiplicationBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MultiplyBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector2TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector3TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector4TransformBlock"]],
+            Value: ["Texture", "Vector2", "Vector3", "Matrix"],
+        };
+        // Create node menu
+        var blockMenu = [];
+        for (var key in allBlocks) {
+            var blockList = allBlocks[key].map(function (b) {
+                var label = typeof b === "string" ? b : b.prototype.getClassName();
+                var onClick = typeof b === "string" ? function () { _this.props.onAddValueNode(b); } : function () { _this.props.onAddNodeFromClass(b); };
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: label, onClick: onClick });
+            });
+            blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: key + " blocks", closed: false }, blockList));
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "nodeList", style: { borderRightStyle: "solid", borderColor: "grey", borderWidth: "1px" } },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "panes" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" }, blockMenu))));
+    };
+    return NodeListComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/propertyTab/properties/texturePropertyTabComponent.tsx":
+/*!***************************************************************************!*\
+  !*** ./components/propertyTab/properties/texturePropertyTabComponent.tsx ***!
+  \***************************************************************************/
+/*! exports provided: TexturePropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TexturePropertyTabComponent", function() { return TexturePropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
+
+
+
+
+
+
+var TexturePropertyTabComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TexturePropertyTabComponent, _super);
+    function TexturePropertyTabComponent() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     * Replaces the texture of the node
+     * @param file the file of the texture to use
+     */
+    TexturePropertyTabComponent.prototype.replaceTexture = function (file) {
+        var _this = this;
+        if (!this.props.node) {
+            return;
+        }
+        var texture = this.props.node.texture;
+        if (!texture) {
+            this.props.node.texture = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Texture"](null, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Engine"].LastCreatedScene);
+            texture = this.props.node.texture;
+        }
+        babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadFile(file, function (data) {
+            var blob = new Blob([data], { type: "octet/stream" });
+            var url = URL.createObjectURL(blob);
+            if (texture.isCube) {
+                var extension = undefined;
+                if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                    extension = ".dds";
+                }
+                else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                    extension = ".env";
+                }
+                texture.updateURL(url, extension, function () { return _this.forceUpdate(); });
+            }
+            else {
+                texture.updateURL(url, null, function () { return _this.forceUpdate(); });
+            }
+        }, undefined, true);
+    };
+    TexturePropertyTabComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { label: "Replace texture", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }));
+    };
+    return TexturePropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx":
+/*!***************************************************************************!*\
+  !*** ./components/propertyTab/properties/vector2PropertyTabComponent.tsx ***!
+  \***************************************************************************/
+/*! exports provided: Vector2PropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Vector2PropertyTabComponent", function() { return Vector2PropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/vector2LineComponent */ "./sharedComponents/vector2LineComponent.tsx");
+
+
+
+var Vector2PropertyTabComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2PropertyTabComponent, _super);
+    function Vector2PropertyTabComponent() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Vector2PropertyTabComponent.prototype.render = function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector2LineComponent"], { label: "Value", target: this.props.node, propertyName: "vector2" }));
+    };
+    return Vector2PropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/propertyTab/propertyTab.scss":
+/*!*************************************************!*\
+  !*** ./components/propertyTab/propertyTab.scss ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./propertyTab.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./components/propertyTab/propertyTabComponent.tsx":
+/*!*********************************************************!*\
+  !*** ./components/propertyTab/propertyTabComponent.tsx ***!
+  \*********************************************************/
+/*! exports provided: PropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PropertyTabComponent", function() { return PropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./properties/texturePropertyTabComponent */ "./components/propertyTab/properties/texturePropertyTabComponent.tsx");
+/* harmony import */ var _properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./properties/vector2PropertyTabComponent */ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx");
+
+
+
+
+__webpack_require__(/*! ./propertyTab.scss */ "./components/propertyTab/propertyTab.scss");
+var PropertyTabComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PropertyTabComponent, _super);
+    function PropertyTabComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { currentNode: null };
+        return _this;
+    }
+    PropertyTabComponent.prototype.componentWillMount = function () {
+        var _this = this;
+        this.props.globalState.onSelectionChangedObservable.add(function (block) {
+            _this.setState({ currentNode: block });
+        });
+    };
+    PropertyTabComponent.prototype.render = function () {
+        if (this.state.currentNode) {
+            if (this.state.currentNode.texture) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__["TexturePropertyTabComponent"], { globalState: this.props.globalState, node: this.state.currentNode })));
+            }
+            if (this.state.currentNode.vector2) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["Vector2PropertyTabComponent"], { globalState: this.props.globalState, node: this.state.currentNode })));
+            }
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" }));
+    };
+    return PropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./globalState.ts":
 /*!************************!*\
   !*** ./globalState.ts ***!
@@ -47468,8 +48636,12 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+
 var GlobalState = /** @class */ (function () {
     function GlobalState() {
+        this.onSelectionChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     return GlobalState;
 }());
@@ -47553,7 +48725,7 @@ var NodeEditor = /** @class */ (function () {
      */
     NodeEditor.Show = function (options) {
         if (!options.hostElement) {
-            options.hostElement = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"].CreatePopup("SCENE EXPLORER", "node-editor", 1000, 800);
+            options.hostElement = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"].CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800);
         }
         var globalState = new _globalState__WEBPACK_IMPORTED_MODULE_2__["GlobalState"]();
         globalState.nodeMaterial = options.nodeMaterial;
@@ -47697,7 +48869,7 @@ var LineContainerComponent = /** @class */ (function (_super) {
             LineContainerComponent._InMemoryStorage[_this.props.title] = !_this.props.closed;
             initialState = !_this.props.closed;
         }
-        _this.state = { isExpanded: initialState, isHighlighted: false };
+        _this.state = { isExpanded: initialState };
         return _this;
     }
     LineContainerComponent.prototype.switchExpandedState = function () {
@@ -47716,24 +48888,6 @@ var LineContainerComponent = /** @class */ (function (_super) {
         }
         this.setState({ isExpanded: newState });
     };
-    LineContainerComponent.prototype.componentDidMount = function () {
-        var _this = this;
-        if (this.props.globalState && !this.props.globalState.selectedLineContainerTitle) {
-            return;
-        }
-        if (this.props.globalState && this.props.globalState.selectedLineContainerTitle === this.props.title) {
-            setTimeout(function () {
-                _this.props.globalState.selectedLineContainerTitle = "";
-            });
-            this.setState({ isExpanded: true, isHighlighted: true });
-            window.setTimeout(function () {
-                _this.setState({ isHighlighted: false });
-            }, 5000);
-        }
-        else {
-            this.setState({ isExpanded: false });
-        }
-    };
     LineContainerComponent.prototype.renderHeader = function () {
         var _this = this;
         var className = this.state.isExpanded ? "collapse" : "collapse closed";
@@ -47750,8 +48904,7 @@ var LineContainerComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer-content" },
                 this.renderHeader(),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneList" }, this.props.children)),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer-highlight-border" + (!this.state.isHighlighted ? " transparent" : "") })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneList" }, this.props.children))));
     };
     return LineContainerComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47838,6 +48991,7 @@ var Popup = /** @class */ (function () {
     function Popup() {
     }
     Popup.CreatePopup = function (title, windowVariableName, width, height) {
+        var _this = this;
         if (width === void 0) { width = 300; }
         if (height === void 0) { height = 800; }
         var windowCreationOptionsList = {
@@ -47854,6 +49008,11 @@ var Popup = /** @class */ (function () {
             return null;
         }
         var parentDocument = popupWindow.document;
+        // Font
+        var newLinkEl = parentDocument.createElement('link');
+        newLinkEl.rel = 'stylesheet';
+        newLinkEl.href = "https://use.typekit.net/cta4xsb.css";
+        parentDocument.head.appendChild(newLinkEl);
         parentDocument.title = title;
         parentDocument.body.style.width = "100%";
         parentDocument.body.style.height = "100%";
@@ -47866,6 +49025,9 @@ var Popup = /** @class */ (function () {
         parentControl.style.padding = "0";
         popupWindow.document.body.appendChild(parentControl);
         this._CopyStyles(window.document, parentDocument);
+        setTimeout(function () {
+            _this._CopyStyles(window.document, parentDocument);
+        }, 0);
         this[windowVariableName] = popupWindow;
         return parentControl;
     };
@@ -47914,7 +49076,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes");
+/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -48167,115 +49329,14 @@ var Vector2LineComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./sharedComponents/vector3LineComponent.tsx":
-/*!***************************************************!*\
-  !*** ./sharedComponents/vector3LineComponent.tsx ***!
-  \***************************************************/
-/*! exports provided: Vector3LineComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Vector3LineComponent", function() { return Vector3LineComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./numericInputComponent */ "./sharedComponents/numericInputComponent.tsx");
-/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-
-
-
-
-
-var Vector3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3LineComponent, _super);
-    function Vector3LineComponent(props) {
-        var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        _this.state = { isExpanded: false, value: _this.props.target[_this.props.propertyName].clone() };
-        return _this;
-    }
-    Vector3LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var nextPropsValue = nextProps.target[nextProps.propertyName];
-        if (!nextPropsValue.equals(nextState.value) || this._localChange) {
-            nextState.value = nextPropsValue.clone();
-            this._localChange = false;
-            return true;
-        }
-        return false;
-    };
-    Vector3LineComponent.prototype.switchExpandState = function () {
-        this._localChange = true;
-        this.setState({ isExpanded: !this.state.isExpanded });
-    };
-    Vector3LineComponent.prototype.raiseOnPropertyChanged = function (previousValue) {
-        if (this.props.onChange) {
-            this.props.onChange(this.state.value);
-        }
-        if (!this.props.onPropertyChangedObservable) {
-            return;
-        }
-        this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.target,
-            property: this.props.propertyName,
-            value: this.state.value,
-            initialValue: previousValue
-        });
-    };
-    Vector3LineComponent.prototype.updateVector3 = function () {
-        var store = this.props.target[this.props.propertyName].clone();
-        this.props.target[this.props.propertyName] = this.state.value;
-        this.setState({ value: store });
-        this.raiseOnPropertyChanged(store);
-    };
-    Vector3LineComponent.prototype.updateStateX = function (value) {
-        this._localChange = true;
-        this.state.value.x = value;
-        this.updateVector3();
-    };
-    Vector3LineComponent.prototype.updateStateY = function (value) {
-        this._localChange = true;
-        this.state.value.y = value;
-        this.updateVector3();
-    };
-    Vector3LineComponent.prototype.updateStateZ = function (value) {
-        this._localChange = true;
-        this.state.value.z = value;
-        this.updateVector3();
-    };
-    Vector3LineComponent.prototype.render = function () {
-        var _this = this;
-        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2)),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }))));
-    };
-    Vector3LineComponent.defaultProps = {
-        step: 0.001,
-    };
-    return Vector3LineComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes":
+/***/ "babylonjs/Misc/observable":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__;
 
 /***/ })
 
