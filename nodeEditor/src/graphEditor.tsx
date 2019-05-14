@@ -6,23 +6,23 @@ import {
 } from "storm-react-diagrams";
 
 import * as React from "react";
-import { GlobalState } from '../globalState';
+import { GlobalState } from './globalState';
 
-import { GenericNodeFactory } from './diagram/generic/genericNodeFactory';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
-import { GenericNodeModel } from './diagram/generic/genericNodeModel';
-import { GenericPortModel } from './diagram/generic/genericPortModel';
-import { Engine } from 'babylonjs/Engines/engine';
+import { GenericNodeFactory } from './components/diagram/generic/genericNodeFactory';
+import { GenericNodeModel } from './components/diagram/generic/genericNodeModel';
+import { GenericPortModel } from './components/diagram/generic/genericPortModel';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-import { Texture } from 'babylonjs/Materials/Textures/texture';
-import { Vector2, Vector3, Vector4, Matrix } from 'babylonjs/Maths/math';
-import { NodeListComponent } from './nodeList/nodeListComponent';
-import { PropertyTabComponent } from './propertyTab/propertyTabComponent';
+import { NodeListComponent } from './components/nodeList/nodeListComponent';
+import { PropertyTabComponent } from './components/propertyTab/propertyTabComponent';
+import { Portal } from './portal';
+import { TextureNodeFactory } from './components/diagram/texture/textureNodeFactory';
+import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
+import { TextureNodeModel } from './components/diagram/texture/textureNodeModel';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
-require("./diagram/diagram.scss");
+require("./components/diagram/diagram.scss");
 
 /*
 Graph Editor Overview
@@ -42,11 +42,17 @@ interface IGraphEditorProps {
     globalState: GlobalState;
 }
 
+export class NodeCreationOptions {
+    column: number;
+    nodeMaterialBlock?: NodeMaterialBlock;
+    type?: string;
+}
+
 export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _engine: DiagramEngine;
     private _model: DiagramModel;
 
-    private _nodes = new Array<GenericNodeModel>();
+    private _nodes = new Array<DefaultNodeModel>();
 
     /**
      * Current row/column position used when adding new nodes
@@ -57,12 +63,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
      * Creates a node and recursivly creates its parent nodes from it's input
      * @param nodeMaterialBlock 
      */
-    public createNodeFromObject(
-        options: {
-            column: number,
-            nodeMaterialBlock?: NodeMaterialBlock
-        }
-    ) {
+    public createNodeFromObject(options: NodeCreationOptions) {
         // Update rows/columns
         if (this._rowPos[options.column] == undefined) {
             this._rowPos[options.column] = 0;
@@ -71,65 +72,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         // Create new node in the graph
-        var outputNode = new GenericNodeModel();
+        var outputNode = options.type === "Texture" ? new TextureNodeModel() : new GenericNodeModel();
         this._nodes.push(outputNode)
-        outputNode.setPosition(1600 - (300 * options.column), 200 * this._rowPos[options.column])
+        outputNode.setPosition(1600 - (300 * options.column), 210 * this._rowPos[options.column])
         this._model.addAll(outputNode);
 
         if (options.nodeMaterialBlock) {
-            outputNode.block = options.nodeMaterialBlock
-            outputNode.headerLabels.push({ text: options.nodeMaterialBlock.getClassName() })
-
-            // Create output ports
-            options.nodeMaterialBlock._outputs.forEach((connection: any) => {
-                var outputPort = new GenericPortModel(connection.name, "output");
-                outputPort.syncWithNodeMaterialConnectionPoint(connection);
-                outputNode.addPort(outputPort)
-            })
-
-            // Create input ports and nodes if they exist
-            options.nodeMaterialBlock._inputs.forEach((connection) => {
-                var inputPort = new GenericPortModel(connection.name, "input");
-                inputPort.connection = connection;
-                outputNode.addPort(inputPort)
-
-                if (connection._connectedPoint) {
-                    // Block is not a leaf node, create node for the given block type
-                    var connectedNode;
-                    var existingNodes = this._nodes.filter((n) => { return n.block == (connection as any)._connectedPoint._ownerBlock });
-                    if (existingNodes.length == 0) {
-                        connectedNode = this.createNodeFromObject({ column: options.column + 1, nodeMaterialBlock: connection._connectedPoint._ownerBlock });
-                    } else {
-                        connectedNode = existingNodes[0];
-                    }
-
-                    let link = connectedNode.ports[connection._connectedPoint.name].link(inputPort);
-                    this._model.addAll(link);
-
-                } else {
-                    // Create value node for the connection
-                    var type = ""
-                    if (connection.type == NodeMaterialBlockConnectionPointTypes.Texture) {
-                        type = "Texture"
-                    } else if (connection.type == NodeMaterialBlockConnectionPointTypes.Matrix) {
-                        type = "Matrix"
-                    } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector3OrColor3) {
-                        type = "Vector3"
-                    } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector2) {
-                        type = "Vector2"
-                    } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4) {
-                        type = "Vector4"
-                    }
-
-                    // Create links
-                    var localNode = this.addValueNode(type, options.column + 1, connection);
-                    var ports = localNode.getPorts()
-                    for (var key in ports) {
-                        let link = (ports[key] as GenericPortModel).link(inputPort);
-                        this._model.addAll(link);
-                    }
-                }
-            })
+            outputNode.prepare(options, this._nodes, this._model, this);
         }
 
         return outputNode;
@@ -157,6 +106,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine = new DiagramEngine();
         this._engine.installDefaultFactories()
         this._engine.registerNodeFactory(new GenericNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new TextureNodeFactory(this.props.globalState));
 
         // setup the diagram model
         this._model = new DiagramModel();
@@ -235,7 +185,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         // Zoom out a bit at the start
-        this._model.setZoomLevel(20)
+        this._model.setZoomLevel(80)
 
         // load model into engine
         this._engine.setDiagramModel(this._model);
@@ -258,74 +208,35 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     }
 
     addValueNode(type: string, column = 0, connection?: NodeMaterialConnectionPoint) {
-        var localNode = this.createNodeFromObject({ column: column })
-        var outPort = new GenericPortModel(type, "output");
-        if (type == "Texture") {
-            outPort.getValue = () => {
-                return localNode.texture;
-            }
-            if (connection && connection.value) {
-                localNode.texture = connection.value
-            } else {
-                localNode.texture = new Texture(null, Engine.LastCreatedScene)
-            }
-        } else if (type == "Vector2") {
-            outPort.getValue = () => {
-                return localNode.vector2;
-            }
-            if (connection && connection.value) {
-                localNode.vector2 = connection.value
-            } else {
-                localNode.vector2 = new Vector2()
-            }
-        } else if (type == "Vector3") {
-            outPort.getValue = () => {
-                return localNode.vector3;
-            }
-            if (connection && connection.value) {
-                localNode.vector3 = connection.value
-            } else {
-                localNode.vector3 = new Vector3()
-            }
-        } else if (type == "Vector4") {
-            outPort.getValue = () => {
-                return localNode.vector4;
-            }
-            if (connection && connection.value) {
-                localNode.vector4 = connection.value
-            } else {
-                localNode.vector4 = new Vector4(0, 0, 0, 1)
-            }
-        } else if (type == "Matrix") {
-            outPort.getValue = () => {
-                return localNode.matrix;
-            }
-            if (connection && connection.value) {
-                localNode.matrix = connection.value
-            } else {
-                localNode.matrix = new Matrix()
-            }
-        } else {
-            console.log("Node type " + type + "is not supported")
+        if (connection && connection.isAttribute) {
+            this.forceUpdate();
+            return null;
         }
-        localNode.addPort(outPort)
-        this.forceUpdate()
+        var localNode = this.createNodeFromObject({ column: column, type: type })
+        var outPort = new GenericPortModel(type, "output");
+
+        localNode.prepareConnection(type, outPort, connection);
+
+        localNode.addPort(outPort);
+        this.forceUpdate();
 
         return localNode;
     }
 
     render() {
         return (
-            <div id="node-editor-graph-root">
-                {/* Node creation menu */}
-                <NodeListComponent globalState={this.props.globalState} onAddValueNode={b => this.addValueNode(b)} onAddNodeFromClass={b => this.addNodeFromClass(b)} />
+            <Portal globalState={this.props.globalState}>
+                <div id="node-editor-graph-root">
+                    {/* Node creation menu */}
+                    <NodeListComponent globalState={this.props.globalState} onAddValueNode={b => this.addValueNode(b)} onAddNodeFromClass={b => this.addNodeFromClass(b)} />
 
-                {/* The node graph diagram */}
-                <DiagramWidget deleteKeys={[46]} ref={"test"} inverseZoom={true} className="diagram-container" diagramEngine={this._engine} maxNumberPointsPerLink={0} />
+                    {/* The node graph diagram */}
+                    <DiagramWidget deleteKeys={[46]} ref={"test"} inverseZoom={true} className="diagram-container" diagramEngine={this._engine} maxNumberPointsPerLink={0} />
 
-                {/* Property tab */}
-                <PropertyTabComponent globalState={this.props.globalState} />
-            </div>
+                    {/* Property tab */}
+                    <PropertyTabComponent globalState={this.props.globalState} />
+                </div>
+            </Portal>
         );
 
     }

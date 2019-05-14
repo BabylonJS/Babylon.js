@@ -2,17 +2,14 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { Nullable } from 'babylonjs/types';
-import { TexturePropertyTabComponent } from './properties/texturePropertyTabComponent';
-import { GenericNodeModel } from '../diagram/generic/genericNodeModel';
-import { Vector2PropertyTabComponent } from './properties/vector2PropertyTabComponent';
-import { Vector3PropertyTabComponent } from './properties/vector3PropertyTabComponent';
+import { DefaultNodeModel } from '../../components/diagram/defaultNodeModel';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
 }
 
-export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<GenericNodeModel> }> {
+export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<DefaultNodeModel> }> {
 
     constructor(props: IPropertyTabComponentProps) {
         super(props)
@@ -28,27 +25,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     render() {
         if (this.state.currentNode) {
-            if (this.state.currentNode.texture) {
-                return (
-                    <div id="propertyTab">
-                        <TexturePropertyTabComponent globalState={this.props.globalState} node={this.state.currentNode} />
-                    </div>
-                );
-            }
-            if (this.state.currentNode.vector2) {
-                return (
-                    <div id="propertyTab">
-                        <Vector2PropertyTabComponent globalState={this.props.globalState} node={this.state.currentNode} />
-                    </div>
-                );
-            }
-            if(this.state.currentNode.vector3) {
-                return (
-                    <div id="propertyTab">
-                        <Vector3PropertyTabComponent globalState={this.props.globalState} node={this.state.currentNode} />
-                    </div>
-                );
-            }
+            return (
+                <div id="propertyTab">
+                    {this.state.currentNode.renderProperties(this.props.globalState)}
+                </div>
+            );
         }
 
         return (

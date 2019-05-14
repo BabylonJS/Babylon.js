@@ -2,7 +2,6 @@ import * as React from "react";
 import { PortWidget } from "storm-react-diagrams";
 import { GenericNodeModel } from './genericNodeModel';
 import { GenericPortModel } from './genericPortModel';
-import { TextureLineComponent } from "../../../sharedComponents/textureLineComponent"
 import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
 
@@ -63,11 +62,11 @@ export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, G
                     var control = <div></div>
 
                     inputPorts.push(
-                        <div key={key} style={{ paddingBottom: "8px" }}>
-                            <div style={{ display: "inline-block", borderStyle: "solid", marginBottom: "-4px", position: "absolute", left: "-17px", background: "#777777" }}>
+                        <div key={key} className="input-port">
+                            <div className="input-port-plug">
                                 <PortWidget key={key} name={port.name} node={this.props.node} />
                             </div>
-                            <div style={{ display: "inline-block" }}>
+                            <div className="input-port-label">
                                 {port.name}
                             </div>
                             {control}
@@ -75,24 +74,17 @@ export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, G
                     )
                 } else {
                     outputPorts.push(
-                        <div key={key} style={{ paddingBottom: "8px" }}>
-                            <div style={{ display: "inline-block" }}>
+                        <div key={key} className="output-port">
+                            <div className="output-port-label">
                                 {port.name}
                             </div>
-                            <div style={{ display: "inline-block", borderStyle: "solid", marginBottom: "-4px", position: "absolute", right: "-17px", background: "#777777" }}>
+                            <div className="output-port-plug">
                                 <PortWidget key={key} name={port.name} node={this.props.node} />
                             </div>
                         </div>
                     )
                 }
 
-            }
-
-            // Display the view depending on the value type of the node
-            if (this.props.node.texture) {
-                value = (
-                    <TextureLineComponent ref="textureView" width={200} height={180} texture={this.props.node.texture} hideChannelSelect={true} />
-                )
             }
         }
 
