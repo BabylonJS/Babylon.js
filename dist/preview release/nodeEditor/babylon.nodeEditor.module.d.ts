@@ -413,7 +413,6 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/vector3P
         render(): JSX.Element;
     }
 }
-<<<<<<< HEAD
 declare module "babylonjs-node-editor/components/diagram/generic/genericNodeModel" {
     import { Nullable } from 'babylonjs/types';
     import { Vector2, Vector3, Vector4, Matrix } from 'babylonjs/Maths/math';
@@ -463,97 +462,6 @@ declare module "babylonjs-node-editor/components/diagram/generic/genericPortMode
     import { Nullable } from 'babylonjs/types';
     import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
     import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
-=======
-declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { Nullable } from 'babylonjs/types';
-    import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
-    interface IPropertyTabComponentProps {
-        globalState: GlobalState;
-    }
-    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
-        currentNode: Nullable<GenericNodeModel>;
-    }> {
-        constructor(props: IPropertyTabComponentProps);
-        componentWillMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/components/graphEditor" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
-    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-    interface IGraphEditorProps {
-        globalState: GlobalState;
-    }
-    export class GraphEditor extends React.Component<IGraphEditorProps> {
-        private _engine;
-        private _model;
-        private _nodes;
-        /**
-         * Current row/column position used when adding new nodes
-         */
-        private _rowPos;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param nodeMaterialBlock
-         */
-        createNodeFromObject(options: {
-            column: number;
-            nodeMaterialBlock?: NodeMaterialBlock;
-        }): GenericNodeModel;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
-        constructor(props: IGraphEditorProps);
-        addNodeFromClass(ObjectClass: typeof NodeMaterialBlock): GenericNodeModel;
-        addValueNode(type: string, column?: number, connection?: NodeMaterialConnectionPoint): GenericNodeModel;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/sharedComponents/popup" {
-    export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
-        private static _CopyStyles;
-    }
-}
-declare module "babylonjs-node-editor/nodeEditor" {
-    import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
-    /**
-     * Interface used to specify creation options for the node editor
-     */
-    export interface INodeEditorOptions {
-        /**
-         * Defines the DOM element that will host the node editor
-         */
-        hostElement?: HTMLDivElement;
-        nodeMaterial?: NodeMaterial;
-    }
-    /**
-     * Class used to create a node editor
-     */
-    export class NodeEditor {
-        /**
-         * Show the node editor
-         * @param options defines the options to use to configure the node editor
-         */
-        static Show(options: INodeEditorOptions): void;
-    }
-}
-declare module "babylonjs-node-editor/index" {
-    export * from "babylonjs-node-editor/nodeEditor";
-}
-declare module "babylonjs-node-editor/legacy/legacy" {
-    export * from "babylonjs-node-editor/index";
-}
-declare module "babylonjs-node-editor" {
-    export * from "babylonjs-node-editor/legacy/legacy";
-}
-/// <reference types="react" />
-declare module NODEEDITOR {
->>>>>>> c561ead7a93fc6094d0854d66d037d358954fe3b
     /**
      * Port model for the generic node
      */
@@ -981,44 +889,6 @@ declare module NODEEDITOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-<<<<<<< HEAD
-=======
-    }
-    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
-        isExpanded: boolean;
-        value: BABYLON.Vector3;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector3LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: BABYLON.Vector3;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
-        updateVector3(): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        updateStateZ(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface IVector3PropertyTabComponentProps {
-        globalState: GlobalState;
-        node: GenericNodeModel;
-    }
-    export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface IPropertyTabComponentProps {
-        globalState: GlobalState;
->>>>>>> c561ead7a93fc6094d0854d66d037d358954fe3b
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
