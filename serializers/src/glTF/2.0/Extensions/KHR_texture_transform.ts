@@ -1,9 +1,7 @@
 import { ImageMimeType } from "babylonjs-gltf2interface";
 
 import { Nullable } from "babylonjs/types";
-import { Vector2 } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
@@ -52,6 +50,14 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
 
     public preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<Texture>> {
         return new Promise((resolve, reject) => {
+            const scene = babylonTexture.getScene();
+            if (!scene) {
+                reject(`${context}: "scene" is not defined for Babylon texture ${babylonTexture.name}!`);
+                return;
+            }
+
+            // TODO: this doesn't take into account rotation center values
+
             const texture_transform_extension: IKHRTextureTransform = {};
 
             if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
@@ -68,20 +74,10 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
 
             if (!Object.keys(texture_transform_extension).length) {
                 resolve(babylonTexture);
+                return;
             }
 
-            const scale = texture_transform_extension.scale ? new Vector2(texture_transform_extension.scale[0], texture_transform_extension.scale[1]) : Vector2.One();
-            const rotation = texture_transform_extension.rotation != null ? texture_transform_extension.rotation : 0;
-            const offset = texture_transform_extension.offset ? new Vector2(texture_transform_extension.offset[0], texture_transform_extension.offset[1]) : Vector2.Zero();
-            const scene = babylonTexture.getScene();
-            if (!scene) {
-                reject(`${context}: "scene" is not defined for Babylon texture ${babylonTexture.name}!`);
-            }
-            else {
-                this.textureTransformTextureAsync(babylonTexture, offset, rotation, scale, scene).then((texture) => {
-                    resolve(texture as Texture);
-                });
-            }
+            return this._textureTransformTextureAsync(babylonTexture, scene);
         });
     }
 
@@ -93,8 +89,8 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
      * @param scale
      * @param scene
      */
-    public textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture> {
-        return new Promise((resolve, reject) => {
+    private _textureTransformTextureAsync(babylonTexture: Texture, scene: Scene): Promise<Texture> {
+        return new Promise((resolve) => {
             const proceduralTexture = new ProceduralTexture(`${babylonTexture.name}`, babylonTexture.getSize(), "textureTransform", scene);
             if (!proceduralTexture) {
                 Tools.Log(`Cannot create procedural texture for ${babylonTexture.name}!`);
@@ -109,7 +105,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 proceduralTexture.render();
                 resolve(proceduralTexture);
             } else {
-                (proceduralTexture as any).getEffect().executeWhenCompiled(() => {
+                proceduralTexture.getEffect().executeWhenCompiled(() => {
                     proceduralTexture.render();
                     resolve(proceduralTexture);
                 });
