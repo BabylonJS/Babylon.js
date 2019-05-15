@@ -5091,7 +5091,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, ".diagramBlock {\n  background: white;\n  width: 200px;\n  border: 4px solid black; }\n  .diagramBlock.input {\n    background: green;\n    color: white; }\n  .diagramBlock.output {\n    background: blue;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    margin: 10px; }\n    .diagramBlock .header .header-labels {\n      font-size: 16px;\n      text-align: center; }\n  .diagramBlock .inputs .input-port {\n    display: grid;\n    grid-template-columns: 4px calc(100% - 4px);\n    grid-template-rows: 100%; }\n    .diagramBlock .inputs .input-port .input-port-plug {\n      grid-column: 1;\n      grid-row: 1;\n      display: grid;\n      align-content: center;\n      margin-left: -11px; }\n      .diagramBlock .inputs .input-port .input-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .inputs .input-port .input-port-label {\n      margin-left: 10px;\n      grid-column: 2;\n      grid-row: 1;\n      margin-bottom: 2px; }\n  .diagramBlock .outputs .output-port {\n    display: grid;\n    grid-template-columns: calc(100% - 4px) 4px;\n    grid-template-rows: 100%; }\n    .diagramBlock .outputs .output-port .output-port-plug {\n      grid-column: 2;\n      grid-row: 1;\n      display: grid;\n      align-content: center; }\n      .diagramBlock .outputs .output-port .output-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .outputs .output-port .output-port-label {\n      text-align: right;\n      margin-right: 10px;\n      grid-column: 1;\n      grid-row: 1;\n      margin-bottom: 2px; }\n", ""]);
+exports.push([module.i, ".diagramBlock {\n  background: white;\n  width: 200px;\n  border: 4px solid black; }\n  .diagramBlock.input {\n    background: green;\n    color: white; }\n  .diagramBlock.output {\n    background: blue;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    margin: 10px;\n    font-size: 16px;\n    text-align: center;\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden; }\n  .diagramBlock .inputs .input-port {\n    display: grid;\n    grid-template-columns: 4px calc(100% - 4px);\n    grid-template-rows: 100%; }\n    .diagramBlock .inputs .input-port .input-port-plug {\n      grid-column: 1;\n      grid-row: 1;\n      display: grid;\n      align-content: center;\n      margin-left: -11px; }\n      .diagramBlock .inputs .input-port .input-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .inputs .input-port .input-port-label {\n      margin-left: 10px;\n      grid-column: 2;\n      grid-row: 1;\n      margin-bottom: 2px; }\n  .diagramBlock .outputs .output-port {\n    display: grid;\n    grid-template-columns: calc(100% - 4px) 4px;\n    grid-template-rows: 100%; }\n    .diagramBlock .outputs .output-port .output-port-plug {\n      grid-column: 2;\n      grid-row: 1;\n      display: grid;\n      align-content: center; }\n      .diagramBlock .outputs .output-port .output-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .outputs .output-port .output-port-label {\n      text-align: right;\n      margin-right: 10px;\n      grid-column: 1;\n      grid-row: 1;\n      margin-bottom: 2px; }\n", ""]);
 
 // exports
 
@@ -46799,9 +46799,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _generic_genericPortModel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./generic/genericPortModel */ "./components/diagram/generic/genericPortModel.ts");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _defaultPortModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./defaultPortModel */ "./components/diagram/defaultPortModel.ts");
 
 
 
@@ -46824,7 +46824,7 @@ var DefaultNodeModel = /** @class */ (function (_super) {
     }
     DefaultNodeModel.prototype.prepareConnection = function (type, outPort, connection) {
     };
-    DefaultNodeModel.prototype.prepare = function (options, nodes, model, graphEditor) {
+    DefaultNodeModel.prototype.prepare = function (options, nodes, model, graphEditor, filterInputs) {
         var _this = this;
         this.block = options.nodeMaterialBlock || null;
         if (!options.nodeMaterialBlock) {
@@ -46832,13 +46832,16 @@ var DefaultNodeModel = /** @class */ (function (_super) {
         }
         // Create output ports
         options.nodeMaterialBlock._outputs.forEach(function (connection) {
-            var outputPort = new _generic_genericPortModel__WEBPACK_IMPORTED_MODULE_2__["GenericPortModel"](connection.name, "output");
+            var outputPort = new _defaultPortModel__WEBPACK_IMPORTED_MODULE_3__["DefaultPortModel"](connection.name, "output");
             outputPort.syncWithNodeMaterialConnectionPoint(connection);
             _this.addPort(outputPort);
         });
         // Create input ports and nodes if they exist
         options.nodeMaterialBlock._inputs.forEach(function (connection) {
-            var inputPort = new _generic_genericPortModel__WEBPACK_IMPORTED_MODULE_2__["GenericPortModel"](connection.name, "input");
+            if (filterInputs.length > 0 && filterInputs.indexOf(connection.name) === -1) {
+                return;
+            }
+            var inputPort = new _defaultPortModel__WEBPACK_IMPORTED_MODULE_3__["DefaultPortModel"](connection.name, "input");
             inputPort.connection = connection;
             _this.addPort(inputPort);
             console.log(connection.name + " for " + options.nodeMaterialBlock.name);
@@ -46860,19 +46863,19 @@ var DefaultNodeModel = /** @class */ (function (_super) {
             else {
                 // Create value node for the connection
                 var type = "";
-                if (connection.type == babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialBlockConnectionPointTypes"].Texture) {
+                if (connection.type == babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Texture) {
                     type = "Texture";
                 }
-                else if (connection.type == babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialBlockConnectionPointTypes"].Matrix) {
+                else if (connection.type == babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Matrix) {
                     type = "Matrix";
                 }
-                else if (connection.type & babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3) {
+                else if (connection.type & babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3) {
                     type = "Vector3";
                 }
-                else if (connection.type & babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialBlockConnectionPointTypes"].Vector2) {
+                else if (connection.type & babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector2) {
                     type = "Vector2";
                 }
-                else if (connection.type & babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3OrVector4OrColor4) {
+                else if (connection.type & babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3OrVector4OrColor4) {
                     type = "Vector4";
                 }
                 // Create links
@@ -46892,6 +46895,86 @@ var DefaultNodeModel = /** @class */ (function (_super) {
     };
     return DefaultNodeModel;
 }(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["NodeModel"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/defaultPortModel.ts":
+/*!************************************************!*\
+  !*** ./components/diagram/defaultPortModel.ts ***!
+  \************************************************/
+/*! exports provided: DefaultPortModel */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DefaultPortModel", function() { return DefaultPortModel; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
+
+
+/**
+ * Port model
+ */
+var DefaultPortModel = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultPortModel, _super);
+    function DefaultPortModel(name, type) {
+        if (type === void 0) { type = "input"; }
+        var _this = _super.call(this, name, "generic") || this;
+        /**
+         * What the port is connected to
+         */
+        _this.connection = null;
+        _this.getValue = function () {
+            return null;
+        };
+        _this.position = type;
+        DefaultPortModel.idCounter++;
+        return _this;
+    }
+    DefaultPortModel.prototype.syncWithNodeMaterialConnectionPoint = function (connection) {
+        this.connection = connection;
+        this.name = connection.name;
+    };
+    DefaultPortModel.prototype.getNodeModel = function () {
+        return this.parent;
+    };
+    DefaultPortModel.prototype.link = function (outPort) {
+        var link = this.createLinkModel();
+        link.setSourcePort(this);
+        link.setTargetPort(outPort);
+        return link;
+    };
+    DefaultPortModel.prototype.getInputFromBlock = function () {
+    };
+    DefaultPortModel.prototype.createLinkModel = function () {
+        return new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DefaultLinkModel"]();
+    };
+    DefaultPortModel.SortInputOutput = function (a, b) {
+        if (!a || !b) {
+            return null;
+        }
+        else if (a.position == "output" && b.position == "input") {
+            return {
+                input: b,
+                output: a
+            };
+        }
+        else if (b.position == "output" && a.position == "input") {
+            return {
+                input: a,
+                output: b
+            };
+        }
+        else {
+            return null;
+        }
+    };
+    DefaultPortModel.idCounter = 0;
+    return DefaultPortModel;
+}(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["PortModel"]));
 
 
 
@@ -47022,7 +47105,7 @@ var GenericNodeModel = /** @class */ (function (_super) {
         /**
          * Labels for the block
          */
-        _this.headerLabels = [];
+        _this.header = "";
         /**
          * Vector2 for the node if it exists
          */
@@ -47090,11 +47173,11 @@ var GenericNodeModel = /** @class */ (function (_super) {
                 break;
         }
     };
-    GenericNodeModel.prototype.prepare = function (options, nodes, model, graphEditor) {
+    GenericNodeModel.prototype.prepare = function (options, nodes, model, graphEditor, filterInputs) {
         if (options.nodeMaterialBlock) {
-            this.headerLabels.push({ text: options.nodeMaterialBlock.getClassName() });
+            this.header = options.nodeMaterialBlock.name;
         }
-        _super.prototype.prepare.call(this, options, nodes, model, graphEditor);
+        _super.prototype.prepare.call(this, options, nodes, model, graphEditor, filterInputs);
     };
     GenericNodeModel.prototype.renderProperties = function (globalState) {
         if (this.vector2) {
@@ -47153,27 +47236,23 @@ var GenericNodeWidget = /** @class */ (function (_super) {
         return _this;
     }
     GenericNodeWidget.prototype.render = function () {
-        var headers = new Array();
+        var header = "";
         var inputPorts = new Array();
         var outputPorts = new Array();
         var value = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null);
         if (this.props.node) {
             // Header labels
-            if (this.props.node.headerLabels.length) {
-                this.props.node.headerLabels.forEach(function (h, i) {
-                    headers.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header-labels", key: i }, h.text));
-                });
+            if (this.props.node.header) {
+                header = this.props.node.header;
             }
             // Input/Output ports
             for (var key in this.props.node.ports) {
                 var port = this.props.node.ports[key];
-                if (port.position == "input") {
-                    var control = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null);
+                if (port.position === "input") {
                     inputPorts.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: key, className: "input-port" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "input-port-plug" },
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__["PortWidget"], { key: key, name: port.name, node: this.props.node })),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "input-port-label" }, port.name),
-                        control));
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "input-port-label" }, port.name)));
                 }
                 else {
                     outputPorts.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: key, className: "output-port" },
@@ -47183,10 +47262,8 @@ var GenericNodeWidget = /** @class */ (function (_super) {
                 }
             }
         }
-        var isInputBlock = this.props.node && this.props.node.headerLabels.length;
-        var isOutputBlock = outputPorts.length === 0;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock" + (isInputBlock ? "" : " input") + (isOutputBlock ? " output" : "") },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, headers),
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, header),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
             value));
@@ -47198,81 +47275,210 @@ var GenericNodeWidget = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/diagram/generic/genericPortModel.ts":
-/*!********************************************************!*\
-  !*** ./components/diagram/generic/genericPortModel.ts ***!
-  \********************************************************/
-/*! exports provided: GenericPortModel */
+/***/ "./components/diagram/input/inputNodeFactory.tsx":
+/*!*******************************************************!*\
+  !*** ./components/diagram/input/inputNodeFactory.tsx ***!
+  \*******************************************************/
+/*! exports provided: InputNodeFactory */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GenericPortModel", function() { return GenericPortModel; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputNodeFactory", function() { return InputNodeFactory; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _inputNodeModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./inputNodeModel */ "./components/diagram/input/inputNodeModel.tsx");
+/* harmony import */ var _inputNodeWidget__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./inputNodeWidget */ "./components/diagram/input/inputNodeWidget.tsx");
+
+
+
 
 
 /**
- * Port model for the generic node
+ * Node factory which creates editor nodes
  */
-var GenericPortModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericPortModel, _super);
-    function GenericPortModel(name, type) {
-        if (type === void 0) { type = "input"; }
-        var _this = _super.call(this, name, "generic") || this;
-        /**
-         * What the port is connected to
-         */
-        _this.connection = null;
-        _this.getValue = function () {
-            return null;
-        };
-        _this.position = type;
-        GenericPortModel.idCounter++;
+var InputNodeFactory = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeFactory, _super);
+    /**
+     * Constructs a GenericNodeFactory
+     */
+    function InputNodeFactory(globalState) {
+        var _this = _super.call(this, "input") || this;
+        _this._globalState = globalState;
         return _this;
     }
-    GenericPortModel.prototype.syncWithNodeMaterialConnectionPoint = function (connection) {
-        this.connection = connection;
-        this.name = connection.name;
+    /**
+     * Generates a node widget
+     * @param diagramEngine diagram engine
+     * @param node node to generate
+     * @returns node widget jsx
+     */
+    InputNodeFactory.prototype.generateReactWidget = function (diagramEngine, node) {
+        return react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_inputNodeWidget__WEBPACK_IMPORTED_MODULE_4__["InputNodeWidget"], { node: node, globalState: this._globalState });
     };
-    GenericPortModel.prototype.getNodeModel = function () {
-        return this.parent;
+    /**
+     * Gets a new instance of a node model
+     * @returns input node model
+     */
+    InputNodeFactory.prototype.getNewInstance = function () {
+        return new _inputNodeModel__WEBPACK_IMPORTED_MODULE_3__["InputNodeModel"]();
     };
-    GenericPortModel.prototype.link = function (outPort) {
-        var link = this.createLinkModel();
-        link.setSourcePort(this);
-        link.setTargetPort(outPort);
-        return link;
-    };
-    GenericPortModel.prototype.getInputFromBlock = function () {
-    };
-    GenericPortModel.prototype.createLinkModel = function () {
-        return new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DefaultLinkModel"]();
-    };
-    GenericPortModel.SortInputOutput = function (a, b) {
-        if (!a || !b) {
-            return null;
+    return InputNodeFactory;
+}(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["AbstractNodeFactory"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/input/inputNodeModel.tsx":
+/*!*****************************************************!*\
+  !*** ./components/diagram/input/inputNodeModel.tsx ***!
+  \*****************************************************/
+/*! exports provided: InputNodeModel */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputNodeModel", function() { return InputNodeModel; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
+/* harmony import */ var _propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../propertyTab/properties/vector2PropertyTabComponent */ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx");
+/* harmony import */ var _propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../propertyTab/properties/vector3PropertyTabComponent */ "./components/propertyTab/properties/vector3PropertyTabComponent.tsx");
+
+
+
+
+
+
+/**
+ * Generic node model which stores information about a node editor block
+ */
+var InputNodeModel = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeModel, _super);
+    /**
+     * Constructs the node model
+     */
+    function InputNodeModel() {
+        var _this = _super.call(this, "input") || this;
+        /**
+         * Vector2 for the node if it exists
+         */
+        _this.vector2 = null;
+        /**
+         * Vector3 for the node if it exists
+         */
+        _this.vector3 = null;
+        /**
+         * Vector4 for the node if it exists
+         */
+        _this.vector4 = null;
+        /**
+         * Matrix for the node if it exists
+         */
+        _this.matrix = null;
+        return _this;
+    }
+    InputNodeModel.prototype.prepareConnection = function (type, outPort, connection) {
+        switch (type) {
+            case "Vector2":
+                this.vector2 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
+                break;
+            case "Vector3":
+                this.vector3 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"]();
+                break;
+            case "Vector4":
+                this.vector4 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector4"](0, 0, 0, 1);
+                break;
+            case "Matrix":
+                this.matrix = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Matrix"]();
+                break;
         }
-        else if (a.position == "output" && b.position == "input") {
-            return {
-                input: b,
-                output: a
-            };
-        }
-        else if (b.position == "output" && a.position == "input") {
-            return {
-                input: a,
-                output: b
-            };
-        }
-        else {
-            return null;
-        }
     };
-    GenericPortModel.idCounter = 0;
-    return GenericPortModel;
-}(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["PortModel"]));
+    InputNodeModel.prototype.renderValue = function (globalState) {
+        if (this.vector2) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_4__["Vector2PropertyTabComponent"], { globalState: globalState, node: this }));
+        }
+        if (this.vector3) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3PropertyTabComponent"], { globalState: globalState, node: this }));
+        }
+        return null;
+    };
+    InputNodeModel.prototype.renderProperties = function (globalState) {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, this.renderValue(globalState)));
+    };
+    return InputNodeModel;
+}(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_3__["DefaultNodeModel"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/input/inputNodeWidget.tsx":
+/*!******************************************************!*\
+  !*** ./components/diagram/input/inputNodeWidget.tsx ***!
+  \******************************************************/
+/*! exports provided: InputNodeWidget */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputNodeWidget", function() { return InputNodeWidget; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+/**
+ * Used to display a node block for the node editor
+ */
+var InputNodeWidget = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeWidget, _super);
+    /**
+     * Creates a GenericNodeWidget
+     * @param props
+     */
+    function InputNodeWidget(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {};
+        if (_this.props.node) {
+            _this.props.node.addListener({
+                selectionChanged: function () {
+                    var selected = _this.props.node.selected;
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(selected ? _this.props.node : null);
+                }
+            });
+        }
+        return _this;
+    }
+    InputNodeWidget.prototype.render = function () {
+        var outputPorts = new Array();
+        var port;
+        if (this.props.node) {
+            for (var key in this.props.node.ports) {
+                port = this.props.node.ports[key];
+                outputPorts.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: key, className: "output-port" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "output-port-label" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "output-port-plug" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__["PortWidget"], { key: key, name: port.name, node: this.props.node }))));
+                break;
+            }
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, port.name),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts)));
+    };
+    return InputNodeWidget;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
 
@@ -47374,6 +47580,11 @@ var TextureNodeModel = /** @class */ (function (_super) {
     TextureNodeModel.prototype.renderProperties = function (globalState) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["TexturePropertyTabComponent"], { globalState: globalState, node: this }));
     };
+    TextureNodeModel.prototype.prepare = function (options, nodes, model, graphEditor, filterInputs) {
+        var textureBlock = options.nodeMaterialBlock;
+        this.texture = textureBlock.texture.value;
+        _super.prototype.prepare.call(this, options, nodes, model, graphEditor, filterInputs);
+    };
     return TextureNodeModel;
 }(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
 
@@ -47424,16 +47635,25 @@ var TextureNodeWidget = /** @class */ (function (_super) {
         return _this;
     }
     TextureNodeWidget.prototype.render = function () {
+        var inputPorts = new Array();
         var outputPorts = new Array();
         var value = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null);
         if (this.props.node) {
             // Input/Output ports
             for (var key in this.props.node.ports) {
                 var port = this.props.node.ports[key];
-                outputPorts.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: key, className: "output-port" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "output-port-label" }, port.name),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "output-port-plug" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__["PortWidget"], { key: key, name: port.name, node: this.props.node }))));
+                if (port.position === "output") {
+                    outputPorts.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: key, className: "output-port" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "output-port-label" }, port.name),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "output-port-plug" },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__["PortWidget"], { key: key, name: port.name, node: this.props.node }))));
+                }
+                else if (port.name === "uv") {
+                    inputPorts.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: key, className: "input-port" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "input-port-plug" },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__["PortWidget"], { key: key, name: port.name, node: this.props.node })),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "input-port-label" }, port.name)));
+                }
             }
             // Display the view depending on the value type of the node
             if (this.props.node.texture) {
@@ -47441,7 +47661,8 @@ var TextureNodeWidget = /** @class */ (function (_super) {
             }
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, "Texture"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, "Texture (" + (this.props.node && this.props.node.texture ? this.props.node.texture.name : "not set") + ")"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
             value));
     };
@@ -47806,12 +48027,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _components_diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/diagram/generic/genericNodeFactory */ "./components/diagram/generic/genericNodeFactory.tsx");
 /* harmony import */ var _components_diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/diagram/generic/genericNodeModel */ "./components/diagram/generic/genericNodeModel.tsx");
-/* harmony import */ var _components_diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/diagram/generic/genericPortModel */ "./components/diagram/generic/genericPortModel.ts");
-/* harmony import */ var _components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/nodeList/nodeListComponent */ "./components/nodeList/nodeListComponent.tsx");
-/* harmony import */ var _components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/propertyTab/propertyTabComponent */ "./components/propertyTab/propertyTabComponent.tsx");
-/* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./portal */ "./portal.tsx");
-/* harmony import */ var _components_diagram_texture_textureNodeFactory__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/diagram/texture/textureNodeFactory */ "./components/diagram/texture/textureNodeFactory.tsx");
-/* harmony import */ var _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/diagram/texture/textureNodeModel */ "./components/diagram/texture/textureNodeModel.tsx");
+/* harmony import */ var _components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/nodeList/nodeListComponent */ "./components/nodeList/nodeListComponent.tsx");
+/* harmony import */ var _components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/propertyTab/propertyTabComponent */ "./components/propertyTab/propertyTabComponent.tsx");
+/* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./portal */ "./portal.tsx");
+/* harmony import */ var _components_diagram_texture_textureNodeFactory__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/diagram/texture/textureNodeFactory */ "./components/diagram/texture/textureNodeFactory.tsx");
+/* harmony import */ var _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/diagram/texture/textureNodeModel */ "./components/diagram/texture/textureNodeModel.tsx");
+/* harmony import */ var _components_diagram_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/diagram/defaultPortModel */ "./components/diagram/defaultPortModel.ts");
+/* harmony import */ var _components_diagram_input_inputNodeFactory__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./components/diagram/input/inputNodeFactory */ "./components/diagram/input/inputNodeFactory.tsx");
+/* harmony import */ var _components_diagram_input_inputNodeModel__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./components/diagram/input/inputNodeModel */ "./components/diagram/input/inputNodeModel.tsx");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/textureBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__);
+
+
+
 
 
 
@@ -47845,7 +48073,8 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._engine = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramEngine"]();
         _this._engine.installDefaultFactories();
         _this._engine.registerNodeFactory(new _components_diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__["GenericNodeFactory"](_this.props.globalState));
-        _this._engine.registerNodeFactory(new _components_diagram_texture_textureNodeFactory__WEBPACK_IMPORTED_MODULE_9__["TextureNodeFactory"](_this.props.globalState));
+        _this._engine.registerNodeFactory(new _components_diagram_texture_textureNodeFactory__WEBPACK_IMPORTED_MODULE_8__["TextureNodeFactory"](_this.props.globalState));
+        _this._engine.registerNodeFactory(new _components_diagram_input_inputNodeFactory__WEBPACK_IMPORTED_MODULE_11__["InputNodeFactory"](_this.props.globalState));
         // setup the diagram model
         _this._model = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramModel"]();
         // Listen to events to connect/disconnect blocks or
@@ -47854,7 +48083,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 if (!e.isCreated) {
                     // Link is deleted
                     console.log("link deleted");
-                    var link = _components_diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_5__["GenericPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
+                    var link = _components_diagram_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
                     console.log(link);
                     if (link) {
                         if (link.output.connection && link.input.connection) {
@@ -47884,7 +48113,7 @@ var GraphEditor = /** @class */ (function (_super) {
                     targetPortChanged: function () {
                         // Link is created with a target port
                         console.log("Link set to target");
-                        var link = _components_diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_5__["GenericPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
+                        var link = _components_diagram_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
                         if (link) {
                             if (link.output.connection && link.input.connection) {
                                 console.log("link standard blocks");
@@ -47939,12 +48168,25 @@ var GraphEditor = /** @class */ (function (_super) {
             this._rowPos[options.column]++;
         }
         // Create new node in the graph
-        var outputNode = options.type === "Texture" ? new _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_10__["TextureNodeModel"]() : new _components_diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_4__["GenericNodeModel"]();
+        var outputNode;
+        var filterInputs = [];
+        if (options.nodeMaterialBlock) {
+            if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__["TextureBlock"]) {
+                outputNode = new _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_9__["TextureNodeModel"]();
+                filterInputs.push("uv");
+            }
+            else {
+                outputNode = new _components_diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_4__["GenericNodeModel"]();
+            }
+        }
+        else {
+            outputNode = new _components_diagram_input_inputNodeModel__WEBPACK_IMPORTED_MODULE_12__["InputNodeModel"]();
+        }
         this._nodes.push(outputNode);
         outputNode.setPosition(1600 - (300 * options.column), 210 * this._rowPos[options.column]);
         this._model.addAll(outputNode);
         if (options.nodeMaterialBlock) {
-            outputNode.prepare(options, this._nodes, this._model, this);
+            outputNode.prepare(options, this._nodes, this._model, this, filterInputs);
         }
         return outputNode;
     };
@@ -47981,7 +48223,7 @@ var GraphEditor = /** @class */ (function (_super) {
             return null;
         }
         var localNode = this.createNodeFromObject({ column: column, type: type });
-        var outPort = new _components_diagram_generic_genericPortModel__WEBPACK_IMPORTED_MODULE_5__["GenericPortModel"](type, "output");
+        var outPort = new _components_diagram_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"](type, "output");
         localNode.prepareConnection(type, outPort, connection);
         localNode.addPort(outPort);
         this.forceUpdate();
@@ -47989,11 +48231,11 @@ var GraphEditor = /** @class */ (function (_super) {
     };
     GraphEditor.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_portal__WEBPACK_IMPORTED_MODULE_8__["Portal"], { globalState: this.props.globalState },
+        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_portal__WEBPACK_IMPORTED_MODULE_7__["Portal"], { globalState: this.props.globalState },
             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "node-editor-graph-root" },
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_6__["NodeListComponent"], { globalState: this.props.globalState, onAddValueNode: function (b) { return _this.addValueNode(b); }, onAddNodeFromClass: function (b) { return _this.addNodeFromClass(b); } }),
+                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_5__["NodeListComponent"], { globalState: this.props.globalState, onAddValueNode: function (b) { return _this.addValueNode(b); }, onAddNodeFromClass: function (b) { return _this.addNodeFromClass(b); } }),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramWidget"], { deleteKeys: [46], ref: "test", inverseZoom: true, className: "diagram-container", diagramEngine: this._engine, maxNumberPointsPerLink: 0 }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_7__["PropertyTabComponent"], { globalState: this.props.globalState }))));
+                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_6__["PropertyTabComponent"], { globalState: this.props.globalState }))));
     };
     return GraphEditor;
 }(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
