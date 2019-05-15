@@ -46,9 +46,8 @@ export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, G
         var header = "";
         var inputPorts = new Array<JSX.Element>()
         var outputPorts = new Array<JSX.Element>()
-        var value = <div></div>
         if (this.props.node) {
-            // Header labels
+            // Header label
             if (this.props.node.header) {
                 header = this.props.node.header;
             }
@@ -83,7 +82,7 @@ export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, G
         }
 
         return (
-            <div className={"diagramBlock"}>
+            <div className={"diagramBlock" + (outputPorts.length === 0 ? " output" : "")}>
                 <div className="header">
                     {header}
                 </div>
@@ -93,7 +92,6 @@ export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, G
                 <div className="outputs">
                     {outputPorts}
                 </div>
-                {value}
             </div>
         );
     }

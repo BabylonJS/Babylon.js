@@ -117,4 +117,145 @@
         }  
     }
 
+    
+    .checkBoxLine {
+        padding-left: $line-padding-left;
+        height: 30px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+
+        .label {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .checkBox {
+            grid-column: 2;
+            
+            display: flex;
+            align-items: center;
+
+            .lbl {
+                position: relative;
+                display: block;
+                height: 14px;
+                width: 34px;
+                margin-right: 5px;
+                background: #898989;
+                border-radius: 100px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .lbl:after {
+                position: absolute;
+                left: 3px;
+                top: 2px;
+                display: block;
+                width: 10px;
+                height: 10px;
+                border-radius: 100px;
+                background: #fff;
+                box-shadow: 0px 3px 3px rgba(0,0,0,0.05);
+                content: '';
+                transition: all 0.15s ease;
+            }
+
+            .lbl:active:after { 
+                transform: scale(1.15, 0.85); 
+            }
+
+            .cbx:checked ~ label { 
+                background: rgb(51, 122, 183);
+            }
+
+            .cbx:checked ~ label:after {
+                left: 20px;
+                background: rgb(22, 73, 117);
+            }
+
+            .hidden { 
+                display: none; 
+            }               
+        }                    
+    }  
+
+    .listLine {
+        padding-left: $line-padding-left;
+        height: 30px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+
+
+        .label {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .options {
+            grid-column: 2;
+            
+            display: flex;
+            align-items: center;   
+            margin-right: 5px;
+
+            select {
+                width: 115px;
+            }
+        }                    
+    }  
+    
+    .textLine {
+        padding-left: $line-padding-left;
+        height: 30px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+
+        .label {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .link-value {
+            grid-column: 2;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            text-align: end;
+            opacity: 0.8;
+            margin:5px;
+            margin-top: 6px;
+            max-width: 140px;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .value {
+            grid-column: 2;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            text-align: end;
+            opacity: 0.8;
+            margin:5px;
+            margin-top: 6px;
+            max-width: 200px;
+            -webkit-user-select: text; 
+            -moz-user-select: text;   
+            -ms-user-select: text;    
+            user-select: text;                
+
+            &.check {
+                color: green;
+            }
+
+            &.uncheck {
+                color: red;
+            }  
+        }
+    }    
+
 }
