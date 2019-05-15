@@ -181,13 +181,31 @@ export class NodeMaterialConnectionPoint {
 
     /**
      * Set the source of this connection point to a well known value
-     * @param value define the well known value to use (world, view, etc...)
+     * @param value define the well known value to use (world, view, etc...) or null to switch to manual value
      * @returns the current connection point
      */
-    public setAsWellKnownValue(value: NodeMaterialWellKnownValues): NodeMaterialConnectionPoint {
+    public setAsWellKnownValue(value: Nullable<NodeMaterialWellKnownValues>): NodeMaterialConnectionPoint {
+        this.wellKnownValue = value;
+        return this;
+    }
+
+    /**
+     * Gets a boolean indicating that the current connection point is a well known value
+     */
+    public get isWellKnownValue(): boolean {
+        return this._wellKnownValue != null;
+    }
+
+    /**
+     * Gets or sets the current well known value or null if not defined as well know value
+     */
+    public get wellKnownValue(): Nullable<NodeMaterialWellKnownValues> {
+        return this._wellKnownValue;
+    }
+
+    public set wellKnownValue(value: Nullable<NodeMaterialWellKnownValues>) {
         this.isUniform = true;
         this._wellKnownValue = value;
-        return this;
     }
 
     private _getTypeLength(type: NodeMaterialBlockConnectionPointTypes) {

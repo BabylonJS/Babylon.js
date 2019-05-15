@@ -4,6 +4,7 @@ import { InputNodeModel } from './inputNodeModel';
 import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
 import { DefaultPortModel } from '../defaultPortModel';
+import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
 
 /**
  * GenericNodeWidgetProps
@@ -54,13 +55,48 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                 break;
             }
         }
+
+        let connection = this.props.node!.connection!;
+        let value = "";
+
+        if (connection.isAttribute) {
+            value = "mesh." + connection.name;
+        } else if (connection.isWellKnownValue) {
+            switch (connection.wellKnownValue) {
+                case NodeMaterialWellKnownValues.World:
+                    value = "World";
+                    break;
+                case NodeMaterialWellKnownValues.WorldView:
+                    value = "World x View";
+                    break;
+                case NodeMaterialWellKnownValues.WorldViewProjection:
+                    value = "World x View x Projection";
+                    break;
+                case NodeMaterialWellKnownValues.View:
+                    value = "View";
+                    break;
+                case NodeMaterialWellKnownValues.ViewProjection:
+                    value = "View x Projection";
+                    break;
+                case NodeMaterialWellKnownValues.Projection:
+                    value = "Projection";
+                    break;
+                case NodeMaterialWellKnownValues.Automatic:
+                    value = "Automatic";
+                    break;
+            }
+        }
+
         return (
-            <div className={"diagramBlock input"}>
+            <div className={"diagramBlock input" + (connection.isAttribute ? " attribute" : "")}>
                 <div className="header">
                     {port!.name}
                 </div>
                 <div className="outputs">
                     {outputPorts}
+                </div>
+                <div className="value">
+                    {value}
                 </div>
             </div>
         );
