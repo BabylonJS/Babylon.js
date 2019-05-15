@@ -26,12 +26,56 @@
     }
 
     .inputs {
-        text-align: left;
-        padding-left: 10px;
+        .input-port {
+            display: grid;
+            grid-template-columns: 4px calc(100% - 4px);
+            grid-template-rows: 100%;
+
+            .input-port-plug {
+                grid-column: 1;
+                grid-row: 1;
+                display: grid;
+                align-content: center;
+                margin-left: -11px;
+                
+                .srd-port {
+                    background: grey;
+                }
+            }
+
+            .input-port-label {
+                margin-left: 10px;
+                grid-column: 2;
+                grid-row: 1;         
+                margin-bottom: 2px;       
+            }
+        }
     }
 
     .outputs {
-        text-align: right;
-        padding-right: 10px;
+        .output-port {
+            display: grid;
+            grid-template-columns: calc(100% - 4px) 4px;
+            grid-template-rows: 100%;
+
+            .output-port-plug {
+                grid-column: 2;
+                grid-row: 1;
+                display: grid;
+                align-content: center;
+
+                .srd-port {
+                    background: grey;
+                }
+            }
+
+            .output-port-label {
+                text-align: right;
+                margin-right: 10px;
+                grid-column: 1;
+                grid-row: 1;                        
+                margin-bottom: 2px;        
+            }
+        }
     }
 }
