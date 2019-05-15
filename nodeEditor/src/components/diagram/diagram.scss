@@ -19,10 +19,12 @@
 
     .header {
         margin: 10px;
-        .header-labels {
-            font-size: 16px;
-            text-align: center;
-        }
+        font-size: 16px;
+        text-align: center;
+        
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
 
     .inputs {

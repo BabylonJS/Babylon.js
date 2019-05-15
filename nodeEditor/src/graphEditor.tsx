@@ -10,7 +10,6 @@ import { GlobalState } from './globalState';
 
 import { GenericNodeFactory } from './components/diagram/generic/genericNodeFactory';
 import { GenericNodeModel } from './components/diagram/generic/genericNodeModel';
-import { GenericPortModel } from './components/diagram/generic/genericPortModel';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { NodeListComponent } from './components/nodeList/nodeListComponent';
@@ -19,6 +18,10 @@ import { Portal } from './portal';
 import { TextureNodeFactory } from './components/diagram/texture/textureNodeFactory';
 import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
 import { TextureNodeModel } from './components/diagram/texture/textureNodeModel';
+import { DefaultPortModel } from './components/diagram/defaultPortModel';
+import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
+import { TextureBlock } from 'babylonjs';
+import { InputNodeModel } from './components/diagram/input/inputNodeModel';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -72,13 +75,25 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         // Create new node in the graph
-        var outputNode = options.type === "Texture" ? new TextureNodeModel() : new GenericNodeModel();
+        var outputNode: DefaultNodeModel;
+        var filterInputs = [];
+
+        if (options.nodeMaterialBlock) {
+            if (options.nodeMaterialBlock instanceof TextureBlock) {
+                outputNode = new TextureNodeModel();
+                filterInputs.push("uv");
+            } else {
+                outputNode = new GenericNodeModel();
+            }
+        } else {
+            outputNode = new InputNodeModel();
+        }
         this._nodes.push(outputNode)
         outputNode.setPosition(1600 - (300 * options.column), 210 * this._rowPos[options.column])
         this._model.addAll(outputNode);
 
         if (options.nodeMaterialBlock) {
-            outputNode.prepare(options, this._nodes, this._model, this);
+            outputNode.prepare(options, this._nodes, this._model, this, filterInputs);
         }
 
         return outputNode;
@@ -107,6 +122,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine.installDefaultFactories()
         this._engine.registerNodeFactory(new GenericNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new TextureNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new InputNodeFactory(this.props.globalState));
 
         // setup the diagram model
         this._model = new DiagramModel();
@@ -117,7 +133,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 if (!e.isCreated) {
                     // Link is deleted
                     console.log("link deleted");
-                    var link = GenericPortModel.SortInputOutput(e.link.sourcePort as GenericPortModel, e.link.targetPort as GenericPortModel);
+                    var link = DefaultPortModel.SortInputOutput(e.link.sourcePort as DefaultPortModel, e.link.targetPort as DefaultPortModel);
                     console.log(link)
                     if (link) {
                         if (link.output.connection && link.input.connection) {
@@ -144,7 +160,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     targetPortChanged: () => {
                         // Link is created with a target port
                         console.log("Link set to target")
-                        var link = GenericPortModel.SortInputOutput(e.link.sourcePort as GenericPortModel, e.link.targetPort as GenericPortModel);
+                        var link = DefaultPortModel.SortInputOutput(e.link.sourcePort as DefaultPortModel, e.link.targetPort as DefaultPortModel);
 
                         if (link) {
                             if (link.output.connection && link.input.connection) {
@@ -213,7 +229,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             return null;
         }
         var localNode = this.createNodeFromObject({ column: column, type: type })
-        var outPort = new GenericPortModel(type, "output");
+        var outPort = new DefaultPortModel(type, "output");
 
         localNode.prepareConnection(type, outPort, connection);
 
