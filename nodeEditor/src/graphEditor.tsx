@@ -20,8 +20,8 @@ import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
 import { TextureNodeModel } from './components/diagram/texture/textureNodeModel';
 import { DefaultPortModel } from './components/diagram/defaultPortModel';
 import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
-import { TextureBlock } from 'babylonjs';
 import { InputNodeModel } from './components/diagram/input/inputNodeModel';
+import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
