@@ -49,6 +49,7 @@ export class NodeCreationOptions {
     column: number;
     nodeMaterialBlock?: NodeMaterialBlock;
     type?: string;
+    connection?: NodeMaterialConnectionPoint;
 }
 
 export class GraphEditor extends React.Component<IGraphEditorProps> {
@@ -87,6 +88,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
         } else {
             outputNode = new InputNodeModel();
+            (outputNode as InputNodeModel).connection = options.connection;
         }
         this._nodes.push(outputNode)
         outputNode.setPosition(1600 - (300 * options.column), 210 * this._rowPos[options.column])
@@ -187,7 +189,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     console.log("node deleted")
                 }
             }
-        })
+        });
+
+        this.props.globalState.onRebuildRequiredObservable.add(() => {
+            if (this.props.globalState.nodeMaterial) {
+                this.props.globalState.nodeMaterial.build();
+            }
+        });
 
         // Load graph of nodes from the material
         if (this.props.globalState.nodeMaterial) {
@@ -224,14 +232,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     }
 
     addValueNode(type: string, column = 0, connection?: NodeMaterialConnectionPoint) {
-        if (connection && connection.isAttribute) {
-            this.forceUpdate();
-            return null;
-        }
-        var localNode = this.createNodeFromObject({ column: column, type: type })
+        var localNode = this.createNodeFromObject({ column: column, type: type, connection: connection })
         var outPort = new DefaultPortModel(type, "output");
-
-        localNode.prepareConnection(type, outPort, connection);
 
         localNode.addPort(outPort);
         this.forceUpdate();

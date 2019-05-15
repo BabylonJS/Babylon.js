@@ -39,7 +39,6 @@ export class TextureNodeWidget extends React.Component<TextureNodeWidgetProps> {
     render() {
         var inputPorts = new Array<JSX.Element>();
         var outputPorts = new Array<JSX.Element>();
-        var value = <div></div>
         if (this.props.node) {
             // Input/Output ports
             for (var key in this.props.node.ports) {
@@ -68,13 +67,6 @@ export class TextureNodeWidget extends React.Component<TextureNodeWidgetProps> {
                     )
                 }
             }
-
-            // Display the view depending on the value type of the node
-            if (this.props.node.texture) {
-                value = (
-                    <TextureLineComponent ref="textureView" width={200} height={180} texture={this.props.node.texture} hideChannelSelect={true} />
-                )
-            }
         }
 
         return (
@@ -88,7 +80,10 @@ export class TextureNodeWidget extends React.Component<TextureNodeWidgetProps> {
                 <div className="outputs">
                     {outputPorts}
                 </div>
-                {value}
+                {
+                    this.props.node && this.props.node.texture &&
+                    <TextureLineComponent ref="textureView" width={200} height={180} texture={this.props.node.texture} hideChannelSelect={true} />
+                }
             </div>
         );
     }
