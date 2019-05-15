@@ -1,10 +1,10 @@
 import * as React from "react";
 import { PortWidget } from "storm-react-diagrams";
 import { TextureNodeModel } from './textureNodeModel';
-import { GenericPortModel } from '../generic/genericPortModel';
 import { TextureLineComponent } from "../../../sharedComponents/textureLineComponent"
 import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
+import { DefaultPortModel } from '../defaultPortModel';
 
 /**
  * GenericNodeWidgetProps
@@ -37,22 +37,36 @@ export class TextureNodeWidget extends React.Component<TextureNodeWidgetProps> {
     }
 
     render() {
+        var inputPorts = new Array<JSX.Element>();
         var outputPorts = new Array<JSX.Element>();
         var value = <div></div>
         if (this.props.node) {
             // Input/Output ports
             for (var key in this.props.node.ports) {
-                var port = this.props.node.ports[key] as GenericPortModel;
-                outputPorts.push(
-                    <div key={key} className="output-port">
-                        <div className="output-port-label">
-                            {port.name}
+                var port = this.props.node.ports[key] as DefaultPortModel;
+                if (port.position === "output") {
+                    outputPorts.push(
+                        <div key={key} className="output-port">
+                            <div className="output-port-label">
+                                {port.name}
+                            </div>
+                            <div className="output-port-plug">
+                                <PortWidget key={key} name={port.name} node={this.props.node} />
+                            </div>
                         </div>
-                        <div className="output-port-plug">
-                            <PortWidget key={key} name={port.name} node={this.props.node} />
+                    );
+                } else if (port.name === "uv") {
+                    inputPorts.push(
+                        <div key={key} className="input-port">
+                            <div className="input-port-plug">
+                                <PortWidget key={key} name={port.name} node={this.props.node} />
+                            </div>
+                            <div className="input-port-label">
+                                {port.name}
+                            </div>
                         </div>
-                    </div>
-                )
+                    )
+                }
             }
 
             // Display the view depending on the value type of the node
@@ -66,7 +80,10 @@ export class TextureNodeWidget extends React.Component<TextureNodeWidgetProps> {
         return (
             <div className={"diagramBlock"}>
                 <div className="header">
-                    Texture
+                    {`Texture (${this.props.node && this.props.node.texture ? this.props.node.texture.name : "not set"})`}
+                </div>
+                <div className="inputs">
+                    {inputPorts}
                 </div>
                 <div className="outputs">
                     {outputPorts}

@@ -1,9 +1,9 @@
 import * as React from "react";
 import { PortWidget } from "storm-react-diagrams";
-import { GenericNodeModel } from './genericNodeModel';
-import { GenericPortModel } from './genericPortModel';
+import { DefaultPortModel } from '../defaultPortModel';
 import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
+import { GenericNodeModel } from './genericNodeModel';
 
 /**
  * GenericNodeWidgetProps
@@ -43,24 +43,20 @@ export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, G
     }
 
     render() {
-        var headers = new Array<JSX.Element>()
+        var header = "";
         var inputPorts = new Array<JSX.Element>()
         var outputPorts = new Array<JSX.Element>()
         var value = <div></div>
         if (this.props.node) {
             // Header labels
-            if (this.props.node.headerLabels.length) {
-                this.props.node.headerLabels.forEach((h, i) => {
-                    headers.push(<div className="header-labels" key={i}>{h.text}</div>)
-                });
+            if (this.props.node.header) {
+                header = this.props.node.header;
             }
 
             // Input/Output ports
             for (var key in this.props.node.ports) {
-                var port = this.props.node.ports[key] as GenericPortModel;
-                if (port.position == "input") {
-                    var control = <div></div>
-
+                var port = this.props.node.ports[key] as DefaultPortModel;
+                if (port.position === "input") {
                     inputPorts.push(
                         <div key={key} className="input-port">
                             <div className="input-port-plug">
@@ -69,7 +65,6 @@ export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, G
                             <div className="input-port-label">
                                 {port.name}
                             </div>
-                            {control}
                         </div>
                     )
                 } else {
@@ -84,17 +79,13 @@ export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, G
                         </div>
                     )
                 }
-
             }
         }
 
-        const isInputBlock = this.props.node && this.props.node.headerLabels.length;
-        const isOutputBlock = outputPorts.length === 0;
-
         return (
-            <div className={"diagramBlock" + (isInputBlock ? "" : " input") + (isOutputBlock ? " output" : "")}>
+            <div className={"diagramBlock"}>
                 <div className="header">
-                    {headers}
+                    {header}
                 </div>
                 <div className="inputs">
                     {inputPorts}

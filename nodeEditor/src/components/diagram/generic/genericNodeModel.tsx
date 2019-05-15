@@ -4,11 +4,11 @@ import { Vector2, Vector3, Vector4, Matrix } from 'babylonjs/Maths/math';
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
 import { GraphEditor, NodeCreationOptions } from '../../../graphEditor';
-import { GenericPortModel } from './genericPortModel';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { Vector2PropertyTabComponent } from '../../../components/propertyTab/properties/vector2PropertyTabComponent';
 import { GlobalState } from '../../../globalState';
 import { Vector3PropertyTabComponent } from '../../../components/propertyTab/properties/vector3PropertyTabComponent';
+import { DefaultPortModel } from '../defaultPortModel';
 
 /**
  * Generic node model which stores information about a node editor block
@@ -17,7 +17,7 @@ export class GenericNodeModel extends DefaultNodeModel {
 	/**
 	 * Labels for the block
 	 */
-    public headerLabels: Array<{ text: string }> = []
+    public header = "";
 	/**
 	 * Vector2 for the node if it exists
 	 */
@@ -42,7 +42,7 @@ export class GenericNodeModel extends DefaultNodeModel {
         super("generic");
     }
 
-    prepareConnection(type: string, outPort: GenericPortModel, connection?: NodeMaterialConnectionPoint) {
+    prepareConnection(type: string, outPort: DefaultPortModel, connection?: NodeMaterialConnectionPoint) {
         switch (type) {
             case "Vector2":
                 outPort.getValue = () => {
@@ -87,12 +87,12 @@ export class GenericNodeModel extends DefaultNodeModel {
         }
     }
 
-    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {
+    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
         if (options.nodeMaterialBlock) {
-            this.headerLabels.push({ text: options.nodeMaterialBlock.getClassName() });
+            this.header = options.nodeMaterialBlock.name;
         }
 
-        super.prepare(options, nodes, model, graphEditor);
+        super.prepare(options, nodes, model, graphEditor, filterInputs);
     }
 
     renderProperties(globalState: GlobalState) {
