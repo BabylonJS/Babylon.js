@@ -3,7 +3,6 @@ import { Nullable } from 'babylonjs/types';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { GraphEditor, NodeCreationOptions } from '../../graphEditor';
-import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { GlobalState } from '../../globalState';
 import { DefaultPortModel } from './defaultPortModel';
 
@@ -23,10 +22,6 @@ export class DefaultNodeModel extends NodeModel {
 	 */
     constructor(key: string) {
         super(key);
-    }
-
-    prepareConnection(type: string, outPort: DefaultPortModel, connection?: NodeMaterialConnectionPoint) {
-
     }
 
     prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
@@ -66,9 +61,6 @@ export class DefaultNodeModel extends NodeModel {
 
                 let link = connectedNode.ports[connection.connectedPoint.name].link(inputPort);
                 model.addAll(link);
-
-            } else if (connection.isAttribute) {
-
             } else {
                 // Create value node for the connection
                 var type = ""

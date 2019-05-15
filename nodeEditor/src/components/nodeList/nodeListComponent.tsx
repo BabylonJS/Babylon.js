@@ -35,18 +35,19 @@ export class NodeListComponent extends React.Component<INodeListComponentProps> 
     render() {
         // Block types used to create the menu from
         const allBlocks = {
-            Fragment: [AlphaTestBlock, FragmentOutputBlock, ImageProcessingBlock, RGBAMergerBlock, RGBASplitterBlock, TextureBlock],
-            Vertex: [BonesBlock, InstancesBlock, MorphTargetsBlock, VertexOutputBlock],
+            Vertex: [BonesBlock, InstancesBlock, MorphTargetsBlock],
+            Fragment: [AlphaTestBlock, , ImageProcessingBlock, RGBAMergerBlock, RGBASplitterBlock, TextureBlock],
+            Outputs: [VertexOutputBlock, FragmentOutputBlock],
             Dual: [FogBlock],
-            Other: [AddBlock, ClampBlock, MatrixMultiplicationBlock, MultiplyBlock, Vector2TransformBlock, Vector3TransformBlock, Vector4TransformBlock],
-            Value: ["Texture", "Vector2", "Vector3", "Matrix"],
+            Math: [AddBlock, ClampBlock, MatrixMultiplicationBlock, MultiplyBlock, Vector2TransformBlock, Vector3TransformBlock, Vector4TransformBlock],
+            Inputs: ["Texture", "Vector2", "Vector3", "Matrix"],
         }
 
         // Create node menu
         var blockMenu = []
         for (var key in allBlocks) {
             var blockList = (allBlocks as any)[key].map((b: any) => {
-                var label = typeof b === "string" ? b : b.prototype.getClassName()
+                var label = typeof b === "string" ? b : b.prototype.getClassName().replace("Block", "")
                 var onClick = typeof b === "string" ? () => { this.props.onAddValueNode(b) } : () => { this.props.onAddNodeFromClass(b) };
                 return <ButtonLineComponent label={label} onClick={onClick} />
             })

@@ -5091,7 +5091,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, ".diagramBlock {\n  background: white;\n  width: 200px;\n  border: 4px solid black; }\n  .diagramBlock.input {\n    background: green;\n    color: white; }\n  .diagramBlock.output {\n    background: blue;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    margin: 10px;\n    font-size: 16px;\n    text-align: center;\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden; }\n  .diagramBlock .inputs .input-port {\n    display: grid;\n    grid-template-columns: 4px calc(100% - 4px);\n    grid-template-rows: 100%; }\n    .diagramBlock .inputs .input-port .input-port-plug {\n      grid-column: 1;\n      grid-row: 1;\n      display: grid;\n      align-content: center;\n      margin-left: -11px; }\n      .diagramBlock .inputs .input-port .input-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .inputs .input-port .input-port-label {\n      margin-left: 10px;\n      grid-column: 2;\n      grid-row: 1;\n      margin-bottom: 2px; }\n  .diagramBlock .outputs .output-port {\n    display: grid;\n    grid-template-columns: calc(100% - 4px) 4px;\n    grid-template-rows: 100%; }\n    .diagramBlock .outputs .output-port .output-port-plug {\n      grid-column: 2;\n      grid-row: 1;\n      display: grid;\n      align-content: center; }\n      .diagramBlock .outputs .output-port .output-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .outputs .output-port .output-port-label {\n      text-align: right;\n      margin-right: 10px;\n      grid-column: 1;\n      grid-row: 1;\n      margin-bottom: 2px; }\n", ""]);
+exports.push([module.i, ".diagramBlock {\n  background: white;\n  width: 200px;\n  border: 4px solid black; }\n  .diagramBlock.input {\n    background: green;\n    color: white; }\n  .diagramBlock.attribute {\n    background: orange; }\n  .diagramBlock.output {\n    background: blue;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    margin: 10px;\n    font-size: 16px;\n    text-align: center;\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden; }\n  .diagramBlock .value {\n    height: 34px;\n    text-align: center;\n    font-size: 20px;\n    font-weight: bold; }\n  .diagramBlock .inputs .input-port {\n    display: grid;\n    grid-template-columns: 4px calc(100% - 4px);\n    grid-template-rows: 100%; }\n    .diagramBlock .inputs .input-port .input-port-plug {\n      grid-column: 1;\n      grid-row: 1;\n      display: grid;\n      align-content: center;\n      margin-left: -11px; }\n      .diagramBlock .inputs .input-port .input-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .inputs .input-port .input-port-label {\n      margin-left: 10px;\n      grid-column: 2;\n      grid-row: 1;\n      margin-bottom: 2px; }\n  .diagramBlock .outputs .output-port {\n    display: grid;\n    grid-template-columns: calc(100% - 4px) 4px;\n    grid-template-rows: 100%; }\n    .diagramBlock .outputs .output-port .output-port-plug {\n      grid-column: 2;\n      grid-row: 1;\n      display: grid;\n      align-content: center; }\n      .diagramBlock .outputs .output-port .output-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .outputs .output-port .output-port-label {\n      text-align: right;\n      margin-right: 10px;\n      grid-column: 1;\n      grid-row: 1;\n      margin-bottom: 2px; }\n", ""]);
 
 // exports
 
@@ -5129,7 +5129,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#propertyTab {\n  padding: 5px;\n  color: white; }\n  #propertyTab .vector3Line {\n    padding-left: 2px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n", ""]);
+exports.push([module.i, "#propertyTab {\n  padding: 5px;\n  color: white; }\n  #propertyTab .vector3Line {\n    padding-left: 2px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n  #propertyTab .checkBoxLine {\n    padding-left: 2px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .checkBoxLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .checkBoxLine .checkBox {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      #propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #propertyTab .listLine {\n    padding-left: 2px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .listLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #propertyTab .listLine .options select {\n        width: 115px; }\n  #propertyTab .textLine {\n    padding-left: 2px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #propertyTab .textLine .value.check {\n        color: green; }\n      #propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
 
 // exports
 
@@ -46822,8 +46822,6 @@ var DefaultNodeModel = /** @class */ (function (_super) {
         _this.block = null;
         return _this;
     }
-    DefaultNodeModel.prototype.prepareConnection = function (type, outPort, connection) {
-    };
     DefaultNodeModel.prototype.prepare = function (options, nodes, model, graphEditor, filterInputs) {
         var _this = this;
         this.block = options.nodeMaterialBlock || null;
@@ -46857,8 +46855,6 @@ var DefaultNodeModel = /** @class */ (function (_super) {
                 }
                 var link = connectedNode.ports[connection.connectedPoint.name].link(inputPort);
                 model.addAll(link);
-            }
-            else if (connection.isAttribute) {
             }
             else {
                 // Create value node for the connection
@@ -47081,13 +47077,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
-/* harmony import */ var _components_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../components/propertyTab/properties/vector2PropertyTabComponent */ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx");
-/* harmony import */ var _components_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../components/propertyTab/properties/vector3PropertyTabComponent */ "./components/propertyTab/properties/vector3PropertyTabComponent.tsx");
-
-
+/* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
+/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
 
 
 
@@ -47124,55 +47115,6 @@ var GenericNodeModel = /** @class */ (function (_super) {
         _this.matrix = null;
         return _this;
     }
-    GenericNodeModel.prototype.prepareConnection = function (type, outPort, connection) {
-        var _this = this;
-        switch (type) {
-            case "Vector2":
-                outPort.getValue = function () {
-                    return _this.vector2;
-                };
-                if (connection && connection.value) {
-                    this.vector2 = connection.value;
-                }
-                else {
-                    this.vector2 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
-                }
-                break;
-            case "Vector3":
-                outPort.getValue = function () {
-                    return _this.vector3;
-                };
-                if (connection && connection.value) {
-                    this.vector3 = connection.value;
-                }
-                else {
-                    this.vector3 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"]();
-                }
-                break;
-            case "Vector4":
-                outPort.getValue = function () {
-                    return _this.vector4;
-                };
-                if (connection && connection.value) {
-                    this.vector4 = connection.value;
-                }
-                else {
-                    this.vector4 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector4"](0, 0, 0, 1);
-                }
-                break;
-            case "Matrix":
-                outPort.getValue = function () {
-                    return _this.matrix;
-                };
-                if (connection && connection.value) {
-                    this.matrix = connection.value;
-                }
-                else {
-                    this.matrix = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Matrix"]();
-                }
-                break;
-        }
-    };
     GenericNodeModel.prototype.prepare = function (options, nodes, model, graphEditor, filterInputs) {
         if (options.nodeMaterialBlock) {
             this.header = options.nodeMaterialBlock.name;
@@ -47180,16 +47122,11 @@ var GenericNodeModel = /** @class */ (function (_super) {
         _super.prototype.prepare.call(this, options, nodes, model, graphEditor, filterInputs);
     };
     GenericNodeModel.prototype.renderProperties = function (globalState) {
-        if (this.vector2) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_4__["Vector2PropertyTabComponent"], { globalState: globalState, node: this }));
-        }
-        if (this.vector3) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3PropertyTabComponent"], { globalState: globalState, node: this }));
-        }
-        return null;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Type", value: this.block.getClassName() })));
     };
     return GenericNodeModel;
-}(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_3__["DefaultNodeModel"]));
+}(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
 
 
 
@@ -47239,9 +47176,8 @@ var GenericNodeWidget = /** @class */ (function (_super) {
         var header = "";
         var inputPorts = new Array();
         var outputPorts = new Array();
-        var value = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null);
         if (this.props.node) {
-            // Header labels
+            // Header label
             if (this.props.node.header) {
                 header = this.props.node.header;
             }
@@ -47262,11 +47198,10 @@ var GenericNodeWidget = /** @class */ (function (_super) {
                 }
             }
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock" + (outputPorts.length === 0 ? " output" : "") },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, header),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
-            value));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts)));
     };
     return GenericNodeWidget;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47346,13 +47281,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
-/* harmony import */ var _propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../propertyTab/properties/vector2PropertyTabComponent */ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx");
-/* harmony import */ var _propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../propertyTab/properties/vector3PropertyTabComponent */ "./components/propertyTab/properties/vector3PropertyTabComponent.tsx");
-
-
+/* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
+/* harmony import */ var _inputNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./inputNodePropertyComponent */ "./components/diagram/input/inputNodePropertyComponent.tsx");
 
 
 
@@ -47366,55 +47296,123 @@ var InputNodeModel = /** @class */ (function (_super) {
      * Constructs the node model
      */
     function InputNodeModel() {
-        var _this = _super.call(this, "input") || this;
-        /**
-         * Vector2 for the node if it exists
-         */
-        _this.vector2 = null;
-        /**
-         * Vector3 for the node if it exists
-         */
-        _this.vector3 = null;
-        /**
-         * Vector4 for the node if it exists
-         */
-        _this.vector4 = null;
-        /**
-         * Matrix for the node if it exists
-         */
-        _this.matrix = null;
-        return _this;
+        return _super.call(this, "input") || this;
     }
-    InputNodeModel.prototype.prepareConnection = function (type, outPort, connection) {
-        switch (type) {
-            case "Vector2":
-                this.vector2 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
-                break;
-            case "Vector3":
-                this.vector3 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"]();
-                break;
-            case "Vector4":
-                this.vector4 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector4"](0, 0, 0, 1);
-                break;
-            case "Matrix":
-                this.matrix = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Matrix"]();
-                break;
+    InputNodeModel.prototype.renderProperties = function (globalState) {
+        if (!this.connection) {
+            return null;
         }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_inputNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__["InputPropertyTabComponentProps"], { globalState: globalState, inputNode: this }));
     };
-    InputNodeModel.prototype.renderValue = function (globalState) {
-        if (this.vector2) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_4__["Vector2PropertyTabComponent"], { globalState: globalState, node: this }));
-        }
-        if (this.vector3) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3PropertyTabComponent"], { globalState: globalState, node: this }));
+    return InputNodeModel;
+}(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/input/inputNodePropertyComponent.tsx":
+/*!*****************************************************************!*\
+  !*** ./components/diagram/input/inputNodePropertyComponent.tsx ***!
+  \*****************************************************************/
+/*! exports provided: InputPropertyTabComponentProps */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputPropertyTabComponentProps", function() { return InputPropertyTabComponentProps; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../propertyTab/properties/vector2PropertyTabComponent */ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx");
+/* harmony import */ var _propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../propertyTab/properties/vector3PropertyTabComponent */ "./components/propertyTab/properties/vector3PropertyTabComponent.tsx");
+/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+
+
+
+
+
+
+
+
+
+var InputPropertyTabComponentProps = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputPropertyTabComponentProps, _super);
+    function InputPropertyTabComponentProps(props) {
+        return _super.call(this, props) || this;
+    }
+    InputPropertyTabComponentProps.prototype.renderValue = function (globalState) {
+        var connection = this.props.inputNode.connection;
+        switch (connection.type) {
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__["Vector2PropertyTabComponent"], { globalState: globalState, connection: connection }));
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color3:
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["Vector3PropertyTabComponent"], { globalState: globalState, connection: connection }));
         }
         return null;
     };
-    InputNodeModel.prototype.renderProperties = function (globalState) {
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, this.renderValue(globalState)));
+    InputPropertyTabComponentProps.prototype.setDefaultValue = function () {
+        var connection = this.props.inputNode.connection;
+        switch (connection.type) {
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+                connection.value = babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["Vector2"].Zero();
+                break;
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color3:
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3:
+                connection.value = babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["Vector3"].Zero();
+                break;
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Matrix:
+                connection.value = babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["Matrix"].Identity();
+                break;
+        }
     };
-    return InputNodeModel;
-}(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_3__["DefaultNodeModel"]));
+    InputPropertyTabComponentProps.prototype.render = function () {
+        var _this = this;
+        var connection = this.props.inputNode.connection;
+        var wellKnownOptions = [
+            { label: "World", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialWellKnownValues"].World },
+            { label: "WorldxView", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialWellKnownValues"].WorldView },
+            { label: "WorldxViewxProjection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialWellKnownValues"].WorldViewProjection },
+            { label: "View", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialWellKnownValues"].View },
+            { label: "ViewxProjection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialWellKnownValues"].ViewProjection },
+            { label: "Projection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialWellKnownValues"].Projection },
+            { label: "Automatic", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialWellKnownValues"].Automatic },
+        ];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Is mesh attribute", onSelect: function (value) {
+                    connection.isAttribute = value;
+                    _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                    _this.forceUpdate();
+                }, isSelected: function () { return connection.isAttribute; } }),
+            connection.isUniform &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Is well known value", onSelect: function (value) {
+                        if (value) {
+                            connection.setAsWellKnownValue(babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialWellKnownValues"].World);
+                        }
+                        else {
+                            connection.setAsWellKnownValue(null);
+                            _this.setDefaultValue();
+                        }
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        _this.forceUpdate();
+                    }, isSelected: function () { return connection.isWellKnownValue; } }),
+            connection.isUniform && !connection.isWellKnownValue &&
+                this.renderValue(this.props.globalState),
+            connection.isUniform && connection.isWellKnownValue &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { label: "Well known value", options: wellKnownOptions, target: connection, propertyName: "wellKnownValue", onSelect: function (value) {
+                        connection.setAsWellKnownValue(value);
+                        _this.forceUpdate();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                    } })));
+    };
+    return InputPropertyTabComponentProps;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
 
@@ -47435,6 +47433,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialWellKnownValues */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
@@ -47473,9 +47474,40 @@ var InputNodeWidget = /** @class */ (function (_super) {
                 break;
             }
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" },
+        var connection = this.props.node.connection;
+        var value = "";
+        if (connection.isAttribute) {
+            value = "mesh." + connection.name;
+        }
+        else if (connection.isWellKnownValue) {
+            switch (connection.wellKnownValue) {
+                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].World:
+                    value = "World";
+                    break;
+                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].WorldView:
+                    value = "World x View";
+                    break;
+                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].WorldViewProjection:
+                    value = "World x View x Projection";
+                    break;
+                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].View:
+                    value = "View";
+                    break;
+                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].ViewProjection:
+                    value = "View x Projection";
+                    break;
+                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].Projection:
+                    value = "Projection";
+                    break;
+                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].Automatic:
+                    value = "Automatic";
+                    break;
+            }
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (connection.isAttribute ? " attribute" : "") },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, port.name),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts)));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" }, value)));
     };
     return InputNodeWidget;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47637,7 +47669,6 @@ var TextureNodeWidget = /** @class */ (function (_super) {
     TextureNodeWidget.prototype.render = function () {
         var inputPorts = new Array();
         var outputPorts = new Array();
-        var value = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null);
         if (this.props.node) {
             // Input/Output ports
             for (var key in this.props.node.ports) {
@@ -47655,16 +47686,13 @@ var TextureNodeWidget = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "input-port-label" }, port.name)));
                 }
             }
-            // Display the view depending on the value type of the node
-            if (this.props.node.texture) {
-                value = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextureLineComponent"], { ref: "textureView", width: 200, height: 180, texture: this.props.node.texture, hideChannelSelect: true }));
-            }
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, "Texture (" + (this.props.node && this.props.node.texture ? this.props.node.texture.name : "not set") + ")"),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
-            value));
+            this.props.node && this.props.node.texture &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextureLineComponent"], { ref: "textureView", width: 200, height: 180, texture: this.props.node.texture, hideChannelSelect: true })));
     };
     return TextureNodeWidget;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47752,17 +47780,18 @@ var NodeListComponent = /** @class */ (function (_super) {
         var _this = this;
         // Block types used to create the menu from
         var allBlocks = {
-            Fragment: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AlphaTestBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FragmentOutputBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ImageProcessingBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBAMergerBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBASplitterBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["TextureBlock"]],
-            Vertex: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["BonesBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["InstancesBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MorphTargetsBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["VertexOutputBlock"]],
+            Vertex: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["BonesBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["InstancesBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MorphTargetsBlock"]],
+            Fragment: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AlphaTestBlock"], , babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ImageProcessingBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBAMergerBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBASplitterBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["TextureBlock"]],
+            Outputs: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["VertexOutputBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FragmentOutputBlock"]],
             Dual: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FogBlock"]],
-            Other: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AddBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ClampBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MatrixMultiplicationBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MultiplyBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector2TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector3TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector4TransformBlock"]],
-            Value: ["Texture", "Vector2", "Vector3", "Matrix"],
+            Math: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AddBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ClampBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MatrixMultiplicationBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MultiplyBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector2TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector3TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector4TransformBlock"]],
+            Inputs: ["Texture", "Vector2", "Vector3", "Matrix"],
         };
         // Create node menu
         var blockMenu = [];
         for (var key in allBlocks) {
             var blockList = allBlocks[key].map(function (b) {
-                var label = typeof b === "string" ? b : b.prototype.getClassName();
+                var label = typeof b === "string" ? b : b.prototype.getClassName().replace("Block", "");
                 var onClick = typeof b === "string" ? function () { _this.props.onAddValueNode(b); } : function () { _this.props.onAddNodeFromClass(b); };
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: label, onClick: onClick });
             });
@@ -47872,7 +47901,7 @@ var Vector2PropertyTabComponent = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Vector2PropertyTabComponent.prototype.render = function () {
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector2LineComponent"], { label: "Value", target: this.props.node, propertyName: "vector2" }));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector2LineComponent"], { label: "Value", target: this.props.connection, propertyName: "value" }));
     };
     return Vector2PropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47904,7 +47933,7 @@ var Vector3PropertyTabComponent = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Vector3PropertyTabComponent.prototype.render = function () {
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { label: "Value", target: this.props.node, propertyName: "vector3" }));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { label: "Value", target: this.props.connection, propertyName: "value" }));
     };
     return Vector3PropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -48001,6 +48030,7 @@ __webpack_require__.r(__webpack_exports__);
 var GlobalState = /** @class */ (function () {
     function GlobalState() {
         this.onSelectionChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onRebuildRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     return GlobalState;
 }());
@@ -48139,6 +48169,11 @@ var GraphEditor = /** @class */ (function (_super) {
                 }
             }
         });
+        _this.props.globalState.onRebuildRequiredObservable.add(function () {
+            if (_this.props.globalState.nodeMaterial) {
+                _this.props.globalState.nodeMaterial.build();
+            }
+        });
         // Load graph of nodes from the material
         if (_this.props.globalState.nodeMaterial) {
             var material = _this.props.globalState.nodeMaterial;
@@ -48181,6 +48216,7 @@ var GraphEditor = /** @class */ (function (_super) {
         }
         else {
             outputNode = new _components_diagram_input_inputNodeModel__WEBPACK_IMPORTED_MODULE_12__["InputNodeModel"]();
+            outputNode.connection = options.connection;
         }
         this._nodes.push(outputNode);
         outputNode.setPosition(1600 - (300 * options.column), 210 * this._rowPos[options.column]);
@@ -48218,13 +48254,8 @@ var GraphEditor = /** @class */ (function (_super) {
     };
     GraphEditor.prototype.addValueNode = function (type, column, connection) {
         if (column === void 0) { column = 0; }
-        if (connection && connection.isAttribute) {
-            this.forceUpdate();
-            return null;
-        }
-        var localNode = this.createNodeFromObject({ column: column, type: type });
+        var localNode = this.createNodeFromObject({ column: column, type: type, connection: connection });
         var outPort = new _components_diagram_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"](type, "output");
-        localNode.prepareConnection(type, outPort, connection);
         localNode.addPort(outPort);
         this.forceUpdate();
         return localNode;
@@ -48445,6 +48476,87 @@ var ButtonLineComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./sharedComponents/checkBoxLineComponent.tsx":
+/*!****************************************************!*\
+  !*** ./sharedComponents/checkBoxLineComponent.tsx ***!
+  \****************************************************/
+/*! exports provided: CheckBoxLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CheckBoxLineComponent", function() { return CheckBoxLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var CheckBoxLineComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CheckBoxLineComponent, _super);
+    function CheckBoxLineComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._localChange = false;
+        _this._uniqueId = CheckBoxLineComponent._UniqueIdSeed++;
+        if (_this.props.isSelected) {
+            _this.state = { isSelected: _this.props.isSelected() };
+        }
+        else {
+            _this.state = { isSelected: _this.props.target[_this.props.propertyName] === true };
+        }
+        return _this;
+    }
+    CheckBoxLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        var currentState;
+        if (this.props.isSelected) {
+            currentState = nextProps.isSelected();
+        }
+        else {
+            currentState = nextProps.target[nextProps.propertyName] === true;
+        }
+        if (currentState !== nextState.isSelected || this._localChange) {
+            nextState.isSelected = currentState;
+            this._localChange = false;
+            return true;
+        }
+        return false;
+    };
+    CheckBoxLineComponent.prototype.onChange = function () {
+        this._localChange = true;
+        if (this.props.onSelect) {
+            this.props.onSelect(!this.state.isSelected);
+        }
+        else {
+            if (this.props.onPropertyChangedObservable) {
+                this.props.onPropertyChangedObservable.notifyObservers({
+                    object: this.props.target,
+                    property: this.props.propertyName,
+                    value: !this.state.isSelected,
+                    initialValue: this.state.isSelected
+                });
+            }
+            this.props.target[this.props.propertyName] = !this.state.isSelected;
+        }
+        if (this.props.onValueChanged) {
+            this.props.onValueChanged();
+        }
+        this.setState({ isSelected: !this.state.isSelected });
+    };
+    CheckBoxLineComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBoxLine" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" }))));
+    };
+    CheckBoxLineComponent._UniqueIdSeed = 0;
+    return CheckBoxLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./sharedComponents/fileButtonLineComponent.tsx":
 /*!******************************************************!*\
   !*** ./sharedComponents/fileButtonLineComponent.tsx ***!
@@ -48633,6 +48745,86 @@ var NumericInputComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./sharedComponents/optionsLineComponent.tsx":
+/*!***************************************************!*\
+  !*** ./sharedComponents/optionsLineComponent.tsx ***!
+  \***************************************************/
+/*! exports provided: OptionsLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OptionsLineComponent", function() { return OptionsLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var ListLineOption = /** @class */ (function () {
+    function ListLineOption() {
+    }
+    return ListLineOption;
+}());
+var OptionsLineComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](OptionsLineComponent, _super);
+    function OptionsLineComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._localChange = false;
+        _this.state = { value: props.target[props.propertyName] };
+        return _this;
+    }
+    OptionsLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        if (this._localChange) {
+            this._localChange = false;
+            return true;
+        }
+        var newValue = nextProps.target[nextProps.propertyName];
+        if (newValue != null && newValue !== nextState.value) {
+            nextState.value = newValue;
+            return true;
+        }
+        return false;
+    };
+    OptionsLineComponent.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
+        if (!this.props.onPropertyChangedObservable) {
+            return;
+        }
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.target,
+            property: this.props.propertyName,
+            value: newValue,
+            initialValue: previousValue
+        });
+    };
+    OptionsLineComponent.prototype.updateValue = function (valueString) {
+        var value = parseInt(valueString);
+        this._localChange = true;
+        var store = this.state.value;
+        if (!this.props.noDirectUpdate) {
+            this.props.target[this.props.propertyName] = value;
+        }
+        this.setState({ value: value });
+        this.raiseOnPropertyChanged(value, store);
+        if (this.props.onSelect) {
+            this.props.onSelect(value);
+        }
+    };
+    OptionsLineComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value }, this.props.options.map(function (option) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
+                })))));
+    };
+    return OptionsLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./sharedComponents/popup.ts":
 /*!***********************************!*\
   !*** ./sharedComponents/popup.ts ***!
@@ -48714,6 +48906,51 @@ var Popup = /** @class */ (function () {
     };
     return Popup;
 }());
+
+
+
+/***/ }),
+
+/***/ "./sharedComponents/textLineComponent.tsx":
+/*!************************************************!*\
+  !*** ./sharedComponents/textLineComponent.tsx ***!
+  \************************************************/
+/*! exports provided: TextLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextLineComponent", function() { return TextLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var TextLineComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextLineComponent, _super);
+    function TextLineComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    TextLineComponent.prototype.onLink = function () {
+        if (!this.props.onLink) {
+            return;
+        }
+        this.props.onLink();
+    };
+    TextLineComponent.prototype.renderContent = function () {
+        var _this = this;
+        if (this.props.onLink) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "link-value", title: this.props.value, onClick: function () { return _this.onLink(); } }, this.props.value || "no name"));
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value", title: this.props.value, style: { color: this.props.color ? this.props.color : "" } }, this.props.value || "no name"));
+    };
+    TextLineComponent.prototype.render = function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.underline ? "textLine underline" : "textLine" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            this.renderContent()));
+    };
+    return TextLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
 
