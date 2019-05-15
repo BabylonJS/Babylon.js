@@ -1,9 +1,244 @@
+/// <reference path="../dist/preview release/babylon.module.d.ts" />
 /// <reference types="react" />
+declare module "babylonjs-node-editor/components/diagram/defaultPortModel" {
+    import { LinkModel, PortModel } from "storm-react-diagrams";
+    import { Nullable } from 'babylonjs/types';
+    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+    import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
+    /**
+     * Port model
+     */
+    export class DefaultPortModel extends PortModel {
+        /**
+         * If the port is input or output
+         */
+        position: string | "input" | "output";
+        /**
+         * What the port is connected to
+         */
+        connection: Nullable<NodeMaterialConnectionPoint>;
+        static idCounter: number;
+        constructor(name: string, type?: string);
+        syncWithNodeMaterialConnectionPoint(connection: NodeMaterialConnectionPoint): void;
+        getNodeModel(): DefaultNodeModel;
+        link(outPort: DefaultPortModel): LinkModel<import("storm-react-diagrams").LinkModelListener>;
+        getInputFromBlock(): void;
+        createLinkModel(): LinkModel;
+        getValue: Function;
+        static SortInputOutput(a: Nullable<DefaultPortModel>, b: Nullable<DefaultPortModel>): {
+            input: DefaultPortModel;
+            output: DefaultPortModel;
+        } | null;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/numericInputComponent" {
+    import * as React from "react";
+    interface INumericInputComponentProps {
+        label: string;
+        value: number;
+        step?: number;
+        onChange: (value: number) => void;
+    }
+    export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
+        value: string;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: INumericInputComponentProps);
+        shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        updateValue(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/propertyChangedEvent" {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/vector2LineComponent" {
+    import * as React from "react";
+    import { Vector2 } from "babylonjs/Maths/math";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    interface IVector2LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: Vector2) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
+        isExpanded: boolean;
+        value: Vector2;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector2LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: Vector2;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Vector2): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/vector3LineComponent" {
+    import * as React from "react";
+    import { Vector3 } from "babylonjs/Maths/math";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    interface IVector3LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: Vector3) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
+        isExpanded: boolean;
+        value: Vector3;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector3LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: Vector3;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Vector3): void;
+        updateVector3(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/propertyTab/properties/vector3PropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
+    import { InputNodeModel } from "babylonjs-node-editor/components/diagram/input/inputNodeModel";
+    interface IVector3PropertyTabComponentProps {
+        globalState: GlobalState;
+        node: GenericNodeModel | InputNodeModel;
+    }
+    export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/input/inputNodeModel" {
+    import { Nullable } from 'babylonjs/types';
+    import { Vector2, Vector3, Vector4, Matrix } from 'babylonjs/Maths/math';
+    import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
+    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { DefaultPortModel } from "babylonjs-node-editor/components/diagram/defaultPortModel";
+    /**
+     * Generic node model which stores information about a node editor block
+     */
+    export class InputNodeModel extends DefaultNodeModel {
+        /**
+         * Vector2 for the node if it exists
+         */
+        vector2: Nullable<Vector2>;
+        /**
+         * Vector3 for the node if it exists
+         */
+        vector3: Nullable<Vector3>;
+        /**
+         * Vector4 for the node if it exists
+         */
+        vector4: Nullable<Vector4>;
+        /**
+         * Matrix for the node if it exists
+         */
+        matrix: Nullable<Matrix>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        prepareConnection(type: string, outPort: DefaultPortModel, connection?: NodeMaterialConnectionPoint): void;
+        renderValue(globalState: GlobalState): JSX.Element | null;
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/propertyTab/properties/vector2PropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
+    import { InputNodeModel } from "babylonjs-node-editor/components/diagram/input/inputNodeModel";
+    interface IVector2PropertyTabComponentProps {
+        globalState: GlobalState;
+        node: GenericNodeModel | InputNodeModel;
+    }
+    export class Vector2PropertyTabComponent extends React.Component<IVector2PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/generic/genericNodeModel" {
+    import { Nullable } from 'babylonjs/types';
+    import { Vector2, Vector3, Vector4, Matrix } from 'babylonjs/Maths/math';
+    import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
+    import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
+    import { GraphEditor, NodeCreationOptions } from "babylonjs-node-editor/graphEditor";
+    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { DefaultPortModel } from "babylonjs-node-editor/components/diagram/defaultPortModel";
+    /**
+     * Generic node model which stores information about a node editor block
+     */
+    export class GenericNodeModel extends DefaultNodeModel {
+        /**
+         * Labels for the block
+         */
+        header: string;
+        /**
+         * Vector2 for the node if it exists
+         */
+        vector2: Nullable<Vector2>;
+        /**
+         * Vector3 for the node if it exists
+         */
+        vector3: Nullable<Vector3>;
+        /**
+         * Vector4 for the node if it exists
+         */
+        vector4: Nullable<Vector4>;
+        /**
+         * Matrix for the node if it exists
+         */
+        matrix: Nullable<Matrix>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        prepareConnection(type: string, outPort: DefaultPortModel, connection?: NodeMaterialConnectionPoint): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        renderProperties(globalState: GlobalState): JSX.Element | null;
+    }
+}
 declare module "babylonjs-node-editor/components/diagram/generic/genericNodeWidget" {
     import * as React from "react";
-    import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
     import { Nullable } from 'babylonjs/types';
     import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
     /**
      * GenericNodeWidgetProps
      */
@@ -157,6 +392,8 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureNodeMode
     import { Texture } from 'babylonjs/Materials/Textures/texture';
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { NodeCreationOptions, GraphEditor } from "babylonjs-node-editor/graphEditor";
+    import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
     /**
      * Texture node model which stores information about a node editor block
      */
@@ -170,6 +407,7 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureNodeMode
          */
         constructor();
         renderProperties(globalState: GlobalState): JSX.Element;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
     }
 }
 declare module "babylonjs-node-editor/sharedComponents/textureLineComponent" {
@@ -254,13 +492,63 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureNodeFact
         getNewInstance(): TextureNodeModel;
     }
 }
+declare module "babylonjs-node-editor/components/diagram/input/inputNodeWidget" {
+    import * as React from "react";
+    import { InputNodeModel } from "babylonjs-node-editor/components/diagram/input/inputNodeModel";
+    import { Nullable } from 'babylonjs/types';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface InputNodeWidgetProps {
+        node: Nullable<InputNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: InputNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/input/inputNodeFactory" {
+    import * as SRD from "storm-react-diagrams";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { InputNodeModel } from "babylonjs-node-editor/components/diagram/input/inputNodeModel";
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class InputNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a GenericNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: InputNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns input node model
+         */
+        getNewInstance(): InputNodeModel;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-    import { TextureNodeModel } from "babylonjs-node-editor/components/diagram/texture/textureNodeModel";
+    import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -281,221 +569,23 @@ declare module "babylonjs-node-editor/graphEditor" {
          * Creates a node and recursivly creates its parent nodes from it's input
          * @param nodeMaterialBlock
          */
-        createNodeFromObject(options: NodeCreationOptions): GenericNodeModel | TextureNodeModel;
+        createNodeFromObject(options: NodeCreationOptions): DefaultNodeModel;
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
-        addNodeFromClass(ObjectClass: typeof NodeMaterialBlock): GenericNodeModel | TextureNodeModel;
-        addValueNode(type: string, column?: number, connection?: NodeMaterialConnectionPoint): GenericNodeModel | TextureNodeModel | null;
+        addNodeFromClass(ObjectClass: typeof NodeMaterialBlock): DefaultNodeModel;
+        addValueNode(type: string, column?: number, connection?: NodeMaterialConnectionPoint): import("babylonjs/types").Nullable<DefaultNodeModel>;
         render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/sharedComponents/numericInputComponent" {
-    import * as React from "react";
-    interface INumericInputComponentProps {
-        label: string;
-        value: number;
-        step?: number;
-        onChange: (value: number) => void;
-    }
-    export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
-        value: string;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: INumericInputComponentProps);
-        shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        updateValue(evt: any): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/sharedComponents/propertyChangedEvent" {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-    }
-}
-declare module "babylonjs-node-editor/sharedComponents/vector2LineComponent" {
-    import * as React from "react";
-    import { Vector2 } from "babylonjs/Maths/math";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
-    interface IVector2LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: Vector2) => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
-        isExpanded: boolean;
-        value: Vector2;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector2LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: Vector2;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: Vector2): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/components/propertyTab/properties/vector2PropertyTabComponent" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
-    interface IVector2PropertyTabComponentProps {
-        globalState: GlobalState;
-        node: GenericNodeModel;
-    }
-    export class Vector2PropertyTabComponent extends React.Component<IVector2PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/sharedComponents/vector3LineComponent" {
-    import * as React from "react";
-    import { Vector3 } from "babylonjs/Maths/math";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
-    interface IVector3LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: Vector3) => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
-        isExpanded: boolean;
-        value: Vector3;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector3LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: Vector3;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: Vector3): void;
-        updateVector3(): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        updateStateZ(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/components/propertyTab/properties/vector3PropertyTabComponent" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
-    interface IVector3PropertyTabComponentProps {
-        globalState: GlobalState;
-        node: GenericNodeModel;
-    }
-    export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/components/diagram/generic/genericNodeModel" {
-    import { Nullable } from 'babylonjs/types';
-    import { Vector2, Vector3, Vector4, Matrix } from 'babylonjs/Maths/math';
-    import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
-    import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
-    import { GraphEditor, NodeCreationOptions } from "babylonjs-node-editor/graphEditor";
-    import { GenericPortModel } from "babylonjs-node-editor/components/diagram/generic/genericPortModel";
-    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-    import { GlobalState } from "babylonjs-node-editor/globalState";
-    /**
-     * Generic node model which stores information about a node editor block
-     */
-    export class GenericNodeModel extends DefaultNodeModel {
-        /**
-         * Labels for the block
-         */
-        headerLabels: Array<{
-            text: string;
-        }>;
-        /**
-         * Vector2 for the node if it exists
-         */
-        vector2: Nullable<Vector2>;
-        /**
-         * Vector3 for the node if it exists
-         */
-        vector3: Nullable<Vector3>;
-        /**
-         * Vector4 for the node if it exists
-         */
-        vector4: Nullable<Vector4>;
-        /**
-         * Matrix for the node if it exists
-         */
-        matrix: Nullable<Matrix>;
-        /**
-         * Constructs the node model
-         */
-        constructor();
-        prepareConnection(type: string, outPort: GenericPortModel, connection?: NodeMaterialConnectionPoint): void;
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
-        renderProperties(globalState: GlobalState): JSX.Element | null;
-    }
-}
-declare module "babylonjs-node-editor/components/diagram/generic/genericPortModel" {
-    import { LinkModel, PortModel } from "storm-react-diagrams";
-    import { Nullable } from 'babylonjs/types';
-    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-    import { GenericNodeModel } from "babylonjs-node-editor/components/diagram/generic/genericNodeModel";
-    /**
-     * Port model for the generic node
-     */
-    export class GenericPortModel extends PortModel {
-        /**
-         * If the port is input or output
-         */
-        position: string | "input" | "output";
-        /**
-         * What the port is connected to
-         */
-        connection: Nullable<NodeMaterialConnectionPoint>;
-        static idCounter: number;
-        constructor(name: string, type?: string);
-        syncWithNodeMaterialConnectionPoint(connection: NodeMaterialConnectionPoint): void;
-        getNodeModel(): GenericNodeModel;
-        link(outPort: GenericPortModel): LinkModel<import("storm-react-diagrams").LinkModelListener>;
-        getInputFromBlock(): void;
-        createLinkModel(): LinkModel;
-        getValue: Function;
-        static SortInputOutput(a: Nullable<GenericPortModel>, b: Nullable<GenericPortModel>): {
-            input: GenericPortModel;
-            output: GenericPortModel;
-        } | null;
     }
 }
 declare module "babylonjs-node-editor/components/diagram/defaultNodeModel" {
     import { NodeModel, DiagramModel } from "storm-react-diagrams";
     import { Nullable } from 'babylonjs/types';
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-    import { GenericPortModel } from "babylonjs-node-editor/components/diagram/generic/genericPortModel";
     import { GraphEditor, NodeCreationOptions } from "babylonjs-node-editor/graphEditor";
     import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
     import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { DefaultPortModel } from "babylonjs-node-editor/components/diagram/defaultPortModel";
     /**
      * Generic node model which stores information about a node editor block
      */
@@ -505,14 +595,14 @@ declare module "babylonjs-node-editor/components/diagram/defaultNodeModel" {
          */
         block: Nullable<NodeMaterialBlock>;
         ports: {
-            [s: string]: GenericPortModel;
+            [s: string]: DefaultPortModel;
         };
         /**
          * Constructs the node model
          */
         constructor(key: string);
-        prepareConnection(type: string, outPort: GenericPortModel, connection?: NodeMaterialConnectionPoint): void;
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
+        prepareConnection(type: string, outPort: DefaultPortModel, connection?: NodeMaterialConnectionPoint): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
         renderProperties(globalState: GlobalState): JSX.Element | null;
     }
 }
@@ -562,7 +652,207 @@ declare module "babylonjs-node-editor/legacy/legacy" {
 declare module "babylonjs-node-editor" {
     export * from "babylonjs-node-editor/legacy/legacy";
 }
+/// <reference path="../dist/preview release/babylon.module.d.ts" />
 /// <reference types="react" />
+declare module NODEEDITOR {
+    /**
+     * Port model
+     */
+    export class DefaultPortModel extends PortModel {
+        /**
+         * If the port is input or output
+         */
+        position: string | "input" | "output";
+        /**
+         * What the port is connected to
+         */
+        connection: BABYLON.Nullable<BABYLON.NodeMaterialConnectionPoint>;
+        static idCounter: number;
+        constructor(name: string, type?: string);
+        syncWithNodeMaterialConnectionPoint(connection: BABYLON.NodeMaterialConnectionPoint): void;
+        getNodeModel(): DefaultNodeModel;
+        link(outPort: DefaultPortModel): LinkModel<import("storm-react-diagrams").LinkModelListener>;
+        getInputFromBlock(): void;
+        createLinkModel(): LinkModel;
+        getValue: Function;
+        static SortInputOutput(a: BABYLON.Nullable<DefaultPortModel>, b: BABYLON.Nullable<DefaultPortModel>): {
+            input: DefaultPortModel;
+            output: DefaultPortModel;
+        } | null;
+    }
+}
+declare module NODEEDITOR {
+    interface INumericInputComponentProps {
+        label: string;
+        value: number;
+        step?: number;
+        onChange: (value: number) => void;
+    }
+    export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
+        value: string;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: INumericInputComponentProps);
+        shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        updateValue(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+    }
+}
+declare module NODEEDITOR {
+    interface IVector2LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector2) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector2;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector2LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector2;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IVector3LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector3) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector3;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector3LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector3;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
+        updateVector3(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IVector3PropertyTabComponentProps {
+        globalState: GlobalState;
+        node: GenericNodeModel | InputNodeModel;
+    }
+    export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Generic node model which stores information about a node editor block
+     */
+    export class InputNodeModel extends DefaultNodeModel {
+        /**
+         * BABYLON.Vector2 for the node if it exists
+         */
+        vector2: BABYLON.Nullable<BABYLON.Vector2>;
+        /**
+         * BABYLON.Vector3 for the node if it exists
+         */
+        vector3: BABYLON.Nullable<BABYLON.Vector3>;
+        /**
+         * BABYLON.Vector4 for the node if it exists
+         */
+        vector4: BABYLON.Nullable<BABYLON.Vector4>;
+        /**
+         * BABYLON.Matrix for the node if it exists
+         */
+        matrix: BABYLON.Nullable<BABYLON.Matrix>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        prepareConnection(type: string, outPort: DefaultPortModel, connection?: BABYLON.NodeMaterialConnectionPoint): void;
+        renderValue(globalState: GlobalState): JSX.Element | null;
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IVector2PropertyTabComponentProps {
+        globalState: GlobalState;
+        node: GenericNodeModel | InputNodeModel;
+    }
+    export class Vector2PropertyTabComponent extends React.Component<IVector2PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Generic node model which stores information about a node editor block
+     */
+    export class GenericNodeModel extends DefaultNodeModel {
+        /**
+         * Labels for the block
+         */
+        header: string;
+        /**
+         * BABYLON.Vector2 for the node if it exists
+         */
+        vector2: BABYLON.Nullable<BABYLON.Vector2>;
+        /**
+         * BABYLON.Vector3 for the node if it exists
+         */
+        vector3: BABYLON.Nullable<BABYLON.Vector3>;
+        /**
+         * BABYLON.Vector4 for the node if it exists
+         */
+        vector4: BABYLON.Nullable<BABYLON.Vector4>;
+        /**
+         * BABYLON.Matrix for the node if it exists
+         */
+        matrix: BABYLON.Nullable<BABYLON.Matrix>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        prepareConnection(type: string, outPort: DefaultPortModel, connection?: BABYLON.NodeMaterialConnectionPoint): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        renderProperties(globalState: GlobalState): JSX.Element | null;
+    }
+}
 declare module NODEEDITOR {
     /**
      * GenericNodeWidgetProps
@@ -708,6 +998,7 @@ declare module NODEEDITOR {
          */
         constructor();
         renderProperties(globalState: GlobalState): JSX.Element;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
     }
 }
 declare module NODEEDITOR {
@@ -784,6 +1075,50 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface InputNodeWidgetProps {
+        node: BABYLON.Nullable<InputNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: InputNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class InputNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a GenericNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: InputNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns input node model
+         */
+        getNewInstance(): InputNodeModel;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -804,184 +1139,13 @@ declare module NODEEDITOR {
          * Creates a node and recursivly creates its parent nodes from it's input
          * @param nodeMaterialBlock
          */
-        createNodeFromObject(options: NodeCreationOptions): GenericNodeModel | TextureNodeModel;
+        createNodeFromObject(options: NodeCreationOptions): DefaultNodeModel;
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
-        addNodeFromClass(ObjectClass: typeof BABYLON.NodeMaterialBlock): GenericNodeModel | TextureNodeModel;
-        addValueNode(type: string, column?: number, connection?: BABYLON.NodeMaterialConnectionPoint): GenericNodeModel | TextureNodeModel | null;
+        addNodeFromClass(ObjectClass: typeof BABYLON.NodeMaterialBlock): DefaultNodeModel;
+        addValueNode(type: string, column?: number, connection?: BABYLON.NodeMaterialConnectionPoint): Nullable<DefaultNodeModel>;
         render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface INumericInputComponentProps {
-        label: string;
-        value: number;
-        step?: number;
-        onChange: (value: number) => void;
-    }
-    export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
-        value: string;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: INumericInputComponentProps);
-        shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        updateValue(evt: any): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-    }
-}
-declare module NODEEDITOR {
-    interface IVector2LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: BABYLON.Vector2) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
-        isExpanded: boolean;
-        value: BABYLON.Vector2;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector2LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: BABYLON.Vector2;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Vector2): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface IVector2PropertyTabComponentProps {
-        globalState: GlobalState;
-        node: GenericNodeModel;
-    }
-    export class Vector2PropertyTabComponent extends React.Component<IVector2PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface IVector3LineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        step?: number;
-        onChange?: (newvalue: BABYLON.Vector3) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
-        isExpanded: boolean;
-        value: BABYLON.Vector3;
-    }> {
-        static defaultProps: {
-            step: number;
-        };
-        private _localChange;
-        constructor(props: IVector3LineComponentProps);
-        shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
-            isExpanded: boolean;
-            value: BABYLON.Vector3;
-        }): boolean;
-        switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
-        updateVector3(): void;
-        updateStateX(value: number): void;
-        updateStateY(value: number): void;
-        updateStateZ(value: number): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface IVector3PropertyTabComponentProps {
-        globalState: GlobalState;
-        node: GenericNodeModel;
-    }
-    export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    /**
-     * Generic node model which stores information about a node editor block
-     */
-    export class GenericNodeModel extends DefaultNodeModel {
-        /**
-         * Labels for the block
-         */
-        headerLabels: Array<{
-            text: string;
-        }>;
-        /**
-         * BABYLON.Vector2 for the node if it exists
-         */
-        vector2: BABYLON.Nullable<BABYLON.Vector2>;
-        /**
-         * BABYLON.Vector3 for the node if it exists
-         */
-        vector3: BABYLON.Nullable<BABYLON.Vector3>;
-        /**
-         * BABYLON.Vector4 for the node if it exists
-         */
-        vector4: BABYLON.Nullable<BABYLON.Vector4>;
-        /**
-         * BABYLON.Matrix for the node if it exists
-         */
-        matrix: BABYLON.Nullable<BABYLON.Matrix>;
-        /**
-         * Constructs the node model
-         */
-        constructor();
-        prepareConnection(type: string, outPort: GenericPortModel, connection?: BABYLON.NodeMaterialConnectionPoint): void;
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
-        renderProperties(globalState: GlobalState): JSX.Element | null;
-    }
-}
-declare module NODEEDITOR {
-    /**
-     * Port model for the generic node
-     */
-    export class GenericPortModel extends PortModel {
-        /**
-         * If the port is input or output
-         */
-        position: string | "input" | "output";
-        /**
-         * What the port is connected to
-         */
-        connection: BABYLON.Nullable<BABYLON.NodeMaterialConnectionPoint>;
-        static idCounter: number;
-        constructor(name: string, type?: string);
-        syncWithNodeMaterialConnectionPoint(connection: BABYLON.NodeMaterialConnectionPoint): void;
-        getNodeModel(): GenericNodeModel;
-        link(outPort: GenericPortModel): LinkModel<import("storm-react-diagrams").LinkModelListener>;
-        getInputFromBlock(): void;
-        createLinkModel(): LinkModel;
-        getValue: Function;
-        static SortInputOutput(a: BABYLON.Nullable<GenericPortModel>, b: BABYLON.Nullable<GenericPortModel>): {
-            input: GenericPortModel;
-            output: GenericPortModel;
-        } | null;
     }
 }
 declare module NODEEDITOR {
@@ -994,14 +1158,14 @@ declare module NODEEDITOR {
          */
         block: BABYLON.Nullable<BABYLON.NodeMaterialBlock>;
         ports: {
-            [s: string]: GenericPortModel;
+            [s: string]: DefaultPortModel;
         };
         /**
          * Constructs the node model
          */
         constructor(key: string);
-        prepareConnection(type: string, outPort: GenericPortModel, connection?: BABYLON.NodeMaterialConnectionPoint): void;
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
+        prepareConnection(type: string, outPort: DefaultPortModel, connection?: BABYLON.NodeMaterialConnectionPoint): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
         renderProperties(globalState: GlobalState): JSX.Element | null;
     }
 }
