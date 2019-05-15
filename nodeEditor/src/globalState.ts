@@ -1,10 +1,11 @@
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Nullable } from "babylonjs/types"
 import { Observable } from 'babylonjs/Misc/observable';
-import { GenericNodeModel } from './components/diagram/generic/genericNodeModel';
+import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
 
 export class GlobalState {
     nodeMaterial?: NodeMaterial;
-    hostDocument?: Nullable<Document>;
-    onSelectionChangedObservable = new Observable<Nullable<GenericNodeModel>>();
+    hostElement: HTMLElement;
+    hostDocument: HTMLDocument;
+    onSelectionChangedObservable = new Observable<Nullable<DefaultNodeModel>>();
 }
