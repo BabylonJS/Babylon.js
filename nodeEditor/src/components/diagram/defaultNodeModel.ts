@@ -1,11 +1,11 @@
 import { NodeModel, DiagramModel } from "storm-react-diagrams";
 import { Nullable } from 'babylonjs/types';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { GenericPortModel } from './generic/genericPortModel';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { GraphEditor, NodeCreationOptions } from '../../graphEditor';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { GlobalState } from '../../globalState';
+import { DefaultPortModel } from './defaultPortModel';
 
 /**
  * Generic node model which stores information about a node editor block
@@ -16,7 +16,7 @@ export class DefaultNodeModel extends NodeModel {
 	 */
     public block: Nullable<NodeMaterialBlock> = null;
 
-    public ports: { [s: string]: GenericPortModel };
+    public ports: { [s: string]: DefaultPortModel };
 
 	/**
 	 * Constructs the node model
@@ -25,11 +25,11 @@ export class DefaultNodeModel extends NodeModel {
         super(key);
     }
 
-    prepareConnection(type: string, outPort: GenericPortModel, connection?: NodeMaterialConnectionPoint) {
+    prepareConnection(type: string, outPort: DefaultPortModel, connection?: NodeMaterialConnectionPoint) {
 
     }
 
-    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {
+    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
         this.block = options.nodeMaterialBlock || null;
 
         if (!options.nodeMaterialBlock) {
@@ -37,14 +37,18 @@ export class DefaultNodeModel extends NodeModel {
         }
         // Create output ports
         options.nodeMaterialBlock._outputs.forEach((connection: any) => {
-            var outputPort = new GenericPortModel(connection.name, "output");
+            var outputPort = new DefaultPortModel(connection.name, "output");
             outputPort.syncWithNodeMaterialConnectionPoint(connection);
             this.addPort(outputPort)
         })
 
         // Create input ports and nodes if they exist
         options.nodeMaterialBlock._inputs.forEach((connection) => {
-            var inputPort = new GenericPortModel(connection.name, "input");
+            if (filterInputs.length > 0 && filterInputs.indexOf(connection.name) === -1) {
+                return;
+            }
+
+            var inputPort = new DefaultPortModel(connection.name, "input");
             inputPort.connection = connection;
             this.addPort(inputPort)
 
@@ -85,7 +89,7 @@ export class DefaultNodeModel extends NodeModel {
                 if (localNode) {
                     var ports = localNode.getPorts()
                     for (var key in ports) {
-                        let link = (ports[key] as GenericPortModel).link(inputPort);
+                        let link = (ports[key] as DefaultPortModel).link(inputPort);
                         model.addAll(link);
                     }
                 }
