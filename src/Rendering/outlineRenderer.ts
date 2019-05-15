@@ -8,6 +8,7 @@ import { Constants } from "../Engines/constants";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
+import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Shaders/outline.fragment";
 import "../Shaders/outline.vertex";
@@ -255,10 +256,7 @@ export class OutlineRenderer implements ISceneComponent {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
         }
 
         // Get correct effect

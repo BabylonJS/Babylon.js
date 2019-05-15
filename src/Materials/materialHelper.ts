@@ -577,7 +577,8 @@ export class MaterialHelper {
      * @param defines The current Defines of the effect
      */
     public static PrepareAttributesForInstances(attribs: string[], defines: any): void {
-        if (defines["INSTANCES"]) {
+        // Check if we are handling a MaterialDefine or an Array containing the #define
+        if (defines["INSTANCES"] || (defines instanceof Array && defines.indexOf("#define INSTANCES") > -1)) {
             attribs.push("world0");
             attribs.push("world1");
             attribs.push("world2");
