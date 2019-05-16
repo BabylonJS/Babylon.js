@@ -1048,7 +1048,10 @@ declare module "babylonjs-serializers/glTF/2.0/shaders/textureTransform.fragment
 declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform" {
     import { ImageMimeType } from "babylonjs-gltf2interface";
     import { Nullable } from "babylonjs/types";
+    import { Vector2 } from "babylonjs/Maths/math";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Texture } from "babylonjs/Materials/Textures/texture";
+    import { Scene } from "babylonjs/scene";
     import { IGLTFExporterExtensionV2 } from "babylonjs-serializers/glTF/2.0/glTFExporterExtension";
     import { _Exporter } from "babylonjs-serializers/glTF/2.0/glTFExporter";
     import "babylonjs-serializers/glTF/2.0/shaders/textureTransform.fragment";
@@ -1075,7 +1078,7 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform"
          * @param scale
          * @param scene
          */
-        private _textureTransformTextureAsync;
+        textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_lights_punctual" {
@@ -2201,7 +2204,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @param scale
          * @param scene
          */
-        private _textureTransformTextureAsync;
+        textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
     }
 }
 declare module BABYLON.GLTF2.Exporter.Extensions {

@@ -83,10 +83,10 @@ export class FogBlock extends NodeMaterialBlock {
             this.view.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
         }
         if (!this.fogColor.connectedPoint) {
-            this.fogColor.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
+            this.fogColor.setAsWellKnownValue(NodeMaterialWellKnownValues.BlockBased);
         }
         if (!this.fogParameters.connectedPoint) {
-            this.fogParameters.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
+            this.fogParameters.setAsWellKnownValue(NodeMaterialWellKnownValues.BlockBased);
         }
         this._outputs[0].isVarying = true;
     }

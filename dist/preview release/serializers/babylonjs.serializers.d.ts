@@ -1023,7 +1023,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @param scale
          * @param scene
          */
-        private _textureTransformTextureAsync;
+        textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
     }
 }
 declare module BABYLON.GLTF2.Exporter.Extensions {
