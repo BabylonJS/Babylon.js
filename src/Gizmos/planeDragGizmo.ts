@@ -6,7 +6,7 @@ import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
-import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
+import { PlaneBuilder } from "../Meshes/Builders/planeBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
@@ -16,9 +16,9 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { Scene } from "../scene";
 import { PositionGizmo } from "./positionGizmo";
 /**
- * Single axis drag gizmo
+ * Single plane drag gizmo
  */
-export class AxisDragGizmo extends Gizmo {
+export class PlaneDragGizmo extends Gizmo {
     /**
      * Drag behavior responsible for the gizmos dragging interactions
      */
@@ -34,25 +34,21 @@ export class AxisDragGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
-    private _isEnabled: boolean = true;
+    private _isEnabled: boolean = false;
     private _parent: PositionGizmo ;
 
     /** @hidden */
-    public static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode {
-        var arrow = new TransformNode("arrow", scene);
-        var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375, tessellation: 96 }, scene);
-        var line = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, scene);
-        line.material = material;
-        cylinder.parent = arrow;
-        line.parent = arrow;
+    public static _CreatePlane(scene: Scene, material: StandardMaterial): TransformNode {
+        var plane = new TransformNode("plane", scene);
 
-        // Position arrow pointing in its drag axis
-        cylinder.material = material;
-        cylinder.rotation.x = Math.PI / 2;
-        cylinder.position.z += 0.3;
-        line.position.z += 0.275 / 2;
-        line.rotation.x = Math.PI / 2;
-        return arrow;
+        //make sure plane is double sided
+        var dragPlane = PlaneBuilder.CreatePlane("dragPlane", { width: .1375, height: .1375, sideOrientation: 2 }, scene);
+        dragPlane.material = material;
+        dragPlane.parent = plane;
+
+        // Position plane pointing normal to dragPlane normal
+        dragPlane.material = material;
+        return plane;
     }
 
     /** @hidden */
@@ -66,12 +62,12 @@ export class AxisDragGizmo extends Gizmo {
     }
 
     /**
-     * Creates an AxisDragGizmo
+     * Creates a PlaneDragGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
-     * @param dragAxis The axis which the gizmo will be able to drag on
+     * @param dragPlaneNormal The axis normal to which the gizmo will be able to drag on
      * @param color The color of the gizmo
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: PositionGizmo) {
+    constructor(dragPlaneNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: PositionGizmo) {
         super(gizmoLayer);
         this._parent = parent;
         // Create Material
@@ -82,18 +78,18 @@ export class AxisDragGizmo extends Gizmo {
         var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
         hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
-        // Build mesh on root node
-        var arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, coloredMaterial);
+        // Build plane mesh on root node
+        var plane = PlaneDragGizmo._CreatePlane(gizmoLayer.utilityLayerScene, coloredMaterial);
 
-        arrow.lookAt(this._rootMesh.position.add(dragAxis));
-        arrow.scaling.scaleInPlace(1 / 3);
-        arrow.parent = this._rootMesh;
+        plane.lookAt(this._rootMesh.position.add(dragPlaneNormal));
+        plane.scaling.scaleInPlace(1 / 3);
+        plane.parent = this._rootMesh;
 
         var currentSnapDragDistance = 0;
         var tmpVector = new Vector3();
         var tmpSnapEvent = { snapDistance: 0 };
-        // Add drag behavior to handle events when the gizmo is dragged
-        this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
+        // Add dragPlaneNormal drag behavior to handle events when the gizmo is dragged
+        this.dragBehavior = new PointerDragBehavior({ dragPlaneNormal: dragPlaneNormal });
         this.dragBehavior.moveAttached = false;
         this._rootMesh.addBehavior(this.dragBehavior);
 
@@ -165,7 +161,6 @@ export class AxisDragGizmo extends Gizmo {
     public get isEnabled(): boolean {
         return this._isEnabled;
     }
-
     /**
      * Disposes of the gizmo
      */
