@@ -29,7 +29,6 @@ import { _DevTools } from '../Misc/devTools';
  */
 
 class Patch {
-
     constructor(p: Vector3, n: Vector3, id: number, residualEnergy: Vector3) {
         // World space
         this.position = p.clone();
@@ -80,6 +79,10 @@ export class PatchRenderer {
 
     public useDepthCompare: boolean;
 
+    public static PERFORMANCE_LOGS_LEVEL : number = 1;
+    public static RADIOSITY_INFO_LOGS_LEVEL : number = 1;
+    public static WARNING_LOGS : number = 1;
+
     private _scene: Scene;
     // private _htScene: Scene; // Higher tesselated scene
     private _meshes: Mesh[];
@@ -92,6 +95,8 @@ export class PatchRenderer {
     private _near: number;
     private _far: number;
     private _texelSize: number;
+    private _frameBuffer0: WebGLFramebuffer;
+    private _frameBuffer1: WebGLFramebuffer;
 
     // private _patches: Patch[] = [];
     private _patchOffset: number = 0;
@@ -144,6 +149,8 @@ export class PatchRenderer {
         // this.createMaps();
 
         scene.getEngine().disableTextureBindingOptimization = true;
+        this._frameBuffer0 = <WebGLFramebuffer>(scene.getEngine()._gl.createFramebuffer());
+        this._frameBuffer1 = <WebGLFramebuffer>(scene.getEngine()._gl.createFramebuffer());
 
         // this.createHTScene();
 
@@ -455,7 +462,7 @@ export class PatchRenderer {
                 7,
                 this._scene,
                 {
-                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST],
+                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST],
                     types: [Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT],
                     generateMipMaps: true
                 }
@@ -514,7 +521,9 @@ export class PatchRenderer {
 
             this._scene.customRenderTargets.push(residualTexture);
 
-            console.log(`Offset ${this._patchOffset} is for mesh : ${mesh.name}.`);
+            if (PatchRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 2) {
+                console.log(`Offset ${this._patchOffset} is for mesh : ${mesh.name}.`);
+            }
             this._patchOffset += 1;
 
             this.buildVisibilityMap();
@@ -546,10 +555,14 @@ export class PatchRenderer {
         this._shootEffect.setFloat("shootDArea", area); // TODO
         this._shootEffect.setMatrix("view", patch.viewMatrix);
 
+        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 3) {
+            console.log(`Lightmap size for this submesh : ${mrt.getSize().width} x ${mrt.getSize().height}`);
+        }
+
         engine.setDirectViewport(0, 0, destResidualTexture.width, destResidualTexture.height);
         engine.setState(false); // TODO : no BFC ?
         var gl = engine._gl;
-        let fb = gl.createFramebuffer();
+        let fb = this._frameBuffer0;
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
         gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, destResidualTexture._webGLTexture, 0);
@@ -646,36 +659,108 @@ export class PatchRenderer {
 
     public gatherRadiosity(): boolean {
         if (this._isCurrentlyGathering) {
-            console.log("Still gathering radiosity for current submesh. Skipping.");
+            if (PatchRenderer.WARNING_LOGS) {
+                console.log("Still gathering radiosity for current submesh. Skipping.");
+            }
             return true;
         }
+
+        let duration;
+        let dateBegin = Date.now();
+        let nextShooterDate = Date.now();
+
+        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+            console.log(`BEGINNING RADIOSITY PASS FOR ${this._meshes.length} MESHES...`);
+        }
+
         var shooter = this.nextShooter();
 
+        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+            duration = Date.now() - nextShooterDate;
+            console.log(`Find next shooter took ${duration}ms.`);
+        }
+
         if (!shooter || !this.isRadiosityDataEffectReady() || !this.isGatheringEffectReady() || !this.isPatchEffectReady() || !this.isDilateEffectReady()) {
-            console.log("No shooter yet");
+            if (PatchRenderer.WARNING_LOGS) {
+                console.log("No shooter yet");
+            }
             return true;
         }
 
+        let updatePatchDate = Date.now();
+
         var energyLeft = this.updatePatches(shooter);
+
+        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+            duration = Date.now() - updatePatchDate;
+            console.log(`Updating patches for shooter took ${duration}ms.`);
+        }
+
         if (energyLeft < 0.01) {
             return false;
         }
 
         this._isCurrentlyGathering = true;
+
+        let consumeEnergyDate = Date.now();
+
         this.consumeEnergyInTexture(shooter);
+
+        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+            duration = Date.now() - consumeEnergyDate;
+            console.log(`Consuming energy for shooter took ${duration}ms.`);
+            console.log(`Now shooting radiosity for ${shooter.radiosityPatches.length} patches.`)
+        }
+
+        let shootingDate = Date.now();
 
         for (let i = 0; i < shooter.radiosityPatches.length; i++) {
             this._currentPatch = shooter.radiosityPatches[i];
+
+            let patchMapDate = Date.now();
+
             this._patchMap.render(false);
+
+            if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 2) {
+                duration = Date.now() - patchMapDate;
+                console.log(`Rendering patch map for 1 patch took ${duration}ms.`);
+            }
+
             // this._scene.customRenderTargets.push(this._patchMap);
             // return false;
+
+            let patchShooting = Date.now();
             for (let j = 0; j < this._patchedSubMeshes.length; j++) {
                 if (this._patchedSubMeshes[j] === shooter) {
                     continue;
                 }
+
+                let subMeshDate = Date.now();
                 this.renderToRadiosityTexture(this._patchedSubMeshes[j], shooter.radiosityPatches[i]);
+
+                if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 3) {
+                    duration = Date.now() - subMeshDate;
+                    console.log(`Shooting radiosity for ${this._patchedSubMeshes[j].getMesh().name} took ${duration}ms.`);
+                }
+            }
+
+            if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 2) {
+                duration = Date.now() - patchShooting;
+                console.log(`Total shooting radiosity for ${this._patchedSubMeshes.length} submeshes took ${duration}ms.`);
             }
         }
+
+        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+            duration = Date.now() - shootingDate;
+            console.log(`Shooting radiosity for all patches took ${duration}ms.`);
+            console.log(`Currently shooting ${shooter.radiosityPatches.length * 1000 / duration} patches/s.`);
+            console.log("\n========================")
+            console.log("ENDING RADIOSITY PASS")
+            console.log("========================")
+            duration = Date.now() - dateBegin;
+            console.log(`Total pass took : ${duration / 1000}s.`)
+        }
+
         var engine = this._scene.getEngine();
         engine.restoreDefaultFramebuffer();
         engine.setViewport((<Camera>this._scene.activeCamera).viewport);
@@ -729,24 +814,30 @@ export class PatchRenderer {
             }
 
             var unshotTexture: Texture = mrt.textures[3];
-            var lmId = (<any>mesh).__lightMapId; // TODO : prettify
+            var polygonId = (<any>mesh).__lightMapId; // TODO : prettify
             var lod = Math.round(Math.log(mrt.getRenderWidth()) / Math.log(2));
-            this._nextShooterEffect.setVector3("polygonId", lmId);
+            this._nextShooterEffect.setVector3("polygonId", polygonId);
             this._nextShooterEffect.setTexture("unshotRadiositySampler", unshotTexture);
             this._nextShooterEffect.setFloat("lod", lod);
             this._nextShooterEffect.setFloat("area", mrt.getRenderWidth() * mrt.getRenderHeight()); // TODO : REAL POLYGON AREA
 
             engine.setDirectViewport(0, 0, 1, 1);
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
-            console.log(`Mesh ${mesh.name} has for Lod ${lod} and dimensions : ${mrt.getRenderWidth()} x ${mrt.getRenderWidth()}`)
-            console.log(engine.readPixelsFloat(0, 0, 1, 1));
+
+            if (PatchRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 2) {
+                console.log(`Mesh ${mesh.name} has for Lod ${lod} and dimensions : ${mrt.getRenderWidth()} x ${mrt.getRenderWidth()}`);
+                console.log("Current value of the nextShooter texture readback : ");
+                console.log(engine.readPixelsFloat(0, 0, 1, 1));
+            }
         }
         // Read result directly after render
         var pixels = engine.readPixelsFloat(0, 0, 1, 1);
         let id = Math.round(this.decodeId(Vector3.FromArray(pixels)) * 255);
         let shaderValue = (1 / (pixels[3] / 255) - 1) / 3;
-        console.log("Next shooter ID : " + id);
-        console.log("Residual energy gathered from shader : " + shaderValue);
+        if (PatchRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 1) {
+            console.log("Next shooter ID : " + id);
+            console.log("Residual energy gathered from shader : " + shaderValue);
+        }
 
         engine.unBindFramebuffer(<InternalTexture>(this._nextShooterTexture._texture));
 
@@ -763,7 +854,7 @@ export class PatchRenderer {
         engine.enableEffect(this._dilateEffect);
         engine.setState(false);
         let gl = engine._gl;
-        let fb = gl.createFramebuffer();
+        let fb = this._frameBuffer1;
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb)
         gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, (<InternalTexture>dest._texture)._webGLTexture, 0);
 
@@ -986,6 +1077,11 @@ export class PatchRenderer {
         var residualEnergy = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[3], width, height);
         var sum = 0;
         var currentIndex = 0;
+
+        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+            console.log(`Updating ${residualEnergy.length / 4} patches...`);
+        }
+
         for (let i = 0; i < residualEnergy.length; i += 4) {
             if (residualEnergy[i + 3] === 0) {
                 // add only rendered patches
@@ -995,7 +1091,10 @@ export class PatchRenderer {
             sum += (residualEnergy[i] + residualEnergy[i + 1] + residualEnergy[i + 2]) / 3;
             currentIndex++;
         }
-        console.log("Residual energy gathered from surface : " + sum);
+
+        if (PatchRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 1) {
+            console.log("Residual energy gathered from surface : " + sum);
+        }
 
         return sum;
     }

@@ -149,7 +149,7 @@ var createScene = function() {
                 var energyLeft = pr.gatherRadiosity();
                 engine.runRenderLoop(renderLoop);
 
-                if (!energyLeft || passes > 10) {
+                if (!energyLeft || passes > 6) {
                     console.log("Converged ! ");
                     scene.onAfterRenderTargetsRenderObservable.remove(observer);
                 }
