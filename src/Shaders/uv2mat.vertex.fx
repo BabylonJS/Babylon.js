@@ -28,6 +28,6 @@ void main(void) {
 
     #ifdef DEPTH_COMPARE
     	// depth was between -1.0 and 1.0
-        depth = gl_Position.z * 0.5 + 0.5;
+        depth = gl_Position.z / farMinusNear * 0.5 + 0.5;
     #endif
 }

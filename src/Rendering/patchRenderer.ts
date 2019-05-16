@@ -79,7 +79,7 @@ export class PatchRenderer {
 
     public useDepthCompare: boolean;
 
-    public static PERFORMANCE_LOGS_LEVEL : number = 1;
+    public static PERFORMANCE_LOGS_LEVEL : number = 0;
     public static RADIOSITY_INFO_LOGS_LEVEL : number = 1;
     public static WARNING_LOGS : number = 1;
 
@@ -154,7 +154,7 @@ export class PatchRenderer {
 
         // this.createHTScene();
 
-        this.useDepthCompare = true;
+        this.useDepthCompare = false;
     }
 
     public createHTScene(areaThreshold: number) {
@@ -484,7 +484,6 @@ export class PatchRenderer {
                 var res = (<any>mesh).residualTexture;
                 effect.setFloat("texSize", width);
                 effect.setFloat("patchOffset", res.patchOffset);
-                effect.setFloat2("nearFar", this._near, this._far);
                 
                 if ((<any>mesh).color) {
                     effect.setVector3("color", (<any>mesh).color);
@@ -548,6 +547,7 @@ export class PatchRenderer {
         this._shootEffect.setTexture("idBuffer", mrt.textures[2]);
         this._shootEffect.setTexture("residualBuffer", mrt.textures[3]);
         this._shootEffect.setTexture("gatheringBuffer", mrt.textures[4]);
+        this._shootEffect.setFloat2("nearFar", this._near, this._far);
 
         this._shootEffect.setVector3("shootPos", patch.position);
         this._shootEffect.setVector3("shootNormal", patch.normal);
@@ -613,8 +613,9 @@ export class PatchRenderer {
         // var defines = [];
 
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
-        var uniforms = ["view", "shootPos", "shootNormal", "shootEnergy", "shootDArea"]; // ["world", "mBones", "view", "nearFar"]
+        var uniforms = ["view", "shootPos", "shootNormal", "shootEnergy", "shootDArea", "nearFar"]; // ["world", "mBones", "view", "nearFar"]
         var samplers = ["itemBuffer", "worldPosBuffer", "worldNormalBuffer", "idBuffer", "residualBuffer", "gatheringBuffer"];
+        var defines = this.useDepthCompare ? "#define DEPTH_COMPARE" : "";
         // var mesh = subMesh.getMesh();
 
         // Bones
@@ -647,7 +648,8 @@ export class PatchRenderer {
         this._shootEffect = this._scene.getEngine().createEffect("radiosity",
             attribs,
             uniforms,
-            samplers);
+            samplers,
+            defines);
         // }
 
         if (this._shootEffect.isReady()) {
@@ -743,6 +745,8 @@ export class PatchRenderer {
                     console.log(`Shooting radiosity for ${this._patchedSubMeshes[j].getMesh().name} took ${duration}ms.`);
                 }
             }
+
+            // return false;
 
             if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 2) {
                 duration = Date.now() - patchShooting;
@@ -989,8 +993,8 @@ export class PatchRenderer {
 
         this._radiosityEffect = this._scene.getEngine().createEffect("buildRadiosity",
             attribs,
-            ["world", "texSize", "worldTexelRatio", "patchOffset", "color", "lightStrength", "nearFar"],
-            [], this.useDepthCompare ? "#define DEPTH_COMPARE" : "");
+            ["world", "texSize", "worldTexelRatio", "patchOffset", "color", "lightStrength"],
+            []);
 
         if (this._radiosityEffect.isReady()) {
             return this._radiosityEffect;
@@ -1100,9 +1104,8 @@ export class PatchRenderer {
     }
 
     public buildVisibilityMap() {
-        this._patchMap = new RenderTargetTexture("patch", 512, this._scene, false, true, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE, true);
-        this._patchMap.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._patchMap.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._patchMap = new RenderTargetTexture("patch", 512, this._scene, false, true, 
+            this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
         this._patchMap.renderParticles = false;
         this._patchMap.renderList = this._meshes;
         this._patchMap.activeCamera = null;
@@ -1155,6 +1158,7 @@ export class PatchRenderer {
                 renderWithDepth(alphaTestSubMeshes.data[index], this._currentPatch);
             }
 
+            // console.log(engine.readPixelsFloat(0, 0, this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight()));
             // Tools.DumpFramebuffer(this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight(), this._scene.getEngine());
         };
 

@@ -28,12 +28,6 @@ vec3 id;          // ID of receiver
 vec3 worldPos;    // world pos of receiving element
 vec3 worldNormal; // world normal of receiving element
 
-float unpack(vec4 color)
-{
-    const vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
-    return dot(color, bit_shift);
-}
-
 float visible()
 {
   // Look up projected point in hemisphere item buffer
@@ -51,8 +45,8 @@ float visible()
   depthProj = (2.0 * depthProj - nearFar.y - nearFar.x) / farMinusNear;
   depthProj = depthProj * 0.5 + 0.5;
 
-  float depth = unpack(texture(itemBuffer, proj.xy).xyza);
-  return 1.0;//float(depthProj <= depth)
+  float depth = texture(itemBuffer, proj.xy).r;
+  return float(depthProj - depth <= 1e-4);
   #else
   // Compare the value in item buffer to the ID of the fragment
   proj = normalize(proj);
@@ -99,6 +93,6 @@ void main(void) {
     worldNormal = texture(worldNormalBuffer, vUV).xyz;
     
     vec3 energy = formFactorEnergy();
-	  glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
+    glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
     glFragData[1] = vec4(energy + texture(gatheringBuffer, vUV).xyz, worldPos4.a);
 }
