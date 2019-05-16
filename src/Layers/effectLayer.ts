@@ -496,7 +496,7 @@ export abstract class EffectLayer {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         this._addCustomEffectDefines(defines);

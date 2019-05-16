@@ -1221,7 +1221,7 @@ export class ShadowGenerator implements IShadowGenerator {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         if (this.customShaderOptions) {

@@ -14,6 +14,7 @@ import { UniformBuffer } from "./uniformBuffer";
 import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
+import { MaterialDefines } from "./materialDefines";
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for
@@ -572,18 +573,25 @@ export class MaterialHelper {
     }
 
     /**
-     * Prepares the list of attributes required for instances according to the effect defines.
+     * Check and prepare the list of attributes required for instances according to the effect defines.
      * @param attribs The current list of supported attribs
-     * @param defines The current Defines of the effect
+     * @param defines The current MaterialDefines of the effect
      */
-    public static PrepareAttributesForInstances(attribs: string[], defines: any): void {
-        // Check if we are handling a MaterialDefine or an Array containing the #define
-        if (defines["INSTANCES"] || Array.isArray(defines)) {
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+    public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
+        if (defines["INSTANCES"]) {
+            this.PushAttributesForInstances(attribs);
         }
+    }
+
+    /**
+     * Add the list of attributes required for instances to the attribs array.
+     * @param attribs The current list of supported attribs
+     */
+    public static PushAttributesForInstances(attribs: string[]): void {
+        attribs.push("world0");
+        attribs.push("world1");
+        attribs.push("world2");
+        attribs.push("world3");
     }
 
     /**

@@ -202,7 +202,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         // Get correct effect
