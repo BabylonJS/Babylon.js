@@ -6,7 +6,7 @@
 
 ## Updates
 - Support Vive Focus 3Dof controller ([TrevorDev](https://github.com/TrevorDev))
-- Unify preparation of instance attributes. MaterialHelper.PrepareAttributesForInstances now supports Array definitions. ([MarkusBillharz](https://github.com/MarkusBillharz))
+- Unify preparation of instance attributes. Added `MaterialHelper.PushAttributesForInstances` ([MarkusBillharz](https://github.com/MarkusBillharz))
  
 ### Inspector
 - Added support for `ShadowGenerator` ([Deltakosh](https://github.com/deltakosh/))
