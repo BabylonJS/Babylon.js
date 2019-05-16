@@ -406,6 +406,8 @@ declare module INSPECTOR {
         accept: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -487,6 +489,8 @@ declare module INSPECTOR {
         isInteger?: boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         additionalClass?: string;
+        step?: string;
+        digits?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
