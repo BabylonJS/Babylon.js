@@ -8,5 +8,4 @@ export class GlobalState {
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     onSelectionChangedObservable = new Observable<Nullable<DefaultNodeModel>>();
-    onRebuildRequiredObservable = new Observable<void>();
 }
