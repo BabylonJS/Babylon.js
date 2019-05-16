@@ -50028,7 +50028,7 @@ declare module BABYLON {
         /** WorldViewProjection */
         WorldViewProjection = 6,
         /** Will be filled by the block itself */
-        Automatic = 7
+        BlockBased = 7
     }
 }
 declare module BABYLON {
@@ -50678,18 +50678,10 @@ declare module BABYLON {
         setAsAttribute(attributeName?: string): NodeMaterialConnectionPoint;
         /**
          * Set the source of this connection point to a well known value
-         * @param value define the well known value to use (world, view, etc...) or null to switch to manual value
+         * @param value define the well known value to use (world, view, etc...)
          * @returns the current connection point
          */
-        setAsWellKnownValue(value: Nullable<NodeMaterialWellKnownValues>): NodeMaterialConnectionPoint;
-        /**
-         * Gets a boolean indicating that the current connection point is a well known value
-         */
-        readonly isWellKnownValue: boolean;
-        /**
-         * Gets or sets the current well known value or null if not defined as well know value
-         */
-        wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        setAsWellKnownValue(value: NodeMaterialWellKnownValues): NodeMaterialConnectionPoint;
         private _getTypeLength;
         /**
          * Connect this point to another connection point
@@ -65603,7 +65595,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @param scale
          * @param scene
          */
-        private _textureTransformTextureAsync;
+        textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
     }
 }
 declare module BABYLON.GLTF2.Exporter.Extensions {

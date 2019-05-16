@@ -8,10 +8,6 @@
         color:white;
     }
 
-    &.attribute {
-        background: orange;
-    }
-
     &.output {
         background: blue;
         color:white;
@@ -29,13 +25,6 @@
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
-    }
-
-    .value {
-        height: 34px;
-        text-align: center;
-        font-size: 20px;
-        font-weight: bold;
     }
 
     .inputs {
