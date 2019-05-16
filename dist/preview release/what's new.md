@@ -6,7 +6,8 @@
 
 ## Updates
 - Support Vive Focus 3Dof controller ([TrevorDev](https://github.com/TrevorDev))
-
+- Unify preparation of instance attributes. Added `MaterialHelper.PushAttributesForInstances` ([MarkusBillharz](https://github.com/MarkusBillharz))
+ 
 ### Inspector
 - Added support for `ShadowGenerator` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for scene normalization ([Deltakosh](https://github.com/deltakosh/))
