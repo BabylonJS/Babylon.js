@@ -1,5 +1,5 @@
 ﻿var meshes = [];
-var texelSize = 2;
+var texelSize = 4;
 
 var prepareForBaking = function(mesh) {
     var scaling = mesh.scaling || new BABYLON.Vector3(1, 1, 1);
@@ -99,7 +99,7 @@ var createScene = function() {
                 //prepareForBaking(meshes[i]);
             }
             pr = new BABYLON.PatchRenderer(scene, ms, texelSize);
-            pr.createHTScene(0.1);
+            pr.createHTScene(1);
             //pr._meshes = scene.meshes;
             for (let i = 0; i < scene.meshes.length; i++) {
                 if (!scene.meshes[i].__lightmapSize) {

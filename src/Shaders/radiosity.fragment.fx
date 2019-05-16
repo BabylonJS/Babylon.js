@@ -16,6 +16,7 @@ uniform vec3 shootPos;     // world-space position of shooter
 uniform vec3 shootNormal;  // world-space normal of shooter
 uniform vec3 shootEnergy;  // energy from shooter residual texture
 uniform float shootDArea;  // the delta area of the shooter
+uniform vec2 nearFar;
 
 uniform vec3 recvColor;  // reflectivity
 
@@ -27,21 +28,40 @@ vec3 id;          // ID of receiver
 vec3 worldPos;    // world pos of receiving element
 vec3 worldNormal; // world normal of receiving element
 
+float unpack(vec4 color)
+{
+    const vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
+    return dot(color, bit_shift);
+}
+
 float visible()
 {
-  vec3 proj = normalize((view * vec4(worldPos, 1.0))).xyz;
+  // Look up projected point in hemisphere item buffer
+  vec3 proj = (view * vec4(worldPos, 1.0)).xyz;
+
+  #ifdef DEPTH_COMPARE
+  float depthProj = proj.z;
+  proj = normalize(proj);
 
   // Vector is in [-1,1], scale to [0..1] for texture lookup
   proj.xy = proj.xy * 0.5 + 0.5;
-  // proj.x += 0.5 / 4096.0;
-  // proj.y += 0.5 / 4096.0;
-  // Look up projected point in hemisphere item buffer
-  vec3 xtex = texture(itemBuffer, proj.xy).xyz;
 
+  float farMinusNear = nearFar.y - nearFar.x;
+
+  depthProj = (2.0 * depthProj - nearFar.y - nearFar.x) / farMinusNear;
+  depthProj = depthProj * 0.5 + 0.5;
+
+  float depth = unpack(texture(itemBuffer, proj.xy).xyza);
+  return 1.0;//float(depthProj <= depth)
+  #else
   // Compare the value in item buffer to the ID of the fragment
-  // return vec3(xtex.x == id.x && xtex.y == id.y && xtex.z == id.z);
+  proj = normalize(proj);
+
+  // Vector is in [-1,1], scale to [0..1] for texture lookup
+  proj.xy = proj.xy * 0.5 + 0.5;
+  vec3 xtex = texture(itemBuffer, proj.xy).xyz;
   return float(xtex == id);
-  //return xtex;
+  #endif
 }
 
 vec3 formFactorEnergy()
