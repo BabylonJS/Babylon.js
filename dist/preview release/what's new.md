@@ -6,6 +6,8 @@
 
 ## Updates
 - Support Vive Focus 3Dof controller ([TrevorDev](https://github.com/TrevorDev))
+- Planar positioning support for GizmoManager ([Balupg](https://github.com/balupg))
+- Individual gizmos can now be enabled/disabled ([Balupg](https://github.com/balupg))
 
 ### Inspector
 - Added support for `ShadowGenerator` ([Deltakosh](https://github.com/deltakosh/))
