@@ -496,10 +496,7 @@ export abstract class EffectLayer {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         this._addCustomEffectDefines(defines);
