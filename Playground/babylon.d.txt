@@ -9338,11 +9338,16 @@ declare module BABYLON {
          */
         static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: any, fallbacks: EffectFallbacks): void;
         /**
-         * Prepares the list of attributes required for instances according to the effect defines.
+         * Check and prepare the list of attributes required for instances according to the effect defines.
          * @param attribs The current list of supported attribs
-         * @param defines The current Defines of the effect
+         * @param defines The current MaterialDefines of the effect
          */
-        static PrepareAttributesForInstances(attribs: string[], defines: any): void;
+        static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void;
+        /**
+         * Add the list of attributes required for instances to the attribs array.
+         * @param attribs The current list of supported attribs
+         */
+        static PushAttributesForInstances(attribs: string[]): void;
         /**
          * Binds the light shadow information to the effect for the given mesh.
          * @param light The light containing the generator
