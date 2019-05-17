@@ -5,6 +5,7 @@ import { Effect } from '../effect';
 import { NodeMaterialWellKnownValues } from './nodeMaterialWellKnownValues';
 import { Scene } from '../../scene';
 import { Matrix } from '../../Maths/math';
+import { NodeMaterialBlockConnectionPointMode } from './NodeMaterialBlockConnectionPointMode';
 
 declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
 
@@ -20,7 +21,7 @@ export class NodeMaterialConnectionPoint {
     private _endpoints = new Array<NodeMaterialConnectionPoint>();
     private _storedValue: any;
     private _valueCallback: () => any;
-    private _isVarying = false;
+    private _mode = NodeMaterialBlockConnectionPointMode.Undefined;
 
     /** @hidden */
     public _wellKnownValue: Nullable<NodeMaterialWellKnownValues> = null;
@@ -63,7 +64,7 @@ export class NodeMaterialConnectionPoint {
 
     public set value(value: any) {
         this._storedValue = value;
-        this.isUniform = true;
+        this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
     }
 
     /**
@@ -76,7 +77,7 @@ export class NodeMaterialConnectionPoint {
 
     public set valueCallback(value: () => any) {
         this._valueCallback = value;
-        this.isUniform = true;
+        this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
     }
 
     /**
@@ -99,25 +100,37 @@ export class NodeMaterialConnectionPoint {
      * In this case the connection point name must be the name of the uniform to use.
      * Can only be set on inputs
      */
-    public isUniform: boolean;
+    public get isUniform(): boolean {
+        return this._mode === NodeMaterialBlockConnectionPointMode.Uniform;
+    }
+
+    public set isUniform(value: boolean) {
+        this._mode = value ? NodeMaterialBlockConnectionPointMode.Uniform : NodeMaterialBlockConnectionPointMode.Undefined;
+    }
 
     /**
      * Gets or sets a boolean indicating that this connection point is coming from an attribute.
      * In this case the connection point name must be the name of the attribute to use
      * Can only be set on inputs
      */
-    public isAttribute: boolean;
+    public get isAttribute(): boolean {
+        return this._mode === NodeMaterialBlockConnectionPointMode.Attribute;
+    }
+
+    public set isAttribute(value: boolean) {
+        this._mode = value ? NodeMaterialBlockConnectionPointMode.Attribute : NodeMaterialBlockConnectionPointMode.Undefined;
+    }
 
     /**
      * Gets or sets a boolean indicating that this connection point is generating a varying variable.
      * Can only be set on exit points
      */
     public get isVarying(): boolean {
-        return this._isVarying;
+        return this._mode === NodeMaterialBlockConnectionPointMode.Varying;
     }
 
     public set isVarying(value: boolean) {
-        this._isVarying = value;
+        this._mode = value ? NodeMaterialBlockConnectionPointMode.Varying : NodeMaterialBlockConnectionPointMode.Undefined;
     }
 
     /** Get the other side of the connection (if any) */
@@ -175,7 +188,7 @@ export class NodeMaterialConnectionPoint {
         if (attributeName) {
             this.name = attributeName;
         }
-        this.isAttribute = true;
+        this._mode = NodeMaterialBlockConnectionPointMode.Attribute;
         return this;
     }
 
@@ -204,7 +217,7 @@ export class NodeMaterialConnectionPoint {
     }
 
     public set wellKnownValue(value: Nullable<NodeMaterialWellKnownValues>) {
-        this.isUniform = true;
+        this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
         this._wellKnownValue = value;
     }
 

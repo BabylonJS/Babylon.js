@@ -54,7 +54,7 @@ export class Vector4TransformBlock extends NodeMaterialBlock {
         let vector = this.vector;
         let transform = this.transform;
 
-        if (vector.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
+        if (vector.connectedPoint && vector.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
             state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
         } else {
             state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * ${vector.associatedVariableName};\r\n`;
