@@ -896,32 +896,36 @@ export class GLTFLoader implements IGLTFLoader {
         };
 
         loadAttribute("POSITION", VertexBuffer.PositionKind, (babylonVertexBuffer, data) => {
+            const positions = new Float32Array(data.length);
             babylonVertexBuffer.forEach(data.length, (value, index) => {
-                data[index] += value;
+                positions[index] = data[index] + value;
             });
 
-            babylonMorphTarget.setPositions(data);
+            babylonMorphTarget.setPositions(positions);
         });
 
         loadAttribute("NORMAL", VertexBuffer.NormalKind, (babylonVertexBuffer, data) => {
-            babylonVertexBuffer.forEach(data.length, (value, index) => {
-                data[index] += value;
+            const normals = new Float32Array(data.length);
+            babylonVertexBuffer.forEach(normals.length, (value, index) => {
+                normals[index] = data[index] + value;
             });
 
-            babylonMorphTarget.setNormals(data);
+            babylonMorphTarget.setNormals(normals);
         });
 
         loadAttribute("TANGENT", VertexBuffer.TangentKind, (babylonVertexBuffer, data) => {
+            const tangents = new Float32Array(data.length / 3 * 4);
             let dataIndex = 0;
             babylonVertexBuffer.forEach(data.length / 3 * 4, (value, index) => {
                 // Tangent data for morph targets is stored as xyz delta.
                 // The vertexData.tangent is stored as xyzw.
                 // So we need to skip every fourth vertexData.tangent.
                 if (((index + 1) % 4) !== 0) {
-                    data[dataIndex++] += value;
+                    tangents[dataIndex] = data[dataIndex] += value;
+                    dataIndex++;
                 }
             });
-            babylonMorphTarget.setTangents(data);
+            babylonMorphTarget.setTangents(tangents);
         });
 
         return Promise.all(promises).then(() => { });
