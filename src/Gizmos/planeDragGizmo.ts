@@ -5,7 +5,6 @@ import { Vector3, Color3, Matrix } from "../Maths/math";
 import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { LinesMesh } from "../Meshes/linesMesh";
 import { PlaneBuilder } from "../Meshes/Builders/planeBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -34,8 +33,12 @@ export class PlaneDragGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
+    private _plane: TransformNode;
+    private _coloredMaterial: StandardMaterial;
+    private _hoverMaterial: StandardMaterial;
+
     private _isEnabled: boolean = false;
-    private _parent: PositionGizmo ;
+    private _parent: Nullable<PositionGizmo> = null;
 
     /** @hidden */
     public static _CreatePlane(scene: Scene, material: StandardMaterial): TransformNode {
@@ -67,23 +70,23 @@ export class PlaneDragGizmo extends Gizmo {
      * @param dragPlaneNormal The axis normal to which the gizmo will be able to drag on
      * @param color The color of the gizmo
      */
-    constructor(dragPlaneNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: PositionGizmo) {
+    constructor(dragPlaneNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null) {
         super(gizmoLayer);
         this._parent = parent;
         // Create Material
-        var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        coloredMaterial.diffuseColor = color;
-        coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
+        this._coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this._coloredMaterial.diffuseColor = color;
+        this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
-        var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
+        this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this._hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build plane mesh on root node
-        var plane = PlaneDragGizmo._CreatePlane(gizmoLayer.utilityLayerScene, coloredMaterial);
+        this._plane = PlaneDragGizmo._CreatePlane(gizmoLayer.utilityLayerScene, this._coloredMaterial);
 
-        plane.lookAt(this._rootMesh.position.add(dragPlaneNormal));
-        plane.scaling.scaleInPlace(1 / 3);
-        plane.parent = this._rootMesh;
+        this._plane.lookAt(this._rootMesh.position.add(dragPlaneNormal));
+        this._plane.scaling.scaleInPlace(1 / 3);
+        this._plane.parent = this._rootMesh;
 
         var currentSnapDragDistance = 0;
         var tmpVector = new Vector3();
@@ -128,12 +131,9 @@ export class PlaneDragGizmo extends Gizmo {
                 return;
             }
             var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-            var material = isHovered ? hoverMaterial : coloredMaterial;
+            var material = isHovered ? this._hoverMaterial : this._coloredMaterial;
             this._rootMesh.getChildMeshes().forEach((m) => {
                 m.material = material;
-                if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = material.diffuseColor;
-                }
             });
         });
 
@@ -155,7 +155,9 @@ export class PlaneDragGizmo extends Gizmo {
             this.attachedMesh = null;
         }
         else {
-            this.attachedMesh = this._parent.attachedMesh;
+            if (this._parent) {
+                this.attachedMesh = this._parent.attachedMesh;
+            }
         }
     }
     public get isEnabled(): boolean {
@@ -169,5 +171,13 @@ export class PlaneDragGizmo extends Gizmo {
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();
         super.dispose();
+        if (this._plane) {
+            this._plane.dispose();
+        }
+        [this._coloredMaterial, this._hoverMaterial].forEach((matl) => {
+            if (matl) {
+                matl.dispose();
+            }
+        });
     }
 }

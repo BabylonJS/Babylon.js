@@ -36,7 +36,7 @@ export class PlaneRotationGizmo extends Gizmo {
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
     private _isEnabled: boolean = true;
-    private _parent: RotationGizmo ;
+    private _parent: Nullable<RotationGizmo> = null;
 
     /**
      * Creates a PlaneRotationGizmo
@@ -45,7 +45,7 @@ export class PlaneRotationGizmo extends Gizmo {
      * @param color The color of the gizmo
      * @param tessellation Amount of tessellation to be used when creating rotation circles
      */
-    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: RotationGizmo) {
+    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null) {
         super(gizmoLayer);
         this._parent = parent;
         // Create Material
@@ -220,7 +220,9 @@ export class PlaneRotationGizmo extends Gizmo {
             this.attachedMesh = null;
         }
         else {
-            this.attachedMesh = this._parent.attachedMesh;
+            if (this._parent) {
+                this.attachedMesh = this._parent.attachedMesh;
+            }
         }
     }
     public get isEnabled(): boolean {
