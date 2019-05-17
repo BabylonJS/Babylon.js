@@ -8216,8 +8216,8 @@ var Line = /** @class */ (function (_super) {
         context.lineWidth = this._lineWidth;
         context.setLineDash(this._dash);
         context.beginPath();
-        context.moveTo(this._cachedParentMeasure.left + this._x1.getValue(this._host), this._cachedParentMeasure.left + this._y1.getValue(this._host));
-        context.lineTo(this._cachedParentMeasure.left + this._effectiveX2, this._cachedParentMeasure.left + this._effectiveY2);
+        context.moveTo(this._cachedParentMeasure.left + this._x1.getValue(this._host), this._cachedParentMeasure.top + this._y1.getValue(this._host));
+        context.lineTo(this._cachedParentMeasure.left + this._effectiveX2, this._cachedParentMeasure.top + this._effectiveY2);
         context.stroke();
         context.restore();
     };

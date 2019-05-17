@@ -50038,6 +50038,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum defining the mode of a NodeMaterialBlockConnectionPoint
+     */
+    export enum NodeMaterialBlockConnectionPointMode {
+        /** Value is an uniform */
+        Uniform = 0,
+        /** Value is a mesh attribute */
+        Attribute = 1,
+        /** Value is a varying between vertex and fragment shaders */
+        Varying = 2,
+        /** Mode is undefined */
+        Undefined = 3
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to store shared data between 2 NodeMaterialBuildState
      */
     export class NodeMaterialBuildStateSharedData {
@@ -50600,7 +50615,7 @@ declare module BABYLON {
         private _endpoints;
         private _storedValue;
         private _valueCallback;
-        private _isVarying;
+        private _mode;
         /** @hidden */
         _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
         /**
