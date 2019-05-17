@@ -68,8 +68,32 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
             { label: "Automatic", value: NodeMaterialWellKnownValues.Automatic },
         ];
 
+        /**
+         * Gets the base math type of node material block connection point.
+         * @param type Type to parse.
+         */
+        function getBaseType(type: NodeMaterialBlockConnectionPointTypes): string {
+            switch (type) {
+                case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
+                case NodeMaterialBlockConnectionPointTypes.Color3: {
+                    return NodeMaterialBlockConnectionPointTypes[NodeMaterialBlockConnectionPointTypes.Vector3];
+                }
+                case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
+                case NodeMaterialBlockConnectionPointTypes.Vector3OrVector4:
+                case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
+                case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4:
+                case NodeMaterialBlockConnectionPointTypes.Color4: {
+                    return NodeMaterialBlockConnectionPointTypes[NodeMaterialBlockConnectionPointTypes.Vector4];
+                }
+                default: {
+                    return NodeMaterialBlockConnectionPointTypes[type];
+                }
+            }
+        }
+
         return (
             <div>
+                <h1>{getBaseType(connection.type)}</h1>
                 <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {
                     connection!.isAttribute = value;
                     this.props.globalState.onRebuildRequiredObservable.notifyObservers();
