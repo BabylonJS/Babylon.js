@@ -428,7 +428,7 @@ export class ShaderMaterial extends Material {
 
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         // Bones
