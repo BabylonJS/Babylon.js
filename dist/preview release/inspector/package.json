@@ -29,13 +29,15 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "@types/react": "~16.7.3",
-        "@types/react-dom": "~16.0.9",
         "babylonjs": "4.1.0-alpha.1",
         "babylonjs-gui": "4.1.0-alpha.1",
         "babylonjs-loaders": "4.1.0-alpha.1",
         "babylonjs-serializers": "4.1.0-alpha.1",
         "babylonjs-gltf2interface": "4.1.0-alpha.1"
+    },
+    "devDependencies": {
+        "@types/react": "~16.7.3",
+        "@types/react-dom": "~16.0.9",
     },
     "engines": {
         "node": "*"
