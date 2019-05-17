@@ -7,7 +7,7 @@ import { PolyhedronBuilder } from "../Meshes/Builders/polyhedronBuilder";
 import { Gizmo } from "./gizmo";
 import { AxisScaleGizmo } from "./axisScaleGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { Mesh } from 'Meshes';
+import { Mesh } from "../Meshes/mesh";
 /**
  * Gizmo that enables scaling a mesh along 3 axis
  */
