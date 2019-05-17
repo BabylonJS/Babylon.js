@@ -76,7 +76,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                 {
                     generator !== null &&
                     <LineContainerComponent globalState={this.props.globalState} title="SHADOW GENERATOR">
-                        <FloatLineComponent lockObject={this.props.lockObject} label="Bias" target={generator} propertyName="bias" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <FloatLineComponent lockObject={this.props.lockObject} digits={4} step="0.0001" label="Bias" target={generator} propertyName="bias" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <FloatLineComponent lockObject={this.props.lockObject} label="Normal bias" target={generator} propertyName="normalBias" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <SliderLineComponent label="Darkness" target={generator} minimum={0} maximum={1} step={0.01} propertyName="darkness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <CheckBoxLineComponent label="Allow transparent shadows" target={generator} propertyName="transparencyShadow" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
