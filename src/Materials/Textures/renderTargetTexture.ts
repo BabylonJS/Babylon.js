@@ -584,7 +584,7 @@ export class RenderTargetTexture extends Texture {
      */
     public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
         var scene = this.getScene();
-        
+
         if (!scene) {
             return;
         }
