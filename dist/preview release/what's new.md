@@ -6,7 +6,11 @@
 
 ## Updates
 - Support Vive Focus 3Dof controller ([TrevorDev](https://github.com/TrevorDev))
+- Planar positioning support for GizmoManager ([Balupg](https://github.com/balupg))
+- Individual gizmos can now be enabled/disabled ([Balupg](https://github.com/balupg))
 
+- Unify preparation of instance attributes. Added `MaterialHelper.PushAttributesForInstances` ([MarkusBillharz](https://github.com/MarkusBillharz))
+ 
 ### Inspector
 - Added support for `ShadowGenerator` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for scene normalization ([Deltakosh](https://github.com/deltakosh/))
