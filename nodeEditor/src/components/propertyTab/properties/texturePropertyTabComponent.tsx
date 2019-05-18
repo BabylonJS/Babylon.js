@@ -50,7 +50,10 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
 
     render() {
         return (
-            <FileButtonLineComponent label="Replace texture" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+            <div>
+                <h1>Texture</h1>
+                <FileButtonLineComponent label="Replace texture" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+            </div>
         );
     }
 }
