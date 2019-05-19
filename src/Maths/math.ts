@@ -65,9 +65,9 @@ export class Color3 {
      * @returns an unique number that can be used to hash Color3 objects
      */
     public getHashCode(): number {
-        let hash = this.r || 0;
-        hash = (hash * 397) ^ (this.g || 0);
-        hash = (hash * 397) ^ (this.b || 0);
+        let hash = (this.r * 255) || 0;
+        hash = (hash * 397) ^ ((this.g * 255) || 0);
+        hash = (hash * 397) ^ ((this.b * 255) || 0);
         return hash;
     }
 
@@ -779,10 +779,10 @@ export class Color4 {
      * @returns an unique number that can be used to hash Color4 objects
      */
     public getHashCode(): number {
-        let hash = this.r || 0;
-        hash = (hash * 397) ^ (this.g || 0);
-        hash = (hash * 397) ^ (this.b || 0);
-        hash = (hash * 397) ^ (this.a || 0);
+        let hash = (this.r * 255) || 0;
+        hash = (hash * 397) ^ ((this.g * 255) || 0);
+        hash = (hash * 397) ^ ((this.b * 255) || 0);
+        hash = (hash * 397) ^ ((this.a * 255) || 0);
         return hash;
     }
 
