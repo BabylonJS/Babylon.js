@@ -7,11 +7,11 @@ export class ShaderCodeArithmeticTestNode extends ShaderCodeNode {
     testValue: string;
     child: ShaderCodeNode;
 
-    getNextNode(preprocessors: {[key: string]: string}) {
+    isValid(preprocessors: { [key: string]: string }) {
         let value = preprocessors[this.define];
 
         if (value === undefined) {
-            return this.next;
+            return false;
         }
 
         let condition = false;
@@ -25,9 +25,9 @@ export class ShaderCodeArithmeticTestNode extends ShaderCodeNode {
         }
 
         if (condition) {
-            return this.child;
+            return true;
         }
 
-        return this.next;
+        return false;
     }
 }
