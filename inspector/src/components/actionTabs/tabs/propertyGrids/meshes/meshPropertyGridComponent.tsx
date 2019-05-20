@@ -22,6 +22,7 @@ import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { Color3LineComponent } from '../../../lines/color3LineComponent';
+import { MorphTarget } from 'babylonjs';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -209,6 +210,14 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         const renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
         const renderWireframeOver = (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) ? true : false;
 
+        var morphTargets: MorphTarget[] = [];
+
+        if (mesh.morphTargetManager) {
+            for (var index = 0; index < mesh.morphTargetManager.numTargets; index++) {
+                morphTargets.push(mesh.morphTargetManager.getTarget(index));
+            }
+        }
+
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={mesh}
@@ -264,6 +273,19 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <CheckBoxLineComponent label="Infinite distance" target={mesh} propertyName="infiniteDistance" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                 </LineContainerComponent>
+                {
+                    mesh.morphTargetManager != null &&
+                    <LineContainerComponent globalState={this.props.globalState} title="MORPH TARGETS" closed={true}>
+                        {
+                            morphTargets.map((mt, i) => {
+                                return (
+                                    <SliderLineComponent label={mt.name} target={mt} propertyName="influence" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                                )
+                            })
+                        }
+                    </LineContainerComponent>
+
+                }
                 <LineContainerComponent globalState={this.props.globalState} title="ADVANCED" closed={true}>
                     {
                         mesh.useBones &&
