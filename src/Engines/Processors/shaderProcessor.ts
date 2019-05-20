@@ -3,6 +3,7 @@ import { ShaderCodeNode } from './shaderCodeNode';
 import { ShaderCodeCursor } from './shaderCodeCursor';
 import { ShaderCodeArithmeticTestNode } from './shaderCodeArithmeticTestNode';
 import { ShaderCodeDefineTestNode } from './shaderCodeDefineTestNode';
+import { Nullable } from '../../types';
 
 /** @hidden */
 interface ProcessingOptions {
@@ -43,7 +44,7 @@ export class ShaderProcessor {
         return source;
     }
 
-    private static _EvaluatePreProcessors(sourceCode: string, preprocessors: {[key: string]: string}): string {
+    private static _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }): string {
         const rootNode = new ShaderCodeNode();
         let cursor = new ShaderCodeCursor();
 
@@ -54,7 +55,7 @@ export class ShaderProcessor {
         // Decompose
         while (!cursor.eof) {
             let line = cursor.currentLine;
-            if (line[0] === "#") {
+            if (line[0] === "#" && line[1] !== "d") {
                 let first6 = line.substring(0, 6).toLowerCase();
                 if (first6 === "#ifdef") {
                     let newNode = new ShaderCodeDefineTestNode();
@@ -67,10 +68,25 @@ export class ShaderProcessor {
                         cursor.currentNode.next = newNode;
                     }
                     cursor.currentNode = newNode.child;
-                } else if (first6 === "#endif") {
+                } else if (line.substring(0, 5).toLowerCase() === "#else") {
+                    let ifNode = cursor.parentNode as ShaderCodeDefineTestNode;
+                    cursor.parentNode = cursor.parentNode!.parent;
+
+                    let newNode = new ShaderCodeDefineTestNode();
+                    newNode.define = ifNode.define;
+                    newNode.not = true;
+                    newNode.parent = cursor.parentNode;
+                    newNode.child = new ShaderCodeNode();
+
+                    cursor.parentNode = newNode;
+                    if (cursor.currentNode) {
+                        cursor.currentNode.next = newNode;
+                    }
+                    cursor.currentNode = newNode.child;
                     cursor.currentNode = cursor.parentNode;
                     cursor.parentNode = cursor.parentNode!.parent;
-                }else if (line.substring(0, 3).toLowerCase() === "#if") {
+                } else if (first6 === "#endif") {
+                } else if (line.substring(0, 3).toLowerCase() === "#if") {
                     let newNode = new ShaderCodeArithmeticTestNode();
                     let regex = /(.+)(.)(.+)/;
                     let matches = regex.exec(line.substring(3).trim())!;
@@ -89,7 +105,6 @@ export class ShaderProcessor {
             } else {
                 let newNode = new ShaderCodeNode();
                 newNode.line = line;
-                newNode.parent = cursor.parentNode;
 
                 if (cursor.currentNode) {
                     cursor.currentNode.next = newNode;
@@ -101,19 +116,7 @@ export class ShaderProcessor {
         }
 
         // Recompose
-
-        let currentNode = rootNode;
-        let processedCode = "";
-
-        while (currentNode) {
-            if (currentNode.line) {
-                processedCode += currentNode.line + "\r\n";
-            }
-
-            currentNode = currentNode.getNextNode(preprocessors);
-        }
-
-        return processedCode;
+        return rootNode.process(preprocessors);
     }
 
     private static _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions): string {
@@ -131,8 +134,8 @@ export class ShaderProcessor {
 
         let defines = options.defines.split("\n");
 
-        let preprocessors: {[key: string]: string} = {};
-        
+        let preprocessors: { [key: string]: string } = {};
+
         for (var define of defines) {
             let keyValue = define.replace("#define", "").trim();
             let split = keyValue.split(" ");
