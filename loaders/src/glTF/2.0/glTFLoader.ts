@@ -921,7 +921,7 @@ export class GLTFLoader implements IGLTFLoader {
                 // The vertexData.tangent is stored as xyzw.
                 // So we need to skip every fourth vertexData.tangent.
                 if (((index + 1) % 4) !== 0) {
-                    tangents[dataIndex] = data[dataIndex] += value;
+                    tangents[dataIndex] = data[dataIndex] + value;
                     dataIndex++;
                 }
             });
