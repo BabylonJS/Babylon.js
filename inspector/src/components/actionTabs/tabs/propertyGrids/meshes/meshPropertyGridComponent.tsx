@@ -22,7 +22,7 @@ import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { Color3LineComponent } from '../../../lines/color3LineComponent';
-import { MorphTarget } from 'babylonjs';
+import { MorphTarget } from 'babylonjs/Morph/morphTarget';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
