@@ -9,8 +9,12 @@ export class ShaderCodeNode {
     }
 
     process(preprocessors: { [key: string]: string }): string {
+        if (!this.isValid(preprocessors)) {
+            return "";
+        }
+
         let result = "";
-        if (this.isValid(preprocessors)) {
+        if (this.line) {
             result += this.line + "\r\n";
         }
 
