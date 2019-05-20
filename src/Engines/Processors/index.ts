@@ -1,4 +1,4 @@
 export * from "./shaderCodeNode";
-export * from "./shaderCodeArithmeticTestNode";
+export * from "./Expressions/Operators/shaderDefineArithmeticOperator";
 export * from "./shaderCodeCursor";
 export * from "./shaderProcessor";

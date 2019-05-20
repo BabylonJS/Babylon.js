@@ -2,14 +2,15 @@ import { ShaderCodeNode } from './shaderCodeNode';
 
 /** @hidden */
 export class ShaderCodeConditionNode extends ShaderCodeNode {
-    if: ShaderCodeNode;
-    else: ShaderCodeNode;
-
     process(preprocessors: { [key: string]: string }) {
-        if (this.if.isValid(preprocessors)) {
-            return this.if.process(preprocessors);
+        for (var index = 0; index < this.children.length; index++) {
+            let node = this.children[index];
+
+            if (node.isValid(preprocessors)) {
+                return node.process(preprocessors);
+            }
         }
 
-        return this.else.process(preprocessors);
+        return "";
     }
 }

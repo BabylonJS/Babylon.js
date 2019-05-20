@@ -1,9 +1,13 @@
 import { Tools } from '../../Misc/tools';
 import { ShaderCodeNode } from './shaderCodeNode';
 import { ShaderCodeCursor } from './shaderCodeCursor';
-import { ShaderCodeArithmeticTestNode } from './shaderCodeArithmeticTestNode';
-import { ShaderCodeDefineTestNode } from './shaderCodeDefineTestNode';
-import { Nullable } from '../../types';
+import { ShaderCodeConditionNode } from './shaderCodeConditionNode';
+import { ShaderCodeTestNode } from './shaderCodeTestNode';
+import { ShaderDefineIsDefinedOperator } from './Expressions/Operators/shaderDefineIsDefinedOperator';
+import { ShaderDefineOrOperator } from './Expressions/Operators/shaderDefineOrOperator';
+import { ShaderDefineAndOperator } from './Expressions/Operators/shaderDefineAndOperator';
+import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
+import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
 
 /** @hidden */
 interface ProcessingOptions {
@@ -44,76 +48,158 @@ export class ShaderProcessor {
         return source;
     }
 
-    private static _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }): string {
-        const rootNode = new ShaderCodeNode();
-        let cursor = new ShaderCodeCursor();
+    private static _ExtractOperation(expression: string) {
+        let regex = /defined\((.+)\)/;
 
-        cursor.lineIndex = 0;
-        cursor.currentNode = rootNode;
-        cursor.lines = sourceCode.split("\n");
+        let match = regex.exec(expression);
 
-        // Decompose
-        while (!cursor.eof) {
+        if (match && match.length) {
+            return new ShaderDefineIsDefinedOperator(match[1], expression[0] === "!");
+        }
+
+        let indexOperator = expression.indexOf("==");
+        let operator = "";
+
+        if (indexOperator === -1) {
+            indexOperator = expression.indexOf(">");
+
+            if (indexOperator === -1) {
+                indexOperator = expression.indexOf("<");
+
+                if (indexOperator !== -1) {
+                    operator = "<";
+                }
+            } else {
+                operator = ">";
+            }
+        } else {
+            operator = "==";
+        }
+
+        let define = expression.substring(0, indexOperator);
+        let value = expression.substring(indexOperator + operator.length);
+
+        return new ShaderDefineArithmeticOperator(define, operator, value);
+    }
+
+    private static _BuildSubExpression(expression: string): ShaderDefineExpression {
+        let indexOr = expression.indexOf("||");
+        if (indexOr === -1) {
+            let indexAnd = expression.indexOf("&&");
+            if (indexAnd > -1) {
+                let andOperator = new ShaderDefineAndOperator();
+                let leftPart = expression.substring(0, indexAnd);
+                let rightPart = expression.substring(indexAnd);
+
+                andOperator.leftOperand = this._BuildSubExpression(leftPart);
+                andOperator.rightOperand = this._BuildSubExpression(rightPart);
+
+                return andOperator;
+            } else {
+                return this._ExtractOperation(expression);
+            }
+        } else {
+            let orOperator = new ShaderDefineOrOperator();
+            let leftPart = expression.substring(0, indexOr);
+            let rightPart = expression.substring(indexOr);
+
+            orOperator.leftOperand = this._BuildSubExpression(leftPart);
+            orOperator.rightOperand = this._BuildSubExpression(rightPart);
+
+            return orOperator;
+        }
+    }
+
+    private static _BuildExpression(line: string, start: number): ShaderCodeTestNode {
+        let node = new ShaderCodeTestNode();
+        let command = line.substring(0, start);
+        let expression = line.substring(start).trim();
+
+        if (command === "#ifdef") {
+            node.testExpression = new ShaderDefineIsDefinedOperator(expression);
+        } else if (command === "#ifndef") {
+            node.testExpression = new ShaderDefineIsDefinedOperator(expression, true);
+        } else {
+            node.testExpression = this._BuildSubExpression(expression);
+        }
+
+        return node;
+    }
+
+    private static _MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeConditionNode, ifNode: ShaderCodeNode) {
+        let line = cursor.currentLine;
+        while (this._MoveCursor(cursor, ifNode)) {
+            line = cursor.currentLine;
+            let first5 = line.substring(0, 5).toLowerCase();
+
+            if (first5 === "#else") {
+                let elseNode = new ShaderCodeNode();
+                rootNode.children.push(ifNode);
+                this._MoveCursor(cursor, elseNode);
+                return;
+            } else if (first5 === "#elif") {
+                console.log(line);
+                let elifNode = this._BuildExpression(line, 5);
+
+                rootNode.children.push(elifNode);
+                ifNode = elifNode;
+            }
+        }
+    }
+
+    private static _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolean {
+        while (cursor.canRead) {
+            cursor.lineIndex++;
             let line = cursor.currentLine;
             if (line[0] === "#" && line[1] !== "d") {
                 let first6 = line.substring(0, 6).toLowerCase();
+                let first5 = line.substring(0, 5).toLowerCase();
                 if (first6 === "#ifdef") {
-                    let newNode = new ShaderCodeDefineTestNode();
-                    newNode.define = line.substring(6).trim();
-                    newNode.parent = cursor.parentNode;
-                    newNode.child = new ShaderCodeNode();
+                    let newRootNode = new ShaderCodeConditionNode();
+                    rootNode.children.push(newRootNode);
 
-                    cursor.parentNode = newNode;
-                    if (cursor.currentNode) {
-                        cursor.currentNode.next = newNode;
-                    }
-                    cursor.currentNode = newNode.child;
-                } else if (line.substring(0, 5).toLowerCase() === "#else") {
-                    let ifNode = cursor.parentNode as ShaderCodeDefineTestNode;
-                    cursor.parentNode = cursor.parentNode!.parent;
-
-                    let newNode = new ShaderCodeDefineTestNode();
-                    newNode.define = ifNode.define;
-                    newNode.not = true;
-                    newNode.parent = cursor.parentNode;
-                    newNode.child = new ShaderCodeNode();
-
-                    cursor.parentNode = newNode;
-                    if (cursor.currentNode) {
-                        cursor.currentNode.next = newNode;
-                    }
-                    cursor.currentNode = newNode.child;
-                    cursor.currentNode = cursor.parentNode;
-                    cursor.parentNode = cursor.parentNode!.parent;
+                    let ifNode = this._BuildExpression(line, 6);
+                    newRootNode.children.push(ifNode);
+                    this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                } else if (first5 === "#else") {
+                    return true;
+                } else if (first5 === "#elif") {
+                    return true;
                 } else if (first6 === "#endif") {
+                    return false;
                 } else if (line.substring(0, 3).toLowerCase() === "#if") {
-                    let newNode = new ShaderCodeArithmeticTestNode();
-                    let regex = /(.+)(.)(.+)/;
-                    let matches = regex.exec(line.substring(3).trim())!;
-                    newNode.define = matches[1];
-                    newNode.operand = matches[2];
-                    newNode.testValue = matches[3];
-                    newNode.parent = cursor.parentNode;
-                    newNode.child = new ShaderCodeNode();
+                    let newRootNode = new ShaderCodeConditionNode();
+                    let ifNode = this._BuildExpression(line, 3);
+                    rootNode.children.push(newRootNode);
 
-                    cursor.parentNode = newNode;
-                    if (cursor.currentNode) {
-                        cursor.currentNode.next = newNode;
-                    }
-                    cursor.currentNode = newNode.child;
+                    newRootNode.children.push(ifNode);
+                    this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                } else if (line.substring(0, 7).toLowerCase() === "#ifndef") {
+                    let newRootNode = new ShaderCodeConditionNode();
+                    rootNode.children.push(newRootNode);
+
+                    let ifNode = this._BuildExpression(line, 7);
+                    newRootNode.children.push(ifNode);
+                    this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
                 }
             } else {
                 let newNode = new ShaderCodeNode();
                 newNode.line = line;
-
-                if (cursor.currentNode) {
-                    cursor.currentNode.next = newNode;
-                }
-                cursor.currentNode = newNode;
+                rootNode.children.push(newNode);
             }
-
-            cursor.lineIndex++;
         }
+        return false;
+    }
+
+    private static _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }): string {
+        const rootNode = new ShaderCodeNode();
+        let cursor = new ShaderCodeCursor();
+
+        cursor.lineIndex = -1;
+        cursor.lines = sourceCode.split("\n");
+
+        // Decompose
+        this._MoveCursor(cursor, rootNode);
 
         // Recompose
         return rootNode.process(preprocessors);

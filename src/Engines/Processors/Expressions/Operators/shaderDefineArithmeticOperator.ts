@@ -1,13 +1,12 @@
-import { ShaderCodeNode } from './shaderCodeNode';
+import { ShaderDefineExpression } from '../shaderDefineExpression';
 
 /** @hidden */
-export class ShaderCodeArithmeticTestNode extends ShaderCodeNode {
-    define: string;
-    operand: string;
-    testValue: string;
-    child: ShaderCodeNode;
+export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
+    public constructor(public define: string, public operand: string, public testValue: string) {
+        super();
+    }
 
-    isValid(preprocessors: { [key: string]: string }) {
+    public isTrue(preprocessors: { [key: string]: string }) {
         let value = preprocessors[this.define];
 
         if (value === undefined) {
@@ -24,10 +23,6 @@ export class ShaderCodeArithmeticTestNode extends ShaderCodeNode {
                 break;
         }
 
-        if (condition) {
-            return true;
-        }
-
-        return false;
+        return condition;
     }
 }
