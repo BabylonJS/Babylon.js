@@ -762,13 +762,19 @@ export class InputManager {
         };
 
         // Keyboard events
-        this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(() => {
-            if (!canvas) {
-                return;
+        this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add((() => {
+            let fn = () => {
+                if (!canvas) {
+                    return;
+                }
+                canvas.addEventListener("keydown", this._onKeyDown, false);
+                canvas.addEventListener("keyup", this._onKeyUp, false);
+            };
+            if (document.activeElement === canvas) {
+                fn();
             }
-            canvas.addEventListener("keydown", this._onKeyDown, false);
-            canvas.addEventListener("keyup", this._onKeyUp, false);
-        });
+            return fn;
+        })());
 
         this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(() => {
             if (!canvas) {
