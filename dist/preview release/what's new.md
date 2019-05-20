@@ -31,6 +31,6 @@
 ## Bug fixes
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Removing assetContainer from scene will also remove gui layers ([TrevorDev](https://github.com/TrevorDev))
-- A secene's input manager not adding key listeners when the canvas is already focused ([Poolminer](https://github.com/Poolminer))
+- A scene's input manager not adding key listeners when the canvas is already focused ([Poolminer](https://github.com/Poolminer))
 
 ## Breaking changes
