@@ -428,6 +428,17 @@ export class RuntimeAnimation {
             frame = keys[keys.length - 1].frame;
         }
 
+        // Need to reset animation events
+        const events = this._events;
+        if (events.length) {
+            for (var index = 0; index < events.length; index++) {
+                if (!events[index].onlyOnce) {
+                    // reset events in the future
+                    events[index].isDone = events[index].frame < frame;
+                }
+            }
+        }
+
         this._currentFrame = frame;
         var currentValue = this._animation._interpolate(frame, this._animationState);
 
