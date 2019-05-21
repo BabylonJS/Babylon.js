@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper } from "../../Misc/decorators";
+import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
 import { Observer, Observable } from "../../Misc/observable";
 import { Tools, IAnimatable } from "../../Misc/tools";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
@@ -256,6 +256,36 @@ export class BaseTexture implements IAnimatable {
     }
     public set lodGenerationScale(value: number) {
         if (this._texture) { this._texture._lodGenerationScale = value; }
+    }
+
+    /**
+     * With prefiltered texture, defined if the specular generation is based on a linear ramp.
+     * By default we are using a log2 of the linear roughness helping to keep a better resolution for 
+     * average roughness values.
+     */
+    @serialize()
+    public get linearSpecularLOD(): boolean {
+        if (this._texture) { return this._texture._linearSpecularLOD; }
+
+        return false;
+    }
+    public set linearSpecularLOD(value: boolean) {
+        if (this._texture) { this._texture._linearSpecularLOD = value; }
+    }
+
+    /**
+     * In case a better definition than spherical harmonics is required for the diffuse part of the environment.
+     * You can set the irradiance texture to rely on a texture instead of the spherical approach.
+     * This texture need to have the same characteristics than its parent (Cube vs 2d, coordinates mode, Gamma/Linear, RGBD).
+     */
+    @serializeAsTexture()
+    public get irradianceTexture(): Nullable<BaseTexture> {
+        if (this._texture) { return this._texture._irradianceTexture; }
+
+        return null;
+    }
+    public set irradianceTexture(value: Nullable<BaseTexture>) {
+        if (this._texture) { this._texture._irradianceTexture = value; }
     }
 
     /**
