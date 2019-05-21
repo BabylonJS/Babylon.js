@@ -353,7 +353,7 @@ export class Effect implements IDisposable {
             indexParameters: this._indexParameters,
             isFragment: false,
             shouldUseHighPrecisionShader: this._engine._shouldUseHighPrecisionShader,
-            needProcessing: this._engine.webGLVersion > 1,
+            processor: this._engine._shaderProcessor,
             supportsUniformBuffers: this._engine.supportsUniformBuffers,
             shadersRepository: Effect.ShadersRepository,
             includesShadersStore: Effect.IncludesShadersStore,

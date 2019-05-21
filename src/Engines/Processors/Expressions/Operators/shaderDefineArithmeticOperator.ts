@@ -14,12 +14,24 @@ export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
         }
 
         let condition = false;
+        let left = parseInt(value);
+        let right = parseInt(this.testValue);
+
         switch (this.operand) {
             case ">":
-                condition = parseInt(this.testValue) > parseInt(value);
+                condition = left > right;
                 break;
             case "<":
-                condition = parseInt(this.testValue) < parseInt(value);
+                condition = left < right;
+                break;
+            case "<=":
+                condition = left <= right;
+                break;
+            case ">=":
+                condition = left >= right;
+                break;
+            case "==":
+                condition = left === right;
                 break;
         }
 
