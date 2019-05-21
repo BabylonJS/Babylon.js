@@ -260,7 +260,7 @@ export class BaseTexture implements IAnimatable {
 
     /**
      * With prefiltered texture, defined if the specular generation is based on a linear ramp.
-     * By default we are using a log2 of the linear roughness helping to keep a better resolution for 
+     * By default we are using a log2 of the linear roughness helping to keep a better resolution for
      * average roughness values.
      */
     @serialize()
