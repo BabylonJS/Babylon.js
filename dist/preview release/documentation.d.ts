@@ -13266,15 +13266,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-        /**
-         * Defines the interface used by display changed events
-         */
-        interface IDisplayChangedEventArgs {
-            /** Gets the vrDisplay object (if any) */
-            vrDisplay: Nullable<any>;
-            /** Gets a boolean indicating if webVR is supported */
-            vrSupported: boolean;
-        }
         interface Engine {
             /** @hidden */
             _vrDisplay: any;
@@ -27229,6 +27220,15 @@ declare module BABYLON {
          * Defines that engine should compile shaders with high precision floats (if supported). True by default
          */
         useHighPrecisionFloats?: boolean;
+    }
+    /**
+     * Defines the interface used by display changed events
+     */
+    export interface IDisplayChangedEventArgs {
+        /** Gets the vrDisplay object (if any) */
+        vrDisplay: Nullable<any>;
+        /** Gets a boolean indicating if webVR is supported */
+        vrSupported: boolean;
     }
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
