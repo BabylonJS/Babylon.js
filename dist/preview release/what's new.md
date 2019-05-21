@@ -10,8 +10,7 @@
 - Support Vive Focus 3Dof controller ([TrevorDev](https://github.com/TrevorDev))
 - Planar positioning support for GizmoManager ([Balupg](https://github.com/balupg))
 - Individual gizmos can now be enabled/disabled ([Balupg](https://github.com/balupg))
-- Unify preparation of instance attributes. Added `MaterialHelper.PushAttributesForInstances` (
-[MarkusBillharz](https://github.com/MarkusBillharz))
+- Unify preparation of instance attributes. Added `MaterialHelper.PushAttributesForInstances` ([MarkusBillharz](https://github.com/MarkusBillharz))
 - Added support for PBR [irradiance map](https://doc.babylonjs.com/how_to/physically_based_rendering_master#irradiance-map)
 
 ### Inspector
