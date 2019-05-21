@@ -5218,6 +5218,11 @@ export class Engine {
             texture._lodTextureLow.dispose();
         }
 
+        // Integrated irradiance map.
+        if (texture._irradianceTexture) {
+            texture._irradianceTexture.dispose();
+        }
+
         // Set output texture of post process to null if the texture has been released/disposed
         this.scenes.forEach((scene) => {
             scene.postProcesses.forEach((postProcess) => {
