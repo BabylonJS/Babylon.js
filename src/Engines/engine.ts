@@ -8,7 +8,6 @@ import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import { Matrix, Color3, Color4, Viewport, Vector4 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
-import { IDisplayChangedEventArgs } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Effect, EffectCreationOptions, EffectFallbacks } from "../Materials/effect";
@@ -227,6 +226,16 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Defines that engine should compile shaders with high precision floats (if supported). True by default
      */
     useHighPrecisionFloats?: boolean;
+}
+
+/**
+ * Defines the interface used by display changed events
+ */
+export interface IDisplayChangedEventArgs {
+    /** Gets the vrDisplay object (if any) */
+    vrDisplay: Nullable<any>;
+    /** Gets a boolean indicating if webVR is supported */
+    vrSupported: boolean;
 }
 
 /**
