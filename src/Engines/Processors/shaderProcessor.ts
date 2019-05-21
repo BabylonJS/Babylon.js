@@ -8,6 +8,7 @@ import { ShaderDefineOrOperator } from './Expressions/Operators/shaderDefineOrOp
 import { ShaderDefineAndOperator } from './Expressions/Operators/shaderDefineAndOperator';
 import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
+import { IShaderProcessor } from './iShaderProcessor';
 
 /** @hidden */
 interface ProcessingOptions {
@@ -15,10 +16,10 @@ interface ProcessingOptions {
     indexParameters: any;
     isFragment: boolean;
     shouldUseHighPrecisionShader: boolean;
-    needProcessing: boolean;
     supportsUniformBuffers: boolean;
     shadersRepository: string;
     includesShadersStore: { [key: string]: string };
+    processor?: IShaderProcessor;
 }
 
 /** @hidden */
@@ -54,30 +55,23 @@ export class ShaderProcessor {
         let match = regex.exec(expression);
 
         if (match && match.length) {
-            return new ShaderDefineIsDefinedOperator(match[1], expression[0] === "!");
+            return new ShaderDefineIsDefinedOperator(match[1].trim(), expression[0] === "!");
         }
 
-        let indexOperator = expression.indexOf("==");
+        let operators = ["==", ">=", "<=", "<", ">"];
         let operator = "";
+        let indexOperator = 0;
 
-        if (indexOperator === -1) {
-            indexOperator = expression.indexOf(">");
+        for (operator of operators) {
+            indexOperator = expression.indexOf(operator);
 
-            if (indexOperator === -1) {
-                indexOperator = expression.indexOf("<");
-
-                if (indexOperator !== -1) {
-                    operator = "<";
-                }
-            } else {
-                operator = ">";
+            if (indexOperator > -1) {
+                break;
             }
-        } else {
-            operator = "==";
         }
 
-        let define = expression.substring(0, indexOperator);
-        let value = expression.substring(indexOperator + operator.length);
+        let define = expression.substring(0, indexOperator).trim();
+        let value = expression.substring(indexOperator + operator.length).trim();
 
         return new ShaderDefineArithmeticOperator(define, operator, value);
     }
@@ -88,8 +82,8 @@ export class ShaderProcessor {
             let indexAnd = expression.indexOf("&&");
             if (indexAnd > -1) {
                 let andOperator = new ShaderDefineAndOperator();
-                let leftPart = expression.substring(0, indexAnd);
-                let rightPart = expression.substring(indexAnd);
+                let leftPart = expression.substring(0, indexAnd).trim();
+                let rightPart = expression.substring(indexAnd + 2).trim();
 
                 andOperator.leftOperand = this._BuildSubExpression(leftPart);
                 andOperator.rightOperand = this._BuildSubExpression(rightPart);
@@ -100,8 +94,8 @@ export class ShaderProcessor {
             }
         } else {
             let orOperator = new ShaderDefineOrOperator();
-            let leftPart = expression.substring(0, indexOr);
-            let rightPart = expression.substring(indexOr);
+            let leftPart = expression.substring(0, indexOr).trim();;
+            let rightPart = expression.substring(indexOr + 2).trim();;
 
             orOperator.leftOperand = this._BuildSubExpression(leftPart);
             orOperator.rightOperand = this._BuildSubExpression(rightPart);
@@ -134,11 +128,10 @@ export class ShaderProcessor {
 
             if (first5 === "#else") {
                 let elseNode = new ShaderCodeNode();
-                rootNode.children.push(ifNode);
+                rootNode.children.push(elseNode);
                 this._MoveCursor(cursor, elseNode);
                 return;
             } else if (first5 === "#elif") {
-                console.log(line);
                 let elifNode = this._BuildExpression(line, 5);
 
                 rootNode.children.push(elifNode);
@@ -151,7 +144,11 @@ export class ShaderProcessor {
         while (cursor.canRead) {
             cursor.lineIndex++;
             let line = cursor.currentLine;
-            if (line[0] === "#" && line[1] !== "d") {
+            let first0 = line[0];
+            let first1 = line[1];
+
+            // Check preprocessor commands
+            if (first0 === "#" && first1 !== "d") {
                 let first6 = line.substring(0, 6).toLowerCase();
                 let first5 = line.substring(0, 5).toLowerCase();
                 if (first6 === "#ifdef") {
@@ -167,13 +164,6 @@ export class ShaderProcessor {
                     return true;
                 } else if (first6 === "#endif") {
                     return false;
-                } else if (line.substring(0, 3).toLowerCase() === "#if") {
-                    let newRootNode = new ShaderCodeConditionNode();
-                    let ifNode = this._BuildExpression(line, 3);
-                    rootNode.children.push(newRootNode);
-
-                    newRootNode.children.push(ifNode);
-                    this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
                 } else if (line.substring(0, 7).toLowerCase() === "#ifndef") {
                     let newRootNode = new ShaderCodeConditionNode();
                     rootNode.children.push(newRootNode);
@@ -181,17 +171,35 @@ export class ShaderProcessor {
                     let ifNode = this._BuildExpression(line, 7);
                     newRootNode.children.push(ifNode);
                     this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                } else if (line.substring(0, 3).toLowerCase() === "#if") {
+                    let newRootNode = new ShaderCodeConditionNode();
+                    let ifNode = this._BuildExpression(line, 3);
+                    rootNode.children.push(newRootNode);
+
+                    newRootNode.children.push(ifNode);
+                    this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
                 }
-            } else {
+            }
+            else {
                 let newNode = new ShaderCodeNode();
                 newNode.line = line;
                 rootNode.children.push(newNode);
+
+                // Detect additional defines
+                if (first0 === "#" && first1 === "d") {
+                    let split = line.replace(";", "").split(" ");
+                    newNode.additionalDefineKey = split[1];
+
+                    if (split.length === 3) {
+                        newNode.additionalDefineValue = split[2];
+                    }
+                }
             }
         }
         return false;
     }
 
-    private static _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }): string {
+    private static _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }, processor?: IShaderProcessor): string {
         const rootNode = new ShaderCodeNode();
         let cursor = new ShaderCodeCursor();
 
@@ -202,14 +210,14 @@ export class ShaderProcessor {
         this._MoveCursor(cursor, rootNode);
 
         // Recompose
-        return rootNode.process(preprocessors);
+        return rootNode.process(preprocessors, processor);
     }
 
     private static _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions): string {
 
         var preparedSourceCode = this._ProcessPrecision(sourceCode, options);
 
-        if (!options.needProcessing) {
+        if (!options.processor) {
             return preparedSourceCode;
         }
 
@@ -228,7 +236,7 @@ export class ShaderProcessor {
             preprocessors[split[0]] = split.length > 1 ? split[1] : "";
         }
 
-        preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors);
+        preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors, options.processor);
 
         var hasDrawBuffersExtension = preparedSourceCode.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
@@ -243,7 +251,7 @@ export class ShaderProcessor {
         // Migrate to GLSL v300
         let isFragment = options.isFragment;
         result = result.replace(/varying(?![\n\r])\s/g, isFragment ? "in " : "out ");
-        result = result.replace(/attribute[ \t]/g, "in ");
+        //   result = result.replace(/attribute[ \t]/g, "in ");
         result = result.replace(/[ \t]attribute/g, " in");
 
         result = result.replace(/texture2D\s*\(/g, "texture(");
