@@ -8,19 +8,7 @@ import { ShaderDefineOrOperator } from './Expressions/Operators/shaderDefineOrOp
 import { ShaderDefineAndOperator } from './Expressions/Operators/shaderDefineAndOperator';
 import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
-import { IShaderProcessor } from './iShaderProcessor';
-
-/** @hidden */
-interface ProcessingOptions {
-    defines: string;
-    indexParameters: any;
-    isFragment: boolean;
-    shouldUseHighPrecisionShader: boolean;
-    supportsUniformBuffers: boolean;
-    shadersRepository: string;
-    includesShadersStore: { [key: string]: string };
-    processor?: IShaderProcessor;
-}
+import { ProcessingOptions } from './shaderProcessingOptions';
 
 /** @hidden */
 export class ShaderProcessor {
@@ -199,7 +187,7 @@ export class ShaderProcessor {
         return false;
     }
 
-    private static _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }, processor?: IShaderProcessor): string {
+    private static _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }, options: ProcessingOptions): string {
         const rootNode = new ShaderCodeNode();
         let cursor = new ShaderCodeCursor();
 
@@ -210,7 +198,7 @@ export class ShaderProcessor {
         this._MoveCursor(cursor, rootNode);
 
         // Recompose
-        return rootNode.process(preprocessors, processor);
+        return rootNode.process(preprocessors, options);
     }
 
     private static _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions): string {
@@ -236,42 +224,14 @@ export class ShaderProcessor {
             preprocessors[split[0]] = split.length > 1 ? split[1] : "";
         }
 
-        preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors, options.processor);
-
-        var hasDrawBuffersExtension = preparedSourceCode.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
-
-        // Remove extensions
-        // #extension GL_OES_standard_derivatives : enable
-        // #extension GL_EXT_shader_texture_lod : enable
-        // #extension GL_EXT_frag_depth : enable
-        // #extension GL_EXT_draw_buffers : require
-        var regex = /#extension.+(GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
-        var result = preparedSourceCode.replace(regex, "");
-
-        // Migrate to GLSL v300
-        let isFragment = options.isFragment;
-        result = result.replace(/varying(?![\n\r])\s/g, isFragment ? "in " : "out ");
-        //   result = result.replace(/attribute[ \t]/g, "in ");
-        result = result.replace(/[ \t]attribute/g, " in");
-
-        result = result.replace(/texture2D\s*\(/g, "texture(");
-        if (isFragment) {
-            result = result.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
-            result = result.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
-            result = result.replace(/textureCube\s*\(/g, "texture(");
-            result = result.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
-            result = result.replace(/gl_FragColor/g, "glFragColor");
-            result = result.replace(/gl_FragData/g, "glFragData");
-            result = result.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
-        }
+        preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
 
         // Add multiview setup to top of file when defined
-        var hasMultiviewExtension = defines.indexOf("#define MULTIVIEW") !== -1;
-        if (hasMultiviewExtension && !isFragment) {
-            result = "#extension GL_OVR_multiview2 : require\nlayout (num_views = 2) in;\n" + result;
+        if (options.processor.postProcessor) {
+            preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment);
         }
 
-        return result;
+        return preparedSourceCode;
     }
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {

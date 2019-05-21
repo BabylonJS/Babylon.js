@@ -1,4 +1,4 @@
-import { IShaderProcessor } from './iShaderProcessor';
+import { ProcessingOptions } from './shaderProcessingOptions';
 
 /** @hidden */
 export class ShaderCodeNode {
@@ -11,13 +11,16 @@ export class ShaderCodeNode {
         return true;
     }
 
-    process(preprocessors: { [key: string]: string }, processor?: IShaderProcessor): string {
+    process(preprocessors: { [key: string]: string }, options: ProcessingOptions): string {
         let result = "";
         if (this.line) {
             let value: string = this.line;
+            let processor = options.processor;
             if (processor) {
                 if (processor.attributeProcessor && this._lineStartsWith("attribute")) {
                     value = processor.attributeProcessor(this.line);
+                } else if (processor.varyingProcessor && this._lineStartsWith("varying")) {
+                    value = processor.varyingProcessor(this.line, options.isFragment);
                 }
             }
 
@@ -25,7 +28,7 @@ export class ShaderCodeNode {
         }
 
         this.children.forEach(child => {
-            result += child.process(preprocessors, processor);
+            result += child.process(preprocessors, options);
         });
 
         if (this.additionalDefineKey) {
