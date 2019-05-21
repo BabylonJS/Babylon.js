@@ -62,7 +62,7 @@ export class BoneAxesViewer extends AxesViewer {
         bone.getDirectionToRef(Axis.Z, this.mesh, this.zaxis);
 
         super.update(this.pos, this.xaxis, this.yaxis, this.zaxis);
-        
+
     }
 
     /** Releases resources */
