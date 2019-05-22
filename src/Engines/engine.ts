@@ -31,6 +31,8 @@ import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
+import { IShaderProcessor } from './Processors/iShaderProcessor';
+import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
@@ -288,9 +290,7 @@ export class Engine {
         }
     }
 
-    /**
-     * Hidden
-     */
+    /** @hidden */
     public static _TextureLoaders: IInternalTextureLoader[] = [];
 
     // Const statics
@@ -556,6 +556,9 @@ export class Engine {
     public static _RescalePostProcessFactory: Nullable<(engine: Engine) => PostProcess> = null;
 
     // Public members
+
+    /** @hidden */
+    public _shaderProcessor: IShaderProcessor;
 
     /**
      * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
@@ -1252,6 +1255,11 @@ export class Engine {
         this._prepareVRComponent();
         if (options.autoEnableWebVR) {
             this.initWebVR();
+        }
+
+        // Shader processor
+        if (this.webGLVersion > 1) {
+            this._shaderProcessor = new WebGL2ShaderProcessor();
         }
 
         // Detect if we are running on a faulty buggy OS.
