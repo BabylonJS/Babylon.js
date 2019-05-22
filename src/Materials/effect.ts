@@ -349,7 +349,7 @@ export class Effect implements IDisposable {
         }
 
         let processorOptions = {
-            defines: this.defines,
+            defines: this.defines.split("\n"),
             indexParameters: this._indexParameters,
             isFragment: false,
             shouldUseHighPrecisionShader: this._engine._shouldUseHighPrecisionShader,
@@ -357,29 +357,34 @@ export class Effect implements IDisposable {
             supportsUniformBuffers: this._engine.supportsUniformBuffers,
             shadersRepository: Effect.ShadersRepository,
             includesShadersStore: Effect.IncludesShadersStore,
-            version: (this._engine.webGLVersion * 100).toString()
+            version: (this._engine.webGLVersion * 100).toString(),
         };
+
 
         this._loadVertexShader(vertexSource, (vertexCode) => {
             this._loadFragmentShader(fragmentSource, (fragmentCode) => {
                 ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
                     processorOptions.isFragment = true;
                     ShaderProcessor.Process(fragmentCode, processorOptions, (migratedFragmentCode) => {
-                        if (baseName) {
-                            var vertex = baseName.vertexElement || baseName.vertex || baseName;
-                            var fragment = baseName.fragmentElement || baseName.fragment || baseName;
-
-                            this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
-                            this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
-                        } else {
-                            this._vertexSourceCode = migratedVertexCode;
-                            this._fragmentSourceCode = migratedFragmentCode;
-                        }
-                        this._prepareEffect();
+                        this._useFinalCode(migratedVertexCode, migratedFragmentCode, baseName);
                     });
                 });
             });
         });
+    }
+
+    private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any) {
+        if (baseName) {
+            var vertex = baseName.vertexElement || baseName.vertex || baseName;
+            var fragment = baseName.fragmentElement || baseName.fragment || baseName;
+
+            this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
+            this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
+        } else {
+            this._vertexSourceCode = migratedVertexCode;
+            this._fragmentSourceCode = migratedFragmentCode;
+        }
+        this._prepareEffect();
     }
 
     /**

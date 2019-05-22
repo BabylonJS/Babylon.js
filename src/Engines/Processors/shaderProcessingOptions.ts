@@ -2,7 +2,7 @@ import { IShaderProcessor } from './iShaderProcessor';
 
 /** @hidden */
 export interface ProcessingOptions {
-    defines: string;
+    defines: string[];
     indexParameters: any;
     isFragment: boolean;
     shouldUseHighPrecisionShader: boolean;
