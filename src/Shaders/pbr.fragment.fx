@@ -980,8 +980,10 @@ void main(void) {
         // Decrease Albedo Contribution
         surfaceAlbedo *= (1. - refractionIntensity);
 
-        // Decrease irradiance Contribution
-        environmentIrradiance *= (1. - refractionIntensity);
+        #ifdef REFLECTION
+            // Decrease irradiance Contribution
+            environmentIrradiance *= (1. - refractionIntensity);
+        #endif
 
         // Add Multiple internal bounces.
         vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
