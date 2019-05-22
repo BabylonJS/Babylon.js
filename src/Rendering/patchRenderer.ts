@@ -668,7 +668,14 @@ export class PatchRenderer {
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
         var uniforms = ["view", "shootPos", "shootNormal", "shootEnergy", "shootDArea", "nearFar"]; // ["world", "mBones", "view", "nearFar"]
         var samplers = ["itemBuffer", "worldPosBuffer", "worldNormalBuffer", "idBuffer", "residualBuffer", "gatheringBuffer"];
-        var defines = this.useDepthCompare ? "#define DEPTH_COMPARE" : "";
+        var defines = [];
+        if (this.useDepthCompare) {
+            defines.push("#define DEPTH_COMPARE");
+        }
+        if (this.useHemicube) {
+            defines.push("#define HEMICUBE");
+        }
+
         // var mesh = subMesh.getMesh();
 
         // Bones
@@ -702,7 +709,7 @@ export class PatchRenderer {
             attribs,
             uniforms,
             samplers,
-            defines);
+            defines.join("\n"));
         // }
 
         if (this._shootEffect.isReady()) {
@@ -786,7 +793,7 @@ export class PatchRenderer {
             }
 
             // this._scene.customRenderTargets.push(this._patchMap);
-            return false;
+            // return false;
 
             let patchShooting = Date.now();
             for (let j = 0; j < this._patchedSubMeshes.length; j++) {
@@ -803,7 +810,7 @@ export class PatchRenderer {
                 }
             }
 
-            // return false;
+            return false;
 
             if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 2) {
                 duration = Date.now() - patchShooting;
@@ -1231,24 +1238,31 @@ export class PatchRenderer {
                         this._currentPatch.viewProjectionPY,
                         this._currentPatch.viewProjectionNY
                         ];
+
         let viewportMultipliers = [[1, 1], 
                                    [0.5, 1],
                                    [0.5, 1],
                                    [1, 0.5],
                                    [1, 0.5],
                                    ];
+        let viewportOffsets = [[0, 0], 
+                                   [0, 0],
+                                   [0.5, 0],
+                                   [0, 0.5],
+                                   [0, 0.5],
+                                   ];
         for (let j = 0; j < matrices.length; j++) {
             // Render on each face of the hemicube
             engine.clear(new Color4(0, 0, 0, 0), true, true);
             // Full cube viewport when rendering the front face
-            engine.setDirectViewport(0, 0, this._patchMap.getRenderWidth() * viewportMultipliers[j][0], this._patchMap.getRenderHeight() * viewportMultipliers[j][1]);
+            engine.setDirectViewport(viewportOffsets[j][0] * this._patchMap.getRenderWidth(), viewportOffsets[j][1] * this._patchMap.getRenderHeight(), this._patchMap.getRenderWidth() * viewportMultipliers[j][0], this._patchMap.getRenderHeight() * viewportMultipliers[j][1]);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + j, internalTexture._webGLTexture, 0);
             for (let i = 0; i < this._meshes.length; i++) {
                 // TODO : mesh ? submesh ?
                 renderWithDepth(this._meshes[i].subMeshes[0], this._currentPatch, matrices[j]);
             }
             // console.log(engine.readPixelsFloat(0, 0, this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight()));
-            Tools.DumpFramebuffer(this._patchMap.getRenderWidth() * viewportMultipliers[j][0], this._patchMap.getRenderHeight() * viewportMultipliers[j][1], this._scene.getEngine());
+            // Tools.DumpFramebuffer(this._patchMap.getRenderWidth(), this._patchMap.getRenderHeight(), this._scene.getEngine());
         }
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 

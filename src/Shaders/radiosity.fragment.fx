@@ -5,7 +5,11 @@ layout(location = 0) out vec4 glFragData[2];
 // Attributes
 in vec2 vUV;
 
+#ifdef HEMICUBE
+uniform samplerCube itemBuffer;
+#else
 uniform sampler2D itemBuffer;
+#endif
 uniform sampler2D idBuffer;
 uniform sampler2D worldPosBuffer;
 uniform sampler2D worldNormalBuffer;
@@ -28,11 +32,17 @@ vec3 id;          // ID of receiver
 vec3 worldPos;    // world pos of receiving element
 vec3 worldNormal; // world normal of receiving element
 
-float visible()
+vec3 visible()
 {
   // Look up projected point in hemisphere item buffer
   vec3 proj = (view * vec4(worldPos, 1.0)).xyz;
-
+  #ifdef HEMICUBE
+  proj = normalize(proj);
+  // proj.xyz = proj.zxy;
+  // return float(texture(itemBuffer, proj).xyz == id);
+  // return proj.xyz;
+  return texture(itemBuffer, proj).xyz;
+  #else
   #ifdef DEPTH_COMPARE
   float depthProj = proj.z;
   proj = normalize(proj);
@@ -55,6 +65,7 @@ float visible()
   proj.xy = proj.xy * 0.5 + 0.5;
   vec3 xtex = texture(itemBuffer, proj.xy).xyz;
   return float(xtex == id);
+  #endif
   #endif
 }
 
@@ -93,6 +104,8 @@ void main(void) {
     worldNormal = texture(worldNormalBuffer, vUV).xyz;
     
     vec3 energy = formFactorEnergy();
-    glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
-    glFragData[1] = vec4(energy + texture(gatheringBuffer, vUV).xyz, worldPos4.a);
+    // glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
+    // glFragData[1] = vec4(energy + texture(gatheringBuffer, vUV).xyz, worldPos4.a);
+    glFragData[0] = vec4(visible(), worldPos4.a);
+    glFragData[1] = vec4(visible(), worldPos4.a);
 }
