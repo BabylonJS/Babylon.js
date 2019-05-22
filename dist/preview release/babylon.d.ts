@@ -44279,6 +44279,18 @@ declare module BABYLON {
      * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
      */
     export class PhotoDome extends TransformNode {
+        /**
+         * Define the image as a Monoscopic panoramic 360 image.
+         */
+        static readonly MODE_MONOSCOPIC: number;
+        /**
+         * Define the image as a Stereoscopic TopBottom/OverUnder panoramic 360 image.
+         */
+        static readonly MODE_TOPBOTTOM: number;
+        /**
+         * Define the image as a Stereoscopic Side by Side panoramic 360 image.
+         */
+        static readonly MODE_SIDEBYSIDE: number;
         private _useDirectMapping;
         /**
          * The texture being displayed on the sphere
@@ -44305,6 +44317,14 @@ declare module BABYLON {
          * Also see the options.resolution property.
          */
         fovMultiplier: number;
+        private _imageMode;
+        /**
+         * Gets or set the current video mode for the video. It can be:
+         * * PhotoDome.MODE_MONOSCOPIC : Define the image as a Monoscopic panoramic 360 image.
+         * * PhotoDome.MODE_TOPBOTTOM  : Define the image as a Stereoscopic TopBottom/OverUnder panoramic 360 image.
+         * * PhotoDome.MODE_SIDEBYSIDE : Define the image as a Stereoscopic Side by Side panoramic 360 image.
+         */
+        imageMode: number;
         /**
          * Create an instance of this class and pass through the parameters to the relevant classes, Texture, StandardMaterial, and Mesh.
          * @param name Element's name, child elements will append suffixes for their own names.
@@ -44318,6 +44338,8 @@ declare module BABYLON {
             useDirectMapping?: boolean;
             faceForward?: boolean;
         }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
+        private _onBeforeCameraRenderObserver;
+        private _changeImageMode;
         /**
          * Releases resources associated with this node.
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
