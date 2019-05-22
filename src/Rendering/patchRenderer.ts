@@ -41,6 +41,7 @@ class Patch {
         // this.viewMatrix.invert();
 
         this.viewProjectionMatrix = this.viewMatrix.multiply(Patch.projectionMatrix);
+        this.viewProjectionXPos = this.viewMatrix.multiply(Patch.projectionMatrix).multiply(Patch.projectionMatrixSides); // TODO get the correct view matrix
     }
 
     public toString() {
@@ -54,10 +55,15 @@ class Patch {
     public normal: Vector3;
     public viewMatrix: Matrix;
     public viewProjectionMatrix: Matrix;
+    public viewProjectionXPos: Matrix;
+    public viewProjectionXNeg: Matrix;
+    public viewProjectionYPos: Matrix;
+    public viewProjectionYNeg: Matrix;
     public residualEnergy: Vector3;
 
-    public static readonly fov: number = 120 * Math.PI / 180;
+    public static readonly fov: number = 90 * Math.PI / 180;
     public static projectionMatrix: Matrix;
+    public static projectionMatrixSides: Matrix;
 }
 declare module "../meshes/submesh" {
     export interface SubMesh {
@@ -78,6 +84,7 @@ declare module "../meshes/submesh" {
 export class PatchRenderer {
 
     public useDepthCompare: boolean;
+    public useHemicube: boolean;
 
     public static PERFORMANCE_LOGS_LEVEL : number = 0;
     public static RADIOSITY_INFO_LOGS_LEVEL : number = 1;
@@ -146,6 +153,12 @@ export class PatchRenderer {
             this._far,
         );
 
+        Patch.projectionMatrixSides = Matrix.FromValues(2, 0, 0, 1,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        );
+
         // this.createMaps();
 
         scene.getEngine().disableTextureBindingOptimization = true;
@@ -155,6 +168,7 @@ export class PatchRenderer {
         // this.createHTScene();
 
         this.useDepthCompare = false;
+        this.useHemicube = true;
     }
 
     public createHTScene(areaThreshold: number) {
@@ -525,6 +539,11 @@ export class PatchRenderer {
             }
             this._patchOffset += 1;
 
+        }
+
+        if (this.useHemicube) {
+            this.buildVisibilityMapCube();
+        } else {
             this.buildVisibilityMap();
         }
     }
@@ -721,7 +740,11 @@ export class PatchRenderer {
 
             let patchMapDate = Date.now();
 
-            this._patchMap.render(false);
+            if (this.useHemicube) {
+                this.renderVisibilityMapCube();
+            } else {
+                this._patchMap.render(false);
+            }
 
             if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 2) {
                 duration = Date.now() - patchMapDate;
@@ -729,7 +752,7 @@ export class PatchRenderer {
             }
 
             // this._scene.customRenderTargets.push(this._patchMap);
-            // return false;
+            return false;
 
             let patchShooting = Date.now();
             for (let j = 0; j < this._patchedSubMeshes.length; j++) {
@@ -917,8 +940,19 @@ export class PatchRenderer {
         // var material: any = subMesh.getMaterial();
         // var defines = [];
 
-        var attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
+        let attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
+        let uniforms = ["world", "mBones", "nearFar"];
+        let defines = [];
+        if (this.useHemicube) {
+            uniforms.push("viewProjection");
+            defines.push("#define HEMICUBE");
+        } else {
+            uniforms.push("view");
+        }
 
+        if (this.useDepthCompare) {
+            defines.push("#define DEPTH_COMPARE");
+        }
         // var mesh = subMesh.getMesh();
 
         // Alpha test
@@ -958,13 +992,13 @@ export class PatchRenderer {
         // }
 
         // Get correct effect
-        // var join = defines.join("\n");
+        var join = defines.join("\n");
         // if (this._cachedDefines !== join) {
         //     this._cachedDefines = join;
         this._uV2Effect = this._scene.getEngine().createEffect("uv2mat",
             attribs,
-            ["world", "mBones", "view", "nearFar"],
-            ["diffuseSampler", "itemBuffer"], this.useDepthCompare ? "#define DEPTH_COMPARE" : "");
+            uniforms,
+            ["diffuseSampler", "itemBuffer"], join);
         // }
 
         if (this._uV2Effect.isReady()) {
@@ -1101,6 +1135,76 @@ export class PatchRenderer {
         }
 
         return sum;
+    }
+
+    public buildVisibilityMapCube() {
+        this._patchMap = new RenderTargetTexture("patch", 512, this._scene, false, true, Constants.TEXTURETYPE_UNSIGNED_INT,true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false)
+        this._patchMap.renderParticles = false;
+        this._patchMap.renderList = this._meshes;
+        this._patchMap.activeCamera = null;
+        this._patchMap.ignoreCameraViewport = true;
+        this._patchMap.useCameraPostProcesses = false;
+    }
+
+    public renderVisibilityMapCube() {
+        let scene = this._scene;
+        let engine = this._scene.getEngine();
+
+        var uniformCb = (effect: Effect, data: any[]) => {
+            var patch = data[0] as Patch;
+            var mesh = data[1].getMesh();
+
+            if (this.useHemicube) {
+                effect.setMatrix("viewProjection", patch.viewProjectionMatrix);
+            } else {
+                effect.setMatrix("view", patch.viewMatrix);
+            }
+            effect.setFloat2("nearFar", this._near, this._far);
+            effect.setTexture("itemBuffer", mesh.residualTexture.textures[2]);
+
+        };
+
+        var renderWithDepth = (subMesh: SubMesh, patch: Patch) => {
+            engine.enableEffect(this._uV2Effect);
+
+            let mesh = subMesh.getRenderingMesh();
+            mesh._bind(subMesh, this._uV2Effect, Material.TriangleFillMode);
+            uniformCb(this._uV2Effect, [this._currentPatch, subMesh]);
+
+            var batch = mesh._getInstancesRenderList(subMesh._id);
+
+            if (batch.mustReturn) {
+                return;
+            }
+
+            // Draw triangles
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+            mesh._processRendering(subMesh, this._uV2Effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+                    (isInstance, world) => this._uV2Effect.setMatrix("world", world));
+        }
+
+
+        engine.clear(new Color4(0, 0, 0, 0), true, true);
+
+        // Render +Z 
+        let gl = engine._gl;
+        let faceIndex = 0;
+        let internalTexture = <InternalTexture>this._patchMap._texture;
+
+        engine.setState(false, 0, true, scene.useRightHandedSystem); // TODO : BFC
+        engine.setDirectViewport(0, 0, this._patchMap.getRenderWidth(), this._patchMap.getRenderHeight());
+        gl.bindFramebuffer(gl.FRAMEBUFFER, internalTexture._framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, internalTexture._webGLTexture, 0);
+
+        for (let i = 0; i < this._meshes.length; i++) {
+            // TODO : mesh ? submesh ?
+            renderWithDepth(this._meshes[i].subMeshes[0], this._currentPatch);
+        }
+
+        // console.log(engine.readPixelsFloat(0, 0, this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight()));
+        Tools.DumpFramebuffer(this._patchMap.getRenderWidth(), this._patchMap.getRenderHeight(), this._scene.getEngine());
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
     public buildVisibilityMap() {
