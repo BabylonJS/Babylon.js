@@ -721,7 +721,8 @@ export class RenderTargetTexture extends Texture {
         this.onAfterUnbindObservable.notifyObservers(this);
 
         if (scene.activeCamera) {
-            if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
+            // Do not avoid setting uniforms when multiple scenes are active as another camera may have overwrite these
+            if (scene.getEngine().scenes.length > 1 || (this.activeCamera && this.activeCamera !== scene.activeCamera)) {
                 scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
             engine.setViewport(scene.activeCamera.viewport);
