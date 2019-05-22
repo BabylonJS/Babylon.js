@@ -5,12 +5,17 @@
 ## Optimizations
 
 ## Updates
+
+### Core Engine
 - Support Vive Focus 3Dof controller ([TrevorDev](https://github.com/TrevorDev))
 - Planar positioning support for GizmoManager ([Balupg](https://github.com/balupg))
 - Individual gizmos can now be enabled/disabled ([Balupg](https://github.com/balupg))
-
 - Unify preparation of instance attributes. Added `MaterialHelper.PushAttributesForInstances` ([MarkusBillharz](https://github.com/MarkusBillharz))
- 
+- Added support for PBR [irradiance map](https://doc.babylonjs.com/how_to/physically_based_rendering_master#irradiance-map)
+
+### Engine
+- Added preprocessors for shaders to improve how shaders are compiled for WebGL1/2 or WebGPU ([Deltakosh](https://github.com/deltakosh/))
+
 ### Inspector
 - Added support for `ShadowGenerator` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for scene normalization ([Deltakosh](https://github.com/deltakosh/))
@@ -21,12 +26,11 @@
 
 ### Tools
 - Added `Color3.toHSV()`, `Color3.toHSVToRef()` and `Color3.HSVtoRGBToRef()` ([Deltakosh](https://github.com/deltakosh/))
+- Added `ShadowGenerator.onAfterShadowMapRenderObservable` and `ShadowGenerator.onAfterShadowMapMeshRenderObservable` ([Deltakosh](https://github.com/deltakosh/))
+- Added support for side by side and top bottom images in the `PhotoDome` ([Deltakosh](https://github.com/deltakosh/))
 
 ### Meshes
 - Added new CreateTiledPlane and CreateTiledBox ([JohnK](https://github.com/BabylonJSGuide/))
-
-### Tools
-- Added `ShadowGenerator.onAfterShadowMapRenderObservable` and `ShadowGenerator.onAfterShadowMapMeshRenderObservable` ([Deltakosh](https://github.com/deltakosh/))
 
 ## Bug fixes
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))

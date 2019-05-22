@@ -372,7 +372,8 @@ export class Bone extends Node {
         this._skeleton._markAsDirty();
     }
 
-    private _markAsDirtyAndCompose() {
+    /** @hidden */
+    public _markAsDirtyAndCompose() {
         this.markAsDirty();
         this._needToCompose = true;
     }
