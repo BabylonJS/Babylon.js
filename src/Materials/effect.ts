@@ -357,6 +357,7 @@ export class Effect implements IDisposable {
             supportsUniformBuffers: this._engine.supportsUniformBuffers,
             shadersRepository: Effect.ShadersRepository,
             includesShadersStore: Effect.IncludesShadersStore,
+            version: (this._engine.webGLVersion * 100).toString()
         };
 
         this._loadVertexShader(vertexSource, (vertexCode) => {

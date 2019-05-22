@@ -10,4 +10,5 @@ export interface ProcessingOptions {
     shadersRepository: string;
     includesShadersStore: { [key: string]: string };
     processor?: IShaderProcessor;
+    version: string;
 }

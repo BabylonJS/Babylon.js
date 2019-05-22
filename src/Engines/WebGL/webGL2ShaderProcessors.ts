@@ -11,17 +11,15 @@ export class WebGL2ShaderProcessor implements IShaderProcessor {
     }
 
     public postProcessor(code: string, defines: string[], isFragment: boolean) {
+        const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
+
         // Remove extensions
-        // #extension GL_OES_standard_derivatives : enable
-        // #extension GL_EXT_shader_texture_lod : enable
-        // #extension GL_EXT_frag_depth : enable
-        // #extension GL_EXT_draw_buffers : require
         var regex = /#extension.+(GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
         code = code.replace(regex, "");
 
+        // Replace instructions
         code = code.replace(/texture2D\s*\(/g, "texture(");
         if (isFragment) {
-            const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
             code = code.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
             code = code.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
             code = code.replace(/textureCube\s*\(/g, "texture(");

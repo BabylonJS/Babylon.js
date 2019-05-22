@@ -58,6 +58,10 @@ export class ShaderProcessor {
             }
         }
 
+        if (indexOperator === -1) {
+            return new ShaderDefineIsDefinedOperator(expression);
+        }
+
         let define = expression.substring(0, indexOperator).trim();
         let value = expression.substring(indexOperator + operator.length).trim();
 
@@ -132,40 +136,45 @@ export class ShaderProcessor {
         while (cursor.canRead) {
             cursor.lineIndex++;
             let line = cursor.currentLine;
-            let first0 = line[0];
-            let first1 = line[1];
+            const keywords = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/
+            const matches = keywords.exec(line);
 
-            // Check preprocessor commands
-            if (first0 === "#" && first1 !== "d") {
-                let first6 = line.substring(0, 6).toLowerCase();
-                let first5 = line.substring(0, 5).toLowerCase();
-                if (first6 === "#ifdef") {
-                    let newRootNode = new ShaderCodeConditionNode();
-                    rootNode.children.push(newRootNode);
+            if (matches && matches.length) {
+                let keyword = matches[0];
 
-                    let ifNode = this._BuildExpression(line, 6);
-                    newRootNode.children.push(ifNode);
-                    this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
-                } else if (first5 === "#else") {
-                    return true;
-                } else if (first5 === "#elif") {
-                    return true;
-                } else if (first6 === "#endif") {
-                    return false;
-                } else if (line.substring(0, 7).toLowerCase() === "#ifndef") {
-                    let newRootNode = new ShaderCodeConditionNode();
-                    rootNode.children.push(newRootNode);
+                switch (keyword) {
+                    case "#ifdef": {
+                        let newRootNode = new ShaderCodeConditionNode();
+                        rootNode.children.push(newRootNode);
 
-                    let ifNode = this._BuildExpression(line, 7);
-                    newRootNode.children.push(ifNode);
-                    this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
-                } else if (line.substring(0, 3).toLowerCase() === "#if") {
-                    let newRootNode = new ShaderCodeConditionNode();
-                    let ifNode = this._BuildExpression(line, 3);
-                    rootNode.children.push(newRootNode);
+                        let ifNode = this._BuildExpression(line, 6);
+                        newRootNode.children.push(ifNode);
+                        this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        break;
+                    }
+                    case "#else":
+                    case "#elif":
+                        return true;
+                    case "#endif":
+                        return false;
+                    case "#ifndef": {
+                        let newRootNode = new ShaderCodeConditionNode();
+                        rootNode.children.push(newRootNode);
 
-                    newRootNode.children.push(ifNode);
-                    this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        let ifNode = this._BuildExpression(line, 7);
+                        newRootNode.children.push(ifNode);
+                        this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        break;
+                    }
+                    case "#if": {
+                        let newRootNode = new ShaderCodeConditionNode();
+                        let ifNode = this._BuildExpression(line, 3);
+                        rootNode.children.push(newRootNode);
+
+                        newRootNode.children.push(ifNode);
+                        this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        break;
+                    }
                 }
             }
             else {
@@ -174,7 +183,7 @@ export class ShaderProcessor {
                 rootNode.children.push(newNode);
 
                 // Detect additional defines
-                if (first0 === "#" && first1 === "d") {
+                if (line[0] === "#" && line[1] === "d") {
                     let split = line.replace(";", "").split(" ");
                     newNode.additionalDefineKey = split[1];
 
@@ -219,9 +228,16 @@ export class ShaderProcessor {
         let preprocessors: { [key: string]: string } = {};
 
         for (var define of defines) {
-            let keyValue = define.replace("#define", "").trim();
+            let keyValue = define.replace("#define", "").replace(";", "").trim();
             let split = keyValue.split(" ");
             preprocessors[split[0]] = split.length > 1 ? split[1] : "";
+        }
+
+        preprocessors["GL_ES"] = "true";
+        preprocessors["__VERSION__"] = options.version;
+
+        if (options.processor.preProcessor) {
+            preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, options.isFragment);
         }
 
         preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
