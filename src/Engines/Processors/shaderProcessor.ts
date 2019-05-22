@@ -203,11 +203,27 @@ export class ShaderProcessor {
         cursor.lineIndex = -1;
         cursor.lines = sourceCode.split("\n");
 
-        // Decompose
+        // Decompose (We keep it in 2 steps so it is easier to maintain and perf hit is insignificant)
         this._MoveCursor(cursor, rootNode);
 
         // Recompose
         return rootNode.process(preprocessors, options);
+    }
+
+    private static _PreparePreProcessors(options: ProcessingOptions): { [key: string]: string } {
+        let defines = options.defines;
+        let preprocessors: { [key: string]: string } = {};
+
+        for (var define of defines) {
+            let keyValue = define.replace("#define", "").replace(";", "").trim();
+            let split = keyValue.split(" ");
+            preprocessors[split[0]] = split.length > 1 ? split[1] : "";
+        }
+
+        preprocessors["GL_ES"] = "true";
+        preprocessors["__VERSION__"] = options.version;
+
+        return preprocessors;
     }
 
     private static _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions): string {
@@ -223,26 +239,18 @@ export class ShaderProcessor {
             return preparedSourceCode.replace("#version 300 es", "");
         }
 
-        let defines = options.defines.split("\n");
+        let defines = options.defines;
 
-        let preprocessors: { [key: string]: string } = {};
+        let preprocessors = this._PreparePreProcessors(options);
 
-        for (var define of defines) {
-            let keyValue = define.replace("#define", "").replace(";", "").trim();
-            let split = keyValue.split(" ");
-            preprocessors[split[0]] = split.length > 1 ? split[1] : "";
-        }
-
-        preprocessors["GL_ES"] = "true";
-        preprocessors["__VERSION__"] = options.version;
-
+        // General pre processing
         if (options.processor.preProcessor) {
             preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, options.isFragment);
         }
 
         preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
 
-        // Add multiview setup to top of file when defined
+        // Post processing
         if (options.processor.postProcessor) {
             preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment);
         }
