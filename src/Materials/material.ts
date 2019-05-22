@@ -917,6 +917,7 @@ export class Material implements IAnimatable {
         });
     }
 
+    private static readonly _AllDirtyCallBack = (defines: MaterialDefines) => defines.markAllAsDirty();
     private static readonly _ImageProcessingDirtyCallBack = (defines: MaterialDefines) => defines.markAsImageProcessingDirty();
     private static readonly _TextureDirtyCallBack = (defines: MaterialDefines) => defines.markAsTexturesDirty();
     private static readonly _FresnelDirtyCallBack = (defines: MaterialDefines) => defines.markAsFresnelDirty();
@@ -1005,6 +1006,13 @@ export class Material implements IAnimatable {
                 func(subMesh._materialDefines);
             }
         }
+    }
+
+        /**
+     * Indicates that we need to re-calculated for all submeshes
+     */
+    protected _markAllSubMeshesAsAllDirty() {
+        this._markAllSubMeshesAsDirty(Material._AllDirtyCallBack);
     }
 
     /**

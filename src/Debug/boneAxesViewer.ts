@@ -55,6 +55,7 @@ export class BoneAxesViewer extends AxesViewer {
         }
 
         var bone = this.bone;
+        bone._markAsDirtyAndCompose();
         bone.getAbsolutePositionToRef(this.mesh, this.pos);
         bone.getDirectionToRef(Axis.X, this.mesh, this.xaxis);
         bone.getDirectionToRef(Axis.Y, this.mesh, this.yaxis);
