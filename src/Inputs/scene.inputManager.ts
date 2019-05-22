@@ -266,7 +266,7 @@ export class InputManager {
         let scene = this._scene;
         if (pickResult && pickResult.hit && pickResult.pickedMesh) {
             this._pickedDownMesh = pickResult.pickedMesh;
-            var actionManager = pickResult.pickedMesh.actionManager;
+            var actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
             if (actionManager) {
                 if (actionManager.hasPickTriggers) {
                     actionManager.processTrigger(Constants.ACTION_OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
@@ -605,7 +605,7 @@ export class InputManager {
             }
 
             if (!scene.pointerMovePredicate) {
-                scene.pointerMovePredicate = (mesh: AbstractMesh): boolean => (mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || scene.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)) && (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0));
+                scene.pointerMovePredicate = (mesh: AbstractMesh): boolean => (mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || scene.constantlyUpdateMeshUnderPointer || (mesh._getActionManagerForTrigger() != null)) && (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0));
             }
 
             // Meshes
@@ -762,13 +762,19 @@ export class InputManager {
         };
 
         // Keyboard events
-        this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(() => {
-            if (!canvas) {
-                return;
+        this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add((() => {
+            let fn = () => {
+                if (!canvas) {
+                    return;
+                }
+                canvas.addEventListener("keydown", this._onKeyDown, false);
+                canvas.addEventListener("keyup", this._onKeyUp, false);
+            };
+            if (document.activeElement === canvas) {
+                fn();
             }
-            canvas.addEventListener("keydown", this._onKeyDown, false);
-            canvas.addEventListener("keyup", this._onKeyUp, false);
-        });
+            return fn;
+        })());
 
         this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(() => {
             if (!canvas) {

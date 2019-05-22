@@ -13,6 +13,8 @@ interface IFloatLineComponentProps {
     isInteger?: boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     additionalClass?: string;
+    step?: string,
+    digits?: number
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -23,7 +25,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         super(props);
 
         let currentValue = this.props.target[this.props.propertyName];
-        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(3)) : "0" };
+        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 3)) : "0" };
         this._store = currentValue;
     }
 
@@ -38,7 +40,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(3) : "0";
+        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
 
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
@@ -109,7 +111,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                     {this.props.label}
                 </div>
                 <div className="value">
-                    <input type="number" step="0.01" className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
+                    <input type="number" step={this.props.step || "0.01"} className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
                 </div>
             </div>
         );

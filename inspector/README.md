@@ -9,13 +9,13 @@ Call the method `show` of the scene debugLayer:
 ```
 scene.debugLayer.show();
 ```
-This method will retrieve dynamically the library `inspector.js`, download it and add
+This method will retrieve dynamically the library `babylon.inspector.bundle.js`, download it and add
 it to the html page.
 
 ### Offline method
 If you don't have access to internet, the inspector should be imported manually in your HTML page :
 ```
-<script src="babylon.inspector.js" />
+<script src="babylon.inspector.bundle.js" />
 ``` 
 Then, call the method `show` of the scene debugLayer: 
 ```

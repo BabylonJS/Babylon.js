@@ -37,7 +37,7 @@ export class FreeCameraPropertyGridComponent extends React.Component<IFreeCamera
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="COLLISIONS" closed={true}>
                     <CheckBoxLineComponent label="Check collisions" target={camera} propertyName="checkCollisions" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Apply gravity" target={camera} propertyName="applYGravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Apply gravity" target={camera} propertyName="applyGravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Ellipsoid" target={camera} propertyName="ellipsoid" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Ellipsoid offset" target={camera} propertyName="ellipsoidOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
