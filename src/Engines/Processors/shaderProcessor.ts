@@ -86,8 +86,8 @@ export class ShaderProcessor {
             }
         } else {
             let orOperator = new ShaderDefineOrOperator();
-            let leftPart = expression.substring(0, indexOr).trim();;
-            let rightPart = expression.substring(indexOr + 2).trim();;
+            let leftPart = expression.substring(0, indexOr).trim();
+            let rightPart = expression.substring(indexOr + 2).trim();
 
             orOperator.leftOperand = this._BuildSubExpression(leftPart);
             orOperator.rightOperand = this._BuildSubExpression(rightPart);
@@ -136,7 +136,7 @@ export class ShaderProcessor {
         while (cursor.canRead) {
             cursor.lineIndex++;
             let line = cursor.currentLine;
-            const keywords = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/
+            const keywords = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
             const matches = keywords.exec(line);
 
             if (matches && matches.length) {

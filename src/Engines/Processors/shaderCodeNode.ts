@@ -27,7 +27,7 @@ export class ShaderCodeNode {
             result += value + "\r\n";
         }
 
-        this.children.forEach(child => {
+        this.children.forEach((child) => {
             result += child.process(preprocessors, options);
         });
 
