@@ -737,6 +737,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Returns the mesh VertexBuffer object from the requested `kind`
      * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
      * - VertexBuffer.UVKind
      * - VertexBuffer.UV2Kind
      * - VertexBuffer.UV3Kind
@@ -761,6 +762,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Tests if a specific vertex buffer is associated with this mesh
      * @param kind defines which buffer to check (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
      * - VertexBuffer.UVKind
      * - VertexBuffer.UV2Kind
      * - VertexBuffer.UV3Kind
@@ -815,6 +817,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Returns a string which contains the list of existing `kinds` of Vertex Data associated with this mesh.
      * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
      * - VertexBuffer.UVKind
      * - VertexBuffer.UV2Kind
      * - VertexBuffer.UV3Kind
@@ -1544,8 +1547,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _freeze() {
-        this._instanceDataStorage.isFrozen = true;
-
         if (!this.subMeshes) {
             return;
         }
@@ -1554,6 +1555,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (var index = 0; index < this.subMeshes.length; index++) {
             this._getInstancesRenderList(index);
         }
+
+        this._effectiveMaterial = null;
+        this._instanceDataStorage.isFrozen = true;
     }
 
     /** @hidden */
