@@ -196,11 +196,11 @@ export class BasisTools {
      * An unoptimized version of dxtToRgb565.  Also, the floating
      * point math used to compute the colors actually results in
      * slightly different colors compared to hardware DXT decoders.
-     * @param {Uint8Array} src
-     * @param {number} srcByteOffset
-     * @param {number} width
-     * @param {number} height
-     * @return {Uint16Array} dst
+     * @param src dxt src pixels
+     * @param srcByteOffset offset for the start of src
+     * @param  width aligned width of the image
+     * @param  height aligned height of the image
+     * @return the converted pixels
      */
     public static ConvertDxtToRgb565(src: Uint16Array, srcByteOffset: number, width: number, height: number): Uint16Array {
         var c = new Uint16Array(4);

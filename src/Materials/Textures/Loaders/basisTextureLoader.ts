@@ -6,6 +6,9 @@ import { _TimeToken } from "../../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 import { BasisTools } from "../../../Misc/basis";
 
+/**
+ * Loader for .basis file format
+ */
 export class _BasisTextureLoader implements IInternalTextureLoader {
     /**
      * Defines wether the loader supports cascade loading the different faces.
@@ -22,7 +25,6 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
      * @returns true if the loader can load the specified file
      */
     public canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean {
-        console.log("basis try");
         return extension.indexOf(".basis") === 0;
     }
 
