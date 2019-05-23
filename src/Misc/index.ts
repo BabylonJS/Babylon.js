@@ -32,3 +32,4 @@ export * from "./screenshotTools";
 export * from "./typeStore";
 export * from "./webRequest";
 export * from "./iInspectable";
+export * from "./brdfTextureTools";

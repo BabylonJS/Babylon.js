@@ -4825,7 +4825,7 @@ declare module BABYLON {
         /**
          * Gets or sets base Assets URL
          */
-        static readonly PARTICLES_BaseAssetsUrl: string;
+        static PARTICLES_BaseAssetsUrl: string;
         /** Default culling strategy : this is an exclusion test and it's the more accurate.
          *  Test order :
          *  Is the bounding sphere outside the frustum ?
@@ -5334,10 +5334,11 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export class ShaderCodeCursor {
-        lines: string[];
+        private _lines;
         lineIndex: number;
         readonly currentLine: string;
         readonly canRead: boolean;
+        lines: string[];
     }
 }
 declare module BABYLON {
