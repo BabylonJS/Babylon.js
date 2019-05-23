@@ -101,7 +101,7 @@ export class PatchRenderer {
     public useDepthCompare: boolean;
     public useHemicube: boolean;
 
-    public static PERFORMANCE_LOGS_LEVEL: number = 0;
+    public static PERFORMANCE_LOGS_LEVEL: number = 1;
     public static RADIOSITY_INFO_LOGS_LEVEL: number = 1;
     public static WARNING_LOGS: number = 1;
 
@@ -509,7 +509,7 @@ export class PatchRenderer {
                 7,
                 this._scene,
                 {
-                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST],
+                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST],
                     types: [Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT],
                     generateMipMaps: true
                 }
@@ -1177,7 +1177,7 @@ export class PatchRenderer {
     }
 
     public buildVisibilityMapCube() {
-        this._patchMap = new RenderTargetTexture("patch", 1024, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false)
+        this._patchMap = new RenderTargetTexture("patch", 128, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false)
         this._patchMap.renderParticles = false;
         this._patchMap.renderList = this._meshes;
         this._patchMap.activeCamera = null;
