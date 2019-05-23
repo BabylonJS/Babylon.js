@@ -12,6 +12,7 @@
 - Individual gizmos can now be enabled/disabled ([Balupg](https://github.com/balupg))
 - Unify preparation of instance attributes. Added `MaterialHelper.PushAttributesForInstances` ([MarkusBillharz](https://github.com/MarkusBillharz))
 - Added support for PBR [irradiance map](https://doc.babylonjs.com/how_to/physically_based_rendering_master#irradiance-map)
+- .basis file support ([TrevorDev](https://github.com/TrevorDev))
 
 ### Engine
 - Added preprocessors for shaders to improve how shaders are compiled for WebGL1/2 or WebGPU ([Deltakosh](https://github.com/deltakosh/))
