@@ -146,7 +146,7 @@ var createScene = function() {
             frameCount++;
             if (true && (frameCount % 60) === 0) {
                 engine.stopRenderLoop();
-                var energyLeft = pr.gatherRadiosity();
+                var energyLeft = pr.gatherRadiosity(true);
                 engine.runRenderLoop(renderLoop);
 
                 if (!energyLeft || passes > 6) {
@@ -184,6 +184,19 @@ var createScene = function() {
         console.log(pi.pickedMesh);
         console.log(pi.getNormal());
     };
+    // var ssaoRatio = {
+    //     ssaoRatio: 1, // Ratio of the SSAO post-process, in a lower resolution
+    //     blurRatio: 1// Ratio of the combine post-process (combines the SSAO and the scene)
+    // };
+
+    // var ssao = new BABYLON.SSAO2RenderingPipeline("ssao", scene, ssaoRatio);
+    // ssao.radius = 1.0;
+    // ssao.totalStrength = 1.3;
+    // ssao.expensiveBlur = true;
+    // ssao.samples = 32;
+    // ssao.maxZ = 250;
+    // // Attach camera to the SSAO render pipeline
+    // scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
 
     return scene;
 };

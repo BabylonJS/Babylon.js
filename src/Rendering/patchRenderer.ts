@@ -718,7 +718,7 @@ export class PatchRenderer {
         return null;
     }
 
-    public gatherRadiosity(): boolean {
+    public gatherRadiosity(directOnly = false): boolean {
         if (this._isCurrentlyGathering) {
             if (PatchRenderer.WARNING_LOGS) {
                 console.log("Still gathering radiosity for current submesh. Skipping.");
@@ -815,6 +815,12 @@ export class PatchRenderer {
                 duration = Date.now() - patchShooting;
                 console.log(`Total shooting radiosity for ${this._patchedSubMeshes.length} submeshes took ${duration}ms.`);
             }
+        }
+
+        if (directOnly) {
+            // TODO : this is wrong, only takes 1 shooter mesh into account
+            // find and merge code from desktop, where passes are separated
+            return false;
         }
 
         if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
@@ -1177,7 +1183,7 @@ export class PatchRenderer {
     }
 
     public buildVisibilityMapCube() {
-        this._patchMap = new RenderTargetTexture("patch", 128, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false)
+        this._patchMap = new RenderTargetTexture("patch", 256, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false)
         this._patchMap.renderParticles = false;
         this._patchMap.renderList = this._meshes;
         this._patchMap.activeCamera = null;
