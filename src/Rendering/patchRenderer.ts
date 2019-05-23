@@ -44,17 +44,17 @@ class Patch {
         let zAxis = new Vector3(this.viewMatrix.m[2], this.viewMatrix.m[6], this.viewMatrix.m[10]); // depth
 
         // TODO : could be optimized, but for now this is not the performance bottleneck
-        let viewMatrixPX = Matrix.LookAtLH(this.position, this.position.add(xAxis), yAxis);
-        let viewMatrixNX = Matrix.LookAtLH(this.position, this.position.subtract(xAxis), yAxis);
-        let viewMatrixPY = Matrix.LookAtLH(this.position, this.position.add(yAxis), zAxis.scale(-1));
-        let viewMatrixNY = Matrix.LookAtLH(this.position, this.position.subtract(yAxis), zAxis);
+        this.viewMatrixPX = Matrix.LookAtLH(this.position, this.position.add(xAxis), yAxis);
+        this.viewMatrixNX = Matrix.LookAtLH(this.position, this.position.subtract(xAxis), yAxis);
+        this.viewMatrixPY = Matrix.LookAtLH(this.position, this.position.add(yAxis), zAxis.scale(-1));
+        this.viewMatrixNY = Matrix.LookAtLH(this.position, this.position.subtract(yAxis), zAxis);
         // this.viewMatrix.invert();
 
-        this.viewProjectionMatrix = this.viewMatrix.multiply(Patch.projectionMatrix);
-        this.viewProjectionPX = viewMatrixPX.multiply(Patch.projectionMatrix).multiply(Patch.projectionMatrixPX);
-        this.viewProjectionNX = viewMatrixNX.multiply(Patch.projectionMatrix).multiply(Patch.projectionMatrixNX);
-        this.viewProjectionPY = viewMatrixPY.multiply(Patch.projectionMatrix).multiply(Patch.projectionMatrixPY);
-        this.viewProjectionNY = viewMatrixNY.multiply(Patch.projectionMatrix).multiply(Patch.projectionMatrixNY);
+        // this.viewProjectionMatrix = this.viewMatrix.multiply(Patch.projectionMatrix);
+        // this.viewProjectionPX = viewMatrixPX.multiply(Patch.projectionMatrix).multiply(Patch.projectionMatrixPX);
+        // this.viewProjectionNX = viewMatrixNX.multiply(Patch.projectionMatrix).multiply(Patch.projectionMatrixNX);
+        // this.viewProjectionPY = viewMatrixPY.multiply(Patch.projectionMatrix).multiply(Patch.projectionMatrixPY);
+        // this.viewProjectionNY = viewMatrixNY.multiply(Patch.projectionMatrix).multiply(Patch.projectionMatrixNY);
     }
 
     public toString() {
@@ -67,11 +67,10 @@ class Patch {
     public position: Vector3
     public normal: Vector3;
     public viewMatrix: Matrix;
-    public viewProjectionMatrix: Matrix;
-    public viewProjectionPX: Matrix;
-    public viewProjectionNX: Matrix;
-    public viewProjectionPY: Matrix;
-    public viewProjectionNY: Matrix;
+    public viewMatrixPX: Matrix;
+    public viewMatrixNX: Matrix;
+    public viewMatrixPY: Matrix;
+    public viewMatrixNY: Matrix;
     public residualEnergy: Vector3;
 
     public static readonly fov: number = 90 * Math.PI / 180;
@@ -102,9 +101,9 @@ export class PatchRenderer {
     public useDepthCompare: boolean;
     public useHemicube: boolean;
 
-    public static PERFORMANCE_LOGS_LEVEL : number = 0;
-    public static RADIOSITY_INFO_LOGS_LEVEL : number = 1;
-    public static WARNING_LOGS : number = 1;
+    public static PERFORMANCE_LOGS_LEVEL: number = 0;
+    public static RADIOSITY_INFO_LOGS_LEVEL: number = 1;
+    public static WARNING_LOGS: number = 1;
 
     private _scene: Scene;
     // private _htScene: Scene; // Higher tesselated scene
@@ -169,29 +168,29 @@ export class PatchRenderer {
             this._far,
         );
 
-        Patch.projectionMatrixPX = Matrix.FromValues(2, 0, 0, 0,
+        Patch.projectionMatrixPX = Patch.projectionMatrix.multiply(Matrix.FromValues(2, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
             1, 0, 0, 1
-        );
+        ));
 
-        Patch.projectionMatrixNX = Matrix.FromValues(2, 0, 0, 0,
+        Patch.projectionMatrixNX = Patch.projectionMatrix.multiply(Matrix.FromValues(2, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
             -1, 0, 0, 1
-        );
+        ));
 
-        Patch.projectionMatrixPY = Matrix.FromValues(1, 0, 0, 0,
+        Patch.projectionMatrixPY = Patch.projectionMatrix.multiply(Matrix.FromValues(1, 0, 0, 0,
             0, 2, 0, 0,
             0, 0, 1, 0,
             0, 1, 0, 1
-        );
+        ));
 
-        Patch.projectionMatrixNY = Matrix.FromValues(1, 0, 0, 0,
+        Patch.projectionMatrixNY = Patch.projectionMatrix.multiply(Matrix.FromValues(1, 0, 0, 0,
             0, 2, 0, 0,
             0, 0, 1, 0,
             0, -1, 0, 1
-        );
+        ));
 
         // this.createMaps();
 
@@ -201,7 +200,7 @@ export class PatchRenderer {
 
         // this.createHTScene();
 
-        this.useDepthCompare = false;
+        this.useDepthCompare = true;
         this.useHemicube = true;
     }
 
@@ -297,7 +296,7 @@ export class PatchRenderer {
                 newPositions.push(tempPositionBuffer[j].x, tempPositionBuffer[j].y, tempPositionBuffer[j].z);
                 newNormals.push(tempNormalBuffer[j].x, tempNormalBuffer[j].y, tempNormalBuffer[j].z);
             }
-            
+
             for (let j = 0; j < tempUVBuffer.length; j++) {
                 newUvs.push(tempUVBuffer[j].x, tempUVBuffer[j].y);
             }
@@ -332,20 +331,20 @@ export class PatchRenderer {
     private _subdiviseRec(v0: Vector3,
         v1: Vector3,
         v2: Vector3,
-        n0: Vector3, 
-        n1: Vector3, 
-        n2: Vector3, 
-        uv0: Vector2, 
-        uv1: Vector2, 
-        uv2: Vector2, 
-        i0: number, 
-        i1: number, 
-        i2: number, 
-        areaThreshold: number, 
-        buffer: Vector3[], 
-        normBuffer: Vector3[], 
-        uvBuffer: Vector2[], 
-        indices: number[], 
+        n0: Vector3,
+        n1: Vector3,
+        n2: Vector3,
+        uv0: Vector2,
+        uv1: Vector2,
+        uv2: Vector2,
+        i0: number,
+        i1: number,
+        i2: number,
+        areaThreshold: number,
+        buffer: Vector3[],
+        normBuffer: Vector3[],
+        uvBuffer: Vector2[],
+        indices: number[],
         indexPointer: number): number {
 
         if (this._triangleArea(v0, v1, v2) <= areaThreshold) {
@@ -532,7 +531,7 @@ export class PatchRenderer {
                 var res = (<any>mesh).residualTexture;
                 effect.setFloat("texSize", width);
                 effect.setFloat("patchOffset", res.patchOffset);
-                
+
                 if ((<any>mesh).color) {
                     effect.setVector3("color", (<any>mesh).color);
                 } else {
@@ -810,7 +809,7 @@ export class PatchRenderer {
                 }
             }
 
-            return false;
+            // return false;
 
             if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 2) {
                 duration = Date.now() - patchShooting;
@@ -984,11 +983,10 @@ export class PatchRenderer {
         let attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
         let uniforms = ["world", "mBones", "nearFar"];
         let defines = [];
+        uniforms.push("view");
         if (this.useHemicube) {
-            uniforms.push("viewProjection");
+            uniforms.push("projection");
             defines.push("#define HEMICUBE");
-        } else {
-            uniforms.push("view");
         }
 
         if (this.useDepthCompare) {
@@ -1179,7 +1177,7 @@ export class PatchRenderer {
     }
 
     public buildVisibilityMapCube() {
-        this._patchMap = new RenderTargetTexture("patch", 512, this._scene, false, true, Constants.TEXTURETYPE_UNSIGNED_INT,true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false)
+        this._patchMap = new RenderTargetTexture("patch", 1024, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false)
         this._patchMap.renderParticles = false;
         this._patchMap.renderList = this._meshes;
         this._patchMap.activeCamera = null;
@@ -1196,7 +1194,8 @@ export class PatchRenderer {
             var mesh = data[1].getMesh();
 
             if (this.useHemicube) {
-                effect.setMatrix("viewProjection", data[2]);
+                effect.setMatrix("view", data[2]);
+                effect.setMatrix("projection", data[3]);
             } else {
                 effect.setMatrix("view", patch.viewMatrix);
             }
@@ -1205,12 +1204,12 @@ export class PatchRenderer {
 
         };
 
-        var renderWithDepth = (subMesh: SubMesh, patch: Patch, viewProjection: Matrix) => {
+        var renderWithDepth = (subMesh: SubMesh, patch: Patch, view: Matrix, projection: Matrix) => {
             engine.enableEffect(this._uV2Effect);
 
             let mesh = subMesh.getRenderingMesh();
             mesh._bind(subMesh, this._uV2Effect, Material.TriangleFillMode);
-            uniformCb(this._uV2Effect, [this._currentPatch, subMesh, viewProjection]);
+            uniformCb(this._uV2Effect, [this._currentPatch, subMesh, view, projection]);
 
             var batch = mesh._getInstancesRenderList(subMesh._id);
 
@@ -1221,7 +1220,7 @@ export class PatchRenderer {
             // Draw triangles
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
             mesh._processRendering(subMesh, this._uV2Effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                    (isInstance, world) => this._uV2Effect.setMatrix("world", world));
+                (isInstance, world) => this._uV2Effect.setMatrix("world", world));
         }
 
 
@@ -1229,37 +1228,53 @@ export class PatchRenderer {
         let gl = engine._gl;
         let internalTexture = <InternalTexture>this._patchMap._texture;
 
-        engine.setState(false, 0, true, scene.useRightHandedSystem); // TODO : BFC
         gl.bindFramebuffer(gl.FRAMEBUFFER, internalTexture._framebuffer);
+        engine.setState(false, 0, true, scene.useRightHandedSystem); // TODO : BFC
 
-        let matrices = [this._currentPatch.viewProjectionMatrix, 
-                        this._currentPatch.viewProjectionPX,
-                        this._currentPatch.viewProjectionNX,
-                        this._currentPatch.viewProjectionPY,
-                        this._currentPatch.viewProjectionNY
-                        ];
+        let viewMatrices = [this._currentPatch.viewMatrix,
+        this._currentPatch.viewMatrixPX,
+        this._currentPatch.viewMatrixNX,
+        this._currentPatch.viewMatrixPY,
+        this._currentPatch.viewMatrixNY
+        ];
 
-        let viewportMultipliers = [[1, 1], 
-                                   [0.5, 1],
-                                   [0.5, 1],
-                                   [1, 0.5],
-                                   [1, 0.5],
-                                   ];
-        let viewportOffsets = [[0, 0], 
-                                   [0, 0],
-                                   [0.5, 0],
-                                   [0, 0.5],
-                                   [0, 0.5],
-                                   ];
-        for (let j = 0; j < matrices.length; j++) {
-            // Render on each face of the hemicube
-            engine.clear(new Color4(0, 0, 0, 0), true, true);
+        let projectionMatrices = [Patch.projectionMatrix,
+        Patch.projectionMatrixPX,
+        Patch.projectionMatrixNX,
+        Patch.projectionMatrixPY,
+        Patch.projectionMatrixNY
+        ];
+
+        let viewportMultipliers = [
+            [1, 1],
+            [0.5, 1],
+            [0.5, 1],
+            [1, 0.5],
+            [1, 0.5],
+        ];
+        let viewportOffsets = [
+            [0, 0],
+            [0, 0],
+            [0.5, 0],
+            [0, 0.5],
+            [0, 0.5],
+        ];
+        let cubeSides = [
+            gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+            gl.TEXTURE_CUBE_MAP_POSITIVE_X,
+            gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
+            gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
+            gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+        ];
+        for (let j = 0; j < 5; j++) {
             // Full cube viewport when rendering the front face
             engine.setDirectViewport(viewportOffsets[j][0] * this._patchMap.getRenderWidth(), viewportOffsets[j][1] * this._patchMap.getRenderHeight(), this._patchMap.getRenderWidth() * viewportMultipliers[j][0], this._patchMap.getRenderHeight() * viewportMultipliers[j][1]);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + j, internalTexture._webGLTexture, 0);
+            // Render on each face of the hemicube
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, cubeSides[j], internalTexture._webGLTexture, 0);
+            engine.clear(new Color4(0, 0, 0, 0), true, true);
             for (let i = 0; i < this._meshes.length; i++) {
                 // TODO : mesh ? submesh ?
-                renderWithDepth(this._meshes[i].subMeshes[0], this._currentPatch, matrices[j]);
+                renderWithDepth(this._meshes[i].subMeshes[0], this._currentPatch, viewMatrices[j], projectionMatrices[j]);
             }
             // console.log(engine.readPixelsFloat(0, 0, this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight()));
             // Tools.DumpFramebuffer(this._patchMap.getRenderWidth(), this._patchMap.getRenderHeight(), this._scene.getEngine());
@@ -1269,7 +1284,7 @@ export class PatchRenderer {
     }
 
     public buildVisibilityMap() {
-        this._patchMap = new RenderTargetTexture("patch", 512, this._scene, false, true, 
+        this._patchMap = new RenderTargetTexture("patch", 512, this._scene, false, true,
             this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
         this._patchMap.renderParticles = false;
         this._patchMap.renderList = this._meshes;
@@ -1307,7 +1322,7 @@ export class PatchRenderer {
             // Draw triangles
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
             mesh._processRendering(subMesh, this._uV2Effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                    (isInstance, world) => this._uV2Effect.setMatrix("world", world));
+                (isInstance, world) => this._uV2Effect.setMatrix("world", world));
         }
 
         this._patchMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {

@@ -37,11 +37,22 @@ vec3 visible()
   // Look up projected point in hemisphere item buffer
   vec3 proj = (view * vec4(worldPos, 1.0)).xyz;
   #ifdef HEMICUBE
-  proj = normalize(proj);
+  // proj = normalize(proj);
   // proj.xyz = proj.zxy;
-  // return float(texture(itemBuffer, proj).xyz == id);
-  // return proj.xyz;
-  return texture(itemBuffer, proj).xyz;
+  proj.y = -proj.y;
+  #ifdef DEPTH_COMPARE
+  float depthProj = proj.z;
+  float farMinusNear = nearFar.y - nearFar.x;
+
+  // TODO : there is a more efficient way to project depth without this costly operation for each fragment
+  depthProj = (depthProj * (nearFar.y + nearFar.x) - 2.0 * nearFar.y * nearFar.x) / farMinusNear;
+  // depthProj = depthProj * 0.5 + 0.5;
+
+  float depth = texture(itemBuffer, proj).r;
+  return vec3(depthProj - depth <= 1e-6);
+  #else
+  return vec3(texture(itemBuffer, proj).xyz == id);
+  #endif
   #else
   #ifdef DEPTH_COMPARE
   float depthProj = proj.z;
@@ -78,7 +89,7 @@ vec3 formFactorEnergy()
   r = normalize(r);
 
   // the angles of the receiver and the shooter from r
-  float cosi = dot(worldNormal, r);
+  float cosi = max(dot(worldNormal, r), 0.0);
   float cosj = -dot(shootNormal, r);
 
   // compute the disc approximation form factor
@@ -104,8 +115,6 @@ void main(void) {
     worldNormal = texture(worldNormalBuffer, vUV).xyz;
     
     vec3 energy = formFactorEnergy();
-    // glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
-    // glFragData[1] = vec4(energy + texture(gatheringBuffer, vUV).xyz, worldPos4.a);
-    glFragData[0] = vec4(visible(), worldPos4.a);
-    glFragData[1] = vec4(visible(), worldPos4.a);
+    glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
+    glFragData[1] = vec4(energy + texture(gatheringBuffer, vUV).xyz, worldPos4.a);
 }

@@ -10,7 +10,6 @@ void main(void) {
 	#ifdef DEPTH_COMPARE
 	gl_FragColor = vec4(depth, 0.0, 0.0, 1.0);
 	#else
-	// gl_FragColor = vec4(texture(itemBuffer, vUV2).xyz, 1.0);
-	gl_FragColor = vec4(vUV2, 0.0, 1.0); // TODO : DEBUG, REPLACE WITH LINE ABOVE
+	gl_FragColor = vec4(texture(itemBuffer, vUV2).xyz, 1.0);
 	#endif
 }

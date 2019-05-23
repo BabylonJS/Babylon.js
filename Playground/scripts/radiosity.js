@@ -99,8 +99,8 @@ var createScene = function() {
                 //prepareForBaking(meshes[i]);
             }
             pr = new BABYLON.PatchRenderer(scene, ms, texelSize);
-            pr.createHTScene(1);
-            //pr._meshes = scene.meshes;
+            // pr.createHTScene(1);
+            pr._meshes = scene.meshes;
             for (let i = 0; i < scene.meshes.length; i++) {
                 if (!scene.meshes[i].__lightmapSize) {
                     prepareForBaking(scene.meshes[i]);
