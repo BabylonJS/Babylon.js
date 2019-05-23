@@ -360,7 +360,6 @@ export class Effect implements IDisposable {
             version: (this._engine.webGLVersion * 100).toString(),
         };
 
-
         this._loadVertexShader(vertexSource, (vertexCode) => {
             this._loadFragmentShader(fragmentSource, (fragmentCode) => {
                 ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
