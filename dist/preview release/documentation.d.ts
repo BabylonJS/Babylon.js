@@ -5302,7 +5302,7 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export interface ProcessingOptions {
-        defines: string;
+        defines: string[];
         indexParameters: any;
         isFragment: boolean;
         shouldUseHighPrecisionShader: boolean;
@@ -5419,6 +5419,7 @@ declare module BABYLON {
         private static _MoveCursorWithinIf;
         private static _MoveCursor;
         private static _EvaluatePreProcessors;
+        private static _PreparePreProcessors;
         private static _ProcessShaderConversion;
         private static _ProcessIncludes;
     }
@@ -12288,9 +12289,9 @@ declare module BABYLON {
          * The mesh corresponding the the pick collision
          */
         pickedMesh: Nullable<AbstractMesh>;
-        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
+        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calculating the texture coordinates of the collision.*/
         bu: number;
-        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
+        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calculating the texture coordinates of the collision.*/
         bv: number;
         /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
         faceId: number;
@@ -29371,6 +29372,7 @@ declare module BABYLON {
          * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
          */
         constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: Nullable<string[]>, engine?: Engine, defines?: Nullable<string>, fallbacks?: Nullable<EffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
+        private _useFinalCode;
         /**
          * Unique key for this effect
          */
