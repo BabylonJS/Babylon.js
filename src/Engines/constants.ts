@@ -375,7 +375,7 @@ export class Constants {
     /**
      * Gets or sets base Assets URL
      */
-    public static readonly PARTICLES_BaseAssetsUrl = "https://assets.babylonjs.com/particles";
+    public static PARTICLES_BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 
     /** Default culling strategy : this is an exclusion test and it's the more accurate.
      *  Test order :
