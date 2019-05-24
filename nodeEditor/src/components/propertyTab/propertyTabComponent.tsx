@@ -27,13 +27,26 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         if (this.state.currentNode) {
             return (
                 <div id="propertyTab">
+                    <div id="header">
+                        <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+                        <div id="title">
+                            NODE MATERIAL EDITOR
+                        </div>
+                    </div>
                     {this.state.currentNode.renderProperties(this.props.globalState)}
                 </div>
             );
         }
 
         return (
-            <div id="propertyTab" />
+            <div id="propertyTab">
+                <div id="header">
+                    <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+                    <div id="title">
+                        NODE MATERIAL EDITOR
+                    </div>
+                </div>
+            </div>
         );
     }
 }

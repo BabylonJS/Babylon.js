@@ -328,7 +328,9 @@ export class Effect implements IDisposable {
         var vertexSource: any;
         var fragmentSource: any;
 
-        if (baseName.vertexElement) {
+        if (baseName.vertexSource) {
+            vertexSource = "source:" + baseName.vertexSource;
+        } else if (baseName.vertexElement) {
             vertexSource = document.getElementById(baseName.vertexElement);
 
             if (!vertexSource) {
@@ -338,7 +340,9 @@ export class Effect implements IDisposable {
             vertexSource = baseName.vertex || baseName;
         }
 
-        if (baseName.fragmentElement) {
+        if (baseName.fragmentSource) {
+            fragmentSource = "source:" + baseName.fragmentSource;
+        } else if (baseName.fragmentElement) {
             fragmentSource = document.getElementById(baseName.fragmentElement);
 
             if (!fragmentSource) {
@@ -534,6 +538,12 @@ export class Effect implements IDisposable {
             }
         }
 
+        // Direct source ?
+        if (vertex.substr(0, 7) === "source:") {
+            callback(vertex.substr(7));
+            return;
+        }
+
         // Base64 encoded ?
         if (vertex.substr(0, 7) === "base64:") {
             var vertexBinary = window.atob(vertex.substr(7));
@@ -568,6 +578,12 @@ export class Effect implements IDisposable {
                 callback(fragmentCode);
                 return;
             }
+        }
+
+        // Direct source ?
+        if (fragment.substr(0, 7) === "source:") {
+            callback(fragment.substr(7));
+            return;
         }
 
         // Base64 encoded ?
