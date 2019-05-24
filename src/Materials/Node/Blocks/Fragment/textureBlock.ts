@@ -38,6 +38,9 @@ export class TextureBlock extends NodeMaterialBlock {
         this.registerInput("textureTransform", NodeMaterialBlockConnectionPointTypes.Matrix, true, NodeMaterialBlockTargets.Vertex);
 
         this.registerOutput("color", NodeMaterialBlockConnectionPointTypes.Color4);
+
+        // Setup
+        this._inputs[0]._needToEmitVarying = false;
     }
 
     /**

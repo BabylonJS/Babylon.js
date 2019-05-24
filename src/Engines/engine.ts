@@ -1210,14 +1210,7 @@ export class Engine {
 
                 // Pointer lock
                 if (this.isFullscreen && this._pointerLockRequested && canvas) {
-                    canvas.requestPointerLock = canvas.requestPointerLock ||
-                        canvas.msRequestPointerLock ||
-                        canvas.mozRequestPointerLock ||
-                        canvas.webkitRequestPointerLock;
-
-                    if (canvas.requestPointerLock) {
-                        canvas.requestPointerLock();
-                    }
+                    Tools.RequestPointerlock(canvas);
                 }
             };
 
@@ -2071,6 +2064,22 @@ export class Engine {
         if (this.isFullscreen) {
             Tools.ExitFullscreen();
         }
+    }
+
+    /**
+     * Enters Pointerlock mode
+     */
+    public enterPointerlock(): void {
+        if (this._renderingCanvas) {
+            Tools.RequestPointerlock(this._renderingCanvas);
+        }
+    }
+
+    /**
+     * Exits Pointerlock mode
+     */
+    public exitPointerlock(): void {
+        Tools.ExitPointerlock();
     }
 
     /**
@@ -4231,7 +4240,8 @@ export class Engine {
                     customFallback = true;
                     excludeLoaders.push(loader);
                     Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
-                    this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, null, buffer, texture, undefined, undefined, excludeLoaders);
+                    this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
+                    return;
                 }
             }
 
@@ -4240,7 +4250,8 @@ export class Engine {
                     texture.onLoadedObservable.remove(onLoadObserver);
                 }
                 if (Tools.UseFallbackTexture) {
-                    this.createTexture(Tools.fallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, null, buffer, texture);
+                    this.createTexture(Tools.fallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
+                    return;
                 }
             }
 

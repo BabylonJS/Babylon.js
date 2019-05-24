@@ -15,6 +15,7 @@
 
 ### Engine
 - Added preprocessors for shaders to improve how shaders are compiled for WebGL1/2 or WebGPU ([Deltakosh](https://github.com/deltakosh/))
+- Added enterPointerlock and exitPointerlock (Separated from enterFullscreen) ([aWeirdo](https://github.com/aWeirdo/))
 
 ### Inspector
 - Added support for `ShadowGenerator` ([Deltakosh](https://github.com/deltakosh/))
@@ -42,5 +43,6 @@
 - A scene's input manager not adding key listeners when the canvas is already focused ([Poolminer](https://github.com/Poolminer))
 - Runtime animation `goToFrame` when going back in time now correctly triggers future events when reached ([zakhenry](https://github.com/zakhenry))
 - Fixed bug in Ray.intersectsTriangle where the barycentric coordinates `bu` and `bv` being returned is actually `bv` and `bw`. ([bghgary](https://github.com/bghgary))
+- Do not call onError when creating a texture when falling back to another loader ([TrevorDev](https://github.com/TrevorDev))
 
 ## Breaking changes

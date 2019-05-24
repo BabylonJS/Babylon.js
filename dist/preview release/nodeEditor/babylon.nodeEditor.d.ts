@@ -430,7 +430,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     class ListLineOption {
         label: string;
-        value: number;
+        value: number | string;
     }
     interface IOptionsLineComponentProps {
         label: string;
@@ -438,19 +438,55 @@ declare module NODEEDITOR {
         propertyName: string;
         options: ListLineOption[];
         noDirectUpdate?: boolean;
-        onSelect?: (value: number) => void;
+        onSelect?: (value: number | string) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        valuesAreStrings?: boolean;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
-        value: number;
+        value: number | string;
     }> {
         private _localChange;
         constructor(props: IOptionsLineComponentProps);
         shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
             value: number;
         }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        raiseOnPropertyChanged(newValue: number | string, previousValue: number | string): void;
         updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IColor3LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
+        isExpanded: boolean;
+        color: BABYLON.Color3;
+    }> {
+        private _localChange;
+        constructor(props: IColor3LineComponentProps);
+        shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
+            color: BABYLON.Color3;
+        }): boolean;
+        onChange(newValue: string): void;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color3): void;
+        updateStateR(value: number): void;
+        updateStateG(value: number): void;
+        updateStateB(value: number): void;
+        copyToClipboard(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IColor3PropertyTabComponentProps {
+        globalState: GlobalState;
+        connection: BABYLON.NodeMaterialConnectionPoint;
+    }
+    export class Color3PropertyTabComponent extends React.Component<IColor3PropertyTabComponentProps> {
         render(): JSX.Element;
     }
 }
@@ -537,6 +573,8 @@ declare module NODEEDITOR {
         private _engine;
         private _model;
         private _nodes;
+        /** @hidden */
+        _toAdd: LinkModel[] | null;
         /**
          * Current row/column position used when adding new nodes
          */
@@ -549,6 +587,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
+        build(): void;
         addNodeFromClass(ObjectClass: typeof BABYLON.NodeMaterialBlock): DefaultNodeModel;
         addValueNode(type: string, column?: number, connection?: BABYLON.NodeMaterialConnectionPoint): DefaultNodeModel;
         render(): JSX.Element;
@@ -581,6 +620,7 @@ declare module NODEEDITOR {
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
+        onResetRequiredObservable: BABYLON.Observable<void>;
     }
 }
 declare module NODEEDITOR {

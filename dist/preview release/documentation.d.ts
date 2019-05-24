@@ -50521,6 +50521,84 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to transform a vector4 with a matrix
+     */
+    export class Vector4TransformBlock extends NodeMaterialBlock {
+        /**
+         * Defines the value to use to complement Vector3 to transform it to a Vector4
+         */
+        complementW: number;
+        /**
+         * Creates a new Vector4TransformBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the vector input
+         */
+        readonly vector: NodeMaterialConnectionPoint;
+        /**
+         * Gets the matrix transform input
+         */
+        readonly transform: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to output the vertex position
+     */
+    export class VertexOutputBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new VertexOutputBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the vector input component
+         */
+        readonly vector: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to output the final color
+     */
+    export class FragmentOutputBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets a boolean indicating if this block will output an alpha value
+         */
+        alphaBlendingEnabled: boolean;
+        /**
+         * Create a new FragmentOutputBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the color input component
+         */
+        readonly color: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface used to configure the node material editor
      */
     export interface INodeMaterialEditorOptions {
@@ -50733,6 +50811,14 @@ declare module BABYLON {
          * @return a promise fulfilled when the node editor is visible
          */
         edit(config?: INodeMaterialEditorOptions): Promise<void>;
+        /**
+         * Clear the current material
+         */
+        clear(): void;
+        /**
+         * Clear the current material and set it to a default state
+         */
+        setToDefault(): void;
     }
 }
 declare module BABYLON {
@@ -50908,6 +50994,8 @@ declare module BABYLON {
         private _mode;
         /** @hidden */
         _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        /** @hidden */
+        _needToEmitVarying: boolean;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -51027,28 +51115,6 @@ declare module BABYLON {
          * @param scene defines the hosting scene
          */
         transmit(effect: Effect, scene: Scene): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to output the vertex position
-     */
-    export class VertexOutputBlock extends NodeMaterialBlock {
-        /**
-         * Creates a new VertexOutputBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the vector input component
-         */
-        readonly vector: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {
@@ -51189,32 +51255,6 @@ declare module BABYLON {
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines): void;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to output the final color
-     */
-    export class FragmentOutputBlock extends NodeMaterialBlock {
-        /**
-         * Gets or sets a boolean indicating if this block will output an alpha value
-         */
-        alphaBlendingEnabled: boolean;
-        /**
-         * Create a new FragmentOutputBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the color input component
-         */
-        readonly color: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -51618,36 +51658,6 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to transform a vector4 with a matrix
-     */
-    export class Vector4TransformBlock extends NodeMaterialBlock {
-        /**
-         * Defines the value to use to complement Vector3 to transform it to a Vector4
-         */
-        complementW: number;
-        /**
-         * Creates a new Vector4TransformBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the vector input
-         */
-        readonly vector: NodeMaterialConnectionPoint;
-        /**
-         * Gets the matrix transform input
-         */
-        readonly transform: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
