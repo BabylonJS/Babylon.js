@@ -15,6 +15,7 @@
 
 ### Engine
 - Added preprocessors for shaders to improve how shaders are compiled for WebGL1/2 or WebGPU ([Deltakosh](https://github.com/deltakosh/))
+- Added enterPointerlock and exitPointerlock (Separated from enterFullscreen) ([aWeirdo](https://github.com/aWeirdo/))
 
 ### Inspector
 - Added support for `ShadowGenerator` ([Deltakosh](https://github.com/deltakosh/))
