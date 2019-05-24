@@ -1210,14 +1210,7 @@ export class Engine {
 
                 // Pointer lock
                 if (this.isFullscreen && this._pointerLockRequested && canvas) {
-                    canvas.requestPointerLock = canvas.requestPointerLock ||
-                        canvas.msRequestPointerLock ||
-                        canvas.mozRequestPointerLock ||
-                        canvas.webkitRequestPointerLock;
-
-                    if (canvas.requestPointerLock) {
-                        canvas.requestPointerLock();
-                    }
+                    Tools.RequestPointerlock(canvas);
                 }
             };
 
@@ -2070,6 +2063,24 @@ export class Engine {
     public exitFullscreen(): void {
         if (this.isFullscreen) {
             Tools.ExitFullscreen();
+        }
+    }
+
+    /**
+     * Enters Pointerlock mode
+     */
+    public enterPointerlock(): void {
+        if (this._renderingCanvas) {
+            Tools.RequestPointerlock(this._renderingCanvas);
+        }
+    }
+
+    /**
+     * Exits Pointerlock mode
+     */
+    public exitPointerlock(): void {
+        if (this.isFullscreen) {
+            Tools.ExitPointerlock();
         }
     }
 
