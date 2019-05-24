@@ -2936,8 +2936,8 @@ export class Engine {
         return false;
     }
 
-    protected _deleteBuffer(buffer: WebGLBuffer): void {
-        this._gl.deleteBuffer(buffer);
+    protected _deleteBuffer(buffer: DataBuffer): void {
+        this._gl.deleteBuffer(buffer.underlyingResource);
     }
 
     /**
