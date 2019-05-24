@@ -10,4 +10,5 @@ export class GlobalState {
     onSelectionChangedObservable = new Observable<Nullable<DefaultNodeModel>>();
     onRebuildRequiredObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
+    onUpdateRequiredObservable = new Observable<void>();
 }
