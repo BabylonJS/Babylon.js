@@ -26,6 +26,9 @@ export class NodeMaterialConnectionPoint {
     /** @hidden */
     public _wellKnownValue: Nullable<NodeMaterialWellKnownValues> = null;
 
+    /** @hidden */
+    public _needToEmitVarying = true;
+
     /**
      * Gets or sets the connection point type (default is float)
      */
@@ -315,8 +318,8 @@ export class NodeMaterialConnectionPoint {
      * @param scene defines the hosting scene
      */
     public transmit(effect: Effect, scene: Scene) {
+        let variableName = this.associatedVariableName;
         if (this._wellKnownValue) {
-            let variableName = this.associatedVariableName;
             switch (this._wellKnownValue) {
                 case NodeMaterialWellKnownValues.World:
                 case NodeMaterialWellKnownValues.WorldView:
@@ -337,36 +340,42 @@ export class NodeMaterialConnectionPoint {
 
         let value = this._valueCallback ? this._valueCallback() : this._storedValue;
 
+        if (value === null) {
+            return;
+        }
+
         switch (this.type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
-                effect.setFloat(this.name, value);
+                effect.setFloat(variableName, value);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Int:
-                effect.setInt(this.name, value);
+                effect.setInt(variableName, value);
                 break;
-            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
             case NodeMaterialBlockConnectionPointTypes.Color3:
-                effect.setColor3(this.name, value);
+                effect.setColor3(variableName, value);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                effect.setDirectColor4(this.name, value);
+                effect.setDirectColor4(variableName, value);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                effect.setVector2(this.name, value);
+                effect.setVector2(variableName, value);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                effect.setVector3(this.name, value);
+                effect.setVector3(variableName, value);
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
+                effect.setFloat4(variableName, value.r, value.g, value.b, value.a || 1.0);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                effect.setVector4(this.name, value);
+                effect.setVector4(variableName, value);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
-                effect.setMatrix(this.name, value);
+                effect.setMatrix(variableName, value);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Texture:
             case NodeMaterialBlockConnectionPointTypes.Texture3D:
-                effect.setTexture(this.name, value);
+                effect.setTexture(variableName, value);
                 break;
         }
     }

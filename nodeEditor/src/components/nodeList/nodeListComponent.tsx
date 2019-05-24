@@ -40,7 +40,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps> 
             Outputs: [VertexOutputBlock, FragmentOutputBlock],
             Dual: [FogBlock],
             Math: [AddBlock, ClampBlock, MatrixMultiplicationBlock, MultiplyBlock, Vector2TransformBlock, Vector3TransformBlock, Vector4TransformBlock],
-            Inputs: ["Texture", "Vector2", "Vector3", "Matrix"],
+            Inputs: ["Vector2", "Vector3", "Matrix"],
         }
 
         // Create node menu
@@ -49,10 +49,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps> 
             var blockList = (allBlocks as any)[key].map((b: any) => {
                 var label = typeof b === "string" ? b : b.prototype.getClassName().replace("Block", "")
                 var onClick = typeof b === "string" ? () => { this.props.onAddValueNode(b) } : () => { this.props.onAddNodeFromClass(b) };
-                return <ButtonLineComponent label={label} onClick={onClick} />
+                return <ButtonLineComponent key={label} label={label} onClick={onClick} />
             })
             blockMenu.push(
-                <LineContainerComponent title={key + " blocks"} closed={false}>
+                <LineContainerComponent key={key + " blocks"} title={key + " blocks"} closed={false}>
                     {blockList}
                 </LineContainerComponent>
             )

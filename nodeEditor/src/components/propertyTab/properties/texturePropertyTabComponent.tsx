@@ -6,6 +6,7 @@ import { FileButtonLineComponent } from '../../../sharedComponents/fileButtonLin
 import { Tools } from 'babylonjs/Misc/tools';
 import { Engine } from 'babylonjs/Engines/engine';
 import { TextureNodeModel } from '../../../components/diagram/texture/textureNodeModel';
+import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
@@ -51,7 +52,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
     render() {
         return (
             <div>
-                <h1>Texture</h1>
+                <TextLineComponent label="Type" value="Texture" />
                 <FileButtonLineComponent label="Replace texture" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
             </div>
         );

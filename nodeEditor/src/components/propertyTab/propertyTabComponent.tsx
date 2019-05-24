@@ -3,6 +3,7 @@ import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { Nullable } from 'babylonjs/types';
 import { DefaultNodeModel } from '../../components/diagram/defaultNodeModel';
+import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -45,6 +46,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <div id="title">
                         NODE MATERIAL EDITOR
                     </div>
+                </div>
+                <div>
+                    <ButtonLineComponent label="Reset to default" onClick={() => {
+                        this.props.globalState.nodeMaterial!.setToDefault();
+                        this.props.globalState.onResetRequiredObservable.notifyObservers();
+                    }} />
                 </div>
             </div>
         );
