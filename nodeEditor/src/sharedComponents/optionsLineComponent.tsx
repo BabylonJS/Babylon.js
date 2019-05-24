@@ -5,7 +5,7 @@ import { PropertyChangedEvent } from "./propertyChangedEvent";
 
 class ListLineOption {
     public label: string;
-    public value: number;
+    public value: number | string;
 }
 
 interface IOptionsLineComponentProps {
@@ -14,11 +14,12 @@ interface IOptionsLineComponentProps {
     propertyName: string,
     options: ListLineOption[],
     noDirectUpdate?: boolean,
-    onSelect?: (value: number) => void,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    onSelect?: (value: number | string) => void,
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
+    valuesAreStrings?: boolean
 }
 
-export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number }> {
+export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string }> {
     private _localChange = false;
 
     constructor(props: IOptionsLineComponentProps) {
@@ -41,7 +42,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         return false;
     }
 
-    raiseOnPropertyChanged(newValue: number, previousValue: number) {
+    raiseOnPropertyChanged(newValue: number | string, previousValue: number | string) {
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
@@ -55,7 +56,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     updateValue(valueString: string) {
-        const value = parseInt(valueString);
+        const value = this.props.valuesAreStrings ? valueString : parseInt(valueString);
         this._localChange = true;
 
         const store = this.state.value;

@@ -47,8 +47,6 @@ export class DefaultNodeModel extends NodeModel {
             inputPort.connection = connection;
             this.addPort(inputPort)
 
-            console.log(connection.name + " for " + options.nodeMaterialBlock!.name)
-
             if (connection.connectedPoint) {
                 // Block is not a leaf node, create node for the given block type
                 var connectedNode;
@@ -60,7 +58,11 @@ export class DefaultNodeModel extends NodeModel {
                 }
 
                 let link = connectedNode.ports[connection.connectedPoint.name].link(inputPort);
-                model.addAll(link);
+                if (graphEditor._toAdd) {
+                    graphEditor._toAdd.push(link);
+                } else {
+                    model.addAll(link);
+                }
             } else {
                 // Create value node for the connection
                 var type = ""
@@ -82,7 +84,11 @@ export class DefaultNodeModel extends NodeModel {
                     var ports = localNode.getPorts()
                     for (var key in ports) {
                         let link = (ports[key] as DefaultPortModel).link(inputPort);
-                        model.addAll(link);
+                        if (graphEditor._toAdd) {
+                            graphEditor._toAdd.push(link);
+                        } else {
+                            model.addAll(link);
+                        }
                     }
                 }
             }

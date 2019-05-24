@@ -10,6 +10,7 @@ import { OptionsLineComponent } from '../../../sharedComponents/optionsLineCompo
 import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
 import { Vector2, Vector3, Matrix } from 'babylonjs/Maths/math';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
+import { Color3PropertyTabComponent } from '../../propertyTab/properties/color3PropertyTabComponent';
 
 interface IInputPropertyTabComponentProps {
     globalState: GlobalState;
@@ -31,6 +32,11 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector3:
             case NodeMaterialBlockConnectionPointTypes.Color3:
+            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                return (
+                    <Color3PropertyTabComponent globalState={globalState} connection={connection} />
+                );
             case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
                 return (
                     <Vector3PropertyTabComponent globalState={globalState} connection={connection} />
@@ -69,6 +75,15 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
             { label: "Automatic", value: NodeMaterialWellKnownValues.Automatic },
         ];
 
+        var attributeOptions = [
+            { label: "position", value: "position" },
+            { label: "normal", value: "normal" },
+            { label: "tangent", value: "tangent" },
+            { label: "color", value: "color" },
+            { label: "uv", value: "uv" },
+            { label: "uv2", value: "uv2" },
+        ];
+
         /**
          * Gets the base math type of node material block connection point.
          * @param type Type to parse.
@@ -76,15 +91,14 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
         function getBaseType(type: NodeMaterialBlockConnectionPointTypes): string {
             switch (type) {
                 case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
-                case NodeMaterialBlockConnectionPointTypes.Color3: {
-                    return NodeMaterialBlockConnectionPointTypes[NodeMaterialBlockConnectionPointTypes.Vector3];
-                }
                 case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
                 case NodeMaterialBlockConnectionPointTypes.Vector3OrVector4:
-                case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
                 case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4:
+                    return "Vector";
+                case NodeMaterialBlockConnectionPointTypes.Color3:
+                case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
                 case NodeMaterialBlockConnectionPointTypes.Color4: {
-                    return NodeMaterialBlockConnectionPointTypes[NodeMaterialBlockConnectionPointTypes.Vector4];
+                    return "Color";
                 }
                 default: {
                     return NodeMaterialBlockConnectionPointTypes[type];
@@ -96,10 +110,22 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
             <div>
                 <TextLineComponent label="Type" value={getBaseType(connection.type)} />
                 <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {
-                    connection!.isAttribute = value;
+                    if (!value) {
+                        connection.isUniform = true;
+                    } else {
+                        connection.isAttribute = true;
+                    }
                     this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                     this.forceUpdate();
                 }} isSelected={() => connection!.isAttribute} />
+                {
+                    connection.isAttribute &&
+                    <OptionsLineComponent label="Attribute" valuesAreStrings={true} options={attributeOptions} target={connection} propertyName="name" onSelect={(value: any) => {
+                        connection.setAsAttribute(value);
+                        this.forceUpdate();
+                        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                    }} />
+                }
                 {
                     connection.isUniform &&
                     <CheckBoxLineComponent label="Is well known value" onSelect={value => {

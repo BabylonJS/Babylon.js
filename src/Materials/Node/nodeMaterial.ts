@@ -2,7 +2,7 @@ import { NodeMaterialBlock } from './nodeMaterialBlock';
 import { PushMaterial } from '../pushMaterial';
 import { Scene } from '../../scene';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { Matrix } from '../../Maths/math';
+import { Matrix, Color4 } from '../../Maths/math';
 import { Mesh } from '../../Meshes/mesh';
 import { Engine } from '../../Engines/engine';
 import { NodeMaterialBuildState } from './nodeMaterialBuildState';
@@ -20,6 +20,9 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { Nullable } from '../../types';
 import { VertexBuffer } from '../../Meshes/buffer';
 import { Tools } from '../../Misc/tools';
+import { Vector4TransformBlock } from './Blocks/vector4TransformBlock';
+import { VertexOutputBlock } from './Blocks/Vertex/vertexOutputBlock';
+import { FragmentOutputBlock } from './Blocks/Fragment/fragmentOutputBlock';
 
 // declare NODEEDITOR namespace for compilation issue
 declare var NODEEDITOR: any;
@@ -782,5 +785,39 @@ export class NodeMaterial extends PushMaterial {
                 resolve();
             }
         });
+    }
+
+    /**
+     * Clear the current material
+     */
+    public clear() {
+        this._vertexOutputNodes = [];
+        this._fragmentOutputNodes = [];
+    }
+
+    /**
+     * Clear the current material and set it to a default state
+     */
+    public setToDefault() {
+        this.clear();
+
+        var worldPos = new Vector4TransformBlock("worldPos");
+        worldPos.vector.setAsAttribute("position");
+        worldPos.transform.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.World);
+
+        var worldPosdMultipliedByViewProjection = new Vector4TransformBlock("worldPos * viewProjectionTransform");
+        worldPos.connectTo(worldPosdMultipliedByViewProjection);
+        worldPosdMultipliedByViewProjection.transform.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.ViewProjection);
+
+        var vertexOutput = new VertexOutputBlock("vertexOutput");
+        worldPosdMultipliedByViewProjection.connectTo(vertexOutput);
+
+        // Pixel       
+        var pixelOutput = new FragmentOutputBlock("pixelOutput");
+        pixelOutput.color.value = new Color4(0.8, 0.8, 0.8, 1);
+
+        // Add to nodes
+        this.addOutputNode(vertexOutput);
+        this.addOutputNode(pixelOutput);
     }
 }
