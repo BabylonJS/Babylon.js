@@ -12,14 +12,13 @@ declare module NODEEDITOR {
          * What the port is connected to
          */
         connection: BABYLON.Nullable<BABYLON.NodeMaterialConnectionPoint>;
+        defaultValue: any;
         static idCounter: number;
         constructor(name: string, type?: string);
         syncWithNodeMaterialConnectionPoint(connection: BABYLON.NodeMaterialConnectionPoint): void;
         getNodeModel(): DefaultNodeModel;
         link(outPort: DefaultPortModel): LinkModel<import("storm-react-diagrams").LinkModelListener>;
-        getInputFromBlock(): void;
         createLinkModel(): LinkModel;
-        getValue: Function;
         static SortInputOutput(a: BABYLON.Nullable<DefaultPortModel>, b: BABYLON.Nullable<DefaultPortModel>): {
             input: DefaultPortModel;
             output: DefaultPortModel;
@@ -210,6 +209,7 @@ declare module NODEEDITOR {
      * BABYLON.Texture node model which stores information about a node editor block
      */
     export class TextureNodeModel extends DefaultNodeModel {
+        private _block;
         /**
          * BABYLON.Texture for the node if it exists
          */
@@ -621,6 +621,7 @@ declare module NODEEDITOR {
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
+        onUpdateRequiredObservable: BABYLON.Observable<void>;
     }
 }
 declare module NODEEDITOR {
