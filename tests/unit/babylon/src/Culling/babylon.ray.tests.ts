@@ -62,12 +62,6 @@ describe('Babylon Ray', function() {
             const geometry = new BABYLON.Geometry("triangle", scene, vertexData);
             geometry.applyToMesh(mesh);
 
-            const material = new BABYLON.PBRMaterial("material", scene);
-            material.metallic = 0;
-            material.albedoColor = BABYLON.Color3.Gray();
-
-            mesh.material = material;
-
             const direction = BABYLON.Vector3.Forward();
             for (const index of vertexData.indices) {
                 const position = BABYLON.Vector3.FromArray(vertexData.positions, index * 3);
@@ -75,9 +69,9 @@ describe('Babylon Ray', function() {
                 const origin = new BABYLON.Vector3(position.x, position.y, position.z - 1);
                 const ray = new BABYLON.Ray(origin, direction);
                 const hit = scene.pickWithRay(ray);
-                expect(hit.hit, "[0] hit.hit").to.be.true;
-                expect(BABYLON.Vector3.DistanceSquared(hit.pickedPoint, position), "[0] hit.pickedPoint").to.equal(0);
-                expect(BABYLON.Vector3.DistanceSquared(hit.getNormal(), normal), "[0] hit.getNormal()").to.equal(0);
+                expect(hit.hit, `[${index}] hit.hit`).to.be.true;
+                expect(BABYLON.Vector3.DistanceSquared(hit.pickedPoint, position), `[${index}] hit.pickedPoint`).to.equal(0);
+                expect(BABYLON.Vector3.DistanceSquared(hit.getNormal(), normal), `[${index}] hit.getNormal()`).to.equal(0);
             }
         });
     });
