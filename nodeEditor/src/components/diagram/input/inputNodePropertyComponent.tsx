@@ -9,6 +9,7 @@ import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/
 import { OptionsLineComponent } from '../../../sharedComponents/optionsLineComponent';
 import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
 import { Vector2, Vector3, Matrix } from 'babylonjs/Maths/math';
+import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 
 interface IInputPropertyTabComponentProps {
     globalState: GlobalState;
@@ -93,7 +94,7 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
 
         return (
             <div>
-                <h1>{getBaseType(connection.type)}</h1>
+                <TextLineComponent label="Type" value={getBaseType(connection.type)} />
                 <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {
                     connection!.isAttribute = value;
                     this.props.globalState.onRebuildRequiredObservable.notifyObservers();

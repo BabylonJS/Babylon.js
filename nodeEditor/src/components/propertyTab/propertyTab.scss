@@ -1,7 +1,39 @@
 #propertyTab {
-    padding: 5px;
     $line-padding-left: 2px;
     color:white;
+
+      #header {
+        height: 30px;
+        font-size: 16px;
+        color: white;
+        background: #222222;
+        grid-row: 1;
+        text-align: center;
+        display: grid;
+        grid-template-columns: 30px 1fr 50px;        
+        -webkit-user-select: none; 
+        -moz-user-select: none;   
+        -ms-user-select: none;    
+        user-select: none;                
+
+        #logo {
+            position: relative;
+            grid-column: 1; 
+            width: 24px;
+            height: 24px;
+            left:0;
+            display: flex;
+            align-self: center;   
+            justify-self: center;
+        }        
+
+        #title {
+            grid-column: 2; 
+            display: grid;
+            align-items: center;   
+            text-align: center;
+        }
+    }
 
     .vector3Line {
         padding-left:$line-padding-left;                    
