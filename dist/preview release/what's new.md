@@ -22,6 +22,7 @@
 - Added support for morph targets ([Deltakosh](https://github.com/deltakosh/))
 - Added context menu to add `SSAORenderingPipeline` and `SSAO2RenderingPipeline` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for texture creation and assignments per material ([Deltakosh](https://github.com/deltakosh/))
+- Added support for occlusion properties ([Deltakosh](https://github.com/deltakosh/))
 - Node material editor ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
 
 ### Tools
