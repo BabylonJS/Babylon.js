@@ -236,7 +236,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         var outPort = new DefaultPortModel(type, "output");
 
         localNode.addPort(outPort);
-        this.forceUpdate();
 
         return localNode;
     }
