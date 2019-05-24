@@ -43,7 +43,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         let input = this.color;
         state.sharedData.hints.needAlphaBlending = this.alphaBlendingEnabled;
 
-        if (input.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color3) {
+        if (input.connectedPoint && input.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color3) {
             state.compilationString += `gl_FragColor = vec4(${input.associatedVariableName}, 1.0);\r\n`;
         } else {
             state.compilationString += `gl_FragColor = ${input.associatedVariableName};\r\n`;
