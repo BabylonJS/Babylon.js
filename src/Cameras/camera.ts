@@ -803,7 +803,7 @@ export class Camera extends Node {
                 result = result || target.isInFrustum(cam._frustumPlanes);
             });
             return result;
-        }else {
+        } else {
             return target.isInFrustum(this._frustumPlanes);
         }
     }
