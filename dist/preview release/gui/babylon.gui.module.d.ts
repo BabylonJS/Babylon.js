@@ -2178,8 +2178,6 @@ declare module "babylonjs-gui/2D/controls/colorpicker" {
         private _drawGradientSquare;
         private _drawCircle;
         private _createColorWheelCanvas;
-        private _RGBtoHSV;
-        private _HSVtoRGB;
         /** @hidden */
         _draw(context: CanvasRenderingContext2D): void;
         private _pointerIsDown;
@@ -5960,8 +5958,6 @@ declare module BABYLON.GUI {
         private _drawGradientSquare;
         private _drawCircle;
         private _createColorWheelCanvas;
-        private _RGBtoHSV;
-        private _HSVtoRGB;
         /** @hidden */
         _draw(context: CanvasRenderingContext2D): void;
         private _pointerIsDown;

@@ -1,6 +1,7 @@
 import { RibbonBuilder } from "./Builders/ribbonBuilder";
 import { DiscBuilder } from "./Builders/discBuilder";
 import { BoxBuilder } from "./Builders/boxBuilder";
+import { TiledBoxBuilder } from "./Builders/tiledBoxBuilder";
 import { SphereBuilder } from "./Builders/sphereBuilder";
 import { CylinderBuilder } from "./Builders/cylinderBuilder";
 import { TorusBuilder } from "./Builders/torusBuilder";
@@ -10,6 +11,7 @@ import { PolygonBuilder } from "./Builders/polygonBuilder";
 import { ShapeBuilder } from "./Builders/shapeBuilder";
 import { LatheBuilder } from "./Builders/latheBuilder";
 import { PlaneBuilder } from "./Builders/planeBuilder";
+import { TiledPlaneBuilder } from "./Builders/tiledPlaneBuilder";
 import { GroundBuilder } from "./Builders/groundBuilder";
 import { TubeBuilder } from "./Builders/tubeBuilder";
 import { PolyhedronBuilder } from "./Builders/polyhedronBuilder";
@@ -47,6 +49,19 @@ export class MeshBuilder {
      */
     public static CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         return BoxBuilder.CreateBox(name, options, scene);
+    }
+
+    /**
+     * Creates a tiled box mesh
+     * * faceTiles sets the pattern, tile size and number of tiles for a face
+     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+     * @param name defines the name of the mesh
+     * @param options defines the options used to create the mesh
+     * @param scene defines the hosting scene
+     * @returns the tiled box mesh
+     */
+    public static CreateTiledBox(name: string, options: { pattern?: number, size?: number, width?: number, height?: number, depth: number, tileSize?: number, tileWidth?: number, tileHeight?: number, faceUV?: Vector4[], faceColors?: Color4[], alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, updatable?: boolean}, scene: Nullable<Scene> = null): Mesh {
+        return TiledBoxBuilder.CreateTiledBox(name, options, scene);
     }
 
     /**
@@ -142,6 +157,7 @@ export class MeshBuilder {
      * * The parameter `subdivisions` sets the number of rings along the cylinder height (positive integer, default 1).
      * * The parameter `hasRings` (boolean, default false) makes the subdivisions independent from each other, so they become different faces.
      * * The parameter `enclose`  (boolean, default false) adds two extra faces per subdivision to a sliced cylinder to close it around its height axis.
+     * * The parameter `cap` sets the way the cylinder is capped. Possible values : BABYLON.Mesh.NO_CAP, BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL (default).
      * * The parameter `arc` (float, default 1) is the ratio (max 1) to apply to the circumference to slice the cylinder.
      * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of n Color3 elements) and `faceUV` (an array of n Vector4 elements).
      * * The value of n is the number of cylinder faces. If the cylinder has only 1 subdivisions, n equals : top face + cylinder surface + bottom face = 3
@@ -160,7 +176,7 @@ export class MeshBuilder {
      * @returns the cylinder mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#cylinder-or-cone
      */
-    public static CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], updatable?: boolean, hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
+    public static CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], updatable?: boolean, hasRings?: boolean, enclose?: boolean, cap?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
         return CylinderBuilder.CreateCylinder(name, options, scene);
     }
 
@@ -339,6 +355,22 @@ export class MeshBuilder {
      */
     public static CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, clip?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, cap?: number, invertUV?: boolean }, scene: Nullable<Scene> = null): Mesh {
         return LatheBuilder.CreateLathe(name, options, scene);
+    }
+
+    /**
+     * Creates a tiled plane mesh
+     * * You can set a limited pattern arrangement with the tiles
+     * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+     * @param name defines the name of the mesh
+     * @param options defines the options used to create the mesh
+     * @param scene defines the hosting scene
+     * @returns the plane mesh
+     * @see https://doc.babylonjs.com/how_to/set_shapes#plane
+     */
+    public static CreateTiledPlane(name: string, options: { pattern?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, size?: number, width?: number, height?: number, alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean}, scene: Nullable<Scene> = null): Mesh {
+        return TiledPlaneBuilder.CreateTiledPlane(name, options, scene);
     }
 
     /**

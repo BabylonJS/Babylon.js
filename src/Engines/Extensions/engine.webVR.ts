@@ -7,16 +7,6 @@ import { Tools } from '../../Misc/tools';
 import { DomManagement } from '../../Misc/domManagement';
 
 declare module "../../Engines/engine" {
-    /**
-     * Defines the interface used by display changed events
-     */
-    export interface IDisplayChangedEventArgs {
-        /** Gets the vrDisplay object (if any) */
-        vrDisplay: Nullable<any>;
-        /** Gets a boolean indicating if webVR is supported */
-        vrSupported: boolean;
-    }
-
     export interface Engine {
         /** @hidden */
         _vrDisplay: any;

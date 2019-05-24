@@ -85,6 +85,9 @@ export interface SceneOptions {
      * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
      */
     useClonedMeshhMap?: boolean;
+
+    /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
+    virtual?: boolean;
 }
 
 /**
@@ -1300,9 +1303,11 @@ export class Scene extends AbstractScene implements IAnimatable {
     constructor(engine: Engine, options?: SceneOptions) {
         super();
         this._engine = engine || EngineStore.LastCreatedEngine;
-        EngineStore._LastCreatedScene = this;
+        if (!options || !options.virtual) {
+            EngineStore._LastCreatedScene = this;
+            this._engine.scenes.push(this);
+        }
 
-        this._engine.scenes.push(this);
         this._uid = null;
 
         this._renderingManager = new RenderingManager(this);
@@ -1332,7 +1337,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.useMaterialMeshMap = options && options.useGeometryUniqueIdsMap || false;
         this.useClonedMeshhMap = options && options.useClonedMeshhMap || false;
 
-        this._engine.onNewSceneAddedObservable.notifyObservers(this);
+        if (!options || !options.virtual) {
+            this._engine.onNewSceneAddedObservable.notifyObservers(this);
+        }
     }
 
     /**
@@ -3856,6 +3863,10 @@ export class Scene extends AbstractScene implements IAnimatable {
     public dispose(): void {
         this.beforeRender = null;
         this.afterRender = null;
+
+        if (EngineStore._LastCreatedScene === this) {
+            EngineStore._LastCreatedScene = null;
+        }
 
         this.skeletons = [];
         this.morphTargetManagers = [];

@@ -4611,10 +4611,10 @@ var GLTFLoader = /** @class */ (function () {
         else if (primitive.targets.length !== node._numMorphTargets) {
             throw new Error(context + ": Primitives do not have the same number of targets");
         }
-        babylonMesh.morphTargetManager = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTargetManager"]();
+        babylonMesh.morphTargetManager = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTargetManager"](babylonMesh.getScene());
         for (var index = 0; index < primitive.targets.length; index++) {
             var weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
-            babylonMesh.morphTargetManager.addTarget(new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTarget"]("morphTarget" + index, weight));
+            babylonMesh.morphTargetManager.addTarget(new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTarget"]("morphTarget" + index, weight, babylonMesh.getScene()));
             // TODO: tell the target whether it has positions, normals, tangents
         }
     };
@@ -4647,28 +4647,32 @@ var GLTFLoader = /** @class */ (function () {
             }));
         };
         loadAttribute("POSITION", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind, function (babylonVertexBuffer, data) {
+            var positions = new Float32Array(data.length);
             babylonVertexBuffer.forEach(data.length, function (value, index) {
-                data[index] += value;
+                positions[index] = data[index] + value;
             });
-            babylonMorphTarget.setPositions(data);
+            babylonMorphTarget.setPositions(positions);
         });
         loadAttribute("NORMAL", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind, function (babylonVertexBuffer, data) {
-            babylonVertexBuffer.forEach(data.length, function (value, index) {
-                data[index] += value;
+            var normals = new Float32Array(data.length);
+            babylonVertexBuffer.forEach(normals.length, function (value, index) {
+                normals[index] = data[index] + value;
             });
-            babylonMorphTarget.setNormals(data);
+            babylonMorphTarget.setNormals(normals);
         });
         loadAttribute("TANGENT", babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].TangentKind, function (babylonVertexBuffer, data) {
+            var tangents = new Float32Array(data.length / 3 * 4);
             var dataIndex = 0;
             babylonVertexBuffer.forEach(data.length / 3 * 4, function (value, index) {
                 // Tangent data for morph targets is stored as xyz delta.
                 // The vertexData.tangent is stored as xyzw.
                 // So we need to skip every fourth vertexData.tangent.
                 if (((index + 1) % 4) !== 0) {
-                    data[dataIndex++] += value;
+                    tangents[dataIndex] = data[dataIndex] + value;
+                    dataIndex++;
                 }
             });
-            babylonMorphTarget.setTangents(data);
+            babylonMorphTarget.setTangents(tangents);
         });
         return Promise.all(promises).then(function () { });
     };
@@ -6418,8 +6422,8 @@ var GLTFFileLoader = /** @class */ (function () {
     GLTFFileLoader.prototype._parseAsync = function (scene, data, rootUrl, fileName) {
         var _this = this;
         return Promise.resolve().then(function () {
-            var unpacked = (data instanceof ArrayBuffer) ? _this._unpackBinary(data) : { json: data, bin: null };
-            return _this._validateAsync(scene, unpacked.json, rootUrl, fileName).then(function () {
+            return _this._validateAsync(scene, data, rootUrl, fileName).then(function () {
+                var unpacked = (data instanceof ArrayBuffer) ? _this._unpackBinary(data) : { json: data, bin: null };
                 _this._startPerformanceCounter("Parse JSON");
                 _this._log("JSON length: " + unpacked.json.length);
                 var loaderData = {
@@ -6433,7 +6437,7 @@ var GLTFFileLoader = /** @class */ (function () {
             });
         });
     };
-    GLTFFileLoader.prototype._validateAsync = function (scene, json, rootUrl, fileName) {
+    GLTFFileLoader.prototype._validateAsync = function (scene, data, rootUrl, fileName) {
         var _this = this;
         if (!this.validate || typeof GLTFValidator === "undefined") {
             return Promise.resolve();
@@ -6449,7 +6453,10 @@ var GLTFFileLoader = /** @class */ (function () {
         if (fileName && fileName.substr(0, 5) !== "data:") {
             options.uri = (rootUrl === "file:" ? fileName : "" + rootUrl + fileName);
         }
-        return GLTFValidator.validateString(json, options).then(function (result) {
+        var promise = (data instanceof ArrayBuffer)
+            ? GLTFValidator.validateBytes(new Uint8Array(data), options)
+            : GLTFValidator.validateString(data, options);
+        return promise.then(function (result) {
             _this._endPerformanceCounter("Validate JSON");
             _this.onValidatedObservable.notifyObservers(result);
             _this.onValidatedObservable.clear();

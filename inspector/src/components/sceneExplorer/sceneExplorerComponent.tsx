@@ -17,6 +17,7 @@ import { Vector3 } from 'babylonjs/Maths/math';
 import { PointLight } from 'babylonjs/Lights/pointLight';
 import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
+import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
 
 require("./sceneExplorer.scss");
 
@@ -246,6 +247,26 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     }
                 });
             }
+
+            if (!pipelines.some(p => p.getClassName() === "SSAORenderingPipeline")) {
+                pipelineContextMenus.push({
+                    label: "Add new SSAO Rendering Pipeline",
+                    action: () => {
+                        let newPipeline = new SSAORenderingPipeline("SSAO rendering pipeline", scene, 1, [scene.activeCamera!]);
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
+                    }
+                });
+            }
+
+            if (scene.getEngine().webGLVersion > 1 && !pipelines.some(p => p.getClassName() === "SSAORenderingPipeline")) {
+                pipelineContextMenus.push({
+                    label: "Add new SSAO2 Rendering Pipeline",
+                    action: () => {
+                        let newPipeline = new SSAORenderingPipeline("SSAO2 rendering pipeline", scene, 1, [scene.activeCamera!]);
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
+                    }
+                });
+            }
         }
 
         let nodeContextMenus: { label: string, action: () => void }[] = [];
@@ -259,7 +280,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         nodeContextMenus.push({
             label: "Add new directional light",
             action: () => {
-                let newDirectionalLight = new DirectionalLight("directional light", new Vector3(1, -1, 1), scene);
+                let newDirectionalLight = new DirectionalLight("directional light", new Vector3(-1, -1, -0.5), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newDirectionalLight);
             }
         });

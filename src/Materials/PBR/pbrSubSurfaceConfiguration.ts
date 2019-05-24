@@ -31,6 +31,7 @@ export interface IMaterialSubSurfaceDefines {
     SS_LODINREFRACTIONALPHA: boolean;
     SS_GAMMAREFRACTION: boolean;
     SS_RGBDREFRACTION: boolean;
+    SS_LINEARSPECULARREFRACTION: boolean;
     SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
 
     SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
@@ -242,6 +243,7 @@ export class PBRSubSurfaceConfiguration {
             defines.SS_REFRACTIONMAP_3D = false;
             defines.SS_GAMMAREFRACTION = false;
             defines.SS_RGBDREFRACTION = false;
+            defines.SS_LINEARSPECULARREFRACTION = false;
             defines.SS_REFRACTIONMAP_OPPOSITEZ = false;
             defines.SS_LODINREFRACTIONALPHA = false;
             defines.SS_LINKREFRACTIONTOTRANSPARENCY = false;
@@ -268,6 +270,7 @@ export class PBRSubSurfaceConfiguration {
                         defines.SS_REFRACTIONMAP_3D = refractionTexture.isCube;
                         defines.SS_GAMMAREFRACTION = refractionTexture.gammaSpace;
                         defines.SS_RGBDREFRACTION = refractionTexture.isRGBD;
+                        defines.SS_LINEARSPECULARREFRACTION = refractionTexture.linearSpecularLOD;
                         defines.SS_REFRACTIONMAP_OPPOSITEZ = refractionTexture.invertZ;
                         defines.SS_LODINREFRACTIONALPHA = refractionTexture.lodLevelInAlpha;
                         defines.SS_LINKREFRACTIONTOTRANSPARENCY = this._linkRefractionWithTransparency;
