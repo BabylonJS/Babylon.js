@@ -6395,7 +6395,7 @@ declare module BABYLON {
      * This class should not be used directly
      */
     export class InternalTexture {
-        /** hidden */
+        /** @hidden */
         static _UpdateRGBDAsync: (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: SphericalPolynomial | null, lodScale: number, lodOffset: number) => Promise<void>;
         /**
          * The source of the texture data is unknown
@@ -20431,7 +20431,7 @@ declare module BABYLON {
         private _deltaPosition;
         private _deltaRotation;
         private _deltaRotationConjugated;
-        /** hidden */
+        /** @hidden */
         _isFromLine: boolean;
         private _parent;
         private _isDisposed;
@@ -30336,13 +30336,13 @@ declare module BABYLON {
      * Class used to help serialization objects
      */
     export class SerializationHelper {
-        /** hidden */
+        /** @hidden */
         static _ImageProcessingConfigurationParser: (sourceProperty: any) => ImageProcessingConfiguration;
-        /** hidden */
+        /** @hidden */
         static _FresnelParametersParser: (sourceProperty: any) => FresnelParameters;
-        /** hidden */
+        /** @hidden */
         static _ColorCurvesParser: (sourceProperty: any) => ColorCurves;
-        /** hidden */
+        /** @hidden */
         static _TextureParser: (sourceProperty: any, scene: Scene, rootUrl: string) => Nullable<BaseTexture>;
         /**
          * Appends the serialized animations from the source animations
@@ -30583,7 +30583,7 @@ declare module BABYLON {
         /** @hidden */
         _activeMeshes: SmartArray<AbstractMesh>;
         protected _globalPosition: Vector3;
-        /** hidden */
+        /** @hidden */
         _computedViewMatrix: Matrix;
         private _doNotComputeProjectionMatrix;
         private _transformMatrix;
@@ -56896,6 +56896,8 @@ declare module BABYLON {
         private _colorShader;
         private _vertexBuffers;
         private _indexBuffer;
+        private _fillIndexBuffer;
+        private _fillIndexData;
         /**
          * Instantiates a new bounding box renderer in a scene.
          * @param scene the scene the  renderer renders in
