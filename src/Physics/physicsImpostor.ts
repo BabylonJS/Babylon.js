@@ -223,7 +223,7 @@ export class PhysicsImpostor {
     private _deltaRotation: Quaternion;
     private _deltaRotationConjugated: Quaternion;
 
-    /** hidden */
+    /** @hidden */
     public _isFromLine: boolean;
 
     //If set, this is this impostor's parent
@@ -294,7 +294,7 @@ export class PhysicsImpostor {
             return 0;
         }
         const plugin = this._physicsEngine.getPhysicsPlugin();
-        if (!plugin .setBodyPressure) {
+        if (!plugin.setBodyPressure) {
             return 0;
         }
         return plugin.getBodyPressure!(this);
