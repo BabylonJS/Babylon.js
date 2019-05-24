@@ -1031,7 +1031,7 @@ export class Tools {
      * @param scriptId defines the id of the script element
      * @returns a promise request object
      */
-    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Nullable<Promise<boolean>> {
+    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             if (!DomManagement.IsWindowObjectExist()) {
                 resolve(false);

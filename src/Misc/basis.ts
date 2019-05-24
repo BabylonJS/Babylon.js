@@ -1,6 +1,6 @@
-import { Logger } from "../Misc/logger";
 import { Nullable } from '../types';
 import { Engine } from '../Engines/engine';
+import { Tools } from './tools';
 
 /**
  * Info about the .basis files
@@ -33,8 +33,10 @@ class BasisFileInfo {
  * See https://github.com/BinomialLLC/basis_universal/tree/master/webgl
  */
 export class BasisTools {
-    private static _Initialized = false;
     private static _IgnoreSupportedFormats = false;
+    private static LoadScriptPromise:any = null;
+    // TODO should load from cdn location as fallback once it exists
+    private static _FallbackURL = "../dist/preview%20release/basisTranscoder/basis_transcoder.js";
     private static _BASIS_FORMAT = {
         cTFETC1: 0,
         cTFBC1: 1,
@@ -54,21 +56,29 @@ export class BasisTools {
     /**
      * Verifies that the BasisModule has been populated and falls back to loading from the web if not availible
      */
-    public static VerifyBasisModule() {
-        if (!BasisTools.BasisModule) {
-            if ((window as any).Module && (window as any).Module.BasisFile) {
-                Logger.Warn("BasisTools.BasisModule not populated, falling back to window.Module");
-                BasisTools.BasisModule = (window as any).Module;
-            }else {
-                // TODO should load from cdn location as fallback
-                throw "Unable to load .basis texture, BasisTools.BasisModule should be populated";
-            }
+    public static VerifyBasisModuleAsync() {
+        // Complete if module has been populated
+        if(BasisTools.BasisModule){
+            return Promise.resolve();
         }
 
-        if (!BasisTools._Initialized && BasisTools.BasisModule) {
-            BasisTools.BasisModule.initializeBasis();
-            BasisTools._Initialized = true;
+        // Otherwise load script from fallback url
+        if(!this.LoadScriptPromise){
+            this.LoadScriptPromise = Tools.LoadScriptAsync(BasisTools._FallbackURL, "basis_transcoder").then((success)=>{
+                return new Promise((res, rej)=>{
+                    if ((window as any).Module) {
+                        (window as any).Module.onRuntimeInitialized = () => {
+                            BasisTools.BasisModule = (window as any).Module;
+                            BasisTools.BasisModule.initializeBasis();
+                            res();
+                        }
+                    }else {
+                        rej("Unable to load .basis texture, BasisTools.BasisModule should be populated");
+                    }
+                })
+            })
         }
+        return this.LoadScriptPromise;
     }
 
     /**
@@ -77,7 +87,6 @@ export class BasisTools {
      * @returns the Basis file
      */
     public static LoadBasisFile(data: ArrayBuffer) {
-        BasisTools.VerifyBasisModule();
         return new BasisTools.BasisModule.BasisFile(new Uint8Array(data));
     }
 

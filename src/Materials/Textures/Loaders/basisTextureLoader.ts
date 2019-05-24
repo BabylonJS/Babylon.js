@@ -69,31 +69,32 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
     public loadData(data: ArrayBuffer, texture: InternalTexture,
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void {
         // Verify Basis Module is loaded and detect file info and format
-        BasisTools.VerifyBasisModule();
-        var loadedFile = BasisTools.LoadBasisFile(data);
-        var fileInfo = BasisTools.GetFileInfo(loadedFile);
-        var format = BasisTools.GetSupportedTranscodeFormat(texture.getEngine(), fileInfo);
+        BasisTools.VerifyBasisModuleAsync().then(()=>{
+            var loadedFile = BasisTools.LoadBasisFile(data);
+            var fileInfo = BasisTools.GetFileInfo(loadedFile);
+            var format = BasisTools.GetSupportedTranscodeFormat(texture.getEngine(), fileInfo);
 
-        // TODO this should be done in web worker
-        var transcodeResult = BasisTools.TranscodeFile(format, fileInfo, loadedFile);
+            // TODO this should be done in web worker
+            var transcodeResult = BasisTools.TranscodeFile(format, fileInfo, loadedFile);
 
-        // Upload data to texture
-        callback(fileInfo.width, fileInfo.height, false, true, () => {
-            if (transcodeResult.fallbackToRgb565) {
-                // Load rgb565Data to texture if conversion is needed
-                texture.getEngine()._unpackFlipY(texture.invertY);
-                var gl = texture.getEngine()._gl;
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, fileInfo.alignedWidth, fileInfo.alignedHeight, 0, gl.RGB, gl.UNSIGNED_SHORT_5_6_5, transcodeResult.pixels);
+            // Upload data to texture
+            callback(fileInfo.width, fileInfo.height, false, true, () => {
+                if (transcodeResult.fallbackToRgb565) {
+                    // Load rgb565Data to texture if conversion is needed
+                    texture.getEngine()._unpackFlipY(texture.invertY);
+                    var gl = texture.getEngine()._gl;
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, fileInfo.alignedWidth, fileInfo.alignedHeight, 0, gl.RGB, gl.UNSIGNED_SHORT_5_6_5, transcodeResult.pixels);
 
-                // TODO this is not working because computed power of 2 image size is larger than rgb565Data causing an error, working around this with below code
-                // texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                // texture.format = Engine.TEXTUREFORMAT_RGB;
-                // texture.getEngine()._uploadDataToTextureDirectly(texture, rgb565Data, 0,0)
-            }else {
-                // compress texture needs to be flipped
-                texture._invertVScale = true;
-                texture.getEngine()._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(format!), fileInfo.width, fileInfo.height, transcodeResult.pixels, 0, 0);
-            }
+                    // TODO this is not working because computed power of 2 image size is larger than rgb565Data causing an error, working around this with below code
+                    // texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                    // texture.format = Engine.TEXTUREFORMAT_RGB;
+                    // texture.getEngine()._uploadDataToTextureDirectly(texture, rgb565Data, 0,0)
+                }else {
+                    // compress texture needs to be flipped
+                    texture._invertVScale = true;
+                    texture.getEngine()._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(format!), fileInfo.width, fileInfo.height, transcodeResult.pixels, 0, 0);
+                }
+            });
         });
     }
 }
