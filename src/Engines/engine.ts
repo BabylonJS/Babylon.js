@@ -2079,9 +2079,7 @@ export class Engine {
      * Exits Pointerlock mode
      */
     public exitPointerlock(): void {
-        if (this.isFullscreen) {
-            Tools.ExitPointerlock();
-        }
+        Tools.ExitPointerlock();
     }
 
     /**
