@@ -5,4 +5,5 @@ export * from "./nullEngine";
 export * from "./Extensions/index";
 export * from "./IPipelineContext";
 export * from "./WebGL/webGLPipelineContext";
+export * from "./WebGL/webGL2ShaderProcessors";
 export * from "./nativeEngine";

@@ -277,7 +277,7 @@ export class Camera extends Node {
 
     protected _globalPosition = Vector3.Zero();
 
-    /** hidden */
+    /** @hidden */
     public _computedViewMatrix = Matrix.Identity();
     private _doNotComputeProjectionMatrix = false;
     private _transformMatrix = Matrix.Zero();
@@ -803,7 +803,7 @@ export class Camera extends Node {
                 result = result || target.isInFrustum(cam._frustumPlanes);
             });
             return result;
-        }else {
+        } else {
             return target.isInFrustum(this._frustumPlanes);
         }
     }

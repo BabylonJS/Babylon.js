@@ -28,12 +28,15 @@ body {
     display: grid;
     grid-template-rows: 100%;
     grid-template-columns: 100%;
+    align-items: center;
 }
 
 #waitLogo {
     grid-column: 1;
     grid-row: 1;
-    margin: 25%;
+    margin: auto;
+    width: 40%;
+    height: 40%;
 }
 
 #waitSpinner {

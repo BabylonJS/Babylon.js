@@ -222,10 +222,21 @@ export class ShadowGenerator implements IShadowGenerator {
     public onBeforeShadowMapRenderObservable = new Observable<Effect>();
 
     /**
+     * Observable triggered after the shadow is rendered. Can be used to restore internal effect state
+     */
+    public onAfterShadowMapRenderObservable = new Observable<Effect>();
+
+    /**
      * Observable triggered before a mesh is rendered in the shadow map.
      * Can be used to update internal effect state (that you can get from the onBeforeShadowMapRenderObservable)
      */
     public onBeforeShadowMapRenderMeshObservable = new Observable<Mesh>();
+
+    /**
+     * Observable triggered after a mesh is rendered in the shadow map.
+     * Can be used to update internal effect state (that you can get from the onAfterShadowMapRenderObservable)
+     */
+    public onAfterShadowMapRenderMeshObservable = new Observable<Mesh>();
 
     private _bias = 0.00005;
     /**
@@ -516,7 +527,15 @@ export class ShadowGenerator implements IShadowGenerator {
      * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
      */
     public set filteringQuality(filteringQuality: number) {
+        if (this._filteringQuality === filteringQuality) {
+            return;
+        }
+
         this._filteringQuality = filteringQuality;
+
+        this._disposeBlurPostProcesses();
+        this._applyFilterValues();
+        this._light._markMeshesAsLightDirty();
     }
 
     /**
@@ -562,6 +581,16 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     private _darkness = 0;
+
+    /** Gets or sets the actual darkness of a shadow */
+    public get darkness() {
+        return this._darkness;
+    }
+
+    public set darkness(value: number) {
+        this.setDarkness(value);
+    }
+
     /**
      * Returns the darkness value (float). This can only decrease the actual darkness of a shadow.
      * 0 means strongest and 1 would means no shadow.
@@ -589,6 +618,16 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     private _transparencyShadow = false;
+
+    /** Gets or sets the ability to have transparent shadow  */
+    public get transparencyShadow() {
+        return this._transparencyShadow;
+    }
+
+    public set transparencyShadow(value: boolean) {
+        this.setTransparencyShadow(value);
+    }
+
     /**
      * Sets the ability to have transparent shadow (boolean).
      * @param transparent True if transparent else False
@@ -618,6 +657,14 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         return this._shadowMap;
+    }
+
+    /**
+     * Gets the class name of that object
+     * @returns "ShadowGenerator"
+     */
+    public getClassName(): string {
+        return "ShadowGenerator";
     }
 
     /**
@@ -985,6 +1032,11 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, false);
             }
+
+            // Observables
+            this.onAfterShadowMapRenderObservable.notifyObservers(this._effect);
+            this.onAfterShadowMapRenderMeshObservable.notifyObservers(mesh);
+
         } else {
             // Need to reset refresh rate of the shadowMap
             if (this._shadowMap) {
@@ -1169,10 +1221,7 @@ export class ShadowGenerator implements IShadowGenerator {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         if (this.customShaderOptions) {
@@ -1464,6 +1513,11 @@ export class ShadowGenerator implements IShadowGenerator {
             this._light._shadowGenerator = null;
             this._light._markMeshesAsLightDirty();
         }
+
+        this.onBeforeShadowMapRenderMeshObservable.clear();
+        this.onBeforeShadowMapRenderObservable.clear();
+        this.onAfterShadowMapRenderMeshObservable.clear();
+        this.onAfterShadowMapRenderObservable.clear();
     }
 
     /**

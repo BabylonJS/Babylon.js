@@ -1,7 +1,7 @@
 import { SmartArray } from "../Misc/smartArray";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Nullable } from "../types";
+import { Nullable, DeepImmutable } from "../types";
 import { Vector3 } from "../Maths/math";
 import { IParticleSystem } from "../Particles/IParticleSystem";
 import { IEdgesRenderer } from "./edgesRenderer";
@@ -18,6 +18,7 @@ import { Camera } from "../Cameras/camera";
  * @hidden
  */
 export class RenderingGroup {
+    private static _zeroVector : DeepImmutable<Vector3> = Vector3.Zero();
     private _scene: Scene;
     private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
     private _transparentSubMeshes = new SmartArray<SubMesh>(256);
@@ -202,11 +203,11 @@ export class RenderingGroup {
     private static renderSorted(subMeshes: SmartArray<SubMesh>, sortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>, camera: Nullable<Camera>, transparent: boolean): void {
         let subIndex = 0;
         let subMesh: SubMesh;
-        let cameraPosition = camera ? camera.globalPosition : Vector3.Zero();
+        let cameraPosition = camera ? camera.globalPosition : RenderingGroup._zeroVector;
         for (; subIndex < subMeshes.length; subIndex++) {
             subMesh = subMeshes.data[subIndex];
             subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
-            subMesh._distanceToCamera = subMesh.getBoundingInfo().boundingSphere.centerWorld.subtract(cameraPosition).length();
+            subMesh._distanceToCamera = Vector3.Distance(subMesh.getBoundingInfo().boundingSphere.centerWorld, cameraPosition);
         }
 
         let sortedArray = subMeshes.data.slice(0, subMeshes.length);

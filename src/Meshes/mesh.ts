@@ -146,6 +146,54 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Mesh cap setting : two caps, one at the beginning  and one at the end of the mesh
      */
     public static readonly CAP_ALL = 3;
+    /**
+     * Mesh pattern setting : no flip or rotate
+     */
+    public static readonly NO_FLIP = 0;
+    /**
+     * Mesh pattern setting : flip (reflect in y axis) alternate tiles on each row or column
+     */
+    public static readonly FLIP_TILE = 1;
+    /**
+     * Mesh pattern setting : rotate (180degs) alternate tiles on each row or column
+     */
+    public static readonly ROTATE_TILE = 2;
+    /**
+     * Mesh pattern setting : flip (reflect in y axis) all tiles on alternate rows
+     */
+    public static readonly FLIP_ROW = 3;
+    /**
+     * Mesh pattern setting : rotate (180degs) all tiles on alternate rows
+     */
+    public static readonly ROTATE_ROW = 4;
+    /**
+     * Mesh pattern setting : flip and rotate alternate tiles on each row or column
+     */
+    public static readonly FLIP_N_ROTATE_TILE = 5;
+    /**
+     * Mesh pattern setting : rotate pattern and rotate
+     */
+    public static readonly FLIP_N_ROTATE_ROW = 6;
+    /**
+     * Mesh tile positioning : part tiles same on left/right or top/bottom
+     */
+    public static readonly CENTER = 0;
+    /**
+     * Mesh tile positioning : part tiles on left
+     */
+    public static readonly LEFT = 1;
+    /**
+     * Mesh tile positioning : part tiles on right
+     */
+    public static readonly RIGHT = 2;
+    /**
+     * Mesh tile positioning : part tiles on top
+     */
+    public static readonly TOP = 3;
+    /**
+     * Mesh tile positioning : part tiles on bottom
+     */
+    public static readonly BOTTOM = 4;
 
     /**
      * Gets the default side orientation.
@@ -689,6 +737,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Returns the mesh VertexBuffer object from the requested `kind`
      * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
      * - VertexBuffer.UVKind
      * - VertexBuffer.UV2Kind
      * - VertexBuffer.UV3Kind
@@ -713,6 +762,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Tests if a specific vertex buffer is associated with this mesh
      * @param kind defines which buffer to check (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
      * - VertexBuffer.UVKind
      * - VertexBuffer.UV2Kind
      * - VertexBuffer.UV3Kind
@@ -767,6 +817,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Returns a string which contains the list of existing `kinds` of Vertex Data associated with this mesh.
      * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
      * - VertexBuffer.UVKind
      * - VertexBuffer.UV2Kind
      * - VertexBuffer.UV3Kind
@@ -1496,8 +1547,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _freeze() {
-        this._instanceDataStorage.isFrozen = true;
-
         if (!this.subMeshes) {
             return;
         }
@@ -1506,6 +1555,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (var index = 0; index < this.subMeshes.length; index++) {
             this._getInstancesRenderList(index);
         }
+
+        this._effectiveMaterial = null;
+        this._instanceDataStorage.isFrozen = true;
     }
 
     /** @hidden */
@@ -2407,7 +2459,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
 
-        vertex_data.applyToMesh(this);
+        vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
         return this;
     }
 
@@ -2535,7 +2587,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             vertex_data.indices = indices;
-            vertex_data.applyToMesh(this);
+            vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
         }
     }
 
@@ -2613,7 +2665,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             vertex_data.normals = normals;
             vertex_data.uvs = uvs;
 
-            vertex_data.applyToMesh(this);
+            vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
         }
     }
 

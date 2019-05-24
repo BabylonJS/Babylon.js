@@ -848,6 +848,13 @@ function showError(errorMessage, errorEvent) {
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 
+        showQRCode = function() {
+            $("#qrCodeImage").empty();
+            var playgroundCode = window.location.href.split("#");
+            playgroundCode.shift();
+            $("#qrCodeImage").qrcode({text: "https://playground.babylonjs.com/frame.html#"+(playgroundCode.join("#"))});
+        };
+
         // Fullscreen
         document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function() {
             if (document.webkitIsFullScreen) goFullPage();

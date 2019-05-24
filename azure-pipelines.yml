@@ -19,7 +19,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp tests-whatsnew'
+  - script: 'gulp tests-whatsnew --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Whats new'
     env:
@@ -37,7 +37,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp typedoc-check'
+  - script: 'gulp typedoc-check --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typedoc check'
 
@@ -52,7 +52,7 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp fullLint'
+  - script: 'gulp fullLint --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Full Lint'
 
@@ -67,10 +67,10 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp typescript-all'
+  - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
-  - script: 'gulp tests-babylon-unit'
+  - script: 'gulp tests-babylon-unit --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Unit Tests'
   - task: PublishTestResults@2
@@ -90,14 +90,14 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp typescript-all'
+  - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
   - script: |
       export DISPLAY=:99
       Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
       sleep 3 # give xvfb some time to start
-      gulp tests-validation-virtualscreenWebGL1
+      gulp tests-validation-virtualscreenWebGL1 --max-old-space-size=8192
     workingDirectory: Tools/Gulp
     displayName: 'Visual Tests'
   - task: PublishTestResults@2
@@ -117,14 +117,14 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp typescript-all'
+  - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
   - script: |
       export DISPLAY=:99
       Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
       sleep 3 # give xvfb some time to start
-      gulp tests-validation-virtualscreen
+      gulp tests-validation-virtualscreen --max-old-space-size=8192
     workingDirectory: Tools/Gulp
     displayName: 'Visual Tests'
   - task: PublishTestResults@2
@@ -151,16 +151,16 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp typescript-all'
+  - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
   - script: 'gulp tests-modules'
     workingDirectory: Tools/Gulp
     displayName: 'Tests modules'
-  - script: 'sudo gulp localdev-es6'
+  - script: 'sudo gulp localdev-es6 --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Npm link ES6'
-  - script: 'gulp tests-es6Modules'
+  - script: 'gulp tests-es6Modules --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Tests ES6'
   - task: PublishTestResults@2
@@ -185,10 +185,10 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp typescript-all'
+  - script: 'gulp typescript-all --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
-  - script: 'gulp tests-viewer-unit'
+  - script: 'gulp tests-viewer-unit --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Unit Tests'
   - task: PublishTestResults@2
@@ -200,7 +200,7 @@ jobs:
       export DISPLAY=:99
       Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
       sleep 3 # give xvfb some time to start
-      gulp tests-viewer-validation-virtualscreen
+      gulp tests-viewer-validation-virtualscreen --max-old-space-size=8192
     workingDirectory: Tools/Gulp
     displayName: 'Visual Tests'
   - task: PublishTestResults@2

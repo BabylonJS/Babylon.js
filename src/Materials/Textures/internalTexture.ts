@@ -16,7 +16,7 @@ declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTe
  */
 export class InternalTexture {
 
-    /** hidden */
+    /** @hidden */
     public static _UpdateRGBDAsync = (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> => {
         throw _DevTools.WarnImport("environmentTextureTools");
     }
@@ -228,6 +228,11 @@ export class InternalTexture {
     public _isRGBD: boolean = false;
 
     /** @hidden */
+    public _linearSpecularLOD: boolean = false;
+    /** @hidden */
+    public _irradianceTexture: Nullable<BaseTexture> = null;
+
+    /** @hidden */
     public _webGLTexture: Nullable<WebGLTexture> = null;
     /** @hidden */
     public _references: number = 1;
@@ -435,6 +440,13 @@ export class InternalTexture {
                 target._lodTextureLow.dispose();
             }
             target._lodTextureLow = this._lodTextureLow;
+        }
+
+        if (this._irradianceTexture) {
+            if (target._irradianceTexture) {
+                target._irradianceTexture.dispose();
+            }
+            target._irradianceTexture = this._irradianceTexture;
         }
 
         let cache = this._engine.getLoadedTexturesCache();

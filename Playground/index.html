@@ -27,6 +27,7 @@
     <script src="https://preview.babylonjs.com/babylon.js"></script>
     <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+    <script src="https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.js"></script>
     <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
     <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
     <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
@@ -114,6 +115,13 @@
                     <div class="option" id="formatButton1600">Format code</div>
                     <div class="option" id="minimapToggle1600">Minimap
                         <i class="far fa-square" aria-hidden="true"></i>
+                    </div>
+                    <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                        <div class="toDisplaySub">
+                            <div class="option" style="height:auto;padding: 20px;background: white;" id="qrCodeImage">QR
+                                Code Image</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -461,6 +469,8 @@
     </div>
 
     <script src="js/libs/jquery.min.js"></script>
+    <script src="js/jquery.qrcode.js"></script>
+    <script src="js/qrcode.js"></script>
 
     <script src="js/actions.js"></script>
     <script src="js/pbt.js"></script>

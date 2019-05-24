@@ -129,6 +129,10 @@ export class WebRequest {
             update(this._xhr);
         }
 
+        // Clean url
+        url = url.replace("file:http:", "http:");
+        url = url.replace("file:https:", "https:");
+
         return this._xhr.open(method, url, true);
     }
 }

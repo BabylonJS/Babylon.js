@@ -1093,6 +1093,10 @@ export class AssetsManager {
      */
     public loadAsync(): Promise<void> {
         return new Promise((resolve, reject) => {
+            if (this._isLoading) {
+                resolve();
+                return;
+            }
             this.onTasksDoneObservable.addOnce((remainingTasks) => {
                 if (remainingTasks && remainingTasks.length) {
                     reject(remainingTasks);
@@ -1100,6 +1104,8 @@ export class AssetsManager {
                     resolve();
                 }
             });
+
+            this.load();
         });
     }
 }

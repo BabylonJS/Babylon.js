@@ -13,6 +13,7 @@
         "packageES6DevFolderName": "packageES6Dev",
         "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",
+        "documentationFile": "documentation.d.ts",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
             "../../dist/preview release/gui/babylon.gui.d.ts",
@@ -45,7 +46,8 @@
         "loaders",
         "serializers",
         "gui",
-        "inspector"
+        "inspector",
+        "nodeEditor"
     ],
     "es6modules": [
         "core",
@@ -56,7 +58,8 @@
         "serializers",
         "gui",
         "inspector",
-        "viewer"
+        "viewer",
+        "nodeEditor"
     ],
     "lintModules": [
         "core",
@@ -68,8 +71,8 @@
         "gui"
     ],
     "viewerModules": [
-        "viewer",
-        "viewer-assets"
+        "viewer-assets",
+        "viewer"
     ],
     "additionalNpmPackages": [
         {
@@ -117,7 +120,9 @@
                             "namespace": "BABYLON.Debug"
                         }
                     ],
-                    "hiddenConsts": ["Debug"]
+                    "hiddenConsts": [
+                        "Debug"
+                    ]
                 },
                 "requiredFiles": [
                     "readme.md"
@@ -575,6 +580,57 @@
                 ],
                 "typings": "babylon.inspector.module.d.ts",
                 "index": "babylon.inspector.bundle.max.js"
+            }
+        }
+    },
+    "nodeEditor": {
+        "libraries": [
+            {
+                "output": "babylon.nodeEditor.js",
+                "entry": "./legacy/legacy.ts"
+            }
+        ],
+        "build": {
+            "ignoreInTestMode": true,
+            "mainFolder": "./nodeEditor/",
+            "uncheckedLintImports": [
+                "react",
+                "react-dom",
+                "re-resizable",
+                "glTF"
+            ],
+            "umd": {
+                "packageName": "babylonjs-node-editor",
+                "webpackRoot": "NODEEDITOR",
+                "processDeclaration": {
+                    "filename": "babylon.nodeEditor.module.d.ts",
+                    "moduleName": "NODEEDITOR",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "react": "React",
+                        "@babylonjs/core": "BABYLON",
+                        "@fortawesome": false,
+                        "react-contextmenu": false
+                    }
+                }
+            },
+            "es6": {
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "node_modules/re-resizable/lib/index.es5.js",
+                    "Tools/**/*"
+                ],
+                "packageName": "@babylonjs/node-editor",
+                "readme": "dist/preview release/nodeEditor/readme-es6.md",
+                "packagesFiles": [
+                    "babylon.nodeEditor.max.js",
+                    "babylon.nodeEditor.max.js.map",
+                    "babylon.nodeEditor.module.d.ts",
+                    "readme.md"
+                ],
+                "typings": "babylon.nodeEditor.module.d.ts",
+                "index": "babylon.nodeEditor.max.js"
             }
         }
     },
