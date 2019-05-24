@@ -812,7 +812,7 @@ export class NodeMaterial extends PushMaterial {
         var vertexOutput = new VertexOutputBlock("vertexOutput");
         worldPosdMultipliedByViewProjection.connectTo(vertexOutput);
 
-        // Pixel       
+        // Pixel
         var pixelOutput = new FragmentOutputBlock("pixelOutput");
         pixelOutput.color.value = new Color4(0.8, 0.8, 0.8, 1);
 
