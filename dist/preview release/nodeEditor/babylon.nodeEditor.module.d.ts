@@ -16,14 +16,13 @@ declare module "babylonjs-node-editor/components/diagram/defaultPortModel" {
          * What the port is connected to
          */
         connection: Nullable<NodeMaterialConnectionPoint>;
+        defaultValue: any;
         static idCounter: number;
         constructor(name: string, type?: string);
         syncWithNodeMaterialConnectionPoint(connection: NodeMaterialConnectionPoint): void;
         getNodeModel(): DefaultNodeModel;
         link(outPort: DefaultPortModel): LinkModel<import("storm-react-diagrams").LinkModelListener>;
-        getInputFromBlock(): void;
         createLinkModel(): LinkModel;
-        getValue: Function;
         static SortInputOutput(a: Nullable<DefaultPortModel>, b: Nullable<DefaultPortModel>): {
             input: DefaultPortModel;
             output: DefaultPortModel;
@@ -221,7 +220,7 @@ declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" 
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/components/propertyTab/properties/texturePropertyTabComponent" {
+declare module "babylonjs-node-editor/components/diagram/texture/texturePropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
     import { TextureNodeModel } from "babylonjs-node-editor/components/diagram/texture/textureNodeModel";
@@ -249,6 +248,7 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureNodeMode
      * Texture node model which stores information about a node editor block
      */
     export class TextureNodeModel extends DefaultNodeModel {
+        private _block;
         /**
          * Texture for the node if it exists
          */
@@ -726,6 +726,7 @@ declare module "babylonjs-node-editor/globalState" {
         onSelectionChangedObservable: Observable<Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: Observable<void>;
         onResetRequiredObservable: Observable<void>;
+        onUpdateRequiredObservable: Observable<void>;
     }
 }
 declare module "babylonjs-node-editor/sharedComponents/popup" {
@@ -776,14 +777,13 @@ declare module NODEEDITOR {
          * What the port is connected to
          */
         connection: BABYLON.Nullable<BABYLON.NodeMaterialConnectionPoint>;
+        defaultValue: any;
         static idCounter: number;
         constructor(name: string, type?: string);
         syncWithNodeMaterialConnectionPoint(connection: BABYLON.NodeMaterialConnectionPoint): void;
         getNodeModel(): DefaultNodeModel;
         link(outPort: DefaultPortModel): LinkModel<import("storm-react-diagrams").LinkModelListener>;
-        getInputFromBlock(): void;
         createLinkModel(): LinkModel;
-        getValue: Function;
         static SortInputOutput(a: BABYLON.Nullable<DefaultPortModel>, b: BABYLON.Nullable<DefaultPortModel>): {
             input: DefaultPortModel;
             output: DefaultPortModel;
@@ -974,6 +974,7 @@ declare module NODEEDITOR {
      * BABYLON.Texture node model which stores information about a node editor block
      */
     export class TextureNodeModel extends DefaultNodeModel {
+        private _block;
         /**
          * BABYLON.Texture for the node if it exists
          */
@@ -1385,6 +1386,7 @@ declare module NODEEDITOR {
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
+        onUpdateRequiredObservable: BABYLON.Observable<void>;
     }
 }
 declare module NODEEDITOR {

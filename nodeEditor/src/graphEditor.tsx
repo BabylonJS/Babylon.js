@@ -23,6 +23,7 @@ import { DefaultPortModel } from './components/diagram/defaultPortModel';
 import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
 import { InputNodeModel } from './components/diagram/input/inputNodeModel';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
+import { Vector2, Vector3, Vector4, Matrix, Color3, Color4 } from 'babylonjs/Maths/math';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -145,6 +146,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
         });
 
+        this.props.globalState.onUpdateRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
+
         this.build();
     }
 
@@ -159,7 +164,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     // Link is deleted
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     var link = DefaultPortModel.SortInputOutput(e.link.sourcePort as DefaultPortModel, e.link.targetPort as DefaultPortModel);
-                    console.log(link)
                     if (link) {
                         if (link.output.connection && link.input.connection) {
                             // Disconnect standard nodes
@@ -184,8 +188,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                             if (link.output.connection && link.input.connection) {
                                 link.output.connection.connectTo(link.input.connection)
                             } else if (link.input.connection) {
-                                link.input.connection.value = link.output.getValue();
-
+                                if (!link.output.connection) { // Input Node
+                                    let name = link.output.name;
+                                    link.output.syncWithNodeMaterialConnectionPoint(link.input.connection);
+                                    link.output.name = name;
+                                    (link.output.getNode() as InputNodeModel).connection = link.output.connection!;
+                                    link.input.connection.value = link.output.defaultValue;
+                                }
                             }
                             if (this.props.globalState.nodeMaterial) {
                                 this.props.globalState.nodeMaterial.build()
@@ -226,7 +235,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         var localNode = this.createNodeFromObject({ column: 0, nodeMaterialBlock: block })
         var widget = (this.refs["test"] as DiagramWidget);
 
-        this.forceUpdate()
+        this.forceUpdate();
 
         // This is needed to fix link offsets when created, (eg. create a fog block)
         // Todo figure out how to correct this without this
@@ -234,7 +243,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             widget.startFiringAction(new MoveCanvasAction(1, 0, this._model));
         }, 500);
 
-        return localNode
+        return localNode;
     }
 
     addValueNode(type: string, column = 0, connection?: NodeMaterialConnectionPoint) {
@@ -242,6 +251,29 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         var outPort = new DefaultPortModel(type, "output");
 
         localNode.addPort(outPort);
+
+        if (!connection) {
+            switch (type) {
+                case "Vector2":
+                    outPort.defaultValue = Vector2.Zero();
+                    break;
+                case "Vector3":
+                    outPort.defaultValue = Vector3.Zero();
+                    break;
+                case "Vector4":
+                    outPort.defaultValue = Vector4.Zero();
+                    break;
+                case "Matrix":
+                    outPort.defaultValue = Matrix.Identity();
+                    break;
+                case "Color3":
+                    outPort.defaultValue = Color3.White();
+                    break;
+                case "Color4":
+                    outPort.defaultValue = new Color4(1, 1, 1, 1);
+                    break;
+            }
+        }
 
         return localNode;
     }

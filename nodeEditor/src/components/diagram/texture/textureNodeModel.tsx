@@ -3,7 +3,7 @@ import { Nullable } from 'babylonjs/types';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { GlobalState } from '../../../globalState';
-import { TexturePropertyTabComponent } from '../../../components/propertyTab/properties/texturePropertyTabComponent';
+import { TexturePropertyTabComponent } from './texturePropertyTabComponent';
 import { NodeCreationOptions, GraphEditor } from '../../../graphEditor';
 import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
@@ -12,10 +12,19 @@ import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBl
  * Texture node model which stores information about a node editor block
  */
 export class TextureNodeModel extends DefaultNodeModel {
+    private _block: TextureBlock;
+
 	/**
 	 * Texture for the node if it exists
 	 */
-    public texture: Nullable<Texture> = null;
+    public get texture(): Nullable<Texture> {
+        return this._block.texture.value;
+    }
+
+    public set texture(value: Nullable<Texture>) {
+        this._block.texture.value = value;
+    }
+
 	/**
 	 * Constructs the node model
 	 */
@@ -30,9 +39,7 @@ export class TextureNodeModel extends DefaultNodeModel {
     }
 
     prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
-        let textureBlock = options.nodeMaterialBlock as TextureBlock;
-
-        this.texture = textureBlock.texture.value;
+        this._block = options.nodeMaterialBlock as TextureBlock;
 
         super.prepare(options, nodes, model, graphEditor, filterInputs);
     }

@@ -46932,9 +46932,6 @@ var DefaultPortModel = /** @class */ (function (_super) {
          * What the port is connected to
          */
         _this.connection = null;
-        _this.getValue = function () {
-            return null;
-        };
         _this.position = type;
         DefaultPortModel.idCounter++;
         return _this;
@@ -46951,8 +46948,6 @@ var DefaultPortModel = /** @class */ (function (_super) {
         link.setSourcePort(this);
         link.setTargetPort(outPort);
         return link;
-    };
-    DefaultPortModel.prototype.getInputFromBlock = function () {
     };
     DefaultPortModel.prototype.createLinkModel = function () {
         return new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DefaultLinkModel"]();
@@ -47533,36 +47528,42 @@ var InputNodeWidget = /** @class */ (function (_super) {
         }
         var connection = this.props.node.connection;
         var value = "";
-        if (connection.isAttribute) {
-            value = "mesh." + connection.name;
-        }
-        else if (connection.isWellKnownValue) {
-            switch (connection.wellKnownValue) {
-                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].World:
-                    value = "World";
-                    break;
-                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].WorldView:
-                    value = "World x View";
-                    break;
-                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].WorldViewProjection:
-                    value = "World x View x Projection";
-                    break;
-                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].View:
-                    value = "View";
-                    break;
-                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].ViewProjection:
-                    value = "View x Projection";
-                    break;
-                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].Projection:
-                    value = "Projection";
-                    break;
-                case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].Automatic:
-                    value = "Automatic";
-                    break;
+        var name = port.name;
+        if (connection) {
+            if (connection.isAttribute) {
+                value = "mesh." + connection.name;
+            }
+            else if (connection.isWellKnownValue) {
+                switch (connection.wellKnownValue) {
+                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].World:
+                        value = "World";
+                        break;
+                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].WorldView:
+                        value = "World x View";
+                        break;
+                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].WorldViewProjection:
+                        value = "World x View x Projection";
+                        break;
+                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].View:
+                        value = "View";
+                        break;
+                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].ViewProjection:
+                        value = "View x Projection";
+                        break;
+                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].Projection:
+                        value = "Projection";
+                        break;
+                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialWellKnownValues"].Automatic:
+                        value = "Automatic";
+                        break;
+                }
             }
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (connection.isAttribute ? " attribute" : "") },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, port.name),
+        else {
+            name = "Not connected input";
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (connection && connection.isAttribute ? " attribute" : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, name),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" }, value)));
     };
@@ -47645,7 +47646,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
-/* harmony import */ var _components_propertyTab_properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../components/propertyTab/properties/texturePropertyTabComponent */ "./components/propertyTab/properties/texturePropertyTabComponent.tsx");
+/* harmony import */ var _texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./texturePropertyTabComponent */ "./components/diagram/texture/texturePropertyTabComponent.tsx");
 
 
 
@@ -47659,19 +47660,26 @@ var TextureNodeModel = /** @class */ (function (_super) {
      * Constructs the node model
      */
     function TextureNodeModel() {
-        var _this = _super.call(this, "texture") || this;
+        return _super.call(this, "texture") || this;
+    }
+    Object.defineProperty(TextureNodeModel.prototype, "texture", {
         /**
          * Texture for the node if it exists
          */
-        _this.texture = null;
-        return _this;
-    }
+        get: function () {
+            return this._block.texture.value;
+        },
+        set: function (value) {
+            this._block.texture.value = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     TextureNodeModel.prototype.renderProperties = function (globalState) {
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["TexturePropertyTabComponent"], { globalState: globalState, node: this }));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["TexturePropertyTabComponent"], { globalState: globalState, node: this }));
     };
     TextureNodeModel.prototype.prepare = function (options, nodes, model, graphEditor, filterInputs) {
-        var textureBlock = options.nodeMaterialBlock;
-        this.texture = textureBlock.texture.value;
+        this._block = options.nodeMaterialBlock;
         _super.prototype.prepare.call(this, options, nodes, model, graphEditor, filterInputs);
     };
     return TextureNodeModel;
@@ -47752,6 +47760,80 @@ var TextureNodeWidget = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextureLineComponent"], { ref: "textureView", width: 200, height: 180, texture: this.props.node.texture, hideChannelSelect: true })));
     };
     return TextureNodeWidget;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/texture/texturePropertyTabComponent.tsx":
+/*!********************************************************************!*\
+  !*** ./components/diagram/texture/texturePropertyTabComponent.tsx ***!
+  \********************************************************************/
+/*! exports provided: TexturePropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TexturePropertyTabComponent", function() { return TexturePropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
+/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
+
+
+
+
+
+
+
+var TexturePropertyTabComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TexturePropertyTabComponent, _super);
+    function TexturePropertyTabComponent() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     * Replaces the texture of the node
+     * @param file the file of the texture to use
+     */
+    TexturePropertyTabComponent.prototype.replaceTexture = function (file) {
+        var _this = this;
+        if (!this.props.node) {
+            return;
+        }
+        var texture = this.props.node.texture;
+        if (!texture) {
+            this.props.node.texture = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Texture"](null, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Engine"].LastCreatedScene);
+            texture = this.props.node.texture;
+        }
+        babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadFile(file, function (data) {
+            var blob = new Blob([data], { type: "octet/stream" });
+            var url = URL.createObjectURL(blob);
+            if (texture.isCube) {
+                var extension = undefined;
+                if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                    extension = ".dds";
+                }
+                else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                    extension = ".env";
+                }
+                texture.updateURL(url, extension, function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); });
+            }
+            else {
+                texture.updateURL(url, null, function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); });
+            }
+        }, undefined, true);
+    };
+    TexturePropertyTabComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: "Texture" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { label: "Replace texture", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" })));
+    };
+    return TexturePropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -47842,14 +47924,17 @@ var NodeListComponent = /** @class */ (function (_super) {
             Outputs: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["VertexOutputBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FragmentOutputBlock"]],
             Dual: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FogBlock"]],
             Math: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AddBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ClampBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MatrixMultiplicationBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MultiplyBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector2TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector3TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector4TransformBlock"]],
-            Inputs: ["Vector2", "Vector3", "Matrix"],
+            Inputs: ["Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
         };
         // Create node menu
         var blockMenu = [];
         for (var key in allBlocks) {
             var blockList = allBlocks[key].map(function (b) {
                 var label = typeof b === "string" ? b : b.prototype.getClassName().replace("Block", "");
-                var onClick = typeof b === "string" ? function () { _this.props.onAddValueNode(b); } : function () { _this.props.onAddNodeFromClass(b); };
+                var onClick = typeof b === "string" ? function () {
+                    _this.props.onAddValueNode(b);
+                    _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                } : function () { _this.props.onAddNodeFromClass(b); };
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { key: label, label: label, onClick: onClick });
             });
             blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key + " blocks", closed: false }, blockList));
@@ -47891,80 +47976,6 @@ var Color3PropertyTabComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Value", target: this.props.connection, propertyName: "value" }));
     };
     return Color3PropertyTabComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./components/propertyTab/properties/texturePropertyTabComponent.tsx":
-/*!***************************************************************************!*\
-  !*** ./components/propertyTab/properties/texturePropertyTabComponent.tsx ***!
-  \***************************************************************************/
-/*! exports provided: TexturePropertyTabComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TexturePropertyTabComponent", function() { return TexturePropertyTabComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
-/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
-
-
-
-
-
-
-
-var TexturePropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TexturePropertyTabComponent, _super);
-    function TexturePropertyTabComponent() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    /**
-     * Replaces the texture of the node
-     * @param file the file of the texture to use
-     */
-    TexturePropertyTabComponent.prototype.replaceTexture = function (file) {
-        var _this = this;
-        if (!this.props.node) {
-            return;
-        }
-        var texture = this.props.node.texture;
-        if (!texture) {
-            this.props.node.texture = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Texture"](null, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Engine"].LastCreatedScene);
-            texture = this.props.node.texture;
-        }
-        babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadFile(file, function (data) {
-            var blob = new Blob([data], { type: "octet/stream" });
-            var url = URL.createObjectURL(blob);
-            if (texture.isCube) {
-                var extension = undefined;
-                if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                    extension = ".dds";
-                }
-                else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                    extension = ".env";
-                }
-                texture.updateURL(url, extension, function () { return _this.forceUpdate(); });
-            }
-            else {
-                texture.updateURL(url, null, function () { return _this.forceUpdate(); });
-            }
-        }, undefined, true);
-    };
-    TexturePropertyTabComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: "Texture" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { label: "Replace texture", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" })));
-    };
-    return TexturePropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -48140,6 +48151,7 @@ var GlobalState = /** @class */ (function () {
         this.onSelectionChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onRebuildRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onResetRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     return GlobalState;
 }());
@@ -48176,6 +48188,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_diagram_input_inputNodeModel__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./components/diagram/input/inputNodeModel */ "./components/diagram/input/inputNodeModel.tsx");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/textureBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__);
+
 
 
 
@@ -48228,6 +48241,9 @@ var GraphEditor = /** @class */ (function (_super) {
             if (_this.props.globalState.nodeMaterial) {
                 _this.props.globalState.nodeMaterial.build(true);
             }
+        });
+        _this.props.globalState.onUpdateRequiredObservable.add(function () {
+            _this.forceUpdate();
         });
         _this.build();
         return _this;
@@ -48292,7 +48308,6 @@ var GraphEditor = /** @class */ (function (_super) {
                     // Link is deleted
                     _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     var link = _components_diagram_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
-                    console.log(link);
                     if (link) {
                         if (link.output.connection && link.input.connection) {
                             // Disconnect standard nodes
@@ -48317,7 +48332,13 @@ var GraphEditor = /** @class */ (function (_super) {
                                 link.output.connection.connectTo(link.input.connection);
                             }
                             else if (link.input.connection) {
-                                link.input.connection.value = link.output.getValue();
+                                if (!link.output.connection) { // Input Node
+                                    var name_1 = link.output.name;
+                                    link.output.syncWithNodeMaterialConnectionPoint(link.input.connection);
+                                    link.output.name = name_1;
+                                    link.output.getNode().connection = link.output.connection;
+                                    link.input.connection.value = link.output.defaultValue;
+                                }
                             }
                             if (_this.props.globalState.nodeMaterial) {
                                 _this.props.globalState.nodeMaterial.build();
@@ -48368,6 +48389,28 @@ var GraphEditor = /** @class */ (function (_super) {
         var localNode = this.createNodeFromObject({ column: column, type: type, connection: connection });
         var outPort = new _components_diagram_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"](type, "output");
         localNode.addPort(outPort);
+        if (!connection) {
+            switch (type) {
+                case "Vector2":
+                    outPort.defaultValue = babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__["Vector2"].Zero();
+                    break;
+                case "Vector3":
+                    outPort.defaultValue = babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__["Vector3"].Zero();
+                    break;
+                case "Vector4":
+                    outPort.defaultValue = babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__["Vector4"].Zero();
+                    break;
+                case "Matrix":
+                    outPort.defaultValue = babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__["Matrix"].Identity();
+                    break;
+                case "Color3":
+                    outPort.defaultValue = babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__["Color3"].White();
+                    break;
+                case "Color4":
+                    outPort.defaultValue = new babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__["Color4"](1, 1, 1, 1);
+                    break;
+            }
+        }
         return localNode;
     };
     GraphEditor.prototype.render = function () {

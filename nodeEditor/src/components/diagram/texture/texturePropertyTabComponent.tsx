@@ -5,7 +5,7 @@ import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { FileButtonLineComponent } from '../../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
 import { Engine } from 'babylonjs/Engines/engine';
-import { TextureNodeModel } from '../../../components/diagram/texture/textureNodeModel';
+import { TextureNodeModel } from './textureNodeModel';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 
 interface ITexturePropertyTabComponentProps {
@@ -42,9 +42,9 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                     extension = ".env";
                 }
 
-                (texture as Texture).updateURL(url, extension, () => this.forceUpdate());
+                (texture as Texture).updateURL(url, extension, () => this.props.globalState.onUpdateRequiredObservable.notifyObservers());
             } else {
-                (texture as Texture).updateURL(url, null, () => this.forceUpdate());
+                (texture as Texture).updateURL(url, null, () => this.props.globalState.onUpdateRequiredObservable.notifyObservers());
             }
         }, undefined, true);
     }

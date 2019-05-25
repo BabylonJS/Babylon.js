@@ -28219,6 +28219,14 @@ declare module BABYLON {
          */
         exitFullscreen(): void;
         /**
+         * Enters Pointerlock mode
+         */
+        enterPointerlock(): void;
+        /**
+         * Exits Pointerlock mode
+         */
+        exitPointerlock(): void;
+        /**
          * Clear the current render buffer or the current render target (if any is set up)
          * @param color defines the color to use
          * @param backBuffer defines if the back buffer must be cleared
@@ -31231,6 +31239,15 @@ declare module BABYLON {
          * Asks the browser to exit fullscreen mode
          */
         static ExitFullscreen(): void;
+        /**
+         * Ask the browser to promote the current element to pointerlock mode
+         * @param element defines the DOM element to promote
+         */
+        static RequestPointerlock(element: HTMLElement): void;
+        /**
+         * Asks the browser to exit pointerlock mode
+         */
+        static ExitPointerlock(): void;
         /**
          * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
          * @param url define the url we are trying
