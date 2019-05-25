@@ -4347,7 +4347,7 @@ export class Engine {
 
         return texture;
     }
-
+    
     private _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<Scene>, internalFormat: number, onComplete: () => void): void {
         let rtt = this.createRenderTargetTexture({
             width: destination.width,
@@ -4973,6 +4973,30 @@ export class Engine {
         }
 
         this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
+    }
+
+    /** @hidden */
+    public _uploadDataToTextureAndResize(texture: InternalTexture, imageData: ArrayBufferView, width:number, height:number, babylonInternalFormat?:number){
+        // Get gl type and formats
+        var textureType = this._getWebGLTextureType(texture.type);
+        var format = this._getInternalFormat(texture.format);
+        var internalFormat = babylonInternalFormat === undefined ? this._getRGBABufferInternalSizedFormat(texture.type,format) : this._getInternalFormat(babylonInternalFormat);
+        
+        // Create non power of two texture
+        var gl = this._gl;
+        let source = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
+        this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, textureType, imageData);
+
+        // rescale to a power of two
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        this._rescaleTexture(source, texture, this.scenes[0], internalFormat, () => {
+            this._releaseTexture(source);
+            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+        });
     }
 
     /** @hidden */
@@ -6089,6 +6113,12 @@ export class Engine {
                     return this._gl.HALF_FLOAT_OES;
                 case Engine.TEXTURETYPE_UNSIGNED_BYTE:
                     return this._gl.UNSIGNED_BYTE;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+                    return this._gl.UNSIGNED_SHORT_4_4_4_4;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                    return this._gl.UNSIGNED_SHORT_5_5_5_1;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                    return this._gl.UNSIGNED_SHORT_5_6_5;
             }
             return this._gl.UNSIGNED_BYTE;
         }

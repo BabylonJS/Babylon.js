@@ -80,15 +80,9 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
             // Upload data to texture
             callback(fileInfo.width, fileInfo.height, false, true, () => {
                 if (transcodeResult.fallbackToRgb565) {
-                    // Load rgb565Data to texture if conversion is needed
-                    texture.getEngine()._unpackFlipY(texture.invertY);
-                    var gl = texture.getEngine()._gl;
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, fileInfo.alignedWidth, fileInfo.alignedHeight, 0, gl.RGB, gl.UNSIGNED_SHORT_5_6_5, transcodeResult.pixels);
-
-                    // TODO this is not working because computed power of 2 image size is larger than rgb565Data causing an error, working around this with below code
-                    // texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                    // texture.format = Engine.TEXTUREFORMAT_RGB;
-                    // texture.getEngine()._uploadDataToTextureDirectly(texture, rgb565Data, 0,0)
+                    texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                    texture.format = Engine.TEXTUREFORMAT_RGB;
+                    texture.getEngine()._uploadDataToTextureAndResize(texture, transcodeResult.pixels, fileInfo.alignedWidth, fileInfo.alignedHeight, Engine.TEXTUREFORMAT_RGB);
                 }else {
                     // compress texture needs to be flipped
                     texture._invertVScale = true;
