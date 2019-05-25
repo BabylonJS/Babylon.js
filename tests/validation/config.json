@@ -664,16 +664,16 @@
         {
             "title": "Instances",
             "renderCount": 50,
-            "playgroundId": "#2YLJ1L#0",
+            "scriptToRun": "/Demos/Instances/instances.js",
+            "functionToCall": "CreateInstancesTestScene",
             "referenceImage": "instances.png",
+            "replace": "ground., Ground.",
             "excludeFromAutomaticTesting": true
         },
         {
             "title": "Instanced Bones",
-            "scriptToRun": "/Demos/InstancedBones/bones2.js",
-            "functionToCall": "CreateBones2TestScene",
-            "referenceImage": "instancedBones.png",
-            "replace": "Dude.babylon, dude.babylon"
+            "playgroundId": "#2YLJ1L#0",
+            "referenceImage": "instancedBones.png"
         },
         {
             "title": "Light Projection Texture",
