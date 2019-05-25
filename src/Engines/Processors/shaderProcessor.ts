@@ -222,6 +222,7 @@ export class ShaderProcessor {
 
         preprocessors["GL_ES"] = "true";
         preprocessors["__VERSION__"] = options.version;
+        preprocessors[options.platformName] = "true";
 
         return preprocessors;
     }
