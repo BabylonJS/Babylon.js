@@ -580,8 +580,7 @@
         },
         {
             "title": "PBR rough",
-            "scriptToRun": "/Demos/PBRRough/index.js",
-            "functionToCall": "CreatePBRRoughScene",
+            "playgroundId": "#PI9IE8#0",
             "referenceImage": "pbrrough.png"
         },
         {
