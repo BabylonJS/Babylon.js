@@ -578,14 +578,13 @@
         },
         {
             "title": "PBR rough",
-            "playgroundId": "#PI9IE8#0",
+            "playgroundId": "#PI9IE8#1",
             "referenceImage": "pbrrough.png"
         },
         {
             "title": "Particles",
             "renderCount": 100,
-            "scriptToRun": "/Demos/Particles/particles.js",
-            "functionToCall": "CreateParticlesTestScene",
+            "playgroundId": "#G3ZYFU#0",
             "referenceImage": "particles.png"
         },
         {
@@ -672,6 +671,7 @@
         },
         {
             "title": "Instanced Bones",
+            "renderCount": 50,
             "playgroundId": "#2YLJ1L#0",
             "referenceImage": "instancedBones.png"
         },
