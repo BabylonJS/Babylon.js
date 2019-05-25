@@ -426,25 +426,86 @@ export class NativeEngine extends Engine {
 
     public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>) {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-        nativePipelineContext.nativeProgram = this._native.createProgram(vertexSourceCode, fragmentSourceCode);
+
+        if (createAsRaw) {
+            nativePipelineContext.nativeProgram = this.createRawShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, undefined, transformFeedbackVaryings);
+        }
+        else {
+            nativePipelineContext.nativeProgram = this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines, undefined, transformFeedbackVaryings);
+        }
     }
 
-    public createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
-        throw new Error("Not supported");
+    /** @hidden */
+    public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
+        // TODO: support async shader compilcation
+        return true;
     }
 
-    public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
-        throw new Error("Not supported");
+    /** @hidden */
+    public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
+        // TODO: support async shader compilcation
+        action();
     }
 
-    protected _setProgram(pipelineContext: IPipelineContext, program: WebGLProgram): void {
-        const nativePipelineContext = pipelineContext as NativePipelineContext;
-        this._native.setProgram(nativePipelineContext.nativeProgram);
+    public createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
+        throw new Error("Not Supported");
+    }
+
+    public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
+        context = context || this._gl;
+
+        this.onBeforeShaderCompilationObservable.notifyObservers(this);
+
+        const shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
+        const vertexShader = Engine._concatenateShader(vertexCode, defines, shaderVersion);
+        const fragmentShader = Engine._concatenateShader(fragmentCode, defines, shaderVersion);
+
+        const program = this._native.createProgram(vertexShader, fragmentShader);
+
+        this.onAfterShaderCompilationObservable.notifyObservers(this);
+
+        return program;
+    }
+
+    protected _setProgram(program: WebGLProgram): void {
+        if (this._currentProgram !== program) {
+            this._native.setProgram(program);
+            this._currentProgram = program;
+        }
+    }
+
+    public _releaseEffect(effect: Effect): void {
+        // TODO
+    }
+
+    public _deletePipelineContext(pipelineContext: IPipelineContext): void {
+        // TODO
     }
 
     public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): WebGLUniformLocation[] {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
         return this._native.getUniforms(nativePipelineContext.nativeProgram, uniformsNames);
+    }
+
+    public bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void {
+        // TODO
+        throw new Error("Not Implemented");
+    }
+
+    public bindSamplers(effect: Effect): void {
+        const nativePipelineContext = effect.getPipelineContext() as NativePipelineContext;
+        this._setProgram(nativePipelineContext.nativeProgram);
+
+        // TODO: share this with engine?
+        var samplers = effect.getSamplers();
+        for (var index = 0; index < samplers.length; index++) {
+            var uniform = effect.getUniform(samplers[index]);
+
+            if (uniform) {
+                this._boundUniforms[index] = uniform;
+            }
+        }
+        this._currentEffect = null;
     }
 
     public setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void {
@@ -1305,7 +1366,7 @@ export class NativeEngine extends Engine {
     }
 
     public releaseEffects() {
-        // TODO: Implement.
+        // TODO
     }
 
     /** @hidden */

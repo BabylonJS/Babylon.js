@@ -5268,7 +5268,7 @@ export class Engine {
         this._gl.deleteTexture(texture);
     }
 
-    protected _setProgram(pipelineContext: IPipelineContext, program: WebGLProgram): void {
+    protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
             this._gl.useProgram(program);
             this._currentProgram = program;
@@ -5283,7 +5283,7 @@ export class Engine {
      */
     public bindSamplers(effect: Effect): void {
         let webGLPipelineContext = effect.getPipelineContext() as WebGLPipelineContext;
-        this._setProgram(webGLPipelineContext, webGLPipelineContext.program!);
+        this._setProgram(webGLPipelineContext.program!);
         var samplers = effect.getSamplers();
         for (var index = 0; index < samplers.length; index++) {
             var uniform = effect.getUniform(samplers[index]);
