@@ -99,7 +99,6 @@ function saveRenderImage(data, canvas) {
 }
 
 function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
-    seed = 100000;
     var renderData = getRenderData(canvas, engine);
     var testRes = true;
 
@@ -217,6 +216,8 @@ function runTest(index, done) {
         container.appendChild(renderImage);
 
         location.href = "#" + container.id;
+       
+        seed = 100000;
 
         if (test.sceneFolder) {
             BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function(newScene) {
