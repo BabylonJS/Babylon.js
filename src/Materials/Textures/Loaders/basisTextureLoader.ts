@@ -11,7 +11,7 @@ import { BasisTools } from "../../../Misc/basis";
  */
 export class _BasisTextureLoader implements IInternalTextureLoader {
     /**
-     * Defines wether the loader supports cascade loading the different faces.
+     * Defines whether the loader supports cascade loading the different faces.
      */
     public readonly supportCascades = false;
 
@@ -49,7 +49,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
     }
 
     /**
-     * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+     * Uploads the cube texture data to the WebGl Texture. It has already been bound.
      * @param data contains the texture data
      * @param texture defines the BabylonJS internal texture
      * @param createPolynomials will be true if polynomials have been requested
@@ -69,7 +69,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
     public loadData(data: ArrayBuffer, texture: InternalTexture,
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void {
         // Verify Basis Module is loaded and detect file info and format
-        BasisTools.VerifyBasisModuleAsync().then(()=>{
+        BasisTools.VerifyBasisModuleAsync().then(() => {
             var loadedFile = BasisTools.LoadBasisFile(data);
             var fileInfo = BasisTools.GetFileInfo(loadedFile);
             var format = BasisTools.GetSupportedTranscodeFormat(texture.getEngine(), fileInfo);

@@ -4347,7 +4347,7 @@ export class Engine {
 
         return texture;
     }
-    
+
     private _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<Scene>, internalFormat: number, onComplete: () => void): void {
         let rtt = this.createRenderTargetTexture({
             width: destination.width,
@@ -4976,12 +4976,12 @@ export class Engine {
     }
 
     /** @hidden */
-    public _uploadDataToTextureAndResize(texture: InternalTexture, imageData: ArrayBufferView, width:number, height:number, babylonInternalFormat?:number){
+    public _uploadDataToTextureAndResize(texture: InternalTexture, imageData: ArrayBufferView, width: number, height: number, babylonInternalFormat?: number) {
         // Get gl type and formats
         var textureType = this._getWebGLTextureType(texture.type);
         var format = this._getInternalFormat(texture.format);
-        var internalFormat = babylonInternalFormat === undefined ? this._getRGBABufferInternalSizedFormat(texture.type,format) : this._getInternalFormat(babylonInternalFormat);
-        
+        var internalFormat = babylonInternalFormat === undefined ? this._getRGBABufferInternalSizedFormat(texture.type, format) : this._getInternalFormat(babylonInternalFormat);
+
         // Create non power of two texture
         var gl = this._gl;
         let source = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
