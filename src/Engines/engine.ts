@@ -1091,7 +1091,6 @@ export class Engine {
             }
 
             // GL
-            options.disableWebGL2Support = true;
             if (!options.disableWebGL2Support) {
                 try {
                     this._gl = <any>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
