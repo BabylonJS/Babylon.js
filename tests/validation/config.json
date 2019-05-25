@@ -283,10 +283,8 @@
         {
             "title": "Advanced shadows",
             "renderCount": 20,
-            "scriptToRun": "/Demos/AdvancedShadows/advancedShadows.js",
-            "functionToCall": "CreateAdvancedShadowsTestScene",
-            "referenceImage": "advancedShadows.png",
-            "replace": "/ground, /Ground"
+            "playgroundId": "#SLV8LW#0",
+            "referenceImage": "advancedShadows.png"
         },
         {
             "title": "point light shadows",
@@ -666,10 +664,8 @@
         {
             "title": "Instances",
             "renderCount": 50,
-            "scriptToRun": "/Demos/Instances/instances.js",
-            "functionToCall": "CreateInstancesTestScene",
+            "playgroundId": "#2YLJ1L#0",
             "referenceImage": "instances.png",
-            "replace": "ground., Ground.",
             "excludeFromAutomaticTesting": true
         },
         {
