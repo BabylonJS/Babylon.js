@@ -327,27 +327,59 @@ export class VideoTexture extends Texture {
     }
 
     /**
+     * Creates a video texture straight from a stream.
+     * @param scene Define the scene the texture should be created in
+     * @param stream Define the stream the texture should be created from
+     * @returns The created video texture as a promise
+     */
+    public static CreateFromStreamAsync(scene: Scene, stream: MediaStream): Promise<VideoTexture> {
+        var video = document.createElement("video");
+        video.setAttribute('autoplay', '');
+        video.setAttribute('muted', 'true');
+        video.setAttribute('playsinline', '');
+        video.muted = true;
+
+        if (video.mozSrcObject !== undefined) {
+            // hack for Firefox < 19
+            video.mozSrcObject = stream;
+        } else {
+            if (typeof video.srcObject == "object") {
+                video.srcObject = stream;
+            } else {
+                window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+                video.src = (window.URL && window.URL.createObjectURL(stream));
+            }
+        }
+
+        return new Promise<VideoTexture>((resolve) => {
+            let onPlaying = () => {
+                resolve(new VideoTexture("video", video, scene, true, true));
+                video.removeEventListener("playing", onPlaying);
+            };
+
+            video.addEventListener("playing", onPlaying);
+            video.play();
+        });
+    }
+
+    /**
      * Creates a video texture straight from your WebCam video feed.
      * @param scene Define the scene the texture should be created in
-     * @param onReady Define a callback to triggered once the texture will be ready
      * @param constraints Define the constraints to use to create the web cam feed from WebRTC
+     * @param audioConstaints Define the audio constraints to use to create the web cam feed from WebRTC
+     * @returns The created video texture as a promise
      */
-    public static CreateFromWebCam(
+    public static CreateFromWebCamAsync(
         scene: Scene,
-        onReady: (videoTexture: VideoTexture) => void,
         constraints: {
             minWidth: number;
             maxWidth: number;
             minHeight: number;
             maxHeight: number;
             deviceId: string;
-        }
-    ): void {
-        var video = document.createElement("video");
-        video.setAttribute('autoplay', '');
-        video.setAttribute('muted', '');
-        video.setAttribute('playsinline', '');
-
+        } & MediaTrackConstraints,
+        audioConstaints: boolean | MediaTrackConstraints = false
+    ): Promise<VideoTexture> {
         var constraintsDeviceId;
         if (constraints && constraints.deviceId) {
             constraintsDeviceId = {
@@ -355,30 +387,13 @@ export class VideoTexture extends Texture {
             };
         }
 
-        window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
-
         if (navigator.mediaDevices) {
-            navigator.mediaDevices.getUserMedia({ video: constraints })
-                .then(function(stream) {
-                    if (video.mozSrcObject !== undefined) {
-                        // hack for Firefox < 19
-                        video.mozSrcObject = stream;
-                    } else {
-                        video.srcObject = stream;
-                    }
-
-                    let onPlaying = () => {
-                        if (onReady) {
-                            onReady(new VideoTexture("video", video, scene, true, true));
-                        }
-                        video.removeEventListener("playing", onPlaying);
-                    };
-
-                    video.addEventListener("playing", onPlaying);
-                    video.play();
+            return navigator.mediaDevices.getUserMedia({
+                    video: constraints,
+                    audio: audioConstaints
                 })
-                .catch(function(err) {
-                    Logger.Error(err.name);
+                .then((stream) => {
+                    return this.CreateFromStreamAsync(scene, stream);
                 });
         }
         else {
@@ -402,20 +417,10 @@ export class VideoTexture extends Texture {
                                 max: (constraints && constraints.maxHeight) || 480,
                             },
                         },
+                        audio: audioConstaints
                     },
                     (stream: any) => {
-                        if (video.mozSrcObject !== undefined) {
-                            // hack for Firefox < 19
-                            video.mozSrcObject = stream;
-                        } else {
-                            video.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
-                        }
-
-                        video.play();
-
-                        if (onReady) {
-                            onReady(new VideoTexture("video", video, scene, true, true));
-                        }
+                        return this.CreateFromStreamAsync(scene, stream);
                     },
                     function(e: MediaStreamError) {
                         Logger.Error(e.name);
@@ -423,5 +428,37 @@ export class VideoTexture extends Texture {
                 );
             }
         }
+
+        return Promise.reject("No support for userMedia on this device");
+    }
+
+    /**
+     * Creates a video texture straight from your WebCam video feed.
+     * @param scene Define the scene the texture should be created in
+     * @param onReady Define a callback to triggered once the texture will be ready
+     * @param constraints Define the constraints to use to create the web cam feed from WebRTC
+     * @param audioConstaints Define the audio constraints to use to create the web cam feed from WebRTC
+     */
+    public static CreateFromWebCam(
+        scene: Scene,
+        onReady: (videoTexture: VideoTexture) => void,
+        constraints: {
+            minWidth: number;
+            maxWidth: number;
+            minHeight: number;
+            maxHeight: number;
+            deviceId: string;
+        } & MediaTrackConstraints,
+        audioConstaints: boolean | MediaTrackConstraints = false
+    ): void {
+        this.CreateFromWebCamAsync(scene, constraints, audioConstaints)
+            .then(function(videoTexture) {
+                if (onReady) {
+                    onReady(videoTexture);
+                }
+            })
+            .catch(function(err) {
+                Logger.Error(err.name);
+            });
     }
 }

@@ -93,7 +93,13 @@ export class Sprite {
         this._delay = delay;
         this._animationStarted = true;
 
-        this._direction = from < to ? 1 : -1;
+        if (from < to) {
+            this._direction = 1;
+        } else {
+            this._direction = -1;
+            this._toIndex = from;
+            this._fromIndex = to;
+        }
 
         this.cellIndex = from;
         this._time = 0;
@@ -116,9 +122,9 @@ export class Sprite {
         if (this._time > this._delay) {
             this._time = this._time % this._delay;
             this.cellIndex += this._direction;
-            if (this.cellIndex > this._toIndex) {
+            if (this._direction > 0 && this.cellIndex > this._toIndex || this._direction < 0 && this.cellIndex < this._fromIndex) {
                 if (this._loopAnimation) {
-                    this.cellIndex = this._fromIndex;
+                    this.cellIndex = this._direction > 0 ? this._fromIndex : this._toIndex;
                 } else {
                     this.cellIndex = this._toIndex;
                     this._animationStarted = false;

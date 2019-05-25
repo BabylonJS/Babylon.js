@@ -47,5 +47,6 @@ console.log("Babylon.js viewer (v" + Version + ")");
 
 // public API for initialization
 export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin, AbstractViewerNavbarButton, registerCustomOptimizer };
+export { GLTF2 } from 'babylonjs-loaders';
 // export publicliy all configuration interfaces
 export * from './configuration';

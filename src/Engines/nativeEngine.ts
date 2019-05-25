@@ -8,12 +8,15 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { VideoTexture } from "../Materials/Textures/videoTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Effect, EffectCreationOptions, EffectFallbacks } from "../Materials/effect";
+import { DataBuffer } from '../Meshes/dataBuffer';
 import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
 import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
 import { Color4, Matrix, Viewport, Color3 } from "../Maths/math";
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
+import { IPipelineContext } from './IPipelineContext';
+import { WebRequest } from '../Misc/webRequest';
 
 interface INativeEngine {
     requestAnimationFrame(callback: () => void): void;
@@ -82,15 +85,30 @@ interface INativeEngine {
     getRenderHeight(): number;
 }
 
-interface WebGLProgramInfo extends WebGLProgram {
-    nativeProgram?: any;
+class NativePipelineContext implements IPipelineContext {
+    // TODO: async should be true?
+    public isAsync = false;
+    public isReady = false;
+
+    // TODO: what should this do?
+    public _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void {
+        throw new Error("Not implemented");
+    }
+
+    public nativeProgram: any;
 }
 
-interface WebGLBufferInfo extends WebGLBuffer {
-    id: number;
-    data: DataArray;
-    nativeIndexBuffer?: any;
-    nativeVertexBuffer?: any;
+class NativeDataBuffer extends DataBuffer {
+    constructor(id: number, data: DataArray) {
+        super();
+        this.id = id;
+        this.data = data;
+    }
+
+    public readonly id: number;
+    public readonly data: DataArray;
+    public nativeIndexBuffer?: any;
+    public nativeVertexBuffer?: any;
 }
 
 // Must match Filter enum in SpectreEngine.h.
@@ -270,28 +288,21 @@ export class NativeEngine extends Engine {
         this._native.clear(color.r, color.g, color.b, color.a, backBuffer, depth, stencil);
     }
 
-    public createIndexBuffer(indices: IndicesArray): WebGLBufferInfo {
+    public createIndexBuffer(indices: IndicesArray): NativeDataBuffer {
         const data = this._normalizeIndexData(indices);
-        return {
-            references: 1,
-            capacity: 0,
-            is32Bits: (data.BYTES_PER_ELEMENT === 4),
-            id: this._nextBufferId++,
-            data: data
-        };
+        const buffer = new NativeDataBuffer(this._nextBufferId++, data);
+        buffer.references = 1;
+        buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
+        return buffer;
     }
 
-    public createVertexBuffer(data: DataArray): WebGLBufferInfo {
-        return {
-            references: 1,
-            capacity: 0,
-            is32Bits: false,
-            id: this._nextBufferId++,
-            data: data
-        };
+    public createVertexBuffer(data: DataArray): NativeDataBuffer {
+        const buffer = new NativeDataBuffer(this._nextBufferId++, data);
+        buffer.references = 1;
+        return buffer;
     }
 
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<WebGLBufferInfo>, effect: Effect): WebGLVertexArrayObject {
+    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
         const vertexArray = this._native.createVertexArray();
 
         // Index
@@ -306,7 +317,7 @@ export class NativeEngine extends Engine {
         // Vertex
 
         // Map the vertex buffers that point to the same underlying buffer.
-        const map: { [id: number]: { buffer: WebGLBufferInfo, byteStride: number, infos: Array<{ location: number, numElements: number, type: number, normalized: boolean, byteOffset: number }> } } = {};
+        const map: { [id: number]: { buffer: NativeDataBuffer, byteStride: number, infos: Array<{ location: number, numElements: number, type: number, normalized: boolean, byteOffset: number }> } } = {};
         const attributes = effect.getAttributesNames();
         for (let index = 0; index < attributes.length; index++) {
             const location = effect.getAttributeLocation(index);
@@ -314,7 +325,7 @@ export class NativeEngine extends Engine {
                 const kind = attributes[index];
                 const vertexBuffer = vertexBuffers[kind];
                 if (vertexBuffer) {
-                    const buffer = vertexBuffer.getBuffer() as WebGLBufferInfo;
+                    const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
                     if (buffer) {
                         let entry = map[buffer.id];
                         if (!entry) {
@@ -360,8 +371,9 @@ export class NativeEngine extends Engine {
         this._native.deleteVertexArray(vertexArray);
     }
 
-    public getAttributes(shaderProgram: WebGLProgramInfo, attributesNames: string[]): number[] {
-        return this._native.getAttributes(shaderProgram.nativeProgram, attributesNames);
+    public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+        return this._native.getAttributes(nativePipelineContext.nativeProgram, attributesNames);
     }
 
     /**
@@ -442,56 +454,92 @@ export class NativeEngine extends Engine {
         return effect;
     }
 
-    /**
-     * Directly creates a webGL program
-     * @param vertexCode defines the vertex shader code to use
-     * @param fragmentCode defines the fragment shader code to use
-     * @param context defines the webGL context to use (if not set, the current one will be used)
-     * @param transformFeedbackVaryings defines the list of transform feedback varyings to use
-     * @returns the new webGL program
-     */
-    public createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgramInfo {
-        return {
-            nativeProgram: this._native.createProgram(vertexCode, fragmentCode),
-            isParallelCompiled: false
-        };
+    public createPipelineContext(): IPipelineContext {
+        return new NativePipelineContext();
     }
 
-    /**
-     * Creates a webGL program
-     * @param vertexCode  defines the vertex shader code to use
-     * @param fragmentCode defines the fragment shader code to use
-     * @param defines defines the string containing the defines to use to compile the shaders
-     * @param context defines the webGL context to use (if not set, the current one will be used)
-     * @param transformFeedbackVaryings defines the list of transform feedback varyings to use
-     * @returns the new webGL program
-     */
-    public createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgramInfo {
+    public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>) {
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+
+        if (createAsRaw) {
+            nativePipelineContext.nativeProgram = this.createRawShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, undefined, transformFeedbackVaryings);
+        }
+        else {
+            nativePipelineContext.nativeProgram = this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines, undefined, transformFeedbackVaryings);
+        }
+    }
+
+    /** @hidden */
+    public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
+        // TODO: support async shader compilcation
+        return true;
+    }
+
+    /** @hidden */
+    public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
+        // TODO: support async shader compilcation
+        action();
+    }
+
+    public createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
+        throw new Error("Not Supported");
+    }
+
+    public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
+        context = context || this._gl;
+
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
-        // TODO: Share this shader version logic with base class.
-        var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
-        var vertexCodeConcat = Engine._concatenateShader(vertexCode, defines, shaderVersion);
-        var fragmentCodeConcat = Engine._concatenateShader(fragmentCode, defines, shaderVersion);
+        const shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
+        const vertexShader = Engine._concatenateShader(vertexCode, defines, shaderVersion);
+        const fragmentShader = Engine._concatenateShader(fragmentCode, defines, shaderVersion);
 
-        var program = this.createRawShaderProgram(vertexCodeConcat, fragmentCodeConcat);
-        program.transformFeedback = null;
-        program.__SPECTOR_rebuildProgram = null;
+        const program = this._native.createProgram(vertexShader, fragmentShader);
 
         this.onAfterShaderCompilationObservable.notifyObservers(this);
 
         return program;
     }
 
-    protected setProgram(program: WebGLProgramInfo): void {
+    protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
-            this._native.setProgram(program.nativeProgram);
+            this._native.setProgram(program);
             this._currentProgram = program;
         }
     }
 
-    public getUniforms(shaderProgram: WebGLProgramInfo, uniformsNames: string[]): WebGLUniformLocation[] {
-        return this._native.getUniforms(shaderProgram.nativeProgram, uniformsNames);
+    public _releaseEffect(effect: Effect): void {
+        // TODO
+    }
+
+    public _deletePipelineContext(pipelineContext: IPipelineContext): void {
+        // TODO
+    }
+
+    public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): WebGLUniformLocation[] {
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+        return this._native.getUniforms(nativePipelineContext.nativeProgram, uniformsNames);
+    }
+
+    public bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void {
+        // TODO
+        throw new Error("Not Implemented");
+    }
+
+    public bindSamplers(effect: Effect): void {
+        const nativePipelineContext = effect.getPipelineContext() as NativePipelineContext;
+        this._setProgram(nativePipelineContext.nativeProgram);
+
+        // TODO: share this with engine?
+        var samplers = effect.getSamplers();
+        for (var index = 0; index < samplers.length; index++) {
+            var uniform = effect.getUniform(samplers[index]);
+
+            if (uniform) {
+                this._boundUniforms[index] = uniform;
+            }
+        }
+        this._currentEffect = null;
     }
 
     public setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void {
@@ -1026,7 +1074,7 @@ export class NativeEngine extends Engine {
             } else if (buffer instanceof Blob) {
                 throw new Error("Loading texture from Blob not yet implemented.");
             } else if (!fromData) {
-                let onLoadFileError = (request?: XMLHttpRequest, exception?: any) => {
+                let onLoadFileError = (request?: WebRequest, exception?: any) => {
                     onInternalError("Failed to retrieve " + url + ".", exception);
                 };
                 Tools.LoadFile(url, onload, undefined, undefined, /*useArrayBuffer*/true, onLoadFileError);
@@ -1122,7 +1170,7 @@ export class NativeEngine extends Engine {
                 throw new Error(`Multi-file loading not yet supported.`);
             }
             else {
-                let onInternalError = (request?: XMLHttpRequest, exception?: any) => {
+                let onInternalError = (request?: WebRequest, exception?: any) => {
                     if (onError && request) {
                         onError(request.status + " " + request.statusText, exception);
                     }
@@ -1228,11 +1276,11 @@ export class NativeEngine extends Engine {
         throw new Error("unBindFramebuffer not yet implemented.");
     }
 
-    public createDynamicVertexBuffer(data: DataArray): WebGLBuffer {
+    public createDynamicVertexBuffer(data: DataArray): DataBuffer {
         throw new Error("createDynamicVertexBuffer not yet implemented.");
     }
 
-    public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
+    public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
         throw new Error("updateDynamicIndexBuffer not yet implemented.");
     }
 
@@ -1243,7 +1291,7 @@ export class NativeEngine extends Engine {
      * @param byteOffset the byte offset of the data (optional)
      * @param byteLength the byte length of the data (optional)
      */
-    public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
         throw new Error("updateDynamicVertexBuffer not yet implemented.");
     }
 
@@ -1339,7 +1387,7 @@ export class NativeEngine extends Engine {
         throw new Error("_bindTexture not implemented.");
     }
 
-    protected _deleteBuffer(buffer: WebGLBufferInfo): void {
+    protected _deleteBuffer(buffer: NativeDataBuffer): void {
         if (buffer.nativeIndexBuffer) {
             this._native.deleteIndexBuffer(buffer.nativeIndexBuffer);
             delete buffer.nativeIndexBuffer;
@@ -1349,19 +1397,10 @@ export class NativeEngine extends Engine {
             this._native.deleteVertexBuffer(buffer.nativeVertexBuffer);
             delete buffer.nativeVertexBuffer;
         }
-
-        // if (buffer._vertexBuffers) {
-        //     for (const vertexBuffer of buffer._vertexBuffers) {
-        //         const nativeBuffer = vertexBuffer._nativeBuffer;
-        //         if (nativeBuffer) {
-        //             delete vertexBuffer._nativeBuffer;
-        //         }
-        //     }
-        // }
     }
 
     public releaseEffects() {
-        // TODO: Implement.
+        // TODO
     }
 
     /** @hidden */

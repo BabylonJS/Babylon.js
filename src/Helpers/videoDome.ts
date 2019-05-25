@@ -7,6 +7,11 @@ import { Texture } from "../Materials/Textures/texture";
 import { VideoTexture, VideoTextureSettings } from "../Materials/Textures/videoTexture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import "../Meshes/Builders/sphereBuilder";
+import { Nullable } from "../types";
+import { Observer } from "../Misc/observable";
+import { Vector3 } from '../Maths/math';
+
+declare type Camera = import("../Cameras/camera").Camera;
 
 /**
  * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
@@ -15,6 +20,19 @@ import "../Meshes/Builders/sphereBuilder";
  * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
  */
 export class VideoDome extends TransformNode {
+    /**
+     * Define the video source as a Monoscopic panoramic 360 video.
+     */
+    public static readonly MODE_MONOSCOPIC = 0;
+    /**
+     * Define the video source as a Stereoscopic TopBottom/OverUnder panoramic 360 video.
+     */
+    public static readonly MODE_TOPBOTTOM = 1;
+    /**
+     * Define the video source as a Stereoscopic Side by Side panoramic 360 video.
+     */
+    public static readonly MODE_SIDEBYSIDE = 2;
+
     private _useDirectMapping = false;
 
     /**
@@ -50,6 +68,29 @@ export class VideoDome extends TransformNode {
         this._material.fovMultiplier = value;
     }
 
+    private _videoMode = VideoDome.MODE_MONOSCOPIC;
+    /**
+     * Gets or set the current video mode for the video. It can be:
+     * * VideoDome.MODE_MONOSCOPIC : Define the video source as a Monoscopic panoramic 360 video.
+     * * VideoDome.MODE_TOPBOTTOM  : Define the video source as a Stereoscopic TopBottom/OverUnder panoramic 360 video.
+     * * VideoDome.MODE_SIDEBYSIDE : Define the video source as a Stereoscopic Side by Side panoramic 360 video.
+     */
+    public get videoMode(): number {
+        return this._videoMode;
+    }
+    public set videoMode(value: number) {
+        if (this._videoMode === value) {
+            return;
+        }
+
+        this._changeVideoMode(value);
+    }
+
+    /**
+     * Oberserver used in Stereoscopic VR Mode.
+     */
+    private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>> = null;
+
     /**
      * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
      * @param name Element's name, child elements will append suffixes for their own names.
@@ -63,9 +104,12 @@ export class VideoDome extends TransformNode {
         loop?: boolean,
         size?: number,
         poster?: string,
+        faceForward?: boolean,
         useDirectMapping?: boolean
     }, scene: Scene) {
         super(name, scene);
+
+        scene = this.getScene();
 
         // set defaults and manage values
         name = name || "videoDome";
@@ -79,6 +123,10 @@ export class VideoDome extends TransformNode {
             this._useDirectMapping = true;
         } else {
             this._useDirectMapping = options.useDirectMapping;
+        }
+
+        if (options.faceForward === undefined) {
+            options.faceForward = true;
         }
 
         this._setReady(false);
@@ -118,6 +166,43 @@ export class VideoDome extends TransformNode {
                 this._videoTexture.video.play();
             };
         }
+
+        // Initial rotation
+        if (options.faceForward && scene.activeCamera) {
+            let camera = scene.activeCamera;
+
+            let forward = Vector3.Forward();
+            var direction = Vector3.TransformNormal(forward, camera.getViewMatrix());
+            direction.normalize();
+
+            this.rotation.y = Math.acos(Vector3.Dot(forward, direction));
+        }
+    }
+
+    private _changeVideoMode(value: number): void {
+        this._scene.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
+        this._videoMode = value;
+
+        // Default Setup and Reset.
+        this._videoTexture.uScale = 1;
+        this._videoTexture.vScale = 1;
+        this._videoTexture.uOffset = 0;
+        this._videoTexture.vOffset = 0;
+
+        switch (value) {
+            case VideoDome.MODE_SIDEBYSIDE:
+                this._videoTexture.uScale = 0.5;
+                this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
+                    this._videoTexture.uOffset = camera.isRightCamera ? 0.5 : 0.0;
+                });
+                break;
+            case VideoDome.MODE_TOPBOTTOM:
+                this._videoTexture.vScale = 0.5;
+                this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
+                    this._videoTexture.vOffset = camera.isRightCamera ? 0.5 : 0.0;
+                });
+                break;
+        }
     }
 
     /**
@@ -129,6 +214,8 @@ export class VideoDome extends TransformNode {
         this._videoTexture.dispose();
         this._mesh.dispose();
         this._material.dispose();
+
+        this._scene.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }

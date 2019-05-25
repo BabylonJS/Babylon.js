@@ -1,30 +1,31 @@
 import * as React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { GlobalState } from '../../components/globalState';
 
 interface ILineContainerComponentProps {
+    globalState?: GlobalState;
     title: string;
     children: any[] | any;
     closed?: boolean;
 }
 
-export class LineContainerComponent extends React.Component<ILineContainerComponentProps, { isExpanded: boolean }> {
-    private static _InMemoryStorage: {[key: string]: boolean};
-    
+export class LineContainerComponent extends React.Component<ILineContainerComponentProps, { isExpanded: boolean, isHighlighted: boolean }> {
+    private static _InMemoryStorage: { [key: string]: boolean };
+
     constructor(props: ILineContainerComponentProps) {
         super(props);
 
         let initialState: boolean;
 
-        try
-        { 
+        try {
             if (LineContainerComponent._InMemoryStorage && LineContainerComponent._InMemoryStorage[this.props.title] !== undefined) {
                 initialState = LineContainerComponent._InMemoryStorage[this.props.title];
             } else if (typeof (Storage) !== "undefined" && localStorage.getItem(this.props.title) !== null) {
                 initialState = localStorage.getItem(this.props.title) === "true";
             } else {
                 initialState = !this.props.closed;
-            }   
+            }
         }
         catch (e) {
             LineContainerComponent._InMemoryStorage = {};
@@ -32,14 +33,13 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
             initialState = !this.props.closed;
         }
 
-        this.state = { isExpanded: initialState };
+        this.state = { isExpanded: initialState, isHighlighted: false };
     }
 
     switchExpandedState(): void {
         const newState = !this.state.isExpanded;
-        
-        try
-        { 
+
+        try {
             if (LineContainerComponent._InMemoryStorage) {
                 LineContainerComponent._InMemoryStorage[this.props.title] = newState;
             } else if (typeof (Storage) !== "undefined") {
@@ -50,9 +50,28 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
             LineContainerComponent._InMemoryStorage = {};
             LineContainerComponent._InMemoryStorage[this.props.title] = newState;
         }
-        
-        this.setState({ isExpanded: newState });
 
+        this.setState({ isExpanded: newState });
+    }
+
+    componentDidMount() {
+        if (this.props.globalState && !this.props.globalState.selectedLineContainerTitle) {
+            return;
+        }
+
+        if (this.props.globalState && this.props.globalState.selectedLineContainerTitle === this.props.title) {
+            setTimeout(() => {
+                this.props.globalState!.selectedLineContainerTitle = "";
+            });
+
+            this.setState({ isExpanded: true, isHighlighted: true });
+
+            window.setTimeout(() => {
+                this.setState({ isHighlighted: false });
+            }, 5000);
+        } else {
+            this.setState({isExpanded: false});
+        }        
     }
 
     renderHeader() {
@@ -74,21 +93,27 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         if (!this.state.isExpanded) {
             return (
                 <div className="paneContainer">
-                    {
-                        this.renderHeader()
-                    }
+                    <div className="paneContainer-content">
+                        {
+                            this.renderHeader()
+                        }
+                    </div>
                 </div>
             );
         }
 
         return (
             <div className="paneContainer">
-                {
-                    this.renderHeader()
-                }
-                <div className="paneList">
-                    {this.props.children}
-                </div >
+                <div className="paneContainer-content">
+                    {
+                        this.renderHeader()
+                    }
+                    <div className="paneList">
+                        {this.props.children}
+                    </div >
+                </div>
+                <div className={"paneContainer-highlight-border" + (!this.state.isHighlighted ? " transparent" : "")}>
+                </div>
             </div>
         );
     }

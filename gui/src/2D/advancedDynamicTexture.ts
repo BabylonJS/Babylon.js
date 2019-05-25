@@ -80,6 +80,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _blockNextFocusCheck = false;
     private _renderScale = 1;
     private _rootCanvas: Nullable<HTMLCanvasElement>;
+    private _cursorChanged = false;
     /**
     * Define type to string to ensure compatibility across browsers
     * Safari doesn't support DataTransfer constructor
@@ -514,7 +515,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     });
                     continue;
                 }
-                var position = mesh.getBoundingInfo().boundingSphere.center;
+                var position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : (Vector3.ZeroReadOnly as Vector3);
                 var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
                 if (projectedPosition.z < 0 || projectedPosition.z > 1) {
                     control.notRenderable = true;
@@ -574,6 +575,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public _changeCursor(cursor: string) {
         if (this._rootCanvas) {
             this._rootCanvas.style.cursor = cursor;
+            this._cursorChanged = true;
         }
     }
     /** @hidden */
@@ -598,6 +600,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._capturingControl[pointerId]._processObservables(type, x, y, pointerId, buttonIndex);
             return;
         }
+
+        this._cursorChanged = false;
         if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex)) {
             this._changeCursor("");
             if (type === PointerEventTypes.POINTERMOVE) {
@@ -606,6 +610,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     delete this._lastControlOver[pointerId];
                 }
             }
+        }
+
+        if (!this._cursorChanged) {
+            this._changeCursor("");
         }
         this._manageFocus();
     }
@@ -647,7 +655,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (!scene) {
                 return;
             }
-
             let camera = scene.cameraToUseForPointers || scene.activeCamera;
             let engine = scene.getEngine();
 

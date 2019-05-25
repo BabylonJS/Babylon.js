@@ -16,49 +16,6 @@ describe(name + " scene", () => {
         });
     });
 
-    it("should enable and disable the debug layer", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
-        let showCalled = 0;
-        let hideCalled = 0;
-        let isVisible = false;
-        viewer.onSceneInitObservable.add((scene) => {
-            scene.debugLayer.show = () => {
-                showCalled++;
-                isVisible = true;
-            };
-
-            scene.debugLayer.hide = () => {
-                hideCalled++;
-                isVisible = false;
-            };
-
-            scene.debugLayer.isVisible = () => {
-                return isVisible;
-            };
-        });
-        viewer.onInitDoneObservable.add(() => {
-            // assert.isUndefined(viewer.configuration.scene);
-            assert.equal(showCalled, 0);
-            assert.equal(hideCalled, 0);
-            viewer.updateConfiguration({
-                scene: {
-                    debug: true
-                }
-            });
-            assert.equal(showCalled, 1);
-
-            viewer.updateConfiguration({
-                scene: {
-                    debug: false
-                }
-            });
-            assert.equal(showCalled, 1);
-            assert.equal(hideCalled, 1);
-            viewer.dispose();
-            done();
-        });
-    });
-
     it("should update the image processing configuration values", (done) => {
         let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 

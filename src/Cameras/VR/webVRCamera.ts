@@ -13,9 +13,14 @@ import { Node } from "../../node";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
 import { HemisphericLight } from "../../Lights/hemisphericLight";
+import { Logger } from '../../Misc/logger';
+import { VRMultiviewToSingleviewPostProcess } from '../../PostProcesses/vrMultiviewToSingleviewPostProcess';
 
 // Side effect import to define the stereoscopic mode.
 import "../RigModes/webVRRigMode";
+
+// Side effect import to add webvr support to engine
+import "../../Engines/Extensions/engine.webVR";
 
 Node.AddNodeConstructor("WebVRFreeCamera", (name, scene) => {
     return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
@@ -140,6 +145,10 @@ export interface WebVROptions {
      */
     defaultHeight?: number;
 
+    /**
+     * If multiview should be used if availible (default: false)
+     */
+    useMultiview?: boolean;
 }
 
 /**
@@ -275,6 +284,16 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
         if (typeof (VRFrameData) !== "undefined") {
             this._frameData = new VRFrameData();
+        }
+
+        if (webVROptions.useMultiview) {
+            if (!this.getScene().getEngine().getCaps().multiview) {
+                Logger.Warn("Multiview is not supported, falling back to standard rendering");
+                this._useMultiviewToSingleView = false;
+            } else {
+                this._useMultiviewToSingleView = true;
+                this._rigPostProcess = new VRMultiviewToSingleviewPostProcess("VRMultiviewToSingleview", this, 1.0);
+            }
         }
 
         /**

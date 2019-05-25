@@ -26,6 +26,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
 import { _DevTools } from '../Misc/devTools';
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -70,7 +71,7 @@ export interface IEffectLayerOptions {
 export abstract class EffectLayer {
 
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _cachedDefines: string;
     private _effectLayerMapGenerationEffect: Effect;
     private _effectLayerOptions: IEffectLayerOptions;
@@ -170,7 +171,7 @@ export abstract class EffectLayer {
 
         // Generate Buffers
         this._generateIndexBuffer();
-        this._genrateVertexBuffer();
+        this._generateVertexBuffer();
     }
 
     /**
@@ -269,7 +270,7 @@ export abstract class EffectLayer {
     /**
      * Generates the vertex buffer of the full screen quad blending to the main canvas.
      */
-    private _genrateVertexBuffer(): void {
+    private _generateVertexBuffer(): void {
         // VBO
         var vertices = [];
         vertices.push(1, 1);
@@ -348,9 +349,13 @@ export abstract class EffectLayer {
                 this._renderSubMesh(alphaTestSubMeshes.data[index]);
             }
 
+            const previousAlphaMode = engine.getAlphaMode();
+
             for (index = 0; index < transparentSubMeshes.length; index++) {
-                this._renderSubMesh(transparentSubMeshes.data[index]);
+                this._renderSubMesh(transparentSubMeshes.data[index], true);
             }
+
+            engine.setAlphaMode(previousAlphaMode);
         };
 
         this._mainTexture.onClearObservable.add((engine: Engine) => {
@@ -491,10 +496,7 @@ export abstract class EffectLayer {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         this._addCustomEffectDefines(defines);
@@ -506,7 +508,7 @@ export abstract class EffectLayer {
             this._effectLayerMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration",
                 attribs,
                 ["world", "mBones", "viewProjection",
-                    "color", "morphTargetInfluences",
+                    "glowColor", "morphTargetInfluences",
                     "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity"],
                 ["diffuseSampler", "emissiveSampler", "opacitySampler"], join,
                 undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
@@ -620,7 +622,7 @@ export abstract class EffectLayer {
     /**
      * Renders the submesh passed in parameter to the generation map.
      */
-    protected _renderSubMesh(subMesh: SubMesh): void {
+    protected _renderSubMesh(subMesh: SubMesh, enableAlphaMode: boolean = false): void {
         if (!this.shouldRender()) {
             return;
         }
@@ -629,6 +631,8 @@ export abstract class EffectLayer {
         var mesh = subMesh.getRenderingMesh();
         var scene = this._scene;
         var engine = scene.getEngine();
+
+        mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
         if (!material) {
             return;
@@ -653,7 +657,7 @@ export abstract class EffectLayer {
             return;
         }
 
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
 
         this._setEmissiveTextureAndColor(mesh, subMesh, material);
 
@@ -663,7 +667,7 @@ export abstract class EffectLayer {
 
             this._effectLayerMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-            this._effectLayerMapGenerationEffect.setFloat4("color",
+            this._effectLayerMapGenerationEffect.setFloat4("glowColor",
                 this._emissiveTextureAndColor.color.r,
                 this._emissiveTextureAndColor.color.g,
                 this._emissiveTextureAndColor.color.b,
@@ -707,6 +711,11 @@ export abstract class EffectLayer {
 
             // Morph targets
             MaterialHelper.BindMorphTargetParameters(mesh, this._effectLayerMapGenerationEffect);
+
+            // Alpha mode
+            if (enableAlphaMode) {
+                engine.setAlphaMode(material.alphaMode);
+            }
 
             // Draw
             mesh._processRendering(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode, batch, hardwareInstancedRendering,

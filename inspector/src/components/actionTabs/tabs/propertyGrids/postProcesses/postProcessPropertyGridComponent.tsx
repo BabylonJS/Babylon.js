@@ -6,8 +6,10 @@ import { PostProcess } from "babylonjs/PostProcesses/postProcess";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LockObject } from "../lockObject";
 import { CommonPostProcessPropertyGridComponent } from './commonPostProcessPropertyGridComponent';
+import { GlobalState } from '../../../../globalState';
 
 interface IPostProcessPropertyGridComponentProps {
+    globalState: GlobalState;
     postProcess: PostProcess,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
@@ -23,7 +25,7 @@ export class PostProcessPropertyGridComponent extends React.Component<IPostProce
 
         return (
             <div className="pane">
-                <CommonPostProcessPropertyGridComponent lockObject={this.props.lockObject} postProcess={postProcess} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonPostProcessPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} postProcess={postProcess} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }

@@ -1,4 +1,4 @@
-import { Observable } from "../Misc/observable";
+import { Observable, Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { TransformNode } from "../Meshes/transformNode";
@@ -8,6 +8,8 @@ import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import "../Meshes/Builders/sphereBuilder";
+import { Vector3 } from '../Maths/math';
+import { Camera } from '../Cameras/camera';
 
 /**
  * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
@@ -16,6 +18,19 @@ import "../Meshes/Builders/sphereBuilder";
  * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
  */
 export class PhotoDome extends TransformNode {
+    /**
+     * Define the image as a Monoscopic panoramic 360 image.
+     */
+    public static readonly MODE_MONOSCOPIC = 0;
+    /**
+     * Define the image as a Stereoscopic TopBottom/OverUnder panoramic 360 image.
+     */
+    public static readonly MODE_TOPBOTTOM = 1;
+    /**
+     * Define the image as a Stereoscopic Side by Side panoramic 360 image.
+     */
+    public static readonly MODE_SIDEBYSIDE = 2;
+
     private _useDirectMapping = false;
 
     /**
@@ -72,6 +87,24 @@ export class PhotoDome extends TransformNode {
         this._material.fovMultiplier = value;
     }
 
+    private _imageMode = PhotoDome.MODE_MONOSCOPIC;
+    /**
+     * Gets or set the current video mode for the video. It can be:
+     * * PhotoDome.MODE_MONOSCOPIC : Define the image as a Monoscopic panoramic 360 image.
+     * * PhotoDome.MODE_TOPBOTTOM  : Define the image as a Stereoscopic TopBottom/OverUnder panoramic 360 image.
+     * * PhotoDome.MODE_SIDEBYSIDE : Define the image as a Stereoscopic Side by Side panoramic 360 image.
+     */
+    public get imageMode(): number {
+        return this._imageMode;
+    }
+    public set imageMode(value: number) {
+        if (this._imageMode === value) {
+            return;
+        }
+
+        this._changeImageMode(value);
+    }
+
     /**
      * Create an instance of this class and pass through the parameters to the relevant classes, Texture, StandardMaterial, and Mesh.
      * @param name Element's name, child elements will append suffixes for their own names.
@@ -82,7 +115,8 @@ export class PhotoDome extends TransformNode {
     constructor(name: string, urlOfPhoto: string, options: {
         resolution?: number,
         size?: number,
-        useDirectMapping?: boolean
+        useDirectMapping?: boolean,
+        faceForward?: boolean
     }, scene: Scene, onError: Nullable<(message?: string, exception?: any) => void> = null) {
         super(name, scene);
 
@@ -95,6 +129,10 @@ export class PhotoDome extends TransformNode {
             this._useDirectMapping = true;
         } else {
             this._useDirectMapping = options.useDirectMapping;
+        }
+
+        if (options.faceForward === undefined) {
+            options.faceForward = true;
         }
 
         this._setReady(false);
@@ -123,6 +161,45 @@ export class PhotoDome extends TransformNode {
         // configure mesh
         this._mesh.material = material;
         this._mesh.parent = this;
+
+        // Initial rotation
+        if (options.faceForward && scene.activeCamera) {
+            let camera = scene.activeCamera;
+
+            let forward = Vector3.Forward();
+            var direction = Vector3.TransformNormal(forward, camera.getViewMatrix());
+            direction.normalize();
+
+            this.rotation.y = Math.acos(Vector3.Dot(forward, direction));
+        }
+    }
+
+    private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>> = null;
+
+    private _changeImageMode(value: number): void {
+        this._scene.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
+        this._imageMode = value;
+
+        // Default Setup and Reset.
+        this._photoTexture.uScale = 1;
+        this._photoTexture.vScale = 1;
+        this._photoTexture.uOffset = 0;
+        this._photoTexture.vOffset = 0;
+
+        switch (value) {
+            case PhotoDome.MODE_SIDEBYSIDE:
+                this._photoTexture.uScale = 0.5;
+                this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
+                    this._photoTexture.uOffset = camera.isRightCamera ? 0.5 : 0.0;
+                });
+                break;
+            case PhotoDome.MODE_TOPBOTTOM:
+                this._photoTexture.vScale = 0.5;
+                this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
+                    this._photoTexture.vOffset = camera.isRightCamera ? 0.5 : 0.0;
+                });
+                break;
+        }
     }
 
     /**
@@ -136,6 +213,8 @@ export class PhotoDome extends TransformNode {
         this._material.dispose();
 
         this.onLoadErrorObservable.clear();
+
+        this._scene.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }

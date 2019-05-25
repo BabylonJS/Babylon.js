@@ -4,13 +4,14 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
-import { Quaternion, Color3 } from "../Maths/math";
+import { Quaternion, Color3, Vector3 } from "../Maths/math";
 import { Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { IPhysicsEnginePlugin } from "../Physics/IPhysicsEngine";
 import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { CylinderBuilder } from '../Meshes/Builders/cylinderBuilder';
 
 /**
      * Used to show the physics impostor around the specific mesh
@@ -32,7 +33,9 @@ export class PhysicsViewer {
 
     private _debugBoxMesh: Mesh;
     private _debugSphereMesh: Mesh;
+    private _debugCylinderMesh: Mesh;
     private _debugMaterial: StandardMaterial;
+    private _debugMeshMeshes = new Array<Mesh>();
 
     /**
      * Creates a new PhysicsViewer
@@ -65,6 +68,9 @@ export class PhysicsViewer {
             if (impostor.isDisposed) {
                 this.hideImpostor(this._impostors[i--]);
             } else {
+                if (impostor.type === PhysicsImpostor.MeshImpostor) {
+                    continue;
+                }
                 let mesh = this._meshes[i];
 
                 if (mesh && plugin) {
@@ -77,9 +83,10 @@ export class PhysicsViewer {
     /**
      * Renders a specified physic impostor
      * @param impostor defines the impostor to render
+     * @param targetMesh defines the mesh represented by the impostor
      * @returns the new debug mesh used to render the impostor
      */
-    public showImpostor(impostor: PhysicsImpostor): Nullable<AbstractMesh> {
+    public showImpostor(impostor: PhysicsImpostor, targetMesh?: Mesh): Nullable<AbstractMesh> {
 
         if (!this._scene) {
             return null;
@@ -91,7 +98,7 @@ export class PhysicsViewer {
             }
         }
 
-        var debugMesh = this._getDebugMesh(impostor);
+        var debugMesh = this._getDebugMesh(impostor, targetMesh);
 
         if (debugMesh) {
             this._impostors[this._numMeshes] = impostor;
@@ -131,6 +138,12 @@ export class PhysicsViewer {
 
                 utilityLayerScene.removeMesh(mesh);
                 mesh.dispose();
+
+                let index = this._debugMeshMeshes.indexOf(mesh as Mesh);
+                if (index > -1) {
+                    this._debugMeshMeshes.splice(index, 1);
+                }
+
                 this._numMeshes--;
                 if (this._numMeshes > 0) {
                     this._meshes[i] = this._meshes[this._numMeshes];
@@ -168,6 +181,7 @@ export class PhysicsViewer {
             this._debugBoxMesh = BoxBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
             this._debugBoxMesh.rotationQuaternion = Quaternion.Identity();
             this._debugBoxMesh.material = this._getDebugMaterial(scene);
+            this._debugBoxMesh.setEnabled(false);
         }
 
         return this._debugBoxMesh.createInstance('physicsBodyBoxViewInstance');
@@ -178,37 +192,90 @@ export class PhysicsViewer {
             this._debugSphereMesh = SphereBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
             this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
             this._debugSphereMesh.material = this._getDebugMaterial(scene);
+            this._debugSphereMesh.setEnabled(false);
         }
 
         return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
     }
 
-    private _getDebugMesh(impostor: PhysicsImpostor): Nullable<AbstractMesh> {
+    private _getDebugCylinderMesh(scene: Scene): AbstractMesh {
+        if (!this._debugCylinderMesh) {
+            this._debugCylinderMesh = CylinderBuilder.CreateCylinder('physicsBodyCylinderViewMesh', { diameterTop: 1, diameterBottom: 1, height: 1 }, scene);
+            this._debugCylinderMesh.rotationQuaternion = Quaternion.Identity();
+            this._debugCylinderMesh.material = this._getDebugMaterial(scene);
+            this._debugCylinderMesh.setEnabled(false);
+        }
+
+        return this._debugCylinderMesh.createInstance('physicsBodyBoxViewInstance');
+    }
+
+    private _getDebugMeshMesh(mesh: Mesh, scene: Scene): AbstractMesh {
+        var wireframeOver = new Mesh(mesh.name, scene, null, mesh);
+        wireframeOver.position = Vector3.Zero();
+        wireframeOver.setParent(mesh);
+        wireframeOver.material = this._getDebugMaterial(scene);
+
+        this._debugMeshMeshes.push(wireframeOver);
+
+        return wireframeOver;
+    }
+
+    private _getDebugMesh(impostor: PhysicsImpostor, targetMesh?: Mesh): Nullable<AbstractMesh> {
         if (!this._utilityLayer) {
+            return null;
+        }
+
+        // Only create child impostor debug meshes when evaluating the parent
+        if (targetMesh && targetMesh.parent && (targetMesh.parent as Mesh).physicsImpostor) {
             return null;
         }
 
         var mesh: Nullable<AbstractMesh> = null;
         const utilityLayerScene = this._utilityLayer.utilityLayerScene;
 
-        if (impostor.type == PhysicsImpostor.BoxImpostor) {
-            mesh = this._getDebugBoxMesh(utilityLayerScene);
-            impostor.getBoxSizeToRef(mesh.scaling);
-        } else if (impostor.type == PhysicsImpostor.SphereImpostor) {
-            mesh = this._getDebugSphereMesh(utilityLayerScene);
-            var radius = impostor.getRadius();
-            mesh.scaling.x = radius * 2;
-            mesh.scaling.y = radius * 2;
-            mesh.scaling.z = radius * 2;
+        switch (impostor.type) {
+            case PhysicsImpostor.BoxImpostor:
+                mesh = this._getDebugBoxMesh(utilityLayerScene);
+                impostor.getBoxSizeToRef(mesh.scaling);
+                break;
+            case PhysicsImpostor.SphereImpostor:
+                mesh = this._getDebugSphereMesh(utilityLayerScene);
+                var radius = impostor.getRadius();
+                mesh.scaling.x = radius * 2;
+                mesh.scaling.y = radius * 2;
+                mesh.scaling.z = radius * 2;
+                break;
+            case PhysicsImpostor.MeshImpostor:
+                if (targetMesh) {
+                    mesh = this._getDebugMeshMesh(targetMesh, utilityLayerScene);
+                }
+                break;
+            case PhysicsImpostor.NoImpostor:
+                if (targetMesh) {
+                    // Handle compound impostors
+                    var childMeshes = targetMesh.getChildMeshes().filter((c) => {return c.physicsImpostor ? 1 : 0; });
+                    childMeshes.forEach((m) => {
+                        var a = this._getDebugBoxMesh(utilityLayerScene);
+                        a.parent = m;
+                    });
+                }
+                break;
+            case PhysicsImpostor.CylinderImpostor:
+                mesh = this._getDebugCylinderMesh(utilityLayerScene);
+                var bi = impostor.object.getBoundingInfo();
+                mesh.scaling.x = bi.boundingBox.maximum.x - bi.boundingBox.minimum.x;
+                mesh.scaling.y = bi.boundingBox.maximum.y - bi.boundingBox.minimum.y;
+                mesh.scaling.z = bi.boundingBox.maximum.z - bi.boundingBox.minimum.z;
+                break;
         }
-
         return mesh;
     }
 
     /** Releases all resources */
     public dispose() {
-        for (var i = 0; i < this._numMeshes; i++) {
-            this.hideImpostor(this._impostors[i]);
+        let count = this._numMeshes;
+        for (var index = 0; index < count; index++) {
+            this.hideImpostor(this._impostors[0]);
         }
 
         if (this._debugBoxMesh) {
@@ -216,6 +283,9 @@ export class PhysicsViewer {
         }
         if (this._debugSphereMesh) {
             this._debugSphereMesh.dispose();
+        }
+        if (this._debugCylinderMesh) {
+            this._debugCylinderMesh.dispose();
         }
         if (this._debugMaterial) {
             this._debugMaterial.dispose();

@@ -148,6 +148,13 @@ export class CubeMapToSphericalPolynomialTools {
                         b = Math.pow(Scalar.Clamp(b), ToLinearSpace);
                     }
 
+                    // Prevent to explode in case of really high dynamic ranges.
+                    // sh 3 would not be enough to accurately represent it.
+                    const max = 4096;
+                    r = Scalar.Clamp(r, 0, max);
+                    g = Scalar.Clamp(g, 0, max);
+                    b = Scalar.Clamp(b, 0, max);
+
                     var color = new Color3(r, g, b);
 
                     sphericalHarmonics.addLight(worldDirection, color, deltaSolidAngle);
@@ -173,7 +180,7 @@ export class CubeMapToSphericalPolynomialTools {
         // small angle approximation of solid angle for each texel (see deltaSolidAngle),
         // and also to compensate for accumulative error due to float precision in the summation.
         var correctionFactor = expectedSolidAngle / totalSolidAngle;
-        sphericalHarmonics.scale(correctionFactor);
+        sphericalHarmonics.scaleInPlace(correctionFactor);
 
         sphericalHarmonics.convertIncidentRadianceToIrradiance();
         sphericalHarmonics.convertIrradianceToLambertianRadiance();

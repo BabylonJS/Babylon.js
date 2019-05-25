@@ -6,12 +6,14 @@ import { GizmoManager } from "babylonjs/Gizmos/gizmoManager";
 import { Scene } from "babylonjs/scene";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare } from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 import { GlobalState } from "../../globalState";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
+import { PropertyChangedEvent } from '../../../components/propertyChangedEvent';
+import { LightGizmo } from 'babylonjs/Gizmos/lightGizmo';
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
@@ -28,6 +30,10 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _selectedEntity: any;
 
+    private _posDragEnd: Nullable<Observer<PropertyChangedEvent>> = null;
+    private _scaleDragEnd: Nullable<Observer<PropertyChangedEvent>> = null;
+    private _rotateDragEnd: Nullable<Observer<PropertyChangedEvent>> = null;
+
     constructor(props: ISceneTreeItemComponentProps) {
         super(props);
 
@@ -41,6 +47,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 gizmoMode = 2;
             } else if (manager.scaleGizmoEnabled) {
                 gizmoMode = 3;
+            } else if (manager.boundingBoxGizmoEnabled) {
+                gizmoMode = 4;
             }
         }
 
@@ -75,8 +83,14 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(entity);
-                }else if(className.indexOf("Light") !== -1 && this._selectedEntity.reservedDataStore && this._selectedEntity.reservedDataStore.lightGizmo){
+                }else if (className.indexOf("Light") !== -1) {
+                    if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.lightGizmo) {
+                        this.props.globalState.enableLightGizmo(this._selectedEntity, true);
+                        this.forceUpdate();
+                    }
                     manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
+                }else{
+                    manager.attachToMesh(null);
                 }
             }
         });
@@ -182,6 +196,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             }
         })
 
+        manager.boundingBoxGizmoEnabled = false;
         manager.positionGizmoEnabled = false;
         manager.rotationGizmoEnabled = false;
         manager.scaleGizmoEnabled = false;
@@ -194,12 +209,84 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             switch (mode) {
                 case 1:
                     manager.positionGizmoEnabled = true;
+                    if(!this._posDragEnd){
+                        // Record movement for generating replay code
+                        this._posDragEnd = manager.gizmos.positionGizmo!.onDragEndObservable.add(()=>{
+                            if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedMesh) {
+                                var lightGizmo:Nullable<LightGizmo> =  manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var obj:any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedMesh;
+                                
+                                if (obj.position) {
+                                    var e = new PropertyChangedEvent();
+                                    e.object = obj
+                                    e.property = "position"
+                                    e.value = obj.position;
+                                    this.props.globalState.onPropertyChangedObservable.notifyObservers(e)
+                                }
+                            }                            
+                        })
+                    }
+                    
                     break;
                 case 2:
                     manager.rotationGizmoEnabled = true;
+                    if(!this._rotateDragEnd){
+                        // Record movement for generating replay code
+                        this._rotateDragEnd = manager.gizmos.rotationGizmo!.onDragEndObservable.add(()=>{
+                            if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedMesh) {
+                                var lightGizmo:Nullable<LightGizmo> =  manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var obj:any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedMesh;
+                                
+                                if (obj.rotationQuaternion) {
+                                    var e = new PropertyChangedEvent();
+                                    e.object = obj;
+                                    e.property = "rotationQuaternion";
+                                    e.value = obj.rotationQuaternion;
+                                    this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                } else if(obj.rotation) {
+                                    var e = new PropertyChangedEvent();
+                                    e.object = obj;
+                                    e.property = "rotation";
+                                    e.value = obj.rotation;
+                                    this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                } else if(obj.direction) {
+                                    var e = new PropertyChangedEvent();
+                                    e.object = obj;
+                                    e.property = "direction";
+                                    e.value = obj.direction;
+                                    this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                            }                            
+                        })
+                    }
+
                     break;
                 case 3:
                     manager.scaleGizmoEnabled = true;
+                    if(!this._scaleDragEnd){
+                        // Record movement for generating replay code
+                        this._scaleDragEnd = manager.gizmos.scaleGizmo!.onDragEndObservable.add(()=>{
+                            if (manager.gizmos.scaleGizmo && manager.gizmos.scaleGizmo.attachedMesh) {
+                                var lightGizmo:Nullable<LightGizmo> =  manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var obj:any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.scaleGizmo.attachedMesh;
+                                
+                                if (obj.scaling) {
+                                    var e = new PropertyChangedEvent();
+                                    e.object = obj;
+                                    e.property = "scaling";
+                                    e.value = obj.scaling;
+                                    this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                            }                            
+                        })
+                    }
+
+                    break;
+                case 4:
+                    manager.boundingBoxGizmoEnabled = true;
+                    if (manager.gizmos.boundingBoxGizmo) {
+                        manager.gizmos.boundingBoxGizmo.fixedDragMeshScreenSize = true;
+                    }
                     break;
             }
 
@@ -208,7 +295,11 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(this._selectedEntity);
-                } else if(className.indexOf("Light") !== -1 && this._selectedEntity.reservedDataStore && this._selectedEntity.reservedDataStore.lightGizmo){
+                } else if(className.indexOf("Light") !== -1){
+                    if(!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.lightGizmo){
+                        this.props.globalState.enableLightGizmo(this._selectedEntity, true);
+                        this.forceUpdate();
+                    }
                     manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 }
             }
@@ -233,6 +324,9 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     <div className={this.state.gizmoMode === 3 ? "scaling selected icon" : "scaling icon"} onClick={() => this.setGizmoMode(3)} title="Enable/Disable scaling mode">
                         <FontAwesomeIcon icon={faCompress} />
                     </div>
+                    <div className={this.state.gizmoMode === 4 ? "bounding selected icon" : "bounding icon"} onClick={() => this.setGizmoMode(4)} title="Enable/Disable bounding box mode">
+                        <FontAwesomeIcon icon={faVectorSquare} />
+                    </div>                    
                     <div className="separator" />
                     <div className={this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon"} onClick={() => this.onPickingMode()} title="Turn picking mode on/off">
                         <FontAwesomeIcon icon={faCrosshairs} />

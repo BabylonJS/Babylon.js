@@ -9,6 +9,8 @@ import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cube
 import { Scene } from '../scene';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 
+import "../Engines/Extensions/engine.cubeTexture";
+
 // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
 // All values and structures referenced from:
 // http://msdn.microsoft.com/en-us/library/bb943991.aspx/
@@ -533,7 +535,8 @@ export class DDSTools {
             mipmapCount = Math.max(1, header[off_mipmapCount]);
         }
 
-        for (var face = 0; face < faces; face++) {
+        const startFace = currentFace || 0;
+        for (var face = startFace; face < faces; face++) {
             width = header[off_width];
             height = header[off_height];
 

@@ -180,10 +180,9 @@ export class Line extends Control {
         context.setLineDash(this._dash);
 
         context.beginPath();
-        context.moveTo(this._x1.getValue(this._host), this._y1.getValue(this._host));
+        context.moveTo(this._cachedParentMeasure.left + this._x1.getValue(this._host), this._cachedParentMeasure.top + this._y1.getValue(this._host));
 
-        context.lineTo(this._effectiveX2, this._effectiveY2);
-
+        context.lineTo(this._cachedParentMeasure.left + this._effectiveX2, this._cachedParentMeasure.top + this._effectiveY2);
         context.stroke();
 
         context.restore();
@@ -196,8 +195,8 @@ export class Line extends Control {
     }
 
     protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-        this._currentMeasure.left = Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
-        this._currentMeasure.top = Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
+        this._currentMeasure.left = parentMeasure.left + Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
+        this._currentMeasure.top = parentMeasure.top + Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
     }
 
     /**

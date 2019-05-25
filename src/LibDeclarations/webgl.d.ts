@@ -1,12 +1,3 @@
-
-interface WebGLProgram {
-    context?: WebGLRenderingContext;
-    vertexShader?: WebGLShader;
-    fragmentShader?: WebGLShader;
-    isParallelCompiled: boolean;
-    onCompiled?: () => void;
-}
-
 interface WebGLRenderingContext {
     drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
     drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
@@ -70,14 +61,7 @@ interface WebGLRenderingContext {
     QUERY_RESULT: number;
 }
 
-interface WebGLBuffer {
-    references: number;
-    capacity: number;
-    is32Bits: boolean;
-}
-
 interface WebGLProgram {
-    transformFeedback?: WebGLTransformFeedback | null;
     __SPECTOR_rebuildProgram?: ((vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void) | null;
 }
 

@@ -8,8 +8,11 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { LockObject } from "../lockObject";
+import { GlobalState } from '../../../../globalState';
+import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 
 interface ICommonCameraPropertyGridComponentProps {
+    globalState: GlobalState;
     camera: Camera;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -31,36 +34,39 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
         ];
 
         return (
-            <LineContainerComponent title="GENERAL">
-                <TextLineComponent label="ID" value={camera.id} />
-                <TextLineComponent label="Unique ID" value={camera.uniqueId.toString()} />
-                <TextLineComponent label="Class" value={camera.getClassName()} />
-                <FloatLineComponent lockObject={this.props.lockObject} label="Near plane" target={camera} propertyName="minZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent lockObject={this.props.lockObject} label="Far plane" target={camera} propertyName="maxZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <SliderLineComponent label="Inertia" target={camera} propertyName="inertia" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <OptionsLineComponent label="Mode" options={modeOptions} target={camera} propertyName="mode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ mode: value })} />
-                {
-                    camera.mode === Camera.PERSPECTIVE_CAMERA &&
-                    <SliderLineComponent label="Field of view" target={camera} propertyName="fov" minimum={0.1} maximum={Math.PI} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                }
-                {
-                    camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Left" target={camera} propertyName="orthoLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                }
-                {
-                    camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Top" target={camera} propertyName="orthoTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                }
-                {
-                    camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Right" target={camera} propertyName="orthoRight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                }
-                {
-                    camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Bottom" target={camera} propertyName="orthoBottom" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                }
-
-            </LineContainerComponent>
+            <div>
+                <CustomPropertyGridComponent globalState={this.props.globalState} target={camera}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                    <TextLineComponent label="ID" value={camera.id} />
+                    <TextLineComponent label="Unique ID" value={camera.uniqueId.toString()} />
+                    <TextLineComponent label="Class" value={camera.getClassName()} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Near plane" target={camera} propertyName="minZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Far plane" target={camera} propertyName="maxZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Inertia" target={camera} propertyName="inertia" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent label="Mode" options={modeOptions} target={camera} propertyName="mode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ mode: value })} />
+                    {
+                        camera.mode === Camera.PERSPECTIVE_CAMERA &&
+                        <SliderLineComponent label="Field of view" target={camera} propertyName="fov" minimum={0.1} maximum={Math.PI} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Left" target={camera} propertyName="orthoLeft" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Top" target={camera} propertyName="orthoTop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Right" target={camera} propertyName="orthoRight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
+                        <FloatLineComponent lockObject={this.props.lockObject} label="Bottom" target={camera} propertyName="orthoBottom" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                </LineContainerComponent>
+            </div>
         );
     }
 }

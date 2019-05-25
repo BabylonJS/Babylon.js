@@ -139,6 +139,148 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
         }
     }
 
+    /**
+     * Get the class name
+     * @returns "LensRenderingPipeline"
+     */
+    public getClassName(): string {
+        return "LensRenderingPipeline";
+    }
+
+    // Properties
+
+    /**
+     * Gets associated scene
+     */
+    public get scene(): Scene {
+        return this._scene;
+    }
+
+    /**
+     * Gets or sets the edge blur
+     */
+    public get edgeBlur(): number {
+        return this._edgeBlur;
+    }
+
+    public set edgeBlur(value: number) {
+        this.setEdgeBlur(value);
+    }
+
+    /**
+     * Gets or sets the grain amount
+     */
+    public get grainAmount(): number {
+        return this._grainAmount;
+    }
+
+    public set grainAmount(value: number) {
+        this.setGrainAmount(value);
+    }
+
+    /**
+     * Gets or sets the chromatic aberration amount
+     */
+    public get chromaticAberration(): number {
+        return this._chromaticAberration;
+    }
+
+    public set chromaticAberration(value: number) {
+        this.setChromaticAberration(value);
+    }
+
+    /**
+     * Gets or sets the depth of field aperture
+     */
+    public get dofAperture(): number {
+        return this._dofAperture;
+    }
+
+    public set dofAperture(value: number) {
+        this.setAperture(value);
+    }
+
+    /**
+     * Gets or sets the edge distortion
+     */
+    public get edgeDistortion(): number {
+        return this._distortion;
+    }
+
+    public set edgeDistortion(value: number) {
+        this.setEdgeDistortion(value);
+    }
+
+    /**
+     * Gets or sets the depth of field distortion
+     */
+    public get dofDistortion(): number {
+        return this._dofDistance;
+    }
+
+    public set dofDistortion(value: number) {
+        this.setFocusDistance(value);
+    }
+
+    /**
+     * Gets or sets the darken out of focus amount
+     */
+    public get darkenOutOfFocus(): number {
+        return this._dofDarken;
+    }
+
+    public set darkenOutOfFocus(value: number) {
+        this.setDarkenOutOfFocus(value);
+    }
+
+    /**
+     * Gets or sets a boolean indicating if blur noise is enabled
+     */
+    public get blurNoise(): boolean {
+        return this._blurNoise;
+    }
+
+    public set blurNoise(value: boolean) {
+        this._blurNoise = value;
+    }
+
+    /**
+     * Gets or sets a boolean indicating if pentagon bokeh is enabled
+     */
+    public get pentagonBokeh(): boolean {
+        return this._pentagonBokehIsEnabled;
+    }
+
+    public set pentagonBokeh(value: boolean) {
+        if (value) {
+            this.enablePentagonBokeh();
+        } else {
+            this.disablePentagonBokeh();
+        }
+    }
+
+    /**
+     * Gets or sets the highlight grain amount
+     */
+    public get highlightsGain(): number {
+        return this._highlightsGain;
+    }
+
+    public set highlightsGain(value: number) {
+        this.setHighlightsGain(value);
+    }
+
+    /**
+     * Gets or sets the highlight threshold
+     */
+    public get highlightsThreshold(): number {
+        return this._highlightsThreshold;
+    }
+
+    public set highlightsThreshold(value: number) {
+        this.setHighlightsThreshold(value);
+    }
+
     // public methods (self explanatory)
     /**
      * Sets the amount of blur at the edges
@@ -195,16 +337,20 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
      * @param amount amount of DarkenOutOfFocus
      */
     public setDarkenOutOfFocus(amount: number) { this._dofDarken = amount; }
+
+    private _pentagonBokehIsEnabled = false;
     /**
      * Creates a pentagon bokeh effect
      */
     public enablePentagonBokeh() {
         this._highlightsPostProcess.updateEffect("#define PENTAGON\n");
+        this._pentagonBokehIsEnabled = true;
     }
     /**
      * Disables the pentagon bokeh effect
      */
     public disablePentagonBokeh() {
+        this._pentagonBokehIsEnabled = false;
         this._highlightsPostProcess.updateEffect();
     }
     /**

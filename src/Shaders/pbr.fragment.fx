@@ -6,243 +6,55 @@
 #extension GL_EXT_shader_texture_lod : enable
 #endif
 
+#define CUSTOM_FRAGMENT_BEGIN
+
 #ifdef LOGARITHMICDEPTH
 #extension GL_EXT_frag_depth : enable
 #endif
 
 precision highp float;
 
-#include<__decl__pbrFragment>
-
-uniform vec4 vEyePosition;
-uniform vec3 vAmbientColor;
-uniform vec4 vCameraInfos;
-
-// Input
-varying vec3 vPositionW;
-
-#ifdef MAINUV1
-    varying vec2 vMainUV1;
-#endif 
-
-#ifdef MAINUV2 
-    varying vec2 vMainUV2;
-#endif 
-
-#ifdef NORMAL
-    varying vec3 vNormalW;
-    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        varying vec3 vEnvironmentIrradiance;
-    #endif
-#endif
-
-#ifdef VERTEXCOLOR
-varying vec4 vColor;
-#endif
-
-// Lights
-#include<__decl__lightFragment>[0..maxSimultaneousLights]
-
-// Samplers
-#ifdef ALBEDO
-    #if ALBEDODIRECTUV == 1
-        #define vAlbedoUV vMainUV1
-    #elif ALBEDODIRECTUV == 2
-        #define vAlbedoUV vMainUV2
-    #else
-        varying vec2 vAlbedoUV;
-    #endif
-    uniform sampler2D albedoSampler;
-#endif
-
-#ifdef AMBIENT
-    #if AMBIENTDIRECTUV == 1
-        #define vAmbientUV vMainUV1
-    #elif AMBIENTDIRECTUV == 2
-        #define vAmbientUV vMainUV2
-    #else
-        varying vec2 vAmbientUV;
-    #endif
-    uniform sampler2D ambientSampler;
-#endif
-
-#ifdef OPACITY
-    #if OPACITYDIRECTUV == 1
-        #define vOpacityUV vMainUV1
-    #elif OPACITYDIRECTUV == 2
-        #define vOpacityUV vMainUV2
-    #else
-        varying vec2 vOpacityUV;
-    #endif
-    uniform sampler2D opacitySampler;
-#endif
-
-#ifdef EMISSIVE
-    #if EMISSIVEDIRECTUV == 1
-        #define vEmissiveUV vMainUV1
-    #elif EMISSIVEDIRECTUV == 2
-        #define vEmissiveUV vMainUV2
-    #else
-        varying vec2 vEmissiveUV;
-    #endif
-    uniform sampler2D emissiveSampler;
-#endif
-
-#ifdef LIGHTMAP
-    #if LIGHTMAPDIRECTUV == 1
-        #define vLightmapUV vMainUV1
-    #elif LIGHTMAPDIRECTUV == 2
-        #define vLightmapUV vMainUV2
-    #else
-        varying vec2 vLightmapUV;
-    #endif
-    uniform sampler2D lightmapSampler;
-#endif
-
-#ifdef REFLECTIVITY
-    #if REFLECTIVITYDIRECTUV == 1
-        #define vReflectivityUV vMainUV1
-    #elif REFLECTIVITYDIRECTUV == 2
-        #define vReflectivityUV vMainUV2
-    #else
-        varying vec2 vReflectivityUV;
-    #endif
-    uniform sampler2D reflectivitySampler;
-#endif
-
-#ifdef MICROSURFACEMAP
-    #if MICROSURFACEMAPDIRECTUV == 1
-        #define vMicroSurfaceSamplerUV vMainUV1
-    #elif MICROSURFACEMAPDIRECTUV == 2
-        #define vMicroSurfaceSamplerUV vMainUV2
-    #else
-        varying vec2 vMicroSurfaceSamplerUV;
-    #endif
-    uniform sampler2D microSurfaceSampler;
-#endif
-
-#ifdef CLEARCOAT
-    #ifdef CLEARCOAT_TEXTURE
-        #if CLEARCOAT_TEXTUREDIRECTUV == 1
-            #define vClearCoatUV vMainUV1
-        #elif CLEARCOAT_TEXTUREDIRECTUV == 2
-            #define vClearCoatUV vMainUV2
-        #else
-            varying vec2 vClearCoatUV;
-        #endif
-        uniform sampler2D clearCoatSampler;
-    #endif
-
-    #ifdef CLEARCOAT_BUMP
-        #if CLEARCOAT_BUMPDIRECTUV == 1
-            #define vClearCoatBumpUV vMainUV1
-        #elif CLEARCOAT_BUMPDIRECTUV == 2
-            #define vClearCoatBumpUV vMainUV2
-        #else
-            varying vec2 vClearCoatBumpUV;
-        #endif
-        uniform sampler2D clearCoatBumpSampler;
-    #endif
-#endif
-
-// Refraction
-#ifdef REFRACTION
-    #ifdef REFRACTIONMAP_3D
-        #define sampleRefraction(s, c) textureCube(s, c)
-        
-        uniform samplerCube refractionSampler;
-
-        #ifdef LODBASEDMICROSFURACE
-            #define sampleRefractionLod(s, c, l) textureCubeLodEXT(s, c, l)
-        #else
-            uniform samplerCube refractionSamplerLow;
-            uniform samplerCube refractionSamplerHigh;
-        #endif
-    #else
-        #define sampleRefraction(s, c) texture2D(s, c)
-        
-        uniform sampler2D refractionSampler;
-
-        #ifdef LODBASEDMICROSFURACE
-            #define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
-        #else
-            uniform samplerCube refractionSamplerLow;
-            uniform samplerCube refractionSamplerHigh;
-        #endif
-    #endif
-#endif
-
-// Reflection
-#ifdef REFLECTION
-    #ifdef REFLECTIONMAP_3D
-        #define sampleReflection(s, c) textureCube(s, c)
-
-        uniform samplerCube reflectionSampler;
-        
-        #ifdef LODBASEDMICROSFURACE
-            #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
-        #else
-            uniform samplerCube reflectionSamplerLow;
-            uniform samplerCube reflectionSamplerHigh;
-        #endif
-    #else
-        #define sampleReflection(s, c) texture2D(s, c)
-
-        uniform sampler2D reflectionSampler;
-
-        #ifdef LODBASEDMICROSFURACE
-            #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
-        #else
-            uniform samplerCube reflectionSamplerLow;
-            uniform samplerCube reflectionSamplerHigh;
-        #endif
-    #endif
-
-    #ifdef REFLECTIONMAP_SKYBOX
-        varying vec3 vPositionUVW;
-    #else
-        #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
-            varying vec3 vDirectionW;
-        #endif
-    #endif
-
-    #include<reflectionFunction>
-#endif
-
-#ifdef ENVIRONMENTBRDF
-    uniform sampler2D environmentBrdfSampler;
-#endif
-
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE
     #define FROMLINEARSPACE;
 #endif
 
+// Declaration
+#include<__decl__pbrFragment>
+#include<pbrFragmentExtraDeclaration>
+#include<__decl__lightFragment>[0..maxSimultaneousLights]
+#include<pbrFragmentSamplersDeclaration>
 #include<imageProcessingDeclaration>
-
-#include<helperFunctions>
-
-#include<imageProcessingFunctions>
-
-// PBR
-#include<shadowsFragmentFunctions>
-#include<pbrFunctions>
-#include<harmonicsFunctions>
-#include<pbrPreLightingFunctions>
-#include<pbrFalloffLightingFunctions>
-#include<pbrLightingFunctions>
-
-#include<bumpFragmentFunctions>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
-
-// Fog
 #include<fogFragmentDeclaration>
 
-void main(void) {
-#include<clipPlaneFragment>
+// Helper Functions
+#include<helperFunctions>
+#include<pbrHelperFunctions>
+#include<imageProcessingFunctions>
+#include<shadowsFragmentFunctions>
+#include<harmonicsFunctions>
+#include<pbrDirectLightingSetupFunctions>
+#include<pbrDirectLightingFalloffFunctions>
+#include<pbrBRDFFunctions>
+#include<pbrDirectLightingFunctions>
+#include<pbrIBLFunctions>
+#include<bumpFragmentFunctions>
 
-// _______________________________________________________________________________
+#ifdef REFLECTION
+    #include<reflectionFunction>
+#endif
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
+// _____________________________ MAIN FUNCTION ____________________________
+void main(void) {
+
+    #define CUSTOM_FRAGMENT_MAIN_BEGIN
+
+    #include<clipPlaneFragment>
+
 // _____________________________ Geometry Information ____________________________
     vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
@@ -293,6 +105,8 @@ void main(void) {
     surfaceAlbedo *= vColor.rgb;
 #endif
 
+#define CUSTOM_FRAGMENT_UPDATE_ALBEDO
+
 // _____________________________ Alpha Information _______________________________
 #ifdef OPACITY
     vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
@@ -310,7 +124,7 @@ void main(void) {
     alpha *= vColor.a;
 #endif
 
-#if !defined(LINKREFRACTIONTOTRANSPARENCY) && !defined(ALPHAFRESNEL)
+#if !defined(SS_LINKREFRACTIONTOTRANSPARENCY) && !defined(ALPHAFRESNEL)
     #ifdef ALPHATEST
         if (alpha < ALPHATESTVALUE)
             discard;
@@ -322,7 +136,11 @@ void main(void) {
     #endif
 #endif
 
+#define CUSTOM_FRAGMENT_UPDATE_ALPHA
+
 #include<depthPrePass>
+
+#define CUSTOM_FRAGMENT_BEFORE_LIGHTS
 
 // _____________________________ AO    Information _______________________________
     vec3 ambientOcclusionColor = vec3(1., 1., 1.);
@@ -373,7 +191,9 @@ void main(void) {
             metallicRoughness.g *= microSurfaceTexel.r;
         #endif
 
-        // Compute microsurface form roughness.
+        #define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS
+		
+        // Compute microsurface from roughness.
         microSurface = 1.0 - metallicRoughness.g;
 
         // Diffuse is used as the base of the reflectivity.
@@ -421,12 +241,15 @@ void main(void) {
                     vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
                     microSurface *= microSurfaceTexel.r;
                 #endif
+				
+                #define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE
+				
             #endif
         #endif
     #endif
-
-    // Adapt microSurface.
-    microSurface = clamp(microSurface, 0., 1.);
+	
+	// Adapt microSurface.
+    microSurface = saturate(microSurface);
     // Compute roughness.
     float roughness = 1. - microSurface;
 
@@ -448,7 +271,7 @@ void main(void) {
             vec3 normalForward = faceforward(normalW, -viewDirectionW, normalW);
 
             // Calculate the appropriate linear opacity for the current viewing angle (formally, this quantity is the "directional absorptance").
-            alpha = fresnelSchlickEnvironmentGGX(clamp(dot(viewDirectionW, normalForward), 0.0, 1.0), vec3(opacity0), vec3(opacity90), sqrt(microSurface)).x;
+            alpha = getReflectanceFromAnalyticalBRDFLookup_Jones(saturate(dot(viewDirectionW, normalForward)), vec3(opacity0), vec3(opacity90), sqrt(microSurface)).x;
 
             #ifdef ALPHATEST
                 if (alpha < ALPHATESTVALUE)
@@ -464,7 +287,8 @@ void main(void) {
 
     // _____________________________ Compute Geometry info _________________________________
     float NdotVUnclamped = dot(normalW, viewDirectionW);
-    float NdotV = clamp(NdotVUnclamped,0., 1.) + 0.00001;
+    // The order 1886 page 3.
+    float NdotV = absEps(NdotVUnclamped);
     float alphaG = convertRoughnessToAverageSlope(roughness);
     vec2 AARoughnessFactors = getAARoughnessFactors(normalW.xyz);
 
@@ -474,14 +298,24 @@ void main(void) {
     #endif
 
     #ifdef ANISOTROPIC
-        vec3 anisotropicFrameDirection = anisotropy >= 0.0 ? TBN[1] : TBN[0];
-        vec3 anisotropicFrameTangent = cross(normalize(anisotropicFrameDirection), viewDirectionW);
-        vec3 anisotropicFrameNormal = cross(anisotropicFrameTangent, anisotropicFrameDirection);
-        vec3 anisotropicNormal = normalize(mix(normalW, anisotropicFrameNormal, abs(anisotropy)));
+        float anisotropy = vAnisotropy.b;
+        vec3 anisotropyDirection = vec3(vAnisotropy.xy, 0.);
+
+        #ifdef ANISOTROPIC_TEXTURE
+            vec3 anisotropyMapData = texture2D(anisotropySampler, vAnisotropyUV + uvOffset).rgb * vAnisotropyInfos.y;
+            anisotropy *= anisotropyMapData.b;
+            anisotropyDirection.rg *= anisotropyMapData.rg * 2.0 - 1.0;
+        #endif
+
+        mat3 anisoTBN = mat3(normalize(TBN[0]), normalize(TBN[1]), normalize(TBN[2]));
+        vec3 anisotropicTangent = normalize(anisoTBN * anisotropyDirection);
+        vec3 anisotropicBitangent = normalize(cross(anisoTBN[2], anisotropicTangent));
+        
+        vec3 anisotropicNormal = getAnisotropicBentNormals(anisotropicTangent, anisotropicBitangent, normalW, viewDirectionW, anisotropy);
     #endif
 
     // _____________________________ Refraction Info _______________________________________
-    #ifdef REFRACTION
+    #ifdef SS_REFRACTION
         vec4 environmentRefraction = vec4(0., 0., 0., 0.);
 
         #ifdef ANISOTROPIC
@@ -490,12 +324,12 @@ void main(void) {
             vec3 refractionVector = refract(-viewDirectionW, normalW, vRefractionInfos.y);
         #endif
 
-        #ifdef REFRACTIONMAP_OPPOSITEZ
+        #ifdef SS_REFRACTIONMAP_OPPOSITEZ
             refractionVector.z *= -1.0;
         #endif
 
         // _____________________________ 2D vs 3D Maps ________________________________
-        #ifdef REFRACTIONMAP_3D
+        #ifdef SS_REFRACTIONMAP_3D
             refractionVector.y = refractionVector.y * vRefractionInfos.w;
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
@@ -505,17 +339,19 @@ void main(void) {
             refractionCoords.y = 1.0 - refractionCoords.y;
         #endif
 
-        #ifdef LODINREFRACTIONALPHA
+        #ifdef SS_LODINREFRACTIONALPHA
             float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
+        #elif defined(SS_LINEARSPECULARREFRACTION)
+            float refractionLOD = getLinearLodFromRoughness(vRefractionMicrosurfaceInfos.x, roughness);
         #else
-            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, 1.0);
+            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG);
         #endif
 
         #ifdef LODBASEDMICROSFURACE
             // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
             refractionLOD = refractionLOD * vRefractionMicrosurfaceInfos.y + vRefractionMicrosurfaceInfos.z;
 
-            #ifdef LODINREFRACTIONALPHA
+            #ifdef SS_LODINREFRACTIONALPHA
                 // Automatic LOD adjustment to ensure that the smoothness-based environment LOD selection
                 // is constrained to appropriate LOD levels in order to prevent aliasing.
                 // The environment map is first sampled without custom LOD selection to determine
@@ -534,7 +370,7 @@ void main(void) {
 
             environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
         #else
-            float lodRefractionNormalized = clamp(refractionLOD / log2(vRefractionMicrosurfaceInfos.x), 0., 1.);
+            float lodRefractionNormalized = saturate(refractionLOD / log2(vRefractionMicrosurfaceInfos.x));
             float lodRefractionNormalizedDoubled = lodRefractionNormalized * 2.0;
 
             vec4 environmentRefractionMid = sampleRefraction(refractionSampler, refractionCoords);
@@ -553,11 +389,11 @@ void main(void) {
             }
         #endif
 
-        #ifdef RGBDREFRACTION
+        #ifdef SS_RGBDREFRACTION
             environmentRefraction.rgb = fromRGBD(environmentRefraction);
         #endif
 
-        #ifdef GAMMAREFRACTION
+        #ifdef SS_GAMMAREFRACTION
             environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
         #endif
 
@@ -593,8 +429,10 @@ void main(void) {
 
         #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
             float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
+        #elif defined(LINEARSPECULARREFLECTION)
+            float refractionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, roughness);
         #else
-            float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, 1.);
+            float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG);
         #endif
 
         #ifdef LODBASEDMICROSFURACE
@@ -620,7 +458,7 @@ void main(void) {
 
             environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, requestedReflectionLOD);
         #else
-            float lodReflectionNormalized = clamp(reflectionLOD / log2(vReflectionMicrosurfaceInfos.x), 0., 1.);
+            float lodReflectionNormalized = saturate(reflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
             float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
 
             vec4 environmentSpecularMid = sampleReflection(reflectionSampler, reflectionCoords);
@@ -662,7 +500,16 @@ void main(void) {
                     irradianceVector.z *= -1.0;
                 #endif
 
-                environmentIrradiance = environmentIrradianceJones(irradianceVector);
+                environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
+            #endif
+        #elif defined(USEIRRADIANCEMAP)
+            environmentIrradiance = sampleReflection(irradianceSampler, reflectionCoords).rgb;
+            #ifdef RGBDREFLECTION
+                environmentIrradiance.rgb = fromRGBD(environmentIrradiance);
+            #endif
+
+            #ifdef GAMMAREFLECTION
+                environmentIrradiance.rgb = toLinearSpace(environmentIrradiance.rgb);
             #endif
         #endif
 
@@ -678,6 +525,93 @@ void main(void) {
     vec3 specularEnvironmentR0 = surfaceReflectivityColor.rgb;
     vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
 
+    // ________________________________ Sheen Information ______________________________
+    #ifdef SHEEN
+        float sheenIntensity = vSheenColor.a;
+
+        #ifdef SHEEN_TEXTURE
+            vec4 sheenMapData = texture2D(sheenSampler, vSheenUV + uvOffset) * vSheenInfos.y;
+            sheenIntensity *= sheenMapData.a;
+        #endif
+
+        #ifdef SHEEN_LINKWITHALBEDO
+            float sheenFactor = pow5(1.0-sheenIntensity);
+            vec3 sheenColor = baseColor.rgb*(1.0-sheenFactor);
+            float sheenRoughness = sheenIntensity;
+            // remap albedo.
+            surfaceAlbedo.rgb *= sheenFactor;
+        #else
+            vec3 sheenColor = vSheenColor.rgb;
+            #ifdef SHEEN_TEXTURE
+                sheenColor.rgb *= toLinearSpace(sheenMapData.rgb);
+            #endif
+            float sheenRoughness = roughness;
+
+            // Sheen Lobe Layering.
+            sheenIntensity *= (1. - reflectance);
+
+            // Remap F0 and sheen.
+            sheenColor *= sheenIntensity;
+        #endif
+
+        // Sheen Reflection
+        #if defined(REFLECTION)
+            float sheenAlphaG = convertRoughnessToAverageSlope(sheenRoughness);
+
+            #ifdef SPECULARAA
+                // Adapt linear roughness (alphaG) to geometric curvature of the current pixel.
+                sheenAlphaG += AARoughnessFactors.y;
+            #endif
+
+            vec4 environmentSheenRadiance = vec4(0., 0., 0., 0.);
+
+            // _____________________________ 2D vs 3D Maps ________________________________
+            #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
+                float sheenReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, sheenAlphaG, NdotVUnclamped);
+            #elif defined(LINEARSPECULARREFLECTION)
+                float sheenReflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, sheenRoughness);
+            #else
+                float sheenReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, sheenAlphaG);
+            #endif
+
+            #ifdef LODBASEDMICROSFURACE
+                // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
+                sheenReflectionLOD = sheenReflectionLOD * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
+                environmentSheenRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, sheenReflectionLOD);
+            #else
+                float lodSheenReflectionNormalized = saturate(sheenReflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
+                float lodSheenReflectionNormalizedDoubled = lodSheenReflectionNormalized * 2.0;
+
+                vec4 environmentSheenMid = sampleReflection(reflectionSampler, reflectionCoords);
+                if(lodSheenReflectionNormalizedDoubled < 1.0){
+                    environmentSheenRadiance = mix(
+                        sampleReflection(reflectionSamplerHigh, reflectionCoords),
+                        environmentSheenMid,
+                        lodSheenReflectionNormalizedDoubled
+                    );
+                }else{
+                    environmentSheenRadiance = mix(
+                        environmentSheenMid,
+                        sampleReflection(reflectionSamplerLow, reflectionCoords),
+                        lodSheenReflectionNormalizedDoubled - 1.0
+                    );
+                }
+            #endif
+
+            #ifdef RGBDREFLECTION
+                environmentSheenRadiance.rgb = fromRGBD(environmentSheenRadiance);
+            #endif
+
+            #ifdef GAMMAREFLECTION
+                environmentSheenRadiance.rgb = toLinearSpace(environmentSheenRadiance.rgb);
+            #endif
+
+            // _____________________________ Levels _____________________________________
+            environmentSheenRadiance.rgb *= vReflectionInfos.x;
+            environmentSheenRadiance.rgb *= vReflectionColor.rgb;
+        #endif
+    #endif
+
     // _____________________________ Clear Coat Information ____________________________
     #ifdef CLEARCOAT
         // Clear COAT parameters.
@@ -690,12 +624,25 @@ void main(void) {
             clearCoatRoughness *= clearCoatMapData.y;
         #endif
 
+        #ifdef CLEARCOAT_TINT
+            vec3 clearCoatColor = vClearCoatTintParams.rgb;
+            float clearCoatThickness = vClearCoatTintParams.a;
+
+            #ifdef CLEARCOAT_TINT_TEXTURE
+                vec4 clearCoatTintMapData = texture2D(clearCoatTintSampler, vClearCoatTintUV + uvOffset);
+                clearCoatColor *= toLinearSpace(clearCoatTintMapData.rgb);
+                clearCoatThickness *= clearCoatTintMapData.a;
+            #endif
+
+            clearCoatColor = computeColorAtDistanceInMedia(clearCoatColor, clearCoatColorAtDistance);
+        #endif
+
         // remapping and linearization of clear coat roughness
         // Let s see how it ends up in gltf
         // clearCoatRoughness = mix(0.089, 0.6, clearCoatRoughness);
 
         // Remap F0 to account for the change of interface within the material.
-        vec3 specularEnvironmentR0Updated = getR0RemappedForPolyurethaneClearCoat(specularEnvironmentR0);
+        vec3 specularEnvironmentR0Updated = getR0RemappedForClearCoat(specularEnvironmentR0);
         specularEnvironmentR0 = mix(specularEnvironmentR0, specularEnvironmentR0Updated, clearCoatIntensity);
 
         #ifdef CLEARCOAT_BUMP
@@ -732,7 +679,8 @@ void main(void) {
 
         // Compute N dot V.
         float clearCoatNdotVUnclamped = dot(clearCoatNormalW, viewDirectionW);
-        float clearCoatNdotV = clamp(clearCoatNdotVUnclamped,0., 1.) + 0.00001;
+        // The order 1886 page 3.
+        float clearCoatNdotV = absEps(clearCoatNdotVUnclamped);
 
         // Clear Coat Reflection
         #if defined(REFLECTION)
@@ -763,8 +711,10 @@ void main(void) {
 
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
                 float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG, clearCoatNdotVUnclamped);
+            #elif defined(LINEARSPECULARREFLECTION)
+                float sheenReflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, clearCoatRoughness);
             #else
-                float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG, 1.);
+                float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG);
             #endif
 
             #ifdef LODBASEDMICROSFURACE
@@ -774,7 +724,7 @@ void main(void) {
 
                 environmentClearCoatRadiance = sampleReflectionLod(reflectionSampler, clearCoatReflectionCoords, requestedClearCoatReflectionLOD);
             #else
-                float lodClearCoatReflectionNormalized = clamp(clearCoatReflectionLOD / log2(vReflectionMicrosurfaceInfos.x), 0., 1.);
+                float lodClearCoatReflectionNormalized = saturate(clearCoatReflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
                 float lodClearCoatReflectionNormalizedDoubled = lodClearCoatReflectionNormalized * 2.0;
 
                 vec4 environmentClearCoatMid = sampleReflection(reflectionSampler, reflectionCoords);
@@ -801,9 +751,70 @@ void main(void) {
                 environmentClearCoatRadiance.rgb = toLinearSpace(environmentClearCoatRadiance.rgb);
             #endif
 
+            #ifdef CLEARCOAT_TINT
+                // Used later on in the light fragment and ibl.
+                vec3 clearCoatVRefract = -refract(vPositionW, clearCoatNormalW, vClearCoatRefractionParams.y);
+                // The order 1886 page 3.
+                float clearCoatNdotVRefract = absEps(dot(clearCoatNormalW, clearCoatVRefract));
+                vec3 absorption = vec3(0.);
+            #endif
+
             // _____________________________ Levels _____________________________________
             environmentClearCoatRadiance.rgb *= vReflectionInfos.x;
             environmentClearCoatRadiance.rgb *= vReflectionColor.rgb;
+        #endif
+    #endif
+
+    // _____________________________ IBL BRDF + Energy Cons ________________________________
+    #if defined(ENVIRONMENTBRDF)
+        // BRDF Lookup
+        vec3 environmentBrdf = getBRDFLookup(NdotV, roughness, environmentBrdfSampler);
+
+        #ifdef MS_BRDF_ENERGY_CONSERVATION
+            vec3 energyConservationFactor = getEnergyConservationFactor(specularEnvironmentR0, environmentBrdf);
+        #endif
+    #endif
+
+    // ___________________________________ SubSurface ______________________________________
+    #ifdef SUBSURFACE
+        #ifdef SS_REFRACTION
+            float refractionIntensity = vSubSurfaceIntensity.x;
+            #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
+                refractionIntensity *= (1.0 - alpha);
+                // Put alpha back to 1;
+                alpha = 1.0;
+            #endif
+        #endif
+        #ifdef SS_TRANSLUCENCY
+            float translucencyIntensity = vSubSurfaceIntensity.y;
+        #endif
+        #ifdef SS_SCATTERING
+            float scatteringIntensity = vSubSurfaceIntensity.z;
+        #endif
+
+        #ifdef SS_THICKNESSANDMASK_TEXTURE
+            vec4 thicknessMap = texture2D(thicknessSampler, vThicknessUV + uvOffset);
+            float thickness = thicknessMap.r * vThicknessParam.y + vThicknessParam.x;
+
+            #ifdef SS_MASK_FROM_THICKNESS_TEXTURE
+                #ifdef SS_REFRACTION
+                    refractionIntensity *= thicknessMap.g;
+                #endif
+                #ifdef SS_TRANSLUCENCY
+                    translucencyIntensity *= thicknessMap.b;
+                #endif
+                #ifdef SS_SCATTERING
+                    scatteringIntensity *= thicknessMap.a;
+                #endif
+            #endif
+        #else
+            float thickness = vThicknessParam.y;
+        #endif
+
+        #ifdef SS_TRANSLUCENCY
+            thickness = maxEps(thickness);
+            vec3 transmittance = transmittanceBRDF_Burley(vTintColor.rgb, vDiffusionDistance, thickness);
+            transmittance *= translucencyIntensity;
         #endif
     #endif
 
@@ -815,6 +826,9 @@ void main(void) {
     #endif
     #ifdef CLEARCOAT
         vec3 clearCoatBase = vec3(0., 0., 0.);
+    #endif
+    #ifdef SHEEN
+        vec3 sheenBase = vec3(0., 0., 0.);
     #endif
 
     #ifdef LIGHTMAP
@@ -834,13 +848,7 @@ void main(void) {
 
     // _________________________ Specular Environment Oclusion __________________________
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-        // Indexed on cos(theta) and roughness
-        vec2 brdfSamplerUV = vec2(NdotV, roughness);
-        
-        // We can find the scale and offset to apply to the specular value.
-        vec4 environmentBrdf = texture2D(environmentBrdfSampler, brdfSamplerUV);
-
-        vec3 specularEnvironmentReflectance = specularEnvironmentR0 * environmentBrdf.x + environmentBrdf.y;
+        vec3 specularEnvironmentReflectance = getReflectanceFromBRDFLookup(specularEnvironmentR0, environmentBrdf);
 
         #ifdef RADIANCEOCCLUSION
             #ifdef AMBIENTINGRAYSCALE
@@ -863,19 +871,32 @@ void main(void) {
         #endif
     #else
         // Jones implementation of a well balanced fast analytical solution.
-        vec3 specularEnvironmentReflectance = fresnelSchlickEnvironmentGGX(NdotV, specularEnvironmentR0, specularEnvironmentR90, sqrt(microSurface));
+        vec3 specularEnvironmentReflectance = getReflectanceFromAnalyticalBRDFLookup_Jones(NdotV, specularEnvironmentR0, specularEnvironmentR90, sqrt(microSurface));
+    #endif
+
+    // _____________________________ Sheen Environment Oclusion __________________________
+    #if defined(SHEEN) && defined(REFLECTION)
+        vec3 sheenEnvironmentReflectance = getSheenReflectanceFromBRDFLookup(sheenColor, environmentBrdf);
+
+        #ifdef RADIANCEOCCLUSION
+            sheenEnvironmentReflectance *= seo;
+        #endif
+
+        #ifdef HORIZONOCCLUSION
+            #ifdef BUMP
+                #ifdef REFLECTIONMAP_3D
+                    sheenEnvironmentReflectance *= eho;
+                #endif
+            #endif
+        #endif
     #endif
 
     // _________________________ Clear Coat Environment Oclusion __________________________
     #ifdef CLEARCOAT
         #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-            // Indexed on cos(theta) and roughness
-            vec2 brdfClearCoatSamplerUV = vec2(clearCoatNdotV, clearCoatRoughness);
-            
-            // We can find the scale and offset to apply to the specular value.
-            vec4 environmentClearCoatBrdf = texture2D(environmentBrdfSampler, brdfClearCoatSamplerUV);
-
-            vec3 clearCoatEnvironmentReflectance = vec3(CLEARCOATREFLECTANCE0 * environmentClearCoatBrdf.x + environmentClearCoatBrdf.y);
+            // BRDF Lookup
+            vec3 environmentClearCoatBrdf = getBRDFLookup(clearCoatNdotV, clearCoatRoughness, environmentBrdfSampler);
+            vec3 clearCoatEnvironmentReflectance = getReflectanceFromBRDFLookup(vec3(vClearCoatRefractionParams.x), environmentClearCoatBrdf);
 
             #ifdef RADIANCEOCCLUSION
                 float clearCoatSeo = environmentRadianceOcclusion(ambientMonochrome, clearCoatNdotVUnclamped);
@@ -892,69 +913,126 @@ void main(void) {
             #endif
         #else
             // Jones implementation of a well balanced fast analytical solution.
-            vec3 clearCoatEnvironmentReflectance = fresnelSchlickEnvironmentGGX(clearCoatNdotV, vec3(1.), vec3(1.), sqrt(1. - clearCoatRoughness));
+            vec3 clearCoatEnvironmentReflectance = getReflectanceFromAnalyticalBRDFLookup_Jones(clearCoatNdotV, vec3(1.), vec3(1.), sqrt(1. - clearCoatRoughness));
         #endif
 
         clearCoatEnvironmentReflectance *= clearCoatIntensity;
 
+        #ifdef CLEARCOAT_TINT
+            // NdotL = NdotV in IBL
+            absorption = computeClearCoatAbsorption(clearCoatNdotVRefract, clearCoatNdotVRefract, clearCoatColor, clearCoatThickness, clearCoatIntensity);
+
+            #ifdef REFLECTION
+                environmentIrradiance *= absorption;
+            #endif
+
+            #ifdef SHEEN
+                sheenEnvironmentReflectance *= absorption;
+            #endif
+
+            specularEnvironmentReflectance *= absorption;
+        #endif
+
         // clear coat energy conservation
-        float fresnelIBLClearCoat = fresnelSchlickGGX(clearCoatNdotV, CLEARCOATREFLECTANCE0, CLEARCOATREFLECTANCE90);
+        float fresnelIBLClearCoat = fresnelSchlickGGX(clearCoatNdotV, vClearCoatRefractionParams.x, CLEARCOATREFLECTANCE90);
         fresnelIBLClearCoat *= clearCoatIntensity;
 
         float conservationFactor = (1. - fresnelIBLClearCoat);
+
         #ifdef REFLECTION
             environmentIrradiance *= conservationFactor;
         #endif
+
+        #ifdef SHEEN
+            sheenEnvironmentReflectance *= (conservationFactor * conservationFactor);
+        #endif
+
         specularEnvironmentReflectance *= (conservationFactor * conservationFactor);
     #endif
 
-    // _____________________________ Refractance+Tint ________________________________
-    #ifdef REFRACTION
-        vec3 refractance = vec3(0.0, 0.0, 0.0);
-        vec3 transmission = vec3(1.0, 1.0, 1.0);
-        #ifdef LINKREFRACTIONTOTRANSPARENCY
-            // Transmission based on alpha.
-            transmission *= (1.0 - alpha);
+    // _____________________________ Transmittance + Tint ________________________________
+    #ifdef SS_REFRACTION
+        vec3 refractionTransmittance = vec3(refractionIntensity);
+        #ifdef SS_THICKNESSANDMASK_TEXTURE
+            vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
 
+            // // Simulate Flat Surface
+            // thickness /=  dot(refractionVector, -normalW);
+
+            // // Simulate Curved Surface
+            // float NdotRefract = dot(normalW, refractionVector);
+            // thickness *= -NdotRefract;
+
+            refractionTransmittance *= cocaLambert(volumeAlbedo, thickness);
+        #elif defined(SS_LINKREFRACTIONTOTRANSPARENCY)
             // Tint the material with albedo.
-            // TODO. PBR Tinting.
-            vec3 mixedAlbedo = surfaceAlbedo;
-            float maxChannel = max(max(mixedAlbedo.r, mixedAlbedo.g), mixedAlbedo.b);
-            vec3 tint = clamp(maxChannel * mixedAlbedo, 0.0, 1.0);
-
-            // Decrease Albedo Contribution
-            surfaceAlbedo *= alpha;
-
-            // Decrease irradiance Contribution
-            environmentIrradiance *= alpha;
+            float maxChannel = max(max(surfaceAlbedo.r, surfaceAlbedo.g), surfaceAlbedo.b);
+            vec3 volumeAlbedo = saturate(maxChannel * surfaceAlbedo);
 
             // Tint reflectance
-            environmentRefraction.rgb *= tint;
+            environmentRefraction.rgb *= volumeAlbedo;
+        #else
+            // Compute tint from min distance only.
+            vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
+            refractionTransmittance *= cocaLambert(volumeAlbedo, vThicknessParam.y);
+        #endif
 
-            // Put alpha back to 1;
-            alpha = 1.0;
+        // Decrease Albedo Contribution
+        surfaceAlbedo *= (1. - refractionIntensity);
+
+        #ifdef REFLECTION
+            // Decrease irradiance Contribution
+            environmentIrradiance *= (1. - refractionIntensity);
         #endif
 
         // Add Multiple internal bounces.
         vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
-        specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, alpha);
+        specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, refractionIntensity);
 
         // In theory T = 1 - R.
-        transmission *= 1.0 - specularEnvironmentReflectance;
+        refractionTransmittance *= 1.0 - specularEnvironmentReflectance;
+    #endif
 
-        // Should baked in diffuse.
-        refractance = transmission;
+    // _______________________________  IBL Translucency ________________________________
+    #if defined(REFLECTION) && defined(SS_TRANSLUCENCY)
+        #if defined(USESPHERICALINVERTEX)
+            vec3 irradianceVector = vec3(reflectionMatrix * vec4(normalW, 0)).xyz;
+            #ifdef REFLECTIONMAP_OPPOSITEZ
+                irradianceVector.z *= -1.0;
+            #endif
+        #endif
+
+        #if defined(USESPHERICALFROMREFLECTIONMAP)
+            vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
+        #elif defined(USEIRRADIANCEMAP)
+            vec3 refractionIrradiance = sampleReflection(irradianceSampler, -irradianceVector).rgb;
+            #ifdef RGBDREFLECTION
+                refractionIrradiance.rgb = fromRGBD(refractionIrradiance);
+            #endif
+
+            #ifdef GAMMAREFLECTION
+                refractionIrradiance.rgb = toLinearSpace(refractionIrradiance.rgb);
+            #endif
+        #else
+            vec3 refractionIrradiance = vec3(0.);
+        #endif
+
+        refractionIrradiance *= transmittance;
     #endif
 
     // ______________________________________________________________________________
     // _____________________________ Energy Conservation  ___________________________
-    // Apply Energy Conservation taking in account the environment level only if 
-    // the environment is present.
-    surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+    // Apply Energy Conservation.
+    #ifndef METALLICWORKFLOW
+        surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+    #endif
 
     // _____________________________ Irradiance ______________________________________
     #ifdef REFLECTION
         vec3 finalIrradiance = environmentIrradiance;
+        #if defined(SS_TRANSLUCENCY)
+            finalIrradiance += refractionIrradiance;
+        #endif
         finalIrradiance *= surfaceAlbedo.rgb;
     #endif
 
@@ -965,6 +1043,9 @@ void main(void) {
 
         // Full value needed for alpha.
         vec3 finalSpecularScaled = finalSpecular * vLightingIntensity.x * vLightingIntensity.w;
+        #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
+            finalSpecularScaled *= energyConservationFactor;
+        #endif
     #endif
 
     // _____________________________ Radiance ________________________________________
@@ -974,12 +1055,15 @@ void main(void) {
 
         // Full value needed for alpha. 
         vec3 finalRadianceScaled = finalRadiance * vLightingIntensity.z;
+        #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
+            finalRadianceScaled *= energyConservationFactor;
+        #endif
     #endif
 
     // _____________________________ Refraction ______________________________________
-    #ifdef REFRACTION
+    #ifdef SS_REFRACTION
         vec3 finalRefraction = environmentRefraction.rgb;
-        finalRefraction *= refractance;
+        finalRefraction *= refractionTransmittance;
     #endif
 
     // _____________________________ Clear Coat _______________________________________
@@ -989,6 +1073,9 @@ void main(void) {
 
         // Full value needed for alpha.
         vec3 finalClearCoatScaled = finalClearCoat * vLightingIntensity.x * vLightingIntensity.w;
+        #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
+            finalClearCoatScaled *= energyConservationFactor;
+        #endif
 
     // ____________________________ Clear Coat Radiance _______________________________
         #ifdef REFLECTION
@@ -999,8 +1086,32 @@ void main(void) {
             vec3 finalClearCoatRadianceScaled = finalClearCoatRadiance * vLightingIntensity.z;
         #endif
 
-        #ifdef REFRACTION
+        #ifdef SS_REFRACTION
             finalRefraction *= (conservationFactor * conservationFactor);
+            #ifdef CLEARCOAT_TINT
+                finalRefraction *= absorption;
+            #endif
+        #endif
+    #endif
+
+    // ________________________________ Sheen ________________________________________
+    #ifdef SHEEN
+        vec3 finalSheen = sheenBase * sheenColor;
+        finalSheen = max(finalSheen, 0.0);
+
+        vec3 finalSheenScaled = finalSheen * vLightingIntensity.x * vLightingIntensity.w;
+        // #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
+            // The sheen does not use the same BRDF so not energy conservation is possible
+            // Should be less a problem as it is usually not metallic
+            // finalSheenScaled *= energyConservationFactor;
+        // #endif
+        
+        #ifdef REFLECTION
+            vec3 finalSheenRadiance = environmentSheenRadiance.rgb;
+            finalSheenRadiance *= sheenEnvironmentReflectance;
+
+            // Full value needed for alpha. 
+            vec3 finalSheenRadianceScaled = finalSheenRadiance * vLightingIntensity.z;
         #endif
     #endif
 
@@ -1023,7 +1134,7 @@ void main(void) {
         #endif
 
         #if defined(RADIANCEOVERALPHA) || defined(SPECULAROVERALPHA)
-            alpha = clamp(alpha + luminanceOverAlpha * luminanceOverAlpha, 0., 1.);
+            alpha = saturate(alpha + luminanceOverAlpha * luminanceOverAlpha);
         #endif
     #endif
 #endif
@@ -1033,6 +1144,10 @@ void main(void) {
     vec3 finalDiffuse = diffuseBase;
     finalDiffuse *= surfaceAlbedo.rgb;
     finalDiffuse = max(finalDiffuse, 0.0);
+
+// _____________________________ Ambient ________________________________________
+    vec3 finalAmbient = vAmbientColor;
+    finalAmbient *= surfaceAlbedo.rgb;
 
 // _____________________________ Emissive ________________________________________
     vec3 finalEmissive = vEmissiveColor;
@@ -1053,7 +1168,7 @@ void main(void) {
 // _____________________________ Composition _____________________________________
     // Reflection already includes the environment intensity.
     vec4 finalColor = vec4(
-        vAmbientColor			* ambientOcclusionColor +
+        finalAmbient			* ambientOcclusionColor +
         finalDiffuse			* ambientOcclusionForDirectDiffuse * vLightingIntensity.x +
 #ifndef UNLIT
     #ifdef REFLECTION
@@ -1069,6 +1184,11 @@ void main(void) {
     //	finalClearCoat			* vLightingIntensity.x * vLightingIntensity.w +
         finalClearCoatScaled +
     #endif
+    #ifdef SHEEN
+    // Computed in the previous step to help with alpha luminance.
+    //	finalSheen  			* vLightingIntensity.x * vLightingIntensity.w +
+        finalSheenScaled +
+    #endif
     #ifdef REFLECTION
     // Comupted in the previous step to help with alpha luminance.
     //	finalRadiance			* vLightingIntensity.z +
@@ -1078,8 +1198,13 @@ void main(void) {
         //  finalClearCoatRadiance * vLightingIntensity.z 
             finalClearCoatRadianceScaled +
         #endif
+        #ifdef SHEEN
+        //  Comupted in the previous step to help with alpha luminance.
+        //  finalSheenRadiance * vLightingIntensity.z 
+            finalSheenRadianceScaled +
+        #endif
     #endif
-    #ifdef REFRACTION
+    #ifdef SS_REFRACTION
         finalRefraction			* vLightingIntensity.z +
     #endif
 #endif
@@ -1097,9 +1222,10 @@ void main(void) {
     #endif
 #endif
 
+#define CUSTOM_FRAGMENT_BEFORE_FOG
+
 // _____________________________ Finally ___________________________________________
     finalColor = max(finalColor, 0.0);
-
 #include<logDepthFragment>
 #include<fogFragment>(color, finalColor)
 
@@ -1112,70 +1238,15 @@ void main(void) {
     finalColor = applyImageProcessing(finalColor);
 #endif
 
+    finalColor.a *= visibility;
+
 #ifdef PREMULTIPLYALPHA
     // Convert to associative (premultiplied) format if needed.
     finalColor.rgb *= finalColor.a;
 #endif
 
+#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
     gl_FragColor = finalColor;
 
-    // Normal Display.
-    //gl_FragColor = vec4(normalW * 0.5 + 0.5, 1.0);
-
-    // Ambient reflection color.
-    // gl_FragColor = vec4(ambientReflectionColor, 1.0);
-
-    // Reflection color.
-    // gl_FragColor = vec4(reflectionColor, 1.0);
-
-    // Base color.
-    // gl_FragColor = vec4(surfaceAlbedo.rgb, 1.0);
-
-    // Diffuse Direct Lighting
-    // gl_FragColor = vec4(diffuseBase.rgb, 1.0);
-
-    // Specular Lighting
-    // gl_FragColor = vec4(specularBase.rgb, 1.0);
-
-    // Final Specular
-    // gl_FragColor = vec4(finalSpecular.rgb, 1.0);
-
-    // Irradiance
-    //gl_FragColor = vec4(specularEnvironmentReflectance.rgb, 1.0);
-    //gl_FragColor = vec4(environmentIrradiance.rgb / 3.0, 1.0);
-
-    // Specular color.
-    //gl_FragColor = vec4(surfaceReflectivityColor.rgb, 1.0);
-
-    // MicroSurface color.
-    // gl_FragColor = vec4(microSurface, microSurface, microSurface, 1.0);
-
-    // Roughness.
-    // gl_FragColor = vec4(roughness, roughness, roughness, 1.0);
-
-    // Specular Map
-    // gl_FragColor = vec4(reflectivityMapColor.rgb, 1.0);
-
-    // Refractance
-    // gl_FragColor = vec4(refractance.rgb, 1.0);
-
-    //// Emissive Color
-    //vec2 test = vEmissiveUV * 0.5 + 0.5;
-    //gl_FragColor = vec4(test.x, test.y, 1.0, 1.0);
-
-    // Specular Environment Occlusion
-    //gl_FragColor = vec4(seo, seo, seo, 1.0);
-
-    //// Horizon Environment Occlusion
-    //gl_FragColor = vec4(eho, eho, eho, 1.0);
-
-    //gl_FragColor = vec4(seo * eho, seo * eho, seo * eho, 1.0);
-
-    //gl_FragColor = vec4(normalize(-TBN[0]), 1.0);
-
-    //gl_FragColor = vec4(vPositionW * 0.5 + 0.5, 1.0);
-
-    //gl_FragColor = vec4(vMainUV1, 0., 1.0);
-
-    //gl_FragColor = vec4(specularEnvironmentR0, 1.0);
+#include<pbrDebug>
 }

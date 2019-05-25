@@ -7,7 +7,7 @@ import { Buffer, VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
-import * as IGLTF2 from "babylonjs-gltf2interface";
+import * as GLTF2 from "babylonjs-gltf2interface";
 
 /**
  * Loader interface with an index field.
@@ -22,7 +22,7 @@ export interface IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface IAccessor extends IGLTF2.IAccessor, IArrayItem {
+export interface IAccessor extends GLTF2.IAccessor, IArrayItem {
     /** @hidden */
     _data?: Promise<ArrayBufferView>;
 
@@ -33,20 +33,20 @@ export interface IAccessor extends IGLTF2.IAccessor, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface IAnimationChannel extends IGLTF2.IAnimationChannel, IArrayItem {
+export interface IAnimationChannel extends GLTF2.IAnimationChannel, IArrayItem {
 }
 
 /** @hidden */
 export interface _IAnimationSamplerData {
     input: Float32Array;
-    interpolation: IGLTF2.AnimationSamplerInterpolation;
+    interpolation: GLTF2.AnimationSamplerInterpolation;
     output: Float32Array;
 }
 
 /**
  * Loader interface with additional members.
  */
-export interface IAnimationSampler extends IGLTF2.IAnimationSampler, IArrayItem {
+export interface IAnimationSampler extends GLTF2.IAnimationSampler, IArrayItem {
     /** @hidden */
     _data?: Promise<_IAnimationSamplerData>;
 }
@@ -54,7 +54,7 @@ export interface IAnimationSampler extends IGLTF2.IAnimationSampler, IArrayItem 
 /**
  * Loader interface with additional members.
  */
-export interface IAnimation extends IGLTF2.IAnimation, IArrayItem {
+export interface IAnimation extends GLTF2.IAnimation, IArrayItem {
     channels: IAnimationChannel[];
     samplers: IAnimationSampler[];
 
@@ -65,7 +65,7 @@ export interface IAnimation extends IGLTF2.IAnimation, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface IBuffer extends IGLTF2.IBuffer, IArrayItem {
+export interface IBuffer extends GLTF2.IBuffer, IArrayItem {
     /** @hidden */
     _data?: Promise<ArrayBufferView>;
 }
@@ -73,7 +73,7 @@ export interface IBuffer extends IGLTF2.IBuffer, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface IBufferView extends IGLTF2.IBufferView, IArrayItem {
+export interface IBufferView extends GLTF2.IBufferView, IArrayItem {
     /** @hidden */
     _data?: Promise<ArrayBufferView>;
 
@@ -84,13 +84,13 @@ export interface IBufferView extends IGLTF2.IBufferView, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface ICamera extends IGLTF2.ICamera, IArrayItem {
+export interface ICamera extends GLTF2.ICamera, IArrayItem {
 }
 
 /**
  * Loader interface with additional members.
  */
-export interface IImage extends IGLTF2.IImage, IArrayItem {
+export interface IImage extends GLTF2.IImage, IArrayItem {
     /** @hidden */
     _data?: Promise<ArrayBufferView>;
 }
@@ -98,19 +98,19 @@ export interface IImage extends IGLTF2.IImage, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface IMaterialNormalTextureInfo extends IGLTF2.IMaterialNormalTextureInfo, ITextureInfo {
+export interface IMaterialNormalTextureInfo extends GLTF2.IMaterialNormalTextureInfo, ITextureInfo {
 }
 
 /**
  * Loader interface with additional members.
  */
-export interface IMaterialOcclusionTextureInfo extends IGLTF2.IMaterialOcclusionTextureInfo, ITextureInfo {
+export interface IMaterialOcclusionTextureInfo extends GLTF2.IMaterialOcclusionTextureInfo, ITextureInfo {
 }
 
 /**
  * Loader interface with additional members.
  */
-export interface IMaterialPbrMetallicRoughness extends IGLTF2.IMaterialPbrMetallicRoughness {
+export interface IMaterialPbrMetallicRoughness extends GLTF2.IMaterialPbrMetallicRoughness {
     baseColorTexture?: ITextureInfo;
     metallicRoughnessTexture?: ITextureInfo;
 }
@@ -118,7 +118,7 @@ export interface IMaterialPbrMetallicRoughness extends IGLTF2.IMaterialPbrMetall
 /**
  * Loader interface with additional members.
  */
-export interface IMaterial extends IGLTF2.IMaterial, IArrayItem {
+export interface IMaterial extends GLTF2.IMaterial, IArrayItem {
     pbrMetallicRoughness?: IMaterialPbrMetallicRoughness;
     normalTexture?: IMaterialNormalTextureInfo;
     occlusionTexture?: IMaterialOcclusionTextureInfo;
@@ -137,14 +137,14 @@ export interface IMaterial extends IGLTF2.IMaterial, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface IMesh extends IGLTF2.IMesh, IArrayItem {
+export interface IMesh extends GLTF2.IMesh, IArrayItem {
     primitives: IMeshPrimitive[];
 }
 
 /**
  * Loader interface with additional members.
  */
-export interface IMeshPrimitive extends IGLTF2.IMeshPrimitive, IArrayItem {
+export interface IMeshPrimitive extends GLTF2.IMeshPrimitive, IArrayItem {
     /** @hidden */
     _instanceData?: {
         babylonSourceMesh: Mesh;
@@ -155,7 +155,7 @@ export interface IMeshPrimitive extends IGLTF2.IMeshPrimitive, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface INode extends IGLTF2.INode, IArrayItem {
+export interface INode extends GLTF2.INode, IArrayItem {
     /**
      * The parent glTF node.
      */
@@ -185,7 +185,7 @@ export interface _ISamplerData {
 /**
  * Loader interface with additional members.
  */
-export interface ISampler extends IGLTF2.ISampler, IArrayItem {
+export interface ISampler extends GLTF2.ISampler, IArrayItem {
     /** @hidden */
     _data?: _ISamplerData;
 }
@@ -193,13 +193,13 @@ export interface ISampler extends IGLTF2.ISampler, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface IScene extends IGLTF2.IScene, IArrayItem {
+export interface IScene extends GLTF2.IScene, IArrayItem {
 }
 
 /**
  * Loader interface with additional members.
  */
-export interface ISkin extends IGLTF2.ISkin, IArrayItem {
+export interface ISkin extends GLTF2.ISkin, IArrayItem {
     /** @hidden */
     _data?: {
         babylonSkeleton: Skeleton;
@@ -210,19 +210,19 @@ export interface ISkin extends IGLTF2.ISkin, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface ITexture extends IGLTF2.ITexture, IArrayItem {
+export interface ITexture extends GLTF2.ITexture, IArrayItem {
 }
 
 /**
  * Loader interface with additional members.
  */
-export interface ITextureInfo extends IGLTF2.ITextureInfo {
+export interface ITextureInfo extends GLTF2.ITextureInfo {
 }
 
 /**
  * Loader interface with additional members.
  */
-export interface IGLTF extends IGLTF2.IGLTF {
+export interface IGLTF extends GLTF2.IGLTF {
     accessors?: IAccessor[];
     animations?: IAnimation[];
     buffers?: IBuffer[];
