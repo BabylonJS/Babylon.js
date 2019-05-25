@@ -671,7 +671,6 @@
         },
         {
             "title": "Instanced Bones",
-            "renderCount": 50,
             "playgroundId": "#2YLJ1L#0",
             "referenceImage": "instancedBones.png"
         },
