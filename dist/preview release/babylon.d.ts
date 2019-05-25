@@ -5313,6 +5313,7 @@ declare module BABYLON {
         };
         processor?: IShaderProcessor;
         version: string;
+        platformName: string;
     }
 }
 declare module BABYLON {
