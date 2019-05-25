@@ -26,7 +26,7 @@ class LoadedMeshInfo {
      */
     public rootNode: AbstractMesh;
     /**
-     * Node of the mesh corrisponding to the direction the ray should be cast from the controller
+     * Node of the mesh corresponding to the direction the ray should be cast from the controller
      */
     public pointingPoseNode: TransformNode;
     /**

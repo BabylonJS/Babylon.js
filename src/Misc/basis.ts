@@ -34,7 +34,7 @@ class BasisFileInfo {
  */
 export class BasisTools {
     private static _IgnoreSupportedFormats = false;
-    private static LoadScriptPromise:any = null;
+    private static LoadScriptPromise: any = null;
     // TODO should load from cdn location as fallback once it exists
     private static _FallbackURL = "../dist/preview%20release/basisTranscoder/basis_transcoder.js";
     private static _BASIS_FORMAT = {
@@ -58,25 +58,25 @@ export class BasisTools {
      */
     public static VerifyBasisModuleAsync() {
         // Complete if module has been populated
-        if(BasisTools.BasisModule){
+        if (BasisTools.BasisModule) {
             return Promise.resolve();
         }
 
         // Otherwise load script from fallback url
-        if(!this.LoadScriptPromise){
-            this.LoadScriptPromise = Tools.LoadScriptAsync(BasisTools._FallbackURL, "basis_transcoder").then((success)=>{
-                return new Promise((res, rej)=>{
+        if (!this.LoadScriptPromise) {
+            this.LoadScriptPromise = Tools.LoadScriptAsync(BasisTools._FallbackURL, "basis_transcoder").then((success) => {
+                return new Promise((res, rej) => {
                     if ((window as any).Module) {
                         (window as any).Module.onRuntimeInitialized = () => {
                             BasisTools.BasisModule = (window as any).Module;
                             BasisTools.BasisModule.initializeBasis();
                             res();
-                        }
+                        };
                     }else {
                         rej("Unable to load .basis texture, BasisTools.BasisModule should be populated");
                     }
-                })
-            })
+                });
+            });
         }
         return this.LoadScriptPromise;
     }
@@ -112,9 +112,9 @@ export class BasisTools {
     }
 
     /**
-     * Get the internal format to be passed to texImage2D corrisponding to the .basis format value
+     * Get the internal format to be passed to texImage2D corresponding to the .basis format value
      * @param basisFormat format chosen from GetSupportedTranscodeFormat
-     * @returns internal format corrisponding to the Basis format
+     * @returns internal format corresponding to the Basis format
      */
     public static GetInternalFormatFromBasisFormat(basisFormat: number) {
         // TODO more formats need to be added here and validated

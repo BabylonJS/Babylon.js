@@ -407,7 +407,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
     private _leftController: Nullable<WebVRController>;
     /**
-     * The controller corrisponding to the users left hand.
+     * The controller corresponding to the users left hand.
      */
     public get leftController(): Nullable<WebVRController> {
         if (!this._leftController) {
@@ -419,7 +419,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
     private _rightController: Nullable<WebVRController>;
     /**
-     * The controller corrisponding to the users right hand.
+     * The controller corresponding to the users right hand.
      */
     public get rightController(): Nullable<WebVRController> {
         if (!this._rightController) {
@@ -432,7 +432,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     /**
      * Casts a ray forward from the vrCamera's gaze.
      * @param length Length of the ray (default: 100)
-     * @returns the ray corrisponding to the gaze
+     * @returns the ray corresponding to the gaze
      */
     public getForwardRay(length = 100): Ray {
         if (this.leftCamera) {
