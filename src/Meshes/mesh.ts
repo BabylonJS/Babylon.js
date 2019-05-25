@@ -27,6 +27,8 @@ import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
+import { SceneComponentConstants } from "../sceneComponent";
+import { MeshLODLevel } from './meshLODLevel';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -35,24 +37,6 @@ declare type IPhysicsEnabledObject = import("../Physics/physicsImpostor").IPhysi
 declare type PhysicsImpostor = import("../Physics/physicsImpostor").PhysicsImpostor;
 
 declare var earcut: any;
-
-/**
- * Class used to represent a specific level of detail of a mesh
- * @see http://doc.babylonjs.com/how_to/how_to_use_lod
- */
-export class MeshLODLevel {
-    /**
-     * Creates a new LOD level
-     * @param distance defines the distance where this level should star being displayed
-     * @param mesh defines the mesh to use to render this level
-     */
-    constructor(
-        /** Defines the distance where this level should star being displayed */
-        public distance: number,
-        /** Defines the mesh to use to render this level */
-        public mesh: Nullable<Mesh>) {
-    }
-}
 
 /**
  * @hidden
@@ -76,12 +60,15 @@ export class _CreationDataStorage {
  **/
 class _InstanceDataStorage {
     public visibleInstances: any = {};
-    public renderIdForInstances = new Array<number>();
     public batchCache = new _InstancesBatch();
     public instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
     public instancesBuffer: Nullable<Buffer>;
     public instancesData: Float32Array;
     public overridenInstanceCount: number;
+    public isFrozen: boolean;
+    public previousBatch: _InstancesBatch;
+    public hardwareInstancedRendering: boolean;
+    public sideOrientation: number;
 }
 
 /**
@@ -91,6 +78,33 @@ export class _InstancesBatch {
     public mustReturn = false;
     public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();
     public renderSelf = new Array<boolean>();
+    public hardwareInstancedRendering = new Array<boolean>();
+}
+
+/**
+ * @hidden
+ **/
+class _InternalMeshDataInfo {
+    // Events
+    public _onBeforeRenderObservable: Nullable<Observable<Mesh>>;
+    public _onBeforeBindObservable: Nullable<Observable<Mesh>>;
+    public _onAfterRenderObservable: Nullable<Observable<Mesh>>;
+    public _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
+
+    public _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
+    public _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
+    public _sourceNormals: Float32Array;   // Will be used to save original normals when using software skinning
+
+    // Will be used to save a source mesh reference, If any
+    public _source: Nullable<Mesh> = null;
+    // Will be used to for fast cloned mesh lookup
+    public meshMap: Nullable<{ [id: string]: Mesh | undefined }> = null;
+
+    public _preActivateId: number = -1;
+    public _LODLevels = new Array<MeshLODLevel>();
+
+    // Morph
+    public _morphTargetManager: Nullable<MorphTargetManager> = null;
 }
 
 /**
@@ -132,6 +146,54 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Mesh cap setting : two caps, one at the beginning  and one at the end of the mesh
      */
     public static readonly CAP_ALL = 3;
+    /**
+     * Mesh pattern setting : no flip or rotate
+     */
+    public static readonly NO_FLIP = 0;
+    /**
+     * Mesh pattern setting : flip (reflect in y axis) alternate tiles on each row or column
+     */
+    public static readonly FLIP_TILE = 1;
+    /**
+     * Mesh pattern setting : rotate (180degs) alternate tiles on each row or column
+     */
+    public static readonly ROTATE_TILE = 2;
+    /**
+     * Mesh pattern setting : flip (reflect in y axis) all tiles on alternate rows
+     */
+    public static readonly FLIP_ROW = 3;
+    /**
+     * Mesh pattern setting : rotate (180degs) all tiles on alternate rows
+     */
+    public static readonly ROTATE_ROW = 4;
+    /**
+     * Mesh pattern setting : flip and rotate alternate tiles on each row or column
+     */
+    public static readonly FLIP_N_ROTATE_TILE = 5;
+    /**
+     * Mesh pattern setting : rotate pattern and rotate
+     */
+    public static readonly FLIP_N_ROTATE_ROW = 6;
+    /**
+     * Mesh tile positioning : part tiles same on left/right or top/bottom
+     */
+    public static readonly CENTER = 0;
+    /**
+     * Mesh tile positioning : part tiles on left
+     */
+    public static readonly LEFT = 1;
+    /**
+     * Mesh tile positioning : part tiles on right
+     */
+    public static readonly RIGHT = 2;
+    /**
+     * Mesh tile positioning : part tiles on top
+     */
+    public static readonly TOP = 3;
+    /**
+     * Mesh tile positioning : part tiles on bottom
+     */
+    public static readonly BOTTOM = 4;
 
     /**
      * Gets the default side orientation.
@@ -140,65 +202,54 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @hidden
      */
     public static _GetDefaultSideOrientation(orientation?: number): number {
-        if (orientation == Mesh.DOUBLESIDE) {
-            return Mesh.DOUBLESIDE;
-        }
-
-        if (orientation === undefined || orientation === null) {
-            return Mesh.FRONTSIDE;
-        }
-
-        return orientation;
+        return orientation || Mesh.FRONTSIDE; // works as Mesh.FRONTSIDE is 0
     }
 
-    // Events
-    private _onBeforeRenderObservable: Nullable<Observable<Mesh>>;
-    private _onBeforeBindObservable: Nullable<Observable<Mesh>>;
-    private _onAfterRenderObservable: Nullable<Observable<Mesh>>;
-    private _onBeforeDrawObservable: Nullable<Observable<Mesh>>;
+    // Internal data
+    private _internalMeshDataInfo = new _InternalMeshDataInfo();
 
     /**
      * An event triggered before rendering the mesh
      */
     public get onBeforeRenderObservable(): Observable<Mesh> {
-        if (!this._onBeforeRenderObservable) {
-            this._onBeforeRenderObservable = new Observable<Mesh>();
+        if (!this._internalMeshDataInfo._onBeforeRenderObservable) {
+            this._internalMeshDataInfo._onBeforeRenderObservable = new Observable<Mesh>();
         }
 
-        return this._onBeforeRenderObservable;
+        return this._internalMeshDataInfo._onBeforeRenderObservable;
     }
 
     /**
      * An event triggered before binding the mesh
      */
     public get onBeforeBindObservable(): Observable<Mesh> {
-        if (!this._onBeforeBindObservable) {
-            this._onBeforeBindObservable = new Observable<Mesh>();
+        if (!this._internalMeshDataInfo._onBeforeBindObservable) {
+            this._internalMeshDataInfo._onBeforeBindObservable = new Observable<Mesh>();
         }
 
-        return this._onBeforeBindObservable;
+        return this._internalMeshDataInfo._onBeforeBindObservable;
     }
 
     /**
     * An event triggered after rendering the mesh
     */
     public get onAfterRenderObservable(): Observable<Mesh> {
-        if (!this._onAfterRenderObservable) {
-            this._onAfterRenderObservable = new Observable<Mesh>();
+        if (!this._internalMeshDataInfo._onAfterRenderObservable) {
+            this._internalMeshDataInfo._onAfterRenderObservable = new Observable<Mesh>();
         }
 
-        return this._onAfterRenderObservable;
+        return this._internalMeshDataInfo._onAfterRenderObservable;
     }
 
     /**
     * An event triggered before drawing the mesh
     */
     public get onBeforeDrawObservable(): Observable<Mesh> {
-        if (!this._onBeforeDrawObservable) {
-            this._onBeforeDrawObservable = new Observable<Mesh>();
+        if (!this._internalMeshDataInfo._onBeforeDrawObservable) {
+            this._internalMeshDataInfo._onBeforeDrawObservable = new Observable<Mesh>();
         }
 
-        return this._onBeforeDrawObservable;
+        return this._internalMeshDataInfo._onBeforeDrawObservable;
     }
 
     private _onBeforeDrawObserver: Nullable<Observer<Mesh>>;
@@ -236,7 +287,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _binaryInfo: any;
-    private _LODLevels = new Array<MeshLODLevel>();
 
     /**
      * User defined function used to change how LOD level selection is done
@@ -244,31 +294,28 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
 
-    // Morph
-    private _morphTargetManager: Nullable<MorphTargetManager>;
-
     /**
      * Gets or sets the morph target manager
      * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
      */
     public get morphTargetManager(): Nullable<MorphTargetManager> {
-        return this._morphTargetManager;
+        return this._internalMeshDataInfo._morphTargetManager;
     }
 
     public set morphTargetManager(value: Nullable<MorphTargetManager>) {
-        if (this._morphTargetManager === value) {
+        if (this._internalMeshDataInfo._morphTargetManager === value) {
             return;
         }
-        this._morphTargetManager = value;
+        this._internalMeshDataInfo._morphTargetManager = value;
         this._syncGeometryWithMorphTargetManager();
     }
 
     // Private
     /** @hidden */
-    public _creationDataStorage: Nullable<_CreationDataStorage>;
+    public _creationDataStorage: Nullable<_CreationDataStorage> = null;
 
     /** @hidden */
-    public _geometry: Nullable<Geometry>;
+    public _geometry: Nullable<Geometry> = null;
     /** @hidden */
     public _delayInfo: Array<string>;
     /** @hidden */
@@ -277,11 +324,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @hidden */
     public _instanceDataStorage = new _InstanceDataStorage();
 
-    private _effectiveMaterial: Material;
+    private _effectiveMaterial: Nullable<Material> = null;
 
     /** @hidden */
-    public _shouldGenerateFlatShading: boolean;
-    private _preActivateId: number;
+    public _shouldGenerateFlatShading: boolean = false;
 
     // Use by builder only to know what orientation were the mesh build in.
     /** @hidden */
@@ -292,21 +338,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public overrideMaterialSideOrientation: Nullable<number> = null;
 
-    private _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
-
-    private _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
-    private _sourceNormals: Float32Array;   // Will be used to save original normals when using software skinning
-
-    // Will be used to save a source mesh reference, If any
-    private _source: Nullable<Mesh> = null;
-    // Will be used to for fast cloned mesh lookup
-    private meshMap: Nullable<{ [id: string]: Mesh | undefined }>;
-
     /**
      * Gets the source mesh (the one used to clone this one from)
      */
     public get source(): Nullable<Mesh> {
-        return this._source;
+        return this._internalMeshDataInfo._source;
     }
 
     /**
@@ -355,12 +391,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 ["_poseMatrix"]);
 
             // Source mesh
-            this._source = source;
+            this._internalMeshDataInfo._source = source;
             if (scene.useClonedMeshhMap) {
-                if (!source.meshMap) {
-                    source.meshMap = {};
+                if (!source._internalMeshDataInfo.meshMap) {
+                    source._internalMeshDataInfo.meshMap = {};
                 }
-                source.meshMap[this.uniqueId] = this;
+                source._internalMeshDataInfo.meshMap[this.uniqueId] = this;
             }
 
             // Construction Params
@@ -369,8 +405,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._creationDataStorage = source._creationDataStorage;
 
             // Animation ranges
-            if (this._source._ranges) {
-                const ranges = this._source._ranges;
+            if (source._ranges) {
+                const ranges = source._ranges;
                 for (var name in ranges) {
                     if (!ranges.hasOwnProperty(name)) {
                         continue;
@@ -420,11 +456,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             // Physics clone
-            var physicsEngine = this.getScene().getPhysicsEngine();
-            if (clonePhysicsImpostor && physicsEngine) {
-                var impostor = physicsEngine.getImpostorForPhysicsObject(source);
-                if (impostor) {
-                    this.physicsImpostor = impostor.clone(this);
+            if (scene.getPhysicsEngine) {
+                var physicsEngine = scene.getPhysicsEngine();
+                if (clonePhysicsImpostor && physicsEngine) {
+                    var impostor = physicsEngine.getImpostorForPhysicsObject(source);
+                    if (impostor) {
+                        this.physicsImpostor = impostor.clone(this);
+                    }
                 }
             }
 
@@ -445,6 +483,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.parent = parent;
         }
 
+        this._instanceDataStorage.hardwareInstancedRendering = this.getEngine().getCaps().instancedArrays;
     }
 
     // Methods
@@ -458,7 +497,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public readonly _isMesh = true;
+    public get _isMesh() {
+        return true;
+    }
 
     /**
      * Returns a description of this mesh
@@ -505,7 +546,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Gets a boolean indicating if this mesh has LOD
      */
     public get hasLODLevels(): boolean {
-        return this._LODLevels.length > 0;
+        return this._internalMeshDataInfo._LODLevels.length > 0;
     }
 
     /**
@@ -513,11 +554,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns an array of MeshLODLevel
      */
     public getLODLevels(): MeshLODLevel[] {
-        return this._LODLevels;
+        return this._internalMeshDataInfo._LODLevels;
     }
 
     private _sortLODLevels(): void {
-        this._LODLevels.sort((a, b) => {
+        this._internalMeshDataInfo._LODLevels.sort((a, b) => {
             if (a.distance < b.distance) {
                 return 1;
             }
@@ -543,7 +584,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var level = new MeshLODLevel(distance, mesh);
-        this._LODLevels.push(level);
+        this._internalMeshDataInfo._LODLevels.push(level);
 
         if (mesh) {
             mesh._masterMesh = this;
@@ -561,8 +602,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a Mesh or `null`
      */
     public getLODLevelAtDistance(distance: number): Nullable<Mesh> {
-        for (var index = 0; index < this._LODLevels.length; index++) {
-            var level = this._LODLevels[index];
+        let internalDataInfo = this._internalMeshDataInfo;
+        for (var index = 0; index < internalDataInfo._LODLevels.length; index++) {
+            var level = internalDataInfo._LODLevels[index];
 
             if (level.distance === distance) {
                 return level.mesh;
@@ -578,10 +620,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @return This mesh (for chaining)
      */
     public removeLODLevel(mesh: Mesh): Mesh {
-
-        for (var index = 0; index < this._LODLevels.length; index++) {
-            if (this._LODLevels[index].mesh === mesh) {
-                this._LODLevels.splice(index, 1);
+        let internalDataInfo = this._internalMeshDataInfo;
+        for (var index = 0; index < internalDataInfo._LODLevels.length; index++) {
+            if (internalDataInfo._LODLevels[index].mesh === mesh) {
+                internalDataInfo._LODLevels.splice(index, 1);
                 if (mesh) {
                     mesh._masterMesh = null;
                 }
@@ -600,7 +642,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @return This mesh (for chaining)
      */
     public getLOD(camera: Camera, boundingSphere?: BoundingSphere): Nullable<AbstractMesh> {
-        if (!this._LODLevels || this._LODLevels.length === 0) {
+        let internalDataInfo = this._internalMeshDataInfo;
+        if (!internalDataInfo._LODLevels || internalDataInfo._LODLevels.length === 0) {
             return this;
         }
 
@@ -616,15 +659,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
 
-        if (this._LODLevels[this._LODLevels.length - 1].distance > distanceToCamera) {
+        if (internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distance > distanceToCamera) {
             if (this.onLODLevelSelection) {
-                this.onLODLevelSelection(distanceToCamera, this, this._LODLevels[this._LODLevels.length - 1].mesh);
+                this.onLODLevelSelection(distanceToCamera, this, internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].mesh);
             }
             return this;
         }
 
-        for (var index = 0; index < this._LODLevels.length; index++) {
-            var level = this._LODLevels[index];
+        for (var index = 0; index < internalDataInfo._LODLevels.length; index++) {
+            var level = internalDataInfo._LODLevels[index];
 
             if (level.distance < distanceToCamera) {
                 if (level.mesh) {
@@ -694,6 +737,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Returns the mesh VertexBuffer object from the requested `kind`
      * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
      * - VertexBuffer.UVKind
      * - VertexBuffer.UV2Kind
      * - VertexBuffer.UV3Kind
@@ -718,6 +762,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Tests if a specific vertex buffer is associated with this mesh
      * @param kind defines which buffer to check (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
      * - VertexBuffer.UVKind
      * - VertexBuffer.UV2Kind
      * - VertexBuffer.UV3Kind
@@ -772,6 +817,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Returns a string which contains the list of existing `kinds` of Vertex Data associated with this mesh.
      * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
      * - VertexBuffer.UVKind
      * - VertexBuffer.UV2Kind
      * - VertexBuffer.UV3Kind
@@ -882,7 +928,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Shadows
-        for (var light of this._lightSources) {
+        for (var light of this.lightSources) {
             let generator = light.getShadowGenerator();
 
             if (generator) {
@@ -895,7 +941,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // LOD
-        for (var lod of this._LODLevels) {
+        for (var lod of this._internalMeshDataInfo._LODLevels) {
             if (lod.mesh && !lod.mesh.isReady(hardwareInstancedRendering)) {
                 return false;
             }
@@ -908,7 +954,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Gets a boolean indicating if the normals aren't to be recomputed on next mesh `positions` array update. This property is pertinent only for updatable parametric shapes.
      */
     public get areNormalsFrozen(): boolean {
-        return this._areNormalsFrozen;
+        return this._internalMeshDataInfo._areNormalsFrozen;
     }
 
     /**
@@ -916,7 +962,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public freezeNormals(): Mesh {
-        this._areNormalsFrozen = true;
+        this._internalMeshDataInfo._areNormalsFrozen = true;
         return this;
     }
 
@@ -925,7 +971,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public unfreezeNormals(): Mesh {
-        this._areNormalsFrozen = false;
+        this._internalMeshDataInfo._areNormalsFrozen = false;
         return this;
     }
 
@@ -939,12 +985,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Methods
     /** @hidden */
     public _preActivate(): Mesh {
+        let internalDataInfo = this._internalMeshDataInfo;
         var sceneRenderId = this.getScene().getRenderId();
-        if (this._preActivateId === sceneRenderId) {
+        if (internalDataInfo._preActivateId === sceneRenderId) {
             return this;
         }
 
-        this._preActivateId = sceneRenderId;
+        internalDataInfo._preActivateId = sceneRenderId;
         this._instanceDataStorage.visibleInstances = null;
         return this;
     }
@@ -1246,14 +1293,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Update the current index buffer
      * @param indices defines the source data
      * @param offset defines the offset in the index buffer where to store the new data (can be null)
+     * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
      * @returns the current mesh
      */
-    public updateIndices(indices: IndicesArray, offset?: number): Mesh {
+    public updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): Mesh {
         if (!this._geometry) {
             return this;
         }
 
-        this._geometry.updateIndices(indices, offset);
+        this._geometry.updateIndices(indices, offset, gpuMemoryOnly);
         return this;
     }
 
@@ -1292,7 +1340,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     break;
                 default:
                 case Material.TriangleFillMode:
-                    indexToBind = this._unIndexed ? null : this._geometry.getIndexBuffer();
+                    indexToBind = this._geometry.getIndexBuffer();
                     break;
             }
         }
@@ -1303,13 +1351,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number, alternate = false): Mesh {
+    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
             return this;
         }
 
-        if (this._onBeforeDrawObservable) {
-            this._onBeforeDrawObservable.notifyObservers(this);
+        if (this._internalMeshDataInfo._onBeforeDrawObservable) {
+            this._internalMeshDataInfo._onBeforeDrawObservable.notifyObservers(this);
         }
 
         let scene = this.getScene();
@@ -1325,23 +1373,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
         }
 
-        if (scene._isAlternateRenderingEnabled && !alternate) {
-            let effect = subMesh.effect || this._effectiveMaterial.getEffect();
-            if (!effect || !scene.activeCamera) {
-                return this;
-            }
-            scene._switchToAlternateCameraConfiguration(true);
-            this._effectiveMaterial.bindView(effect);
-            this._effectiveMaterial.bindViewProjection(effect);
-
-            engine.setViewport(scene.activeCamera._alternateCamera.viewport);
-            this._draw(subMesh, fillMode, instancesCount, true);
-            engine.setViewport(scene.activeCamera.viewport);
-
-            scene._switchToAlternateCameraConfiguration(false);
-            this._effectiveMaterial.bindView(effect);
-            this._effectiveMaterial.bindViewProjection(effect);
-        }
         return this;
     }
 
@@ -1387,40 +1418,29 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
+        if (this._instanceDataStorage.isFrozen && this._instanceDataStorage.previousBatch) {
+            return this._instanceDataStorage.previousBatch;
+        }
         var scene = this.getScene();
+        const isInIntermediateRendering = scene._isInIntermediateRendering();
+        const onlyForInstances = isInIntermediateRendering ? this._internalAbstractMeshDataInfo._onlyForInstancesIntermediate : this._internalAbstractMeshDataInfo._onlyForInstances;
         let batchCache = this._instanceDataStorage.batchCache;
         batchCache.mustReturn = false;
-        batchCache.renderSelf[subMeshId] = this.isEnabled() && this.isVisible;
+        batchCache.renderSelf[subMeshId] = !onlyForInstances && this.isEnabled() && this.isVisible;
         batchCache.visibleInstances[subMeshId] = null;
 
         if (this._instanceDataStorage.visibleInstances) {
             let visibleInstances = this._instanceDataStorage.visibleInstances;
             var currentRenderId = scene.getRenderId();
-            var defaultRenderId = (scene._isInIntermediateRendering() ? visibleInstances.intermediateDefaultRenderId : visibleInstances.defaultRenderId);
+            var defaultRenderId = (isInIntermediateRendering ? visibleInstances.intermediateDefaultRenderId : visibleInstances.defaultRenderId);
             batchCache.visibleInstances[subMeshId] = visibleInstances[currentRenderId];
-            var selfRenderId = this._renderId;
 
             if (!batchCache.visibleInstances[subMeshId] && defaultRenderId) {
                 batchCache.visibleInstances[subMeshId] = visibleInstances[defaultRenderId];
-                currentRenderId = Math.max(defaultRenderId, currentRenderId);
-                selfRenderId = Math.max(visibleInstances.selfDefaultRenderId, currentRenderId);
             }
-
-            let visibleInstancesForSubMesh = batchCache.visibleInstances[subMeshId];
-            if (visibleInstancesForSubMesh && visibleInstancesForSubMesh.length) {
-                if (this._instanceDataStorage.renderIdForInstances[subMeshId] === currentRenderId) {
-                    batchCache.mustReturn = true;
-                    return batchCache;
-                }
-
-                if (currentRenderId !== selfRenderId) {
-                    batchCache.renderSelf[subMeshId] = false;
-                }
-
-            }
-            this._instanceDataStorage.renderIdForInstances[subMeshId] = currentRenderId;
         }
-
+        batchCache.hardwareInstancedRendering[subMeshId] = this._instanceDataStorage.hardwareInstancedRendering && (batchCache.visibleInstances[subMeshId] !== null) && (batchCache.visibleInstances[subMeshId] !== undefined);
+        this._instanceDataStorage.previousBatch = batchCache;
         return batchCache;
     }
 
@@ -1431,12 +1451,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        var matricesCount = visibleInstances.length + 1;
-        var bufferSize = matricesCount * 16 * 4;
-
         let instanceStorage = this._instanceDataStorage;
         var currentInstancesBufferSize = instanceStorage.instancesBufferSize;
         var instancesBuffer = instanceStorage.instancesBuffer;
+        var matricesCount = visibleInstances.length + 1;
+        var bufferSize = matricesCount * 16 * 4;
 
         while (instanceStorage.instancesBufferSize < bufferSize) {
             instanceStorage.instancesBufferSize *= 2;
@@ -1449,7 +1468,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var offset = 0;
         var instancesCount = 0;
 
-        var world = this.getWorldMatrix();
+        var world = this._effectiveMesh.getWorldMatrix();
         if (batch.renderSelf[subMesh._id]) {
             world.copyToArray(instanceStorage.instancesData, offset);
             offset += 16;
@@ -1478,7 +1497,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
         } else {
-            instancesBuffer.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
+            instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
         }
 
         this._bind(subMesh, effect, fillMode);
@@ -1500,7 +1519,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
                 if (onBeforeDraw) {
-                    onBeforeDraw(false, this.getWorldMatrix(), effectiveMaterial);
+                    onBeforeDraw(false, this._effectiveMesh.getWorldMatrix(), effectiveMaterial);
                 }
 
                 this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
@@ -1526,6 +1545,26 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this;
     }
 
+    /** @hidden */
+    public _freeze() {
+        if (!this.subMeshes) {
+            return;
+        }
+
+        // Prepare batches
+        for (var index = 0; index < this.subMeshes.length; index++) {
+            this._getInstancesRenderList(index);
+        }
+
+        this._effectiveMaterial = null;
+        this._instanceDataStorage.isFrozen = true;
+    }
+
+    /** @hidden */
+    public _unFreeze() {
+        this._instanceDataStorage.isFrozen = false;
+    }
+
     /**
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
@@ -1533,11 +1572,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
+        var scene = this.getScene();
+
+        if (scene._isInIntermediateRendering()) {
+            this._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+        } else {
+            this._internalAbstractMeshDataInfo._isActive = false;
+        }
+
         if (this._checkOcclusionQuery()) {
             return this;
         }
 
-        var scene = this.getScene();
         // Managing instances
         var batch = this._getInstancesRenderList(subMesh._id);
 
@@ -1550,28 +1596,32 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        if (this._onBeforeRenderObservable) {
-            this._onBeforeRenderObservable.notifyObservers(this);
+        if (this._internalMeshDataInfo._onBeforeRenderObservable) {
+            this._internalMeshDataInfo._onBeforeRenderObservable.notifyObservers(this);
         }
 
         var engine = scene.getEngine();
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
+        let instanceDataStorage = this._instanceDataStorage;
 
-        // Material
         let material = subMesh.getMaterial();
 
         if (!material) {
             return this;
         }
 
-        this._effectiveMaterial = material;
+        // Material
+        if (!instanceDataStorage.isFrozen || !this._effectiveMaterial || this._effectiveMaterial !== material) {
 
-        if (this._effectiveMaterial._storeEffectOnSubMeshes) {
-            if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+            this._effectiveMaterial = material;
+
+            if (this._effectiveMaterial._storeEffectOnSubMeshes) {
+                if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                    return this;
+                }
+            } else if (!this._effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
                 return this;
             }
-        } else if (!this._effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
-            return this;
         }
 
         // Alpha mode
@@ -1594,14 +1644,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const effectiveMesh = (this.skeleton && this.skeleton.overrideMesh) || this;
+        const effectiveMesh = this._effectiveMesh;
 
-        var sideOrientation = this.overrideMaterialSideOrientation;
-        if (sideOrientation == null) {
-            sideOrientation = this._effectiveMaterial.sideOrientation;
-            if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
-                sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+        var sideOrientation: Nullable<number>;
+
+        if (!instanceDataStorage.isFrozen) {
+            sideOrientation = this.overrideMaterialSideOrientation;
+            if (sideOrientation == null) {
+                sideOrientation = this._effectiveMaterial.sideOrientation;
+                if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
+                    sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+                }
             }
+            instanceDataStorage.sideOrientation = sideOrientation!;
+        } else {
+            sideOrientation = instanceDataStorage.sideOrientation;
         }
 
         var reverse = this._effectiveMaterial._preBind(effect, sideOrientation);
@@ -1613,8 +1670,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Bind
         var fillMode = scene.forcePointsCloud ? Material.PointFillMode : (scene.forceWireframe ? Material.WireFrameFillMode : this._effectiveMaterial.fillMode);
 
-        if (this._onBeforeBindObservable) {
-            this._onBeforeBindObservable.notifyObservers(this);
+        if (this._internalMeshDataInfo._onBeforeBindObservable) {
+            this._internalMeshDataInfo._onBeforeBindObservable.notifyObservers(this);
         }
 
         if (!hardwareInstancedRendering) { // Binding will be done later because we need to add more info to the VB
@@ -1645,8 +1702,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             step.action(this, subMesh, batch);
         }
 
-        if (this._onAfterRenderObservable) {
-            this._onAfterRenderObservable.notifyObservers(this);
+        if (this._internalMeshDataInfo._onAfterRenderObservable) {
+            this._internalMeshDataInfo._onAfterRenderObservable.notifyObservers(this);
         }
         return this;
     }
@@ -1846,6 +1903,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             this.instances.forEach((instance) => {
+                instance.refreshBoundingInfo();
                 instance._syncSubMeshes();
             });
 
@@ -2040,49 +2098,51 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._geometry.releaseForMesh(this, true);
         }
 
-        if (this._onBeforeDrawObservable) {
-            this._onBeforeDrawObservable.clear();
+        let internalDataInfo = this._internalMeshDataInfo;
+
+        if (internalDataInfo._onBeforeDrawObservable) {
+            internalDataInfo._onBeforeDrawObservable.clear();
         }
 
-        if (this._onBeforeBindObservable) {
-            this._onBeforeBindObservable.clear();
+        if (internalDataInfo._onBeforeBindObservable) {
+            internalDataInfo._onBeforeBindObservable.clear();
         }
 
-        if (this._onBeforeRenderObservable) {
-            this._onBeforeRenderObservable.clear();
+        if (internalDataInfo._onBeforeRenderObservable) {
+            internalDataInfo._onBeforeRenderObservable.clear();
         }
 
-        if (this._onAfterRenderObservable) {
-            this._onAfterRenderObservable.clear();
+        if (internalDataInfo._onAfterRenderObservable) {
+            internalDataInfo._onAfterRenderObservable.clear();
         }
 
         // Sources
         if (this._scene.useClonedMeshhMap) {
-            if (this.meshMap) {
-                for (const uniqueId in this.meshMap) {
-                    const mesh = this.meshMap[uniqueId];
+            if (internalDataInfo.meshMap) {
+                for (const uniqueId in internalDataInfo.meshMap) {
+                    const mesh = internalDataInfo.meshMap[uniqueId];
                     if (mesh) {
-                        mesh._source = null;
-                        this.meshMap[uniqueId] = undefined;
+                        mesh._internalMeshDataInfo._source = null;
+                        internalDataInfo.meshMap[uniqueId] = undefined;
                     }
                 }
             }
 
-            if (this._source && this._source.meshMap) {
-                this._source.meshMap[this.uniqueId] = undefined;
+            if (internalDataInfo._source && internalDataInfo._source._internalMeshDataInfo.meshMap) {
+                internalDataInfo._source._internalMeshDataInfo.meshMap[this.uniqueId] = undefined;
             }
         }
         else {
             var meshes = this.getScene().meshes;
             for (const abstractMesh of meshes) {
                 let mesh = abstractMesh as Mesh;
-                if (mesh._source && mesh._source === this) {
-                    mesh._source = null;
+                if (mesh._internalMeshDataInfo && mesh._internalMeshDataInfo._source && mesh._internalMeshDataInfo._source === this) {
+                    mesh._internalMeshDataInfo._source = null;
                 }
             }
         }
 
-        this._source = null;
+        internalDataInfo._source = null;
 
         // Instances
         if (this._instanceDataStorage.instancesBuffer) {
@@ -2399,8 +2459,214 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
 
-        vertex_data.applyToMesh(this);
+        vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
         return this;
+    }
+
+    /**
+     * Increase the number of facets and hence vertices in a mesh
+     * Vertex normals are interpolated from existing vertex normals
+     * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
+     * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
+     */
+    public increaseVertices(numberPerEdge: number): void {
+        var vertex_data = VertexData.ExtractFromMesh(this);
+        var uvs = vertex_data.uvs;
+        var currentIndices = vertex_data.indices;
+        var positions = vertex_data.positions;
+        var normals = vertex_data.normals;
+
+        if (currentIndices === null || positions === null || normals === null || uvs === null) {
+            Logger.Warn("VertexData contains null entries");
+        }
+        else {
+            var segments: number = numberPerEdge + 1; //segments per current facet edge, become sides of new facets
+            var tempIndices: Array<Array<number>> = new Array();
+            for (var i = 0; i < segments + 1; i++) {
+                tempIndices[i] = new Array();
+            }
+            var a: number;  //vertex index of one end of a side
+            var b: number; //vertex index of other end of the side
+            var deltaPosition: Vector3 = new Vector3(0, 0, 0);
+            var deltaNormal: Vector3 = new Vector3(0, 0, 0);
+            var deltaUV: Vector2 = new Vector2(0, 0);
+            var indices: number[] = new Array();
+            var vertexIndex: number[] = new Array();
+            var side: Array<Array<Array<number>>> = new Array();
+            var len: number;
+            var positionPtr: number = positions.length;
+            var uvPtr: number = uvs.length;
+
+            for (var i = 0; i < currentIndices.length; i += 3) {
+                vertexIndex[0] = currentIndices[i];
+                vertexIndex[1] = currentIndices[i + 1];
+                vertexIndex[2] = currentIndices[i + 2];
+                for (var j = 0; j < 3; j++) {
+                    a = vertexIndex[j];
+                    b = vertexIndex[(j + 1) % 3];
+                    if (side[a] === undefined && side[b] === undefined) {
+                        side[a] = new Array();
+                        side[b] = new Array();
+                    }
+                    else {
+                        if (side[a] === undefined) {
+                            side[a] = new Array();
+                        }
+                        if (side[b] === undefined) {
+                            side[b] = new Array();
+                        }
+                    }
+                    if (side[a][b] === undefined && side[b][a] === undefined) {
+                        side[a][b] = [];
+                        deltaPosition.x = (positions[3 * b] - positions[3 * a]) / segments;
+                        deltaPosition.y = (positions[3 * b + 1] - positions[3 * a + 1]) / segments;
+                        deltaPosition.z = (positions[3 * b + 2] - positions[3 * a + 2]) / segments;
+                        deltaNormal.x = (normals[3 * b] - normals[3 * a]) / segments;
+                        deltaNormal.y = (normals[3 * b + 1] - normals[3 * a + 1]) / segments;
+                        deltaNormal.z = (normals[3 * b + 2] - normals[3 * a + 2]) / segments;
+                        deltaUV.x = (uvs[2 * b] - uvs[2 * a]) / segments;
+                        deltaUV.y = (uvs[2 * b + 1] - uvs[2 * a + 1]) / segments;
+                        side[a][b].push(a);
+                        for (var k = 1; k < segments; k++) {
+                            side[a][b].push(positions.length / 3);
+                            positions[positionPtr] = positions[3 * a] + k * deltaPosition.x;
+                            normals[positionPtr++] = normals[3 * a] + k * deltaNormal.x;
+                            positions[positionPtr] = positions[3 * a + 1] + k * deltaPosition.y;
+                            normals[positionPtr++] = normals[3 * a + 1] + k * deltaNormal.y;
+                            positions[positionPtr] = positions[3 * a + 2] + k * deltaPosition.z;
+                            normals[positionPtr++] = normals[3 * a + 2] + k * deltaNormal.z;
+                            uvs[uvPtr++] = uvs[2 * a] + k * deltaUV.x;
+                            uvs[uvPtr++] = uvs[2 * a + 1] + k * deltaUV.y;
+                        }
+                        side[a][b].push(b);
+                        side[b][a] = new Array();
+                        len = side[a][b].length;
+                        for (var idx = 0; idx < len; idx++) {
+                            side[b][a][idx] = side[a][b][len - 1 - idx];
+                        }
+                    }
+                }
+                //Calculate positions, normals and uvs of new internal vertices
+                tempIndices[0][0] = currentIndices[i];
+                tempIndices[1][0] = side[currentIndices[i]][currentIndices[i + 1]][1];
+                tempIndices[1][1] = side[currentIndices[i]][currentIndices[i + 2]][1];
+                for (var k = 2; k < segments; k++) {
+                    tempIndices[k][0] = side[currentIndices[i]][currentIndices[i + 1]][k];
+                    tempIndices[k][k] = side[currentIndices[i]][currentIndices[i + 2]][k];
+                    deltaPosition.x = (positions[3 * tempIndices[k][k]] - positions[3 * tempIndices[k][0]]) / k;
+                    deltaPosition.y = (positions[3 * tempIndices[k][k] + 1] - positions[3 * tempIndices[k][0] + 1]) / k;
+                    deltaPosition.z = (positions[3 * tempIndices[k][k] + 2] - positions[3 * tempIndices[k][0] + 2]) / k;
+                    deltaNormal.x = (normals[3 * tempIndices[k][k]] - normals[3 * tempIndices[k][0]]) / k;
+                    deltaNormal.y = (normals[3 * tempIndices[k][k] + 1] - normals[3 * tempIndices[k][0] + 1]) / k;
+                    deltaNormal.z = (normals[3 * tempIndices[k][k] + 2] - normals[3 * tempIndices[k][0] + 2]) / k;
+                    deltaUV.x = (uvs[2 * tempIndices[k][k]] - uvs[2 * tempIndices[k][0]]) / k;
+                    deltaUV.y = (uvs[2 * tempIndices[k][k] + 1] - uvs[2 * tempIndices[k][0] + 1]) / k;
+                    for (var j = 1; j < k; j++) {
+                        tempIndices[k][j] = positions.length / 3;
+                        positions[positionPtr] = positions[3 * tempIndices[k][0]] + j * deltaPosition.x;
+                        normals[positionPtr++] = normals[3 * tempIndices[k][0]] + j * deltaNormal.x;
+                        positions[positionPtr] = positions[3 * tempIndices[k][0] + 1] + j * deltaPosition.y;
+                        normals[positionPtr++] = normals[3 * tempIndices[k][0] + 1] + j * deltaNormal.y;
+                        positions[positionPtr] = positions[3 * tempIndices[k][0] + 2] + j * deltaPosition.z;
+                        normals[positionPtr++] = normals[3 * tempIndices[k][0] + 2] + j * deltaNormal.z;
+                        uvs[uvPtr++] = uvs[2 * tempIndices[k][0]] + j * deltaUV.x;
+                        uvs[uvPtr++] = uvs[2 * tempIndices[k][0] + 1] + j * deltaUV.y;
+                    }
+                }
+                tempIndices[segments] = side[currentIndices[i + 1]][currentIndices[i + 2]];
+
+                // reform indices
+                indices.push(tempIndices[0][0], tempIndices[1][0], tempIndices[1][1]);
+                for (var k = 1; k < segments; k++) {
+                    for (var j = 0; j < k; j++) {
+                        indices.push(tempIndices[k][j], tempIndices[k + 1][j], tempIndices[k + 1][j + 1]);
+                        indices.push(tempIndices[k][j], tempIndices[k + 1][j + 1], tempIndices[k][j + 1]);
+                    }
+                    indices.push(tempIndices[k][j], tempIndices[k + 1][j], tempIndices[k + 1][j + 1]);
+                }
+            }
+
+            vertex_data.indices = indices;
+            vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
+        }
+    }
+
+    /**
+     * Force adjacent facets to share vertices and remove any facets that have all vertices in a line
+     * This will undo any application of covertToFlatShadedMesh
+     * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
+     */
+    public forceSharedVertices(): void {
+        var vertex_data = VertexData.ExtractFromMesh(this);
+        var currentUVs = vertex_data.uvs;
+        var currentIndices = vertex_data.indices;
+        var currentPositions = vertex_data.positions;
+        var currentNormals = vertex_data.normals;
+
+        if (currentIndices === null || currentPositions === null || currentNormals === null || currentUVs === null) {
+            Logger.Warn("VertexData contains null entries");
+        }
+        else {
+            var positions: Array<number> = new Array();
+            var indices: Array<number> = new Array();
+            var uvs: Array<number> = new Array();
+            var pstring: Array<string> = new Array(); //lists facet vertex positions (a,b,c) as string "a|b|c"
+
+            var indexPtr: number = 0; // pointer to next available index value
+            var uniquePositions: Array<string> = new Array(); // unique vertex positions
+            var ptr: number; // pointer to element in uniquePositions
+            var facet: Array<number>;
+
+            for (var i = 0; i < currentIndices.length; i += 3) {
+                facet = [currentIndices[i], currentIndices[i + 1], currentIndices[i + 2]]; //facet vertex indices
+                pstring = new Array();
+                for (var j = 0; j < 3; j++) {
+                    pstring[j] = "";
+                    for (var k = 0; k < 3; k++) {
+                        //small values make 0
+                        if (Math.abs(currentPositions[3 * facet[j] + k]) < 0.00000001) {
+                            currentPositions[3 * facet[j] + k] = 0;
+                        }
+                        pstring[j] += currentPositions[3 * facet[j] + k] + "|";
+                    }
+                    pstring[j] = pstring[j].slice(0, -1);
+                }
+                //check facet vertices to see that none are repeated
+                // do not process any facet that has a repeated vertex, ie is a line
+                if (!(pstring[0] == pstring[1] || pstring[0] == pstring[2] || pstring[1] == pstring[2])) {
+                    //for each facet position check if already listed in uniquePositions
+                    // if not listed add to uniquePositions and set index pointer
+                    // if listed use its index in uniquePositions and new index pointer
+                    for (var j = 0; j < 3; j++) {
+                        ptr = uniquePositions.indexOf(pstring[j]);
+                        if (ptr < 0) {
+                            uniquePositions.push(pstring[j]);
+                            ptr = indexPtr++;
+                            //not listed so add individual x, y, z coordinates to positions
+                            for (var k = 0; k < 3; k++) {
+                                positions.push(currentPositions[3 * facet[j] + k]);
+                            }
+                            for (var k = 0; k < 2; k++) {
+                                uvs.push(currentUVs[2 * facet[j] + k]);
+                            }
+                        }
+                        // add new index pointer to indices array
+                        indices.push(ptr);
+                    }
+                }
+            }
+
+            var normals: Array<number> = new Array();
+            VertexData.ComputeNormals(positions, indices, normals);
+
+            //create new vertex data object and update
+            vertex_data.positions = positions;
+            vertex_data.indices = indices;
+            vertex_data.normals = normals;
+            vertex_data.uvs = uvs;
+
+            vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
+        }
     }
 
     // Instances
@@ -2571,13 +2837,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Physics
         //TODO implement correct serialization for physics impostors.
-
-        let impostor = this.getPhysicsImpostor();
-        if (impostor) {
-            serializationObject.physicsMass = impostor.getParam("mass");
-            serializationObject.physicsFriction = impostor.getParam("friction");
-            serializationObject.physicsRestitution = impostor.getParam("mass");
-            serializationObject.physicsImpostor = impostor.type;
+        if (this.getScene()._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
+            let impostor = this.getPhysicsImpostor();
+            if (impostor) {
+                serializationObject.physicsMass = impostor.getParam("mass");
+                serializationObject.physicsFriction = impostor.getParam("friction");
+                serializationObject.physicsRestitution = impostor.getParam("mass");
+                serializationObject.physicsImpostor = impostor.type;
+            }
         }
 
         // Metadata
@@ -2651,7 +2918,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         this._markSubMeshesAsAttributesDirty();
 
-        let morphTargetManager = this._morphTargetManager;
+        let morphTargetManager = this._internalMeshDataInfo._morphTargetManager;
         if (morphTargetManager && morphTargetManager.vertexCount) {
             if (morphTargetManager.vertexCount !== this.getTotalVertices()) {
                 Logger.Error("Mesh is incompatible with morph targets. Targets and mesh must all have the same vertices count.");
@@ -2782,7 +3049,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // freezeWorldMatrix
         if (parsedMesh.freezeWorldMatrix) {
-            mesh._waitingFreezeWorldMatrix = parsedMesh.freezeWorldMatrix;
+            mesh._waitingData.freezeWorldMatrix = parsedMesh.freezeWorldMatrix;
         }
 
         // Parent
@@ -2792,7 +3059,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Actions
         if (parsedMesh.actions !== undefined) {
-            mesh._waitingActions = parsedMesh.actions;
+            mesh._waitingData.actions = parsedMesh.actions;
         }
 
         // Overlay
@@ -2916,6 +3183,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             Mesh._PhysicsImpostorParser(scene, mesh, parsedMesh);
         }
 
+        // Levels
+        if (parsedMesh.lodMeshIds) {
+            mesh._waitingData.lods = {
+                ids: parsedMesh.lodMeshIds,
+                distances: (parsedMesh.lodDistances) ? parsedMesh.lodDistances : null,
+                coverages: (parsedMesh.lodCoverages) ? parsedMesh.lodCoverages : null
+            };
+        }
+
         // Instances
         if (parsedMesh.instances) {
             for (var index = 0; index < parsedMesh.instances.length; index++) {
@@ -2935,6 +3211,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
 
                 instance.position = Vector3.FromArray(parsedInstance.position);
+
+                if (parsedInstance.metadata !== undefined) {
+                    instance.metadata = parsedInstance.metadata;
+                }
 
                 if (parsedInstance.parentId) {
                     instance._waitingParentId = parsedInstance.parentId;
@@ -3046,6 +3326,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
       * @returns a new Mesh
       */
     public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+        throw _DevTools.WarnImport("MeshBuilder");
+    }
+
+    /**
+      * Creates a hemisphere mesh. Please consider using the same method from the MeshBuilder class instead
+      * @param name defines the name of the mesh to create
+      * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
+      * @param diameter sets the diameter size (float) of the sphere (default 1)
+      * @param scene defines the hosting scene
+      * @returns a new Mesh
+      */
+    public static CreateHemisphere(name: string, segments: number, diameter: number, scene?: Scene): Mesh {
         throw _DevTools.WarnImport("MeshBuilder");
     }
 
@@ -3383,19 +3675,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns original positions used for CPU skinning. Useful for integrating Morphing with skeletons in same mesh
      */
     public setPositionsForCPUSkinning(): Float32Array {
-        if (!this._sourcePositions) {
+        let internalDataInfo = this._internalMeshDataInfo;
+        if (!internalDataInfo._sourcePositions) {
             let source = this.getVerticesData(VertexBuffer.PositionKind);
             if (!source) {
-                return this._sourcePositions;
+                return internalDataInfo._sourcePositions;
             }
 
-            this._sourcePositions = new Float32Array(<any>source);
+            internalDataInfo._sourcePositions = new Float32Array(<any>source);
 
             if (!this.isVertexBufferUpdatable(VertexBuffer.PositionKind)) {
                 this.setVerticesData(VertexBuffer.PositionKind, source, true);
             }
         }
-        return this._sourcePositions;
+        return internalDataInfo._sourcePositions;
     }
 
     /**
@@ -3403,20 +3696,22 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns original normals used for CPU skinning. Useful for integrating Morphing with skeletons in same mesh.
      */
     public setNormalsForCPUSkinning(): Float32Array {
-        if (!this._sourceNormals) {
+        let internalDataInfo = this._internalMeshDataInfo;
+
+        if (!internalDataInfo._sourceNormals) {
             let source = this.getVerticesData(VertexBuffer.NormalKind);
 
             if (!source) {
-                return this._sourceNormals;
+                return internalDataInfo._sourceNormals;
             }
 
-            this._sourceNormals = new Float32Array(<any>source);
+            internalDataInfo._sourceNormals = new Float32Array(<any>source);
 
             if (!this.isVertexBufferUpdatable(VertexBuffer.NormalKind)) {
                 this.setVerticesData(VertexBuffer.NormalKind, source, true);
             }
         }
-        return this._sourceNormals;
+        return internalDataInfo._sourceNormals;
     }
 
     /**
@@ -3448,13 +3743,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        if (!this._sourcePositions) {
+        let internalDataInfo = this._internalMeshDataInfo;
+
+        if (!internalDataInfo._sourcePositions) {
             var submeshes = this.subMeshes.slice();
             this.setPositionsForCPUSkinning();
             this.subMeshes = submeshes;
         }
 
-        if (!this._sourceNormals) {
+        if (!internalDataInfo._sourceNormals) {
             this.setNormalsForCPUSkinning();
         }
 
@@ -3518,10 +3815,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
             }
 
-            Vector3.TransformCoordinatesFromFloatsToRef(this._sourcePositions[index], this._sourcePositions[index + 1], this._sourcePositions[index + 2], finalMatrix, tempVector3);
+            Vector3.TransformCoordinatesFromFloatsToRef(internalDataInfo._sourcePositions[index], internalDataInfo._sourcePositions[index + 1], internalDataInfo._sourcePositions[index + 2], finalMatrix, tempVector3);
             tempVector3.toArray(positionsData, index);
 
-            Vector3.TransformNormalFromFloatsToRef(this._sourceNormals[index], this._sourceNormals[index + 1], this._sourceNormals[index + 2], finalMatrix, tempVector3);
+            Vector3.TransformNormalFromFloatsToRef(internalDataInfo._sourceNormals[index], internalDataInfo._sourceNormals[index + 1], internalDataInfo._sourceNormals[index + 2], finalMatrix, tempVector3);
             tempVector3.toArray(normalsData, index);
 
             finalMatrix.reset();
@@ -3623,6 +3920,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (index = 0; index < meshes.length; index++) {
             if (meshes[index]) {
                 var mesh = meshes[index];
+                if (mesh.isAnInstance) {
+                    Logger.Warn("Cannot merge instance meshes.");
+                    return null;
+                }
+
                 const wm = mesh.computeWorldMatrix(true);
                 otherVertexData = VertexData.ExtractFromMesh(mesh, true, true);
                 otherVertexData.transform(wm);

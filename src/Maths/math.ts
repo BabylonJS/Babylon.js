@@ -15,7 +15,8 @@ export const ToLinearSpace = 2.2;
  * Constant used to define the minimal number value in Babylon.js
  * @ignorenaming
  */
-export const Epsilon = 0.001;
+let Epsilon = 0.001;
+export { Epsilon };
 
 /**
  * Class used to hold a RBG color
@@ -64,9 +65,9 @@ export class Color3 {
      * @returns an unique number that can be used to hash Color3 objects
      */
     public getHashCode(): number {
-        let hash = this.r || 0;
-        hash = (hash * 397) ^ (this.g || 0);
-        hash = (hash * 397) ^ (this.b || 0);
+        let hash = (this.r * 255) || 0;
+        hash = (hash * 397) ^ ((this.g * 255) || 0);
+        hash = (hash * 397) ^ ((this.b * 255) || 0);
         return hash;
     }
 
@@ -315,6 +316,58 @@ export class Color3 {
     }
 
     /**
+     * Converts current color in rgb space to HSV values
+     * @returns a new color3 representing the HSV values
+     */
+    public toHSV(): Color3 {
+        let result = new Color3();
+
+        this.toHSVToRef(result);
+
+        return result;
+    }
+
+    /**
+     * Converts current color in rgb space to HSV values
+     * @param result defines the Color3 where to store the HSV values
+     */
+    public toHSVToRef(result: Color3) {
+        var r = this.r;
+        var g = this.g;
+        var b = this.b;
+
+        var max = Math.max(r, g, b);
+        var min = Math.min(r, g, b);
+        var h = 0;
+        var s = 0;
+        var v = max;
+
+        var dm = max - min;
+
+        if (max !== 0) {
+            s = dm / max;
+        }
+
+        if (max != min) {
+            if (max == r) {
+                h = (g - b) / dm;
+                if (g < b) {
+                    h += 6;
+                }
+            } else if (max == g) {
+                h = (b - r) / dm + 2;
+            } else if (max == b) {
+                h = (r - g) / dm + 4;
+            }
+            h *= 60;
+        }
+
+        result.r = h;
+        result.g = s;
+        result.b = v;
+    }
+
+    /**
      * Converts the Color3 values to linear space and stores the result in "convertedColor"
      * @param convertedColor defines the Color3 object where to store the linear space version
      * @returns the unmodified Color3
@@ -353,6 +406,45 @@ export class Color3 {
     private static _BlackReadOnly = Color3.Black() as DeepImmutable<Color3>;
 
     /**
+     * Convert Hue, saturation and value to a Color3 (RGB)
+     * @param hue defines the hue
+     * @param saturation defines the saturation
+     * @param value defines the value
+     * @param result defines the Color3 where to store the RGB values
+     */
+    public static HSVtoRGBToRef(hue: number, saturation: number, value: number, result: Color3) {
+        var chroma = value * saturation;
+        var h = hue / 60;
+        var x = chroma * (1 - Math.abs((h % 2) - 1));
+        var r = 0;
+        var g = 0;
+        var b = 0;
+
+        if (h >= 0 && h <= 1) {
+            r = chroma;
+            g = x;
+        } else if (h >= 1 && h <= 2) {
+            r = x;
+            g = chroma;
+        } else if (h >= 2 && h <= 3) {
+            g = chroma;
+            b = x;
+        } else if (h >= 3 && h <= 4) {
+            g = x;
+            b = chroma;
+        } else if (h >= 4 && h <= 5) {
+            r = x;
+            b = chroma;
+        } else if (h >= 5 && h <= 6) {
+            r = chroma;
+            b = x;
+        }
+
+        var m = value - chroma;
+        result.set((r + m), (g + m), (b + m));
+    }
+
+    /**
      * Creates a new Color3 from the string containing valid hexadecimal values
      * @param hex defines a string containing valid hexadecimal values
      * @returns a new Color3 object
@@ -370,7 +462,7 @@ export class Color3 {
     }
 
     /**
-     * Creates a new Vector3 from the starting index of the given array
+     * Creates a new Color3 from the starting index of the given array
      * @param array defines the source array
      * @param offset defines an offset in the source array
      * @returns a new Color3 object
@@ -687,10 +779,10 @@ export class Color4 {
      * @returns an unique number that can be used to hash Color4 objects
      */
     public getHashCode(): number {
-        let hash = this.r || 0;
-        hash = (hash * 397) ^ (this.g || 0);
-        hash = (hash * 397) ^ (this.b || 0);
-        hash = (hash * 397) ^ (this.a || 0);
+        let hash = (this.r * 255) || 0;
+        hash = (hash * 397) ^ ((this.g * 255) || 0);
+        hash = (hash * 397) ^ ((this.b * 255) || 0);
+        hash = (hash * 397) ^ ((this.a * 255) || 0);
         return hash;
     }
 
@@ -1553,6 +1645,7 @@ export class Vector2 {
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
+    private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
 
     /**
      * Creates a new Vector3 object from the given x, y, z (floats) coordinates.
@@ -2269,6 +2362,13 @@ export class Vector3 {
      */
     public static get UpReadOnly(): DeepImmutable<Vector3> {
         return Vector3._UpReadOnly;
+    }
+
+    /**
+     * Gets a zero Vector3 that must not be updated
+     */
+    public static get ZeroReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._ZeroReadOnly;
     }
 
     /**
@@ -3897,11 +3997,17 @@ export class Quaternion {
      * @returns the current updated quaternion
      */
     public normalize(): Quaternion {
-        var length = 1.0 / this.length();
-        this.x *= length;
-        this.y *= length;
-        this.z *= length;
-        this.w *= length;
+        var len = this.length();
+
+        if (len === 0) {
+            return this;
+        }
+
+        var inv = 1.0 / len;
+        this.x *= inv;
+        this.y *= inv;
+        this.z *= inv;
+        this.w *= inv;
         return this;
     }
 
@@ -4379,7 +4485,7 @@ export class Matrix {
      * It will be incremented every time the matrix data change.
      * You can use it to speed the comparison between two versions of the same matrix.
      */
-    public updateFlag: number;
+    public updateFlag: number = -1;
 
     private readonly _m: Float32Array = new Float32Array(16);
 
@@ -4690,6 +4796,21 @@ export class Matrix {
         this._m[12] = x;
         this._m[13] = y;
         this._m[14] = z;
+        this._markAsUpdated();
+        return this;
+    }
+
+    /**
+     * Adds the translation vector (using 3 floats) in the current matrix
+     * @param x defines the 1st component of the translation
+     * @param y defines the 2nd component of the translation
+     * @param z defines the 3rd component of the translation
+     * @returns the current updated matrix
+     */
+    public addTranslationFromFloats(x: number, y: number, z: number): Matrix {
+        this._m[12] += x;
+        this._m[13] += y;
+        this._m[14] += z;
         this._markAsUpdated();
         return this;
     }
@@ -5271,11 +5392,36 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static ComposeToRef(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>, result: Matrix): void {
-        Matrix.ScalingToRef(scale.x, scale.y, scale.z, MathTmp.Matrix[1]);
-        rotation.toRotationMatrix(MathTmp.Matrix[0]);
-        MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], result);
+        let m = result._m;
+        var x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w;
+        var x2 = x + x, y2 = y + y, z2 = z + z;
+        var xx = x * x2, xy = x * y2, xz = x * z2;
+        var yy = y * y2, yz = y * z2, zz = z * z2;
+        var wx = w * x2, wy = w * y2, wz = w * z2;
 
-        result.setTranslation(translation);
+        var sx = scale.x, sy = scale.y, sz = scale.z;
+
+        m[0] = (1 - (yy + zz)) * sx;
+        m[1] = (xy + wz) * sx;
+        m[2] = (xz - wy) * sx;
+        m[3] = 0;
+
+        m[4] = (xy - wz) * sy;
+        m[5] = (1 - (xx + zz)) * sy;
+        m[6] = (yz + wx) * sy;
+        m[7] = 0;
+
+        m[8] = (xz + wy) * sz;
+        m[9] = (yz - wx) * sz;
+        m[10] = (1 - (xx + yy)) * sz;
+        m[11] = 0;
+
+        m[12] = translation.x;
+        m[13] = translation.y;
+        m[14] = translation.z;
+        m[15] = 1;
+
+        result._markAsUpdated();
     }
 
     /**
@@ -5466,6 +5612,27 @@ export class Matrix {
         m[13] = 0.0;
         m[14] = 0.0;
         m[15] = 1.0;
+
+        result._markAsUpdated();
+    }
+
+    /**
+     * Takes normalised vectors and returns a rotation matrix to align "from" with "to".
+     * Taken from http://www.iquilezles.org/www/articles/noacos/noacos.htm
+     * @param from defines the vector to align
+     * @param to defines the vector to align to
+     * @param result defines the target matrix
+     */
+    public static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void {
+        const v = Vector3.Cross(to, from);
+        const c = Vector3.Dot(to, from);
+        const k = 1 / (1 + c);
+
+        const m = result._m;
+        m[0] = v.x * v.x * k + c; m[1] = v.y * v.x * k - v.z; m[2] = v.z * v.x * k + v.y; m[3] = 0;
+        m[4] = v.x * v.y * k + v.z; m[5] = v.y * v.y * k + c; m[6] = v.z * v.y * k - v.x; m[7] = 0;
+        m[8] = v.x * v.z * k - v.y; m[9] = v.y * v.z * k + v.x; m[10] = v.z * v.z * k + c; m[11] = 0;
+        m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
 
         result._markAsUpdated();
     }

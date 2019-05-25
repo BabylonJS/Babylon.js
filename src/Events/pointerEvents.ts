@@ -115,3 +115,25 @@ export class PointerInfo extends PointerInfoBase {
         super(type, event);
     }
 }
+
+/**
+ * Data relating to a touch event on the screen.
+ */
+export interface PointerTouch {
+    /**
+     * X coordinate of touch.
+     */
+    x: number;
+    /**
+     * Y coordinate of touch.
+     */
+    y: number;
+    /**
+     * Id of touch. Unique for each finger.
+     */
+    pointerId: number;
+    /**
+     * Event type passed from DOM.
+     */
+    type: any;
+}

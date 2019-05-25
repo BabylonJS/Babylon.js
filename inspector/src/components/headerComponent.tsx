@@ -73,7 +73,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps, { is
         }
 
         return (
-            <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+            <img id="logo" style={{top: "0%"}} src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
         )
     }
 

@@ -60,6 +60,9 @@ export class Bone extends Node {
     public _linkedTransformNode: Nullable<TransformNode> = null;
 
     /** @hidden */
+    public _waitingTransformNodeId: Nullable<string> = null;
+
+    /** @hidden */
     get _matrix(): Matrix {
         this._compose();
         return this._localMatrix;
@@ -103,6 +106,14 @@ export class Bone extends Node {
         }
     }
 
+    /**
+     * Gets the current object class name.
+     * @return the class name
+     */
+    public getClassName(): string {
+        return "Bone";
+    }
+
     // Members
 
     /**
@@ -119,6 +130,14 @@ export class Bone extends Node {
      */
     public getParent(): Nullable<Bone> {
         return this._parent;
+    }
+
+    /**
+     * Returns an array containing the root bones
+     * @returns an array containing the root bones
+     */
+    public getChildren(): Array<Bone> {
+        return this.children;
     }
 
     /**
@@ -295,6 +314,11 @@ export class Bone extends Node {
             return;
         }
 
+        if (!this._localScaling) {
+            this._needToCompose = false;
+            return;
+        }
+
         this._needToCompose = false;
         Matrix.ComposeToRef(this._localScaling, this._localRotation, this._localPosition, this._localMatrix);
     }
@@ -349,11 +373,12 @@ export class Bone extends Node {
      */
     public markAsDirty(): void {
         this._currentRenderId++;
-        this._childRenderId++;
+        this._childUpdateId++;
         this._skeleton._markAsDirty();
     }
 
-    private _markAsDirtyAndCompose() {
+    /** @hidden */
+    public _markAsDirtyAndCompose() {
         this.markAsDirty();
         this._needToCompose = true;
     }

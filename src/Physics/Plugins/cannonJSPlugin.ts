@@ -7,6 +7,7 @@ import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysi
 import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImpostor";
 import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../../Physics/physicsJoint";
 import { PhysicsEngine } from "../../Physics/physicsEngine";
+import { PhysicsRaycastResult } from "../physicsRaycastResult";
 
 //declare var require: any;
 declare var CANNON: any;
@@ -18,6 +19,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     public name: string = "CannonJSPlugin";
     private _physicsMaterials = new Array();
     private _fixedTimeStep: number = 1 / 60;
+    private _cannonRaycastResult: any;
+    private _raycastResult: PhysicsRaycastResult;
+    private _removeAfterStep = new Array<PhysicsImpostor>();
     //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
     public BJSCANNON: any;
 
@@ -33,6 +37,8 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         this.world = new this.BJSCANNON.World();
         this.world.broadphase = new this.BJSCANNON.NaiveBroadphase();
         this.world.solver.iterations = iterations;
+        this._cannonRaycastResult = new this.BJSCANNON.RaycastResult();
+        this._raycastResult = new PhysicsRaycastResult();
     }
 
     public setGravity(gravity: Vector3): void {
@@ -49,6 +55,12 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
     public executeStep(delta: number): void {
         this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
+        if (this._removeAfterStep.length > 0) {
+            this._removeAfterStep.forEach((impostor) => {
+                this.world.remove(impostor.physicsBody);
+            });
+            this._removeAfterStep = [];
+        }
     }
 
     public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
@@ -160,7 +172,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         impostor.physicsBody.removeEventListener("collide", impostor.onCollide);
         this.world.removeEventListener("preStep", impostor.beforeStep);
         this.world.removeEventListener("postStep", impostor.afterStep);
-        this.world.remove(impostor.physicsBody);
+
+        // Only remove the physics body after the physics step to avoid disrupting cannon's internal state
+        this._removeAfterStep.push(impostor);
     }
 
     public generateJoint(impostorJoint: PhysicsImpostorJoint) {
@@ -673,6 +687,37 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 }
             }
         };
+    }
+
+    /**
+     * Does a raycast in the physics world
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     * @returns PhysicsRaycastResult
+     */
+    public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
+        this._cannonRaycastResult.reset();
+        this.world.raycastClosest(from, to, {}, this._cannonRaycastResult);
+
+        this._raycastResult.reset(from, to);
+        if (this._cannonRaycastResult.hasHit) {
+            // TODO: do we also want to get the body it hit?
+            this._raycastResult.setHitData(
+                {
+                    x: this._cannonRaycastResult.hitNormalWorld.x,
+                    y: this._cannonRaycastResult.hitNormalWorld.y,
+                    z: this._cannonRaycastResult.hitNormalWorld.z,
+                },
+                {
+                    x: this._cannonRaycastResult.hitPointWorld.x,
+                    y: this._cannonRaycastResult.hitPointWorld.y,
+                    z: this._cannonRaycastResult.hitPointWorld.z,
+                }
+            );
+            this._raycastResult.setHitDistance(this._cannonRaycastResult.distance);
+        }
+
+        return this._raycastResult;
     }
 }
 

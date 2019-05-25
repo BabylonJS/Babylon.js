@@ -607,6 +607,16 @@ export abstract class Light extends Node {
             light._waitingParentId = parsedLight.parentId;
         }
 
+        // Falloff
+        if (parsedLight.falloffType !== undefined) {
+            light.falloffType = parsedLight.falloffType;
+        }
+
+        // Lightmaps
+        if (parsedLight.lightmapMode !== undefined) {
+            light.lightmapMode = parsedLight.lightmapMode;
+        }
+
         // Animations
         if (parsedLight.animations) {
             for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
@@ -688,7 +698,7 @@ export abstract class Light extends Node {
      */
     public _markMeshesAsLightDirty() {
         for (var mesh of this.getScene().meshes) {
-            if (mesh._lightSources.indexOf(this) !== -1) {
+            if (mesh.lightSources.indexOf(this) !== -1) {
                 mesh._markSubMeshesAsLightDirty();
             }
         }

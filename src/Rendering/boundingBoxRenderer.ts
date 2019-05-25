@@ -5,7 +5,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Color3, Matrix } from "../Maths/math";
 import { SmartArray } from "../Misc/smartArray";
-import { Nullable, FloatArray } from "../types";
+import { Nullable, FloatArray, IndicesArray } from "../types";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { BoundingBox } from "../Culling/boundingBox";
 import { Effect } from "../Materials/effect";
@@ -16,6 +16,7 @@ import "../Meshes/Builders/boxBuilder";
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 declare module "../scene" {
     export interface Scene {
@@ -123,7 +124,9 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
     private _colorShader: ShaderMaterial;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: WebGLBuffer;
+    private _indexBuffer: DataBuffer;
+    private _fillIndexBuffer: Nullable<DataBuffer> = null;
+    private _fillIndexData: Nullable<IndicesArray> = null;
 
     /**
      * Instantiates a new bounding box renderer in a scene.
@@ -180,6 +183,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
         var boxdata = VertexData.CreateBox({ size: 1.0 });
         this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, <FloatArray>boxdata.positions, VertexBuffer.PositionKind, false);
         this._createIndexBuffer();
+        this._fillIndexData = boxdata.indices;
     }
 
     private _createIndexBuffer(): void {
@@ -279,6 +283,10 @@ export class BoundingBoxRenderer implements ISceneComponent {
         }
 
         var engine = this.scene.getEngine();
+        if (!this._fillIndexBuffer) {
+            this._fillIndexBuffer = engine.createIndexBuffer(this._fillIndexData!);
+        }
+
         engine.setDepthWrite(false);
         engine.setColorWrite(false);
         this._colorShader._preBind();
@@ -293,13 +301,13 @@ export class BoundingBoxRenderer implements ISceneComponent {
             .multiply(Matrix.Translation(median.x, median.y, median.z))
             .multiply(boundingBox.getWorldMatrix());
 
-        engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
+        engine.bindBuffers(this._vertexBuffers, this._fillIndexBuffer, <Effect>this._colorShader.getEffect());
 
         engine.setDepthFunctionToLess();
         this.scene.resetCachedMaterial();
         this._colorShader.bind(worldMatrix);
 
-        engine.drawElementsType(Material.LineListDrawMode, 0, 24);
+        engine.drawElementsType(Material.TriangleFillMode, 0, 36);
 
         this._colorShader.unbind();
         engine.setDepthFunctionToLessOrEqual();
@@ -325,5 +333,10 @@ export class BoundingBoxRenderer implements ISceneComponent {
             this._vertexBuffers[VertexBuffer.PositionKind] = null;
         }
         this.scene.getEngine()._releaseBuffer(this._indexBuffer);
+
+        if (this._fillIndexBuffer) {
+            this.scene.getEngine()._releaseBuffer(this._fillIndexBuffer);
+            this._fillIndexBuffer = null;
+        }
     }
 }

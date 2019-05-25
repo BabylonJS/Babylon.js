@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper } from "../../Misc/decorators";
+import { serialize, serializeAsMatrix, SerializationHelper } from "../../Misc/decorators";
 import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
@@ -9,6 +9,8 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
+
+import "../../Engines/Extensions/engine.cubeTexture";
 
 /**
  * Class for creating a cube texture
@@ -82,7 +84,7 @@ export class CubeTexture extends BaseTexture {
     private _files: string[];
     private _extensions: string[];
 
-    @serialize("textureMatrix")
+    @serializeAsMatrix("textureMatrix")
     private _textureMatrix: Matrix;
 
     private _format: number;
@@ -125,7 +127,7 @@ export class CubeTexture extends BaseTexture {
      * @param scene defines the scene the texture is attached to
      * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
      * @param noMipmap defines if mipmaps should be created or not
-     * @param files defines the six files to load for the different faces
+     * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
      * @param onLoad defines a callback triggered at the end of the file load if no errors occured
      * @param onError defines a callback triggered in case of error during load
      * @param format defines the internal format to use for the texture once loaded
@@ -213,6 +215,13 @@ export class CubeTexture extends BaseTexture {
     }
 
     /**
+     * Gets a boolean indicating if the cube texture contains prefiltered mips (used to simulate roughness with PBR)
+     */
+    public get isPrefiltered(): boolean {
+        return this._prefiltered;
+    }
+
+    /**
      * Get the current class name of the texture useful for serialization or dynamic coding.
      * @returns "CubeTexture"
      */
@@ -265,7 +274,7 @@ export class CubeTexture extends BaseTexture {
                 this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, this.lodGenerationScale, this.lodGenerationOffset, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
             }
             else {
-                this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, undefined, this._format, forcedExtension);
+                this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);
             }
         }
     }

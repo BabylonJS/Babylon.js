@@ -22,6 +22,7 @@ import { GlobalState } from "../../../../../components/globalState";
 
 import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
@@ -90,13 +91,46 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             { label: "Linear", value: Texture.LINEAR_LINEAR_MIPLINEAR },
         ];
 
+        var coordinatesMode = [
+            { label: "Explicit", value: Texture.EXPLICIT_MODE },
+            { label: "Cubic", value: Texture.CUBIC_MODE },
+            { label: "Inverse cubic", value: Texture.INVCUBIC_MODE },
+            { label: "Equirectangular", value: Texture.EQUIRECTANGULAR_MODE },
+            { label: "Fixed equirectangular", value: Texture.FIXED_EQUIRECTANGULAR_MODE },
+            { label: "Fixed equirectangular mirrored", value: Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE },
+            { label: "Planar", value: Texture.PLANAR_MODE },
+            { label: "Projection", value: Texture.PROJECTION_MODE },
+            { label: "Skybox", value: Texture.SKYBOX_MODE },
+            { label: "Spherical", value: Texture.SPHERICAL_MODE },
+        ];
+
+        let extension = "";
+        let url = (texture as Texture).url;
+
+        if (url) {
+            for (var index = url.length - 1; index >= 0; index--) {
+                if (url[index] === ".") {
+                    break;
+                }
+                extension = url[index] + extension;
+            }
+        }
+
         return (
             <div className="pane">
-                <LineContainerComponent title="PREVIEW">
+                <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
                     <TextureLineComponent texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 </LineContainerComponent>
-                <LineContainerComponent title="GENERAL">
+                <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                    <TextLineComponent label="Width" value={texture.getSize().width.toString()} />
+                    <TextLineComponent label="Height" value={texture.getSize().height.toString()} />
+                    {
+                        extension &&
+                        <TextLineComponent label="File format" value={extension} />
+                    }
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={texture.getClassName()} />
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
@@ -105,6 +139,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Is render target" value={texture.isRenderTarget ? "Yes" : "No"} />
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
                     <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} decimalCount={0} />
+                    <OptionsLineComponent label="Mode" options={coordinatesMode} target={texture} propertyName="coordinatesMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
                     <SliderLineComponent label="Level" target={texture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         texture.updateSamplingMode &&
@@ -113,7 +148,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 </LineContainerComponent>
                 {
                     (texture as any).rootContainer &&
-                    <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES">
+                    <LineContainerComponent globalState={this.props.globalState} title="ADVANCED TEXTURE PROPERTIES">
                         <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
                         <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent label="Render scale" minimum={0.1} maximum={5} step={0.1} target={texture} propertyName="renderScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -125,7 +160,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <CheckBoxLineComponent label="Invalidate Rect optimization" target={texture} propertyName="useInvalidateRectOptimization" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 }
-                <LineContainerComponent title="TRANSFORM">
+                <LineContainerComponent globalState={this.props.globalState} title="TRANSFORM">
                     {
                         !texture.isCube &&
                         <div>

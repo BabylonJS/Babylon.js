@@ -94,6 +94,8 @@ declare module "babylonjs-materials/custom/customMaterial" {
         Fragment_Definitions: string;
         Fragment_MainBegin: string;
         Fragment_Custom_Diffuse: string;
+        Fragment_Before_Lights: string;
+        Fragment_Before_Fog: string;
         Fragment_Custom_Alpha: string;
         Fragment_Before_FragColor: string;
         Vertex_Begin: string;
@@ -101,6 +103,7 @@ declare module "babylonjs-materials/custom/customMaterial" {
         Vertex_MainBegin: string;
         Vertex_Before_PositionUpdated: string;
         Vertex_Before_NormalUpdated: string;
+        Vertex_MainEnd: string;
     }
     export class CustomMaterial extends StandardMaterial {
         static ShaderIndexer: number;
@@ -123,16 +126,80 @@ declare module "babylonjs-materials/custom/customMaterial" {
         Fragment_MainBegin(shaderPart: string): CustomMaterial;
         Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial;
         Fragment_Custom_Alpha(shaderPart: string): CustomMaterial;
+        Fragment_Before_Lights(shaderPart: string): CustomMaterial;
+        Fragment_Before_Fog(shaderPart: string): CustomMaterial;
         Fragment_Before_FragColor(shaderPart: string): CustomMaterial;
         Vertex_Begin(shaderPart: string): CustomMaterial;
         Vertex_Definitions(shaderPart: string): CustomMaterial;
         Vertex_MainBegin(shaderPart: string): CustomMaterial;
         Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial;
         Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial;
+        Vertex_MainEnd(shaderPart: string): CustomMaterial;
+    }
+}
+declare module "babylonjs-materials/custom/pbrCustomMaterial" {
+    import { Texture } from "babylonjs/Materials/Textures/texture";
+    import { Effect } from "babylonjs/Materials/effect";
+    import { PBRMaterialDefines } from "babylonjs/Materials/PBR/pbrBaseMaterial";
+    import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    import { Scene } from "babylonjs/scene";
+    export class ShaderAlebdoParts {
+        constructor();
+        Fragment_Begin: string;
+        Fragment_Definitions: string;
+        Fragment_MainBegin: string;
+        Fragment_Custom_Albedo: string;
+        Fragment_Before_Lights: string;
+        Fragment_Custom_MetallicRoughness: string;
+        Fragment_Custom_MicroSurface: string;
+        Fragment_Before_Fog: string;
+        Fragment_Custom_Alpha: string;
+        Fragment_Before_FragColor: string;
+        Vertex_Begin: string;
+        Vertex_Definitions: string;
+        Vertex_MainBegin: string;
+        Vertex_Before_PositionUpdated: string;
+        Vertex_Before_NormalUpdated: string;
+        Vertex_MainEnd: string;
+    }
+    export class PBRCustomMaterial extends PBRMaterial {
+        static ShaderIndexer: number;
+        CustomParts: ShaderAlebdoParts;
+        _isCreatedShader: boolean;
+        _createdShaderName: string;
+        _customUniform: string[];
+        _newUniforms: string[];
+        _newUniformInstances: any[];
+        _newSamplerInstances: Texture[];
+        FragmentShader: string;
+        VertexShader: string;
+        AttachAfterBind(mesh: Mesh, effect: Effect): void;
+        ReviewUniform(name: string, arr: string[]): string[];
+        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines): string;
+        constructor(name: string, scene: Scene);
+        AddUniform(name: string, kind: string, param: any): PBRCustomMaterial;
+        Fragment_Begin(shaderPart: string): PBRCustomMaterial;
+        Fragment_Definitions(shaderPart: string): PBRCustomMaterial;
+        Fragment_MainBegin(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_Albedo(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_Alpha(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_Lights(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MetallicRoughness(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MicroSurface(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial;
+        Vertex_Begin(shaderPart: string): PBRCustomMaterial;
+        Vertex_Definitions(shaderPart: string): PBRCustomMaterial;
+        Vertex_MainBegin(shaderPart: string): PBRCustomMaterial;
+        Vertex_Before_PositionUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_MainEnd(shaderPart: string): PBRCustomMaterial;
     }
 }
 declare module "babylonjs-materials/custom/index" {
     export * from "babylonjs-materials/custom/customMaterial";
+    export * from "babylonjs-materials/custom/pbrCustomMaterial";
 }
 declare module "babylonjs-materials/fire/fire.fragment" {
     import "babylonjs/Shaders/ShadersInclude/clipPlaneFragmentDeclaration";
@@ -1523,6 +1590,8 @@ declare module BABYLON {
         Fragment_Definitions: string;
         Fragment_MainBegin: string;
         Fragment_Custom_Diffuse: string;
+        Fragment_Before_Lights: string;
+        Fragment_Before_Fog: string;
         Fragment_Custom_Alpha: string;
         Fragment_Before_FragColor: string;
         Vertex_Begin: string;
@@ -1530,6 +1599,7 @@ declare module BABYLON {
         Vertex_MainBegin: string;
         Vertex_Before_PositionUpdated: string;
         Vertex_Before_NormalUpdated: string;
+        Vertex_MainEnd: string;
     }
     export class CustomMaterial extends BABYLON.StandardMaterial {
         static ShaderIndexer: number;
@@ -1552,12 +1622,69 @@ declare module BABYLON {
         Fragment_MainBegin(shaderPart: string): CustomMaterial;
         Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial;
         Fragment_Custom_Alpha(shaderPart: string): CustomMaterial;
+        Fragment_Before_Lights(shaderPart: string): CustomMaterial;
+        Fragment_Before_Fog(shaderPart: string): CustomMaterial;
         Fragment_Before_FragColor(shaderPart: string): CustomMaterial;
         Vertex_Begin(shaderPart: string): CustomMaterial;
         Vertex_Definitions(shaderPart: string): CustomMaterial;
         Vertex_MainBegin(shaderPart: string): CustomMaterial;
         Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial;
         Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial;
+        Vertex_MainEnd(shaderPart: string): CustomMaterial;
+    }
+}
+declare module BABYLON {
+    export class ShaderAlebdoParts {
+        constructor();
+        Fragment_Begin: string;
+        Fragment_Definitions: string;
+        Fragment_MainBegin: string;
+        Fragment_Custom_Albedo: string;
+        Fragment_Before_Lights: string;
+        Fragment_Custom_MetallicRoughness: string;
+        Fragment_Custom_MicroSurface: string;
+        Fragment_Before_Fog: string;
+        Fragment_Custom_Alpha: string;
+        Fragment_Before_FragColor: string;
+        Vertex_Begin: string;
+        Vertex_Definitions: string;
+        Vertex_MainBegin: string;
+        Vertex_Before_PositionUpdated: string;
+        Vertex_Before_NormalUpdated: string;
+        Vertex_MainEnd: string;
+    }
+    export class PBRCustomMaterial extends BABYLON.PBRMaterial {
+        static ShaderIndexer: number;
+        CustomParts: ShaderAlebdoParts;
+        _isCreatedShader: boolean;
+        _createdShaderName: string;
+        _customUniform: string[];
+        _newUniforms: string[];
+        _newUniformInstances: any[];
+        _newSamplerInstances: BABYLON.Texture[];
+        FragmentShader: string;
+        VertexShader: string;
+        AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
+        ReviewUniform(name: string, arr: string[]): string[];
+        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.PBRMaterialDefines): string;
+        constructor(name: string, scene: BABYLON.Scene);
+        AddUniform(name: string, kind: string, param: any): PBRCustomMaterial;
+        Fragment_Begin(shaderPart: string): PBRCustomMaterial;
+        Fragment_Definitions(shaderPart: string): PBRCustomMaterial;
+        Fragment_MainBegin(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_Albedo(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_Alpha(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_Lights(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MetallicRoughness(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MicroSurface(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial;
+        Vertex_Begin(shaderPart: string): PBRCustomMaterial;
+        Vertex_Definitions(shaderPart: string): PBRCustomMaterial;
+        Vertex_MainBegin(shaderPart: string): PBRCustomMaterial;
+        Vertex_Before_PositionUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_MainEnd(shaderPart: string): PBRCustomMaterial;
     }
 }
 declare module BABYLON {

@@ -1,6 +1,6 @@
 import { Tags } from "../Misc/tags";
 import { Nullable } from "../types";
-import { Color4, Quaternion, Color3, Vector2, Vector3 } from "../Maths/math";
+import { Color4, Quaternion, Color3, Vector2, Vector3, Matrix } from "../Maths/math";
 import { _DevTools } from './devTools';
 
 declare type Scene = import("../scene").Scene;
@@ -47,6 +47,7 @@ var _copySource = function <T>(creationFunction: () => T, source: T, instanciate
                 case 5:     // Vector3
                 case 7:     // Color Curves
                 case 10:    // Quaternion
+                case 12:    // Matrix
                     (<any>destination)[property] = instanciate ? sourceProperty : sourceProperty.clone();
                     break;
             }
@@ -196,6 +197,10 @@ export function serializeAsQuaternion(sourceName?: string) {
     return generateSerializableMember(10, sourceName); // quaternion member
 }
 
+export function serializeAsMatrix(sourceName?: string) {
+    return generateSerializableMember(12, sourceName); // matrix member
+}
+
 /**
  * Decorator used to define property that can be serialized as reference to a camera
  * @param sourceName defines the name of the property to decorate
@@ -208,22 +213,22 @@ export function serializeAsCameraReference(sourceName?: string) {
  * Class used to help serialization objects
  */
 export class SerializationHelper {
-    /** hidden */
+    /** @hidden */
     public static _ImageProcessingConfigurationParser = (sourceProperty: any): ImageProcessingConfiguration => {
         throw _DevTools.WarnImport("ImageProcessingConfiguration");
     }
 
-    /** hidden */
+    /** @hidden */
     public static _FresnelParametersParser = (sourceProperty: any): FresnelParameters => {
         throw _DevTools.WarnImport("FresnelParameters");
     }
 
-    /** hidden */
+    /** @hidden */
     public static _ColorCurvesParser = (sourceProperty: any): ColorCurves => {
         throw _DevTools.WarnImport("ColorCurves");
     }
 
-    /** hidden */
+    /** @hidden */
     public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
         throw _DevTools.WarnImport("Texture");
     }
@@ -306,6 +311,8 @@ export class SerializationHelper {
                         break;
                     case 11:    // Camera reference
                         serializationObject[targetPropertyName] = (<Camera>sourceProperty).id;
+                    case 12:    // Matrix
+                        serializationObject[targetPropertyName] = (<Matrix>sourceProperty).asArray();
                         break;
                 }
             }
@@ -386,6 +393,8 @@ export class SerializationHelper {
                         if (scene) {
                             dest[property] = scene.getCameraByID(sourceProperty);
                         }
+                    case 12:    // Matrix
+                        dest[property] = Matrix.FromArray(sourceProperty);
                         break;
                 }
             }

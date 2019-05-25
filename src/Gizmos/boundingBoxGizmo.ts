@@ -18,6 +18,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { PivotTools } from "../Misc/pivotTools";
 
 import "../Meshes/Builders/boxBuilder";
+import { LinesMesh } from '../Meshes/linesMesh';
 
 /**
  * Bounding box gizmo
@@ -84,13 +85,34 @@ export class BoundingBoxGizmo extends Gizmo {
      * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
      */
     public scalePivot: Nullable<Vector3> = null;
+
+    /**
+     * Mesh used as a pivot to rotate the attached mesh
+     */
     private _anchorMesh: AbstractMesh;
+
     private _existingMeshScale = new Vector3();
 
     // Dragging
     private _dragMesh: Nullable<Mesh> = null;
     private pointerDragBehavior = new PointerDragBehavior();
 
+    private coloredMaterial: StandardMaterial;
+    private hoverColoredMaterial: StandardMaterial;
+
+    /**
+     * Sets the color of the bounding box gizmo
+     * @param color the color to set
+     */
+    public setColor(color: Color3) {
+        this.coloredMaterial.emissiveColor = color;
+        this.hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.3, 0.3, 0.3));
+        this._lineBoundingBox.getChildren().forEach((l) => {
+            if ((l as LinesMesh).color) {
+                (l as LinesMesh).color = color;
+            }
+        });
+    }
     /**
      * Creates an BoundingBoxGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
@@ -104,12 +126,10 @@ export class BoundingBoxGizmo extends Gizmo {
 
         this._anchorMesh = new AbstractMesh("anchor", gizmoLayer.utilityLayerScene);
         // Create Materials
-        var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        coloredMaterial.disableLighting = true;
-        coloredMaterial.emissiveColor = color;
-        var hoverColoredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        hoverColoredMaterial.disableLighting = true;
-        hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.3, 0.3, 0.3));
+        this.coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this.coloredMaterial.disableLighting = true;
+        this.hoverColoredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this.hoverColoredMaterial.disableLighting = true;
 
         // Build bounding box out of lines
         this._lineBoundingBox = new AbstractMesh("", gizmoLayer.utilityLayerScene);
@@ -135,13 +155,15 @@ export class BoundingBoxGizmo extends Gizmo {
         });
         this._rootMesh.addChild(this._lineBoundingBox);
 
+        this.setColor(color);
+
         // Create rotation spheres
         this._rotateSpheresParent = new AbstractMesh("", gizmoLayer.utilityLayerScene);
         this._rotateSpheresParent.rotationQuaternion = new Quaternion();
         for (let i = 0; i < 12; i++) {
             let sphere = SphereBuilder.CreateSphere("", { diameter: 1 }, gizmoLayer.utilityLayerScene);
             sphere.rotationQuaternion = new Quaternion();
-            sphere.material = coloredMaterial;
+            sphere.material = this.coloredMaterial;
 
             // Drag behavior
             var _dragBehavior = new PointerDragBehavior({});
@@ -230,7 +252,7 @@ export class BoundingBoxGizmo extends Gizmo {
             for (var j = 0; j < 2; j++) {
                 for (var k = 0; k < 2; k++) {
                     let box = BoxBuilder.CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
-                    box.material = coloredMaterial;
+                    box.material = this.coloredMaterial;
 
                     // Dragging logic
                     let dragAxis = new Vector3(i == 0 ? -1 : 1, j == 0 ? -1 : 1, k == 0 ? -1 : 1);
@@ -301,12 +323,12 @@ export class BoundingBoxGizmo extends Gizmo {
                 this._rotateSpheresParent.getChildMeshes().concat(this._scaleBoxesParent.getChildMeshes()).forEach((mesh) => {
                     if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
                         pointerIds[(<PointerEvent>pointerInfo.event).pointerId] = mesh;
-                        mesh.material = hoverColoredMaterial;
+                        mesh.material = this.hoverColoredMaterial;
                     }
                 });
             } else {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<PointerEvent>pointerInfo.event).pointerId]) {
-                    pointerIds[(<PointerEvent>pointerInfo.event).pointerId].material = coloredMaterial;
+                    pointerIds[(<PointerEvent>pointerInfo.event).pointerId].material = this.coloredMaterial;
                     delete pointerIds[(<PointerEvent>pointerInfo.event).pointerId];
                 }
             }
@@ -365,9 +387,20 @@ export class BoundingBoxGizmo extends Gizmo {
     public updateBoundingBox() {
         if (this.attachedMesh) {
             PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
+
+            // Store original parent
             var originalParent = this.attachedMesh.parent;
             this.attachedMesh.setParent(null);
+
+            // Store original skelton override mesh
+            var originalSkeletonOverrideMesh = null;
+            if (this.attachedMesh.skeleton) {
+                originalSkeletonOverrideMesh = this.attachedMesh.skeleton.overrideMesh;
+                this.attachedMesh.skeleton.overrideMesh = null;
+            }
+
             this._update();
+
             // Rotate based on axis
             if (!this.attachedMesh.rotationQuaternion) {
                 this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
@@ -388,6 +421,8 @@ export class BoundingBoxGizmo extends Gizmo {
             boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
 
             // Update gizmo to match bounding box scaling and rotation
+            // The position set here is the offset from the origin for the boundingbox when the attached mesh is at the origin
+            // The position of the gizmo is then set to the attachedMesh in gizmo._update
             this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
             this._lineBoundingBox.position.set((boundingMinMax.max.x + boundingMinMax.min.x) / 2, (boundingMinMax.max.y + boundingMinMax.min.y) / 2, (boundingMinMax.max.z + boundingMinMax.min.z) / 2);
             this._rotateSpheresParent.position.copyFrom(this._lineBoundingBox.position);
@@ -395,10 +430,17 @@ export class BoundingBoxGizmo extends Gizmo {
             this._lineBoundingBox.computeWorldMatrix();
             this._anchorMesh.position.copyFrom(this._lineBoundingBox.absolutePosition);
 
-            // restore position/rotation values
+            // Restore position/rotation values
             this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
             this.attachedMesh.position.copyFrom(this._tmpVector);
+
+            // Restore original parent
             this.attachedMesh.setParent(originalParent);
+
+            // Restore original skeleton override mesh
+            if (this.attachedMesh.skeleton) {
+                this.attachedMesh.skeleton.overrideMesh = originalSkeletonOverrideMesh;
+            }
         }
 
         this._updateRotationSpheres();

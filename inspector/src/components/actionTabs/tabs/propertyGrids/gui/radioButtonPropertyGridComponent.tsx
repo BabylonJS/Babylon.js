@@ -8,8 +8,10 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
+import { GlobalState } from '../../../../globalState';
 
 interface IRadioButtonPropertyGridComponentProps {
+    globalState: GlobalState;
     radioButton: RadioButton,
     lockObject: LockObject,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
@@ -25,8 +27,8 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={radioButton} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="RADIO BUTTON">
+                <CommonControlPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} control={radioButton} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent globalState={this.props.globalState} title="RADIO BUTTON">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Thickness" target={radioButton} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Check size ratio" target={radioButton} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Group" target={radioButton} propertyName="group" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

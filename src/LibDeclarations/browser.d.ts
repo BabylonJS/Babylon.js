@@ -22,21 +22,6 @@ interface Window {
     setImmediate(handler: (...args: any[]) => void): number;
 }
 
-interface Document {
-    mozCancelFullScreen(): void;
-    msCancelFullScreen(): void;
-    webkitCancelFullScreen(): void;
-    requestPointerLock(): void;
-    exitPointerLock(): void;
-    mozFullScreen: boolean;
-    msIsFullScreen: boolean;
-    readonly webkitIsFullScreen: boolean;
-    readonly pointerLockElement: Element;
-    mozPointerLockElement: HTMLElement;
-    msPointerLockElement: HTMLElement;
-    webkitPointerLockElement: HTMLElement;
-}
-
 interface HTMLCanvasElement {
     requestPointerLock(): void;
     msRequestPointerLock?(): void;

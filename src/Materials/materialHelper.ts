@@ -13,6 +13,8 @@ import { Light } from "../Lights/light";
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
+import { MaterialDefines } from "./materialDefines";
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for
@@ -34,7 +36,12 @@ export class MaterialHelper {
             effect.setVector3("vEyePosition", scene._forcedViewPosition);
             return;
         }
-        effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera!.globalPosition);
+        var globalPosition = scene.activeCamera!.globalPosition;
+        if (!globalPosition) {
+            // Use WebVRFreecamera's device position as global position is not it's actual position in babylon space
+            globalPosition = (scene.activeCamera! as WebVRFreeCamera).devicePosition;
+        }
+        effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
     }
 
     /**
@@ -74,6 +81,16 @@ export class MaterialHelper {
     }
 
     /**
+     * Gets the current status of the fog (should it be enabled?)
+     * @param mesh defines the mesh to evaluate for fog support
+     * @param scene defines the hosting scene
+     * @returns true if fog must be enabled
+     */
+    public static GetFogState(mesh: AbstractMesh, scene: Scene) {
+        return (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE);
+    }
+
+    /**
      * Helper used to prepare the list of defines associated with misc. values for shader compilation
      * @param mesh defines the current mesh
      * @param scene defines the current scene
@@ -87,7 +104,7 @@ export class MaterialHelper {
         if (defines._areMiscDirty) {
             defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
             defines["POINTSIZE"] = pointsCloud;
-            defines["FOG"] = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && fogEnabled);
+            defines["FOG"] = fogEnabled && this.GetFogState(mesh, scene);
             defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
             defines["ALPHATEST"] = alphaTest;
         }
@@ -149,6 +166,49 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the defines for bones
+     * @param mesh The mesh containing the geometry data we will draw
+     * @param defines The defines to update
+     */
+    public static PrepareDefinesForBones(mesh: AbstractMesh, defines: any) {
+        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+            defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
+
+            const materialSupportsBoneTexture = defines["BONETEXTURE"] !== undefined;
+
+            if (mesh.skeleton.isUsingTextureForMatrices && materialSupportsBoneTexture) {
+                defines["BONETEXTURE"] = true;
+            } else {
+                defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
+                defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
+            }
+        } else {
+            defines["NUM_BONE_INFLUENCERS"] = 0;
+            defines["BonesPerMesh"] = 0;
+        }
+    }
+
+    /**
+     * Prepares the defines for morph targets
+     * @param mesh The mesh containing the geometry data we will draw
+     * @param defines The defines to update
+     */
+    public static PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) {
+        var manager = (<Mesh>mesh).morphTargetManager;
+        if (manager) {
+            defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
+            defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
+            defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
+            defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
+        } else {
+            defines["MORPHTARGETS_TANGENT"] = false;
+            defines["MORPHTARGETS_NORMAL"] = false;
+            defines["MORPHTARGETS"] = false;
+            defines["NUM_MORPH_INFLUENCERS"] = 0;
+        }
+    }
+
+    /**
      * Prepares the defines used in the shader depending on the attributes data available in the mesh
      * @param mesh The mesh containing the geometry data we will draw
      * @param defines The defines to update
@@ -187,39 +247,29 @@ export class MaterialHelper {
         }
 
         if (useBones) {
-            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
-
-                const materialSupportsBoneTexture = defines["BONETEXTURE"] !== undefined;
-
-                if (mesh.skeleton.isUsingTextureForMatrices && materialSupportsBoneTexture) {
-                    defines["BONETEXTURE"] = true;
-                } else {
-                    defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
-                    defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
-                }
-            } else {
-                defines["NUM_BONE_INFLUENCERS"] = 0;
-                defines["BonesPerMesh"] = 0;
-            }
+            this.PrepareDefinesForBones(mesh, defines);
         }
 
         if (useMorphTargets) {
-            var manager = (<Mesh>mesh).morphTargetManager;
-            if (manager) {
-                defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
-                defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
-                defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
-                defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
-            } else {
-                defines["MORPHTARGETS_TANGENT"] = false;
-                defines["MORPHTARGETS_NORMAL"] = false;
-                defines["MORPHTARGETS"] = false;
-                defines["NUM_MORPH_INFLUENCERS"] = 0;
-            }
+            this.PrepareDefinesForMorphTargets(mesh, defines);
         }
 
         return true;
+    }
+
+    /**
+     * Prepares the defines related to multiview
+     * @param scene The scene we are intending to draw
+     * @param defines The defines to update
+     */
+    public static PrepareDefinesForMultiview(scene: Scene, defines: any) {
+        if (scene.activeCamera) {
+            var previousMultiview = defines.MULTIVIEW;
+            defines.MULTIVIEW = (scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1);
+            if (defines.MULTIVIEW != previousMultiview) {
+                defines.markAsUnprocessed();
+            }
+        }
     }
 
     /**
@@ -245,7 +295,7 @@ export class MaterialHelper {
         var specularEnabled = false;
 
         if (scene.lightsEnabled && !disableLighting) {
-            for (var light of mesh._lightSources) {
+            for (var light of mesh.lightSources) {
                 needNormals = true;
 
                 if (defines["LIGHT" + lightIndex] === undefined) {
@@ -523,17 +573,25 @@ export class MaterialHelper {
     }
 
     /**
-     * Prepares the list of attributes required for instances according to the effect defines.
+     * Check and prepare the list of attributes required for instances according to the effect defines.
      * @param attribs The current list of supported attribs
-     * @param defines The current Defines of the effect
+     * @param defines The current MaterialDefines of the effect
      */
-    public static PrepareAttributesForInstances(attribs: string[], defines: any): void {
+    public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
         if (defines["INSTANCES"]) {
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+            this.PushAttributesForInstances(attribs);
         }
+    }
+
+    /**
+     * Add the list of attributes required for instances to the attribs array.
+     * @param attribs The current list of supported attribs
+     */
+    public static PushAttributesForInstances(attribs: string[]): void {
+        attribs.push("world0");
+        attribs.push("world1");
+        attribs.push("world2");
+        attribs.push("world3");
     }
 
     /**
@@ -573,11 +631,11 @@ export class MaterialHelper {
      * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      */
     public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false): void {
-        let len = Math.min(mesh._lightSources.length, maxSimultaneousLights);
+        let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
-            let light = mesh._lightSources[i];
+            let light = mesh.lightSources[i];
             let iAsString = i.toString();
 
             let scaledIntensity = light.getScaledIntensity();

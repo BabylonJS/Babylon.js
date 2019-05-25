@@ -7,6 +7,8 @@ declare module "babylonjs-gltf2interface" {
 }
 /**
  * Module for glTF 2.0 Interface
+ * @ignoreChildren
+ * @ignore
  */
 declare module BABYLON.GLTF2 {
     /**
@@ -852,52 +854,53 @@ declare module BABYLON.GLTF2 {
          */
         textures?: ITexture[];
     }
-}
 
-/**
- * Interface for glTF validation results
- */
-interface IGLTFValidationResults {
-    info: {
-        generator: string;
-        hasAnimations: boolean;
-        hasDefaultScene: boolean;
-        hasMaterials: boolean;
-        hasMorphTargets: boolean;
-        hasSkins: boolean;
-        hasTextures: boolean;
-        maxAttributesUsed: number;
-        primitivesCount: number
-    };
-    issues: {
-        messages: Array<string>;
-        numErrors: number;
-        numHints: number;
-        numInfos: number;
-        numWarnings: number;
-        truncated: boolean
-    };
-    mimeType: string;
-    uri: string;
-    validatedAt: string;
-    validatorVersion: string;
-}
+    /**
+     * The glTF validation results
+     */
+    interface IGLTFValidationResults {
+        info: {
+            generator: string;
+            hasAnimations: boolean;
+            hasDefaultScene: boolean;
+            hasMaterials: boolean;
+            hasMorphTargets: boolean;
+            hasSkins: boolean;
+            hasTextures: boolean;
+            maxAttributesUsed: number;
+            primitivesCount: number
+        };
+        issues: {
+            messages: Array<string>;
+            numErrors: number;
+            numHints: number;
+            numInfos: number;
+            numWarnings: number;
+            truncated: boolean
+        };
+        mimeType: string;
+        uri: string;
+        validatedAt: string;
+        validatorVersion: string;
+    }
 
-/**
- * Interface for glTF validation options
- */
-interface IGLTFValidationOptions {
-    uri?: string;
-    externalResourceFunction?: (uri: string) => Promise<Uint8Array>;
-    validateAccessorData?: boolean;
-    maxIssues?: number;
-    ignoredIssues?: Array<string>;
-    severityOverrides?: Object;
-}
+    /**
+     * The glTF validation options
+     */
+    interface IGLTFValidationOptions {
+        uri?: string;
+        externalResourceFunction?: (uri: string) => Promise<Uint8Array>;
+        validateAccessorData?: boolean;
+        maxIssues?: number;
+        ignoredIssues?: Array<string>;
+        severityOverrides?: Object;
+    }
 
-/**
- * glTF validator object
- */
-declare var GLTFValidator: {
-    validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
-};
+    /**
+     * The glTF validator object
+     */
+    interface IGLTFValidator {
+        validateBytes: (data: Uint8Array, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
+        validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
+    }
+}

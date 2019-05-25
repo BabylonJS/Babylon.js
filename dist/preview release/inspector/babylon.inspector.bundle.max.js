@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -5633,7 +5633,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#__resizable_base__ {\n  display: none; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs .hoverIcon:hover {\n    opacity: 0.8; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      display: grid;\n      grid-template-rows: 1fr;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            display: grid;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n        #actionTabs .tabs .panes .pane .messageLine {\n          text-align: center;\n          font-size: 12px;\n          font-style: italic;\n          opacity: 0.6; }\n        #actionTabs .tabs .panes .pane .iconMessageLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 30px 1fr; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .icon {\n            grid-column: 1;\n            display: grid;\n            align-items: center;\n            justify-items: center; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 140px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            -webkit-user-select: text;\n            -moz-user-select: text;\n            -ms-user-select: text;\n            user-select: text; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .textInputLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .textInputLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textInputLine .value {\n            display: flex;\n            align-items: center;\n            grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textInputLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: transparent;\n            border: 1px solid #337ab7;\n            margin: 0px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 1px solid #337ab7;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 24px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 5px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 1px solid transparent;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px;\n            border: 2px solid rgba(255, 255, 255, 0.4); }\n        #actionTabs .tabs .panes .pane .gltf-extension-property {\n          margin-left: 30px;\n          border-left: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 5px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .color3Line .firstLine {\n            height: 30px;\n            display: grid;\n            grid-template-columns: 1fr auto 20px 20px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 {\n              grid-column: 2;\n              display: flex;\n              align-items: center; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"] {\n                -webkit-appearance: none;\n                border: 1px solid rgba(255, 255, 255, 0.5);\n                padding: 0;\n                width: 30px;\n                height: 20px; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n                padding: 0; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n                border: none; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input {\n                margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .copy {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .expand {\n              grid-column: 4;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .color3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 5px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .listLine .options select {\n              width: 115px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px; }\n          #actionTabs .tabs .panes .pane .paneContainer .header {\n            display: grid;\n            grid-template-columns: 1fr auto;\n            background: #555555;\n            height: 30px;\n            padding-right: 5px;\n            cursor: pointer; }\n            #actionTabs .tabs .panes .pane .paneContainer .header .title {\n              margin-left: 5px;\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .paneContainer .header .collapse {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              justify-items: center;\n              transform-origin: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .header .collapse.closed {\n                transform: rotate(180deg); }\n          #actionTabs .tabs .panes .pane .paneContainer .paneList > div:not(:last-child) {\n            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#__resizable_base__ {\n  display: none; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs .hoverIcon:hover {\n    opacity: 0.8; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      display: grid;\n      grid-template-rows: 100%;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: 100%;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            margin-right: 5px;\n            display: grid;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n        #actionTabs .tabs .panes .pane .messageLine {\n          text-align: center;\n          font-size: 12px;\n          font-style: italic;\n          opacity: 0.6; }\n        #actionTabs .tabs .panes .pane .iconMessageLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 30px 1fr; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .icon {\n            grid-column: 1;\n            display: grid;\n            align-items: center;\n            justify-items: center; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 140px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            -webkit-user-select: text;\n            -moz-user-select: text;\n            -ms-user-select: text;\n            user-select: text; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .textInputLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .textInputLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textInputLine .value {\n            display: flex;\n            align-items: center;\n            grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textInputLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: transparent;\n            border: 1px solid #337ab7;\n            margin: 0px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 1px solid #337ab7;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 24px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 1px solid transparent;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px;\n            border: 2px solid rgba(255, 255, 255, 0.4); }\n        #actionTabs .tabs .panes .pane .gltf-extension-property {\n          margin-left: 30px;\n          border-left: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .color3Line .firstLine {\n            height: 30px;\n            display: grid;\n            grid-template-columns: 1fr auto 20px 20px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 {\n              grid-column: 2;\n              display: flex;\n              align-items: center; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"] {\n                -webkit-appearance: none;\n                border: 1px solid rgba(255, 255, 255, 0.5);\n                padding: 0;\n                width: 30px;\n                height: 20px; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n                padding: 0; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n                border: none; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input {\n                margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .copy {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .expand {\n              grid-column: 4;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .color3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .listLine .options select {\n              width: 115px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneList {\n            border-left: 3px solid transparent; }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneList {\n            border-left: 3px solid rgba(51, 122, 183, 0.8); }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneContainer-content .header .title {\n            border-left: 3px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border {\n            grid-row: 1;\n            grid-column: 1;\n            opacity: 1;\n            border: 3px solid red;\n            transition: opacity 250ms;\n            pointer-events: none; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border.transparent {\n              opacity: 0; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
 
 // exports
 
@@ -5671,26 +5671,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #222222; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #555555; }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 5;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 6;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 7; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 8; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .gizmo {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .gizmo.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .postProcessTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .postProcessTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .renderingPipelineTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .renderingPipelineTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
-
-// exports
-
-
-/***/ }),
-
-/***/ "../../node_modules/css-loader/index.js!./index.css":
-/*!***************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/css-loader!./index.css ***!
-  \***************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
+exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #222222; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #555555; }\n\n.react-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .bounding-box {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .bounding-box.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .postProcessTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .postProcessTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .renderingPipelineTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .renderingPipelineTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .skeletonTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .skeletonTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
 
 // exports
 
@@ -33188,10 +33169,12 @@ var ActionTabsComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._once = true;
         var initialIndex = 0;
-        var validationResutls = _this.props.globalState.validationResults;
-        if (validationResutls) {
-            if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
-                initialIndex = 3;
+        if (_this.props.globalState) {
+            var validationResutls = _this.props.globalState.validationResults;
+            if (validationResutls) {
+                if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
+                    initialIndex = 3;
+                }
             }
         }
         _this.state = { selectedEntity: null, selectedIndex: initialIndex };
@@ -33199,31 +33182,42 @@ var ActionTabsComponent = /** @class */ (function (_super) {
     }
     ActionTabsComponent.prototype.componentWillMount = function () {
         var _this = this;
-        this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add(function (entity) {
-            _this.setState({ selectedEntity: entity, selectedIndex: 0 });
-        });
-        this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add(function (index) {
-            _this.setState({ selectedIndex: index });
-        });
+        if (this.props.globalState) {
+            this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add(function (entity) {
+                _this.setState({ selectedEntity: entity, selectedIndex: 0 });
+            });
+            this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add(function (index) {
+                _this.setState({ selectedIndex: index });
+            });
+        }
     };
     ActionTabsComponent.prototype.componentWillUnmount = function () {
-        if (this._onSelectionChangeObserver) {
-            this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
-        }
-        if (this._onTabChangedObserver) {
-            this.props.globalState.onTabChangedObservable.remove(this._onTabChangedObserver);
+        if (this.props.globalState) {
+            if (this._onSelectionChangeObserver) {
+                this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
+            }
+            if (this._onTabChangedObserver) {
+                this.props.globalState.onTabChangedObservable.remove(this._onTabChangedObserver);
+            }
         }
     };
     ActionTabsComponent.prototype.changeSelectedTab = function (index) {
-        this.props.globalState.onTabChangedObservable.notifyObservers(index);
+        if (this.props.globalState) {
+            this.props.globalState.onTabChangedObservable.notifyObservers(index);
+        }
     };
     ActionTabsComponent.prototype.renderContent = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabsComponent__WEBPACK_IMPORTED_MODULE_2__["TabsComponent"], { selectedIndex: this.state.selectedIndex, onSelectedIndexChange: function (value) { return _this.changeSelectedTab(value); } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_propertyGridTabComponent__WEBPACK_IMPORTED_MODULE_7__["PropertyGridTabComponent"], { title: "Properties", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faFileAlt"], scene: this.props.scene, selectedEntity: this.state.selectedEntity, globalState: this.props.globalState, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_debugTabComponent__WEBPACK_IMPORTED_MODULE_5__["DebugTabComponent"], { title: "Debug", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faBug"], scene: this.props.scene, globalState: this.props.globalState }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_statisticsTabComponent__WEBPACK_IMPORTED_MODULE_4__["StatisticsTabComponent"], { title: "Statistics", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faChartBar"], scene: this.props.scene, globalState: this.props.globalState }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_toolsTabComponent__WEBPACK_IMPORTED_MODULE_9__["ToolsTabComponent"], { title: "Tools", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faWrench"], scene: this.props.scene, globalState: this.props.globalState })));
+        if (this.props.globalState && this.props.scene) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabsComponent__WEBPACK_IMPORTED_MODULE_2__["TabsComponent"], { selectedIndex: this.state.selectedIndex, onSelectedIndexChange: function (value) { return _this.changeSelectedTab(value); } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_propertyGridTabComponent__WEBPACK_IMPORTED_MODULE_7__["PropertyGridTabComponent"], { title: "Properties", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faFileAlt"], scene: this.props.scene, selectedEntity: this.state.selectedEntity, globalState: this.props.globalState, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_debugTabComponent__WEBPACK_IMPORTED_MODULE_5__["DebugTabComponent"], { title: "Debug", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faBug"], scene: this.props.scene, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_statisticsTabComponent__WEBPACK_IMPORTED_MODULE_4__["StatisticsTabComponent"], { title: "Statistics", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faChartBar"], scene: this.props.scene, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_toolsTabComponent__WEBPACK_IMPORTED_MODULE_9__["ToolsTabComponent"], { title: "Tools", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faWrench"], scene: this.props.scene, globalState: this.props.globalState })));
+        }
+        else {
+            return null;
+        }
     };
     ActionTabsComponent.prototype.onClose = function () {
         if (!this.props.onClose) {
@@ -33242,7 +33236,7 @@ var ActionTabsComponent = /** @class */ (function (_super) {
         if (this.props.popupMode) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "actionTabs" },
                 !this.props.noHeader &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_8__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_8__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined }),
                 this.renderContent()));
         }
         if (this._once) {
@@ -33258,7 +33252,7 @@ var ActionTabsComponent = /** @class */ (function (_super) {
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_6___default.a, { id: "actionTabs", minWidth: 300, maxWidth: 600, size: { height: "100%" }, minHeight: "100%", enable: { top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false } },
             !this.props.noHeader &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_8__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_8__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined }),
             this.renderContent()));
     };
     return ActionTabsComponent;
@@ -33308,7 +33302,7 @@ var LineContainerComponent = /** @class */ (function (_super) {
             LineContainerComponent._InMemoryStorage[_this.props.title] = !_this.props.closed;
             initialState = !_this.props.closed;
         }
-        _this.state = { isExpanded: initialState };
+        _this.state = { isExpanded: initialState, isHighlighted: false };
         return _this;
     }
     LineContainerComponent.prototype.switchExpandedState = function () {
@@ -33327,6 +33321,24 @@ var LineContainerComponent = /** @class */ (function (_super) {
         }
         this.setState({ isExpanded: newState });
     };
+    LineContainerComponent.prototype.componentDidMount = function () {
+        var _this = this;
+        if (this.props.globalState && !this.props.globalState.selectedLineContainerTitle) {
+            return;
+        }
+        if (this.props.globalState && this.props.globalState.selectedLineContainerTitle === this.props.title) {
+            setTimeout(function () {
+                _this.props.globalState.selectedLineContainerTitle = "";
+            });
+            this.setState({ isExpanded: true, isHighlighted: true });
+            window.setTimeout(function () {
+                _this.setState({ isHighlighted: false });
+            }, 5000);
+        }
+        else {
+            this.setState({ isExpanded: false });
+        }
+    };
     LineContainerComponent.prototype.renderHeader = function () {
         var _this = this;
         var className = this.state.isExpanded ? "collapse" : "collapse closed";
@@ -33337,11 +33349,14 @@ var LineContainerComponent = /** @class */ (function (_super) {
     };
     LineContainerComponent.prototype.render = function () {
         if (!this.state.isExpanded) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer" }, this.renderHeader()));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer-content" }, this.renderHeader())));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer" },
-            this.renderHeader(),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneList" }, this.props.children)));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer-content" },
+                this.renderHeader(),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneList" }, this.props.children)),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer-highlight-border" + (!this.state.isHighlighted ? " transparent" : "") })));
     };
     return LineContainerComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -33445,7 +33460,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             _this.state = { isSelected: _this.props.isSelected() };
         }
         else {
-            _this.state = { isSelected: _this.props.target[_this.props.propertyName] };
+            _this.state = { isSelected: _this.props.target[_this.props.propertyName] === true };
         }
         return _this;
     }
@@ -33455,7 +33470,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             currentState = nextProps.isSelected();
         }
         else {
-            currentState = nextProps.target[nextProps.propertyName];
+            currentState = nextProps.target[nextProps.propertyName] === true;
         }
         if (currentState !== nextState.isSelected || this._localChange) {
             nextState.isSelected = currentState;
@@ -33479,6 +33494,9 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
                 });
             }
             this.props.target[this.props.propertyName] = !this.state.isSelected;
+        }
+        if (this.props.onValueChanged) {
+            this.props.onValueChanged();
         }
         this.setState({ isSelected: !this.state.isSelected });
     };
@@ -33651,7 +33669,9 @@ __webpack_require__.r(__webpack_exports__);
 var FileButtonLineComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FileButtonLineComponent, _super);
     function FileButtonLineComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._id = FileButtonLineComponent._IDGenerator++;
+        return _this;
     }
     FileButtonLineComponent.prototype.onChange = function (evt) {
         var files = evt.target.files;
@@ -33663,9 +33683,10 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
     FileButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload", className: "file-upload" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "upload", id: "file-upload", type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload" + this._id, className: "file-upload" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "upload", id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
     };
+    FileButtonLineComponent._IDGenerator = 0;
     return FileButtonLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
@@ -33694,7 +33715,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
         var currentValue = _this.props.target[_this.props.propertyName];
-        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(3)) : "0" };
+        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 3)) : "0" };
         _this._store = currentValue;
         return _this;
     }
@@ -33707,7 +33728,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var newValue = nextProps.target[nextProps.propertyName];
-        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(3) : "0";
+        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
             return true;
@@ -33763,7 +33784,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: "0.01", className: "numeric-input", value: this.state.value, onBlur: function () { return _this.unlock(); }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || "0.01", className: "numeric-input", value: this.state.value, onBlur: function () { return _this.unlock(); }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
     };
     return FloatLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -33863,7 +33884,10 @@ var NumericInputComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
             this.props.label &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label" }, this.props.label + ": "),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: "1", className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); } })));
+    };
+    NumericInputComponent.defaultProps = {
+        step: 1,
     };
     return NumericInputComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -33897,7 +33921,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
     function OptionsLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { value: 0 };
+        _this.state = { value: props.target[props.propertyName] };
         return _this;
     }
     OptionsLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -33978,13 +34002,13 @@ var QuaternionLineComponent = /** @class */ (function (_super) {
     function QuaternionLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { isExpanded: false, value: _this.props.target[_this.props.propertyName] };
+        _this.state = { isExpanded: false, value: _this.props.target[_this.props.propertyName].clone() };
         return _this;
     }
     QuaternionLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         var nextPropsValue = nextProps.target[nextProps.propertyName];
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
-            nextState.value = nextPropsValue;
+            nextState.value = nextPropsValue.clone();
             this._localChange = false;
             return true;
         }
@@ -34038,7 +34062,7 @@ var QuaternionLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + quat.x.toFixed(2) + ", Y: " + quat.y.toFixed(2) + ", Z: " + quat.z.toFixed(2) + ", W: " + quat.w.toFixed(2)),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + quat.x.toFixed(1) + ", Y: " + quat.y.toFixed(1) + ", Z: " + quat.z.toFixed(1) + ", W: " + quat.w.toFixed(1)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand", onClick: function () { return _this.switchExpandState(); } }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
@@ -34133,7 +34157,11 @@ var SliderLineComponent = /** @class */ (function (_super) {
             };
         }
         else {
-            _this.state = { value: _this.props.target[_this.props.propertyName] };
+            var value = _this.props.target[_this.props.propertyName];
+            if (value === undefined) {
+                value = _this.props.maximum;
+            }
+            _this.state = { value: value };
         }
         return _this;
     }
@@ -34143,6 +34171,9 @@ var SliderLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var currentState = nextProps.target[nextProps.propertyName];
+        if (currentState === undefined) {
+            currentState = nextProps.maximum;
+        }
         if (currentState !== nextState.value || this._localChange) {
             nextState.value = currentState;
             this._localChange = false;
@@ -34177,10 +34208,11 @@ var SliderLineComponent = /** @class */ (function (_super) {
     };
     SliderLineComponent.prototype.render = function () {
         var _this = this;
+        var decimalCount = this.props.decimalCount !== undefined ? this.props.decimalCount : 2;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "slider" },
-                this.state.value ? this.state.value.toFixed(this.props.decimalCount || 2) : "0",
+                this.state.value ? this.state.value.toFixed(decimalCount) : "0",
                 "\u00A0",
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: this.props.step, min: this.props.minimum, max: this.props.maximum, value: this.state.value, onInput: function (evt) { return _this.onInput(evt.target.value); }, onChange: function (evt) { return _this.onChange(evt.target.value); } }))));
     };
@@ -34358,12 +34390,17 @@ var TextureLineComponent = /** @class */ (function (_super) {
     TextureLineComponent.prototype.updatePreview = function () {
         var _this = this;
         var texture = this.props.texture;
+        if (!texture.isReady() && texture._texture) {
+            texture._texture.onLoadedObservable.addOnce(function () {
+                _this.updatePreview();
+            });
+        }
         var scene = texture.getScene();
         var engine = scene.getEngine();
         var size = texture.getSize();
         var ratio = size.width / size.height;
         var width = this.props.width;
-        var height = (width / ratio) | 0;
+        var height = (width / ratio) | 1;
         var passPostProcess;
         if (!texture.isCube) {
             passPostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassPostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
@@ -34380,7 +34417,9 @@ var TextureLineComponent = /** @class */ (function (_super) {
             return;
         }
         var previewCanvas = this.refs.canvas;
-        this.props.globalState.blockMutationUpdates = true;
+        if (this.props.globalState) {
+            this.props.globalState.blockMutationUpdates = true;
+        }
         var rtt = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
         passPostProcess.onApply = function (effect) {
             effect.setTexture("textureSampler", texture);
@@ -34444,13 +34483,15 @@ var TextureLineComponent = /** @class */ (function (_super) {
         rtt.dispose();
         passPostProcess.dispose();
         previewCanvas.style.height = height + "px";
-        this.props.globalState.blockMutationUpdates = false;
+        if (this.props.globalState) {
+            this.props.globalState.blockMutationUpdates = false;
+        }
     };
     TextureLineComponent.prototype.render = function () {
         var _this = this;
         var texture = this.props.texture;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textureLine" },
-            texture.isCube &&
+            !this.props.hideChannelSelect && texture.isCube &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control3D" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 0 ? "px command selected" : "px command", onClick: function () { return _this.setState({ face: 0 }); } }, "PX"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 1 ? "nx command selected" : "nx command", onClick: function () { return _this.setState({ face: 1 }); } }, "NX"),
@@ -34458,7 +34499,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 3 ? "ny command selected" : "ny command", onClick: function () { return _this.setState({ face: 3 }); } }, "NY"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 4 ? "pz command selected" : "pz command", onClick: function () { return _this.setState({ face: 4 }); } }, "PZ"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 5 ? "nz command selected" : "nz command", onClick: function () { return _this.setState({ face: 5 }); } }, "NZ")),
-            !texture.isCube &&
+            !this.props.hideChannelSelect && !texture.isCube &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && !this.state.displayGreen ? "red command selected" : "red command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: false, displayBlue: false, displayAlpha: false }); } }, "R"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayGreen && !this.state.displayBlue ? "green command selected" : "green command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: true, displayBlue: false, displayAlpha: false }); } }, "G"),
@@ -34492,6 +34533,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
+
+
+
 
 
 
@@ -34526,12 +34571,13 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
     TextureLinkLineComponent.prototype.debugTexture = function () {
         var texture = this.props.texture;
         var material = this.props.material;
-        if (!material) {
+        if (!material || !texture) {
             return;
         }
         var scene = material.getScene();
         if (material.reservedDataStore && material.reservedDataStore.debugTexture === texture) {
             var debugMaterial_1 = material.reservedDataStore.debugMaterial;
+            texture.level = material.reservedDataStore.level;
             for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
                 var mesh = _a[_i];
                 if (mesh.material === debugMaterial_1) {
@@ -34567,6 +34613,8 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         }
         material.reservedDataStore.debugTexture = texture;
         material.reservedDataStore.debugMaterial = debugMaterial;
+        material.reservedDataStore.level = texture.level;
+        texture.level = 1.0;
         if (this.props.onDebugSelectionChangeObservable) {
             this.props.onDebugSelectionChangeObservable.notifyObservers(texture);
         }
@@ -34582,10 +34630,24 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         var texture = this.props.texture;
         this.props.onSelectionChangedObservable.notifyObservers(texture);
     };
+    TextureLinkLineComponent.prototype.updateTexture = function (file) {
+        var _this = this;
+        var material = this.props.material;
+        babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadFile(file, function (data) {
+            var blob = new Blob([data], { type: "octet/stream" });
+            var url = URL.createObjectURL(blob);
+            var texture = new babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Texture"](url, material.getScene());
+            material[_this.props.propertyName] = texture;
+            _this.forceUpdate();
+        }, undefined, true);
+    };
     TextureLinkLineComponent.prototype.render = function () {
         var _this = this;
         var texture = this.props.texture;
         if (!texture) {
+            if (this.props.propertyName) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_6__["FileButtonLineComponent"], { label: "Add " + this.props.label + " texture", onClick: function (file) { return _this.updateTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }));
+            }
             return null;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textureLinkLine" },
@@ -34717,8 +34779,11 @@ var Vector2LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }))));
+    };
+    Vector2LineComponent.defaultProps = {
+        step: 0.001,
     };
     return Vector2LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -34783,29 +34848,26 @@ var Vector3LineComponent = /** @class */ (function (_super) {
             initialValue: previousValue
         });
     };
+    Vector3LineComponent.prototype.updateVector3 = function () {
+        var store = this.props.target[this.props.propertyName].clone();
+        this.props.target[this.props.propertyName] = this.state.value;
+        this.setState({ value: store });
+        this.raiseOnPropertyChanged(store);
+    };
     Vector3LineComponent.prototype.updateStateX = function (value) {
         this._localChange = true;
-        var store = this.state.value.clone();
-        this.props.target[this.props.propertyName].x = value;
         this.state.value.x = value;
-        this.setState({ value: this.state.value });
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     };
     Vector3LineComponent.prototype.updateStateY = function (value) {
         this._localChange = true;
-        var store = this.state.value.clone();
-        this.props.target[this.props.propertyName].y = value;
         this.state.value.y = value;
-        this.setState({ value: this.state.value });
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     };
     Vector3LineComponent.prototype.updateStateZ = function (value) {
         this._localChange = true;
-        var store = this.state.value.clone();
-        this.props.target[this.props.propertyName].z = value;
         this.state.value.z = value;
-        this.setState({ value: this.state.value });
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     };
     Vector3LineComponent.prototype.render = function () {
         var _this = this;
@@ -34817,9 +34879,12 @@ var Vector3LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "z", value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }))));
+    };
+    Vector3LineComponent.defaultProps = {
+        step: 0.001,
     };
     return Vector3LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -34875,9 +34940,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _propertyGrids_renderGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./propertyGrids/renderGridPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/renderGridPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Debug/skeletonViewer */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__);
-
+/* harmony import */ var babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Debug/physicsViewer */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__);
 
 
 
@@ -34890,9 +34954,7 @@ var DebugTabComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DebugTabComponent, _super);
     function DebugTabComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._skeletonViewersEnabled = false;
         _this._physicsViewersEnabled = false;
-        _this._skeletonViewers = new Array();
         return _this;
     }
     DebugTabComponent.prototype.componentWillMount = function () {
@@ -34903,62 +34965,20 @@ var DebugTabComponent = /** @class */ (function (_super) {
         if (!scene.reservedDataStore) {
             scene.reservedDataStore = {};
         }
-        for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
-            var mesh = _a[_i];
-            if (mesh.skeleton && mesh.reservedDataStore && mesh.reservedDataStore.skeletonViewer) {
-                this._skeletonViewers.push(mesh.reservedDataStore.skeletonViewer);
-            }
-        }
-        this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
         this._physicsViewersEnabled = scene.reservedDataStore.physicsViewer != null;
     };
     DebugTabComponent.prototype.componentWillUnmount = function () {
-    };
-    DebugTabComponent.prototype.switchSkeletonViewers = function () {
-        this._skeletonViewersEnabled = !this._skeletonViewersEnabled;
-        var scene = this.props.scene;
-        if (this._skeletonViewersEnabled) {
-            for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
-                var mesh = _a[_i];
-                if (mesh.skeleton) {
-                    var found = false;
-                    for (var sIndex = 0; sIndex < this._skeletonViewers.length; sIndex++) {
-                        if (this._skeletonViewers[sIndex].skeleton === mesh.skeleton) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (found) {
-                        continue;
-                    }
-                    var viewer = new babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["SkeletonViewer"](mesh.skeleton, mesh, scene, true, 0);
-                    viewer.isEnabled = true;
-                    this._skeletonViewers.push(viewer);
-                    if (!mesh.reservedDataStore) {
-                        mesh.reservedDataStore = {};
-                    }
-                    mesh.reservedDataStore.skeletonViewer = viewer;
-                }
-            }
-        }
-        else {
-            for (var index = 0; index < this._skeletonViewers.length; index++) {
-                this._skeletonViewers[index].mesh.reservedDataStore.skeletonViewer = null;
-                this._skeletonViewers[index].dispose();
-            }
-            this._skeletonViewers = [];
-        }
     };
     DebugTabComponent.prototype.switchPhysicsViewers = function () {
         this._physicsViewersEnabled = !this._physicsViewersEnabled;
         var scene = this.props.scene;
         if (this._physicsViewersEnabled) {
-            var physicsViewer = new babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["PhysicsViewer"](scene);
+            var physicsViewer = new babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["PhysicsViewer"](scene);
             scene.reservedDataStore.physicsViewer = physicsViewer;
             for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
                 var mesh = _a[_i];
                 if (mesh.physicsImpostor) {
-                    var debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor);
+                    var debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor, mesh);
                     if (debugMesh) {
                         debugMesh.reservedDataStore = { hidden: true };
                         debugMesh.material.reservedDataStore = { hidden: true };
@@ -34978,23 +34998,22 @@ var DebugTabComponent = /** @class */ (function (_super) {
             return null;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "HELPERS" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_renderGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["RenderGridPropertyGridComponent"], { scene: scene }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Bones", isSelected: function () { return _this._skeletonViewersEnabled; }, onSelect: function () { return _this.switchSkeletonViewers(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "HELPERS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_renderGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["RenderGridPropertyGridComponent"], { globalState: this.props.globalState, scene: scene }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Physics", isSelected: function () { return _this._physicsViewersEnabled; }, onSelect: function () { return _this.switchPhysicsViewers(); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TEXTURE CHANNELS" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Diffuse", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Ambient", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Specular", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Emissive", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Bump", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Opacity", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Reflection", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Refraction", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "ColorGrading", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Lightmap", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Fresnel", isSelected: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled; }, onSelect: function () { return babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled = !babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled; } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FEATURES" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURE CHANNELS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Diffuse", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].DiffuseTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Ambient", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].AmbientTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Specular", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].SpecularTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Emissive", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].EmissiveTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Bump", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].BumpTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Opacity", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].OpacityTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Reflection", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ReflectionTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Refraction", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].RefractionTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "ColorGrading", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].ColorGradingTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Lightmap", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].LightmapTextureEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Fresnel", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled; } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "FEATURES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Animations", isSelected: function () { return scene.animationsEnabled; }, onSelect: function () { return scene.animationsEnabled = !scene.animationsEnabled; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Collisions", isSelected: function () { return scene.collisionsEnabled; }, onSelect: function () { return scene.collisionsEnabled = !scene.collisionsEnabled; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Fog", isSelected: function () { return scene.fogEnabled; }, onSelect: function () { return scene.fogEnabled = !scene.fogEnabled; } }),
@@ -35067,6 +35086,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyGrids_postProcesses_defaultRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_postProcesses_ssaoRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_postProcesses_ssao2RenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_38__ = __webpack_require__(/*! ./propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_meshes_skeletonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_39__ = __webpack_require__(/*! ./propertyGrids/meshes/skeletonPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_meshes_bonePropertyGridComponent__WEBPACK_IMPORTED_MODULE_40__ = __webpack_require__(/*! ./propertyGrids/meshes/bonePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_lights_directionalLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_41__ = __webpack_require__(/*! ./propertyGrids/lights/directionalLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/directionalLightPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_lights_spotLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_42__ = __webpack_require__(/*! ./propertyGrids/lights/spotLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/spotLightPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_postProcesses_lensRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_43__ = __webpack_require__(/*! ./propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_materials_nodeMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_44__ = __webpack_require__(/*! ./propertyGrids/materials/nodeMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx");
+
+
+
+
+
+
 
 
 
@@ -35132,148 +35163,173 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
         }
         if (entity.getClassName) {
             var className = entity.getClassName();
+            if (className === "Scene") {
+                var scene = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_scenePropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["ScenePropertyGridComponent"], { scene: scene, globalState: this.props.globalState, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
             if (className.indexOf("Mesh") !== -1) {
                 var mesh = entity;
                 if (mesh.getTotalVertices() > 0) {
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_meshes_meshPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["MeshPropertyGridComponent"], { mesh: mesh, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_meshes_meshPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["MeshPropertyGridComponent"], { globalState: this.props.globalState, mesh: mesh, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
                 }
             }
-            if (className.indexOf("FreeCamera") !== -1) {
+            if (className.indexOf("FreeCamera") !== -1 || className.indexOf("UniversalCamera") !== -1) {
                 var freeCamera = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_cameras_freeCameraPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["FreeCameraPropertyGridComponent"], { camera: freeCamera, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_cameras_freeCameraPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["FreeCameraPropertyGridComponent"], { globalState: this.props.globalState, camera: freeCamera, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("ArcRotateCamera") !== -1) {
                 var arcRotateCamera = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_cameras_arcRotateCameraPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["ArcRotateCameraPropertyGridComponent"], { camera: arcRotateCamera, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_cameras_arcRotateCameraPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["ArcRotateCameraPropertyGridComponent"], { globalState: this.props.globalState, camera: arcRotateCamera, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "HemisphericLight") {
                 var hemisphericLight = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_lights_hemisphericLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__["HemisphericLightPropertyGridComponent"], { light: hemisphericLight, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_lights_hemisphericLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__["HemisphericLightPropertyGridComponent"], { globalState: this.props.globalState, light: hemisphericLight, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "PointLight") {
                 var pointLight = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_lights_pointLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["PointLightPropertyGridComponent"], { light: pointLight, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_lights_pointLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["PointLightPropertyGridComponent"], { globalState: this.props.globalState, light: pointLight, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className === "DirectionalLight") {
+                var pointLight = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_lights_directionalLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_41__["DirectionalLightPropertyGridComponent"], { globalState: this.props.globalState, light: pointLight, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className === "SpotLight") {
+                var pointLight = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_lights_spotLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_42__["SpotLightPropertyGridComponent"], { globalState: this.props.globalState, light: pointLight, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("TransformNode") !== -1 || className.indexOf("Mesh") !== -1) {
                 var transformNode = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_meshes_transformNodePropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["TransformNodePropertyGridComponent"], { transformNode: transformNode, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_meshes_transformNodePropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["TransformNodePropertyGridComponent"], { transformNode: transformNode, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "StandardMaterial") {
                 var material = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_standardMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_4__["StandardMaterialPropertyGridComponent"], { material: material, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_standardMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_4__["StandardMaterialPropertyGridComponent"], { globalState: this.props.globalState, material: material, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className === "NodeMaterial") {
+                var material = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_nodeMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_44__["NodeMaterialPropertyGridComponent"], { globalState: this.props.globalState, material: material, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "PBRMaterial") {
                 var material = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_pbrMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["PBRMaterialPropertyGridComponent"], { material: material, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_pbrMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["PBRMaterialPropertyGridComponent"], { globalState: this.props.globalState, material: material, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "PBRMetallicRoughnessMaterial") {
                 var material = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_pbrMetallicRoughnessMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__["PBRMetallicRoughnessMaterialPropertyGridComponent"], { material: material, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_pbrMetallicRoughnessMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__["PBRMetallicRoughnessMaterialPropertyGridComponent"], { globalState: this.props.globalState, material: material, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "PBRSpecularGlossinessMaterial") {
                 var material = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_pbrSpecularGlossinessMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_32__["PBRSpecularGlossinessMaterialPropertyGridComponent"], { material: material, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_pbrSpecularGlossinessMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_32__["PBRSpecularGlossinessMaterialPropertyGridComponent"], { globalState: this.props.globalState, material: material, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "BackgroundMaterial") {
                 var material = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_backgroundMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["BackgroundMaterialPropertyGridComponent"], { material: material, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_backgroundMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["BackgroundMaterialPropertyGridComponent"], { globalState: this.props.globalState, material: material, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "AnimationGroup") {
                 var animationGroup = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_animationGroupPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__["AnimationGroupGridComponent"], { animationGroup: animationGroup, scene: this.props.scene, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_animationGroupPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__["AnimationGroupGridComponent"], { globalState: this.props.globalState, animationGroup: animationGroup, scene: this.props.scene, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("Material") !== -1) {
                 var material = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_materialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_3__["MaterialPropertyGridComponent"], { material: material, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_materialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_3__["MaterialPropertyGridComponent"], { material: material, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("DefaultRenderingPipeline") !== -1) {
                 var renderPipeline = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_defaultRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_36__["DefaultRenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_defaultRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_36__["DefaultRenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className.indexOf("LensRenderingPipeline") !== -1) {
+                var renderPipeline = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_lensRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_43__["LensRenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("SSAORenderingPipeline") !== -1) {
                 var renderPipeline = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_ssaoRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_37__["SSAORenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_ssaoRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_37__["SSAORenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("SSAO2RenderingPipeline") !== -1) {
                 var renderPipeline = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_ssao2RenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_38__["SSAO2RenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_ssao2RenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_38__["SSAO2RenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("RenderingPipeline") !== -1) {
                 var renderPipeline = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_renderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_35__["RenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_renderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_35__["RenderingPipelinePropertyGridComponent"], { renderPipeline: renderPipeline, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("PostProcess") !== -1) {
                 var postProcess = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_postProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_34__["PostProcessPropertyGridComponent"], { postProcess: postProcess, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_postProcesses_postProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_34__["PostProcessPropertyGridComponent"], { postProcess: postProcess, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("Texture") !== -1) {
                 var texture = entity;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_materials_texturePropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyGridComponent"], { texture: texture, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
+            if (className.indexOf("Skeleton") !== -1) {
+                var skeleton = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_meshes_skeletonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_39__["SkeletonPropertyGridComponent"], { skeleton: skeleton, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className.indexOf("Bone") !== -1) {
+                var bone = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_meshes_bonePropertyGridComponent__WEBPACK_IMPORTED_MODULE_40__["BonePropertyGridComponent"], { bone: bone, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
             if (className === "TextBlock") {
                 var textBlock = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["TextBlockPropertyGridComponent"], { textBlock: textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["TextBlockPropertyGridComponent"], { textBlock: textBlock, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "InputText") {
                 var inputText = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["InputTextPropertyGridComponent"], { inputText: inputText, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["InputTextPropertyGridComponent"], { inputText: inputText, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "ColorPicker") {
                 var colorPicker = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__["ColorPickerPropertyGridComponent"], { colorPicker: colorPicker, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__["ColorPickerPropertyGridComponent"], { colorPicker: colorPicker, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "Image") {
                 var image = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__["ImagePropertyGridComponent"], { image: image, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__["ImagePropertyGridComponent"], { image: image, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "Slider") {
                 var slider = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__["SliderPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__["SliderPropertyGridComponent"], { slider: slider, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "ImageBasedSlider") {
                 var imageBasedSlider = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__["ImageBasedSliderPropertyGridComponent"], { imageBasedSlider: imageBasedSlider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__["ImageBasedSliderPropertyGridComponent"], { imageBasedSlider: imageBasedSlider, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "Rectangle") {
                 var rectangle = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__["RectanglePropertyGridComponent"], { rectangle: rectangle, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__["RectanglePropertyGridComponent"], { rectangle: rectangle, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "StackPanel") {
                 var stackPanel = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_33__["StackPanelPropertyGridComponent"], { stackPanel: stackPanel, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_33__["StackPanelPropertyGridComponent"], { stackPanel: stackPanel, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "Grid") {
                 var grid = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_30__["GridPropertyGridComponent"], { grid: grid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_30__["GridPropertyGridComponent"], { grid: grid, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "ScrollViewer") {
                 var scrollViewer = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__["ScrollViewerPropertyGridComponent"], { scrollViewer: scrollViewer, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__["ScrollViewerPropertyGridComponent"], { scrollViewer: scrollViewer, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "Ellipse") {
                 var ellipse = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_25__["EllipsePropertyGridComponent"], { ellipse: ellipse, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_25__["EllipsePropertyGridComponent"], { ellipse: ellipse, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "Checkbox") {
                 var checkbox = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_26__["CheckboxPropertyGridComponent"], { checkbox: checkbox, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_26__["CheckboxPropertyGridComponent"], { checkbox: checkbox, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "RadioButton") {
                 var radioButton = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_27__["RadioButtonPropertyGridComponent"], { radioButton: radioButton, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_27__["RadioButtonPropertyGridComponent"], { radioButton: radioButton, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className === "Line") {
                 var line = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_28__["LinePropertyGridComponent"], { line: line, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_28__["LinePropertyGridComponent"], { line: line, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (entity._host) {
                 var control = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["ControlPropertyGridComponent"], { control: control, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["ControlPropertyGridComponent"], { control: control, globalState: this.props.globalState, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
-        }
-        else if (entity.transformNodes) {
-            var scene = entity;
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_scenePropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["ScenePropertyGridComponent"], { scene: scene, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
         }
         return null;
     };
@@ -35397,16 +35453,176 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
         var animationGroup = this.props.animationGroup;
         var playButtonText = animationGroup.isPlaying ? "Pause" : "Play";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "CONTROLS" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONTROLS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: playButtonText, onClick: function () { return _this.playOrPause(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Speed ratio", minimum: 0, maximum: 10, step: 0.1, target: animationGroup, propertyName: "speedRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { ref: "timeline", label: "Current frame", minimum: animationGroup.from, maximum: animationGroup.to, step: (animationGroup.to - animationGroup.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "INFOS" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "INFOS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Animation count", value: animationGroup.targetedAnimations.length.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "From", value: animationGroup.from.toFixed(2) }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "To", value: animationGroup.to.toFixed(2) }))));
     };
     return AnimationGroupGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animationPropertyGridComponent.tsx":
+/*!*************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animationPropertyGridComponent.tsx ***!
+  \*************************************************************************************/
+/*! exports provided: AnimationGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AnimationGridComponent", function() { return AnimationGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Animations/animationPropertiesOverride */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+
+
+
+
+
+
+
+
+
+var AnimationGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AnimationGridComponent, _super);
+    function AnimationGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._animations = null;
+        _this._animationControl = {
+            from: 0,
+            to: 0,
+            loop: false
+        };
+        _this._isPlaying = false;
+        _this.state = { currentFrame: 0 };
+        var animatableAsAny = _this.props.animatable;
+        _this._ranges = animatableAsAny.getAnimationRanges ? animatableAsAny.getAnimationRanges() : [];
+        if (animatableAsAny.getAnimatables) {
+            var animatables = animatableAsAny.getAnimatables();
+            _this._animations = new Array();
+            animatables.forEach(function (animatable) {
+                var _a;
+                if (animatable.animations) {
+                    (_a = _this._animations).push.apply(_a, animatable.animations);
+                }
+            });
+            // Extract from and to
+            if (_this._animations && _this._animations.length) {
+                _this._animations.forEach(function (animation) {
+                    var keys = animation.getKeys();
+                    if (keys && keys.length > 0) {
+                        if (keys[0].frame < _this._animationControl.from) {
+                            _this._animationControl.from = keys[0].frame;
+                        }
+                        var lastKeyIndex = keys.length - 1;
+                        if (keys[lastKeyIndex].frame > _this._animationControl.to) {
+                            _this._animationControl.to = keys[lastKeyIndex].frame;
+                        }
+                    }
+                });
+            }
+        }
+        return _this;
+    }
+    AnimationGridComponent.prototype.playOrPause = function () {
+        var animatable = this.props.animatable;
+        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(animatable).length > 0;
+        if (this._isPlaying) {
+            this.props.scene.stopAnimation(this.props.animatable);
+            this._runningAnimatable = null;
+        }
+        else {
+            this._runningAnimatable = this.props.scene.beginAnimation(this.props.animatable, this._animationControl.from, this._animationControl.to, this._animationControl.loop);
+        }
+        this.forceUpdate();
+    };
+    AnimationGridComponent.prototype.componentWillMount = function () {
+        var _this = this;
+        this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(function () {
+            if (!_this._isPlaying || !_this._runningAnimatable) {
+                return;
+            }
+            _this.setState({ currentFrame: _this._runningAnimatable.masterFrame });
+        });
+    };
+    AnimationGridComponent.prototype.componentWillUnmount = function () {
+        if (this._onBeforeRenderObserver) {
+            this.props.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            this._onBeforeRenderObserver = null;
+        }
+    };
+    AnimationGridComponent.prototype.onCurrentFrameChange = function (value) {
+        if (!this._runningAnimatable) {
+            return;
+        }
+        this._runningAnimatable.goToFrame(value);
+        this.setState({ currentFrame: value });
+    };
+    AnimationGridComponent.prototype.render = function () {
+        var _this = this;
+        var animatable = this.props.animatable;
+        var animatableAsAny = this.props.animatable;
+        var animatablesForTarget = this.props.scene.getAllAnimatablesByTarget(animatable);
+        this._isPlaying = animatablesForTarget.length > 0;
+        if (this._isPlaying && !this._runningAnimatable) {
+            this._runningAnimatable = animatablesForTarget[0];
+        }
+        if (this._runningAnimatable) {
+            this._animationControl.from = this._runningAnimatable.fromFrame;
+            this._animationControl.to = this._runningAnimatable.toFrame;
+            this._animationControl.loop = this._runningAnimatable.loopAnimation;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            (this._ranges.length > 0 || this._animations && this._animations.length > 0) &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION OVERRIDE" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable override", onSelect: function (value) {
+                            if (value) {
+                                animatableAsAny.animationPropertiesOverride = new babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__["AnimationPropertiesOverride"]();
+                                animatableAsAny.animationPropertiesOverride.blendingSpeed = 0.05;
+                            }
+                            else {
+                                animatableAsAny.animationPropertiesOverride = null;
+                            }
+                            _this.forceUpdate();
+                        }, isSelected: function () { return animatableAsAny.animationPropertiesOverride != null; }, onValueChanged: function () { return _this.forceUpdate(); } }),
+                    animatableAsAny.animationPropertiesOverride != null &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable blending", target: animatableAsAny.animationPropertiesOverride, propertyName: "enableBlending", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Blending speed", target: animatableAsAny.animationPropertiesOverride, propertyName: "blendingSpeed", minimum: 0, maximum: 0.1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
+            this._ranges.length > 0 &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION RANGES" }, this._ranges.map(function (range) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { key: range.name, label: range.name, onClick: function () {
+                            _this._runningAnimatable = null;
+                            _this.props.scene.beginAnimation(animatable, range.from, range.to, true);
+                        } }));
+                })),
+            this._animations && this._animations.length > 0 &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATIONS" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "Count", value: this._animations.length.toString() }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "From", target: this._animationControl, propertyName: "from" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "To", target: this._animationControl, propertyName: "to" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Loop", onSelect: function (value) { return _this._animationControl.loop = value; }, isSelected: function () { return _this._animationControl.loop; } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? "Stop" : "Play", onClick: function () { return _this.playOrPause(); } }),
+                    this._isPlaying &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: "timeline", label: "Current frame", minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to - this._animationControl.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } }))));
+    };
+    return AnimationGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -35448,29 +35664,30 @@ var ArcRotateCameraPropertyGridComponent = /** @class */ (function (_super) {
     ArcRotateCameraPropertyGridComponent.prototype.render = function () {
         var camera = this.props.camera;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonCameraPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonCameraPropertyGridComponent"], { lockObject: this.props.lockObject, camera: camera, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TRANSFORMS" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonCameraPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonCameraPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, camera: camera, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_7__["Vector3LineComponent"], { label: "Target", target: camera, propertyName: "target", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Alpha", target: camera, propertyName: "alpha", minimum: camera.lowerAlphaLimit || 0, maximum: camera.upperAlphaLimit || 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Beta", target: camera, propertyName: "beta", minimum: camera.lowerAlphaLimit || 0, maximum: camera.upperBetaLimit || 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Radius", target: camera, propertyName: "radius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "CONTROLS", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONTROLS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Angular sensitivity X", target: camera, propertyName: "angularSensibilityX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Angular sensitivity Y", target: camera, propertyName: "angularSensibilityY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Panning sensitivity", target: camera, propertyName: "panningSensibility", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Pinch delta percentage", target: camera, propertyName: "pinchDeltaPercentage", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Wheel delta percentage", target: camera, propertyName: "wheelDeltaPercentage", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Speed", target: camera, propertyName: "speed", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "COLLISIONS", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "COLLISIONS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Check collisions", target: camera, propertyName: "checkCollisions", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_7__["Vector3LineComponent"], { label: "Collision radius", target: camera, propertyName: "collisionRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LIMITS", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIMITS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Lower alpha limit", target: camera, propertyName: "lowerAlphaLimit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Upper alpha limit", target: camera, propertyName: "upperAlphaLimit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Lower beta limit", target: camera, propertyName: "lowerBetaLimit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Upper beta limit", target: camera, propertyName: "upperBetaLimit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Lower radius limit", target: camera, propertyName: "lowerRadiusLimit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Upper radius limit", target: camera, propertyName: "upperRadiusLimit", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "BEHAVIORS", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "BEHAVIORS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Auto rotation", target: camera, propertyName: "useAutoRotationBehavior", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Bouncing", target: camera, propertyName: "useBouncingBehavior", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Framing", target: camera, propertyName: "useFramingBehavior", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
@@ -35502,6 +35719,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
+
 
 
 
@@ -35524,24 +35743,26 @@ var CommonCameraPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Perspective", value: babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].PERSPECTIVE_CAMERA },
             { label: "Orthographic", value: babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA }
         ];
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "GENERAL" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "ID", value: camera.id }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "Unique ID", value: camera.uniqueId.toString() }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "Class", value: camera.getClassName() }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Near plane", target: camera, propertyName: "minZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Far plane", target: camera, propertyName: "maxZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Inertia", target: camera, propertyName: "inertia", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: camera, propertyName: "mode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
-            camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].PERSPECTIVE_CAMERA &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Field of view", target: camera, propertyName: "fov", minimum: 0.1, maximum: Math.PI, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Left", target: camera, propertyName: "orthoLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Top", target: camera, propertyName: "orthoTop", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Right", target: camera, propertyName: "orthoRight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Bottom", target: camera, propertyName: "orthoBottom", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: camera, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "ID", value: camera.id }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "Unique ID", value: camera.uniqueId.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "Class", value: camera.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Near plane", target: camera, propertyName: "minZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Far plane", target: camera, propertyName: "maxZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Inertia", target: camera, propertyName: "inertia", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: camera, propertyName: "mode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
+                camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].PERSPECTIVE_CAMERA &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Field of view", target: camera, propertyName: "fov", minimum: 0.1, maximum: Math.PI, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Left", target: camera, propertyName: "orthoLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Top", target: camera, propertyName: "orthoTop", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Right", target: camera, propertyName: "orthoRight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Bottom", target: camera, propertyName: "orthoBottom", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return CommonCameraPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -35583,19 +35804,88 @@ var FreeCameraPropertyGridComponent = /** @class */ (function (_super) {
     FreeCameraPropertyGridComponent.prototype.render = function () {
         var camera = this.props.camera;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonCameraPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonCameraPropertyGridComponent"], { lockObject: this.props.lockObject, camera: camera, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TRANSFORMS" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonCameraPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonCameraPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, camera: camera, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Position", target: camera, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "CONTROLS", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONTROLS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Angular sensitivity", target: camera, propertyName: "angularSensibility", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Speed", target: camera, propertyName: "speed", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "COLLISIONS", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "COLLISIONS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Check collisions", target: camera, propertyName: "checkCollisions", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Apply gravity", target: camera, propertyName: "applYGravity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Apply gravity", target: camera, propertyName: "applyGravity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Ellipsoid", target: camera, propertyName: "ellipsoid", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Ellipsoid offset", target: camera, propertyName: "ellipsoidOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return FreeCameraPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx ***!
+  \**********************************************************************************/
+/*! exports provided: CustomPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CustomPropertyGridComponent", function() { return CustomPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
+/* harmony import */ var babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/iInspectable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+/* harmony import */ var _lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../lines/quaternionLineComponent */ "./components/actionTabs/lines/quaternionLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+
+
+
+
+
+
+
+
+
+var CustomPropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CustomPropertyGridComponent, _super);
+    function CustomPropertyGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { mode: 0 };
+        return _this;
+    }
+    CustomPropertyGridComponent.prototype.renderInspectable = function (inspectable) {
+        switch (inspectable.type) {
+            case babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3__["InspectableType"].Checkbox:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { key: inspectable.label, label: inspectable.label, target: this.props.target, propertyName: inspectable.propertyName, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3__["InspectableType"].Slider:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { key: inspectable.label, label: inspectable.label, target: this.props.target, propertyName: inspectable.propertyName, step: inspectable.step !== undefined ? inspectable.step : 0.1, minimum: inspectable.min !== undefined ? inspectable.min : 0, maximum: inspectable.max !== undefined ? inspectable.max : 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3__["InspectableType"].Vector3:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { key: inspectable.label, label: inspectable.label, target: this.props.target, propertyName: inspectable.propertyName, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3__["InspectableType"].Quaternion:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_7__["QuaternionLineComponent"], { key: inspectable.label, label: inspectable.label, target: this.props.target, propertyName: inspectable.propertyName, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case babylonjs_Misc_iInspectable__WEBPACK_IMPORTED_MODULE_3__["InspectableType"].Color3:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { key: inspectable.label, label: inspectable.label, target: this.props.target, propertyName: inspectable.propertyName, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+        }
+        return null;
+    };
+    CustomPropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var inspectables = this.props.target.inspectableCustomProperties;
+        if (!inspectables || inspectables.length === 0) {
+            return null;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_8__["LineContainerComponent"], { title: "CUSTOM", globalState: this.props.globalState }, inspectables.map(function (inspectable) {
+            return _this.renderInspectable(inspectable);
+        })));
+    };
+    return CustomPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -35691,8 +35981,8 @@ var CheckboxPropertyGridComponent = /** @class */ (function (_super) {
     CheckboxPropertyGridComponent.prototype.render = function () {
         var checkbox = this.props.checkbox;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: checkbox, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "CHECKBOX" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: checkbox, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CHECKBOX" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Check size ratio", target: checkbox, propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Checked", target: checkbox, propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
@@ -35732,8 +36022,8 @@ var ColorPickerPropertyGridComponent = /** @class */ (function (_super) {
     ColorPickerPropertyGridComponent.prototype.render = function () {
         var colorPicker = this.props.colorPicker;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: colorPicker, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "COLORPICKER" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: colorPicker, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "COLORPICKER" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Color", target: colorPicker, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return ColorPickerPropertyGridComponent;
@@ -35789,7 +36079,7 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         }
         var grid = gridParent;
         var cellInfos = grid.getChildCellInfo(control).split(":");
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GRID" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GRID" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Row", value: cellInfos[0] }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Column", value: cellInfos[1] })));
     };
@@ -35806,7 +36096,7 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Center", value: babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Class", value: control.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Unique ID", value: control.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Alpha", target: control, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -35815,10 +36105,10 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                 control.background !== undefined &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Background", target: control, propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             this.renderGridInformation(),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "ALIGNMENT" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "ALIGNMENT" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Horizontal", options: horizontalOptions, target: control, propertyName: "horizontalAlignment", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Vertical", options: verticalOptions, target: control, propertyName: "verticalAlignment", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "POSITION" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "POSITION" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Left", target: control, propertyName: "left", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Top", target: control, propertyName: "top", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Width", target: control, propertyName: "width", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -35827,18 +36117,18 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Padding top", target: control, propertyName: "paddingTop", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Padding right", target: control, propertyName: "paddingRight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Padding bottom", target: control, propertyName: "paddingBottom", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "TRANSFORMATION", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMATION", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "ScaleX", target: control, propertyName: "scaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "ScaleY", target: control, propertyName: "scaleY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Rotation", target: control, propertyName: "rotation", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Transform center X", target: control, propertyName: "transformCenterX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Transform center Y", target: control, propertyName: "transformCenterY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "FONT", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "FONT", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Family", target: control, propertyName: "fontFamily", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Size", target: control, propertyName: "fontSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Weight", target: control, propertyName: "fontWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Style", target: control, propertyName: "fontStyle", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "SHADOWS", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOWS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Color", target: control, propertyName: "shadowColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Offset X", target: control, propertyName: "shadowOffsetX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Offset Y", target: control, propertyName: "shadowOffsetY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -35876,7 +36166,7 @@ var ControlPropertyGridComponent = /** @class */ (function (_super) {
     ControlPropertyGridComponent.prototype.render = function () {
         var control = this.props.control;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: control, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: control, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return ControlPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -35916,8 +36206,8 @@ var EllipsePropertyGridComponent = /** @class */ (function (_super) {
     EllipsePropertyGridComponent.prototype.render = function () {
         var ellipse = this.props.ellipse;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: ellipse, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "ELLIPSE" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: ellipse, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ELLIPSE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Clip children", target: ellipse, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Thickness", target: ellipse, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
@@ -35961,7 +36251,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
             rows.push(grid.getRowDefinition(index));
         }
         return (rows.map(function (rd, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { key: "r" + i, label: "Row " + i, value: rd.toString(grid.host), underline: i === grid.rowCount - 1 }));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { key: "r" + i, label: "Row " + i, value: rd.toString(grid.host, 2), underline: i === grid.rowCount - 1 }));
         }));
     };
     GridPropertyGridComponent.prototype.renderColumns = function () {
@@ -35971,7 +36261,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
             cols.push(grid.getColumnDefinition(index));
         }
         return (cols.map(function (cd, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { key: "c" + i, label: "Column " + i, value: cd.toString(grid.host) }));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { key: "c" + i, label: "Column " + i, value: cd.toString(grid.host, 2) }));
         }));
     };
     GridPropertyGridComponent.prototype.render = function () {
@@ -35981,8 +36271,8 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
             cols.push(grid.getColumnDefinition(index));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: grid, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GRID" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: grid, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "GRID" },
                 this.renderRows(),
                 this.renderColumns())));
     };
@@ -36026,8 +36316,8 @@ var ImageBasedSliderPropertyGridComponent = /** @class */ (function (_super) {
     ImageBasedSliderPropertyGridComponent.prototype.render = function () {
         var imageBasedSlider = this.props.imageBasedSlider;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: imageBasedSlider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "IMAGE BASED SLIDER" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: imageBasedSlider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "IMAGE BASED SLIDER" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display thumb", target: imageBasedSlider, propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Vertical", target: imageBasedSlider, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Thumb clamped", target: imageBasedSlider, propertyName: "isThumbClamped", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -36088,15 +36378,15 @@ var ImagePropertyGridComponent = /** @class */ (function (_super) {
             { label: "NinePatch", value: babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__["Image"].STRETCH_NINE_PATCH }
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: image, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "IMAGE" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: image, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "IMAGE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Source left", target: image, propertyName: "sourceLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Source top", target: image, propertyName: "sourceTop", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Source width", target: image, propertyName: "sourceWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Source height", target: image, propertyName: "sourceHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Autoscale", target: image, propertyName: "autoScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Stretch", options: stretchOptions, target: image, propertyName: "stretch", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "ANIMATION SHEET" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION SHEET" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Cell Id", isInteger: true, target: image, propertyName: "cellId", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Cell width", target: image, propertyName: "cellWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Cell height", target: image, propertyName: "cellHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
@@ -36143,8 +36433,8 @@ var InputTextPropertyGridComponent = /** @class */ (function (_super) {
     InputTextPropertyGridComponent.prototype.render = function () {
         var inputText = this.props.inputText;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: inputText, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "INPUTTEXT" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: inputText, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "INPUTTEXT" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Text", target: inputText, propertyName: "text", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Prompt", target: inputText, propertyName: "promptMessage", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Max width", target: inputText, propertyName: "maxWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -36210,8 +36500,8 @@ var LinePropertyGridComponent = /** @class */ (function (_super) {
         var _this = this;
         var line = this.props.line;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: line, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LINE" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: line, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LINE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Line width", target: line, propertyName: "lineWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "X1", target: line, propertyName: "x1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y1", target: line, propertyName: "y1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -36259,8 +36549,8 @@ var RadioButtonPropertyGridComponent = /** @class */ (function (_super) {
     RadioButtonPropertyGridComponent.prototype.render = function () {
         var radioButton = this.props.radioButton;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: radioButton, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "RADIO BUTTON" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: radioButton, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "RADIO BUTTON" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Thickness", target: radioButton, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Check size ratio", target: radioButton, propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Group", target: radioButton, propertyName: "group", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -36304,8 +36594,8 @@ var RectanglePropertyGridComponent = /** @class */ (function (_super) {
     RectanglePropertyGridComponent.prototype.render = function () {
         var rectangle = this.props.rectangle;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: rectangle, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "RECTANGLE" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: rectangle, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "RECTANGLE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Clip children", target: rectangle, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Thickness", target: rectangle, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Corner radius", target: rectangle, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
@@ -36348,11 +36638,11 @@ var ScrollViewerPropertyGridComponent = /** @class */ (function (_super) {
     ScrollViewerPropertyGridComponent.prototype.render = function () {
         var scrollViewer = this.props.scrollViewer;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: scrollViewer, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "RECTANGLE" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: scrollViewer, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "RECTANGLE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Thickness", target: scrollViewer, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Corner radius", target: scrollViewer, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SCROLLVIEWER" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SCROLLVIEWER" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Bar size", target: scrollViewer, propertyName: "barSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Bar color", target: scrollViewer, propertyName: "barColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Bar background", target: scrollViewer, propertyName: "barBackground", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -36398,8 +36688,8 @@ var SliderPropertyGridComponent = /** @class */ (function (_super) {
     SliderPropertyGridComponent.prototype.render = function () {
         var slider = this.props.slider;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: slider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SLIDER" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: slider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SLIDER" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Border color", target: slider, propertyName: "borderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display thumb", target: slider, propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Thumb circle", target: slider, propertyName: "isThumbCircle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -36447,8 +36737,8 @@ var StackPanelPropertyGridComponent = /** @class */ (function (_super) {
     StackPanelPropertyGridComponent.prototype.render = function () {
         var stackPanel = this.props.stackPanel;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: stackPanel, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "STACKPANEL" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: stackPanel, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "STACKPANEL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Clip children", target: stackPanel, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Vertical", target: stackPanel, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
@@ -36513,15 +36803,15 @@ var TextBlockPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Word wrap", value: babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__["TextWrapping"].WordWrap },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: textBlock, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "TEXTBLOCK" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, control: textBlock, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTBLOCK" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Text", target: textBlock, propertyName: "text", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { label: "Horizontal text alignment", options: horizontalOptions, target: textBlock, propertyName: "textHorizontalAlignment", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { label: "Vertical text alignment", options: verticalOptions, target: textBlock, propertyName: "textVerticalAlignment", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Resize to fit", target: textBlock, propertyName: "resizeToFit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { label: "Wrapping", options: wrappingOptions, target: textBlock, propertyName: "textWrapping", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Line spacing", target: textBlock, propertyName: "lineSpacing", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "OUTLINE" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "OUTLINE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Outline width", target: textBlock, propertyName: "outlineWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Outline color", target: textBlock, propertyName: "outlineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
@@ -36548,6 +36838,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
+
 
 
 
@@ -36560,11 +36852,13 @@ var CommonLightPropertyGridComponent = /** @class */ (function (_super) {
     }
     CommonLightPropertyGridComponent.prototype.render = function () {
         var light = this.props.light;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "ID", value: light.id }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: light.uniqueId.toString() }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: light.getClassName() }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Intensity", target: light, propertyName: "intensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "ID", value: light.id }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: light.uniqueId.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: light.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Intensity", target: light, propertyName: "intensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return CommonLightPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -36589,6 +36883,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+/* harmony import */ var babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Lights/Shadows/shadowGenerator */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+
+
+
+
 
 
 
@@ -36599,14 +36902,121 @@ var CommonShadowLightPropertyGridComponent = /** @class */ (function (_super) {
     function CommonShadowLightPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
-    CommonShadowLightPropertyGridComponent.prototype.render = function () {
+    CommonShadowLightPropertyGridComponent.prototype.createShadowGenerator = function () {
         var light = this.props.light;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "SHADOWS" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Shadows enabled", target: light, propertyName: "shadowEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Shadows near plane", target: light, propertyName: "shadowMinZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Shadows far plane", target: light, propertyName: "shadowMaxZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+        var scene = light.getScene();
+        var generator = new babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"](512, light);
+        scene.meshes.forEach(function (m) {
+            generator.addShadowCaster(m);
+            m.receiveShadows = true;
+        });
+        this.forceUpdate();
+    };
+    CommonShadowLightPropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var light = this.props.light;
+        var generator = light.getShadowGenerator() || null;
+        var blurModeOptions = [
+            { label: "None", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_NONE },
+            { label: "PCF", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCF },
+            { label: "PCSS", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCSS },
+            { label: "Poisson", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_POISSONSAMPLING },
+            { label: "Exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_EXPONENTIALSHADOWMAP },
+            { label: "Blurred exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP },
+            { label: "Close exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_CLOSEEXPONENTIALSHADOWMAP },
+            { label: "Blurred close exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP },
+        ];
+        var filteringQualityOptions = [
+            { label: "Low", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].QUALITY_LOW },
+            { label: "Medium", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].QUALITY_MEDIUM },
+            { label: "High", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].QUALITY_HIGH }
+        ];
+        var filter = generator ? generator.filter : 0;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOWS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Shadows enabled", target: light, propertyName: "shadowEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Shadows near plane", target: light, propertyName: "shadowMinZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Shadows far plane", target: light, propertyName: "shadowMaxZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            generator == null &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOW GENERATOR" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: "Create generator", onClick: function () { return _this.createShadowGenerator(); } })),
+            generator !== null &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOW GENERATOR" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, digits: 4, step: "0.0001", label: "Bias", target: generator, propertyName: "bias", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Normal bias", target: generator, propertyName: "normalBias", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Darkness", target: generator, minimum: 0, maximum: 1, step: 0.01, propertyName: "darkness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Allow transparent shadows", target: generator, propertyName: "transparencyShadow", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Filter", options: blurModeOptions, onSelect: function () {
+                            _this.forceUpdate();
+                        }, target: generator, propertyName: "filter", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCF || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCSS) &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Filtering quality", options: filteringQualityOptions, onSelect: function () {
+                                _this.forceUpdate();
+                            }, target: generator, propertyName: "filteringQuality", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCSS) &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Penumbra ratio", minimum: 0, maximum: 0.5, step: 0.001, target: generator, propertyName: "contactHardeningLightSizeUVRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use kernel blur", target: generator, propertyName: "useKernelBlur", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
+                        !generator.useKernelBlur &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Blur box offset", target: generator, propertyName: "blurBoxOffset", minimum: 1, maximum: 64, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
+                        generator.useKernelBlur &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Blur kernel", target: generator, propertyName: "blurKernel", minimum: 1, maximum: 64, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_EXPONENTIALSHADOWMAP) &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Depth scale", target: generator, propertyName: "depthScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_EXPONENTIALSHADOWMAP) &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Blur scale", target: generator, propertyName: "blurScale", minimum: 1, maximum: 4, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return CommonShadowLightPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/lights/directionalLightPropertyGridComponent.tsx":
+/*!***************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/lights/directionalLightPropertyGridComponent.tsx ***!
+  \***************************************************************************************************/
+/*! exports provided: DirectionalLightPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DirectionalLightPropertyGridComponent", function() { return DirectionalLightPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/commonLightPropertyGridComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+/* harmony import */ var _commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./commonShadowLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/commonShadowLightPropertyGridComponent.tsx");
+
+
+
+
+
+
+
+var DirectionalLightPropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DirectionalLightPropertyGridComponent, _super);
+    function DirectionalLightPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    DirectionalLightPropertyGridComponent.prototype.render = function () {
+        var light = this.props.light;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SETUP" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffuse", target: light, propertyName: "diffuse", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: light, propertyName: "specular", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Position", target: light, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Direction", target: light, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonShadowLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return DirectionalLightPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -36644,8 +37054,8 @@ var HemisphericLightPropertyGridComponent = /** @class */ (function (_super) {
     HemisphericLightPropertyGridComponent.prototype.render = function () {
         var light = this.props.light;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonLightPropertyGridComponent"], { lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SETUP" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SETUP" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffuse", target: light, propertyName: "diffuse", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ground", target: light, propertyName: "groundColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Direction", target: light, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
@@ -36690,14 +37100,66 @@ var PointLightPropertyGridComponent = /** @class */ (function (_super) {
     PointLightPropertyGridComponent.prototype.render = function () {
         var light = this.props.light;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonLightPropertyGridComponent"], { lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SETUP" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SETUP" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffuse", target: light, propertyName: "diffuse", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: light, propertyName: "specular", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Position", target: light, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonShadowLightPropertyGridComponent"], { lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonShadowLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return PointLightPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/lights/spotLightPropertyGridComponent.tsx":
+/*!********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/lights/spotLightPropertyGridComponent.tsx ***!
+  \********************************************************************************************/
+/*! exports provided: SpotLightPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SpotLightPropertyGridComponent", function() { return SpotLightPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/commonLightPropertyGridComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./commonShadowLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/commonShadowLightPropertyGridComponent.tsx");
+
+
+
+
+
+
+
+
+var SpotLightPropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SpotLightPropertyGridComponent, _super);
+    function SpotLightPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    SpotLightPropertyGridComponent.prototype.render = function () {
+        var light = this.props.light;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SETUP" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffuse", target: light, propertyName: "diffuse", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: light, propertyName: "specular", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Position", target: light, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Direction", target: light, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Angle", target: light, propertyName: "angle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Exponent", target: light, propertyName: "exponent", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CommonShadowLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return SpotLightPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -36764,12 +37226,14 @@ __webpack_require__.r(__webpack_exports__);
 var BackgroundMaterialPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BackgroundMaterialPropertyGridComponent, _super);
     function BackgroundMaterialPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        return _this;
     }
     BackgroundMaterialPropertyGridComponent.prototype.renderTextures = function () {
         var material = this.props.material;
-        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TEXTURES" },
+        var onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Diffuse", texture: material.diffuseTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             material.reflectionTexture &&
@@ -36778,13 +37242,13 @@ var BackgroundMaterialPropertyGridComponent = /** @class */ (function (_super) {
     BackgroundMaterialPropertyGridComponent.prototype.render = function () {
         var material = this.props.material;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CommonMaterialPropertyGridComponent"], { lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LIGHTING & COLORS" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIGHTING & COLORS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Primary", target: material, propertyName: "primaryColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Shadow level", target: material, propertyName: "primaryColorShadowLevel", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Highlight level", target: material, propertyName: "primaryColorHighlightLevel", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             this.renderTextures(),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "RENDERING", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "RENDERING", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enable noise", target: material, propertyName: "enableNoise", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Opacity fresnel", target: material, propertyName: "opacityFresnel", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Reflection fresnel", target: material, propertyName: "reflectionFresnel", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -36817,6 +37281,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
+
 
 
 
@@ -36855,7 +37321,8 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Pre-multiplied", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_PREMULTIPLIED },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "GENERAL" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "ID", value: material.id }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "Unique ID", value: material.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "Class", value: material.getClassName() }),
@@ -36868,7 +37335,7 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Point cloud", target: material, propertyName: "pointsCloud", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Point size", target: material, propertyName: "pointSize", minimum: 0, maximum: 100, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Z-offset", target: material, propertyName: "zOffset", minimum: -10, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "TRANSPARENCY" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSPARENCY" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Alpha", target: material, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.transparencyMode !== undefined &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Transparency mode", options: transparencyModeOptions, target: material, propertyName: "transparencyMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ transparencyMode: value }); } }),
@@ -36907,9 +37374,53 @@ var MaterialPropertyGridComponent = /** @class */ (function (_super) {
     MaterialPropertyGridComponent.prototype.render = function () {
         var material = this.props.material;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonMaterialPropertyGridComponent"], { lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return MaterialPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx":
+/*!**************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx ***!
+  \**************************************************************************************************/
+/*! exports provided: NodeMaterialPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NodeMaterialPropertyGridComponent", function() { return NodeMaterialPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./commonMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+
+
+
+
+
+var NodeMaterialPropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeMaterialPropertyGridComponent, _super);
+    function NodeMaterialPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    NodeMaterialPropertyGridComponent.prototype.edit = function () {
+        this.props.material.edit();
+    };
+    NodeMaterialPropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var material = this.props.material;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_3__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "EDITOR" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Edit", onClick: function () { return _this.edit(); } }))));
+    };
+    return NodeMaterialPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -36934,9 +37445,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
-/* harmony import */ var _commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./commonMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx");
-/* harmony import */ var _lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/textureLinkLineComponent */ "./components/actionTabs/lines/textureLinkLineComponent.tsx");
+/* harmony import */ var _lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/vector2LineComponent */ "./components/actionTabs/lines/vector2LineComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+/* harmony import */ var _commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./commonMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx");
+/* harmony import */ var _lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/textureLinkLineComponent */ "./components/actionTabs/lines/textureLinkLineComponent.tsx");
+
+
 
 
 
@@ -36949,66 +37464,182 @@ __webpack_require__.r(__webpack_exports__);
 var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PBRMaterialPropertyGridComponent, _super);
     function PBRMaterialPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        return _this;
     }
     PBRMaterialPropertyGridComponent.prototype.renderTextures = function (onDebugSelectionChangeObservable) {
         var material = this.props.material;
-        if (material.getActiveTextures().length === 0) {
-            return null;
-        }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TEXTURES" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Albedo", texture: material.albedoTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Metallic", texture: material.metallicTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Refraction", texture: material.refractionTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Micro-surface", texture: material.microSurfaceTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Bump", texture: material.bumpTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Opacity", texture: material.opacityTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Ambient", texture: material.ambientTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Albedo", texture: material.albedoTexture, propertyName: "albedoTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Metallic", texture: material.metallicTexture, propertyName: "metallicTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, propertyName: "reflectionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Refraction", texture: material.refractionTexture, propertyName: "refractionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Micro-surface", texture: material.microSurfaceTexture, propertyName: "microSurfaceTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Bump", texture: material.bumpTexture, propertyName: "bumpTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, propertyName: "emissiveTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Opacity", texture: material.opacityTexture, propertyName: "opacityTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Ambient", texture: material.ambientTexture, propertyName: "ambientTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, propertyName: "lightmapTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use lightmap as shadowmap", target: material, propertyName: "useLightmapAsShadowmap ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     PBRMaterialPropertyGridComponent.prototype.render = function () {
+        var _this = this;
         var material = this.props.material;
-        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        var debugMode = [
+            { label: "None", value: 0 },
+            // Geometry
+            { label: "Normalized position", value: 1 },
+            { label: "Normals", value: 2 },
+            { label: "Tangents", value: 3 },
+            { label: "Bitangents", value: 4 },
+            { label: "Bump Normals", value: 5 },
+            { label: "UV1", value: 6 },
+            { label: "UV2", value: 7 },
+            { label: "ClearCoat Normals", value: 8 },
+            { label: "ClearCoat Tangents", value: 9 },
+            { label: "ClearCoat Bitangents", value: 10 },
+            { label: "Anisotropic Normals", value: 11 },
+            { label: "Anisotropic Tangents", value: 12 },
+            { label: "Anisotropic Bitangents", value: 13 },
+            // Maps
+            { label: "Albdeo Map", value: 20 },
+            { label: "Ambient Map", value: 21 },
+            { label: "Opacity Map", value: 22 },
+            { label: "Emissive Map", value: 23 },
+            { label: "Light Map", value: 24 },
+            { label: "Metallic Map", value: 25 },
+            { label: "Reflectivity Map", value: 26 },
+            { label: "ClearCoat Map", value: 27 },
+            { label: "ClearCoat Tint Map", value: 28 },
+            { label: "Sheen Map", value: 29 },
+            { label: "Anisotropic Map", value: 30 },
+            { label: "Thickness Map", value: 31 },
+            // Env
+            { label: "Env Refraction", value: 40 },
+            { label: "Env Reflection", value: 41 },
+            { label: "Env Clear Coat", value: 42 },
+            // Lighting
+            { label: "Direct Diffuse", value: 50 },
+            { label: "Direct Specular", value: 51 },
+            { label: "Direct Clear Coat", value: 52 },
+            { label: "Direct Sheen", value: 53 },
+            { label: "Env Irradiance", value: 54 },
+            // Lighting Params
+            { label: "Surface Albedo", value: 60 },
+            { label: "Reflectance 0", value: 61 },
+            { label: "Roughness", value: 62 },
+            { label: "AlphaG", value: 63 },
+            { label: "NdotV", value: 64 },
+            { label: "ClearCoat Color", value: 65 },
+            { label: "ClearCoat Roughness", value: 66 },
+            { label: "ClearCoat NdotV", value: 67 },
+            { label: "Transmittance", value: 68 },
+            { label: "Refraction Transmittance", value: 69 },
+            // Misc
+            { label: "SEO", value: 70 },
+            { label: "EHO", value: 71 },
+            { label: "Energy Factor", value: 72 },
+            { label: "Specular Reflectance", value: 73 },
+            { label: "Clear Coat Reflectance", value: 74 },
+            { label: "Sheen Reflectance", value: 75 },
+            { label: "Luminance Over Alpha", value: 76 },
+            { label: "Alpha", value: 77 },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CommonMaterialPropertyGridComponent"], { lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            this.renderTextures(onDebugSelectionChangeObservable),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LIGHTING & COLORS" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            this.renderTextures(this._onDebugSelectionChangeObservable),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIGHTING & COLORS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Albedo", target: material, propertyName: "albedoColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Reflectivity", target: material, propertyName: "reflectivityColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Micro-surface", target: material, propertyName: "microSurface", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "CLEAR COAT" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: material.clearCoat, propertyName: "isEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Intensity", target: material.clearCoat, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Roughness", target: material.clearCoat, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Texture", texture: material.clearCoat.texture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextureLinkLineComponent"], { label: "Bump", texture: material.clearCoat.bumpTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LEVELS", closed: true },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Environment", target: material, propertyName: "environmentIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Metallic", target: material, propertyName: "metallic", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Roughness", target: material, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Micro-surface", target: material, propertyName: "microSurface", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Specular", target: material, propertyName: "specularIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use physical light falloff", target: material, propertyName: "usePhysicalLightFalloff ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "METALLIC WORKFLOW" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Metallic", target: material, propertyName: "metallic", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Roughness", target: material, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CLEAR COAT" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: material.clearCoat, propertyName: "isEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.clearCoat.isEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.clearCoat, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Roughness", target: material.clearCoat, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "IOR", target: material.clearCoat, propertyName: "indiceOfRefraction", minimum: 1.0, maximum: 3, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Texture", texture: material.clearCoat.texture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Bump", texture: material.clearCoat.bumpTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }),
+                        material.clearCoat.bumpTexture &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Bump strength", target: material.clearCoat.bumpTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Tint", target: material.clearCoat, propertyName: "isTintEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.clearCoat, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "At Distance", target: material.clearCoat, propertyName: "tintColorAtDistance", minimum: 0, maximum: 20, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Tint Thickness", target: material.clearCoat, propertyName: "tintThickness", minimum: 0, maximum: 20, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Tint Texture", texture: material.clearCoat.tintTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANISOTROPIC" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: material.anisotropy, propertyName: "isEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.anisotropy.isEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.anisotropy, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Direction", target: material.anisotropy, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Texture", texture: material.anisotropy.texture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHEEN" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: material.sheen, propertyName: "isEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.sheen.isEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Link to Albedo", target: material.sheen, propertyName: "linkSheenWithAlbedo", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.sheen, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Color", target: material.sheen, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Texture", texture: material.sheen.texture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SUBSURFACE" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Thickness", texture: material.subSurface.thicknessTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Min Thickness", target: material.subSurface, propertyName: "minimumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Max Thickness", target: material.subSurface, propertyName: "maximumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Mask From Thickness", target: material.subSurface, propertyName: "useMaskFromThicknessTexture", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.subSurface, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Refraction Enabled", target: material.subSurface, propertyName: "isRefractionEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.subSurface.isRefractionEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.subSurface, propertyName: "refractionIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Index of Refraction", target: material.subSurface, propertyName: "indexOfRefraction", minimum: 1, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Tint at Distance", target: material.subSurface, propertyName: "tintColorAtDistance", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Link refraction with transparency", target: material.subSurface, propertyName: "linkRefractionWithTransparency", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Transluency Enabled", target: material.subSurface, propertyName: "isTranslucencyEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.subSurface.isTranslucencyEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.subSurface, propertyName: "translucencyIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffusion Distance", target: material.subSurface, propertyName: "diffusionDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LEVELS", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Environment", target: material, propertyName: "environmentIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Specular", target: material, propertyName: "specularIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Emissive", target: material, propertyName: "emissiveIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Direct", target: material, propertyName: "directIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.bumpTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Bump strength", target: material.bumpTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Bump strength", target: material.bumpTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.ambientTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Ambient strength", target: material, propertyName: "ambientTextureStrength", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Ambient strength", target: material, propertyName: "ambientTextureStrength", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.reflectionTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Reflection strength", target: material.reflectionTexture, propertyName: "level", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "RENDERING", closed: true },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Reflection strength", target: material.reflectionTexture, propertyName: "level", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "RENDERING", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Alpha from albedo", target: material, propertyName: "useAlphaFromAlbedoTexture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Ambient in grayscale", target: material, propertyName: "useAmbientInGrayScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Radiance over alpha", target: material, propertyName: "useRadianceOverAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Link refraction with transparency", target: material, propertyName: "linkRefractionWithTransparency", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Micro-surface from ref. map alpha", target: material, propertyName: "useMicroSurfaceFromReflectivityMapAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Specular over alpha", target: material, propertyName: "useSpecularOverAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Specular anti-aliasing", target: material, propertyName: "enableSpecularAntiAliasing", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "ADVANCED", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ADVANCED", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Energy Conservation", target: material.brdf, propertyName: "useEnergyConservation", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Spherical Harmonics", target: material.brdf, propertyName: "useSphericalHarmonics", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Radiance occlusion", target: material, propertyName: "useRadianceOcclusion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Horizon occlusion ", target: material, propertyName: "useHorizonOcclusion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Unlit", target: material, propertyName: "unlit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Unlit", target: material, propertyName: "unlit", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEBUG", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Debug mode", options: debugMode, target: material, propertyName: "debugMode" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Split position", target: material, propertyName: "debugLimit", minimum: -1, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Output factor", target: material, propertyName: "debugFactor", minimum: 0, maximum: 5, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return PBRMaterialPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -37048,30 +37679,30 @@ __webpack_require__.r(__webpack_exports__);
 var PBRMetallicRoughnessMaterialPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PBRMetallicRoughnessMaterialPropertyGridComponent, _super);
     function PBRMetallicRoughnessMaterialPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        return _this;
     }
     PBRMetallicRoughnessMaterialPropertyGridComponent.prototype.renderTextures = function () {
         var material = this.props.material;
-        if (material.getActiveTextures().length === 0) {
-            return null;
-        }
-        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TEXTURES" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Base", texture: material.baseTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Metallic roughness", texture: material.metallicRoughnessTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Environment", texture: material.environmentTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })));
+        var onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Base", texture: material.baseTexture, propertyName: "baseTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Metallic roughness", texture: material.metallicRoughnessTexture, propertyName: "metallicRoughnessTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Normal", texture: material.normalTexture, propertyName: "normalTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Environment", texture: material.environmentTexture, propertyName: "environmentTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, propertyName: "emissiveTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, propertyName: "lightmapTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })));
     };
     PBRMetallicRoughnessMaterialPropertyGridComponent.prototype.render = function () {
         var material = this.props.material;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonMaterialPropertyGridComponent"], { lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             this.renderTextures(),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LIGHTING & COLORS" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIGHTING & COLORS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Base", target: material, propertyName: "baseColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LEVELS", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LEVELS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Metallic", target: material, propertyName: "metallic", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Roughness", target: material, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
@@ -37113,30 +37744,30 @@ __webpack_require__.r(__webpack_exports__);
 var PBRSpecularGlossinessMaterialPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PBRSpecularGlossinessMaterialPropertyGridComponent, _super);
     function PBRSpecularGlossinessMaterialPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        return _this;
     }
     PBRSpecularGlossinessMaterialPropertyGridComponent.prototype.renderTextures = function () {
         var material = this.props.material;
-        if (material.getActiveTextures().length === 0) {
-            return null;
-        }
-        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TEXTURES" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Diffuse", texture: material.diffuseTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Specular glossiness", texture: material.specularGlossinessTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Environment", texture: material.environmentTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })));
+        var onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Diffuse", texture: material.diffuseTexture, propertyName: "diffuseTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Specular glossiness", texture: material.specularGlossinessTexture, propertyName: "specularGlossinessTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Normal", texture: material.normalTexture, propertyName: "normalTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Environment", texture: material.environmentTexture, propertyName: "environmentTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, propertyName: "emissiveTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, propertyName: "lightmapTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })));
     };
     PBRSpecularGlossinessMaterialPropertyGridComponent.prototype.render = function () {
         var material = this.props.material;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonMaterialPropertyGridComponent"], { lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             this.renderTextures(),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LIGHTING & COLORS" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIGHTING & COLORS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffuse", target: material, propertyName: "diffuseColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: material, propertyName: "specularColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LEVELS", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LEVELS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Glossiness", target: material, propertyName: "glossiness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return PBRSpecularGlossinessMaterialPropertyGridComponent;
@@ -37166,6 +37797,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./commonMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx");
 /* harmony import */ var _lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/textureLinkLineComponent */ "./components/actionTabs/lines/textureLinkLineComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+
 
 
 
@@ -37177,37 +37810,37 @@ __webpack_require__.r(__webpack_exports__);
 var StandardMaterialPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](StandardMaterialPropertyGridComponent, _super);
     function StandardMaterialPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
+        return _this;
     }
     StandardMaterialPropertyGridComponent.prototype.renderTextures = function () {
         var material = this.props.material;
-        if (material.getActiveTextures().length === 0) {
-            return null;
-        }
-        var onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TEXTURES" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Diffuse", texture: material.diffuseTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Specular", texture: material.specularTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Refraction", texture: material.refractionTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Bump", texture: material.bumpTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Opacity", texture: material.opacityTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Ambient", texture: material.ambientTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable })));
+        var onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Diffuse", texture: material.diffuseTexture, propertyName: "diffuseTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Specular", texture: material.specularTexture, propertyName: "specularTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, propertyName: "reflectionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Refraction", texture: material.refractionTexture, propertyName: "refractionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, propertyName: "emissiveTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Bump", texture: material.bumpTexture, propertyName: "bumpTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Opacity", texture: material.opacityTexture, propertyName: "opacityTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Ambient", texture: material.ambientTexture, propertyName: "ambientTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, propertyName: "lightmapTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Use lightmap as shadowmap", target: material, propertyName: "useLightmapAsShadowmap ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     StandardMaterialPropertyGridComponent.prototype.render = function () {
         var material = this.props.material;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonMaterialPropertyGridComponent"], { lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             this.renderTextures(),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LIGHTING & COLORS" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIGHTING & COLORS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffuse", target: material, propertyName: "diffuseColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: material, propertyName: "specularColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Specular power", target: material, propertyName: "specularPower", minimum: 0, maximum: 128, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LEVELS", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LEVELS", closed: true },
                 material.diffuseTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Diffuse level", target: material.diffuseTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.specularTexture &&
@@ -37260,6 +37893,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/valueLineComponent */ "./components/actionTabs/lines/valueLineComponent.tsx");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
+/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
+
 
 
 
@@ -37324,11 +37959,38 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
             { label: "Nearest & linear mip", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_LINEAR },
             { label: "Linear", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].LINEAR_LINEAR_MIPLINEAR },
         ];
+        var coordinatesMode = [
+            { label: "Explicit", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].EXPLICIT_MODE },
+            { label: "Cubic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].CUBIC_MODE },
+            { label: "Inverse cubic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].INVCUBIC_MODE },
+            { label: "Equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].EQUIRECTANGULAR_MODE },
+            { label: "Fixed equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].FIXED_EQUIRECTANGULAR_MODE },
+            { label: "Fixed equirectangular mirrored", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].FIXED_EQUIRECTANGULAR_MIRRORED_MODE },
+            { label: "Planar", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].PLANAR_MODE },
+            { label: "Projection", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].PROJECTION_MODE },
+            { label: "Skybox", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].SKYBOX_MODE },
+            { label: "Spherical", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].SPHERICAL_MODE },
+        ];
+        var extension = "";
+        var url = texture.url;
+        if (url) {
+            for (var index = url.length - 1; index >= 0; index--) {
+                if (url[index] === ".") {
+                    break;
+                }
+                extension = url[index] + extension;
+            }
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "PREVIEW" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "PREVIEW" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLineComponent"], { texture: texture, width: 256, height: 256, globalState: this.props.globalState }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__["FileButtonLineComponent"], { label: "Replace texture", onClick: function (file) { return _this.updateTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: texture, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Width", value: texture.getSize().width.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Height", value: texture.getSize().height.toString() }),
+                extension &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "File format", value: extension }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Unique ID", value: texture.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Class", value: texture.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Has alpha", value: texture.hasAlpha ? "Yes" : "No" }),
@@ -37337,11 +37999,12 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Is render target", value: texture.isRenderTarget ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Has mipmaps", value: !texture.noMipmap ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "UV set", target: texture, propertyName: "coordinatesIndex", minimum: 0, maximum: 3, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Mode", options: coordinatesMode, target: texture, propertyName: "coordinatesMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return texture.updateSamplingMode(value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Level", target: texture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 texture.updateSamplingMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return texture.updateSamplingMode(value); } })),
             texture.rootContainer &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "ADVANCED TEXTURE PROPERTIES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ADVANCED TEXTURE PROPERTIES" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__["ValueLineComponent"], { label: "Last layout time", value: this._adtInstrumentation.renderTimeCounter.current, units: "ms" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__["ValueLineComponent"], { label: "Last render time", value: this._adtInstrumentation.layoutTimeCounter.current, units: "ms" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Render scale", minimum: 0.1, maximum: 5, step: 0.1, target: texture, propertyName: "renderScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37351,7 +38014,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Use smallest ideal", target: texture, propertyName: "useSmallestIdeal", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Render at ideal size", target: texture, propertyName: "renderAtIdealSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Invalidate Rect optimization", target: texture, propertyName: "useInvalidateRectOptimization", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TRANSFORM" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORM" },
                 !texture.isCube &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "U offset", target: texture, propertyName: "uOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37374,79 +38037,49 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/actionTabs/tabs/propertyGrids/meshes/axesViewerComponent.tsx":
-/*!*********************************************************************************!*\
-  !*** ./components/actionTabs/tabs/propertyGrids/meshes/axesViewerComponent.tsx ***!
-  \*********************************************************************************/
-/*! exports provided: AxesViewerComponent */
+/***/ "./components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx":
+/*!***************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx ***!
+  \***************************************************************************************/
+/*! exports provided: BonePropertyGridComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AxesViewerComponent", function() { return AxesViewerComponent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BonePropertyGridComponent", function() { return BonePropertyGridComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+/* harmony import */ var _lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/quaternionLineComponent */ "./components/actionTabs/lines/quaternionLineComponent.tsx");
 
 
 
 
 
 
-var AxesViewerComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AxesViewerComponent, _super);
-    function AxesViewerComponent(props) {
-        var _this = _super.call(this, props) || this;
-        var node = _this.props.node;
-        if (!node.reservedDataStore) {
-            node.reservedDataStore = {};
-        }
-        _this.state = { displayAxis: (node.reservedDataStore && node.reservedDataStore.axisViewer) ? true : false };
-        return _this;
+var BonePropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BonePropertyGridComponent, _super);
+    function BonePropertyGridComponent(props) {
+        return _super.call(this, props) || this;
     }
-    AxesViewerComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        if (nextProps.node !== this.props.node) {
-            nextState.displayAxis = (nextProps.node.reservedDataStore && nextProps.node.reservedDataStore.axisViewer) ? true : false;
-        }
-        return true;
+    BonePropertyGridComponent.prototype.render = function () {
+        var bone = this.props.bone;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "ID", value: bone.id }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Unique ID", value: bone.uniqueId.toString() })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMATIONS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Position", target: bone, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                !bone.rotationQuaternion &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Rotation", target: bone, propertyName: "rotation", step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                bone.rotationQuaternion &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_5__["QuaternionLineComponent"], { label: "Rotation", target: bone, propertyName: "rotationQuaternion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Scaling", target: bone, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
-    AxesViewerComponent.prototype.displayAxes = function () {
-        var node = this.props.node;
-        var scene = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultUtilityLayer.utilityLayerScene;
-        if (node.reservedDataStore.axisViewer) {
-            node.reservedDataStore.axisViewer.dispose();
-            node.reservedDataStore.axisViewer = null;
-            scene.onBeforeRenderObservable.remove(node.reservedDataStore.onBeforeRenderObserver);
-            node.reservedDataStore.onBeforeRenderObserver = null;
-            this.setState({ displayAxis: false });
-            return;
-        }
-        var viewer = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["AxesViewer"](scene);
-        node.reservedDataStore.axisViewer = viewer;
-        var x = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"](1, 0, 0);
-        var y = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, 1, 0);
-        var z = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, 0, 1);
-        viewer.xAxis.reservedDataStore = { hidden: true };
-        viewer.yAxis.reservedDataStore = { hidden: true };
-        viewer.zAxis.reservedDataStore = { hidden: true };
-        node.reservedDataStore.onBeforeRenderObserver = scene.onBeforeRenderObservable.add(function () {
-            var cameraMatrix = scene.activeCamera.getWorldMatrix();
-            var matrix = node.getWorldMatrix();
-            var extend = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Tmp"].Vector3[0];
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformCoordinatesFromFloatsToRef(0, 0, 1, cameraMatrix, extend);
-            viewer.scaleLines = extend.length() / 10;
-            viewer.update(node.getAbsolutePosition(), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformNormal(x, matrix), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformNormal(y, matrix), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"].TransformNormal(z, matrix));
-        });
-        this.setState({ displayAxis: true });
-    };
-    AxesViewerComponent.prototype.render = function () {
-        var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Display axes", isSelected: function () { return _this.state.displayAxis; }, onSelect: function () { return _this.displayAxes(); } }));
-    };
-    return AxesViewerComponent;
+    return BonePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -37474,8 +38107,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/quaternionLineComponent */ "./components/actionTabs/lines/quaternionLineComponent.tsx");
-/* harmony import */ var _axesViewerComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./axesViewerComponent */ "./components/actionTabs/tabs/propertyGrids/meshes/axesViewerComponent.tsx");
-/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
+/* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
+/* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+
+
+
+
 
 
 
@@ -37496,17 +38135,45 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MeshPropertyGridComponent, _super);
     function MeshPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
-        var mesh = _this.props.mesh;
-        _this.state = { displayNormals: false, renderNormalVectors: mesh.reservedDataStore && mesh.reservedDataStore.normalLines };
+        _this.state = {
+            displayNormals: false
+        };
         return _this;
     }
+    MeshPropertyGridComponent.prototype.renderWireframeOver = function () {
+        var mesh = this.props.mesh;
+        var scene = mesh.getScene();
+        if (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) {
+            mesh.reservedDataStore.wireframeOver.dispose(false, true);
+            mesh.reservedDataStore.wireframeOver = null;
+            this.forceUpdate();
+            return;
+        }
+        var wireframeOver = mesh.clone();
+        wireframeOver.reservedDataStore = { hidden: true };
+        wireframeOver.position = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
+        wireframeOver.setParent(mesh);
+        var material = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("wireframeOver", scene);
+        material.reservedDataStore = { hidden: true };
+        wireframeOver.material = material;
+        material.zOffset = 1;
+        material.disableLighting = true;
+        material.backFaceCulling = false;
+        material.emissiveColor = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Color3"].White();
+        material.wireframe = true;
+        if (!mesh.reservedDataStore) {
+            mesh.reservedDataStore = {};
+        }
+        mesh.reservedDataStore.wireframeOver = wireframeOver;
+        this.forceUpdate();
+    };
     MeshPropertyGridComponent.prototype.renderNormalVectors = function () {
         var mesh = this.props.mesh;
         var scene = mesh.getScene();
         if (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) {
             mesh.reservedDataStore.normalLines.dispose();
             mesh.reservedDataStore.normalLines = null;
-            this.setState({ renderNormalVectors: false });
+            this.forceUpdate();
             return;
         }
         var normals = mesh.getVerticesData(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].NormalKind);
@@ -37522,11 +38189,12 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var normalLines = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["LinesBuilder"].CreateLineSystem("normalLines", { lines: lines }, scene);
         normalLines.color = color;
         normalLines.parent = mesh;
+        normalLines.reservedDataStore = { hidden: true };
         if (!mesh.reservedDataStore) {
             mesh.reservedDataStore = {};
         }
         mesh.reservedDataStore.normalLines = normalLines;
-        this.setState({ renderNormalVectors: true });
+        this.forceUpdate();
     };
     MeshPropertyGridComponent.prototype.displayNormals = function () {
         var _this = this;
@@ -37568,6 +38236,13 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var mesh = this.props.mesh;
         this.props.onSelectionChangedObservable.notifyObservers(mesh.material);
     };
+    MeshPropertyGridComponent.prototype.onSourceMeshLink = function () {
+        if (!this.props.onSelectionChangedObservable) {
+            return;
+        }
+        var instanceMesh = this.props.mesh;
+        this.props.onSelectionChangedObservable.notifyObservers(instanceMesh.sourceMesh);
+    };
     MeshPropertyGridComponent.prototype.convertPhysicsTypeToString = function () {
         var mesh = this.props.mesh;
         switch (mesh.physicsImpostor.type) {
@@ -37587,6 +38262,12 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 return "Particle";
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["PhysicsImpostor"].HeightmapImpostor:
                 return "Heightmap";
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["PhysicsImpostor"].ConvexHullImpostor:
+                return "Convex hull";
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["PhysicsImpostor"].RopeImpostor:
+                return "Rope";
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["PhysicsImpostor"].SoftbodyImpostor:
+                return "Soft body";
         }
         return "Unknown";
     };
@@ -37596,8 +38277,25 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var scene = mesh.getScene();
         var displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
         var renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
+        var renderWireframeOver = (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) ? true : false;
+        var morphTargets = [];
+        if (mesh.morphTargetManager) {
+            for (var index = 0; index < mesh.morphTargetManager.numTargets; index++) {
+                morphTargets.push(mesh.morphTargetManager.getTarget(index));
+            }
+        }
+        var algorithmOptions = [
+            { label: "Accurate", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["AbstractMesh"].OCCLUSION_ALGORITHM_TYPE_ACCURATE },
+            { label: "Conservative", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["AbstractMesh"].OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE },
+        ];
+        var occlusionTypeOptions = [
+            { label: "None", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["AbstractMesh"].OCCLUSION_TYPE_NONE },
+            { label: "Optimistic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["AbstractMesh"].OCCLUSION_TYPE_OPTIMISTIC },
+            { label: "Strict", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["AbstractMesh"].OCCLUSION_TYPE_STRICT },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: mesh, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "ID", value: mesh.id }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: mesh.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: mesh.getClassName() }),
@@ -37608,17 +38306,20 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "IsEnabled", isSelected: function () { return mesh.isEnabled(); }, onSelect: function (value) { return mesh.setEnabled(value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "IsPickable", target: mesh, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.material &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Material", value: mesh.material.name, onLink: function () { return _this.onMaterialLink(); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "TRANSFORMS" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Material", value: mesh.material.name, onLink: function () { return _this.onMaterialLink(); } }),
+                mesh.isAnInstance &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Source", value: mesh.sourceMesh.name, onLink: function () { return _this.onSourceMeshLink(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Position", target: mesh, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !mesh.rotationQuaternion &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Rotation", target: mesh, propertyName: "rotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Rotation", target: mesh, propertyName: "rotation", step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.rotationQuaternion &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_8__["QuaternionLineComponent"], { label: "Rotation", target: mesh, propertyName: "rotationQuaternion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Scaling", target: mesh, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "DISPLAY", closed: true },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Visibility", target: mesh, propertyName: "visibility", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Alpha index", target: mesh, propertyName: "alphaIndex", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "DISPLAY", closed: true },
+                !mesh.isAnInstance &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Visibility", target: mesh, propertyName: "visibility", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Alpha index", target: mesh, propertyName: "alphaIndex", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Receive shadows", target: mesh, propertyName: "receiveShadows", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].ColorKind) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use vertex colors", target: mesh, propertyName: "useVertexColors", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37626,34 +38327,170 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Apply fog", target: mesh, propertyName: "applyFog", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !mesh.parent &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Infinite distance", target: mesh, propertyName: "infiniteDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "ADVANCED", closed: true },
+            mesh.morphTargetManager != null &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "MORPH TARGETS", closed: true }, morphTargets.map(function (mt, i) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: mt.name, target: mt, propertyName: "influence", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: _this.props.onPropertyChangedObservable }));
+                })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ADVANCED", closed: true },
                 mesh.useBones &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Compute bones using shaders", target: mesh, propertyName: "computeBonesUsingShaders", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Collisions", target: mesh, propertyName: "checkCollisions", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has normals", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].NormalKind) ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has vertex colors", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].ColorKind) ? "Yes" : "No" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "has UV set 0", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].UVKind) ? "Yes" : "No" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "has UV set 1", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].UV2Kind) ? "Yes" : "No" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "has UV set 2", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].UV3Kind) ? "Yes" : "No" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "has UV set 3", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].UV4Kind) ? "Yes" : "No" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "has tangents", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].TangentKind) ? "Yes" : "No" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "has matrix weights", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].MatricesWeightsKind) ? "Yes" : "No" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "has matrix indices", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].MatricesIndicesKind) ? "Yes" : "No" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has UV set 0", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].UVKind) ? "Yes" : "No" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has UV set 1", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].UV2Kind) ? "Yes" : "No" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has UV set 2", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].UV3Kind) ? "Yes" : "No" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has UV set 3", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].UV4Kind) ? "Yes" : "No" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has tangents", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].TangentKind) ? "Yes" : "No" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has matrix weights", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].MatricesWeightsKind) ? "Yes" : "No" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has matrix indices", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].MatricesIndicesKind) ? "Yes" : "No" })),
             mesh.physicsImpostor != null &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "PHYSICS", closed: true },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Mass", target: mesh.physicsImpostor, propertyName: "mass", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Friction", target: mesh.physicsImpostor, propertyName: "friction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Restitution", target: mesh.physicsImpostor, propertyName: "restitution", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "PHYSICS", closed: true },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Mass", target: mesh.physicsImpostor, propertyName: "mass", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Friction", target: mesh.physicsImpostor, propertyName: "friction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Restitution", target: mesh.physicsImpostor, propertyName: "restitution", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: this.convertPhysicsTypeToString() })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "DEBUG", closed: true },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Show bounding box", target: mesh, propertyName: "showBoundingBox", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "OCCLUSIONS", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__["OptionsLineComponent"], { label: "Type", options: occlusionTypeOptions, target: mesh, propertyName: "occlusionType", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Retry count", minimum: -1, maximum: 10, decimalCount: 0, step: 1, target: mesh, propertyName: "occlusionRetryCount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__["OptionsLineComponent"], { label: "Algorithm", options: algorithmOptions, target: mesh, propertyName: "occlusionQueryAlgorithmType", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "EDGE RENDERING", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enable", target: mesh, isSelected: function () { return mesh.edgesRenderer != null; }, onSelect: function (value) {
+                        if (value) {
+                            mesh.enableEdgesRendering();
+                        }
+                        else {
+                            mesh.disableEdgesRendering();
+                        }
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Edge width", minimum: 0, maximum: 10, step: 0.1, target: mesh, propertyName: "edgesWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_11__["Color3LineComponent"], { label: "Edge color", target: mesh, propertyName: "edgesColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "OUTLINE & OVERLAY", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render overlay", target: mesh, propertyName: "renderOverlay", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_11__["Color3LineComponent"], { label: "Overlay color", target: mesh, propertyName: "overlayColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render outline", target: mesh, propertyName: "renderOutline", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_11__["Color3LineComponent"], { label: "Outline color", target: mesh, propertyName: "outlineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEBUG", closed: true },
                 mesh.material &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display normals", isSelected: function () { return displayNormals; }, onSelect: function () { return _this.displayNormals(); } }),
                 mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].NormalKind) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render vertex normals", isSelected: function () { return renderNormalVectors; }, onSelect: function () { return _this.renderNormalVectors(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_axesViewerComponent__WEBPACK_IMPORTED_MODULE_9__["AxesViewerComponent"], { node: mesh }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render wireframe over mesh", isSelected: function () { return renderWireframeOver; }, onSelect: function () { return _this.renderWireframeOver(); } }))));
     };
     return MeshPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx":
+/*!*******************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx ***!
+  \*******************************************************************************************/
+/*! exports provided: SkeletonPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SkeletonPropertyGridComponent", function() { return SkeletonPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animationPropertyGridComponent.tsx");
+/* harmony import */ var babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Debug/skeletonViewer */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
+
+
+
+
+
+
+
+
+var SkeletonPropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SkeletonPropertyGridComponent, _super);
+    function SkeletonPropertyGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._skeletonViewersEnabled = false;
+        _this._skeletonViewers = new Array();
+        return _this;
+    }
+    SkeletonPropertyGridComponent.prototype.switchSkeletonViewers = function () {
+        this._skeletonViewersEnabled = !this._skeletonViewersEnabled;
+        var scene = this.props.skeleton.getScene();
+        if (this._skeletonViewersEnabled) {
+            for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
+                var mesh = _a[_i];
+                if (mesh.skeleton === this.props.skeleton) {
+                    var found = false;
+                    for (var sIndex = 0; sIndex < this._skeletonViewers.length; sIndex++) {
+                        if (this._skeletonViewers[sIndex].skeleton === mesh.skeleton) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        continue;
+                    }
+                    var viewer = new babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__["SkeletonViewer"](mesh.skeleton, mesh, scene, true, 0);
+                    viewer.isEnabled = true;
+                    this._skeletonViewers.push(viewer);
+                    if (!mesh.reservedDataStore) {
+                        mesh.reservedDataStore = {};
+                    }
+                    mesh.reservedDataStore.skeletonViewer = viewer;
+                }
+            }
+        }
+        else {
+            for (var index = 0; index < this._skeletonViewers.length; index++) {
+                this._skeletonViewers[index].mesh.reservedDataStore.skeletonViewer = null;
+                this._skeletonViewers[index].dispose();
+            }
+            this._skeletonViewers = [];
+        }
+    };
+    SkeletonPropertyGridComponent.prototype.checkSkeletonViewerState = function (props) {
+        var scene = props.skeleton.getScene();
+        this._skeletonViewers = [];
+        if (!scene) {
+            return;
+        }
+        for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
+            var mesh = _a[_i];
+            if (mesh.skeleton === props.skeleton && mesh.reservedDataStore && mesh.reservedDataStore.skeletonViewer) {
+                this._skeletonViewers.push(mesh.reservedDataStore.skeletonViewer);
+            }
+        }
+        this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
+    };
+    SkeletonPropertyGridComponent.prototype.componentWillMount = function () {
+        this.checkSkeletonViewerState(this.props);
+    };
+    SkeletonPropertyGridComponent.prototype.shouldComponentUpdate = function (nextProps) {
+        if (nextProps.skeleton !== this.props.skeleton) {
+            this.checkSkeletonViewerState(nextProps);
+        }
+        return true;
+    };
+    SkeletonPropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var skeleton = this.props.skeleton;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: skeleton, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "ID", value: skeleton.id }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Bone count", value: skeleton.bones.length.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use texture to store matrices", target: skeleton, propertyName: "useTextureToStoreBoneMatrices", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Debug mode", isSelected: function () { return _this._skeletonViewersEnabled; }, onSelect: function () { return _this.switchSkeletonViewers(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: skeleton, scene: skeleton.getScene(), lockObject: this.props.lockObject })));
+    };
+    return SkeletonPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -37678,7 +38515,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/quaternionLineComponent */ "./components/actionTabs/lines/quaternionLineComponent.tsx");
-/* harmony import */ var _axesViewerComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./axesViewerComponent */ "./components/actionTabs/tabs/propertyGrids/meshes/axesViewerComponent.tsx");
+/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 
 
 
@@ -37695,20 +38532,19 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
     TransformNodePropertyGridComponent.prototype.render = function () {
         var transformNode = this.props.transformNode;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: transformNode, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "ID", value: transformNode.id }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Unique ID", value: transformNode.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Class", value: transformNode.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "IsEnabled", isSelected: function () { return transformNode.isEnabled(); }, onSelect: function (value) { return transformNode.setEnabled(value); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "TRANSFORMATIONS" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMATIONS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Position", target: transformNode, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !transformNode.rotationQuaternion &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Rotation", target: transformNode, propertyName: "rotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Rotation", target: transformNode, propertyName: "rotation", step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 transformNode.rotationQuaternion &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_6__["QuaternionLineComponent"], { label: "Rotation", target: transformNode, propertyName: "rotationQuaternion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Scaling", target: transformNode, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "DEBUG", closed: true },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_axesViewerComponent__WEBPACK_IMPORTED_MODULE_7__["AxesViewerComponent"], { node: transformNode }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Scaling", target: transformNode, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return TransformNodePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -37750,16 +38586,18 @@ var CommonPostProcessPropertyGridComponent = /** @class */ (function (_super) {
     CommonPostProcessPropertyGridComponent.prototype.render = function () {
         var postProcess = this.props.postProcess;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: postProcess.getClassName() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Width", value: postProcess.width.toString() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Height", value: postProcess.height.toString() }),
+                postProcess.width &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Width", value: postProcess.width.toString() }),
+                postProcess.height &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Height", value: postProcess.height.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__["CheckBoxLineComponent"], { label: "Auto clear", target: postProcess, propertyName: "autoClear", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 postProcess.clearColor &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { label: "Clear color", target: postProcess, propertyName: "clearColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__["CheckBoxLineComponent"], { label: "Pixel perfect", target: postProcess, propertyName: "enablePixelPerfectMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_2__["CheckBoxLineComponent"], { label: "Fullscreen viewport", target: postProcess, propertyName: "forceFullscreenViewport", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Samples", target: postProcess, propertyName: "samples", minimum: 1, maximum: 8, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Samples", target: postProcess, propertyName: "samples", minimum: 1, maximum: 8, step: 1, decimalCount: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return CommonPostProcessPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -37783,6 +38621,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+
 
 
 
@@ -37794,9 +38634,12 @@ var CommonRenderingPipelinePropertyGridComponent = /** @class */ (function (_sup
     }
     CommonRenderingPipelinePropertyGridComponent.prototype.render = function () {
         var renderPipeline = this.props.renderPipeline;
+        var renderPipelineAsAny = renderPipeline;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Class", value: renderPipeline.getClassName() }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Class", value: renderPipeline.getClassName() }),
+                renderPipelineAsAny.samples !== undefined &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Samples", minimum: 1, maximum: 8, step: 1, decimalCount: 0, target: renderPipeline, propertyName: "samples", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return CommonRenderingPipelinePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -37855,35 +38698,47 @@ var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_su
             { label: "Opaque", value: babylonjs_Materials_imageProcessingConfiguration__WEBPACK_IMPORTED_MODULE_8__["ImageProcessingConfiguration"].VIGNETTEMODE_OPAQUE }
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "BLOOM" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "bloomEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Threshold", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "bloomThreshold", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Weight", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "bloomWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Kernel", minimum: 0, maximum: 128, step: 1, target: renderPipeline, propertyName: "bloomKernel", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Scale", minimum: 0, maximum: 1, step: 0.25, target: renderPipeline, propertyName: "bloomScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "CHROMATIC ABERRATION" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "chromaticAberrationEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "aberrationAmount", minimum: 0, maximum: 128, step: 0.1, target: renderPipeline.chromaticAberration, propertyName: "aberrationAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Radial intensity", minimum: 0, maximum: 1, step: 0.01, target: renderPipeline.chromaticAberration, propertyName: "radialIntensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Center", target: renderPipeline.chromaticAberration, propertyName: "centerPosition", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Direction", target: renderPipeline.chromaticAberration, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "DEPTH OF FIELD" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "depthOfFieldEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Focal length", minimum: 0, maximum: camera.maxZ, step: 0.1, target: renderPipeline.depthOfField, propertyName: "focalLength", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "fStop", minimum: 0, maximum: 32, step: 0.1, target: renderPipeline.depthOfField, propertyName: "fStop", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distance", minimum: 0, maximum: camera.maxZ, step: 0.1, target: renderPipeline.depthOfField, propertyName: "focusDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Lens size", minimum: 0, maximum: 1000, step: 1, target: renderPipeline.depthOfField, propertyName: "lensSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "FXAA" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "BLOOM" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "bloomEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                renderPipeline.bloomEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Threshold", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "bloomThreshold", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Weight", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "bloomWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Kernel", minimum: 0, maximum: 128, step: 1, target: renderPipeline, propertyName: "bloomKernel", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Scale", minimum: 0, maximum: 1, step: 0.25, target: renderPipeline, propertyName: "bloomScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "CHROMATIC ABERRATION" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "chromaticAberrationEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                renderPipeline.chromaticAberrationEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "aberrationAmount", minimum: 0, maximum: 128, step: 0.1, target: renderPipeline.chromaticAberration, propertyName: "aberrationAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Radial intensity", minimum: 0, maximum: 1, step: 0.01, target: renderPipeline.chromaticAberration, propertyName: "radialIntensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Center", target: renderPipeline.chromaticAberration, propertyName: "centerPosition", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector2LineComponent"], { label: "Direction", target: renderPipeline.chromaticAberration, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEPTH OF FIELD" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "depthOfFieldEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                renderPipeline.depthOfFieldEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Focal length", minimum: 0, maximum: camera.maxZ, step: 0.1, target: renderPipeline.depthOfField, propertyName: "focalLength", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "fStop", minimum: 0, maximum: 32, step: 0.1, target: renderPipeline.depthOfField, propertyName: "fStop", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distance", minimum: 0, maximum: camera.maxZ, step: 0.1, target: renderPipeline.depthOfField, propertyName: "focusDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Lens size", minimum: 0, maximum: 1000, step: 1, target: renderPipeline.depthOfField, propertyName: "lensSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 0 }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "FXAA" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "fxaaEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "GLOW LAYER" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "glowLayerEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "GRAIN" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "grainEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Animated", target: renderPipeline.grain, propertyName: "animated", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Intensity", minimum: 0, maximum: 50, step: 0.1, target: renderPipeline.grain, propertyName: "intensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "IMAGE PROCESSING" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "imageProcessingEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "GLOW LAYER" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "glowLayerEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                renderPipeline.glowLayerEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Blur kernel size", minimum: 1, maximum: 128, step: 1, decimalCount: 0, target: renderPipeline.glowLayer, propertyName: "blurKernelSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Intensity", minimum: 0, maximum: 10, step: 0.1, target: renderPipeline.glowLayer, propertyName: "intensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "GRAIN" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "grainEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                renderPipeline.grainEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Animated", target: renderPipeline.grain, propertyName: "animated", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Intensity", minimum: 0, maximum: 50, step: 0.1, target: renderPipeline.grain, propertyName: "intensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "IMAGE PROCESSING" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "imageProcessingEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 renderPipeline.imageProcessing &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Contrast", target: renderPipeline.imageProcessing, propertyName: "contrast", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37898,12 +38753,67 @@ var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_su
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { minimum: 0, maximum: 1, step: 0.1, label: "Vignette center Y", target: renderPipeline.imageProcessing, propertyName: "vignetteCentreY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { label: "Vignette color", target: renderPipeline.imageProcessing, propertyName: "vignetteColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Vignette blend mode", options: vignetteModeOptions, target: renderPipeline.imageProcessing, propertyName: "vignetteBlendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }))),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SHARPEN" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, propertyName: "sharpenEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Color amount", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline.sharpen, propertyName: "colorAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Edge amount", minimum: 0, maximum: 5, step: 0.05, target: renderPipeline.sharpen, propertyName: "edgeAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHARPEN" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: renderPipeline, onValueChanged: function () { return _this.forceUpdate(); }, propertyName: "sharpenEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                renderPipeline.sharpenEnabled &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Color amount", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline.sharpen, propertyName: "colorAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Edge amount", minimum: 0, maximum: 5, step: 0.05, target: renderPipeline.sharpen, propertyName: "edgeAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable })))));
     };
     return DefaultRenderingPipelinePropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent.tsx":
+/*!***************************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent.tsx ***!
+  \***************************************************************************************************************/
+/*! exports provided: LensRenderingPipelinePropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LensRenderingPipelinePropertyGridComponent", function() { return LensRenderingPipelinePropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/commonRenderingPipelinePropertyGridComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+
+
+
+
+
+
+var LensRenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LensRenderingPipelinePropertyGridComponent, _super);
+    function LensRenderingPipelinePropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    LensRenderingPipelinePropertyGridComponent.prototype.render = function () {
+        var renderPipeline = this.props.renderPipeline;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "OPTIONS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Edge blur", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "edgeBlur", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Edge distortion", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "edgeDistortion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Grain amount", minimum: 0, maximum: 1, step: 0.1, target: renderPipeline, propertyName: "grainAmount", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Chromatic aberration", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "chromaticAberration", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Darken out of focus", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "darkenOutOfFocus", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Blur noise", target: renderPipeline, propertyName: "blurNoise", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEPTH OF FIELD" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Aperture", minimum: 0, maximum: 10, step: 0.1, target: renderPipeline, propertyName: "dofAperture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Distortion", minimum: 0, maximum: 10, step: 0.1, target: renderPipeline, propertyName: "dofDistortion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Pentagon bokeh", target: renderPipeline, propertyName: "pentagonBokeh", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Highlight gain", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "highlightsGain", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Highlight threshold", minimum: 0, maximum: 5, step: 0.1, target: renderPipeline, propertyName: "highlightsThreshold", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+    };
+    return LensRenderingPipelinePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -37935,7 +38845,7 @@ var PostProcessPropertyGridComponent = /** @class */ (function (_super) {
     PostProcessPropertyGridComponent.prototype.render = function () {
         var postProcess = this.props.postProcess;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPostProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonPostProcessPropertyGridComponent"], { lockObject: this.props.lockObject, postProcess: postProcess, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPostProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonPostProcessPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, postProcess: postProcess, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return PostProcessPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -37969,7 +38879,7 @@ var RenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
     RenderingPipelinePropertyGridComponent.prototype.render = function () {
         var renderPipeline = this.props.renderPipeline;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return RenderingPipelinePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -38008,8 +38918,8 @@ var SSAO2RenderingPipelinePropertyGridComponent = /** @class */ (function (_supe
         var renderPipeline = this.props.renderPipeline;
         var camera = renderPipeline.scene.activeCamera;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SSAO" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "SSAO" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Strength", minimum: 0, maximum: 2, step: 0.05, target: renderPipeline, propertyName: "totalStrength", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Base", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "base", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Max Z", minimum: 0, maximum: camera.maxZ, step: 1, target: renderPipeline, propertyName: "maxZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -38052,8 +38962,8 @@ var SSAORenderingPipelinePropertyGridComponent = /** @class */ (function (_super
     SSAORenderingPipelinePropertyGridComponent.prototype.render = function () {
         var renderPipeline = this.props.renderPipeline;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SSAO" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonRenderingPipelinePropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, renderPipeline: renderPipeline, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "SSAO" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Strength", minimum: 0, maximum: 2, step: 0.05, target: renderPipeline, propertyName: "totalStrength", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Base", minimum: 0, maximum: 1, step: 0.05, target: renderPipeline, propertyName: "base", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Radius", minimum: 0.0001, maximum: 0.001, step: 0.0001, target: renderPipeline, propertyName: "radius", onPropertyChangedObservable: this.props.onPropertyChangedObservable, decimalCount: 4 }),
@@ -38187,6 +39097,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+
 
 
 
@@ -38261,6 +39173,13 @@ var ScenePropertyGridComponent = /** @class */ (function (_super) {
         var physicsEngine = scene.getPhysicsEngine();
         physicsEngine.setTimeStep(newValue);
     };
+    ScenePropertyGridComponent.prototype.normalizeScene = function () {
+        var scene = this.props.scene;
+        scene.meshes.forEach(function (mesh) {
+            mesh.normalizeToUnitCube(true);
+            mesh.computeWorldMatrix(true);
+        });
+    };
     ScenePropertyGridComponent.prototype.render = function () {
         var _this = this;
         var scene = this.props.scene;
@@ -38282,11 +39201,11 @@ var ScenePropertyGridComponent = /** @class */ (function (_super) {
             { label: "Opaque", value: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["ImageProcessingConfiguration"].VIGNETTEMODE_OPAQUE }
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "RENDERING MODE" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "RENDERING MODE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_radioLineComponent__WEBPACK_IMPORTED_MODULE_4__["RadioButtonLineComponent"], { onSelectionChangedObservable: this._renderingModeGroupObservable, label: "Point", isSelected: function () { return scene.forcePointsCloud; }, onSelect: function () { return _this.setRenderingModes(true, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_radioLineComponent__WEBPACK_IMPORTED_MODULE_4__["RadioButtonLineComponent"], { onSelectionChangedObservable: this._renderingModeGroupObservable, label: "Wireframe", isSelected: function () { return scene.forceWireframe; }, onSelect: function () { return _this.setRenderingModes(false, true); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_radioLineComponent__WEBPACK_IMPORTED_MODULE_4__["RadioButtonLineComponent"], { onSelectionChangedObservable: this._renderingModeGroupObservable, label: "Solid", isSelected: function () { return !scene.forcePointsCloud && !scene.forceWireframe; }, onSelect: function () { return _this.setRenderingModes(false, false); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "ENVIRONMENT" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ENVIRONMENT" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { label: "Clear color", target: scene, propertyName: "clearColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clear color enabled", target: scene, propertyName: "autoClear", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { label: "Ambient color", target: scene, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -38294,8 +39213,8 @@ var ScenePropertyGridComponent = /** @class */ (function (_super) {
                 scene.environmentTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Env. texture", texture: scene.environmentTexture, onSelectionChangedObservable: this.props.onSelectionChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_8__["FileButtonLineComponent"], { label: "Update environment texture", onClick: function (file) { return _this.updateEnvironmentTexture(file); }, accept: ".dds, .env" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fogPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["FogPropertyGridComponent"], { lockObject: this.props.lockObject, scene: scene, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "IMAGE PROCESSING" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fogPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["FogPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, scene: scene, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "MATERIAL IMAGE PROCESSING" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Contrast", target: imageProcessing, propertyName: "contrast", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Exposure", target: imageProcessing, propertyName: "exposure", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Tone mapping", target: imageProcessing, propertyName: "toneMappingEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -38309,11 +39228,13 @@ var ScenePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { label: "Vignette color", target: imageProcessing, propertyName: "vignetteColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_13__["OptionsLineComponent"], { label: "Vignette blend mode", options: vignetteModeOptions, target: imageProcessing, propertyName: "vignetteBlendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } })),
             dummy !== null &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "PHYSICS", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "PHYSICS", closed: true },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_11__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Time step", target: dummy, propertyName: "timeStep", onChange: function (newValue) { return _this.updateTimeStep(newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_10__["Vector3LineComponent"], { label: "Gravity", target: dummy, propertyName: "gravity", onChange: function (newValue) { return _this.updateGravity(newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "COLLISIONS", closed: true },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_10__["Vector3LineComponent"], { label: "Gravity", target: scene, propertyName: "gravity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "COLLISIONS", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_10__["Vector3LineComponent"], { label: "Gravity", target: scene, propertyName: "gravity", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOWS", closed: true },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__["ButtonLineComponent"], { label: "Normalize scene", onClick: function () { return _this.normalizeScene(); } }))));
     };
     return ScenePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -38400,7 +39321,7 @@ var StatisticsTabComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Version", value: babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5__["Engine"].Version, color: "rgb(113, 159, 255)" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "FPS", value: engine.getFps(), fractionDigits: 0 }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "COUNT" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "COUNT" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Total meshes", value: scene.meshes.length.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Active meshes", value: scene.getActiveMeshes().length.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Active indices", value: scene.getActiveIndices().toString() }),
@@ -38408,12 +39329,11 @@ var StatisticsTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Active bones", value: scene.getActiveBones().toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Active particles", value: scene.getActiveParticles().toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Draw calls", value: sceneInstrumentation.drawCallsCounter.current.toString() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Texture collisions", value: sceneInstrumentation.textureCollisionsCounter.current.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Total lights", value: scene.lights.length.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Total vertices", value: scene.getTotalVertices().toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Total materials", value: scene.materials.length.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Total textures", value: scene.textures.length.toString() })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "FRAME STEPS DURATION" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "FRAME STEPS DURATION" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "Absolute FPS", value: 1000.0 / this._sceneInstrumentation.frameTimeCounter.current, fractionDigits: 0 }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "Meshes selection", value: sceneInstrumentation.activeMeshesEvaluationTimeCounter.current, units: "ms" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "Render targets", value: sceneInstrumentation.renderTargetsRenderTimeCounter.current, units: "ms" }),
@@ -38426,7 +39346,7 @@ var StatisticsTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "Inter-frame", value: sceneInstrumentation.interFrameTimeCounter.current, units: "ms" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "GPU Frame time", value: engineInstrumentation.gpuFrameTimeCounter.current * 0.000001, units: "ms" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "GPU Frame time (average)", value: engineInstrumentation.gpuFrameTimeCounter.average * 0.000001, units: "ms" })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SYSTEM INFO" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "SYSTEM INFO" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Resolution", value: engine.getRenderWidth() + "x" + engine.getRenderHeight() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "WebGL version", value: engine.webGLVersion.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Std derivatives", value: caps.standardDerivatives }),
@@ -38443,6 +39363,7 @@ var StatisticsTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Vertex array object", value: caps.vertexArrayObject }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Timer query", value: caps.timerQuery !== undefined }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Stencil", value: engine.isStencilEnable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Parallel shader compilation", value: caps.parallelShaderCompile != null }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "Max textures units", value: caps.maxTexturesImageUnits, fractionDigits: 0 }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "Max textures size", value: caps.maxTextureSize, fractionDigits: 0 }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "Max anisotropy", value: caps.maxAnisotropy, fractionDigits: 0 }),
@@ -38539,7 +39460,7 @@ var GLTFComponent = /** @class */ (function (_super) {
         var _this = this;
         var validationResults = this.props.globalState.validationResults;
         var issues = validationResults.issues;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GLTF VALIDATION", closed: !issues.numErrors && !issues.numWarnings },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GLTF VALIDATION", closed: !issues.numErrors && !issues.numWarnings },
             issues.numErrors !== 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_6__["MessageLineComponent"], { text: "Your file has some validation issues", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_7__["faTimesCircle"], color: "Red" }),
             issues.numErrors === 0 &&
@@ -38563,7 +39484,7 @@ var GLTFComponent = /** @class */ (function (_super) {
             { label: "Right handed", value: babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_9__["GLTFLoaderCoordinateSystemMode"].FORCE_RIGHT_HANDED }
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GLTF LOADER", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GLTF LOADER", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Animation start mode", options: animationStartMode, target: loaderState, propertyName: "animationStartMode" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Capture performance counters", target: loaderState, propertyName: "capturePerformanceCounters" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Compile materials", target: loaderState, propertyName: "compileMaterials" }),
@@ -38574,7 +39495,7 @@ var GLTFComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use clip plane", target: loaderState, propertyName: "useClipPlane" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Validate", target: loaderState, propertyName: "validate" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_6__["MessageLineComponent"], { text: "You need to reload your file to see these changes" })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GLTF EXTENSIONS", closed: true },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GLTF EXTENSIONS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_lod", isSelected: function () { return extensionStates["MSFT_lod"].enabled; }, onSelect: function (value) { return extensionStates["MSFT_lod"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { label: "Maximum LODs", target: extensionStates["MSFT_lod"], propertyName: "maxLODsToLoad", additionalClass: "gltf-extension-property" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_minecraftMesh", isSelected: function () { return extensionStates["MSFT_minecraftMesh"].enabled; }, onSelect: function (value) { return extensionStates["MSFT_minecraftMesh"].enabled = value; } }),
@@ -38655,7 +39576,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
     ToolsTabComponent.prototype.captureScreenshot = function () {
         var scene = this.props.scene;
         if (scene.activeCamera) {
-            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, { precision: 1.0 }, undefined, undefined, 4, true);
+            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].CreateScreenshot(scene.getEngine(), scene.activeCamera, { precision: 1.0 });
         }
     };
     ToolsTabComponent.prototype.recordVideo = function () {
@@ -38713,6 +39634,12 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             alert(error);
         });
     };
+    ToolsTabComponent.prototype.resetReplay = function () {
+        this.props.globalState.recorder.reset();
+    };
+    ToolsTabComponent.prototype.exportReplay = function () {
+        this.props.globalState.recorder.export();
+    };
     ToolsTabComponent.prototype.render = function () {
         var _this = this;
         var scene = this.props.scene;
@@ -38720,13 +39647,16 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             return null;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "CAPTURE" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CAPTURE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Screenshot", onClick: function () { return _this.captureScreenshot(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: this.state.tag, onClick: function () { return _this.recordVideo(); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SCENE EXPORT" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "REPLAY" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate replay code", onClick: function () { return _this.exportReplay(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Reset", onClick: function () { return _this.resetReplay(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SCENE EXPORT" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to GLB", onClick: function () { return _this.exportGLTF(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to Babylon", onClick: function () { return _this.exportBabylon(); } }),
-                !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.activeCamera &&
+                !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture.isPrefiltered && scene.activeCamera &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate .env texture", onClick: function () { return _this.createEnvTexture(); } })),
             BABYLON.GLTFFileLoader &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tools_gltfComponent__WEBPACK_IMPORTED_MODULE_6__["GLTFComponent"], { scene: scene, globalState: this.props.globalState })));
@@ -38772,7 +39702,7 @@ var TabsComponent = /** @class */ (function (_super) {
     };
     TabsComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "tabs" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "tabs", onContextMenu: function (e) { return e.preventDefault(); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "labels" }, this.props.children.map(function (child, index) {
                 return _this.renderLabel(child, index);
             })),
@@ -38915,6 +39845,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _replayRecorder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./replayRecorder */ "./components/replayRecorder.ts");
+
 
 
 var GlobalState = /** @class */ (function () {
@@ -38925,9 +39857,18 @@ var GlobalState = /** @class */ (function () {
         this.glTFLoaderExtensionDefaults = {};
         this.glTFLoaderDefaults = { "validate": true };
         this.blockMutationUpdates = false;
+        this.selectedLineContainerTitle = "";
+        this.recorder = new _replayRecorder__WEBPACK_IMPORTED_MODULE_1__["ReplayRecorder"]();
         // Light gizmos
         this.lightGizmos = [];
     }
+    GlobalState.prototype.init = function (propertyChangedObservable) {
+        var _this = this;
+        this.onPropertyChangedObservable = propertyChangedObservable;
+        propertyChangedObservable.add(function (event) {
+            _this.recorder.record(event);
+        });
+    };
     GlobalState.prototype.prepareGLTFPlugin = function (loader) {
         var _this = this;
         var loaderState = this.glTFLoaderDefaults;
@@ -39041,7 +39982,7 @@ var HeaderComponent = /** @class */ (function (_super) {
             return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { id: "back", onClick: function () { return _this.goBack(); } },
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faArrowLeft"] })));
         }
-        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }));
+        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { id: "logo", style: { top: "0%" }, src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }));
     };
     HeaderComponent.prototype.render = function () {
         var _this = this;
@@ -39058,6 +39999,112 @@ var HeaderComponent = /** @class */ (function (_super) {
     };
     return HeaderComponent;
 }(react__WEBPACK_IMPORTED_MODULE_3__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/propertyChangedEvent.ts":
+/*!********************************************!*\
+  !*** ./components/propertyChangedEvent.ts ***!
+  \********************************************/
+/*! exports provided: PropertyChangedEvent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PropertyChangedEvent", function() { return PropertyChangedEvent; });
+var PropertyChangedEvent = /** @class */ (function () {
+    function PropertyChangedEvent() {
+    }
+    return PropertyChangedEvent;
+}());
+
+
+
+/***/ }),
+
+/***/ "./components/replayRecorder.ts":
+/*!**************************************!*\
+  !*** ./components/replayRecorder.ts ***!
+  \**************************************/
+/*! exports provided: ReplayRecorder */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReplayRecorder", function() { return ReplayRecorder; });
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__);
+
+var ReplayRecorder = /** @class */ (function () {
+    function ReplayRecorder() {
+    }
+    ReplayRecorder.prototype.reset = function () {
+        this._recordedCodeLines = [];
+        this._previousObject = null;
+        this._previousProperty = "";
+    };
+    ReplayRecorder.prototype.record = function (event) {
+        if (!this._recordedCodeLines) {
+            this._recordedCodeLines = [];
+        }
+        if (this._previousObject === event.object && this._previousProperty === event.property) {
+            this._recordedCodeLines.pop();
+        }
+        var value = event.value;
+        if (value.w !== undefined) { // Quaternion
+            value = "new BABYLON.Quaternion(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
+        }
+        else if (value.z !== undefined) { // Vector3
+            value = "new BABYLON.Vector3(" + value.x + ", " + value.y + ", " + value.z + ")";
+        }
+        else if (value.y !== undefined) { // Vector2
+            value = "new BABYLON.Vector2(" + value.x + ", " + value.y + ")";
+        }
+        else if (value.a !== undefined) { // Color4
+            value = "new BABYLON.Color4(" + value.r + ", " + value.g + ", " + value.b + ", " + value.a + ")";
+        }
+        else if (value.b !== undefined) { // Color3
+            value = "new BABYLON.Color3(" + value.r + ", " + value.g + ", " + value.b + ")";
+        }
+        var target = event.object.getClassName().toLowerCase();
+        if (event.object.id) {
+            if (target === "Scene") {
+                target = "scene";
+            }
+            else if (target.indexOf("camera") > -1) {
+                target = "scene.getCameraByID(\"" + event.object.id + "\")";
+            }
+            else if (target.indexOf("mesh") > -1) {
+                target = "scene.getMeshByID(\"" + event.object.id + "\")";
+            }
+            else if (target.indexOf("light") > -1) {
+                target = "scene.getLightByID(\"" + event.object.id + "\")";
+            }
+            else if (target === "transformnode") {
+                target = "scene.getTransformNodeByID(\"" + event.object.id + "\")";
+            }
+            else if (target === "skeleton") {
+                target = "scene.getSkeletonById(\"" + event.object.id + "\")";
+            }
+            else if (target.indexOf("material") > -1) {
+                target = "scene.getMaterialByID(\"" + event.object.id + "\")";
+            }
+        }
+        this._recordedCodeLines.push(target + "." + event.property + " = " + value + ";");
+        this._previousObject = event.object;
+        this._previousProperty = event.property;
+    };
+    ReplayRecorder.prototype.export = function () {
+        var content = "// Code generated by babylon.js Inspector\r\n// Please keep in mind to define the 'scene' variable before using that code\r\n\r\n";
+        if (this._recordedCodeLines) {
+            content += this._recordedCodeLines.join("\r\n");
+        }
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].Download(new Blob([content]), "pseudo-code.txt");
+    };
+    return ReplayRecorder;
+}());
 
 
 
@@ -39097,6 +40144,46 @@ var AnimationGroupItemComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: animationGroup, extensibilityGroups: this.props.extensibilityGroups })));
     };
     return AnimationGroupItemComponent;
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/sceneExplorer/entities/boneTreeItemComponent.tsx":
+/*!*********************************************************************!*\
+  !*** ./components/sceneExplorer/entities/boneTreeItemComponent.tsx ***!
+  \*********************************************************************/
+/*! exports provided: BoneTreeItemComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BoneTreeItemComponent", function() { return BoneTreeItemComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var BoneTreeItemComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BoneTreeItemComponent, _super);
+    function BoneTreeItemComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    BoneTreeItemComponent.prototype.render = function () {
+        var _this = this;
+        var bone = this.props.bone;
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "skeletonTools" },
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: bone.name || "no name", onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faBone"], color: "lightgray" }),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: bone, extensibilityGroups: this.props.extensibilityGroups })));
+    };
+    return BoneTreeItemComponent;
 }(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
 
 
@@ -39351,6 +40438,9 @@ var LightTreeItemComponent = /** @class */ (function (_super) {
     LightTreeItemComponent.prototype.toggleGizmo = function () {
         var light = this.props.light;
         if (light.reservedDataStore && light.reservedDataStore.lightGizmo) {
+            if (light.getScene().reservedDataStore && light.getScene().reservedDataStore.gizmoManager) {
+                light.getScene().reservedDataStore.gizmoManager.attachToMesh(null);
+            }
             this.props.globalState.enableLightGizmo(light, false);
             this.setState({ isGizmoEnabled: false });
         }
@@ -39362,7 +40452,7 @@ var LightTreeItemComponent = /** @class */ (function (_super) {
     LightTreeItemComponent.prototype.render = function () {
         var _this = this;
         var isEnabledElement = this.state.isEnabled ? react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLightbulb"] }) : react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLightbulb"], className: "isNotActive" });
-        var isGizmoEnabled = this.state.isGizmoEnabled ? react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faEye"] }) : react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faEye"], className: "isNotActive" });
+        var isGizmoEnabled = (this.state.isGizmoEnabled || (this.props.light && this.props.light.reservedDataStore && this.props.light.reservedDataStore.lightGizmo)) ? react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faEye"] }) : react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faEye"], className: "isNotActive" });
         return (react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", { className: "lightTools" },
             react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_4__["TreeItemLabelComponent"], { label: this.props.light.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faLightbulb"], color: "yellow" }),
             react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", { className: "visibility icon", onClick: function () { return _this.switchIsEnabled(); }, title: "Turn on/off the light" }, isEnabledElement),
@@ -39426,18 +40516,13 @@ var MaterialTreeItemComponent = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MeshTreeItemComponent", function() { return MeshTreeItemComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/free-regular-svg-icons */ "../../node_modules/@fortawesome/free-regular-svg-icons/index.es.js");
-/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
-/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_7__);
-
-
-
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-regular-svg-icons */ "../../node_modules/@fortawesome/free-regular-svg-icons/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_6__);
 
 
 
@@ -39450,44 +40535,13 @@ var MeshTreeItemComponent = /** @class */ (function (_super) {
     function MeshTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
         var mesh = _this.props.mesh;
-        _this.state = { isGizmoEnabled: mesh.reservedDataStore && mesh.reservedDataStore.gizmo, isVisible: _this.props.mesh.isVisible };
+        _this.state = { isBoundingBoxEnabled: mesh.showBoundingBox, isVisible: _this.props.mesh.isVisible };
         return _this;
     }
-    MeshTreeItemComponent.prototype.showGizmos = function () {
+    MeshTreeItemComponent.prototype.showBoundingBox = function () {
         var mesh = this.props.mesh;
-        if (!this.state.isGizmoEnabled) {
-            if (!mesh.reservedDataStore) {
-                mesh.reservedDataStore = {};
-            }
-            mesh.reservedDataStore.previousParent = mesh.parent;
-            if (mesh.reservedDataStore.previousParent) {
-                if (!mesh.reservedDataStore.previousParent.reservedDataStore) {
-                    mesh.reservedDataStore.previousParent.reservedDataStore = {};
-                }
-                if (!mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren) {
-                    mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren = [];
-                }
-                mesh.reservedDataStore.previousParent.reservedDataStore.detachedChildren.push(mesh);
-            }
-            var gizmo = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["BoundingBoxGizmo"](babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromHexString("#0984e3"));
-            gizmo.attachedMesh = mesh;
-            gizmo.enableDragBehavior();
-            gizmo.updateBoundingBox();
-            gizmo.fixedDragMeshScreenSize = true;
-            mesh.reservedDataStore.gizmo = gizmo;
-            this.setState({ isGizmoEnabled: true });
-            return;
-        }
-        var previousParent = mesh.reservedDataStore.previousParent;
-        mesh.reservedDataStore.gizmo.dispose();
-        mesh.reservedDataStore.gizmo = null;
-        mesh.setParent(previousParent);
-        if (previousParent && previousParent.reservedDataStore) {
-            previousParent.reservedDataStore.detachedChildren = null;
-        }
-        mesh.reservedDataStore.previousParent = null;
-        mesh.reservedDataStore.pointerDragBehavior = null;
-        this.setState({ isGizmoEnabled: false });
+        mesh.showBoundingBox = !this.state.isBoundingBoxEnabled;
+        this.setState({ isBoundingBoxEnabled: !this.state.isBoundingBoxEnabled });
     };
     MeshTreeItemComponent.prototype.switchVisibility = function () {
         var newState = !this.state.isVisible;
@@ -39497,16 +40551,16 @@ var MeshTreeItemComponent = /** @class */ (function (_super) {
     MeshTreeItemComponent.prototype.render = function () {
         var _this = this;
         var mesh = this.props.mesh;
-        var visibilityElement = this.state.isVisible ? react__WEBPACK_IMPORTED_MODULE_7__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faEye"] }) : react__WEBPACK_IMPORTED_MODULE_7__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faEyeSlash"], className: "isNotActive" });
-        return (react__WEBPACK_IMPORTED_MODULE_7__["createElement"]("div", { className: "meshTools" },
-            react__WEBPACK_IMPORTED_MODULE_7__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_5__["TreeItemLabelComponent"], { label: mesh.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCube"], color: "dodgerblue" }),
-            react__WEBPACK_IMPORTED_MODULE_7__["createElement"]("div", { className: this.state.isGizmoEnabled ? "gizmo selected icon" : "gizmo icon", onClick: function () { return _this.showGizmos(); }, title: "Show/Hide position gizmo" },
-                react__WEBPACK_IMPORTED_MODULE_7__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faVectorSquare"] })),
-            react__WEBPACK_IMPORTED_MODULE_7__["createElement"]("div", { className: "visibility icon", onClick: function () { return _this.switchVisibility(); }, title: "Show/Hide mesh" }, visibilityElement),
-            react__WEBPACK_IMPORTED_MODULE_7__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_6__["ExtensionsComponent"], { target: mesh, extensibilityGroups: this.props.extensibilityGroups })));
+        var visibilityElement = this.state.isVisible ? react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faEye"] }) : react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faEyeSlash"], className: "isNotActive" });
+        return (react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", { className: "meshTools" },
+            react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_4__["TreeItemLabelComponent"], { label: mesh.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faCube"], color: "dodgerblue" }),
+            react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", { className: this.state.isBoundingBoxEnabled ? "bounding-box selected icon" : "bounding-box icon", onClick: function () { return _this.showBoundingBox(); }, title: "Show/Hide bounding box" },
+                react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faSquare"] })),
+            react__WEBPACK_IMPORTED_MODULE_6__["createElement"]("div", { className: "visibility icon", onClick: function () { return _this.switchVisibility(); }, title: "Show/Hide mesh" }, visibilityElement),
+            react__WEBPACK_IMPORTED_MODULE_6__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_5__["ExtensionsComponent"], { target: mesh, extensibilityGroups: this.props.extensibilityGroups })));
     };
     return MeshTreeItemComponent;
-}(react__WEBPACK_IMPORTED_MODULE_7__["Component"]));
+}(react__WEBPACK_IMPORTED_MODULE_6__["Component"]));
 
 
 
@@ -39608,6 +40662,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../components/propertyChangedEvent */ "./components/propertyChangedEvent.ts");
+
 
 
 
@@ -39620,6 +40676,9 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneTreeItemComponent, _super);
     function SceneTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._posDragEnd = null;
+        _this._scaleDragEnd = null;
+        _this._rotateDragEnd = null;
         var scene = _this.props.scene;
         var gizmoMode = 0;
         if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
@@ -39632,6 +40691,9 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
             }
             else if (manager.scaleGizmoEnabled) {
                 gizmoMode = 3;
+            }
+            else if (manager.boundingBoxGizmoEnabled) {
+                gizmoMode = 4;
             }
         }
         _this.state = { isSelected: false, isInPickingMode: false, gizmoMode: gizmoMode };
@@ -39663,8 +40725,15 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(entity);
                 }
-                else if (className.indexOf("Light") !== -1 && _this._selectedEntity.reservedDataStore && _this._selectedEntity.reservedDataStore.lightGizmo) {
+                else if (className.indexOf("Light") !== -1) {
+                    if (!_this._selectedEntity.reservedDataStore || !_this._selectedEntity.reservedDataStore.lightGizmo) {
+                        _this.props.globalState.enableLightGizmo(_this._selectedEntity, true);
+                        _this.forceUpdate();
+                    }
                     manager.attachToMesh(_this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
+                }
+                else {
+                    manager.attachToMesh(null);
                 }
             }
         });
@@ -39757,6 +40826,7 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                 }
             }
         });
+        manager.boundingBoxGizmoEnabled = false;
         manager.positionGizmoEnabled = false;
         manager.rotationGizmoEnabled = false;
         manager.scaleGizmoEnabled = false;
@@ -39769,12 +40839,80 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
             switch (mode) {
                 case 1:
                     manager.positionGizmoEnabled = true;
+                    if (!this._posDragEnd) {
+                        // Record movement for generating replay code
+                        this._posDragEnd = manager.gizmos.positionGizmo.onDragEndObservable.add(function () {
+                            if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedMesh) {
+                                var lightGizmo = manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var obj = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedMesh;
+                                if (obj.position) {
+                                    var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
+                                    e.object = obj;
+                                    e.property = "position";
+                                    e.value = obj.position;
+                                    _this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                            }
+                        });
+                    }
                     break;
                 case 2:
                     manager.rotationGizmoEnabled = true;
+                    if (!this._rotateDragEnd) {
+                        // Record movement for generating replay code
+                        this._rotateDragEnd = manager.gizmos.rotationGizmo.onDragEndObservable.add(function () {
+                            if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedMesh) {
+                                var lightGizmo = manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var obj = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedMesh;
+                                if (obj.rotationQuaternion) {
+                                    var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
+                                    e.object = obj;
+                                    e.property = "rotationQuaternion";
+                                    e.value = obj.rotationQuaternion;
+                                    _this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                                else if (obj.rotation) {
+                                    var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
+                                    e.object = obj;
+                                    e.property = "rotation";
+                                    e.value = obj.rotation;
+                                    _this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                                else if (obj.direction) {
+                                    var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
+                                    e.object = obj;
+                                    e.property = "direction";
+                                    e.value = obj.direction;
+                                    _this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                            }
+                        });
+                    }
                     break;
                 case 3:
                     manager.scaleGizmoEnabled = true;
+                    if (!this._scaleDragEnd) {
+                        // Record movement for generating replay code
+                        this._scaleDragEnd = manager.gizmos.scaleGizmo.onDragEndObservable.add(function () {
+                            if (manager.gizmos.scaleGizmo && manager.gizmos.scaleGizmo.attachedMesh) {
+                                var lightGizmo = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var obj = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.scaleGizmo.attachedMesh;
+                                if (obj.scaling) {
+                                    var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
+                                    e.object = obj;
+                                    e.property = "scaling";
+                                    e.value = obj.scaling;
+                                    _this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                }
+                            }
+                        });
+                    }
+                    break;
+                case 4:
+                    manager.boundingBoxGizmoEnabled = true;
+                    if (manager.gizmos.boundingBoxGizmo) {
+                        manager.gizmos.boundingBoxGizmo.fixedDragMeshScreenSize = true;
+                    }
                     break;
             }
             if (this._selectedEntity && this._selectedEntity.getClassName) {
@@ -39782,7 +40920,11 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
                     manager.attachToMesh(this._selectedEntity);
                 }
-                else if (className.indexOf("Light") !== -1 && this._selectedEntity.reservedDataStore && this._selectedEntity.reservedDataStore.lightGizmo) {
+                else if (className.indexOf("Light") !== -1) {
+                    if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.lightGizmo) {
+                        this.props.globalState.enableLightGizmo(this._selectedEntity, true);
+                        this.forceUpdate();
+                    }
                     manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 }
             }
@@ -39802,6 +40944,8 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_5__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faRedoAlt"] })),
                 react__WEBPACK_IMPORTED_MODULE_5__["createElement"]("div", { className: this.state.gizmoMode === 3 ? "scaling selected icon" : "scaling icon", onClick: function () { return _this.setGizmoMode(3); }, title: "Enable/Disable scaling mode" },
                     react__WEBPACK_IMPORTED_MODULE_5__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCompress"] })),
+                react__WEBPACK_IMPORTED_MODULE_5__["createElement"]("div", { className: this.state.gizmoMode === 4 ? "bounding selected icon" : "bounding icon", onClick: function () { return _this.setGizmoMode(4); }, title: "Enable/Disable bounding box mode" },
+                    react__WEBPACK_IMPORTED_MODULE_5__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faVectorSquare"] })),
                 react__WEBPACK_IMPORTED_MODULE_5__["createElement"]("div", { className: "separator" }),
                 react__WEBPACK_IMPORTED_MODULE_5__["createElement"]("div", { className: this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon", onClick: function () { return _this.onPickingMode(); }, title: "Turn picking mode on/off" },
                     react__WEBPACK_IMPORTED_MODULE_5__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCrosshairs"] })),
@@ -39811,6 +40955,46 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
     };
     return SceneTreeItemComponent;
 }(react__WEBPACK_IMPORTED_MODULE_5__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/sceneExplorer/entities/skeletonTreeItemComponent.tsx":
+/*!*************************************************************************!*\
+  !*** ./components/sceneExplorer/entities/skeletonTreeItemComponent.tsx ***!
+  \*************************************************************************/
+/*! exports provided: SkeletonTreeItemComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SkeletonTreeItemComponent", function() { return SkeletonTreeItemComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var SkeletonTreeItemComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SkeletonTreeItemComponent, _super);
+    function SkeletonTreeItemComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    SkeletonTreeItemComponent.prototype.render = function () {
+        var _this = this;
+        var skeleton = this.props.skeleton;
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "skeletonTools" },
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: skeleton.name || "no name", onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faSkull"], color: "gray" }),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: skeleton, extensibilityGroups: this.props.extensibilityGroups })));
+    };
+    return SkeletonTreeItemComponent;
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
 
 
 
@@ -40026,6 +41210,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+
+
 __webpack_require__(/*! ./sceneExplorer.scss */ "./components/sceneExplorer/sceneExplorer.scss");
 var SceneExplorerFilterComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneExplorerFilterComponent, _super);
@@ -40045,6 +41234,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
     function SceneExplorerComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._once = true;
+        _this._hooked = false;
         _this.state = { filter: null, selectedEntity: null, scene: _this.props.scene };
         _this.sceneMutationFunc = _this.processMutation.bind(_this);
         return _this;
@@ -40071,12 +41261,14 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["EngineStore"].LastCreatedEngine.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
         }
         var scene = this.state.scene;
+        scene.onNewSkeletonAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewCameraAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewLightAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewMaterialAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewMeshAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewTextureAddedObservable.removeCallback(this.sceneMutationFunc);
         scene.onNewTransformNodeAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onSkeletonRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onMeshRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onCameraRemovedObservable.removeCallback(this.sceneMutationFunc);
         scene.onLightRemovedObservable.removeCallback(this.sceneMutationFunc);
@@ -40169,26 +41361,86 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             this._onNewSceneAddedObserver = babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["EngineStore"].LastCreatedEngine.onNewSceneAddedObservable.addOnce(function (scene) { return _this.setState({ scene: scene }); });
             return null;
         }
+        if (!this._hooked) {
+            this._hooked = true;
+            scene.onNewSkeletonAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
+            scene.onSkeletonRemovedObservable.add(this.sceneMutationFunc);
+            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
+            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
+            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
+            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
+            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
+        }
         var guiElements = scene.textures.filter(function (t) { return t.getClassName() === "AdvancedDynamicTexture"; });
         var textures = scene.textures.filter(function (t) { return t.getClassName() !== "AdvancedDynamicTexture"; });
         var postProcessses = scene.postProcesses;
         var pipelines = scene.postProcessRenderPipelineManager.supportedPipelines;
+        // Context menus
         var pipelineContextMenus = [];
         if (scene.activeCamera) {
             if (!pipelines.some(function (p) { return p.getClassName() === "DefaultRenderingPipeline"; })) {
                 pipelineContextMenus.push({
-                    label: "Add new DefaultRenderingPipeline",
+                    label: "Add new Default Rendering Pipeline",
                     action: function () {
                         var newPipeline = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["DefaultRenderingPipeline"]("Default rendering pipeline", true, scene, [scene.activeCamera]);
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
             }
+            if (!pipelines.some(function (p) { return p.getClassName() === "SSAORenderingPipeline"; })) {
+                pipelineContextMenus.push({
+                    label: "Add new SSAO Rendering Pipeline",
+                    action: function () {
+                        var newPipeline = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["SSAORenderingPipeline"]("SSAO rendering pipeline", scene, 1, [scene.activeCamera]);
+                        _this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
+                    }
+                });
+            }
+            if (scene.getEngine().webGLVersion > 1 && !pipelines.some(function (p) { return p.getClassName() === "SSAORenderingPipeline"; })) {
+                pipelineContextMenus.push({
+                    label: "Add new SSAO2 Rendering Pipeline",
+                    action: function () {
+                        var newPipeline = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["SSAORenderingPipeline"]("SSAO2 rendering pipeline", scene, 1, [scene.activeCamera]);
+                        _this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
+                    }
+                });
+            }
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree" },
+        var nodeContextMenus = [];
+        nodeContextMenus.push({
+            label: "Add new point light",
+            action: function () {
+                var newPointLight = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["PointLight"]("point light", babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), scene);
+                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newPointLight);
+            }
+        });
+        nodeContextMenus.push({
+            label: "Add new directional light",
+            action: function () {
+                var newDirectionalLight = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["DirectionalLight"]("directional light", new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"](-1, -1, -0.5), scene);
+                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newDirectionalLight);
+            }
+        });
+        nodeContextMenus.push({
+            label: "Add new free camera",
+            action: function () {
+                var newFreeCamera = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["FreeCamera"]("free camera", scene.activeCamera ? scene.activeCamera.globalPosition : new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, 0, -5), scene);
+                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
+            }
+        });
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree", onContextMenu: function (e) { return e.preventDefault(); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](SceneExplorerFilterComponent, { onFilter: function (filter) { return _this.filterContent(filter); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_6__["SceneTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, filter: this.state.filter }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, contextMenuItems: nodeContextMenus, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, filter: this.state.filter }),
+            scene.skeletons.length > 0 &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.skeletons, label: "Skeletons", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.materials, label: "Materials", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: textures, label: "Textures", offset: 1, filter: this.state.filter }),
             postProcessses.length > 0 &&
@@ -40221,19 +41473,6 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
         if (this._once) {
             this._once = false;
-            var scene = this.state.scene;
-            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
-            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
-            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
-            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
-            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
             // A bit hacky but no other way to force the initial width to 300px and not auto
             setTimeout(function () {
                 var element = document.getElementById("sceneExplorer");
@@ -40495,7 +41734,7 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
     TreeItemSelectableComponent.prototype.scrollIntoView = function () {
         var element = react_dom__WEBPACK_IMPORTED_MODULE_5__["findDOMNode"](this);
         if (element) {
-            element.scrollIntoView();
+            element.scrollIntoView(false);
         }
     };
     TreeItemSelectableComponent.prototype.componentDidMount = function () {
@@ -40600,6 +41839,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _entities_animationGroupTreeItemComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./entities/animationGroupTreeItemComponent */ "./components/sceneExplorer/entities/animationGroupTreeItemComponent.tsx");
 /* harmony import */ var _entities_postProcessTreeItemComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./entities/postProcessTreeItemComponent */ "./components/sceneExplorer/entities/postProcessTreeItemComponent.tsx");
 /* harmony import */ var _entities_renderingPipelineTreeItemComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./entities/renderingPipelineTreeItemComponent */ "./components/sceneExplorer/entities/renderingPipelineTreeItemComponent.tsx");
+/* harmony import */ var _entities_skeletonTreeItemComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./entities/skeletonTreeItemComponent */ "./components/sceneExplorer/entities/skeletonTreeItemComponent.tsx");
+/* harmony import */ var _entities_boneTreeItemComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./entities/boneTreeItemComponent */ "./components/sceneExplorer/entities/boneTreeItemComponent.tsx");
+
+
 
 
 
@@ -40639,6 +41882,12 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
                 else {
                     return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_transformNodeTreeItemComponent__WEBPACK_IMPORTED_MODULE_8__["TransformNodeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, transformNode: entity, onClick: function () { return _this.onClick(); } }));
                 }
+            }
+            if (className.indexOf("Skeleton") !== -1) {
+                return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_skeletonTreeItemComponent__WEBPACK_IMPORTED_MODULE_15__["SkeletonTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, skeleton: entity, onClick: function () { return _this.onClick(); } }));
+            }
+            if (className.indexOf("Bone") !== -1) {
+                return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_boneTreeItemComponent__WEBPACK_IMPORTED_MODULE_16__["BoneTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, bone: entity, onClick: function () { return _this.onClick(); } }));
             }
             if (className.indexOf("TransformNode") !== -1) {
                 return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_transformNodeTreeItemComponent__WEBPACK_IMPORTED_MODULE_8__["TransformNodeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, transformNode: entity, onClick: function () { return _this.onClick(); } }));
@@ -40681,36 +41930,6 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./index.css":
-/*!*******************!*\
-  !*** ./index.css ***!
-  \*******************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-
-var content = __webpack_require__(/*! !../../node_modules/css-loader!./index.css */ "../../node_modules/css-loader/index.js!./index.css");
-
-if(typeof content === 'string') content = [[module.i, content, '']];
-
-var transform;
-var insertInto;
-
-
-
-var options = {"hmr":true}
-
-options.transform = transform
-options.insertInto = undefined;
-
-var update = __webpack_require__(/*! ../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
-
-if(content.locals) module.exports = content.locals;
-
-if(false) {}
-
-/***/ }),
-
 /***/ "./index.ts":
 /*!******************!*\
   !*** ./index.ts ***!
@@ -40723,7 +41942,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _inspector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./inspector */ "./inspector.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Inspector", function() { return _inspector__WEBPACK_IMPORTED_MODULE_0__["Inspector"]; });
 
-__webpack_require__(/*! ./index.css */ "./index.css");
 
 
 
@@ -40763,23 +41981,31 @@ __webpack_require__.r(__webpack_exports__);
 var Inspector = /** @class */ (function () {
     function Inspector() {
     }
+    Inspector.MarkLineContainerTitleForHighlighting = function (title) {
+        this._GlobalState.selectedLineContainerTitle = title;
+    };
     Inspector._CopyStyles = function (sourceDoc, targetDoc) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
             var styleSheet = sourceDoc.styleSheets[index];
-            if (styleSheet.cssRules) { // for <style> elements
-                var newStyleEl = sourceDoc.createElement('style');
-                for (var _i = 0, _a = styleSheet.cssRules; _i < _a.length; _i++) {
-                    var cssRule = _a[_i];
-                    // write the text of each rule into the body of the style element
-                    newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+            try {
+                if (styleSheet.cssRules) { // for <style> elements
+                    var newStyleEl = sourceDoc.createElement('style');
+                    for (var _i = 0, _a = styleSheet.cssRules; _i < _a.length; _i++) {
+                        var cssRule = _a[_i];
+                        // write the text of each rule into the body of the style element
+                        newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+                    }
+                    targetDoc.head.appendChild(newStyleEl);
                 }
-                targetDoc.head.appendChild(newStyleEl);
+                else if (styleSheet.href) { // for <link> elements loading CSS from a URL
+                    var newLinkEl = sourceDoc.createElement('link');
+                    newLinkEl.rel = 'stylesheet';
+                    newLinkEl.href = styleSheet.href;
+                    targetDoc.head.appendChild(newLinkEl);
+                }
             }
-            else if (styleSheet.href) { // for <link> elements loading CSS from a URL
-                var newLinkEl = sourceDoc.createElement('link');
-                newLinkEl.rel = 'stylesheet';
-                newLinkEl.href = styleSheet.href;
-                targetDoc.head.appendChild(newLinkEl);
+            catch (e) {
+                console.log(e);
             }
         }
     };
@@ -40933,12 +42159,14 @@ var Inspector = /** @class */ (function () {
             react_dom__WEBPACK_IMPORTED_MODULE_2__["render"](embedHostElement, this._EmbedHost);
         }
     };
-    Inspector._CreatePopup = function (title, windowVariableName) {
+    Inspector._CreatePopup = function (title, windowVariableName, width, height) {
+        if (width === void 0) { width = 300; }
+        if (height === void 0) { height = 800; }
         var windowCreationOptionsList = {
-            width: 300,
-            height: 800,
-            top: (window.innerHeight - 800) / 2 + window.screenY,
-            left: (window.innerWidth - 300) / 2 + window.screenX
+            width: width,
+            height: height,
+            top: (window.innerHeight - width) / 2 + window.screenY,
+            left: (window.innerWidth - height) / 2 + window.screenX
         };
         var windowCreationOptions = Object.keys(windowCreationOptionsList)
             .map(function (key) { return key + '=' + windowCreationOptionsList[key]; })
@@ -40985,7 +42213,7 @@ var Inspector = /** @class */ (function () {
         var options = tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({ original: true, popup: false, overlay: false, showExplorer: true, showInspector: true, embedMode: false, enableClose: true, handleResize: true, enablePopup: true }, userOptions);
         // Prepare state
         if (!this._GlobalState.onPropertyChangedObservable) {
-            this._GlobalState.onPropertyChangedObservable = this.OnPropertyChangedObservable;
+            this._GlobalState.init(this.OnPropertyChangedObservable);
         }
         if (!this._GlobalState.onSelectionChangedObservable) {
             this._GlobalState.onSelectionChangedObservable = this.OnSelectionChangeObservable;
@@ -41218,7 +42446,7 @@ var Tools = /** @class */ (function () {
                     result.push(m);
                 });
             }
-            else {
+            else if (!i.reservedDataStore || !i.reservedDataStore.hidden) {
                 result.push(i);
             }
         }

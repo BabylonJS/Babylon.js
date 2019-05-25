@@ -2,6 +2,7 @@ import { CameraInputsManager } from "./cameraInputsManager";
 import { FollowCamera } from "./followCamera";
 import { FollowCameraKeyboardMoveInput } from './Inputs/followCameraKeyboardMoveInput';
 import { FollowCameraMouseWheelInput } from './Inputs/followCameraMouseWheelInput';
+import { FollowCameraPointersInput } from './Inputs/followCameraPointersInput';
 
 /**
  * Default Inputs manager for the FollowCamera.
@@ -40,7 +41,7 @@ export class FollowCameraInputsManager extends CameraInputsManager<FollowCamera>
      * @returns the current input manager
      */
     public addPointers(): FollowCameraInputsManager {
-        console.warn("Pointer support not yet implemented for FollowCamera.");
+        this.add(new FollowCameraPointersInput());
         return this;
     }
 

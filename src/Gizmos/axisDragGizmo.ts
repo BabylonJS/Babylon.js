@@ -7,7 +7,6 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
-import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
@@ -15,6 +14,7 @@ import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Scene } from "../scene";
+import { PositionGizmo } from "./positionGizmo";
 /**
  * Single axis drag gizmo
  */
@@ -34,23 +34,28 @@ export class AxisDragGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
+    private _isEnabled: boolean = true;
+    private _parent: Nullable<PositionGizmo> = null;
+
+    private _arrow: TransformNode;
+    private _coloredMaterial: StandardMaterial;
+    private _hoverMaterial: StandardMaterial;
+
     /** @hidden */
     public static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode {
         var arrow = new TransformNode("arrow", scene);
-        var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 1.5, diameterBottom: 0.75, tessellation: 96 }, scene);
-        var line = LinesBuilder.CreateLines("line", { points: [new Vector3(0, 0, 0), new Vector3(0, 1.1, 0)] }, scene);
-        line.color = material.emissiveColor;
+        var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375, tessellation: 96 }, scene);
+        var line = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, scene);
+        line.material = material;
         cylinder.parent = arrow;
         line.parent = arrow;
 
         // Position arrow pointing in its drag axis
-        cylinder.scaling.scaleInPlace(0.05);
         cylinder.material = material;
         cylinder.rotation.x = Math.PI / 2;
         cylinder.position.z += 0.3;
-        line.scaling.scaleInPlace(0.26);
+        line.position.z += 0.275 / 2;
         line.rotation.x = Math.PI / 2;
-        line.material = material;
         return arrow;
     }
 
@@ -70,24 +75,23 @@ export class AxisDragGizmo extends Gizmo {
      * @param dragAxis The axis which the gizmo will be able to drag on
      * @param color The color of the gizmo
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null) {
         super(gizmoLayer);
-
+        this._parent = parent;
         // Create Material
-        var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        coloredMaterial.disableLighting = true;
-        coloredMaterial.emissiveColor = color;
+        this._coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this._coloredMaterial.diffuseColor = color;
+        this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
-        var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        hoverMaterial.disableLighting = true;
-        hoverMaterial.emissiveColor = color.add(new Color3(0.3, 0.3, 0.3));
+        this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this._hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build mesh on root node
-        var arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, coloredMaterial);
+        this._arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial);
 
-        arrow.lookAt(this._rootMesh.position.add(dragAxis));
-        arrow.scaling.scaleInPlace(1 / 3);
-        arrow.parent = this._rootMesh;
+        this._arrow.lookAt(this._rootMesh.position.add(dragAxis));
+        this._arrow.scaling.scaleInPlace(1 / 3);
+        this._arrow.parent = this._rootMesh;
 
         var currentSnapDragDistance = 0;
         var tmpVector = new Vector3();
@@ -132,20 +136,42 @@ export class AxisDragGizmo extends Gizmo {
                 return;
             }
             var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-            var material = isHovered ? hoverMaterial : coloredMaterial;
+            var material = isHovered ? this._hoverMaterial : this._coloredMaterial;
             this._rootMesh.getChildMeshes().forEach((m) => {
                 m.material = material;
                 if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = material.emissiveColor;
+                    (<LinesMesh>m).color = material.diffuseColor;
                 }
             });
         });
+
+        var light = gizmoLayer._getSharedGizmoLight();
+        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
     }
     protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
         }
     }
+
+    /**
+     * If the gizmo is enabled
+     */
+    public set isEnabled(value: boolean) {
+        this._isEnabled = value;
+        if (!value) {
+            this.attachedMesh = null;
+        }
+        else {
+            if (this._parent) {
+                this.attachedMesh = this._parent.attachedMesh;
+            }
+        }
+    }
+    public get isEnabled(): boolean {
+        return this._isEnabled;
+    }
+
     /**
      * Disposes of the gizmo
      */
@@ -153,6 +179,15 @@ export class AxisDragGizmo extends Gizmo {
         this.onSnapObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();
+        if (this._arrow)
+        {
+            this._arrow.dispose();
+        }
+        [this._coloredMaterial, this._hoverMaterial].forEach((matl) => {
+            if (matl) {
+                matl.dispose();
+            }
+        });
         super.dispose();
     }
 }

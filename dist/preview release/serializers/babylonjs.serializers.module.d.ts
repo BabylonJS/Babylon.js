@@ -1048,10 +1048,7 @@ declare module "babylonjs-serializers/glTF/2.0/shaders/textureTransform.fragment
 declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform" {
     import { ImageMimeType } from "babylonjs-gltf2interface";
     import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math";
-    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Texture } from "babylonjs/Materials/Textures/texture";
-    import { Scene } from "babylonjs/scene";
     import { IGLTFExporterExtensionV2 } from "babylonjs-serializers/glTF/2.0/glTFExporterExtension";
     import { _Exporter } from "babylonjs-serializers/glTF/2.0/glTFExporter";
     import "babylonjs-serializers/glTF/2.0/shaders/textureTransform.fragment";
@@ -1078,7 +1075,7 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform"
          * @param scale
          * @param scene
          */
-        textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
+        private _textureTransformTextureAsync;
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_lights_punctual" {
@@ -1134,9 +1131,31 @@ declare module "babylonjs-serializers/glTF/index" {
     export * from "babylonjs-serializers/glTF/glTFFileExporter";
     export * from "babylonjs-serializers/glTF/2.0/index";
 }
+declare module "babylonjs-serializers/stl/stlSerializer" {
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    /**
+    * Class for generating STL data from a Babylon scene.
+    */
+    export class STLExport {
+        /**
+        * Exports the geometry of a Mesh array in .STL file format (ASCII)
+        * @param meshes list defines the mesh to serialize
+        * @param download triggers the automatic download of the file.
+        * @param fileName changes the downloads fileName.
+        * @param binary changes the STL to a binary type.
+        * @param isLittleEndian toggle for binary type exporter.
+        * @returns the STL as UTF8 string
+        */
+        static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean): any;
+    }
+}
+declare module "babylonjs-serializers/stl/index" {
+    export * from "babylonjs-serializers/stl/stlSerializer";
+}
 declare module "babylonjs-serializers/index" {
     export * from "babylonjs-serializers/OBJ/index";
     export * from "babylonjs-serializers/glTF/index";
+    export * from "babylonjs-serializers/stl/index";
 }
 declare module "babylonjs-serializers/legacy/legacy-glTF2Serializer" {
     export * from "babylonjs-serializers/glTF/glTFFileExporter";
@@ -1145,10 +1164,14 @@ declare module "babylonjs-serializers/legacy/legacy-glTF2Serializer" {
 declare module "babylonjs-serializers/legacy/legacy-objSerializer" {
     export * from "babylonjs-serializers/OBJ/index";
 }
+declare module "babylonjs-serializers/legacy/legacy-stlSerializer" {
+    export * from "babylonjs-serializers/stl/index";
+}
 declare module "babylonjs-serializers/legacy/legacy" {
     import "babylonjs-serializers/index";
     export * from "babylonjs-serializers/legacy/legacy-glTF2Serializer";
     export * from "babylonjs-serializers/legacy/legacy-objSerializer";
+    export * from "babylonjs-serializers/legacy/legacy-stlSerializer";
 }
 declare module "babylonjs-serializers" {
     export * from "babylonjs-serializers/legacy/legacy";
@@ -2178,7 +2201,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @param scale
          * @param scene
          */
-        textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
+        private _textureTransformTextureAsync;
     }
 }
 declare module BABYLON.GLTF2.Exporter.Extensions {
@@ -2209,5 +2232,22 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @returns nullable INode promise
          */
         postExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
+    }
+}
+declare module BABYLON {
+    /**
+    * Class for generating STL data from a Babylon scene.
+    */
+    export class STLExport {
+        /**
+        * Exports the geometry of a Mesh array in .STL file format (ASCII)
+        * @param meshes list defines the mesh to serialize
+        * @param download triggers the automatic download of the file.
+        * @param fileName changes the downloads fileName.
+        * @param binary changes the STL to a binary type.
+        * @param isLittleEndian toggle for binary type exporter.
+        * @returns the STL as UTF8 string
+        */
+        static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean): any;
     }
 }

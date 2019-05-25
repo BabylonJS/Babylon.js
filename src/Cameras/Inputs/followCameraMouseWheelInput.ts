@@ -16,19 +16,19 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
     public camera: FollowCamera;
 
     /**
-     * Moue wheel controls zoom. (Moue wheel modifies camera.radius value.)
+     * Moue wheel controls zoom. (Mouse wheel modifies camera.radius value.)
      */
     @serialize()
     public axisControlRadius: boolean = true;
 
     /**
-     * Moue wheel controls height. (Moue wheel modifies camera.heightOffset value.)
+     * Moue wheel controls height. (Mouse wheel modifies camera.heightOffset value.)
      */
     @serialize()
     public axisControlHeight: boolean = false;
 
     /**
-     * Moue wheel controls angle. (Moue wheel modifies camera.rotationOffset value.)
+     * Moue wheel controls angle. (Mouse wheel modifies camera.rotationOffset value.)
      */
     @serialize()
     public axisControlRotation: boolean = false;

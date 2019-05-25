@@ -1,4 +1,4 @@
-import { Observer, EventState } from "../../Misc/observable";
+import { Observer, EventState, Observable } from "../../Misc/observable";
 import { serialize } from "../../Misc/decorators";
 import { Nullable } from "../../types";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
@@ -31,6 +31,15 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     private _observer: Nullable<Observer<PointerInfo>>;
     private previousPosition: Nullable<{ x: number, y: number }> = null;
 
+    /**
+     * Observable for when a pointer move event occurs containing the move offset
+     */
+    public onPointerMovedObservable = new Observable<{ offsetX: number, offsetY: number }>();
+    /**
+     * @hidden
+     * If the camera should be rotated automatically based on pointer movement
+     */
+    public _allowCameraRotation = true;
     /**
      * Manage the mouse inputs to control the movement of a free camera.
      * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -105,12 +114,15 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     }
 
                     var offsetX = evt.clientX - this.previousPosition.x;
+                    var offsetY = evt.clientY - this.previousPosition.y;
                     if (this.camera.getScene().useRightHandedSystem) { offsetX *= -1; }
                     if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) { offsetX *= -1; }
-                    this.camera.cameraRotation.y += offsetX / this.angularSensibility;
 
-                    var offsetY = evt.clientY - this.previousPosition.y;
-                    this.camera.cameraRotation.x += offsetY / this.angularSensibility;
+                    if (this._allowCameraRotation) {
+                        this.camera.cameraRotation.y += offsetX / this.angularSensibility;
+                        this.camera.cameraRotation.x += offsetY / this.angularSensibility;
+                    }
+                    this.onPointerMovedObservable.notifyObservers({offsetX: offsetX, offsetY: offsetY});
 
                     this.previousPosition = {
                         x: evt.clientX,
@@ -151,6 +163,16 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
         element.addEventListener("mousemove", this._onMouseMove, false);
 
+        element.addEventListener("contextmenu",
+            <EventListener>this.onContextMenu.bind(this), false);
+    }
+
+    /**
+     * Called on JS contextmenu event.
+     * Override this method to provide functionality.
+     */
+    protected onContextMenu(evt: PointerEvent): void {
+        evt.preventDefault();
     }
 
     /**
@@ -163,6 +185,14 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
             if (this._onMouseMove) {
                 element.removeEventListener("mousemove", this._onMouseMove);
+            }
+
+            if (this.onContextMenu) {
+                element.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
+            }
+
+            if (this.onPointerMovedObservable) {
+                this.onPointerMovedObservable.clear();
             }
 
             this._observer = null;

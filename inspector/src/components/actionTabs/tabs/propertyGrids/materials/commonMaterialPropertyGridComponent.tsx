@@ -12,8 +12,11 @@ import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { LockObject } from "../lockObject";
+import { GlobalState } from '../../../../globalState';
+import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 
 interface ICommonMaterialPropertyGridComponentProps {
+    globalState: GlobalState;
     material: Material;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -51,7 +54,9 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
 
         return (
             <div>
-                <LineContainerComponent title="GENERAL">
+                <CustomPropertyGridComponent globalState={this.props.globalState} target={material}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={material.id} />
                     <TextLineComponent label="Unique ID" value={material.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={material.getClassName()} />
@@ -65,7 +70,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     <SliderLineComponent label="Point size" target={material} propertyName="pointSize" minimum={0} maximum={100} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Z-offset" target={material} propertyName="zOffset" minimum={-10} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent title="TRANSPARENCY">
+                <LineContainerComponent globalState={this.props.globalState} title="TRANSPARENCY">
                     <SliderLineComponent label="Alpha" target={material} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         (material as any).transparencyMode !== undefined &&

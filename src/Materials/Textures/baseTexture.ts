@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper } from "../../Misc/decorators";
+import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
 import { Observer, Observable } from "../../Misc/observable";
 import { Tools, IAnimatable } from "../../Misc/tools";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
@@ -259,6 +259,36 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
+     * With prefiltered texture, defined if the specular generation is based on a linear ramp.
+     * By default we are using a log2 of the linear roughness helping to keep a better resolution for
+     * average roughness values.
+     */
+    @serialize()
+    public get linearSpecularLOD(): boolean {
+        if (this._texture) { return this._texture._linearSpecularLOD; }
+
+        return false;
+    }
+    public set linearSpecularLOD(value: boolean) {
+        if (this._texture) { this._texture._linearSpecularLOD = value; }
+    }
+
+    /**
+     * In case a better definition than spherical harmonics is required for the diffuse part of the environment.
+     * You can set the irradiance texture to rely on a texture instead of the spherical approach.
+     * This texture need to have the same characteristics than its parent (Cube vs 2d, coordinates mode, Gamma/Linear, RGBD).
+     */
+    @serializeAsTexture()
+    public get irradianceTexture(): Nullable<BaseTexture> {
+        if (this._texture) { return this._texture._irradianceTexture; }
+
+        return null;
+    }
+    public set irradianceTexture(value: Nullable<BaseTexture>) {
+        if (this._texture) { this._texture._irradianceTexture = value; }
+    }
+
+    /**
      * Define if the texture is a render target.
      */
     @serialize()
@@ -300,7 +330,7 @@ export class BaseTexture implements IAnimatable {
     */
     public onDisposeObservable = new Observable<BaseTexture>();
 
-    private _onDisposeObserver: Nullable<Observer<BaseTexture>>;
+    private _onDisposeObserver: Nullable<Observer<BaseTexture>> = null;
     /**
      * Callback triggered when the texture has been disposed.
      * Kept for back compatibility, you can use the onDisposeObservable instead.
@@ -317,11 +347,11 @@ export class BaseTexture implements IAnimatable {
      */
     public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
-    private _scene: Nullable<Scene>;
+    private _scene: Nullable<Scene> = null;
 
     /** @hidden */
-    public _texture: Nullable<InternalTexture>;
-    private _uid: Nullable<string>;
+    public _texture: Nullable<InternalTexture> = null;
+    private _uid: Nullable<string> = null;
 
     /**
      * Define if the texture is preventinga material to render or not.
@@ -497,7 +527,7 @@ export class BaseTexture implements IAnimatable {
     }
 
     /** @hidden */
-    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number): Nullable<InternalTexture> {
+    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture> {
         if (!this._scene) {
             return null;
         }
@@ -506,10 +536,12 @@ export class BaseTexture implements IAnimatable {
         for (var index = 0; index < texturesCache.length; index++) {
             var texturesCacheEntry = texturesCache[index];
 
-            if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
-                if (!sampling || sampling === texturesCacheEntry.samplingMode) {
-                    texturesCacheEntry.incrementReferences();
-                    return texturesCacheEntry;
+            if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
+                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
+                    if (!sampling || sampling === texturesCacheEntry.samplingMode) {
+                        texturesCacheEntry.incrementReferences();
+                        return texturesCacheEntry;
+                    }
                 }
             }
         }
@@ -665,7 +697,9 @@ export class BaseTexture implements IAnimatable {
         }
 
         // Animations
-        this._scene.stopAnimation(this);
+        if (this._scene.stopAnimation) {
+            this._scene.stopAnimation(this);
+        }
 
         // Remove from scene
         this._scene._removePendingData(this);

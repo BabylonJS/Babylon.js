@@ -2,6 +2,7 @@ import { Observable } from "../Misc/observable";
 import { Vector2, Vector3, Color3, Color4 } from "../Maths/math";
 import { Condition } from "./condition";
 import { _TypeStore } from '../Misc/typeStore';
+import { AbstractActionManager } from './abstractActionManager';
 
 declare type Scene = import("../scene").Scene;
 declare type ActionManager = import("./actionManager").ActionManager;
@@ -41,6 +42,26 @@ export interface IAction {
      * @returns the serialized object
      */
     serialize(parent: any): any;
+
+    /**
+    * Internal only
+    * @hidden
+    */
+    _prepare(): void;
+
+    /**
+     * Internal only - manager for action
+     * @hidden
+     */
+    _actionManager: AbstractActionManager;
+
+    /**
+     * Adds action to chain of actions, may be a DoNothingAction
+     * @param action defines the next action to execute
+     * @returns The action passed in
+     * @see https://www.babylonjs-playground.com/#1T30HR#0
+     */
+    then(action: IAction): IAction;
 }
 
 /**

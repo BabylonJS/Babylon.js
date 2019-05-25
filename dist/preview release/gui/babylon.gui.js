@@ -7,7 +7,7 @@
 		exports["babylonjs-gui"] = factory(require("babylonjs"));
 	else
 		root["BABYLON"] = root["BABYLON"] || {}, root["BABYLON"]["GUI"] = factory(root["BABYLON"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_tools__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -355,7 +355,7 @@ module.exports = g;
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return AdvancedDynamicTextureInstrumentation; });
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__);
 
 /**
@@ -498,7 +498,7 @@ var AdvancedDynamicTextureInstrumentation = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return AdvancedDynamicTexture; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _controls_container__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./controls/container */ "./2D/controls/container.ts");
 /* harmony import */ var _style__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./style */ "./2D/style.ts");
@@ -558,6 +558,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         _this._renderAtIdealSize = false;
         _this._blockNextFocusCheck = false;
         _this._renderScale = 1;
+        _this._cursorChanged = false;
         /**
         * Define type to string to ensure compatibility across browsers
         * Safari doesn't support DataTransfer constructor
@@ -1052,7 +1053,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                     });
                     continue;
                 }
-                var position = mesh.getBoundingInfo().boundingSphere.center;
+                var position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].ZeroReadOnly;
                 var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
                 if (projectedPosition.z < 0 || projectedPosition.z > 1) {
                     control.notRenderable = true;
@@ -1108,6 +1109,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     AdvancedDynamicTexture.prototype._changeCursor = function (cursor) {
         if (this._rootCanvas) {
             this._rootCanvas.style.cursor = cursor;
+            this._cursorChanged = true;
         }
     };
     /** @hidden */
@@ -1132,6 +1134,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             this._capturingControl[pointerId]._processObservables(type, x, y, pointerId, buttonIndex);
             return;
         }
+        this._cursorChanged = false;
         if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex)) {
             this._changeCursor("");
             if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
@@ -1140,6 +1143,9 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                     delete this._lastControlOver[pointerId];
                 }
             }
+        }
+        if (!this._cursorChanged) {
+            this._changeCursor("");
         }
         this._manageFocus();
     };
@@ -1467,7 +1473,7 @@ var Button = /** @class */ (function (_super) {
     // While being a container, the button behaves like a control.
     /** @hidden */
     Button.prototype._processPicking = function (x, y, type, pointerId, buttonIndex) {
-        if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
+        if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
         }
         if (!_super.prototype.contains.call(this, x, y)) {
@@ -1613,7 +1619,7 @@ var Button = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Checkbox", function() { return Checkbox; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
@@ -1794,7 +1800,7 @@ var Checkbox = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return ColorPicker; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _inputText__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./inputText */ "./2D/controls/inputText.ts");
@@ -1831,6 +1837,7 @@ var ColorPicker = /** @class */ (function (_super) {
         _this._h = 360;
         _this._s = 1;
         _this._v = 1;
+        _this._lastPointerDownID = -1;
         /**
          * Observable raised when the value changes
          */
@@ -1852,7 +1859,7 @@ var ColorPicker = /** @class */ (function (_super) {
                 return;
             }
             this._value.copyFrom(value);
-            this._RGBtoHSV(this._value, this._tmpColor);
+            this._value.toHSVToRef(this._tmpColor);
             this._h = this._tmpColor.r;
             this._s = Math.max(this._tmpColor.g, 0.00001);
             this._v = Math.max(this._tmpColor.b, 0.00001);
@@ -1997,7 +2004,7 @@ var ColorPicker = /** @class */ (function (_super) {
                 }
                 var dist = Math.sqrt(distSq);
                 var ang = Math.atan2(y, x);
-                this._HSVtoRGB(ang * 180 / Math.PI + 180, dist / radius, 1, color);
+                babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].HSVtoRGBToRef(ang * 180 / Math.PI + 180, dist / radius, 1, color);
                 var index = ((x + radius) + ((y + radius) * 2 * radius)) * 4;
                 data[index] = color.r * 255;
                 data[index + 1] = color.g * 255;
@@ -2032,72 +2039,6 @@ var ColorPicker = /** @class */ (function (_super) {
         }
         context.putImageData(image, 0, 0);
         return canvas;
-    };
-    ColorPicker.prototype._RGBtoHSV = function (color, result) {
-        var r = color.r;
-        var g = color.g;
-        var b = color.b;
-        var max = Math.max(r, g, b);
-        var min = Math.min(r, g, b);
-        var h = 0;
-        var s = 0;
-        var v = max;
-        var dm = max - min;
-        if (max !== 0) {
-            s = dm / max;
-        }
-        if (max != min) {
-            if (max == r) {
-                h = (g - b) / dm;
-                if (g < b) {
-                    h += 6;
-                }
-            }
-            else if (max == g) {
-                h = (b - r) / dm + 2;
-            }
-            else if (max == b) {
-                h = (r - g) / dm + 4;
-            }
-            h *= 60;
-        }
-        result.r = h;
-        result.g = s;
-        result.b = v;
-    };
-    ColorPicker.prototype._HSVtoRGB = function (hue, saturation, value, result) {
-        var chroma = value * saturation;
-        var h = hue / 60;
-        var x = chroma * (1 - Math.abs((h % 2) - 1));
-        var r = 0;
-        var g = 0;
-        var b = 0;
-        if (h >= 0 && h <= 1) {
-            r = chroma;
-            g = x;
-        }
-        else if (h >= 1 && h <= 2) {
-            r = x;
-            g = chroma;
-        }
-        else if (h >= 2 && h <= 3) {
-            g = chroma;
-            b = x;
-        }
-        else if (h >= 3 && h <= 4) {
-            g = x;
-            b = chroma;
-        }
-        else if (h >= 4 && h <= 5) {
-            r = x;
-            b = chroma;
-        }
-        else if (h >= 5 && h <= 6) {
-            r = chroma;
-            b = x;
-        }
-        var m = value - chroma;
-        result.set((r + m), (g + m), (b + m));
     };
     /** @hidden */
     ColorPicker.prototype._draw = function (context) {
@@ -2150,7 +2091,7 @@ var ColorPicker = /** @class */ (function (_super) {
             this._v = Math.min(this._v, 1);
             this._v = Math.max(this._v, ColorPicker._Epsilon);
         }
-        this._HSVtoRGB(this._h, this._s, this._v, this._tmpColor);
+        babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].HSVtoRGBToRef(this._h, this._s, this._v, this._tmpColor);
         this.value = this._tmpColor;
     };
     ColorPicker.prototype._isPointOnSquare = function (x, y) {
@@ -2199,9 +2140,14 @@ var ColorPicker = /** @class */ (function (_super) {
         }
         this._updateValueFromPointer(x, y);
         this._host._capturingControl[pointerId] = this;
+        this._lastPointerDownID = pointerId;
         return true;
     };
-    ColorPicker.prototype._onPointerMove = function (target, coordinates) {
+    ColorPicker.prototype._onPointerMove = function (target, coordinates, pointerId) {
+        // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
+        if (pointerId != this._lastPointerDownID) {
+            return;
+        }
         // Invert transform
         this._invertTransformMatrix.transformCoordinates(coordinates.x, coordinates.y, this._transformedPosition);
         var x = this._transformedPosition.x;
@@ -2209,7 +2155,7 @@ var ColorPicker = /** @class */ (function (_super) {
         if (this._pointerIsDown) {
             this._updateValueFromPointer(x, y);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
     };
     ColorPicker.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
         this._pointerIsDown = false;
@@ -3241,7 +3187,7 @@ var ColorPicker = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Container", function() { return Container; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/logger */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/logger */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../measure */ "./2D/measure.ts");
@@ -3596,7 +3542,7 @@ var Container = /** @class */ (function (_super) {
     };
     /** @hidden */
     Container.prototype._processPicking = function (x, y, type, pointerId, buttonIndex) {
-        if (!this.isVisible || this.notRenderable) {
+        if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
         if (!_super.prototype.contains.call(this, x, y)) {
@@ -3646,7 +3592,7 @@ var Container = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Control", function() { return Control; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../measure */ "./2D/measure.ts");
@@ -3751,6 +3697,11 @@ var Control = /** @class */ (function () {
          * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
          */
         this.clipChildren = true;
+        /**
+         * Gets or sets a boolean indicating that control content must be clipped
+         * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+         */
+        this.clipContent = true;
         /**
          * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
          */
@@ -4080,11 +4031,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "widthInPixels", {
         /**
-         * Gets control width in pixel
+         * Gets or sets the control width in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.width = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4110,11 +4067,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "heightInPixels", {
         /**
-         * Gets control height in pixel
+         * Gets or sets control height in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.height = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4203,13 +4166,19 @@ var Control = /** @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Control.prototype, "fontSizeInPixels", {
-        /** Gets font size in pixels */
+        /** Gets or sets font size in pixels */
         get: function () {
             var fontSizeToUse = this._style ? this._style._fontSize : this._fontSize;
             if (fontSizeToUse.isPixel) {
                 return fontSizeToUse.getValue(this._host);
             }
             return fontSizeToUse.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.fontSize = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4329,11 +4298,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "paddingLeftInPixels", {
         /**
-         * Gets a value indicating the padding in pixels to use on the left of the control
+         * Gets or sets a value indicating the padding in pixels to use on the left of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.paddingLeft = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4356,11 +4331,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "paddingRightInPixels", {
         /**
-         * Gets a value indicating the padding in pixels to use on the right of the control
+         * Gets or sets a value indicating the padding in pixels to use on the right of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.paddingRight = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4383,11 +4364,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "paddingTopInPixels", {
         /**
-         * Gets a value indicating the padding in pixels to use on the top of the control
+         * Gets or sets a value indicating the padding in pixels to use on the top of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.paddingTop = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4410,11 +4397,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "paddingBottomInPixels", {
         /**
-         * Gets a value indicating the padding in pixels to use on the bottom of the control
+         * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.paddingBottom = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4437,11 +4430,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "leftInPixels", {
         /**
-         * Gets a value indicating the left coordinate in pixels of the control
+         * Gets or sets a value indicating the left coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.left = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4464,11 +4463,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "topInPixels", {
         /**
-         * Gets a value indicating the top coordinate in pixels of the control
+         * Gets or sets a value indicating the top coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get: function () {
             return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.top = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4491,11 +4496,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "linkOffsetXInPixels", {
         /**
-         * Gets a value indicating the offset in pixels on X axis to the linked mesh
+         * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         get: function () {
             return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.linkOffsetX = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -4518,11 +4529,17 @@ var Control = /** @class */ (function () {
     });
     Object.defineProperty(Control.prototype, "linkOffsetYInPixels", {
         /**
-         * Gets a value indicating the offset in pixels on Y axis to the linked mesh
+         * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         get: function () {
             return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        },
+        set: function (value) {
+            if (isNaN(value)) {
+                return;
+            }
+            this.linkOffsetY = value + "px";
         },
         enumerable: true,
         configurable: true
@@ -5088,9 +5105,9 @@ var Control = /** @class */ (function () {
         // Transform
         this._transform(context);
         // Clip
-        //     if (this.clipChildren) {
-        this._clip(context, invalidatedRectangle);
-        //   }
+        if (this.clipContent) {
+            this._clip(context, invalidatedRectangle);
+        }
         if (this.onBeforeDrawObservable.hasObservers()) {
             this.onBeforeDrawObservable.notifyObservers(this);
         }
@@ -5158,10 +5175,10 @@ var Control = /** @class */ (function () {
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerMove = function (target, coordinates) {
+    Control.prototype._onPointerMove = function (target, coordinates, pointerId) {
         var canNotify = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerMove(target, coordinates);
+            this.parent._onPointerMove(target, coordinates, pointerId);
         }
     };
     /** @hidden */
@@ -5248,7 +5265,7 @@ var Control = /** @class */ (function () {
         }
         this._dummyVector2.copyFromFloats(x, y);
         if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE) {
-            this._onPointerMove(this, this._dummyVector2);
+            this._onPointerMove(this, this._dummyVector2, pointerId);
             var previousControlOver = this._host._lastControlOver[pointerId];
             if (previousControlOver && previousControlOver !== this) {
                 previousControlOver._onPointerOut(this);
@@ -5766,6 +5783,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__);
+
 
 
 
@@ -5812,6 +5832,14 @@ var Grid = /** @class */ (function (_super) {
         /** Gets the list of children */
         get: function () {
             return this._childControls;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Grid.prototype, "cells", {
+        /** Gets the list of cells (e.g. the containers) */
+        get: function () {
+            return this._cells;
         },
         enumerable: true,
         configurable: true
@@ -6016,6 +6044,10 @@ var Grid = /** @class */ (function (_super) {
             // Add default column definition
             this.addColumnDefinition(1, false);
         }
+        if (this._childControls.indexOf(control) !== -1) {
+            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].Warn("Control (Name:" + control.name + ", UniqueId:" + control.uniqueId + ") is already associated with this grid. You must remove it before reattaching it");
+            return this;
+        }
         var x = Math.min(row, this._rowDefinitions.length - 1);
         var y = Math.min(column, this._columnDefinitions.length - 1);
         var key = x + ":" + y;
@@ -6047,6 +6079,7 @@ var Grid = /** @class */ (function (_super) {
         var cell = this._cells[control._tag];
         if (cell) {
             cell.removeControl(control);
+            control._tag = null;
         }
         this._markAsDirty();
         return this;
@@ -6206,7 +6239,7 @@ var Grid = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Image", function() { return Image; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 
@@ -6981,7 +7014,7 @@ var InputPassword = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputText", function() { return InputText; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
@@ -7739,7 +7772,7 @@ var InputText = /** @class */ (function (_super) {
         this._isTextHighlightOn = false;
         //when write permission to clipbaord data is denied
         try {
-            ev.clipboardData.setData("text/plain", this._highlightedText);
+            ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
         }
         catch (_a) { } //pass
         this._host.clipboardData = this._highlightedText;
@@ -7754,7 +7787,7 @@ var InputText = /** @class */ (function (_super) {
         this._cursorOffset = this.text.length - this._startHighlightIndex;
         //when write permission to clipbaord data is denied
         try {
-            ev.clipboardData.setData("text/plain", this._highlightedText);
+            ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
         }
         catch (_a) { } //pass
         this._host.clipboardData = this._highlightedText;
@@ -7945,13 +7978,13 @@ var InputText = /** @class */ (function (_super) {
         this._host.focusedControl = this;
         return true;
     };
-    InputText.prototype._onPointerMove = function (target, coordinates) {
+    InputText.prototype._onPointerMove = function (target, coordinates, pointerId) {
         if (this._host.focusedControl === this && this._isPointerDown) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
             this._updateValueFromCursorIndex(this._cursorOffset);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
     };
     InputText.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
         this._isPointerDown = false;
@@ -7990,7 +8023,7 @@ var InputText = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Line", function() { return Line; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
@@ -8183,8 +8216,8 @@ var Line = /** @class */ (function (_super) {
         context.lineWidth = this._lineWidth;
         context.setLineDash(this._dash);
         context.beginPath();
-        context.moveTo(this._x1.getValue(this._host), this._y1.getValue(this._host));
-        context.lineTo(this._effectiveX2, this._effectiveY2);
+        context.moveTo(this._cachedParentMeasure.left + this._x1.getValue(this._host), this._cachedParentMeasure.top + this._y1.getValue(this._host));
+        context.lineTo(this._cachedParentMeasure.left + this._effectiveX2, this._cachedParentMeasure.top + this._effectiveY2);
         context.stroke();
         context.restore();
     };
@@ -8194,8 +8227,8 @@ var Line = /** @class */ (function (_super) {
         this._currentMeasure.height = Math.abs(this._y1.getValue(this._host) - this._effectiveY2) + this._lineWidth;
     };
     Line.prototype._computeAlignment = function (parentMeasure, context) {
-        this._currentMeasure.left = Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
-        this._currentMeasure.top = Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
+        this._currentMeasure.left = parentMeasure.left + Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
+        this._currentMeasure.top = parentMeasure.top + Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
     };
     /**
      * Move one end of the line given 3D cartesian coordinates.
@@ -8258,7 +8291,7 @@ var Line = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MultiLine", function() { return MultiLine; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/abstractMesh */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/abstractMesh */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _multiLinePoint__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../multiLinePoint */ "./2D/multiLinePoint.ts");
@@ -8525,7 +8558,7 @@ var MultiLine = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RadioButton", function() { return RadioButton; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
@@ -8870,7 +8903,7 @@ var Rectangle = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ScrollViewer", function() { return ScrollViewer; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Events/pointerEvents */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Events/pointerEvents */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _rectangle__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../rectangle */ "./2D/controls/rectangle.ts");
 /* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../grid */ "./2D/controls/grid.ts");
@@ -9172,7 +9205,7 @@ var ScrollViewer = /** @class */ (function (_super) {
     /** @hidden */
     ScrollViewer.prototype._attachWheel = function () {
         var _this = this;
-        if (this._onPointerObserver) {
+        if (!this._host || this._onPointerObserver) {
             return;
         }
         var scene = this._host.getScene();
@@ -9961,7 +9994,7 @@ var SelectionPanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseSlider", function() { return BaseSlider; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../control */ "./2D/controls/control.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../valueAndUnit */ "./2D/valueAndUnit.ts");
@@ -9990,6 +10023,7 @@ var BaseSlider = /** @class */ (function (_super) {
         _this._isThumbClamped = false;
         _this._displayThumb = true;
         _this._step = 0;
+        _this._lastPointerDownID = -1;
         // Shared rendering info
         _this._effectiveBarOffset = 0;
         /** Observable raised when the sldier value changes */
@@ -10252,13 +10286,18 @@ var BaseSlider = /** @class */ (function (_super) {
         this._pointerIsDown = true;
         this._updateValueFromPointer(coordinates.x, coordinates.y);
         this._host._capturingControl[pointerId] = this;
+        this._lastPointerDownID = pointerId;
         return true;
     };
-    BaseSlider.prototype._onPointerMove = function (target, coordinates) {
+    BaseSlider.prototype._onPointerMove = function (target, coordinates, pointerId) {
+        // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
+        if (pointerId != this._lastPointerDownID) {
+            return;
+        }
         if (this._pointerIsDown) {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
     };
     BaseSlider.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
         this._pointerIsDown = false;
@@ -10856,7 +10895,7 @@ var Slider = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StackPanel", function() { return StackPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
@@ -11114,7 +11153,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return TextWrapping; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return TextBlock; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
@@ -11554,7 +11593,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return KeyPropertySet; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VirtualKeyboard", function() { return VirtualKeyboard; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
 /* harmony import */ var _button__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./button */ "./2D/controls/button.ts");
@@ -11641,13 +11680,19 @@ var VirtualKeyboard = /** @class */ (function (_super) {
         var panel = new _stackPanel__WEBPACK_IMPORTED_MODULE_2__["StackPanel"]();
         panel.isVertical = false;
         panel.isFocusInvisible = true;
+        var maxKey = null;
         for (var i = 0; i < keys.length; i++) {
             var properties = null;
             if (propertySets && propertySets.length === keys.length) {
                 properties = propertySets[i];
             }
-            panel.addControl(this._createKey(keys[i], properties));
+            var key = this._createKey(keys[i], properties);
+            if (!maxKey || key.heightInPixels > maxKey.heightInPixels) {
+                maxKey = key;
+            }
+            panel.addControl(key);
         }
+        panel.height = maxKey ? maxKey.height : this.defaultButtonHeight;
         this.addControl(panel);
     };
     /**
@@ -11929,7 +11974,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Vector2WithInfo", function() { return Vector2WithInfo; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Matrix2D", function() { return Matrix2D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -12153,7 +12198,7 @@ var Matrix2D = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return Measure; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
 
 
@@ -12286,7 +12331,7 @@ var Measure = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MultiLinePoint", function() { return MultiLinePoint; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./valueAndUnit */ "./2D/valueAndUnit.ts");
 
@@ -12429,7 +12474,7 @@ var MultiLinePoint = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Style", function() { return Style; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./valueAndUnit */ "./2D/valueAndUnit.ts");
 
@@ -12649,14 +12694,17 @@ var ValueAndUnit = /** @class */ (function () {
     /**
      * Gets a string representation of the value
      * @param host defines the root host
+     * @param decimals defines an optional number of decimals to display
      * @returns a string
      */
-    ValueAndUnit.prototype.toString = function (host) {
+    ValueAndUnit.prototype.toString = function (host, decimals) {
         switch (this.unit) {
             case ValueAndUnit.UNITMODE_PERCENTAGE:
-                return (this.getValue(host) * 100) + "%";
+                var percentage = this.getValue(host) * 100;
+                return (decimals ? percentage.toFixed(decimals) : percentage) + "%";
             case ValueAndUnit.UNITMODE_PIXEL:
-                return this.getValue(host) + "px";
+                var pixels = this.getValue(host);
+                return (decimals ? pixels.toFixed(decimals) : pixels) + "px";
         }
         return this.unit.toString();
     };
@@ -12733,7 +12781,7 @@ var ValueAndUnit = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AbstractButton3D", function() { return AbstractButton3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control3D */ "./3D/controls/control3D.ts");
 
@@ -12776,7 +12824,7 @@ var AbstractButton3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Button3D", function() { return Button3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _abstractButton3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./abstractButton3D */ "./3D/controls/abstractButton3D.ts");
 /* harmony import */ var _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../2D/advancedDynamicTexture */ "./2D/advancedDynamicTexture.ts");
@@ -12953,7 +13001,7 @@ var Button3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Container3D", function() { return Container3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control3D */ "./3D/controls/control3D.ts");
 
@@ -13110,7 +13158,7 @@ var Container3D = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Control3D", function() { return Control3D; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _vector3WithInfo__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../vector3WithInfo */ "./3D/vector3WithInfo.ts");
 
@@ -13399,6 +13447,7 @@ var Control3D = /** @class */ (function () {
     /** @hidden */
     Control3D.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
         if (this._downCount !== 0) {
+            this._downCount++;
             return false;
         }
         this._downCount++;
@@ -13411,14 +13460,21 @@ var Control3D = /** @class */ (function () {
     };
     /** @hidden */
     Control3D.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
-        this._downCount = 0;
+        this._downCount--;
         delete this._downPointerIds[pointerId];
-        if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
-            this.onPointerClickObservable.notifyObservers(new _vector3WithInfo__WEBPACK_IMPORTED_MODULE_1__["Vector3WithInfo"](coordinates, buttonIndex), -1, target, this);
+        if (this._downCount < 0) {
+            // Handle if forcePointerUp was called prior to this
+            this._downCount = 0;
+            return;
         }
-        this.onPointerUpObservable.notifyObservers(new _vector3WithInfo__WEBPACK_IMPORTED_MODULE_1__["Vector3WithInfo"](coordinates, buttonIndex), -1, target, this);
-        if (this.pointerUpAnimation) {
-            this.pointerUpAnimation();
+        if (this._downCount == 0) {
+            if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
+                this.onPointerClickObservable.notifyObservers(new _vector3WithInfo__WEBPACK_IMPORTED_MODULE_1__["Vector3WithInfo"](coordinates, buttonIndex), -1, target, this);
+            }
+            this.onPointerUpObservable.notifyObservers(new _vector3WithInfo__WEBPACK_IMPORTED_MODULE_1__["Vector3WithInfo"](coordinates, buttonIndex), -1, target, this);
+            if (this.pointerUpAnimation) {
+                this.pointerUpAnimation();
+            }
         }
     };
     /** @hidden */
@@ -13430,6 +13486,10 @@ var Control3D = /** @class */ (function () {
         else {
             for (var key in this._downPointerIds) {
                 this._onPointerUp(this, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), +key, 0, true);
+            }
+            if (this._downCount > 0) {
+                this._downCount = 1;
+                this._onPointerUp(this, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), 0, 0, true);
             }
         }
     };
@@ -13504,7 +13564,7 @@ var Control3D = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CylinderPanel", function() { return CylinderPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
@@ -13589,7 +13649,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return HolographicButton; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _button3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./button3D */ "./3D/controls/button3D.ts");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _materials_fluentMaterial__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../materials/fluentMaterial */ "./3D/materials/fluentMaterial.ts");
 /* harmony import */ var _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../2D/controls/stackPanel */ "./2D/controls/stackPanel.ts");
@@ -14065,7 +14125,7 @@ var MeshButton3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return PlanePanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
@@ -14120,7 +14180,7 @@ var PlanePanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return ScatterPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
@@ -14247,7 +14307,7 @@ var ScatterPanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return SpherePanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
@@ -14332,7 +14392,7 @@ var SpherePanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return StackPanel3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
 
@@ -14457,7 +14517,7 @@ var StackPanel3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return VolumeBasedPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
 
@@ -14648,7 +14708,7 @@ var VolumeBasedPanel = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return GUI3DManager; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _controls_container3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./controls/container3D */ "./3D/controls/container3D.ts");
 
@@ -14915,7 +14975,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return FluentMaterialDefines; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return FluentMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _shaders_fluent_vertex__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./shaders/fluent.vertex */ "./3D/materials/shaders/fluent.vertex.ts");
 /* harmony import */ var _shaders_fluent_fragment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./shaders/fluent.fragment */ "./3D/materials/shaders/fluent.fragment.ts");
@@ -15237,7 +15297,7 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fluentPixelShader", function() { return fluentPixelShader; });
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
 var name = 'fluentPixelShader';
@@ -15259,7 +15319,7 @@ var fluentPixelShader = { name: name, shader: shader };
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fluentVertexShader", function() { return fluentVertexShader; });
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
 var name = 'fluentVertexShader';
@@ -15282,7 +15342,7 @@ var fluentVertexShader = { name: name, shader: shader };
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Vector3WithInfo", function() { return Vector3WithInfo; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -15576,14 +15636,14 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
-/***/ "babylonjs/Misc/observable":
+/***/ "babylonjs/Misc/tools":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_tools__;
 
 /***/ })
 

@@ -7,7 +7,7 @@
 		exports["babylonjs-loaders"] = factory(require("babylonjs"));
 	else
 		root["LOADERS"] = factory(root["BABYLON"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -3104,12 +3104,23 @@ var GLTFFileLoader = /** @class */ (function () {
         return this._parseAsync(scene, data, rootUrl, fileName).then(function (loaderData) {
             _this._log("Loading " + (fileName || ""));
             _this._loader = _this._getLoader(loaderData);
+            // Get materials/textures when loading to add to container
+            var materials = [];
+            _this.onMaterialLoadedObservable.add(function (material) {
+                materials.push(material);
+            });
+            var textures = [];
+            _this.onTextureLoadedObservable.add(function (texture) {
+                textures.push(texture);
+            });
             return _this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fileName).then(function (result) {
                 var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                 Array.prototype.push.apply(container.skeletons, result.skeletons);
                 Array.prototype.push.apply(container.animationGroups, result.animationGroups);
+                Array.prototype.push.apply(container.materials, materials);
+                Array.prototype.push.apply(container.textures, textures);
                 container.removeAllFromScene();
                 return container;
             });
@@ -3158,8 +3169,8 @@ var GLTFFileLoader = /** @class */ (function () {
     GLTFFileLoader.prototype._parseAsync = function (scene, data, rootUrl, fileName) {
         var _this = this;
         return Promise.resolve().then(function () {
-            var unpacked = (data instanceof ArrayBuffer) ? _this._unpackBinary(data) : { json: data, bin: null };
-            return _this._validateAsync(scene, unpacked.json, rootUrl, fileName).then(function () {
+            return _this._validateAsync(scene, data, rootUrl, fileName).then(function () {
+                var unpacked = (data instanceof ArrayBuffer) ? _this._unpackBinary(data) : { json: data, bin: null };
                 _this._startPerformanceCounter("Parse JSON");
                 _this._log("JSON length: " + unpacked.json.length);
                 var loaderData = {
@@ -3173,7 +3184,7 @@ var GLTFFileLoader = /** @class */ (function () {
             });
         });
     };
-    GLTFFileLoader.prototype._validateAsync = function (scene, json, rootUrl, fileName) {
+    GLTFFileLoader.prototype._validateAsync = function (scene, data, rootUrl, fileName) {
         var _this = this;
         if (!this.validate || typeof GLTFValidator === "undefined") {
             return Promise.resolve();
@@ -3189,7 +3200,10 @@ var GLTFFileLoader = /** @class */ (function () {
         if (fileName && fileName.substr(0, 5) !== "data:") {
             options.uri = (rootUrl === "file:" ? fileName : "" + rootUrl + fileName);
         }
-        return GLTFValidator.validateString(json, options).then(function (result) {
+        var promise = (data instanceof ArrayBuffer)
+            ? GLTFValidator.validateBytes(new Uint8Array(data), options)
+            : GLTFValidator.validateString(data, options);
+        return promise.then(function (result) {
             _this._endPerformanceCounter("Validate JSON");
             _this.onValidatedObservable.notifyObservers(result);
             _this.onValidatedObservable.clear();

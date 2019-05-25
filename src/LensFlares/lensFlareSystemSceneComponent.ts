@@ -134,7 +134,7 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
     }
 
     /**
-     * Adds all the element from the container to the scene
+     * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
     public addFromContainer(container: AbstractScene): void {
@@ -149,13 +149,17 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
     /**
      * Removes all the elements in the container from the scene
      * @param container contains the elements to remove
+     * @param dispose if the removed element should be disposed (default: false)
      */
-    public removeFromContainer(container: AbstractScene): void {
+    public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
         if (!container.lensFlareSystems) {
             return;
         }
         container.lensFlareSystems.forEach((o) => {
             this.scene.removeLensFlareSystem(o);
+            if (dispose) {
+                o.dispose();
+            }
         });
     }
 

@@ -1,15 +1,36 @@
-﻿html, body, #root {
+﻿html {
+    --background: #2A2342;
+    --footer-background: #201936;
+    --footer-height: 70px;
+    --button-hover-color: #BB464B;
+    --button-hover-hover: #e0684b;
+    --button-hover-background:  #162D3A;
+    --font-size: 20px;
+}
+
+html, body, #root {
     width: 100%;
     height: 100%;
     padding: 0;
     margin: 0;
     overflow: hidden;
-    font-family: "Segoe WP", "Segoe UI", "Verdana", "Arial";
-    background: #a9b5bc;
+    font-size: var(--font-size);
+    background: var(--background);
+    font-family: "acumin-pro-condensed";
+    font-weight: normal;
 }
 
 .hidden {
-    display: none;
+    display: none !important;
+}
+
+#click-interceptor {
+    position: absolute;
+    width: 100%;
+    height: 100%;    
+    z-index: 99;
+    top:0;
+    left:0;
 }
 
 #canvasZone {
@@ -18,7 +39,7 @@
     margin: 0;
     overflow: hidden;
     width: 100%;
-    height: calc(100% - 56px);   
+    height: calc(100% - var(--footer-height));   
 }
 
 #renderCanvas {
@@ -37,58 +58,75 @@ a {
     color: white;
 }
 
-    a:visited {
-        color: white;
-    }
-
+a:visited {
+    color: white;
+}
 
 .footer {
     position: relative;
     width: 100%;
-    height: 56px;
+    height: var(--footer-height);
     margin: 0;
     padding: 0;
-    background-color: #3B789A;
+    background-color:var(--footer-background);
     font-size: 0;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 201px 1fr 210px
+}
+
+#logoImg {
+    height: var(--footer-height);
+    width: 161px;
+}
+
+.footerLeft {
+    display: grid;
+    grid-column: 1;
+    grid-row: 1;
+    padding-left: 40px;
+    align-content: center; 
+    overflow: hidden;
 }
 
 .footerRight {
-    display: block;
-    float: right;
-    bottom: 0;
-    right: 0px;
-    top: 0px;
+    display: flex;
+    flex-direction: row-reverse;
+    grid-column: 3;
+    grid-row: 1;
 }
 
 .footerRight a {
     float: left; /* Float links side by side */
-    width: 56px; 
-    height: 56px;
+    width: var(--footer-height);
+    height: var(--footer-height);
     margin: 0px;
     padding: 0;
     transition: all 0.3s ease; /* Add transition for hover effects */
+    display: grid;
+    align-content: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
 .footerRight a img {
-    width: 36px; 
-    height: 36px;
-    margin: 10px;
+    width: var(--footer-height);
+    height: var(--footer-height);
 }
 
 .footerRight a:hover {
-    background-color: #2c5a74; /* Add a hover color */    
+    background-color: var(--button-hover-color);
 }
 
 .footerRight a:active {
-    background-color: #162D3A; /* Add a hover color */
+    background-color: var(--button-hover-background);
 }
 
 .custom-upload {
     position: relative;
     background:url(./Assets/Icon_OpenFile.svg) center right no-repeat;
-    width: 36px; 
-    height: 36px;
-    margin: 10px;
+    width: var(--footer-height);
+    height: var(--footer-height);
 }
 
 .custom-upload input[type=file]
@@ -104,14 +142,21 @@ a {
     filter:alpha(opacity=0);
 }
 
-#logo {
+#logoContainer {
     position: absolute;
     top:0;
-    width: 100%;
-    height: 100%;
-    background: url('./Assets/Logo_Fullscreen.svg') no-repeat 0 0;
-    background-position: center;
-    background-size: 50%;
+    left:0;
+    width: 100%;   
+    height: calc(100% - 70px);
+    pointer-events: none;
+}
+
+#logo {
+    position: absolute;
+    width: 20%;
+    height: 20%;
+    top: 40%;
+    left: 40%;
     pointer-events: none;
 }
 
@@ -121,7 +166,7 @@ a {
     color: #fff;
     height: 50px;
     width: 100%;
-    bottom: 5%;    
+    bottom: 50px;    
 }
 #btnDownArrow {
     position: absolute;
@@ -144,7 +189,7 @@ a {
     -webkit-transition: -webkit-transform 0.25s ease-in-out;
     z-index: 3;
     cursor: default;
-    background-color: #3B789A;
+    background-color: var(--footer-background);
 }
 
 .loadingText {
@@ -182,14 +227,15 @@ a {
 
 /* animation bar */
 #animationBar {
-    position: absolute;
-    bottom: 0px;
+    margin-left: 10px;
     display: none;
     align-items: center;
     color: white;
-    width: calc(100% - 168px);
     min-height: 30px;
-    font-size: 14px;
+    height: var(--footer-height);
+    background-color: var(--footer-background);    
+    grid-column: 2;
+    grid-row: 1;
 }
 
 .row {
@@ -205,14 +251,9 @@ a {
     margin: 0px;
 }
 
-#animationBar {
-    background-color: #3B789A;
-}
-
-#animationBar img {
-    width: 36px;
-    height: 36px;
-    margin: 10px;
+#playBtn img {
+    width: var(--footer-height);
+    height: var(--footer-height);
 }
 
 .dropdown {
@@ -221,10 +262,18 @@ a {
     width: 200px;
 }
 
-#dropdownBtn,
 #playBtn {
     display: flex;
     align-items: center;
+    height: var(--footer-height);
+    width: var(--footer-height);
+}
+
+#dropdownBtn {
+    display: flex;
+    height: var(--footer-height);
+    width: 200px;
+    font-size: var(--font-size);
 }
 
 #playBtn {
@@ -233,11 +282,11 @@ a {
 }
 
     #playBtn:hover {
-        background-color: #2c5a74; /* Add a hover color */    
+        background-color: var(--button-hover-color);   
     }
 
     #playBtn:active {
-        background-color: #162D3A; /* Add a hover color */
+        background-color: var(--button-hover-background);
     }
 
     #playBtn:focus {
@@ -245,48 +294,96 @@ a {
         border: none;
     }
 
-#dropdownContent {
-    background-color: #3B789A;
+#dropdownContent-env {
+    position: absolute;
+    bottom: var(--footer-height);
+    right: 0px;     
+    z-index: 100;
 }
 
-#dropdownLabel,
+#dropdownContent-env div  {
+    background-color: var(--button-hover-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--font-size);
+    width: calc(2 * var(--footer-height));
+    color: white;
+    cursor: pointer;
+    height: 40px;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+}
+
+#dropdownContent-env div:hover {
+    background-color: var(--button-hover-hover); 
+    transition: all 0.3s ease;
+}
+#dropdownContent-env div:active {
+    background-color: var(--button-hover-background);
+    transition: all 0.3s ease;
+}
+
+#btnEnvironment.open {
+    background-color:var(--button-hover-color); 
+}
+
+#dropdownLabel {
+    align-self: center;
+    justify-self: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 #dropdownContent a  {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     padding: 10px 15px 10px 46px;
 }
-#dropdownLabel {
-    cursor: pointer;
-    width: 200px;
-    padding: 0px 15px 2px 5px;
-}
 
 #dropdownBtn:hover {
     cursor: pointer;
-    background-color: #2c5a74;
+    background-color:var(--button-hover-color); 
     transition: all 0.3s ease;
+}
+
+#dropdownBtn.open {
+    background-color:var(--button-hover-color); 
 }
 
 #dropdownContent a {
     max-width: 1000px;
     transition: color 0.5s;
+    height: 40px;
+    font-size: var(--font-size);
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    align-content: center;
+    justify-content: center;
 }
 #dropdownContent a:hover {
-    background-color: #2c5a74;
+    background-color: var(--button-hover-hover); 
     transition: all 0.3s ease;
 }
 #dropdownContent a:active {
-    background-color: #162D3A;
+    background-color: var(--button-hover-background);
     transition: all 0.3s ease;
 }
 
-#dropdownContent {
+#dropdownContent {    
+    background-color: var(--button-hover-color);
     display: none;
-    position: absolute;
-    bottom: 56px;
-    border-bottom: 1px solid white; 
-    z-index: 1;
+    position: absolute;      
+    z-index: 100;
+    bottom: var(--footer-height);
     min-width: 135px;
     width: 200px;
     flex-direction: column;
@@ -299,15 +396,25 @@ a {
 }
 
 #chevronUp {
-    display: inline;
     margin-right: 0px;
     margin-left: 0px;
+    height: var(--footer-height);
+    width: var(--footer-height);
 }
 #chevronDown {
     display: none;
     margin-right: 0px;
     margin-left: 0px;
+    height: var(--footer-height);
+    width: var(--footer-height);
 }
+
+#dropdownLabel {
+    cursor: pointer;
+    width: 200px;
+    padding: 0px 15px 2px 5px;
+}
+
 
 #playBtn.play #pauseImg,
 #playBtn.pause #playImg{
@@ -317,10 +424,12 @@ a {
 #slider {
     -webkit-appearance: none;
     cursor: pointer;
-    width: 1000px;
-    height: 50px;
+    width: 100%;
+    max-width: 820px;
+    height: var(--footer-height);
     outline: none;
     margin-left: 20px;
+    margin-right: 10px;
     background-color: transparent;
 }
 
@@ -331,7 +440,7 @@ a {
     height: 20px;
     border: 2px solid white;
     border-radius: 50%;
-    background: #3B789A;
+    background: var(--footer-background);
     margin-top: -10px;
 }
 #slider::-webkit-slider-runnable-track {
@@ -351,7 +460,7 @@ a {
     height: 20px;
     border: 2px solid white;
     border-radius: 50%;
-    background: #3B789A;
+    background: var(--footer-background);
 }
 #slider::-moz-range-track {
     background: white;
@@ -385,83 +494,6 @@ a {
     height: 16px;
     border: 2px solid white;
     border-radius: 50%;
-    background: #3B789A;
+    background: var(--footer-background);
     margin-top: 0px;
-}
-
-@media (min-width: 0px) {
-    #slider {
-        display: none;
-    }
-
-    .dropdown {        
-        width: 56px;
-    }    
-
-    #dropdownLabel {
-        display: none;
-    }   
-    #dropdownContent a {
-        max-width: 200px;
-    }
-}
-
-@media (min-width: 480px) {
-    #slider,
-    #dropdownLabel {
-        display: initial;
-    }
-    
-    #slider {
-        width: 100px;
-    }
-
-    .dropdown {        
-        width: 150px;
-    }
-
-    #dropdownContent {
-        width: 150px;
-    }
-}
-
-@media (min-width: 768px) {
-    #slider,
-    #dropdownLabel {
-        display: initial;
-    }
-    
-    #slider {
-        width: 300px;
-    }
-
-    .dropdown {        
-        width: 200px;
-    }
-
-    #dropdownContent {
-        width: 200px;
-    }
-}
-
-@media (min-width: 992px) {
-    #slider,
-    #dropdownLabel {
-        display: initial;
-    }
-    
-    #slider {
-        width: 400px;
-    }
-}
-
-@media (min-width: 1200px) {
-    #slider,
-    #dropdownLabel {
-        display: initial;
-    }
-    
-    #slider {
-        width: 700px;
-    }
 }

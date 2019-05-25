@@ -60,6 +60,11 @@ export class VRCameraMetrics {
     public compensateDistortion = true;
 
     /**
+     * Defines if multiview should be enabled when rendering (Default: false)
+     */
+    public multiviewEnabled = false;
+
+    /**
      * Gets the rendering aspect ratio based on the provided resolutions.
      */
     public get aspectRatio(): number {

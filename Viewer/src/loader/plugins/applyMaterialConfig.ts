@@ -1,7 +1,7 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, Material } from 'babylonjs';
-
 import { ViewerModel } from '../../model/viewerModel';
 import { ILoaderPlugin } from './loaderPlugin';
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs/Loading/sceneLoader';
+import { Material } from 'babylonjs/Materials/material';
 
 /**
  * Force-apply material configuration right after a material was loaded.

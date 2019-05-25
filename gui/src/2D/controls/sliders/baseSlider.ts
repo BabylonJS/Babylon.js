@@ -18,6 +18,8 @@ export class BaseSlider extends Control {
     protected _displayThumb = true;
     private _step = 0;
 
+    private _lastPointerDownID = -1;
+
     // Shared rendering info
     protected _effectiveBarOffset = 0;
     protected _renderLeft: number;
@@ -301,16 +303,21 @@ export class BaseSlider extends Control {
 
         this._updateValueFromPointer(coordinates.x, coordinates.y);
         this._host._capturingControl[pointerId] = this;
-
+        this._lastPointerDownID = pointerId;
         return true;
     }
 
-    public _onPointerMove(target: Control, coordinates: Vector2): void {
+    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void {
+        // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
+        if (pointerId != this._lastPointerDownID) {
+            return;
+        }
+
         if (this._pointerIsDown) {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
 
-        super._onPointerMove(target, coordinates);
+        super._onPointerMove(target, coordinates, pointerId);
     }
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {

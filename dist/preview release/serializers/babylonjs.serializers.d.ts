@@ -1023,7 +1023,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @param scale
          * @param scene
          */
-        textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
+        private _textureTransformTextureAsync;
     }
 }
 declare module BABYLON.GLTF2.Exporter.Extensions {
@@ -1054,5 +1054,22 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @returns nullable INode promise
          */
         postExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
+    }
+}
+declare module BABYLON {
+    /**
+    * Class for generating STL data from a Babylon scene.
+    */
+    export class STLExport {
+        /**
+        * Exports the geometry of a Mesh array in .STL file format (ASCII)
+        * @param meshes list defines the mesh to serialize
+        * @param download triggers the automatic download of the file.
+        * @param fileName changes the downloads fileName.
+        * @param binary changes the STL to a binary type.
+        * @param isLittleEndian toggle for binary type exporter.
+        * @returns the STL as UTF8 string
+        */
+        static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean): any;
     }
 }

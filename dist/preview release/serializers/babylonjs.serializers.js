@@ -7,7 +7,7 @@
 		exports["babylonjs-serializers"] = factory(require("babylonjs"));
 	else
 		root["SERIALIZERS"] = factory(root["BABYLON"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Maths_math__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Maths_math__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -478,11 +478,10 @@ _glTFExporter__WEBPACK_IMPORTED_MODULE_1__["_Exporter"].RegisterExtension(NAME, 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return KHR_texture_transform; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Maths/math");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Maths/math");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _glTFExporter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFExporter */ "./glTF/2.0/glTFExporter.ts");
 /* harmony import */ var _shaders_textureTransform_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shaders/textureTransform.fragment */ "./glTF/2.0/shaders/textureTransform.fragment.ts");
-
 
 
 
@@ -507,6 +506,12 @@ var KHR_texture_transform = /** @class */ (function () {
     KHR_texture_transform.prototype.preExportTextureAsync = function (context, babylonTexture, mimeType) {
         var _this = this;
         return new Promise(function (resolve, reject) {
+            var scene = babylonTexture.getScene();
+            if (!scene) {
+                reject(context + ": \"scene\" is not defined for Babylon texture " + babylonTexture.name + "!");
+                return;
+            }
+            // TODO: this doesn't take into account rotation center values
             var texture_transform_extension = {};
             if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
                 texture_transform_extension.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
@@ -519,19 +524,9 @@ var KHR_texture_transform = /** @class */ (function () {
             }
             if (!Object.keys(texture_transform_extension).length) {
                 resolve(babylonTexture);
+                return;
             }
-            var scale = texture_transform_extension.scale ? new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](texture_transform_extension.scale[0], texture_transform_extension.scale[1]) : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].One();
-            var rotation = texture_transform_extension.rotation != null ? texture_transform_extension.rotation : 0;
-            var offset = texture_transform_extension.offset ? new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](texture_transform_extension.offset[0], texture_transform_extension.offset[1]) : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero();
-            var scene = babylonTexture.getScene();
-            if (!scene) {
-                reject(context + ": \"scene\" is not defined for Babylon texture " + babylonTexture.name + "!");
-            }
-            else {
-                _this.textureTransformTextureAsync(babylonTexture, offset, rotation, scale, scene).then(function (texture) {
-                    resolve(texture);
-                });
-            }
+            return _this._textureTransformTextureAsync(babylonTexture, scene);
         });
     };
     /**
@@ -542,11 +537,11 @@ var KHR_texture_transform = /** @class */ (function () {
      * @param scale
      * @param scene
      */
-    KHR_texture_transform.prototype.textureTransformTextureAsync = function (babylonTexture, offset, rotation, scale, scene) {
-        return new Promise(function (resolve, reject) {
-            var proceduralTexture = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["ProceduralTexture"]("" + babylonTexture.name, babylonTexture.getSize(), "textureTransform", scene);
+    KHR_texture_transform.prototype._textureTransformTextureAsync = function (babylonTexture, scene) {
+        return new Promise(function (resolve) {
+            var proceduralTexture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["ProceduralTexture"]("" + babylonTexture.name, babylonTexture.getSize(), "textureTransform", scene);
             if (!proceduralTexture) {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Cannot create procedural texture for " + babylonTexture.name + "!");
+                babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Cannot create procedural texture for " + babylonTexture.name + "!");
                 resolve(babylonTexture);
             }
             proceduralTexture.setTexture("textureSampler", babylonTexture);
@@ -907,7 +902,12 @@ var _GLTFAnimation = /** @class */ (function () {
                     }
                     previousTime = time;
                     maxUsedFrame = time;
-                    value = animation._interpolate(f, 0, undefined, animation.loopMode);
+                    var state = {
+                        key: 0,
+                        repeatCount: 0,
+                        loopMode: animation.loopMode
+                    };
+                    value = animation._interpolate(f, state);
                     _GLTFAnimation._SetInterpolatedValue(babylonTransformNode, value, time, animation, animationChannelTargetPath, quaternionCache, inputs, outputs, convertToRightHandedSystem, useQuaternion);
                 }
             }
@@ -2338,8 +2338,8 @@ var _Exporter = /** @class */ (function () {
                     }
                     if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
                         var sideOrientation = babylonMaterial.sideOrientation;
-                        if (this._convertToRightHandedSystem && sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].ClockWiseSideOrientation) {
-                            //Overwrite the indices to be counter-clockwise
+                        // Only reverse the winding if we have a clockwise winding
+                        if (sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].ClockWiseSideOrientation) {
                             var byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
                             if (byteOffset == null) {
                                 byteOffset = 0;
@@ -4275,7 +4275,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, OBJExport, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual */
+/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, OBJExport, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, STLExport, KHR_texture_transform, KHR_lights_punctual */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4305,6 +4305,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["KHR_texture_transform"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights_punctual", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["KHR_lights_punctual"]; });
+
+/* harmony import */ var _stl__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./stl */ "./stl/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return _stl__WEBPACK_IMPORTED_MODULE_2__["STLExport"]; });
+
 
 
 
@@ -4425,11 +4429,40 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
+/***/ "./legacy/legacy-stlSerializer.ts":
+/*!****************************************!*\
+  !*** ./legacy/legacy-stlSerializer.ts ***!
+  \****************************************/
+/*! exports provided: STLExport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _stl__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../stl */ "./stl/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return _stl__WEBPACK_IMPORTED_MODULE_0__["STLExport"]; });
+
+
+/**
+ * This is the entry point for the UMD module.
+ * The entry point for a future ESM package should be index.ts
+ */
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+if (typeof globalObject !== "undefined") {
+    for (var serializer in _stl__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[serializer] = _stl__WEBPACK_IMPORTED_MODULE_0__[serializer];
+    }
+}
+
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
 /***/ "./legacy/legacy.ts":
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, OBJExport, KHR_texture_transform, KHR_lights_punctual */
+/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, OBJExport, STLExport, KHR_texture_transform, KHR_lights_punctual */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4461,8 +4494,151 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _legacy_objSerializer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./legacy-objSerializer */ "./legacy/legacy-objSerializer.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OBJExport", function() { return _legacy_objSerializer__WEBPACK_IMPORTED_MODULE_2__["OBJExport"]; });
 
+/* harmony import */ var _legacy_stlSerializer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./legacy-stlSerializer */ "./legacy/legacy-stlSerializer.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return _legacy_stlSerializer__WEBPACK_IMPORTED_MODULE_3__["STLExport"]; });
 
 
+
+
+
+
+
+/***/ }),
+
+/***/ "./stl/index.ts":
+/*!**********************!*\
+  !*** ./stl/index.ts ***!
+  \**********************/
+/*! exports provided: STLExport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _stlSerializer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./stlSerializer */ "./stl/stlSerializer.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return _stlSerializer__WEBPACK_IMPORTED_MODULE_0__["STLExport"]; });
+
+
+
+
+/***/ }),
+
+/***/ "./stl/stlSerializer.ts":
+/*!******************************!*\
+  !*** ./stl/stlSerializer.ts ***!
+  \******************************/
+/*! exports provided: STLExport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return STLExport; });
+/* harmony import */ var babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Meshes/buffer */ "babylonjs/Maths/math");
+/* harmony import */ var babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__);
+
+
+/**
+* Class for generating STL data from a Babylon scene.
+*/
+var STLExport = /** @class */ (function () {
+    function STLExport() {
+    }
+    /**
+    * Exports the geometry of a Mesh array in .STL file format (ASCII)
+    * @param meshes list defines the mesh to serialize
+    * @param download triggers the automatic download of the file.
+    * @param fileName changes the downloads fileName.
+    * @param binary changes the STL to a binary type.
+    * @param isLittleEndian toggle for binary type exporter.
+    * @returns the STL as UTF8 string
+    */
+    STLExport.CreateSTL = function (meshes, download, fileName, binary, isLittleEndian) {
+        //Binary support adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61
+        if (download === void 0) { download = true; }
+        if (fileName === void 0) { fileName = 'STL_Mesh'; }
+        if (binary === void 0) { binary = false; }
+        if (isLittleEndian === void 0) { isLittleEndian = true; }
+        var getFaceData = function (indices, vertices, i) {
+            var id = [indices[i] * 3, indices[i + 1] * 3, indices[i + 2] * 3];
+            var v = [
+                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[0]], vertices[id[0] + 1], vertices[id[0] + 2]),
+                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[1]], vertices[id[1] + 1], vertices[id[1] + 2]),
+                new babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"](vertices[id[2]], vertices[id[2] + 1], vertices[id[2] + 2])
+            ];
+            var p1p2 = v[0].subtract(v[1]);
+            var p3p2 = v[2].subtract(v[1]);
+            var n = (babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Cross(p1p2, p3p2)).normalize();
+            return { v: v, n: n };
+        };
+        var writeVector = function (dataview, offset, vector, isLittleEndian) {
+            offset = writeFloat(dataview, offset, vector.x, isLittleEndian);
+            offset = writeFloat(dataview, offset, vector.y, isLittleEndian);
+            return writeFloat(dataview, offset, vector.z, isLittleEndian);
+        };
+        var writeFloat = function (dataview, offset, value, isLittleEndian) {
+            dataview.setFloat32(offset, value, isLittleEndian);
+            return offset + 4;
+        };
+        var data;
+        var faceCount = 0;
+        var offset = 0;
+        if (binary) {
+            for (var i = 0; i < meshes.length; i++) {
+                var mesh = meshes[i];
+                var indices = mesh.getIndices();
+                faceCount += indices ? indices.length : 0;
+            }
+            var bufferSize = 84 + (50 * faceCount);
+            var buffer = new ArrayBuffer(bufferSize);
+            data = new DataView(buffer);
+            offset += 80;
+            data.setUint32(offset, faceCount, isLittleEndian);
+            offset += 4;
+        }
+        else {
+            data = 'solid exportedMesh\r\n';
+        }
+        for (var i = 0; i < meshes.length; i++) {
+            var mesh = meshes[i];
+            mesh.bakeCurrentTransformIntoVertices();
+            var vertices = mesh.getVerticesData(babylonjs_Meshes_buffer__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind) || [];
+            var indices = mesh.getIndices() || [];
+            for (var i_1 = 0; i_1 < indices.length; i_1 += 3) {
+                var fd = getFaceData(indices, vertices, i_1);
+                if (binary) {
+                    offset = writeVector(data, offset, fd.n, isLittleEndian);
+                    offset = writeVector(data, offset, fd.v[0], isLittleEndian);
+                    offset = writeVector(data, offset, fd.v[1], isLittleEndian);
+                    offset = writeVector(data, offset, fd.v[2], isLittleEndian);
+                    offset += 2;
+                }
+                else {
+                    data += 'facet normal ' + fd.n.x + ' ' + fd.n.y + ' ' + fd.n.z + '\r\n';
+                    data += '\touter loop\r\n';
+                    data += '\t\tvertex ' + fd.v[0].x + ' ' + fd.v[0].y + ' ' + fd.v[0].z + '\r\n';
+                    data += '\t\tvertex ' + fd.v[1].x + ' ' + fd.v[1].y + ' ' + fd.v[1].z + '\r\n';
+                    data += '\t\tvertex ' + fd.v[2].x + ' ' + fd.v[2].y + ' ' + fd.v[2].z + '\r\n';
+                    data += '\tendloop\r\n';
+                    data += 'endfacet\r\n';
+                }
+            }
+        }
+        if (!binary) {
+            data += 'endsolid exportedMesh';
+        }
+        if (download) {
+            var a = document.createElement('a');
+            var blob = new Blob([data], { 'type': 'application/octet-stream' });
+            a.href = window.URL.createObjectURL(blob);
+            if (!fileName) {
+                fileName = "STL_Mesh";
+            }
+            a.download = fileName + ".stl";
+            a.click();
+        }
+        return data;
+    };
+    return STLExport;
+}());
 
 
 

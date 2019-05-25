@@ -1,12 +1,13 @@
 import { Nullable, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
+import { DataBuffer } from './dataBuffer';
 
 /**
  * Class used to store data that will be store in GPU memory
  */
 export class Buffer {
     private _engine: Engine;
-    private _buffer: Nullable<WebGLBuffer>;
+    private _buffer: Nullable<DataBuffer>;
     /** @hidden */
     public _data: Nullable<DataArray>;
     private _updatable: boolean;
@@ -102,7 +103,7 @@ export class Buffer {
      * Gets underlying native buffer
      * @returns underlying native buffer
      */
-    public getBuffer(): Nullable<WebGLBuffer> {
+    public getBuffer(): Nullable<DataBuffer> {
         return this._buffer;
     }
 
@@ -379,7 +380,7 @@ export class VertexBuffer {
      * Gets underlying native buffer
      * @returns underlying native buffer
      */
-    public getBuffer(): Nullable<WebGLBuffer> {
+    public getBuffer(): Nullable<DataBuffer> {
         return this._buffer.getBuffer();
     }
 

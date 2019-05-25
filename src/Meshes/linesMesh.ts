@@ -1,6 +1,6 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Color3 } from "../Maths/math";
+import { Color3, Color4 } from "../Maths/math";
 import { Node } from "../node";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
@@ -9,6 +9,7 @@ import { InstancedMesh } from "../Meshes/instancedMesh";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
+import { MaterialHelper } from '../Materials/materialHelper';
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
@@ -36,6 +37,8 @@ export class LinesMesh extends Mesh {
 
     private _colorShader: ShaderMaterial;
 
+    private color4 : Color4;
+
     /**
      * Creates a new LinesMesh
      * @param name defines the name
@@ -57,11 +60,11 @@ export class LinesMesh extends Mesh {
         /**
          * If vertex color should be applied to the mesh
          */
-        public useVertexColor?: boolean,
+        public readonly useVertexColor?: boolean,
         /**
          * If vertex alpha should be applied to the mesh
          */
-        public useVertexAlpha?: boolean
+        public readonly useVertexAlpha?: boolean
     ) {
         super(name, scene, parent, source, doNotCloneChildren);
 
@@ -77,7 +80,7 @@ export class LinesMesh extends Mesh {
         var defines: string[] = [];
         var options = {
             attributes: [VertexBuffer.PositionKind, "world0", "world1", "world2", "world3"],
-            uniforms: ["world", "viewProjection"],
+            uniforms: ["vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "world", "viewProjection"],
             needAlphaBlending: true,
             defines: defines
         };
@@ -88,6 +91,7 @@ export class LinesMesh extends Mesh {
 
         if (!useVertexColor) {
             options.uniforms.push("color");
+            this.color4 = new Color4();
         }
         else {
             options.defines.push("#define VERTEXCOLOR");
@@ -95,6 +99,44 @@ export class LinesMesh extends Mesh {
         }
 
         this._colorShader = new ShaderMaterial("colorShader", this.getScene(), "color", options);
+    }
+
+    private _addClipPlaneDefine(label: string) {
+        const define = "#define " + label;
+        let index = this._colorShader.options.defines.indexOf(define);
+
+        if (index !== -1) {
+            return;
+        }
+
+        this._colorShader.options.defines.push(define);
+    }
+
+    private _removeClipPlaneDefine(label: string) {
+        const define = "#define " + label;
+        let index = this._colorShader.options.defines.indexOf(define);
+
+        if (index === -1) {
+            return;
+        }
+
+        this._colorShader.options.defines.splice(index, 1);
+    }
+
+    public isReady() {
+        const scene = this.getScene();
+
+        // Clip planes
+        scene.clipPlane ? this._addClipPlaneDefine("CLIPPLANE") : this._removeClipPlaneDefine("CLIPPLANE");
+        scene.clipPlane2 ? this._addClipPlaneDefine("CLIPPLANE2") : this._removeClipPlaneDefine("CLIPPLANE2");
+        scene.clipPlane3 ? this._addClipPlaneDefine("CLIPPLANE3") : this._removeClipPlaneDefine("CLIPPLANE3");
+        scene.clipPlane4 ? this._addClipPlaneDefine("CLIPPLANE4") : this._removeClipPlaneDefine("CLIPPLANE4");
+
+        if (!this._colorShader.isReady()) {
+            return false;
+        }
+
+        return super.isReady();
     }
 
     /**
@@ -130,13 +172,21 @@ export class LinesMesh extends Mesh {
         if (!this._geometry) {
             return this;
         }
+        const colorEffect = this._colorShader.getEffect();
+
         // VBOs
-        this._geometry._bind(this._colorShader.getEffect());
+        const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
+        this._geometry._bind(colorEffect, indexToBind);
 
         // Color
         if (!this.useVertexColor) {
-            this._colorShader.setColor4("color", this.color.toColor4(this.alpha));
+            const { r, g, b } = this.color;
+            this.color4.set(r, g, b, this.alpha);
+            this._colorShader.setColor4("color", this.color4);
         }
+
+        // Clip planes
+        MaterialHelper.BindClipPlane(colorEffect!, this.getScene());
         return this;
     }
 
@@ -149,7 +199,13 @@ export class LinesMesh extends Mesh {
         var engine = this.getScene().getEngine();
 
         // Draw order
-        engine.drawElementsType(Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
+
+        if (this._unIndexed) {
+            engine.drawArraysType(Material.LineListDrawMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+        }
+        else {
+            engine.drawElementsType(Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
+        }
         return this;
     }
 

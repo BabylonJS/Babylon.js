@@ -4,6 +4,8 @@ uniform vec4 vSpecularColor;
 #endif
 uniform vec3 vEmissiveColor;
 
+uniform float visibility;
+
 // Samplers
 #ifdef DIFFUSE
 uniform vec2 vDiffuseInfos;
@@ -69,22 +71,20 @@ uniform vec4 emissiveRightColor;
 #ifdef REFLECTION
 uniform vec2 vReflectionInfos;
 
-#ifdef REFLECTIONMAP_SKYBOX
-#else
+    #if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION) || defined(REFLECTIONMAP_EQUIRECTANGULAR) || defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_SKYBOX)
+    uniform mat4 reflectionMatrix;
+    #endif
 
-#if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
-uniform mat4 reflectionMatrix;
-#endif
+    #ifndef REFLECTIONMAP_SKYBOX
+        #if defined(USE_LOCAL_REFLECTIONMAP_CUBIC) && defined(REFLECTIONMAP_CUBIC)
+            uniform vec3 vReflectionPosition;
+            uniform vec3 vReflectionSize; 
+        #endif
+    #endif
 
-#if defined(USE_LOCAL_REFLECTIONMAP_CUBIC) && defined(REFLECTIONMAP_CUBIC)
-	uniform vec3 vReflectionPosition;
-	uniform vec3 vReflectionSize; 
-#endif
-#endif
-
-#ifdef REFLECTIONFRESNEL
-uniform vec4 reflectionLeftColor;
-uniform vec4 reflectionRightColor;
-#endif
+    #ifdef REFLECTIONFRESNEL
+    uniform vec4 reflectionLeftColor;
+    uniform vec4 reflectionRightColor;
+    #endif
 
 #endif

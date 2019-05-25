@@ -13,6 +13,7 @@
         "packageES6DevFolderName": "packageES6Dev",
         "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",
+        "documentationFile": "documentation.d.ts",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
             "../../dist/preview release/gui/babylon.gui.d.ts",
@@ -45,7 +46,20 @@
         "loaders",
         "serializers",
         "gui",
-        "inspector"
+        "inspector",
+        "nodeEditor"
+    ],
+    "es6modules": [
+        "core",
+        "materialsLibrary",
+        "postProcessesLibrary",
+        "proceduralTexturesLibrary",
+        "loaders",
+        "serializers",
+        "gui",
+        "inspector",
+        "viewer",
+        "nodeEditor"
     ],
     "lintModules": [
         "core",
@@ -57,8 +71,8 @@
         "gui"
     ],
     "viewerModules": [
-        "viewer",
-        "viewer-assets"
+        "viewer-assets",
+        "viewer"
     ],
     "additionalNpmPackages": [
         {
@@ -105,6 +119,9 @@
                             "path": "babylonjs/Debug/skeletonViewer",
                             "namespace": "BABYLON.Debug"
                         }
+                    ],
+                    "hiddenConsts": [
+                        "Debug"
                     ]
                 },
                 "requiredFiles": [
@@ -548,12 +565,11 @@
                 }
             },
             "es6": {
-                "webpackBuild": {
-                    "dependencies": [
-                        "node_modules/re-resizable/lib/index.es5.js",
-                        "Tools/**/*"
-                    ]
-                },
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "node_modules/re-resizable/lib/index.es5.js",
+                    "Tools/**/*"
+                ],
                 "packageName": "@babylonjs/inspector",
                 "readme": "dist/preview release/inspector/readme-es6.md",
                 "packagesFiles": [
@@ -564,6 +580,57 @@
                 ],
                 "typings": "babylon.inspector.module.d.ts",
                 "index": "babylon.inspector.bundle.max.js"
+            }
+        }
+    },
+    "nodeEditor": {
+        "libraries": [
+            {
+                "output": "babylon.nodeEditor.js",
+                "entry": "./legacy/legacy.ts"
+            }
+        ],
+        "build": {
+            "ignoreInTestMode": true,
+            "mainFolder": "./nodeEditor/",
+            "uncheckedLintImports": [
+                "react",
+                "react-dom",
+                "re-resizable",
+                "glTF"
+            ],
+            "umd": {
+                "packageName": "babylonjs-node-editor",
+                "webpackRoot": "NODEEDITOR",
+                "processDeclaration": {
+                    "filename": "babylon.nodeEditor.module.d.ts",
+                    "moduleName": "NODEEDITOR",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "react": "React",
+                        "@babylonjs/core": "BABYLON",
+                        "@fortawesome": false,
+                        "react-contextmenu": false
+                    }
+                }
+            },
+            "es6": {
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "node_modules/re-resizable/lib/index.es5.js",
+                    "Tools/**/*"
+                ],
+                "packageName": "@babylonjs/node-editor",
+                "readme": "dist/preview release/nodeEditor/readme-es6.md",
+                "packagesFiles": [
+                    "babylon.nodeEditor.max.js",
+                    "babylon.nodeEditor.max.js.map",
+                    "babylon.nodeEditor.module.d.ts",
+                    "readme.md"
+                ],
+                "typings": "babylon.nodeEditor.module.d.ts",
+                "index": "babylon.nodeEditor.max.js"
             }
         }
     },
@@ -579,6 +646,7 @@
             }
         ],
         "build": {
+            "mainFolder": "./Viewer/",
             "webpack": "../../../Viewer/webpack.gulp.config.js",
             "distOutputDirectory": "/viewer/",
             "dtsBundle": {
@@ -591,7 +659,7 @@
                 "processDeclaration": {
                     "moduleName": "BabylonViewer",
                     "doNotAppendNamespace": true,
-                    "prependText": "/// <reference path=\"./babylon.module.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n",
+                    "prependText": "/// <reference path=\"./babylon.module.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.module.d.ts\"/>\n",
                     "importsToRemove": [
                         "pep",
                         "babylonjs-loaders"
@@ -599,7 +667,17 @@
                     "classMap": {
                         "babylonjs": "BABYLON",
                         "babylonjs-loaders": "BABYLON"
-                    }
+                    },
+                    "replacements": [
+                        {
+                            "from": "import(\"./configuration\")",
+                            "to": "import(\"babylonjs-viewer/configuration/configuration\")"
+                        },
+                        {
+                            "from": "import(\"./viewer\")",
+                            "to": "import(\"babylonjs-viewer/viewer/viewer\")"
+                        }
+                    ]
                 },
                 "requiredFiles": [
                     "dist/preview release/viewer/readme.md",
@@ -620,7 +698,7 @@
                             "outputDirectory": "/viewer/",
                             "addBabylonDeclaration": [
                                 "babylon.module.d.ts",
-                                "loaders/babylonjs.loaders.d.ts",
+                                "loaders/babylonjs.loaders.module.d.ts",
                                 "glTF2Interface/babylon.glTF2Interface.d.ts"
                             ]
                         }
@@ -640,7 +718,17 @@
                     ]
                 }
             ],
-            "legacyPackageOutputDirectory": "../../../Viewer/build/src/"
+            "legacyPackageOutputDirectory": "../../../Viewer/build/src/",
+            "es6": {
+                "buildDependencies": [
+                    "node_modules/handlebars/**/*",
+                    "node_modules/@types/**/*"
+                ],
+                "packageName": "@babylonjs/viewer",
+                "readme": "Viewer/README-ES6.md",
+                "skipLibCheck": true,
+                "packageBuildFolder": "src"
+            }
         }
     },
     "viewer-assets": {

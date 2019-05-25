@@ -9,8 +9,8 @@ For usage documentation please visit http://doc.babylonjs.com/extensions and cho
 
 Compiled js files (minified and source) are offered on our public CDN here:
 
-* https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.js
-* https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js
+* https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.js
+* https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js
 
 ## NPM
 

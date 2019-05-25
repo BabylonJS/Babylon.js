@@ -31,12 +31,22 @@ export class RotationGizmo extends Gizmo {
     /** Fires an event when any of it's sub gizmos are released from dragging */
     public onDragEndObservable = new Observable();
 
+    private _meshAttached: Nullable<AbstractMesh>;
+
+    public get attachedMesh() {
+        return this._meshAttached;
+    }
     public set attachedMesh(mesh: Nullable<AbstractMesh>) {
-        if (this.xGizmo) {
-            this.xGizmo.attachedMesh = mesh;
-            this.yGizmo.attachedMesh = mesh;
-            this.zGizmo.attachedMesh = mesh;
-        }
+        this._meshAttached = mesh;
+
+        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+            if (gizmo.isEnabled) {
+                gizmo.attachedMesh = mesh;
+            }
+            else {
+                gizmo.attachedMesh = null;
+            }
+        });
     }
     /**
      * Creates a RotationGizmo
@@ -45,9 +55,9 @@ export class RotationGizmo extends Gizmo {
      */
     constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32) {
         super(gizmoLayer);
-        this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, tessellation);
-        this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, tessellation);
-        this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, tessellation);
+        this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, tessellation, this);
+        this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, tessellation, this);
+        this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, tessellation, this);
 
         // Relay drag events
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
