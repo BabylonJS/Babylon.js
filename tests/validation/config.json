@@ -1,5 +1,5 @@
 ﻿{
-    "root": "https://rawgit.com/BabylonJS/Website/master/build",
+    "root": "https://www.babylonjs.com/",
     "tests": [
         {
             "title": "Unindexed mesh",
