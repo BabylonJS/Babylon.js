@@ -16,7 +16,7 @@ xhr.addEventListener("load", function () {
                     true :
                     false;
 
-                this.timeout(18000000);
+                this.timeout(180000);
                 require = null;
                 BABYLONDEVTOOLS.Loader
                     .require('/tests/validation/validation.js')
@@ -44,7 +44,7 @@ xhr.addEventListener("load", function () {
                 }
 
                 it(test.title, function (done) {
-                    this.timeout(18000000);
+                    this.timeout(180000);
 
                     var deferredDone = function(err) {
                         setTimeout(function() {
