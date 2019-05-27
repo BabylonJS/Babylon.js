@@ -1,6 +1,10 @@
 # 4.1.0
 
 ## Major updates
+- Node Material (NEED DOC AND SAMPLES) ([Deltakosh](https://github.com/deltakosh/))
+- Node material editor (NEED DOC AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
+- WebGPU support (NEED DOC AND SAMPLES) ([Sebavan](https://github.com/sebavan/)
+- .basis texture file format support (NEED DEMO) ([TrevorDev](https://github.com/TrevorDev))
 
 ## Optimizations
 
@@ -24,7 +28,6 @@
 - Added context menu to add `SSAORenderingPipeline` and `SSAO2RenderingPipeline` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for texture creation and assignments per material ([Deltakosh](https://github.com/deltakosh/))
 - Added support for occlusion properties ([Deltakosh](https://github.com/deltakosh/))
-- Node material editor ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
 
 ### Tools
 - Added `Color3.toHSV()`, `Color3.toHSVToRef()` and `Color3.HSVtoRGBToRef()` ([Deltakosh](https://github.com/deltakosh/))
