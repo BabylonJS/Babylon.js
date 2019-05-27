@@ -12,7 +12,6 @@ import { IDisplayChangedEventArgs } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Effect, EffectCreationOptions, EffectFallbacks } from "../Materials/effect";
-import { Material } from "../Materials/material";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -33,6 +32,7 @@ import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 
+declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
@@ -3094,24 +3094,24 @@ export class Engine {
     private _drawMode(fillMode: number): number {
         switch (fillMode) {
             // Triangle views
-            case Material.TriangleFillMode:
+              case Constants.MATERIAL_TriangleFillMode:
                 return this._gl.TRIANGLES;
-            case Material.PointFillMode:
+            case Constants.MATERIAL_PointFillMode:
                 return this._gl.POINTS;
-            case Material.WireFrameFillMode:
+            case Constants.MATERIAL_WireFrameFillMode:
                 return this._gl.LINES;
             // Draw modes
-            case Material.PointListDrawMode:
+            case Constants.MATERIAL_PointListDrawMode:
                 return this._gl.POINTS;
-            case Material.LineListDrawMode:
+            case Constants.MATERIAL_LineListDrawMode:
                 return this._gl.LINES;
-            case Material.LineLoopDrawMode:
+            case Constants.MATERIAL_LineLoopDrawMode:
                 return this._gl.LINE_LOOP;
-            case Material.LineStripDrawMode:
+            case Constants.MATERIAL_LineStripDrawMode:
                 return this._gl.LINE_STRIP;
-            case Material.TriangleStripDrawMode:
+            case Constants.MATERIAL_TriangleStripDrawMode:
                 return this._gl.TRIANGLE_STRIP;
-            case Material.TriangleFanDrawMode:
+            case Constants.MATERIAL_TriangleFanDrawMode:
                 return this._gl.TRIANGLE_FAN;
             default:
                 return this._gl.TRIANGLES;
