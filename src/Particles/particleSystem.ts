@@ -2429,13 +2429,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 particleSystem.addAlphaRemapGradient(alphaRemapGradient.gradient, alphaRemapGradient.factor1 !== undefined ? alphaRemapGradient.factor1 : alphaRemapGradient.factor, alphaRemapGradient.factor2);
             }
         }
-
-        if (parsedParticleSystem.sizeGradients) {
-            for (var sizeGradient of parsedParticleSystem.sizeGradients) {
-                particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ? sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
-            }
-        }
-
+        
         if (parsedParticleSystem.sizeGradients) {
             for (var sizeGradient of parsedParticleSystem.sizeGradients) {
                 particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ? sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
