@@ -77,6 +77,7 @@ export class SubEmitter {
         var clone = new SubEmitter(this.particleSystem.clone("", emitter));
 
         // Clone properties
+        clone.particleSystem.name += "Clone";
         clone.type = this.type;
         clone.inheritDirection = this.inheritDirection;
         clone.inheritedVelocityAmount = this.inheritedVelocityAmount;
