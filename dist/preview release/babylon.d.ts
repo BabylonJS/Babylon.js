@@ -32330,6 +32330,10 @@ declare module BABYLON {
         * An event triggered after rendering the scene
         */
         onAfterRenderObservable: Observable<Scene>;
+        /**
+        * An event triggered after rendering the scene for an active camera (When scene.render is called this will be called after each camera)
+        */
+        onAfterRenderCameraObservable: Observable<Camera>;
         private _onAfterRenderObserver;
         /** Sets a function to be executed after rendering this scene */
         afterRender: Nullable<() => void>;
@@ -36200,6 +36204,10 @@ declare module BABYLON {
          *  Initializes the behavior
          */
         init(): void;
+        /**
+         * In the case of multiplea active cameras, the cameraToUseForPointers should be used if set instead of active camera
+         */
+        private readonly _pointerCamera;
         /**
          * Attaches the scale behavior the passed in mesh
          * @param ownerNode The mesh that will be scaled around once attached
@@ -40862,6 +40870,17 @@ declare module BABYLON {
         private static _DefaultUtilityLayer;
         private static _DefaultKeepDepthUtilityLayer;
         private _sharedGizmoLight;
+        private _renderCamera;
+        /**
+         * Gets the camera that is used to render the utility layer (when not set, this will be the last active camera)
+         * @returns the camera that is used when rendering the utility layer
+         */
+        getRenderCamera(): Nullable<Camera>;
+        /**
+         * Sets the camera that should be used when rendering the utility layer (If set to null the last active camera will be used)
+         * @param cam the camera that should be used when rendering the utility layer
+         */
+        setRenderCamera(cam: Nullable<Camera>): void;
         /**
          * @hidden
          * Light which used by gizmos to get light shading
@@ -43286,6 +43305,14 @@ declare module BABYLON {
          * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh. (Default: true)
          */
         usePointerToAttachGizmos: boolean;
+        /**
+         * Utility layer that the bounding box gizmo belongs to
+         */
+        readonly keepDepthUtilityLayer: UtilityLayerRenderer;
+        /**
+         * Utility layer that all gizmos besides bounding box belong to
+         */
+        readonly utilityLayer: UtilityLayerRenderer;
         /**
          * Instatiates a gizmo manager
          * @param scene the scene to overlay the gizmos on top of
@@ -49156,8 +49183,9 @@ declare module BABYLON {
          * Initializes the ammoJS plugin
          * @param _useDeltaForWorldStep if the time between frames should be used when calculating physics steps (Default: true)
          * @param ammoInjection can be used to inject your own ammo reference
+         * @param overlappingPairCache can be used to specify your own overlapping pair cache
          */
-        constructor(_useDeltaForWorldStep?: boolean, ammoInjection?: any);
+        constructor(_useDeltaForWorldStep?: boolean, ammoInjection?: any, overlappingPairCache?: any);
         /**
          * Sets the gravity of the physics world (m/(s^2))
          * @param gravity Gravity to set
