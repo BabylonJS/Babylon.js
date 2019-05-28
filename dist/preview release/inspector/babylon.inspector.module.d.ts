@@ -18,6 +18,15 @@ declare module "babylonjs-inspector/components/replayRecorder" {
         export(): void;
     }
 }
+declare module "babylonjs-inspector/tools" {
+    export class Tools {
+        static StoreLocalBooleanSettings(key: string, value: boolean): void;
+        static ReadLocalBooleanSettings(key: string, defaultValue: boolean): boolean;
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+    }
+}
 declare module "babylonjs-inspector/components/globalState" {
     import { GLTFFileLoader, IGLTFLoaderExtension } from "babylonjs-loaders/glTF/index";
     import { IGLTFValidationResults } from "babylonjs-gltf2interface";
@@ -49,6 +58,8 @@ declare module "babylonjs-inspector/components/globalState" {
         blockMutationUpdates: boolean;
         selectedLineContainerTitle: string;
         recorder: ReplayRecorder;
+        private _onlyUseEulers;
+        onlyUseEulers: boolean;
         init(propertyChangedObservable: Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: GLTFFileLoader): void;
         lightGizmos: Array<LightGizmo>;
@@ -356,6 +367,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector3LineCompo
         propertyName: string;
         step?: number;
         onChange?: (newvalue: Vector3) => void;
+        useEuler?: boolean;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
@@ -367,6 +379,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector3LineCompo
         };
         private _localChange;
         constructor(props: IVector3LineComponentProps);
+        getCurrentValue(): any;
         shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
             isExpanded: boolean;
             value: Vector3;
@@ -383,17 +396,19 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector3LineCompo
 declare module "babylonjs-inspector/components/actionTabs/lines/quaternionLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Quaternion } from "babylonjs/Maths/math";
+    import { Quaternion, Vector3 } from "babylonjs/Maths/math";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     interface IQuaternionLineComponentProps {
         label: string;
         target: any;
+        useEuler?: boolean;
         propertyName: string;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class QuaternionLineComponent extends React.Component<IQuaternionLineComponentProps, {
         isExpanded: boolean;
         value: Quaternion;
+        eulerValue: Vector3;
     }> {
         private _localChange;
         constructor(props: IQuaternionLineComponentProps);
@@ -408,6 +423,10 @@ declare module "babylonjs-inspector/components/actionTabs/lines/quaternionLineCo
         updateStateY(value: number): void;
         updateStateZ(value: number): void;
         updateStateW(value: number): void;
+        updateQuaternionFromEuler(): void;
+        updateStateEulerX(value: number): void;
+        updateStateEulerY(value: number): void;
+        updateStateEulerZ(value: number): void;
         render(): JSX.Element;
     }
 }
@@ -1700,6 +1719,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
         render(): JSX.Element | null;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/settingsTabComponent" {
+    import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
+    export class SettingsTabComponent extends PaneComponent {
+        constructor(props: IPaneComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/actionTabsComponent" {
     import * as React from "react";
     import { Scene } from "babylonjs/scene";
@@ -1992,13 +2018,6 @@ declare module "babylonjs-inspector/components/sceneExplorer/treeItemSpecialized
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/tools" {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
-    }
-}
 declare module "babylonjs-inspector/components/sceneExplorer/treeItemSelectableComponent" {
     import { Nullable } from "babylonjs/types";
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
@@ -2242,6 +2261,15 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class Tools {
+        static StoreLocalBooleanSettings(key: string, value: boolean): void;
+        static ReadLocalBooleanSettings(key: string, defaultValue: boolean): boolean;
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+    }
+}
+declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
@@ -2262,6 +2290,8 @@ declare module INSPECTOR {
         blockMutationUpdates: boolean;
         selectedLineContainerTitle: string;
         recorder: ReplayRecorder;
+        private _onlyUseEulers;
+        onlyUseEulers: boolean;
         init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
@@ -2534,6 +2564,7 @@ declare module INSPECTOR {
         propertyName: string;
         step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
+        useEuler?: boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
@@ -2545,6 +2576,7 @@ declare module INSPECTOR {
         };
         private _localChange;
         constructor(props: IVector3LineComponentProps);
+        getCurrentValue(): any;
         shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
             isExpanded: boolean;
             value: BABYLON.Vector3;
@@ -2562,12 +2594,14 @@ declare module INSPECTOR {
     interface IQuaternionLineComponentProps {
         label: string;
         target: any;
+        useEuler?: boolean;
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class QuaternionLineComponent extends React.Component<IQuaternionLineComponentProps, {
         isExpanded: boolean;
         value: BABYLON.Quaternion;
+        eulerValue: BABYLON.Vector3;
     }> {
         private _localChange;
         constructor(props: IQuaternionLineComponentProps);
@@ -2582,6 +2616,10 @@ declare module INSPECTOR {
         updateStateY(value: number): void;
         updateStateZ(value: number): void;
         updateStateW(value: number): void;
+        updateQuaternionFromEuler(): void;
+        updateStateEulerX(value: number): void;
+        updateStateEulerY(value: number): void;
+        updateStateEulerZ(value: number): void;
         render(): JSX.Element;
     }
 }
@@ -3533,6 +3571,12 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class SettingsTabComponent extends PaneComponent {
+        constructor(props: IPaneComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IActionTabsComponentProps {
         scene?: BABYLON.Scene;
         noCommands?: boolean;
@@ -3772,13 +3816,6 @@ declare module INSPECTOR {
         constructor(props: ITreeItemSpecializedComponentProps);
         onClick(): void;
         render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module INSPECTOR {
