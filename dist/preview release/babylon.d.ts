@@ -5295,6 +5295,10 @@ declare module BABYLON {
     export interface IShaderProcessor {
         attributeProcessor?: (attribute: string) => string;
         varyingProcessor?: (varying: string, isFragment: boolean) => string;
+        uniformProcessor?: (uniform: string, isFragment: boolean) => string;
+        uniformBufferProcessor?: (uniformBuffer: string, isFragment: boolean) => string;
+        endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean) => string;
+        lineProcessor?: (line: string, isFragment: boolean) => string;
         preProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
         postProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
     }
@@ -5314,6 +5318,7 @@ declare module BABYLON {
         processor?: IShaderProcessor;
         version: string;
         platformName: string;
+        lookForClosingBracketForUniformBuffer?: boolean;
     }
 }
 declare module BABYLON {
@@ -5329,7 +5334,6 @@ declare module BABYLON {
         process(preprocessors: {
             [key: string]: string;
         }, options: ProcessingOptions): string;
-        private _lineStartsWith;
     }
 }
 declare module BABYLON {
@@ -31362,6 +31366,13 @@ declare module BABYLON {
          * @returns Boolean indicating whether the suffix was found (true) or not (false)
          */
         static EndsWith(str: string, suffix: string): boolean;
+        /**
+         * Checks for a matching suffix at the beginning of a string (for ES5 and lower)
+         * @param str Source string
+         * @param suffix Suffix to search for in the source string
+         * @returns Boolean indicating whether the suffix was found (true) or not (false)
+         */
+        static StartsWith(str: string, suffix: string): boolean;
         /**
          * Function used to register events at window level
          * @param events defines the events to register

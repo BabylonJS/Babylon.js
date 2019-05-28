@@ -33710,6 +33710,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__);
+
+
 
 
 var FloatLineComponent = /** @class */ (function (_super) {
@@ -33784,10 +33789,21 @@ var FloatLineComponent = /** @class */ (function (_super) {
     };
     FloatLineComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || "0.01", className: "numeric-input", value: this.state.value, onBlur: function () { return _this.unlock(); }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
+        var valueAsNumber;
+        if (this.props.isInteger) {
+            valueAsNumber = parseInt(this.state.value);
+        }
+        else {
+            valueAsNumber = parseFloat(this.state.value);
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            !this.props.useEuler &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || "0.01", className: "numeric-input", value: this.state.value, onBlur: function () { return _this.unlock(); }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))),
+            this.props.useEuler &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: this.props.label, minimum: 0, maximum: 360, step: 0.1, directValue: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToDegrees(valueAsNumber), onChange: function (value) { return _this.updateValue(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToRadians(value).toString()); } })));
     };
     return FloatLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -34186,6 +34202,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__);
+
 
 
 var SliderLineComponent = /** @class */ (function (_super) {
@@ -34226,6 +34245,9 @@ var SliderLineComponent = /** @class */ (function (_super) {
     SliderLineComponent.prototype.onChange = function (newValueString) {
         this._localChange = true;
         var newValue = parseFloat(newValueString);
+        if (this.props.useEuler) {
+            newValue = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ToRadians(newValue);
+        }
         if (this.props.target) {
             if (this.props.onPropertyChangedObservable) {
                 this.props.onPropertyChangedObservable.notifyObservers({
@@ -34248,15 +34270,21 @@ var SliderLineComponent = /** @class */ (function (_super) {
             this.props.onInput(newValue);
         }
     };
+    SliderLineComponent.prototype.prepareDataToRead = function (value) {
+        if (this.props.useEuler) {
+            return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ToDegrees(value);
+        }
+        return value;
+    };
     SliderLineComponent.prototype.render = function () {
         var _this = this;
         var decimalCount = this.props.decimalCount !== undefined ? this.props.decimalCount : 2;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "slider" },
-                this.state.value ? this.state.value.toFixed(decimalCount) : "0",
+                this.state.value ? this.prepareDataToRead(this.state.value).toFixed(decimalCount) : "0",
                 "\u00A0",
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: this.props.step, min: this.props.minimum, max: this.props.maximum, value: this.state.value, onInput: function (evt) { return _this.onInput(evt.target.value); }, onChange: function (evt) { return _this.onChange(evt.target.value); } }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: this.props.step, min: this.prepareDataToRead(this.props.minimum), max: this.prepareDataToRead(this.props.maximum), value: this.prepareDataToRead(this.state.value), onInput: function (evt) { return _this.onInput(evt.target.value); }, onChange: function (evt) { return _this.onChange(evt.target.value); } }))));
     };
     return SliderLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -35726,8 +35754,8 @@ var ArcRotateCameraPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonCameraPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonCameraPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, camera: camera, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_7__["Vector3LineComponent"], { label: "Target", target: camera, propertyName: "target", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Alpha", target: camera, propertyName: "alpha", minimum: camera.lowerAlphaLimit || 0, maximum: camera.upperAlphaLimit || 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Beta", target: camera, propertyName: "beta", minimum: camera.lowerAlphaLimit || 0, maximum: camera.upperBetaLimit || 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Alpha", useEuler: this.props.globalState.onlyUseEulers, target: camera, propertyName: "alpha", minimum: camera.lowerAlphaLimit || 0, maximum: camera.upperAlphaLimit || 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_6__["SliderLineComponent"], { label: "Beta", useEuler: this.props.globalState.onlyUseEulers, target: camera, propertyName: "beta", minimum: camera.lowerAlphaLimit || 0, maximum: camera.upperBetaLimit || 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Radius", target: camera, propertyName: "radius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONTROLS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Angular sensitivity X", target: camera, propertyName: "angularSensibilityX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37214,7 +37242,8 @@ var SpotLightPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: light, propertyName: "specular", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Position", target: light, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Direction", target: light, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Angle", target: light, propertyName: "angle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, useEuler: this.props.globalState.onlyUseEulers, label: "Angle", target: light, propertyName: "angle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, useEuler: this.props.globalState.onlyUseEulers, label: "Inner angle", target: light, propertyName: "innerAngle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Exponent", target: light, propertyName: "exponent", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CommonShadowLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };

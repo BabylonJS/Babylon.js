@@ -210,6 +210,7 @@ declare module INSPECTOR {
         maximum: number;
         step: number;
         directValue?: number;
+        useEuler?: boolean;
         onChange?: (value: number) => void;
         onInput?: (value: number) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -225,6 +226,7 @@ declare module INSPECTOR {
         }): boolean;
         onChange(newValueString: any): void;
         onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
         render(): JSX.Element;
     }
 }
@@ -510,6 +512,7 @@ declare module INSPECTOR {
         additionalClass?: string;
         step?: string;
         digits?: number;
+        useEuler?: boolean;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
