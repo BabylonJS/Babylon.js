@@ -311,7 +311,7 @@ export class TargetCamera extends Camera {
             }
 
             if (!this.noRotationConstraint) {
-                var limit = (Math.PI / 2) * 0.95;
+                var limit = 1.570796;
 
                 if (this.rotation.x > limit) {
                     this.rotation.x = limit;
