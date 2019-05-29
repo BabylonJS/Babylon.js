@@ -243,8 +243,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <TextLineComponent label="Faces" value={(mesh.getTotalIndices() / 3).toFixed(0)} />
                     <TextLineComponent label="Sub-meshes" value={mesh.subMeshes ? mesh.subMeshes.length.toString() : "0"} />
                     <TextLineComponent label="Has skeleton" value={mesh.skeleton ? "Yes" : "No"} />
-                    <CheckBoxLineComponent label="IsEnabled" isSelected={() => mesh.isEnabled()} onSelect={(value) => mesh.setEnabled(value)} />
-                    <CheckBoxLineComponent label="IsPickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Is enabled" isSelected={() => mesh.isEnabled()} onSelect={(value) => mesh.setEnabled(value)} />
+                    <CheckBoxLineComponent label="Is pickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.material &&
                         <TextLineComponent label="Material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
@@ -258,11 +258,11 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         !mesh.rotationQuaternion &&
-                        <Vector3LineComponent label="Rotation" target={mesh} propertyName="rotation" step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Vector3LineComponent label="Rotation" useEuler={this.props.globalState.onlyUseEulers} target={mesh} propertyName="rotation" step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     {
                         mesh.rotationQuaternion &&
-                        <QuaternionLineComponent label="Rotation" target={mesh} propertyName="rotationQuaternion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <QuaternionLineComponent label="Rotation" useEuler={this.props.globalState.onlyUseEulers} target={mesh} propertyName="rotationQuaternion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     <Vector3LineComponent label="Scaling" target={mesh} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>

@@ -364,6 +364,7 @@ export class Effect implements IDisposable {
             shadersRepository: Effect.ShadersRepository,
             includesShadersStore: Effect.IncludesShadersStore,
             version: (this._engine.webGLVersion * 100).toString(),
+            platformName: this._engine.webGLVersion >= 2 ? "WEBGL2" : "WEBGL1"
         };
 
         this._loadVertexShader(vertexSource, (vertexCode) => {

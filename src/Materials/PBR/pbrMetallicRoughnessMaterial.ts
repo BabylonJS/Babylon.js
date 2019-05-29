@@ -108,6 +108,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
         serializationObject.anisotropy = this.anisotropy.serialize();
         serializationObject.brdf = this.brdf.serialize();
         serializationObject.sheen = this.sheen.serialize();
+        serializationObject.subSurface = this.subSurface.serialize();
 
         return serializationObject;
     }
@@ -127,7 +128,10 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
             material.brdf.parse(source.brdf);
         }
         if (source.sheen) {
-            material.sheen.parse(source.brdf);
+            material.sheen.parse(source.sheen);
+        }
+        if (source.subSurface) {
+            material.subSurface.parse(source.subSurface);
         }
         return material;
     }

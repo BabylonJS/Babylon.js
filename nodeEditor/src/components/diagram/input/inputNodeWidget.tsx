@@ -56,41 +56,46 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
             }
         }
 
-        let connection = this.props.node!.connection!;
+        let connection = this.props.node!.connection;
         let value = "";
+        let name = port!.name;
 
-        if (connection.isAttribute) {
-            value = "mesh." + connection.name;
-        } else if (connection.isWellKnownValue) {
-            switch (connection.wellKnownValue) {
-                case NodeMaterialWellKnownValues.World:
-                    value = "World";
-                    break;
-                case NodeMaterialWellKnownValues.WorldView:
-                    value = "World x View";
-                    break;
-                case NodeMaterialWellKnownValues.WorldViewProjection:
-                    value = "World x View x Projection";
-                    break;
-                case NodeMaterialWellKnownValues.View:
-                    value = "View";
-                    break;
-                case NodeMaterialWellKnownValues.ViewProjection:
-                    value = "View x Projection";
-                    break;
-                case NodeMaterialWellKnownValues.Projection:
-                    value = "Projection";
-                    break;
-                case NodeMaterialWellKnownValues.Automatic:
-                    value = "Automatic";
-                    break;
+        if (connection) {
+            if (connection.isAttribute) {
+                value = "mesh." + connection.name;
+            } else if (connection.isWellKnownValue) {
+                switch (connection.wellKnownValue) {
+                    case NodeMaterialWellKnownValues.World:
+                        value = "World";
+                        break;
+                    case NodeMaterialWellKnownValues.WorldView:
+                        value = "World x View";
+                        break;
+                    case NodeMaterialWellKnownValues.WorldViewProjection:
+                        value = "World x View x Projection";
+                        break;
+                    case NodeMaterialWellKnownValues.View:
+                        value = "View";
+                        break;
+                    case NodeMaterialWellKnownValues.ViewProjection:
+                        value = "View x Projection";
+                        break;
+                    case NodeMaterialWellKnownValues.Projection:
+                        value = "Projection";
+                        break;
+                    case NodeMaterialWellKnownValues.Automatic:
+                        value = "Automatic";
+                        break;
+                }
             }
+        } else {
+            name = "Not connected input";
         }
 
         return (
-            <div className={"diagramBlock input" + (connection.isAttribute ? " attribute" : "")}>
+            <div className={"diagramBlock input" + (connection && connection.isAttribute ? " attribute" : "")}>
                 <div className="header">
-                    {port!.name}
+                    {name}
                 </div>
                 <div className="outputs">
                     {outputPorts}
