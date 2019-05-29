@@ -11,7 +11,6 @@ import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Effect, EffectCreationOptions, EffectFallbacks } from "../Materials/effect";
-import { Material } from "../Materials/material";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -34,6 +33,7 @@ import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { IShaderProcessor } from './Processors/iShaderProcessor';
 import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 
+declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
@@ -3051,7 +3051,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
-        this.drawElementsType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, indexStart, indexCount, instancesCount);
+        this.drawElementsType(useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, indexStart, indexCount, instancesCount);
     }
 
     /**
@@ -3061,7 +3061,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
-        this.drawArraysType(Material.PointFillMode, verticesStart, verticesCount, instancesCount);
+        this.drawArraysType(Constants.MATERIAL_PointFillMode, verticesStart, verticesCount, instancesCount);
     }
 
     /**
@@ -3072,7 +3072,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
-        this.drawArraysType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, verticesStart, verticesCount, instancesCount);
+        this.drawArraysType(useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, verticesStart, verticesCount, instancesCount);
     }
 
     /**
@@ -3122,24 +3122,24 @@ export class Engine {
     private _drawMode(fillMode: number): number {
         switch (fillMode) {
             // Triangle views
-            case Material.TriangleFillMode:
+              case Constants.MATERIAL_TriangleFillMode:
                 return this._gl.TRIANGLES;
-            case Material.PointFillMode:
+            case Constants.MATERIAL_PointFillMode:
                 return this._gl.POINTS;
-            case Material.WireFrameFillMode:
+            case Constants.MATERIAL_WireFrameFillMode:
                 return this._gl.LINES;
             // Draw modes
-            case Material.PointListDrawMode:
+            case Constants.MATERIAL_PointListDrawMode:
                 return this._gl.POINTS;
-            case Material.LineListDrawMode:
+            case Constants.MATERIAL_LineListDrawMode:
                 return this._gl.LINES;
-            case Material.LineLoopDrawMode:
+            case Constants.MATERIAL_LineLoopDrawMode:
                 return this._gl.LINE_LOOP;
-            case Material.LineStripDrawMode:
+            case Constants.MATERIAL_LineStripDrawMode:
                 return this._gl.LINE_STRIP;
-            case Material.TriangleStripDrawMode:
+            case Constants.MATERIAL_TriangleStripDrawMode:
                 return this._gl.TRIANGLE_STRIP;
-            case Material.TriangleFanDrawMode:
+            case Constants.MATERIAL_TriangleFanDrawMode:
                 return this._gl.TRIANGLE_FAN;
             default:
                 return this._gl.TRIANGLES;
