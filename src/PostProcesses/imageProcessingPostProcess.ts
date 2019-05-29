@@ -40,6 +40,9 @@ export class ImageProcessingPostProcess extends PostProcess {
      * If sets to null, the scene one is in use.
      */
     public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+        // We are almost sure it is applied by post process as
+        // We are in the post process :-)
+        value.applyByPostProcess = true;
         this._attachImageProcessingConfiguration(value);
     }
 
