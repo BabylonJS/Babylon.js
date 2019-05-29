@@ -128,7 +128,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
             material.brdf.parse(source.brdf);
         }
         if (source.sheen) {
-            material.sheen.parse(source.brdf);
+            material.sheen.parse(source.sheen);
         }
         if (source.subSurface) {
             material.subSurface.parse(source.subSurface);
