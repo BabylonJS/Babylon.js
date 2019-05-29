@@ -2086,7 +2086,7 @@ export class Vector3 {
     // Properties
     /**
      * Gets the length of the Vector3
-     * @returns the length of the Vecto3
+     * @returns the length of the Vector3
      */
     public length(): number {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
