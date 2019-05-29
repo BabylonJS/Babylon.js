@@ -98,6 +98,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         serializationObject.anisotropy = this.anisotropy.serialize();
         serializationObject.brdf = this.brdf.serialize();
         serializationObject.sheen = this.sheen.serialize();
+        serializationObject.subSurface = this.subSurface.serialize();
 
         return serializationObject;
     }
@@ -118,6 +119,9 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         }
         if (source.sheen) {
             material.sheen.parse(source.brdf);
+        }
+        if (source.subSurface) {
+            material.subSurface.parse(source.subSurface);
         }
         return material;
     }
