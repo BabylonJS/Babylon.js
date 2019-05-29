@@ -144,12 +144,12 @@ export class NodeMaterialBuildState {
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Vector3:
             case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
-            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
                 return "vec3";
             case NodeMaterialBlockConnectionPointTypes.Color4:
             case NodeMaterialBlockConnectionPointTypes.Vector4:
             case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
             case NodeMaterialBlockConnectionPointTypes.Vector3OrVector4:
+            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
                 return "vec4";
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 return "mat4";
@@ -369,6 +369,11 @@ export class NodeMaterialBuildState {
 
             if (this.target === NodeMaterialBlockTargets.Fragment) { // Attribute for fragment need to be carried over by varyings
                 this._vertexState._emitUniformOrAttributes(point);
+
+                if (point._needToEmitVarying) {
+                    this._vertexState._emitVaryings(point, undefined, true, true, "v" + point.associatedVariableName);
+                    point.associatedVariableName = "v" + point.associatedVariableName;
+                }
                 return;
             }
 

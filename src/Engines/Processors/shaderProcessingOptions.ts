@@ -11,4 +11,6 @@ export interface ProcessingOptions {
     includesShadersStore: { [key: string]: string };
     processor?: IShaderProcessor;
     version: string;
+    platformName: string;
+    lookForClosingBracketForUniformBuffer?: boolean;
 }

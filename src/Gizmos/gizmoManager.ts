@@ -48,6 +48,20 @@ export class GizmoManager implements IDisposable {
     public usePointerToAttachGizmos = true;
 
     /**
+     * Utility layer that the bounding box gizmo belongs to
+     */
+    public get keepDepthUtilityLayer() {
+        return this._defaultKeepDepthUtilityLayer;
+    }
+
+    /**
+     * Utility layer that all gizmos besides bounding box belong to
+     */
+    public get utilityLayer() {
+        return this._defaultUtilityLayer;
+    }
+
+    /**
      * Instatiates a gizmo manager
      * @param scene the scene to overlay the gizmos on top of
      */
