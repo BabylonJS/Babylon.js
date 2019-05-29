@@ -9,7 +9,6 @@ import { EngineStore } from "../Engines/engineStore";
 import { BaseSubMesh, SubMesh } from "../Meshes/subMesh";
 import { Geometry } from "../Meshes/geometry";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -19,6 +18,7 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
 
+declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
 declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
 
