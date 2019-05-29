@@ -702,7 +702,6 @@ export class Texture extends BaseTexture {
     public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, format: number = Constants.TEXTUREFORMAT_RGBA): Texture {
         var texture = new Texture("data:" + name, scene, noMipmap, invertY, samplingMode, onLoad, onError, data, false, format);
-        scene.getEngine()._internalTexturesCache.push(texture.getInternalTexture()!);
         return texture;
     }
 
