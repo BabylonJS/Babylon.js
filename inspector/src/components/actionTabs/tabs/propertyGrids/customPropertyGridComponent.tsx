@@ -43,7 +43,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                 )
             case InspectableType.Quaternion:
                 return (
-                    <QuaternionLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
+                    <QuaternionLineComponent useEuler={this.props.globalState.onlyUseEulers} key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )
             case InspectableType.Color3:

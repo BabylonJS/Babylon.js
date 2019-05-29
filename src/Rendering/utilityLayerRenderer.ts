@@ -7,6 +7,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { EngineStore } from "../Engines/engineStore";
 import { HemisphericLight } from '../Lights/hemisphericLight';
 import { Vector3, Color3 } from '../Maths/math';
+import { Camera } from '../Cameras/camera';
 
 /**
  * Renders a layer on top of an existing scene
@@ -17,6 +18,30 @@ export class UtilityLayerRenderer implements IDisposable {
     private static _DefaultUtilityLayer: Nullable<UtilityLayerRenderer> = null;
     private static _DefaultKeepDepthUtilityLayer: Nullable<UtilityLayerRenderer> = null;
     private _sharedGizmoLight: Nullable<HemisphericLight> = null;
+
+    private _renderCamera: Nullable<Camera> = null;
+
+    /**
+     * Gets the camera that is used to render the utility layer (when not set, this will be the last active camera)
+     * @returns the camera that is used when rendering the utility layer
+     */
+    public getRenderCamera() {
+        if (this._renderCamera) {
+            return this._renderCamera;
+        } else if (this.originalScene.activeCameras.length > 1) {
+            return this.originalScene.activeCameras[this.originalScene.activeCameras.length - 1];
+        } else {
+            return this.originalScene.activeCamera;
+        }
+    }
+    /**
+     * Sets the camera that should be used when rendering the utility layer (If set to null the last active camera will be used)
+     * @param cam the camera that should be used when rendering the utility layer
+     */
+    public setRenderCamera(cam: Nullable<Camera>) {
+        this._renderCamera = cam;
+    }
+
     /**
      * @hidden
      * Light which used by gizmos to get light shading
@@ -87,7 +112,7 @@ export class UtilityLayerRenderer implements IDisposable {
     /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
     public mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
 
-    private _afterRenderObserver: Nullable<Observer<Scene>>;
+    private _afterRenderObserver: Nullable<Observer<Camera>>;
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
     private _originalPointerObserver: Nullable<Observer<PointerInfoPre>>;
     /**
@@ -212,8 +237,9 @@ export class UtilityLayerRenderer implements IDisposable {
         // Render directly on top of existing scene without clearing
         this.utilityLayerScene.autoClear = false;
 
-        this._afterRenderObserver = this.originalScene.onAfterRenderObservable.add(() => {
-            if (this.shouldRender) {
+        this._afterRenderObserver = this.originalScene.onAfterCameraRenderObservable.add((camera) => {
+            // Only render when the render camera finishes rendering
+            if (this.shouldRender && camera == this.getRenderCamera()) {
                 this.render();
             }
         });
@@ -270,7 +296,7 @@ export class UtilityLayerRenderer implements IDisposable {
         this.onPointerOutObservable.clear();
 
         if (this._afterRenderObserver) {
-            this.originalScene.onAfterRenderObservable.remove(this._afterRenderObserver);
+            this.originalScene.onAfterCameraRenderObservable.remove(this._afterRenderObserver);
         }
         if (this._sceneDisposeObserver) {
             this.originalScene.onDisposeObservable.remove(this._sceneDisposeObserver);
@@ -282,10 +308,7 @@ export class UtilityLayerRenderer implements IDisposable {
     }
 
     private _updateCamera() {
-        if (this.originalScene.activeCameras.length > 1) {
-            this.utilityLayerScene.activeCamera = this.originalScene.activeCameras[this.originalScene.activeCameras.length - 1];
-        } else {
-            this.utilityLayerScene.activeCamera = this.originalScene.activeCamera;
-        }
+        this.utilityLayerScene.cameraToUseForPointers = this.getRenderCamera();
+        this.utilityLayerScene.activeCamera = this.getRenderCamera();
     }
 }

@@ -3,6 +3,8 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
+import { SliderLineComponent } from './sliderLineComponent';
+import { Tools } from 'babylonjs/Misc/tools';
 
 interface IFloatLineComponentProps {
     label: string;
@@ -14,7 +16,8 @@ interface IFloatLineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     additionalClass?: string;
     step?: string,
-    digits?: number
+    digits?: number;
+    useEuler?: boolean
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -105,14 +108,31 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     render() {
+        let valueAsNumber: number;
+
+        if (this.props.isInteger) {
+            valueAsNumber = parseInt(this.state.value);
+        } else {
+            valueAsNumber = parseFloat(this.state.value);
+        }
+
         return (
-            <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
-                <div className="label">
-                    {this.props.label}
-                </div>
-                <div className="value">
-                    <input type="number" step={this.props.step || "0.01"} className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
-                </div>
+            <div>
+                {
+                    !this.props.useEuler &&
+                    <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
+                        <div className="label">
+                            {this.props.label}
+                        </div>
+                        <div className="value">
+                            <input type="number" step={this.props.step || "0.01"} className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
+                        </div>
+                    </div>
+                }
+                {
+                    this.props.useEuler &&
+                    <SliderLineComponent label={this.props.label} minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(valueAsNumber)} onChange={value => this.updateValue(Tools.ToRadians(value).toString())} />
+                }
             </div>
         );
     }
