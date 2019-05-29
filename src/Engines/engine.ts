@@ -3023,7 +3023,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
-        this.drawElementsType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, indexStart, indexCount, instancesCount);
+        this.drawElementsType(useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, indexStart, indexCount, instancesCount);
     }
 
     /**
@@ -3033,7 +3033,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
-        this.drawArraysType(Material.PointFillMode, verticesStart, verticesCount, instancesCount);
+        this.drawArraysType(Constants.MATERIAL_PointFillMode, verticesStart, verticesCount, instancesCount);
     }
 
     /**
@@ -3044,7 +3044,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
-        this.drawArraysType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, verticesStart, verticesCount, instancesCount);
+        this.drawArraysType(useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, verticesStart, verticesCount, instancesCount);
     }
 
     /**
