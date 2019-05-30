@@ -775,21 +775,24 @@ export class Effect implements IDisposable {
                 this.onErrorObservable.notifyObservers(this);
             }
 
-            if (fallbacks && fallbacks.isMoreFallbacks) {
-                Logger.Error("Trying next fallback.");
-                this.defines = fallbacks.reduce(this.defines, this);
-                this._prepareEffect();
-            } else { // Sorry we did everything we can
+            if (fallbacks) {
+                this._pipelineContext = null;
+                if (fallbacks.isMoreFallbacks) {
+                    Logger.Error("Trying next fallback.");
+                    this.defines = fallbacks.reduce(this.defines, this);
+                    this._prepareEffect();
+                } else { // Sorry we did everything we can
 
-                if (this.onError) {
-                    this.onError(this, this._compilationError);
-                }
-                this.onErrorObservable.notifyObservers(this);
-                this.onErrorObservable.clear();
+                    if (this.onError) {
+                        this.onError(this, this._compilationError);
+                    }
+                    this.onErrorObservable.notifyObservers(this);
+                    this.onErrorObservable.clear();
 
-                // Unbind mesh reference in fallbacks
-                if (this._fallbacks) {
-                    this._fallbacks.unBindMesh();
+                    // Unbind mesh reference in fallbacks
+                    if (this._fallbacks) {
+                        this._fallbacks.unBindMesh();
+                    }
                 }
             }
         }
