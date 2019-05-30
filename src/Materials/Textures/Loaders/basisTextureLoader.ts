@@ -73,6 +73,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
             var loadedFile = BasisTools.LoadBasisFile(data);
             var fileInfo = BasisTools.GetFileInfo(loadedFile);
             var format = BasisTools.GetSupportedTranscodeFormat(texture.getEngine(), fileInfo);
+            texture._invertVScale = true;
 
             // TODO this should be done in web worker
             var transcodeResult = BasisTools.TranscodeFile(format, fileInfo, loadedFile);
@@ -82,10 +83,23 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                 if (transcodeResult.fallbackToRgb565) {
                     texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
                     texture.format = Engine.TEXTUREFORMAT_RGB;
-                    texture.getEngine()._uploadDataToTextureAndResize(texture, transcodeResult.pixels, fileInfo.alignedWidth, fileInfo.alignedHeight, Engine.TEXTUREFORMAT_RGB);
+
+                    // Create non power of two texture
+                    let source = new InternalTexture(texture.getEngine(), InternalTexture.DATASOURCE_TEMP);
+
+                    source.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                    source.format = Engine.TEXTUREFORMAT_RGB;
+                    source.width = fileInfo.alignedWidth;
+                    source.height = fileInfo.alignedHeight;
+                    texture.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, source, true);
+                    texture.getEngine()._uploadDataToTextureDirectly(source, transcodeResult.pixels, 0, 0, Engine.TEXTUREFORMAT_RGB, true);
+
+                    // Resize to power of two
+                    source.getEngine()._rescaleTexture(source, texture, texture.getEngine().scenes[0], source.getEngine()._getInternalFormat(Engine.TEXTUREFORMAT_RGB), () => {
+                        source.getEngine()._releaseTexture(source);
+                        source.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, texture, true);
+                    });
                 }else {
-                    // compress texture needs to be flipped
-                    texture._invertVScale = true;
                     texture.getEngine()._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(format!), fileInfo.width, fileInfo.height, transcodeResult.pixels, 0, 0);
                 }
             });
