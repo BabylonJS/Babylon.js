@@ -367,6 +367,11 @@ export class Scene extends AbstractScene implements IAnimatable {
     */
     public onAfterRenderObservable = new Observable<Scene>();
 
+    /**
+    * An event triggered after rendering the scene for an active camera (When scene.render is called this will be called after each camera)
+    */
+   public onAfterRenderCameraObservable = new Observable<Camera>();
+
     private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
     /** Sets a function to be executed after rendering this scene */
     public set afterRender(callback: Nullable<() => void>) {
@@ -3538,6 +3543,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _processSubCameras(camera: Camera): void {
         if (camera.cameraRigMode === Camera.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
             this._renderForCamera(camera);
+            this.onAfterRenderCameraObservable.notifyObservers(camera);
             return;
         }
 
@@ -3553,6 +3559,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
         this._activeCamera = camera;
         this.setTransformMatrix(this._activeCamera.getViewMatrix(), this._activeCamera.getProjectionMatrix());
+        this.onAfterRenderCameraObservable.notifyObservers(camera);
     }
 
     private _checkIntersections(): void {

@@ -8,6 +8,7 @@ import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Gizmo } from "./gizmo";
 import { AxisDragGizmo } from "./axisDragGizmo";
+import { PlaneDragGizmo } from "./planeDragGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 /**
  * Gizmo that enables dragging a mesh along 3 axis
@@ -25,21 +26,51 @@ export class PositionGizmo extends Gizmo {
      * Internal gizmo used for interactions on the z axis
      */
     public zGizmo: AxisDragGizmo;
+    /**
+     * Internal gizmo used for interactions on the yz plane
+     */
+    public xPlaneGizmo: PlaneDragGizmo;
+    /**
+     * Internal gizmo used for interactions on the xz plane
+     */
+    public yPlaneGizmo: PlaneDragGizmo;
+    /**
+     * Internal gizmo used for interactions on the xy plane
+     */
+    public zPlaneGizmo: PlaneDragGizmo;
+
+    /**
+     * private variables
+     */
+    private _meshAttached: Nullable<AbstractMesh> = null;
+    private _updateGizmoRotationToMatchAttachedMesh: boolean;
+    private _snapDistance: number;
+    private _scaleRatio: number;
 
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
     /** Fires an event when any of it's sub gizmos are released from dragging */
     public onDragEndObservable = new Observable();
 
+    /**
+     * If set to true, planar drag is enabled
+     */
+    private _planarGizmoEnabled = false;
+
     public get attachedMesh() {
-        return this.xGizmo.attachedMesh;
+        return this._meshAttached;
     }
     public set attachedMesh(mesh: Nullable<AbstractMesh>) {
-        if (this.xGizmo) {
-            this.xGizmo.attachedMesh = mesh;
-            this.yGizmo.attachedMesh = mesh;
-            this.zGizmo.attachedMesh = mesh;
-        }
+        this._meshAttached = mesh;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            if (gizmo.isEnabled) {
+                gizmo.attachedMesh = mesh;
+            }
+            else {
+                gizmo.attachedMesh = null;
+            }
+        });
+
     }
     /**
      * Creates a PositionGizmo
@@ -47,12 +78,15 @@ export class PositionGizmo extends Gizmo {
      */
     constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
         super(gizmoLayer);
-        this.xGizmo = new AxisDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer);
-        this.yGizmo = new AxisDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer);
-        this.zGizmo = new AxisDragGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer);
+        this.xGizmo = new AxisDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this);
+        this.yGizmo = new AxisDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this);
+        this.zGizmo = new AxisDragGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, this);
 
+        this.xPlaneGizmo = new PlaneDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), this.gizmoLayer, this);
+        this.yPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), this.gizmoLayer, this);
+        this.zPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), this.gizmoLayer, this);
         // Relay drag events
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             gizmo.dragBehavior.onDragStartObservable.add(() => {
                 this.onDragStartObservable.notifyObservers({});
             });
@@ -64,52 +98,76 @@ export class PositionGizmo extends Gizmo {
         this.attachedMesh = null;
     }
 
+    /**
+     * If the planar drag gizmo is enabled
+     * setting this will enable/disable XY, XZ and YZ planes regardless of individual gizmo settings.
+     */
+    public set planarGizmoEnabled(value: boolean) {
+        this._planarGizmoEnabled = value;
+        [this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.isEnabled = value;
+                if (value) {
+                    gizmo.attachedMesh = this.attachedMesh;
+                }
+            }
+        }, this);
+    }
+    public get planarGizmoEnabled(): boolean {
+        return this._planarGizmoEnabled;
+    }
+
     public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
-        if (this.xGizmo) {
-            this.xGizmo.updateGizmoRotationToMatchAttachedMesh = value;
-            this.yGizmo.updateGizmoRotationToMatchAttachedMesh = value;
-            this.zGizmo.updateGizmoRotationToMatchAttachedMesh = value;
-        }
+        this._updateGizmoRotationToMatchAttachedMesh = value;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.updateGizmoRotationToMatchAttachedMesh = value;
+            }
+        });
     }
     public get updateGizmoRotationToMatchAttachedMesh() {
-        return this.xGizmo.updateGizmoRotationToMatchAttachedMesh;
+        return this._updateGizmoRotationToMatchAttachedMesh;
     }
 
     /**
      * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
      */
     public set snapDistance(value: number) {
-        if (this.xGizmo) {
-            this.xGizmo.snapDistance = value;
-            this.yGizmo.snapDistance = value;
-            this.zGizmo.snapDistance = value;
-        }
+        this._snapDistance = value;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.snapDistance = value;
+            }
+        });
     }
     public get snapDistance() {
-        return this.xGizmo.snapDistance;
+        return this._snapDistance;
     }
 
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
     public set scaleRatio(value: number) {
-        if (this.xGizmo) {
-            this.xGizmo.scaleRatio = value;
-            this.yGizmo.scaleRatio = value;
-            this.zGizmo.scaleRatio = value;
-        }
+        this._scaleRatio = value;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.scaleRatio = value;
+            }
+        });
     }
     public get scaleRatio() {
-        return this.xGizmo.scaleRatio;
+        return this._scaleRatio;
     }
 
     /**
      * Disposes of the gizmo
      */
     public dispose() {
-        this.xGizmo.dispose();
-        this.yGizmo.dispose();
-        this.zGizmo.dispose();
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.dispose();
+            }
+        });
         this.onDragStartObservable.clear();
         this.onDragEndObservable.clear();
     }
@@ -119,6 +177,6 @@ export class PositionGizmo extends Gizmo {
      * @param mesh The mesh to replace the default mesh of the gizmo
      */
     public setCustomMesh(mesh: Mesh) {
-        Logger.Error("Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo)");
+        Logger.Error("Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo,gizmo.xPlaneGizmo, gizmo.yPlaneGizmo, gizmo.zPlaneGizmo)");
     }
 }

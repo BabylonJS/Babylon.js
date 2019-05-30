@@ -213,22 +213,22 @@ export function serializeAsCameraReference(sourceName?: string) {
  * Class used to help serialization objects
  */
 export class SerializationHelper {
-    /** hidden */
+    /** @hidden */
     public static _ImageProcessingConfigurationParser = (sourceProperty: any): ImageProcessingConfiguration => {
         throw _DevTools.WarnImport("ImageProcessingConfiguration");
     }
 
-    /** hidden */
+    /** @hidden */
     public static _FresnelParametersParser = (sourceProperty: any): FresnelParameters => {
         throw _DevTools.WarnImport("FresnelParameters");
     }
 
-    /** hidden */
+    /** @hidden */
     public static _ColorCurvesParser = (sourceProperty: any): ColorCurves => {
         throw _DevTools.WarnImport("ColorCurves");
     }
 
-    /** hidden */
+    /** @hidden */
     public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
         throw _DevTools.WarnImport("Texture");
     }

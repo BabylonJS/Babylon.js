@@ -1067,7 +1067,6 @@ export class _Exporter {
         let promises: Promise<IMeshPrimitive>[] = [];
         let bufferMesh: Nullable<Mesh> = null;
         let bufferView: IBufferView;
-        let uvCoordsPresent: boolean;
         let minMax: { min: Nullable<number[]>, max: Nullable<number[]> };
 
         if (babylonTransformNode instanceof Mesh) {
@@ -1123,7 +1122,6 @@ export class _Exporter {
             if (bufferMesh.subMeshes) {
                 // go through all mesh primitives (submeshes)
                 for (const submesh of bufferMesh.subMeshes) {
-                    uvCoordsPresent = false;
                     let babylonMaterial = submesh.getMaterial() || bufferMesh.getScene().defaultMaterial;
 
                     let materialIndex: Nullable<number> = null;
@@ -1179,9 +1177,6 @@ export class _Exporter {
                                     const accessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, AccessorComponentType.FLOAT, vertexData.length / stride, 0, minMax.min, minMax.max);
                                     this._accessors.push(accessor);
                                     this.setAttributeKind(meshPrimitive, attributeKind);
-                                    if (meshPrimitive.attributes.TEXCOORD_0 != null || meshPrimitive.attributes.TEXCOORD_1 != null) {
-                                        uvCoordsPresent = true;
-                                    }
                                 }
                             }
                         }
@@ -1218,12 +1213,6 @@ export class _Exporter {
                                     }
                                 }
                             }
-                        }
-
-                        if (!uvCoordsPresent && this._glTFMaterialExporter._hasTexturesPresent(this._materials[materialIndex])) {
-                            const newMat = this._glTFMaterialExporter._stripTexturesFromMaterial(this._materials[materialIndex]);
-                            this._materials.push(newMat);
-                            materialIndex = this._materials.length - 1;
                         }
 
                         meshPrimitive.material = materialIndex;

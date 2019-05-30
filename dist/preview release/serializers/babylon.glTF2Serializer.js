@@ -300,11 +300,10 @@ _glTFExporter__WEBPACK_IMPORTED_MODULE_1__["_Exporter"].RegisterExtension(NAME, 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return KHR_texture_transform; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Maths/math");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Maths/math");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _glTFExporter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFExporter */ "./glTF/2.0/glTFExporter.ts");
 /* harmony import */ var _shaders_textureTransform_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shaders/textureTransform.fragment */ "./glTF/2.0/shaders/textureTransform.fragment.ts");
-
 
 
 
@@ -329,6 +328,12 @@ var KHR_texture_transform = /** @class */ (function () {
     KHR_texture_transform.prototype.preExportTextureAsync = function (context, babylonTexture, mimeType) {
         var _this = this;
         return new Promise(function (resolve, reject) {
+            var scene = babylonTexture.getScene();
+            if (!scene) {
+                reject(context + ": \"scene\" is not defined for Babylon texture " + babylonTexture.name + "!");
+                return;
+            }
+            // TODO: this doesn't take into account rotation center values
             var texture_transform_extension = {};
             if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
                 texture_transform_extension.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
@@ -341,19 +346,9 @@ var KHR_texture_transform = /** @class */ (function () {
             }
             if (!Object.keys(texture_transform_extension).length) {
                 resolve(babylonTexture);
+                return;
             }
-            var scale = texture_transform_extension.scale ? new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](texture_transform_extension.scale[0], texture_transform_extension.scale[1]) : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].One();
-            var rotation = texture_transform_extension.rotation != null ? texture_transform_extension.rotation : 0;
-            var offset = texture_transform_extension.offset ? new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](texture_transform_extension.offset[0], texture_transform_extension.offset[1]) : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero();
-            var scene = babylonTexture.getScene();
-            if (!scene) {
-                reject(context + ": \"scene\" is not defined for Babylon texture " + babylonTexture.name + "!");
-            }
-            else {
-                _this.textureTransformTextureAsync(babylonTexture, offset, rotation, scale, scene).then(function (texture) {
-                    resolve(texture);
-                });
-            }
+            return _this._textureTransformTextureAsync(babylonTexture, scene);
         });
     };
     /**
@@ -364,11 +359,11 @@ var KHR_texture_transform = /** @class */ (function () {
      * @param scale
      * @param scene
      */
-    KHR_texture_transform.prototype.textureTransformTextureAsync = function (babylonTexture, offset, rotation, scale, scene) {
-        return new Promise(function (resolve, reject) {
-            var proceduralTexture = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["ProceduralTexture"]("" + babylonTexture.name, babylonTexture.getSize(), "textureTransform", scene);
+    KHR_texture_transform.prototype._textureTransformTextureAsync = function (babylonTexture, scene) {
+        return new Promise(function (resolve) {
+            var proceduralTexture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["ProceduralTexture"]("" + babylonTexture.name, babylonTexture.getSize(), "textureTransform", scene);
             if (!proceduralTexture) {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Cannot create procedural texture for " + babylonTexture.name + "!");
+                babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Cannot create procedural texture for " + babylonTexture.name + "!");
                 resolve(babylonTexture);
             }
             proceduralTexture.setTexture("textureSampler", babylonTexture);
@@ -2046,7 +2041,6 @@ var _Exporter = /** @class */ (function () {
         var promises = [];
         var bufferMesh = null;
         var bufferView;
-        var uvCoordsPresent;
         var minMax;
         if (babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"]) {
             bufferMesh = babylonTransformNode;
@@ -2097,7 +2091,6 @@ var _Exporter = /** @class */ (function () {
                 // go through all mesh primitives (submeshes)
                 for (var _a = 0, _b = bufferMesh.subMeshes; _a < _b.length; _a++) {
                     var submesh = _b[_a];
-                    uvCoordsPresent = false;
                     var babylonMaterial = submesh.getMaterial() || bufferMesh.getScene().defaultMaterial;
                     var materialIndex = null;
                     if (babylonMaterial) {
@@ -2150,9 +2143,6 @@ var _Exporter = /** @class */ (function () {
                                     var accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, 5126 /* FLOAT */, vertexData.length / stride, 0, minMax.min, minMax.max);
                                     this._accessors.push(accessor);
                                     this.setAttributeKind(meshPrimitive, attributeKind);
-                                    if (meshPrimitive.attributes.TEXCOORD_0 != null || meshPrimitive.attributes.TEXCOORD_1 != null) {
-                                        uvCoordsPresent = true;
-                                    }
                                 }
                             }
                         }
@@ -2191,11 +2181,6 @@ var _Exporter = /** @class */ (function () {
                                     }
                                 }
                             }
-                        }
-                        if (!uvCoordsPresent && this._glTFMaterialExporter._hasTexturesPresent(this._materials[materialIndex])) {
-                            var newMat = this._glTFMaterialExporter._stripTexturesFromMaterial(this._materials[materialIndex]);
-                            this._materials.push(newMat);
-                            materialIndex = this._materials.length - 1;
                         }
                         meshPrimitive.material = materialIndex;
                     }

@@ -314,6 +314,11 @@ export class Bone extends Node {
             return;
         }
 
+        if (!this._localScaling) {
+            this._needToCompose = false;
+            return;
+        }
+
         this._needToCompose = false;
         Matrix.ComposeToRef(this._localScaling, this._localRotation, this._localPosition, this._localMatrix);
     }
@@ -372,7 +377,8 @@ export class Bone extends Node {
         this._skeleton._markAsDirty();
     }
 
-    private _markAsDirtyAndCompose() {
+    /** @hidden */
+    public _markAsDirtyAndCompose() {
         this.markAsDirty();
         this._needToCompose = true;
     }

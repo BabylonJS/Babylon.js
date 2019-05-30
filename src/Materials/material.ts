@@ -9,7 +9,6 @@ import { EngineStore } from "../Engines/engineStore";
 import { BaseSubMesh, SubMesh } from "../Meshes/subMesh";
 import { Geometry } from "../Meshes/geometry";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -19,6 +18,7 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
 
+declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
 declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
 
@@ -917,6 +917,7 @@ export class Material implements IAnimatable {
         });
     }
 
+    private static readonly _AllDirtyCallBack = (defines: MaterialDefines) => defines.markAllAsDirty();
     private static readonly _ImageProcessingDirtyCallBack = (defines: MaterialDefines) => defines.markAsImageProcessingDirty();
     private static readonly _TextureDirtyCallBack = (defines: MaterialDefines) => defines.markAsTexturesDirty();
     private static readonly _FresnelDirtyCallBack = (defines: MaterialDefines) => defines.markAsFresnelDirty();
@@ -1005,6 +1006,13 @@ export class Material implements IAnimatable {
                 func(subMesh._materialDefines);
             }
         }
+    }
+
+        /**
+     * Indicates that we need to re-calculated for all submeshes
+     */
+    protected _markAllSubMeshesAsAllDirty() {
+        this._markAllSubMeshesAsDirty(Material._AllDirtyCallBack);
     }
 
     /**

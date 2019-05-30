@@ -27,6 +27,10 @@
             uniform samplerCube reflectionSamplerLow;
             uniform samplerCube reflectionSamplerHigh;
         #endif
+
+        #ifdef USEIRRADIANCEMAP
+            uniform samplerCube irradianceSampler;
+        #endif
     #else
         #define sampleReflection(s, c) texture2D(s, c)
 
@@ -37,6 +41,10 @@
         #else
             uniform samplerCube reflectionSamplerLow;
             uniform samplerCube reflectionSamplerHigh;
+        #endif
+
+        #ifdef USEIRRADIANCEMAP
+            uniform samplerCube irradianceSampler;
         #endif
     #endif
 

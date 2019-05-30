@@ -13,6 +13,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 
 import "../Meshes/Builders/linesBuilder";
+import { RotationGizmo } from "./rotationGizmo";
 
 /**
  * Single plane rotation gizmo
@@ -34,6 +35,9 @@ export class PlaneRotationGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
+    private _isEnabled: boolean = true;
+    private _parent: Nullable<RotationGizmo> = null;
+
     /**
      * Creates a PlaneRotationGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
@@ -41,9 +45,9 @@ export class PlaneRotationGizmo extends Gizmo {
      * @param color The color of the gizmo
      * @param tessellation Amount of tessellation to be used when creating rotation circles
      */
-    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32) {
+    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null) {
         super(gizmoLayer);
-
+        this._parent = parent;
         // Create Material
         var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
         coloredMaterial.diffuseColor = color;
@@ -207,7 +211,23 @@ export class PlaneRotationGizmo extends Gizmo {
             this.dragBehavior.enabled = value ? true : false;
         }
     }
-
+    /**
+         * If the gizmo is enabled
+         */
+    public set isEnabled(value: boolean) {
+        this._isEnabled = value;
+        if (!value) {
+            this.attachedMesh = null;
+        }
+        else {
+            if (this._parent) {
+                this.attachedMesh = this._parent.attachedMesh;
+            }
+        }
+    }
+    public get isEnabled(): boolean {
+        return this._isEnabled;
+    }
     /**
      * Disposes of the gizmo
      */

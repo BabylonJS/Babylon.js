@@ -121,7 +121,7 @@ export interface ISceneComponent {
  */
 export interface ISceneSerializableComponent extends ISceneComponent {
     /**
-     * Adds all the element from the container to the scene
+     * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
     addFromContainer(container: AbstractScene): void;

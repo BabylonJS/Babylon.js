@@ -18,6 +18,15 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class Tools {
+        static StoreLocalBooleanSettings(key: string, value: boolean): void;
+        static ReadLocalBooleanSettings(key: string, defaultValue: boolean): boolean;
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+    }
+}
+declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
@@ -38,6 +47,8 @@ declare module INSPECTOR {
         blockMutationUpdates: boolean;
         selectedLineContainerTitle: string;
         recorder: ReplayRecorder;
+        private _onlyUseEulers;
+        onlyUseEulers: boolean;
         init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
@@ -90,7 +101,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ILineContainerComponentProps {
-        globalState: GlobalState;
+        globalState?: GlobalState;
         title: string;
         children: any[] | any;
         closed?: boolean;
@@ -199,6 +210,7 @@ declare module INSPECTOR {
         maximum: number;
         step: number;
         directValue?: number;
+        useEuler?: boolean;
         onChange?: (value: number) => void;
         onInput?: (value: number) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -214,6 +226,7 @@ declare module INSPECTOR {
         }): boolean;
         onChange(newValueString: any): void;
         onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
         render(): JSX.Element;
     }
 }
@@ -310,6 +323,7 @@ declare module INSPECTOR {
         propertyName: string;
         step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
+        useEuler?: boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
@@ -321,6 +335,7 @@ declare module INSPECTOR {
         };
         private _localChange;
         constructor(props: IVector3LineComponentProps);
+        getCurrentValue(): any;
         shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: {
             isExpanded: boolean;
             value: BABYLON.Vector3;
@@ -338,12 +353,14 @@ declare module INSPECTOR {
     interface IQuaternionLineComponentProps {
         label: string;
         target: any;
+        useEuler?: boolean;
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class QuaternionLineComponent extends React.Component<IQuaternionLineComponentProps, {
         isExpanded: boolean;
         value: BABYLON.Quaternion;
+        eulerValue: BABYLON.Vector3;
     }> {
         private _localChange;
         constructor(props: IQuaternionLineComponentProps);
@@ -358,6 +375,10 @@ declare module INSPECTOR {
         updateStateY(value: number): void;
         updateStateZ(value: number): void;
         updateStateW(value: number): void;
+        updateQuaternionFromEuler(): void;
+        updateStateEulerX(value: number): void;
+        updateStateEulerY(value: number): void;
+        updateStateEulerZ(value: number): void;
         render(): JSX.Element;
     }
 }
@@ -400,12 +421,27 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export interface ITextureLinkLineComponentProps {
         label: string;
         texture: BABYLON.Nullable<BABYLON.BaseTexture>;
         material?: BABYLON.Material;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
         onDebugSelectionChangeObservable?: BABYLON.Observable<BABYLON.BaseTexture>;
+        propertyName?: string;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
         isDebugSelected: boolean;
@@ -416,6 +452,7 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         debugTexture(): void;
         onLink(): void;
+        updateTexture(file: File): void;
         render(): JSX.Element | null;
     }
 }
@@ -430,7 +467,7 @@ declare module INSPECTOR {
     export class StandardMaterialPropertyGridComponent extends React.Component<IStandardMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -439,7 +476,8 @@ declare module INSPECTOR {
         texture: BABYLON.BaseTexture;
         width: number;
         height: number;
-        globalState: GlobalState;
+        globalState?: GlobalState;
+        hideChannelSelect?: boolean;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
         displayRed: boolean;
@@ -472,6 +510,9 @@ declare module INSPECTOR {
         isInteger?: boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         additionalClass?: string;
+        step?: string;
+        digits?: number;
+        useEuler?: boolean;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -487,18 +528,6 @@ declare module INSPECTOR {
         updateValue(valueString: string): void;
         lock(): void;
         unlock(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
         render(): JSX.Element;
     }
 }
@@ -558,7 +587,7 @@ declare module INSPECTOR {
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMaterialPropertyGridComponentProps);
-        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element | null;
+        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -1006,7 +1035,7 @@ declare module INSPECTOR {
     export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Component<IPBRMetallicRoughnessMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMetallicRoughnessMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -1021,7 +1050,7 @@ declare module INSPECTOR {
     export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Component<IPBRSpecularGlossinessMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRSpecularGlossinessMaterialPropertyGridComponentProps);
-        renderTextures(): JSX.Element | null;
+        renderTextures(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -1213,6 +1242,20 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface INodeMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: BABYLON.NodeMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
+        constructor(props: INodeMaterialPropertyGridComponentProps);
+        edit(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
@@ -1288,8 +1331,14 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class SettingsTabComponent extends PaneComponent {
+        constructor(props: IPaneComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IActionTabsComponentProps {
-        scene: BABYLON.Scene;
+        scene?: BABYLON.Scene;
         noCommands?: boolean;
         noHeader?: boolean;
         noExpand?: boolean;
@@ -1297,7 +1346,7 @@ declare module INSPECTOR {
         popupMode?: boolean;
         onPopup?: () => void;
         onClose?: () => void;
-        globalState: GlobalState;
+        globalState?: GlobalState;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;
@@ -1310,7 +1359,7 @@ declare module INSPECTOR {
         componentWillMount(): void;
         componentWillUnmount(): void;
         changeSelectedTab(index: number): void;
-        renderContent(): JSX.Element;
+        renderContent(): JSX.Element | null;
         onClose(): void;
         onPopup(): void;
         render(): JSX.Element;
@@ -1530,13 +1579,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
-    }
-}
-declare module INSPECTOR {
     export interface ITreeItemSelectableComponentProps {
         entity: any;
         selectedEntity?: any;
@@ -1713,11 +1755,11 @@ declare module INSPECTOR {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        private static _CreatePopup;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): BABYLON.Nullable<HTMLDivElement>;
         static readonly IsVisible: boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
-        private static _CreateCanvasContainer;
+        static _CreateCanvasContainer(parentControl: HTMLElement): void;
         private static _DestroyCanvasContainer;
         private static _Cleanup;
         private static _RemoveElementFromDOM;

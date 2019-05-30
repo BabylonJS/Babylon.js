@@ -65,9 +65,9 @@ export class Color3 {
      * @returns an unique number that can be used to hash Color3 objects
      */
     public getHashCode(): number {
-        let hash = this.r || 0;
-        hash = (hash * 397) ^ (this.g || 0);
-        hash = (hash * 397) ^ (this.b || 0);
+        let hash = (this.r * 255) || 0;
+        hash = (hash * 397) ^ ((this.g * 255) || 0);
+        hash = (hash * 397) ^ ((this.b * 255) || 0);
         return hash;
     }
 
@@ -779,10 +779,10 @@ export class Color4 implements GPUColor {
      * @returns an unique number that can be used to hash Color4 objects
      */
     public getHashCode(): number {
-        let hash = this.r || 0;
-        hash = (hash * 397) ^ (this.g || 0);
-        hash = (hash * 397) ^ (this.b || 0);
-        hash = (hash * 397) ^ (this.a || 0);
+        let hash = (this.r * 255) || 0;
+        hash = (hash * 397) ^ ((this.g * 255) || 0);
+        hash = (hash * 397) ^ ((this.b * 255) || 0);
+        hash = (hash * 397) ^ ((this.a * 255) || 0);
         return hash;
     }
 
@@ -1645,6 +1645,7 @@ export class Vector2 {
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
+    private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
 
     /**
      * Creates a new Vector3 object from the given x, y, z (floats) coordinates.
@@ -2085,7 +2086,7 @@ export class Vector3 {
     // Properties
     /**
      * Gets the length of the Vector3
-     * @returns the length of the Vecto3
+     * @returns the length of the Vector3
      */
     public length(): number {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
@@ -2361,6 +2362,13 @@ export class Vector3 {
      */
     public static get UpReadOnly(): DeepImmutable<Vector3> {
         return Vector3._UpReadOnly;
+    }
+
+    /**
+     * Gets a zero Vector3 that must not be updated
+     */
+    public static get ZeroReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._ZeroReadOnly;
     }
 
     /**
