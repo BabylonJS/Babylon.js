@@ -34,7 +34,7 @@ class BasisFileInfo {
  */
 export class BasisTools {
     private static _IgnoreSupportedFormats = false;
-    private static LoadScriptPromise: any = null;
+    private static _LoadScriptPromise: any = null;
     // TODO should load from cdn location as fallback once it exists
     private static _FallbackURL = "../dist/preview%20release/basisTranscoder/basis_transcoder.js";
     private static _BASIS_FORMAT = {
@@ -63,8 +63,8 @@ export class BasisTools {
         }
 
         // Otherwise load script from fallback url
-        if (!this.LoadScriptPromise) {
-            this.LoadScriptPromise = Tools.LoadScriptAsync(BasisTools._FallbackURL, "basis_transcoder").then((success) => {
+        if (!this._LoadScriptPromise) {
+            this._LoadScriptPromise = Tools.LoadScriptAsync(BasisTools._FallbackURL, "basis_transcoder").then((success) => {
                 return new Promise((res, rej) => {
                     if ((window as any).Module) {
                         (window as any).Module.onRuntimeInitialized = () => {
@@ -78,7 +78,7 @@ export class BasisTools {
                 });
             });
         }
-        return this.LoadScriptPromise;
+        return this._LoadScriptPromise;
     }
 
     /**
