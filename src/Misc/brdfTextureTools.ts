@@ -62,6 +62,7 @@ export class BRDFTextureTools {
 
                 // Cleanup
                 engine.restoreDefaultFramebuffer();
+                engine._releaseTexture(texture);
                 engine._releaseFramebufferObjects(expandedTexture);
                 if (rgbdPostProcess) {
                     rgbdPostProcess.dispose();
