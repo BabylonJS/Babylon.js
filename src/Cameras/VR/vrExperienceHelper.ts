@@ -1203,7 +1203,7 @@ export class VRExperienceHelper {
             this._castRayAndSelectObject(this._rightController);
         }
 
-        if (this._noControllerIsActive) {
+        if (this._noControllerIsActive && this._scene.getEngine().isPointerLock) {
             this._castRayAndSelectObject(this._cameraGazer);
         } else {
             this._cameraGazer._gazeTracker.isVisible = false;
