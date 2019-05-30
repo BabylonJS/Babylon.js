@@ -12,4 +12,5 @@ export interface ProcessingOptions {
     processor?: IShaderProcessor;
     version: string;
     platformName: string;
+    lookForClosingBracketForUniformBuffer?: boolean;
 }

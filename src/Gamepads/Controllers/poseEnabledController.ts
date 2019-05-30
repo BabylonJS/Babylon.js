@@ -10,7 +10,6 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/ind
 import { EngineStore } from "../../Engines/engineStore";
 
 import { Gamepad } from "../../Gamepads/gamepad";
-import { ExtendedGamepadButton } from "./poseEnabledController";
 import { WebVRFreeCamera, PoseControlled, DevicePose } from "../../Cameras/VR/webVRCamera";
 import { TargetCamera } from "../../Cameras/targetCamera";
 

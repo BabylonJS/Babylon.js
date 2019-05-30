@@ -1,10 +1,10 @@
 # 4.1.0
 
 ## Major updates
-- Node Material (NEED DOC AND SAMPLES) ([Deltakosh](https://github.com/deltakosh/))
-- Node material editor (NEED DOC AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
-- WebGPU support (NEED DOC AND SAMPLES) ([Sebavan](https://github.com/sebavan/)
-- .basis texture file format support (NEED DEMO) ([TrevorDev](https://github.com/TrevorDev))
+- WIP: Node Material (NEED DOC AND SAMPLES) ([Deltakosh](https://github.com/deltakosh/))
+- WIP: Node material editor (NEED DOC AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
+- WIP: WebGPU support (NEED DOC AND SAMPLES) ([Sebavan](https://github.com/sebavan/)
+- WIP: .basis texture file format support (NEED DEMO) ([TrevorDev](https://github.com/TrevorDev))
 
 ## Optimizations
 
@@ -51,5 +51,6 @@
 - Fixed bug in Ray.intersectsTriangle where the barycentric coordinates `bu` and `bv` being returned is actually `bv` and `bw`. ([bghgary](https://github.com/bghgary))
 - Do not call onError when creating a texture when falling back to another loader ([TrevorDev](https://github.com/TrevorDev))
 - Context loss should not cause PBR materials to render black ([TrevorDev](https://github.com/TrevorDev))
+- Only cast pointer ray input when pointer is locked in webVR ([TrevorDev](https://github.com/TrevorDev))
 
 ## Breaking changes
