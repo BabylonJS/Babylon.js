@@ -1911,7 +1911,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         var result = new ParticleSystem(name, this._capacity, this._scene, custom);
         result.customShader = program;
 
-        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture"]);
+        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable"]);
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;
@@ -2427,12 +2427,6 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (parsedParticleSystem.alphaRemapGradients) {
             for (var alphaRemapGradient of parsedParticleSystem.alphaRemapGradients) {
                 particleSystem.addAlphaRemapGradient(alphaRemapGradient.gradient, alphaRemapGradient.factor1 !== undefined ? alphaRemapGradient.factor1 : alphaRemapGradient.factor, alphaRemapGradient.factor2);
-            }
-        }
-
-        if (parsedParticleSystem.sizeGradients) {
-            for (var sizeGradient of parsedParticleSystem.sizeGradients) {
-                particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ? sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
             }
         }
 

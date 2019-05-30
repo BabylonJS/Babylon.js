@@ -13,11 +13,12 @@ import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { ScaleGizmo } from "./scaleGizmo";
+
 /**
  * Single axis scale gizmo
  */
 export class AxisScaleGizmo extends Gizmo {
-    private _coloredMaterial: StandardMaterial;
     /**
      * Drag behavior responsible for the gizmos dragging interactions
      */
@@ -36,30 +37,38 @@ export class AxisScaleGizmo extends Gizmo {
      * If the scaling operation should be done on all axis (default: false)
      */
     public uniformScaling = false;
+
+    private _isEnabled: boolean = true;
+    private _parent: Nullable<ScaleGizmo> = null;
+
+    private _arrow: AbstractMesh;
+    private _coloredMaterial: StandardMaterial;
+    private _hoverMaterial: StandardMaterial;
+
     /**
      * Creates an AxisScaleGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragAxis The axis which the gizmo will be able to scale on
      * @param color The color of the gizmo
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<ScaleGizmo> = null) {
         super(gizmoLayer);
-
+        this._parent = parent;
         // Create Material
         this._coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
         this._coloredMaterial.diffuseColor = color;
         this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
-        var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
+        this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this._hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build mesh on root node
-        var arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
+        this._arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
         var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 }, gizmoLayer.utilityLayerScene);
         var arrowTail = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, gizmoLayer.utilityLayerScene);
         arrowTail.material = this._coloredMaterial;
-        arrow.addChild(arrowMesh);
-        arrow.addChild(arrowTail);
+        this._arrow.addChild(arrowMesh);
+        this._arrow.addChild(arrowTail);
 
         // Position arrow pointing in its drag axis
         arrowMesh.scaling.scaleInPlace(0.1);
@@ -68,9 +77,9 @@ export class AxisScaleGizmo extends Gizmo {
         arrowMesh.position.z += 0.3;
         arrowTail.position.z += 0.275 / 2;
         arrowTail.rotation.x = Math.PI / 2;
-        arrow.lookAt(this._rootMesh.position.add(dragAxis));
-        this._rootMesh.addChild(arrow);
-        arrow.scaling.scaleInPlace(1 / 3);
+        this._arrow.lookAt(this._rootMesh.position.add(dragAxis));
+        this._rootMesh.addChild(this._arrow);
+        this._arrow.scaling.scaleInPlace(1 / 3);
 
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
@@ -127,7 +136,7 @@ export class AxisScaleGizmo extends Gizmo {
                 return;
             }
             var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-            var material = isHovered ? hoverMaterial : this._coloredMaterial;
+            var material = isHovered ? this._hoverMaterial : this._coloredMaterial;
             this._rootMesh.getChildMeshes().forEach((m) => {
                 m.material = material;
                 if ((<LinesMesh>m).color) {
@@ -147,12 +156,38 @@ export class AxisScaleGizmo extends Gizmo {
     }
 
     /**
+ * If the gizmo is enabled
+ */
+    public set isEnabled(value: boolean) {
+        this._isEnabled = value;
+        if (!value) {
+            this.attachedMesh = null;
+        }
+        else {
+            if (this._parent) {
+                this.attachedMesh = this._parent.attachedMesh;
+            }
+        }
+    }
+    public get isEnabled(): boolean {
+        return this._isEnabled;
+    }
+
+    /**
      * Disposes of the gizmo
      */
     public dispose() {
         this.onSnapObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();
+        if (this._arrow) {
+            this._arrow.dispose();
+        }
+        [this._coloredMaterial, this._hoverMaterial].forEach((matl) => {
+            if (matl) {
+                matl.dispose();
+            }
+        });
         super.dispose();
     }
 

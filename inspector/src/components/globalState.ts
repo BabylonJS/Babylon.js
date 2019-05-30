@@ -9,6 +9,7 @@ import { Light } from "babylonjs/Lights/light";
 import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from './replayRecorder';
+import { Tools } from '../tools';
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -28,6 +29,22 @@ export class GlobalState {
     public selectedLineContainerTitle = "";
 
     public recorder = new ReplayRecorder();
+
+    private _onlyUseEulers: Nullable<boolean> = null;
+
+    public get onlyUseEulers(): boolean {
+        if (this._onlyUseEulers === null) {
+            this._onlyUseEulers = Tools.ReadLocalBooleanSettings("settings_onlyUseEulers", true);
+        }
+
+        return this._onlyUseEulers!;
+    }
+
+    public set onlyUseEulers(value: boolean) {
+        this._onlyUseEulers = value;
+
+        Tools.StoreLocalBooleanSettings("settings_onlyUseEulers", value);
+    }
 
     public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
         this.onPropertyChangedObservable = propertyChangedObservable;
