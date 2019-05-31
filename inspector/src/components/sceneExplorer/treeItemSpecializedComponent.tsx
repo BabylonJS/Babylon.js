@@ -61,7 +61,7 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
 
             if (className.indexOf("Mesh") !== -1) {
                 const mesh = entity as AbstractMesh;
-                if (mesh.getTotalVertices() > 0) {
+                if (mesh.isAnInstance || mesh.getTotalVertices() > 0) {
                     return (<MeshTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} mesh={mesh} onClick={() => this.onClick()} />);
                 } else {
                     return (<TransformNodeItemComponent extensibilityGroups={this.props.extensibilityGroups} transformNode={entity as TransformNode} onClick={() => this.onClick()} />);
