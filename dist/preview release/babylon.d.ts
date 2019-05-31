@@ -39175,7 +39175,7 @@ declare module BABYLON {
          */
         roughness: number;
         /**
-         * In case of refraction, define the value of the indice of refraction.
+         * In case of refraction, define the value of the index of refraction.
          * @see http://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
          */
         indexOfRefraction: number;
@@ -44458,7 +44458,7 @@ declare module BABYLON {
          * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
          * The default fits with a polyurethane material.
          */
-        private static readonly _DefaultIndiceOfRefraction;
+        private static readonly _DefaultIndexOfRefraction;
         private _isEnabled;
         /**
          * Defines if the clear coat is enabled in the material.
@@ -44472,14 +44472,14 @@ declare module BABYLON {
          * Defines the clear coat layer roughness.
          */
         roughness: number;
-        private _indiceOfRefraction;
+        private _indexOfRefraction;
         /**
-         * Defines the indice of refraction of the clear coat.
+         * Defines the index of refraction of the clear coat.
          * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
          * The default fits with a polyurethane material.
          * Changing the default value is more performance intensive.
          */
-        indiceOfRefraction: number;
+        indexOfRefraction: number;
         private _texture;
         /**
          * Stores the clear coat values in a texture.
@@ -45050,7 +45050,7 @@ declare module BABYLON {
         refractionTexture: Nullable<BaseTexture>;
         private _indexOfRefraction;
         /**
-         * Defines the indice of refraction used in the material.
+         * Defines the index of refraction used in the material.
          * https://en.wikipedia.org/wiki/List_of_refractive_indices
          */
         indexOfRefraction: number;

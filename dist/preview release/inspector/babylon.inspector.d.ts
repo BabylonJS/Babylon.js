@@ -479,19 +479,20 @@ declare module INSPECTOR {
         globalState?: GlobalState;
         hideChannelSelect?: boolean;
     }
+    enum ChannelToDisplay {
+        R = 0,
+        G = 1,
+        B = 2,
+        A = 3,
+        All = 4
+    }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
-        displayRed: boolean;
-        displayGreen: boolean;
-        displayBlue: boolean;
-        displayAlpha: boolean;
+        channel: ChannelToDisplay;
         face: number;
     }> {
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
-            displayRed: boolean;
-            displayGreen: boolean;
-            displayBlue: boolean;
-            displayAlpha: boolean;
+            channel: ChannelToDisplay;
             face: number;
         }): boolean;
         componentDidMount(): void;
