@@ -4,7 +4,7 @@
 - WIP: Node Material (NEED DOC AND SAMPLES) ([Deltakosh](https://github.com/deltakosh/))
 - WIP: Node material editor (NEED DOC AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
 - WIP: WebGPU support (NEED DOC AND SAMPLES) ([Sebavan](https://github.com/sebavan/)
-- WIP: .basis texture file format support (NEED DEMO) ([TrevorDev](https://github.com/TrevorDev))
+- WIP: .basis file format texture support (NEED DEMO) ([TrevorDev](https://github.com/TrevorDev))
 
 ## Optimizations
 
@@ -52,5 +52,6 @@
 - Do not call onError when creating a texture when falling back to another loader ([TrevorDev](https://github.com/TrevorDev))
 - Context loss should not cause PBR materials to render black ([TrevorDev](https://github.com/TrevorDev))
 - Only cast pointer ray input when pointer is locked in webVR ([TrevorDev](https://github.com/TrevorDev))
+- Avoid using default utility layer in gizmo manager to support multiple scenes ([TrevorDev](https://github.com/TrevorDev))
 
 ## Breaking changes

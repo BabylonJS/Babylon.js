@@ -120,13 +120,7 @@ window.preparePBR = function() {
 		  "albedoColorLevel": 1
 		});
 	});
-	
-    registerRangeUI("pbr", "indiceOfRefraction", 0, 2, function(value) {
-		pbr.indexOfRefraction = value;
-	}, function() {
-		return pbr.indexOfRefraction;
-	});
-    
+
     registerRangeUI("pbr", "alpha", 0, 1, function(value) {
 		pbr.alpha = value;
 	}, function() {
