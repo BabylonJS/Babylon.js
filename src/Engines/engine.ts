@@ -4354,6 +4354,15 @@ export class Engine {
         return texture;
     }
 
+    /**
+     * @hidden
+     * Rescales a texture
+     * @param source input texutre
+     * @param destination destination texture
+     * @param scene scene to use to render the resize
+     * @param internalFormat format to use when resizing
+     * @param onComplete callback to be called when resize has completed
+     */
     public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<Scene>, internalFormat: number, onComplete: () => void): void {
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, this._gl.LINEAR);
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
