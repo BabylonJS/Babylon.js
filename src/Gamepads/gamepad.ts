@@ -1,5 +1,4 @@
 import { Observable } from "../Misc/observable";
-import { GamepadButtonChanges } from "../Gamepads/gamepad";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 

@@ -16,6 +16,7 @@ export class DefaultPortModel extends PortModel {
 	 */
     public connection: Nullable<NodeMaterialConnectionPoint> = null;
 
+    public defaultValue: any;
 
     static idCounter = 0;
 
@@ -41,16 +42,8 @@ export class DefaultPortModel extends PortModel {
         return link;
     }
 
-    getInputFromBlock() {
-
-    }
-
     createLinkModel(): LinkModel {
         return new DefaultLinkModel();
-    }
-
-    getValue: Function = () => {
-        return null;
     }
 
     static SortInputOutput(a: Nullable<DefaultPortModel>, b: Nullable<DefaultPortModel>) {
