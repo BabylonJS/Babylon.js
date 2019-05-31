@@ -55,6 +55,7 @@ export class BasisTools {
 
     /**
      * Verifies that the BasisModule has been populated and falls back to loading from the web if not availible
+     * @returns promise which will resolve if the basis module was loaded
      */
     public static VerifyBasisModuleAsync() {
         // Complete if module has been populated
