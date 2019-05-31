@@ -35,7 +35,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
     }
 
     switchMetallicMode(state: boolean) {
-        this.props.material.debugMode = state ? 21 : 0;
+        this.props.material.debugMode = state ? 62 : 0;
     }
 
     renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>) {
