@@ -123,7 +123,7 @@ export class InstancedMesh extends AbstractMesh {
      * Returns the total number of vertices (integer).
      */
     public getTotalVertices(): number {
-        return this._sourceMesh.getTotalVertices();
+        return this._sourceMesh ? this._sourceMesh.getTotalVertices() : 0;
     }
 
     /**
