@@ -30,6 +30,10 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         super(props);
     }
 
+    switchAmbientMode(state: boolean) {
+        this.props.material.debugMode = state ? 21 : 0;
+    }
+
     renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>) {
         const material = this.props.material;
 
@@ -43,7 +47,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                 <TextureLinkLineComponent label="Bump" texture={material.bumpTexture} propertyName="bumpTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Emissive" texture={material.emissiveTexture} propertyName="emissiveTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Opacity" texture={material.opacityTexture} propertyName="opacityTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Ambient" texture={material.ambientTexture} propertyName="ambientTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                <TextureLinkLineComponent customDebugAction={state => this.switchAmbientMode(state)} label="Ambient" texture={material.ambientTexture} propertyName="ambientTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Lightmap" texture={material.lightmapTexture} propertyName="lightmapTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <CheckBoxLineComponent label="Use lightmap as shadowmap" target={material} propertyName="useLightmapAsShadowmap " onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </LineContainerComponent>
