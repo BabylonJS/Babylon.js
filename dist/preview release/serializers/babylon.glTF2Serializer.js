@@ -2041,7 +2041,6 @@ var _Exporter = /** @class */ (function () {
         var promises = [];
         var bufferMesh = null;
         var bufferView;
-        var uvCoordsPresent;
         var minMax;
         if (babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"]) {
             bufferMesh = babylonTransformNode;
@@ -2092,7 +2091,6 @@ var _Exporter = /** @class */ (function () {
                 // go through all mesh primitives (submeshes)
                 for (var _a = 0, _b = bufferMesh.subMeshes; _a < _b.length; _a++) {
                     var submesh = _b[_a];
-                    uvCoordsPresent = false;
                     var babylonMaterial = submesh.getMaterial() || bufferMesh.getScene().defaultMaterial;
                     var materialIndex = null;
                     if (babylonMaterial) {
@@ -2145,9 +2143,6 @@ var _Exporter = /** @class */ (function () {
                                     var accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, 5126 /* FLOAT */, vertexData.length / stride, 0, minMax.min, minMax.max);
                                     this._accessors.push(accessor);
                                     this.setAttributeKind(meshPrimitive, attributeKind);
-                                    if (meshPrimitive.attributes.TEXCOORD_0 != null || meshPrimitive.attributes.TEXCOORD_1 != null) {
-                                        uvCoordsPresent = true;
-                                    }
                                 }
                             }
                         }
@@ -2186,11 +2181,6 @@ var _Exporter = /** @class */ (function () {
                                     }
                                 }
                             }
-                        }
-                        if (!uvCoordsPresent && this._glTFMaterialExporter._hasTexturesPresent(this._materials[materialIndex])) {
-                            var newMat = this._glTFMaterialExporter._stripTexturesFromMaterial(this._materials[materialIndex]);
-                            this._materials.push(newMat);
-                            materialIndex = this._materials.length - 1;
                         }
                         meshPrimitive.material = materialIndex;
                     }

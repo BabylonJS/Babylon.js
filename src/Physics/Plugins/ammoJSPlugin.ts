@@ -63,8 +63,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * Initializes the ammoJS plugin
      * @param _useDeltaForWorldStep if the time between frames should be used when calculating physics steps (Default: true)
      * @param ammoInjection can be used to inject your own ammo reference
+     * @param overlappingPairCache can be used to specify your own overlapping pair cache
      */
-    public constructor(private _useDeltaForWorldStep: boolean = true, ammoInjection: any = Ammo) {
+    public constructor(private _useDeltaForWorldStep: boolean = true, ammoInjection: any = Ammo, overlappingPairCache: any = null) {
         if (typeof ammoInjection === "function") {
             ammoInjection(this.bjsAMMO);
         } else {
@@ -79,7 +80,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         // Initialize the physics world
         this._collisionConfiguration = new this.bjsAMMO.btSoftBodyRigidBodyCollisionConfiguration();
         this._dispatcher = new this.bjsAMMO.btCollisionDispatcher(this._collisionConfiguration);
-        this._overlappingPairCache = new this.bjsAMMO.btDbvtBroadphase();
+        this._overlappingPairCache = overlappingPairCache || new this.bjsAMMO.btDbvtBroadphase();
         this._solver = new this.bjsAMMO.btSequentialImpulseConstraintSolver();
         this._softBodySolver = new this.bjsAMMO.btDefaultSoftBodySolver();
         this.world = new this.bjsAMMO.btSoftRigidDynamicsWorld(this._dispatcher, this._overlappingPairCache, this._solver, this._collisionConfiguration, this._softBodySolver);
