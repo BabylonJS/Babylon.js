@@ -35,8 +35,7 @@ class BasisFileInfo {
 export class BasisTools {
     private static _IgnoreSupportedFormats = false;
     private static _LoadScriptPromise: any = null;
-    // TODO should load from cdn location as fallback once it exists
-    private static _FallbackURL = "../dist/preview%20release/basisTranscoder/basis_transcoder.js";
+    private static _FallbackURL = "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.js";
     private static _BASIS_FORMAT = {
         cTFETC1: 0,
         cTFBC1: 1,

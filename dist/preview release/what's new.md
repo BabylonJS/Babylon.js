@@ -4,7 +4,7 @@
 - WIP: Node Material (NEED DOC AND SAMPLES) ([Deltakosh](https://github.com/deltakosh/))
 - WIP: Node material editor (NEED DOC AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
 - WIP: WebGPU support (NEED DOC AND SAMPLES) ([Sebavan](https://github.com/sebavan/)
-- WIP: .basis file format texture support [Demo](https://www.babylonjs-playground.com/#4RN0VF) ([TrevorDev](https://github.com/TrevorDev))
+- WIP: .basis texture file format support [Demo](https://www.babylonjs-playground.com/#4RN0VF) ([TrevorDev](https://github.com/TrevorDev))
 
 ## Optimizations
 
