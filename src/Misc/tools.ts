@@ -692,6 +692,29 @@ export class Tools {
     }
 
     /**
+     * Ask the browser to promote the current element to pointerlock mode
+     * @param element defines the DOM element to promote
+     */
+    public static RequestPointerlock(element: HTMLElement): void {
+        element.requestPointerLock = element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
+        if (element.requestPointerLock) {
+            element.requestPointerLock();
+        }
+    }
+
+    /**
+     * Asks the browser to exit pointerlock mode
+     */
+    public static ExitPointerlock(): void {
+        let anyDoc = document as any;
+        document.exitPointerLock = document.exitPointerLock || anyDoc.msExitPointerLock || anyDoc.mozExitPointerLock || anyDoc.webkitExitPointerLock;
+
+        if (document.exitPointerLock) {
+            document.exitPointerLock();
+        }
+    }
+
+    /**
      * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
      * @param url define the url we are trying
      * @param element define the dom element where to configure the cors policy
@@ -1192,6 +1215,16 @@ export class Tools {
      */
     public static EndsWith(str: string, suffix: string): boolean {
         return str.indexOf(suffix, str.length - suffix.length) !== -1;
+    }
+
+    /**
+     * Checks for a matching suffix at the beginning of a string (for ES5 and lower)
+     * @param str Source string
+     * @param suffix Suffix to search for in the source string
+     * @returns Boolean indicating whether the suffix was found (true) or not (false)
+     */
+    public static StartsWith(str: string, suffix: string): boolean {
+        return str.indexOf(suffix) === 0;
     }
 
     /**

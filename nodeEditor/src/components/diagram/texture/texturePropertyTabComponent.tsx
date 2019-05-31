@@ -5,7 +5,8 @@ import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { FileButtonLineComponent } from '../../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
 import { Engine } from 'babylonjs/Engines/engine';
-import { TextureNodeModel } from '../../../components/diagram/texture/textureNodeModel';
+import { TextureNodeModel } from './textureNodeModel';
+import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
@@ -41,9 +42,9 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                     extension = ".env";
                 }
 
-                (texture as Texture).updateURL(url, extension, () => this.forceUpdate());
+                (texture as Texture).updateURL(url, extension, () => this.props.globalState.onUpdateRequiredObservable.notifyObservers());
             } else {
-                (texture as Texture).updateURL(url, null, () => this.forceUpdate());
+                (texture as Texture).updateURL(url, null, () => this.props.globalState.onUpdateRequiredObservable.notifyObservers());
             }
         }, undefined, true);
     }
@@ -51,7 +52,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
     render() {
         return (
             <div>
-                <h1>Texture</h1>
+                <TextLineComponent label="Type" value="Texture" />
                 <FileButtonLineComponent label="Replace texture" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
             </div>
         );

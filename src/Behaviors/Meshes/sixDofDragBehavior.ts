@@ -74,6 +74,17 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
     public init() { }
 
     /**
+     * In the case of multiplea active cameras, the cameraToUseForPointers should be used if set instead of active camera
+     */
+    private get _pointerCamera() {
+        if (this._scene.cameraToUseForPointers) {
+            return this._scene.cameraToUseForPointers;
+        }else {
+            return this._scene.activeCamera;
+        }
+    }
+
+    /**
      * Attaches the scale behavior the passed in mesh
      * @param ownerNode The mesh that will be scaled around once attached
      */
@@ -102,8 +113,8 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
         this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState) => {
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)) {
-                    if (this._scene.activeCamera && this._scene.activeCamera.cameraRigMode == Camera.RIG_MODE_NONE) {
-                        pointerInfo.pickInfo.ray.origin.copyFrom(this._scene.activeCamera!.globalPosition);
+                    if (this._pointerCamera && this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE) {
+                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
                     }
 
                     pickedMesh = this._ownerNode;
@@ -133,10 +144,10 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     this.currentDraggingPointerID = (<PointerEvent>pointerInfo.event).pointerId;
 
                     // Detatch camera controls
-                    if (this.detachCameraControls && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
-                        if (this._scene.activeCamera.inputs.attachedElement) {
-                            attachedElement = this._scene.activeCamera.inputs.attachedElement;
-                            this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
+                    if (this.detachCameraControls && this._pointerCamera && !this._pointerCamera.leftCamera) {
+                        if (this._pointerCamera.inputs.attachedElement) {
+                            attachedElement = this._pointerCamera.inputs.attachedElement;
+                            this._pointerCamera.detachControl(this._pointerCamera.inputs.attachedElement);
                         } else {
                             attachedElement = null;
                         }
@@ -153,16 +164,16 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
                     this._virtualOriginMesh.removeChild(this._virtualDragMesh);
 
                     // Reattach camera controls
-                    if (this.detachCameraControls && attachedElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
-                        this._scene.activeCamera.attachControl(attachedElement, true);
+                    if (this.detachCameraControls && attachedElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
+                        this._pointerCamera.attachControl(attachedElement, true);
                     }
                     this.onDragEndObservable.notifyObservers({});
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                 if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId && this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.ray && pickedMesh) {
                     var zDragFactor = this.zDragFactor;
-                    if (this._scene.activeCamera && this._scene.activeCamera.cameraRigMode == Camera.RIG_MODE_NONE) {
-                        pointerInfo.pickInfo.ray.origin.copyFrom(this._scene.activeCamera!.globalPosition);
+                    if (this._pointerCamera && this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE) {
+                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
                         zDragFactor = 0;
                     }
 

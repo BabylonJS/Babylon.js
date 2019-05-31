@@ -23,6 +23,8 @@ import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { MorphTarget } from 'babylonjs/Morph/morphTarget';
+import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
+import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -218,6 +220,17 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             }
         }
 
+        var algorithmOptions = [
+            { label: "Accurate", value: AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE },
+            { label: "Conservative", value: AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE },
+        ];
+
+        var occlusionTypeOptions = [
+            { label: "None", value: AbstractMesh.OCCLUSION_TYPE_NONE },
+            { label: "Optimistic", value: AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC },
+            { label: "Strict", value: AbstractMesh.OCCLUSION_TYPE_STRICT },
+        ];
+
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={mesh}
@@ -230,8 +243,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <TextLineComponent label="Faces" value={(mesh.getTotalIndices() / 3).toFixed(0)} />
                     <TextLineComponent label="Sub-meshes" value={mesh.subMeshes ? mesh.subMeshes.length.toString() : "0"} />
                     <TextLineComponent label="Has skeleton" value={mesh.skeleton ? "Yes" : "No"} />
-                    <CheckBoxLineComponent label="IsEnabled" isSelected={() => mesh.isEnabled()} onSelect={(value) => mesh.setEnabled(value)} />
-                    <CheckBoxLineComponent label="IsPickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Is enabled" isSelected={() => mesh.isEnabled()} onSelect={(value) => mesh.setEnabled(value)} />
+                    <CheckBoxLineComponent label="Is pickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.material &&
                         <TextLineComponent label="Material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
@@ -245,11 +258,11 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         !mesh.rotationQuaternion &&
-                        <Vector3LineComponent label="Rotation" target={mesh} propertyName="rotation" step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Vector3LineComponent label="Rotation" useEuler={this.props.globalState.onlyUseEulers} target={mesh} propertyName="rotation" step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     {
                         mesh.rotationQuaternion &&
-                        <QuaternionLineComponent label="Rotation" target={mesh} propertyName="rotationQuaternion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <QuaternionLineComponent label="Rotation" useEuler={this.props.globalState.onlyUseEulers} target={mesh} propertyName="rotationQuaternion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     <Vector3LineComponent label="Scaling" target={mesh} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
@@ -311,6 +324,11 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <TextLineComponent label="Type" value={this.convertPhysicsTypeToString()} />
                     </LineContainerComponent>
                 }
+                <LineContainerComponent globalState={this.props.globalState} title="OCCLUSIONS" closed={true}>
+                    <OptionsLineComponent label="Type" options={occlusionTypeOptions} target={mesh} propertyName="occlusionType" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Retry count" minimum={-1} maximum={10} decimalCount={0} step={1} target={mesh} propertyName="occlusionRetryCount" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent label="Algorithm" options={algorithmOptions} target={mesh} propertyName="occlusionQueryAlgorithmType" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="EDGE RENDERING" closed={true}>
                     <CheckBoxLineComponent label="Enable" target={mesh} isSelected={() => mesh.edgesRenderer != null} onSelect={value => {
                         if (value) {

@@ -1,7 +1,39 @@
 #propertyTab {
-    padding: 5px;
-    $line-padding-left: 2px;
+    $line-padding-left: 5px;
     color:white;
+
+      #header {
+        height: 30px;
+        font-size: 16px;
+        color: white;
+        background: #222222;
+        grid-row: 1;
+        text-align: center;
+        display: grid;
+        grid-template-columns: 30px 1fr 50px;        
+        -webkit-user-select: none; 
+        -moz-user-select: none;   
+        -ms-user-select: none;    
+        user-select: none;                
+
+        #logo {
+            position: relative;
+            grid-column: 1; 
+            width: 24px;
+            height: 24px;
+            left:0;
+            display: flex;
+            align-self: center;   
+            justify-self: center;
+        }        
+
+        #title {
+            grid-column: 2; 
+            display: grid;
+            align-items: center;   
+            text-align: center;
+        }
+    }
 
     .vector3Line {
         padding-left:$line-padding-left;                    
@@ -206,6 +238,92 @@
             }
         }                    
     }  
+                    
+    .color3Line {
+        padding-left: $line-padding-left;
+        display: grid;
+
+        .firstLine {
+            height: 30px;
+            display: grid;
+            grid-template-columns: 1fr auto 20px 20px;
+
+            .label {
+                grid-column: 1;
+                display: flex;
+                align-items: center;
+            }
+
+            .color3 {
+                grid-column: 2;
+                
+                display: flex;
+                align-items: center;   
+
+                input[type="color"] {
+                    -webkit-appearance: none;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                    padding: 0;
+                    width: 30px;
+                    height: 20px;
+                }
+                input[type="color"]::-webkit-color-swatch-wrapper {
+                    padding: 0;
+                }
+                input[type="color"]::-webkit-color-swatch {
+                    border: none;
+                }
+                
+                input {
+                    margin-right: 5px;
+                }
+            }
+
+            .copy {
+                grid-column: 3;
+                display: grid;
+                align-items: center;
+                justify-items: center;
+                cursor: pointer;
+            }
+
+            .expand {
+                grid-column: 4;
+                display: grid;
+                align-items: center;
+                justify-items: center;
+                cursor: pointer;
+            }
+        }   
+
+        .secondLine {
+            display: grid;
+            padding-right: 5px;  
+            border-left: 1px solid rgb(51, 122, 183);
+
+            .numeric {
+                display: grid;
+                grid-template-columns: 1fr auto;
+            }
+
+            .numeric-label {
+                text-align: right;
+                grid-column: 1;
+                display: flex;
+                align-items: center;                            
+                justify-self: right;
+                margin-right: 10px;                          
+            }
+
+            .numeric-value {
+                width: 120px;
+                grid-column: 2;
+                display: flex;
+                align-items: center;  
+                border: 1px solid  rgb(51, 122, 183);
+            }                        
+        }                  
+    }     
     
     .textLine {
         padding-left: $line-padding-left;

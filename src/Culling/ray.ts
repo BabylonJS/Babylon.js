@@ -197,17 +197,17 @@ export class Ray {
 
         this.origin.subtractToRef(vertex0, tvec);
 
-        var bu = Vector3.Dot(tvec, pvec) * invdet;
+        var bv = Vector3.Dot(tvec, pvec) * invdet;
 
-        if (bu < 0 || bu > 1.0) {
+        if (bv < 0 || bv > 1.0) {
             return null;
         }
 
         Vector3.CrossToRef(tvec, edge1, qvec);
 
-        var bv = Vector3.Dot(this.direction, qvec) * invdet;
+        var bw = Vector3.Dot(this.direction, qvec) * invdet;
 
-        if (bv < 0 || bu + bv > 1.0) {
+        if (bw < 0 || bv + bw > 1.0) {
             return null;
         }
 
@@ -217,7 +217,7 @@ export class Ray {
             return null;
         }
 
-        return new IntersectionInfo(bu, bv, distance);
+        return new IntersectionInfo(1 - bv - bw, bv, distance);
     }
 
     /**

@@ -3,7 +3,7 @@ import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { Scene } from "babylonjs/scene";
 import { TabsComponent } from "./tabsComponent";
-import { faFileAlt, faWrench, faBug, faChartBar } from '@fortawesome/free-solid-svg-icons';
+import { faFileAlt, faWrench, faBug, faChartBar, faCog } from '@fortawesome/free-solid-svg-icons';
 import { StatisticsTabComponent } from "./tabs/statisticsTabComponent";
 import { DebugTabComponent } from "./tabs/debugTabComponent";
 import Resizable from "re-resizable";
@@ -11,6 +11,7 @@ import { PropertyGridTabComponent } from "./tabs/propertyGridTabComponent";
 import { HeaderComponent } from "../headerComponent";
 import { ToolsTabComponent } from "./tabs/toolsTabComponent";
 import { GlobalState } from "../../components/globalState";
+import { SettingsTabComponent } from './tabs/settingsTabComponent';
 
 require("./actionTabs.scss");
 
@@ -36,7 +37,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
 
         let initialIndex = 0;
 
-        if(this.props.globalState){
+        if (this.props.globalState) {
             const validationResutls = this.props.globalState.validationResults;
             if (validationResutls) {
                 if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
@@ -44,13 +45,13 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
                 }
             }
         }
-        
+
 
         this.state = { selectedEntity: null, selectedIndex: initialIndex }
     }
 
     componentWillMount() {
-        if(this.props.globalState){
+        if (this.props.globalState) {
             this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
                 this.setState({ selectedEntity: entity, selectedIndex: 0 });
             });
@@ -62,7 +63,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
     }
 
     componentWillUnmount() {
-        if(this.props.globalState){
+        if (this.props.globalState) {
             if (this._onSelectionChangeObserver) {
                 this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
             }
@@ -74,13 +75,13 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
     }
 
     changeSelectedTab(index: number) {
-        if(this.props.globalState){
+        if (this.props.globalState) {
             this.props.globalState.onTabChangedObservable.notifyObservers(index);
         }
     }
 
     renderContent() {
-        if(this.props.globalState && this.props.scene){
+        if (this.props.globalState && this.props.scene) {
             return (
                 <TabsComponent selectedIndex={this.state.selectedIndex} onSelectedIndexChange={(value) => this.changeSelectedTab(value)}>
                     <PropertyGridTabComponent
@@ -91,9 +92,10 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
                     <DebugTabComponent title="Debug" icon={faBug} scene={this.props.scene} globalState={this.props.globalState} />
                     <StatisticsTabComponent title="Statistics" icon={faChartBar} scene={this.props.scene} globalState={this.props.globalState} />
                     <ToolsTabComponent title="Tools" icon={faWrench} scene={this.props.scene} globalState={this.props.globalState} />
+                    <SettingsTabComponent title="Settings" icon={faCog} scene={this.props.scene} globalState={this.props.globalState} />
                 </TabsComponent>
             )
-        }else{
+        } else {
             return null;
         }
     }
