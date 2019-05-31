@@ -20,6 +20,7 @@ export interface ITextureLinkLineComponentProps {
     onSelectionChangedObservable?: Observable<any>;
     onDebugSelectionChangeObservable?: Observable<BaseTexture>;
     propertyName?: string;
+    customDebugAction?: (state: boolean) => void
 }
 
 export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, { isDebugSelected: boolean }> {
@@ -52,6 +53,13 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
     }
 
     debugTexture() {
+        if (this.props.customDebugAction) {
+            let newState = !this.state.isDebugSelected;
+            this.props.customDebugAction(newState);
+            this.setState({ isDebugSelected: newState });
+            return;
+        }
+
         const texture = this.props.texture;
         const material = this.props.material;
 
