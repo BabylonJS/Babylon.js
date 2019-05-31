@@ -442,6 +442,7 @@ declare module INSPECTOR {
         onSelectionChangedObservable?: BABYLON.Observable<any>;
         onDebugSelectionChangeObservable?: BABYLON.Observable<BABYLON.BaseTexture>;
         propertyName?: string;
+        customDebugAction?: (state: boolean) => void;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
         isDebugSelected: boolean;
@@ -588,6 +589,7 @@ declare module INSPECTOR {
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMaterialPropertyGridComponentProps);
+        switchAmbientMode(state: boolean): void;
         renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element;
         render(): JSX.Element;
     }

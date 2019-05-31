@@ -34651,6 +34651,12 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         }
     };
     TextureLinkLineComponent.prototype.debugTexture = function () {
+        if (this.props.customDebugAction) {
+            var newState = !this.state.isDebugSelected;
+            this.props.customDebugAction(newState);
+            this.setState({ isDebugSelected: newState });
+            return;
+        }
         var texture = this.props.texture;
         var material = this.props.material;
         if (!material || !texture) {
@@ -37568,7 +37574,11 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
         _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
         return _this;
     }
+    PBRMaterialPropertyGridComponent.prototype.switchAmbientMode = function (state) {
+        this.props.material.debugMode = state ? 21 : 0;
+    };
     PBRMaterialPropertyGridComponent.prototype.renderTextures = function (onDebugSelectionChangeObservable) {
+        var _this = this;
         var material = this.props.material;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Albedo", texture: material.albedoTexture, propertyName: "albedoTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
@@ -37579,7 +37589,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Bump", texture: material.bumpTexture, propertyName: "bumpTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, propertyName: "emissiveTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Opacity", texture: material.opacityTexture, propertyName: "opacityTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Ambient", texture: material.ambientTexture, propertyName: "ambientTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { customDebugAction: function (state) { return _this.switchAmbientMode(state); }, label: "Ambient", texture: material.ambientTexture, propertyName: "ambientTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, propertyName: "lightmapTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use lightmap as shadowmap", target: material, propertyName: "useLightmapAsShadowmap ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
