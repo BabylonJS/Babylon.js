@@ -328,7 +328,9 @@ export class Effect implements IDisposable {
         var vertexSource: any;
         var fragmentSource: any;
 
-        if (baseName.vertexElement) {
+        if (baseName.vertexSource) {
+            vertexSource = "source:" + baseName.vertexSource;
+        } else if (baseName.vertexElement) {
             vertexSource = document.getElementById(baseName.vertexElement);
 
             if (!vertexSource) {
@@ -338,7 +340,9 @@ export class Effect implements IDisposable {
             vertexSource = baseName.vertex || baseName;
         }
 
-        if (baseName.fragmentElement) {
+        if (baseName.fragmentSource) {
+            fragmentSource = "source:" + baseName.fragmentSource;
+        } else if (baseName.fragmentElement) {
             fragmentSource = document.getElementById(baseName.fragmentElement);
 
             if (!fragmentSource) {
@@ -358,6 +362,7 @@ export class Effect implements IDisposable {
             shadersRepository: Effect.ShadersRepository,
             includesShadersStore: Effect.IncludesShadersStore,
             version: (this._engine.webGLVersion * 100).toString(),
+            platformName: this._engine.webGLVersion >= 2 ? "WEBGL2" : "WEBGL1"
         };
 
         this._loadVertexShader(vertexSource, (vertexCode) => {
@@ -534,6 +539,12 @@ export class Effect implements IDisposable {
             }
         }
 
+        // Direct source ?
+        if (vertex.substr(0, 7) === "source:") {
+            callback(vertex.substr(7));
+            return;
+        }
+
         // Base64 encoded ?
         if (vertex.substr(0, 7) === "base64:") {
             var vertexBinary = window.atob(vertex.substr(7));
@@ -568,6 +579,12 @@ export class Effect implements IDisposable {
                 callback(fragmentCode);
                 return;
             }
+        }
+
+        // Direct source ?
+        if (fragment.substr(0, 7) === "source:") {
+            callback(fragment.substr(7));
+            return;
         }
 
         // Base64 encoded ?
@@ -758,21 +775,24 @@ export class Effect implements IDisposable {
                 this.onErrorObservable.notifyObservers(this);
             }
 
-            if (fallbacks && fallbacks.isMoreFallbacks) {
-                Logger.Error("Trying next fallback.");
-                this.defines = fallbacks.reduce(this.defines, this);
-                this._prepareEffect();
-            } else { // Sorry we did everything we can
+            if (fallbacks) {
+                this._pipelineContext = null;
+                if (fallbacks.isMoreFallbacks) {
+                    Logger.Error("Trying next fallback.");
+                    this.defines = fallbacks.reduce(this.defines, this);
+                    this._prepareEffect();
+                } else { // Sorry we did everything we can
 
-                if (this.onError) {
-                    this.onError(this, this._compilationError);
-                }
-                this.onErrorObservable.notifyObservers(this);
-                this.onErrorObservable.clear();
+                    if (this.onError) {
+                        this.onError(this, this._compilationError);
+                    }
+                    this.onErrorObservable.notifyObservers(this);
+                    this.onErrorObservable.clear();
 
-                // Unbind mesh reference in fallbacks
-                if (this._fallbacks) {
-                    this._fallbacks.unBindMesh();
+                    // Unbind mesh reference in fallbacks
+                    if (this._fallbacks) {
+                        this._fallbacks.unBindMesh();
+                    }
                 }
             }
         }

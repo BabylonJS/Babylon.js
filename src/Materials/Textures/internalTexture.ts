@@ -16,7 +16,7 @@ declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTe
  */
 export class InternalTexture {
 
-    /** hidden */
+    /** @hidden */
     public static _UpdateRGBDAsync = (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> => {
         throw _DevTools.WarnImport("environmentTextureTools");
     }
