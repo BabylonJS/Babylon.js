@@ -52,6 +52,33 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     private _gamma: number = 0;
 
     /**
+     * Can be used to detect if a device orientation sensor is availible on a device
+     * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
+     */
+    public static WaitForOrientationChangeAsync(timeout?: number) {
+        return new Promise((res, rej) => {
+            var gotValue = false;
+            var eventHandler = () => {
+                window.removeEventListener("deviceorientation", eventHandler);
+                gotValue = true;
+                res();
+            };
+
+            // If timeout is pupulated reject the promise
+            if (timeout) {
+                setTimeout(() => {
+                    if (!gotValue) {
+                        window.removeEventListener("deviceorientation", eventHandler);
+                        rej("WaitForOrientationChangeAsync timed out");
+                    }
+                }, timeout);
+            }
+
+            window.addEventListener("deviceorientation", eventHandler);
+        });
+    }
+
+    /**
      * @hidden
      */
     public _onDeviceOrientationChangedObservable = new Observable<void>();
