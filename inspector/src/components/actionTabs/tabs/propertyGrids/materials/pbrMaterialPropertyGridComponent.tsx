@@ -34,13 +34,17 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         this.props.material.debugMode = state ? 21 : 0;
     }
 
+    switchMetallicMode(state: boolean) {
+        this.props.material.debugMode = state ? 62 : 0;
+    }
+
     renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>) {
         const material = this.props.material;
 
         return (
             <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">
                 <TextureLinkLineComponent label="Albedo" texture={material.albedoTexture} propertyName="albedoTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Metallic" texture={material.metallicTexture} propertyName="metallicTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                <TextureLinkLineComponent customDebugAction={state => this.switchMetallicMode(state)} label="Metallic" texture={material.metallicTexture} propertyName="metallicTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Reflection" texture={material.reflectionTexture} propertyName="reflectionTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Refraction" texture={material.refractionTexture} propertyName="refractionTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Micro-surface" texture={material.microSurfaceTexture} propertyName="microSurfaceTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
@@ -99,23 +103,24 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             // Lighting Params
             { label: "Surface Albedo", value: 60 },
             { label: "Reflectance 0", value: 61 },
-            { label: "Roughness", value: 62 },
-            { label: "AlphaG", value: 63 },
-            { label: "NdotV", value: 64 },
-            { label: "ClearCoat Color", value: 65 },
-            { label: "ClearCoat Roughness", value: 66 },
-            { label: "ClearCoat NdotV", value: 67 },
-            { label: "Transmittance", value: 68 },
-            { label: "Refraction Transmittance", value: 69 },
+            { label: "Metallic", value: 62 },
+            { label: "Roughness", value: 63 },
+            { label: "AlphaG", value: 64 },
+            { label: "NdotV", value: 65 },
+            { label: "ClearCoat Color", value: 66 },
+            { label: "ClearCoat Roughness", value: 67 },
+            { label: "ClearCoat NdotV", value: 68 },
+            { label: "Transmittance", value: 69 },
+            { label: "Refraction Transmittance", value: 70 },
             // Misc
-            { label: "SEO", value: 70 },
-            { label: "EHO", value: 71 },
-            { label: "Energy Factor", value: 72 },
-            { label: "Specular Reflectance", value: 73 },
-            { label: "Clear Coat Reflectance", value: 74 },
-            { label: "Sheen Reflectance", value: 75 },
-            { label: "Luminance Over Alpha", value: 76 },
-            { label: "Alpha", value: 77 },
+            { label: "SEO", value: 80 },
+            { label: "EHO", value: 81 },
+            { label: "Energy Factor", value: 82 },
+            { label: "Specular Reflectance", value: 83 },
+            { label: "Clear Coat Reflectance", value: 84 },
+            { label: "Sheen Reflectance", value: 85 },
+            { label: "Luminance Over Alpha", value: 86 },
+            { label: "Alpha", value: 87 },
         ];
 
         return (
