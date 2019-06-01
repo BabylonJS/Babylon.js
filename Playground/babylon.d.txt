@@ -13653,7 +13653,7 @@ declare module BABYLON {
         instancesData: Float32Array;
         overridenInstanceCount: number;
         isFrozen: boolean;
-        previousBatch: _InstancesBatch;
+        previousBatch: Nullable<_InstancesBatch>;
         hardwareInstancedRendering: boolean;
         sideOrientation: number;
     }
