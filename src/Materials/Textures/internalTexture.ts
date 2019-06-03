@@ -461,6 +461,11 @@ export class InternalTexture {
         if (index !== -1) {
             cache.splice(index, 1);
         }
+
+        var index = cache.indexOf(target);
+        if (index === -1) {
+            cache.push(target);
+        }
     }
 
     /**

@@ -114,7 +114,7 @@ export class PBRSubSurfaceConfiguration {
 
     private _indexOfRefraction = 1;
     /**
-     * Defines the indice of refraction used in the material.
+     * Defines the index of refraction used in the material.
      * https://en.wikipedia.org/wiki/List_of_refractive_indices
      */
     @serialize()
