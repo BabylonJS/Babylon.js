@@ -5,6 +5,9 @@ import { IInternalTextureLoader } from "../../../Materials/Textures/internalText
 import { _TimeToken } from "../../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 import { BasisTools } from "../../../Misc/basis";
+import { Texture } from '../texture';
+import { Tools } from '../../../Misc/tools';
+import { Scalar } from '../../../Maths/math.scalar';
 
 /**
  * Loader for .basis file format
@@ -100,7 +103,13 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                         source.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, texture, true);
                     });
                 }else {
+                    texture.width = fileInfo.width;
+                    texture.height = fileInfo.height;
                     texture.getEngine()._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(format!), fileInfo.width, fileInfo.height, transcodeResult.pixels, 0, 0);
+                    if(texture.getEngine().webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)){
+                        Tools.Warn("Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1.");
+                        texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
+                    }
                 }
             });
         });
