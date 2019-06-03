@@ -2,6 +2,9 @@
 attribute vec3 position;
 #include<bonesDeclaration>
 
+#include<morphTargetsVertexGlobalDeclaration>
+#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
+
 // Uniform
 #include<instancesDeclaration>
 
@@ -23,11 +26,14 @@ varying float vDepthMetric;
 
 void main(void)
 {
+vec3 positionUpdated = position;
+#include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+
 #include<instancesVertex>
 
 #include<bonesVertex>
 
-	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
+	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 	
 	vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y));
 
