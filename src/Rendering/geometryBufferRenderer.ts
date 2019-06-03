@@ -389,7 +389,6 @@ export class GeometryBufferRenderer {
                 // Morph targets
                 MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
 
-
                 // Velocity
                 if (this._enableVelocity) {
                     this._effect.setMatrix("previousWorld", this._previousTransformationMatrices[mesh.uniqueId].world);
