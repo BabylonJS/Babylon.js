@@ -981,45 +981,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
      * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
      * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
+     * @param predicate predicate that is passed in to getHierarchyBoundingVectors when selecting which object should be included when scaling
      * @returns the current mesh
      */
-    public normalizeToUnitCube(includeDescendants = true, ignoreRotation = false): AbstractMesh {
-        let storedRotation: Nullable<Vector3> = null;
-        let storedRotationQuaternion: Nullable<Quaternion> = null;
-
-        if (ignoreRotation) {
-            if (this.rotationQuaternion) {
-                storedRotationQuaternion = this.rotationQuaternion.clone();
-                this.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
-            } else if (this.rotation) {
-                storedRotation = this.rotation.clone();
-                this.rotation.copyFromFloats(0, 0, 0);
-            }
-        }
-
-        let boundingVectors = this.getHierarchyBoundingVectors(includeDescendants);
-        let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
-        let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
-
-        if (maxDimension === 0) {
-            return this;
-        }
-
-        let scale = 1 / maxDimension;
-
-        this.scaling.scaleInPlace(scale);
-
-        if (ignoreRotation) {
-            if (this.rotationQuaternion && storedRotationQuaternion) {
-                this.rotationQuaternion.copyFrom(storedRotationQuaternion);
-            } else if (this.rotation && storedRotation) {
-                this.rotation.copyFrom(storedRotation);
-            }
-        }
-
-        return this;
+    public normalizeToUnitCube(includeDescendants = true, ignoreRotation = false, predicate?: Nullable<(node: AbstractMesh) => boolean>): AbstractMesh {
+        return <AbstractMesh>super.normalizeToUnitCube(includeDescendants, ignoreRotation, predicate);
     }
-
     /**
      * Overwrite the current bounding info
      * @param boundingInfo defines the new bounding info
