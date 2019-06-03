@@ -49,6 +49,7 @@ varying vec4 vPreviousPosition;
 void main(void)
 {
 vec3 positionUpdated = position;
+vec3 normalUpdated = normal;
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include<instancesVertex>
@@ -62,7 +63,7 @@ vec3 positionUpdated = position;
 #include<bonesVertex>
 	vec4 pos = vec4(finalWorld * vec4(positionUpdated, 1.0));
 
-	vNormalV = normalize(vec3((view * finalWorld) * vec4(normal, 0.0)));
+	vNormalV = normalize(vec3((view * finalWorld) * vec4(normalUpdated, 0.0)));
 	vViewPos = view * pos;
 
 	#if defined(VELOCITY) && defined(BONES_VELOCITY_ENABLED)
