@@ -2,6 +2,10 @@ precision highp float;
 precision highp int;
 
 #include<bonesDeclaration>
+
+#include<morphTargetsVertexGlobalDeclaration>
+#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
+
 #include<instancesDeclaration>
 
 attribute vec3 position;
@@ -44,22 +48,25 @@ varying vec4 vPreviousPosition;
 
 void main(void)
 {
+vec3 positionUpdated = position;
+#include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+
 #include<instancesVertex>
 
 	#if defined(VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
 	// Compute velocity before bones computation
-	vCurrentPosition = viewProjection * finalWorld * vec4(position, 1.0);	
-	vPreviousPosition = previousViewProjection * previousWorld * vec4(position, 1.0);
+	vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+	vPreviousPosition = previousViewProjection * previousWorld * vec4(positionUpdated, 1.0);
 	#endif
 
 #include<bonesVertex>
-	vec4 pos = vec4(finalWorld * vec4(position, 1.0));
+	vec4 pos = vec4(finalWorld * vec4(positionUpdated, 1.0));
 
 	vNormalV = normalize(vec3((view * finalWorld) * vec4(normal, 0.0)));
 	vViewPos = view * pos;
 
 	#if defined(VELOCITY) && defined(BONES_VELOCITY_ENABLED)
-		vCurrentPosition = viewProjection * finalWorld * vec4(position, 1.0);
+		vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 
 		#if NUM_BONE_INFLUENCERS > 0
 			mat4 previousInfluence;
@@ -87,9 +94,9 @@ void main(void)
 				previousInfluence += mPreviousBones[int(matricesIndicesExtra[3])] * matricesWeightsExtra[3];
 			#endif
 
-			vPreviousPosition = previousViewProjection * previousWorld * previousInfluence * vec4(position, 1.0);
+			vPreviousPosition = previousViewProjection * previousWorld * previousInfluence * vec4(positionUpdated, 1.0);
 		#else
-			vPreviousPosition = previousViewProjection * previousWorld * vec4(position, 1.0);
+			vPreviousPosition = previousViewProjection * previousWorld * vec4(positionUpdated, 1.0);
 		#endif
 	#endif
 
@@ -97,7 +104,7 @@ void main(void)
 	vPosition = pos.xyz / pos.w;
 	#endif
 
-	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
+	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 
 #if defined(ALPHATEST) || defined(BASIC_RENDER)
 #ifdef UV1
