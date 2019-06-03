@@ -18,7 +18,7 @@
 - Added support for PBR [irradiance map](https://doc.babylonjs.com/how_to/physically_based_rendering_master#irradiance-map)
 - Ability to set render camera on utility layer instead of using the latest active camera ([TrevorDev](https://github.com/TrevorDev))
 - Method to check if device orientation is available ([TrevorDev](https://github.com/TrevorDev))
-- Added MorphTarget support to the DepthRenderer ([MarkusBillharz](https://github.com/MarkusBillharz))
+- Added MorphTarget support to the DepthRenderer and GeometryBufferRenderer ([MarkusBillharz](https://github.com/MarkusBillharz))
 
 ### Engine
 - Added preprocessors for shaders to improve how shaders are compiled for WebGL1/2 or WebGPU ([Deltakosh](https://github.com/deltakosh/))
