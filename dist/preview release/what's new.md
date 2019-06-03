@@ -4,7 +4,7 @@
 - WIP: Node Material (NEED DOC AND SAMPLES) ([Deltakosh](https://github.com/deltakosh/))
 - WIP: Node material editor (NEED DOC AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
 - WIP: WebGPU support (NEED DOC AND SAMPLES) ([Sebavan](https://github.com/sebavan/)
-- WIP: .basis texture file format support (NEED DEMO) ([TrevorDev](https://github.com/TrevorDev))
+- WIP: .basis texture file format support [Demo](https://www.babylonjs-playground.com/#4RN0VF) ([TrevorDev](https://github.com/TrevorDev))
 
 ## Optimizations
 
@@ -17,6 +17,7 @@
 - Unify preparation of instance attributes. Added `MaterialHelper.PushAttributesForInstances` ([MarkusBillharz](https://github.com/MarkusBillharz))
 - Added support for PBR [irradiance map](https://doc.babylonjs.com/how_to/physically_based_rendering_master#irradiance-map)
 - Ability to set render camera on utility layer instead of using the latest active camera ([TrevorDev](https://github.com/TrevorDev))
+- Method to check if device orientation is available ([TrevorDev](https://github.com/TrevorDev))
 
 ### Engine
 - Added preprocessors for shaders to improve how shaders are compiled for WebGL1/2 or WebGPU ([Deltakosh](https://github.com/deltakosh/))
@@ -30,6 +31,8 @@
 - Added context menu to add `SSAORenderingPipeline` and `SSAO2RenderingPipeline` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for texture creation and assignments per material ([Deltakosh](https://github.com/deltakosh/))
 - Added support for occlusion properties ([Deltakosh](https://github.com/deltakosh/))
+- Texture channels are now displayed in grayscale ([Deltakosh](https://github.com/deltakosh/))
+- Ambiant and metallic maps are displayed correctly on PBR material even when using ORM packed texture ([Deltakosh](https://github.com/deltakosh/))
 
 ### Tools
 - Added `Color3.toHSV()`, `Color3.toHSVToRef()` and `Color3.HSVtoRGBToRef()` ([Deltakosh](https://github.com/deltakosh/))
@@ -50,5 +53,8 @@
 - Runtime animation `goToFrame` when going back in time now correctly triggers future events when reached ([zakhenry](https://github.com/zakhenry))
 - Fixed bug in Ray.intersectsTriangle where the barycentric coordinates `bu` and `bv` being returned is actually `bv` and `bw`. ([bghgary](https://github.com/bghgary))
 - Do not call onError when creating a texture when falling back to another loader ([TrevorDev](https://github.com/TrevorDev))
+- Context loss should not cause PBR materials to render black ([TrevorDev](https://github.com/TrevorDev))
+- Only cast pointer ray input when pointer is locked in webVR ([TrevorDev](https://github.com/TrevorDev))
+- Avoid using default utility layer in gizmo manager to support multiple scenes ([TrevorDev](https://github.com/TrevorDev))
 
 ## Breaking changes
