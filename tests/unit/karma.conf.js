@@ -12,6 +12,8 @@ module.exports = function(config) {
         frameworks: ['mocha', 'chai', 'sinon'],
 
         files: [
+            { pattern: 'dist/ammo.js', watched: false },    // need ammo for physics test
+
             '!./**/*.d.ts',
             './Tools/DevLoader/BabylonLoader.js',
             './tests/unit/babylon/babylon.example.tests.js',
@@ -29,6 +31,7 @@ module.exports = function(config) {
             './tests/unit/babylon/src/Meshes/babylon.geometry.tests.js',
             './tests/unit/babylon/src/Meshes/babylon.mesh.vertexData.tests.js',
             './tests/unit/babylon/src/Misc/babylon.promise.tests.js',
+            './tests/unit/babylon/src/Physics/babylon.physicsComponents.tests.js',
             { pattern: 'dist/preview release/**/*.js', watched: false, included: false, served: true },
             { pattern: 'assets/**/*', watched: false, included: false, served: true },
             //{ pattern: 'tests/**/*', watched: false, included: false, served: true },

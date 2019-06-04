@@ -8,6 +8,7 @@ import { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Tmp, Space } from "../Maths/math";
 import { Node } from "../node";
 import { Bone } from "../Bones/bone";
+import { AbstractMesh } from '../Meshes/abstractMesh';
 /**
  * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
  * @see https://doc.babylonjs.com/how_to/transformnode
@@ -1263,5 +1264,49 @@ export class TransformNode extends Node {
         }
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
+    }
+
+    /**
+     * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
+     * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
+     * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
+     * @param predicate predicate that is passed in to getHierarchyBoundingVectors when selecting which object should be included when scaling
+     * @returns the current mesh
+     */
+    public normalizeToUnitCube(includeDescendants = true, ignoreRotation = false, predicate?: Nullable<(node: AbstractMesh) => boolean>): TransformNode {
+        let storedRotation: Nullable<Vector3> = null;
+        let storedRotationQuaternion: Nullable<Quaternion> = null;
+
+        if (ignoreRotation) {
+            if (this.rotationQuaternion) {
+                storedRotationQuaternion = this.rotationQuaternion.clone();
+                this.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+            } else if (this.rotation) {
+                storedRotation = this.rotation.clone();
+                this.rotation.copyFromFloats(0, 0, 0);
+            }
+        }
+
+        let boundingVectors = this.getHierarchyBoundingVectors(includeDescendants, predicate);
+        let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
+        let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+
+        if (maxDimension === 0) {
+            return this;
+        }
+
+        let scale = 1 / maxDimension;
+
+        this.scaling.scaleInPlace(scale);
+
+        if (ignoreRotation) {
+            if (this.rotationQuaternion && storedRotationQuaternion) {
+                this.rotationQuaternion.copyFrom(storedRotationQuaternion);
+            } else if (this.rotation && storedRotation) {
+                this.rotation.copyFrom(storedRotation);
+            }
+        }
+
+        return this;
     }
 }
