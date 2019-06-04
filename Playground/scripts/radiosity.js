@@ -142,17 +142,30 @@ var createScene = function() {
         var frameCount = 0;
         var passes = 0;
         var observer;
+        var directLightShot = false;
         observer = scene.onAfterRenderTargetsRenderObservable.add(() => {
             frameCount++;
             if (true && (frameCount % 60) === 0) {
                 engine.stopRenderLoop();
-                var energyLeft = pr.gatherRadiosity();
+                if (!directLightShot) {
+                    var { hasShot, energyShot } = pr.gatherDirectLightOnly();
+                    if (hasShot) {
+                        console.log("Direct light shot ! ");
+                        directLightShot = true;
+                    }
+                } else {
+                    var energyLeft = pr.gatherRadiosity();
+
+                    if (!energyLeft || passes > 6) {
+                        console.log("Converged ! ");
+                        scene.onAfterRenderTargetsRenderObservable.remove(observer);
+                    }
+                }
+                
                 engine.runRenderLoop(renderLoop);
 
-                if (!energyLeft || passes > 6) {
-                    console.log("Converged ! ");
-                    scene.onAfterRenderTargetsRenderObservable.remove(observer);
-                }
+
+
                 passes++;
             }
         });

@@ -79,6 +79,7 @@ export class PatchRenderer {
     public static RADIOSITY_INFO_LOGS_LEVEL : number = 1;
     public static WARNING_LOGS : number = 1;
 
+    private _activeShooters: Mesh[] = [];
     private _scene: Scene;
     // private _htScene: Scene; // Higher tesselated scene
     private _meshes: Mesh[];
@@ -523,7 +524,7 @@ export class PatchRenderer {
         }
     }
 
-    public renderToRadiosityTexture(subMesh: SubMesh, patch: Patch) {
+    public renderToRadiosityTexture(subMesh: SubMesh, patch: Patch, doNotWriteToGathering = false) {
         if (!this.isGatheringEffectReady()) {
             return;
         }
@@ -547,6 +548,7 @@ export class PatchRenderer {
         this._shootEffect.setVector3("shootEnergy", patch.residualEnergy);
         this._shootEffect.setFloat("shootDArea", area); // TODO
         this._shootEffect.setMatrix("view", patch.viewMatrix);
+        this._shootEffect.setFloat("gatheringScale", doNotWriteToGathering ? 0.0 : 1.0);
 
         if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 3) {
             console.log(`Lightmap size for this submesh : ${mrt.getSize().width} x ${mrt.getSize().height}`);
@@ -606,7 +608,7 @@ export class PatchRenderer {
         // var defines = [];
 
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
-        var uniforms = ["view", "shootPos", "shootNormal", "shootEnergy", "shootDArea"]; // ["world", "mBones", "view", "nearFar"]
+        var uniforms = ["view", "shootPos", "shootNormal", "shootEnergy", "shootDArea", "gatheringScale"]; // ["world", "mBones", "view", "nearFar"]
         var samplers = ["itemBuffer", "worldPosBuffer", "worldNormalBuffer", "idBuffer", "residualBuffer", "gatheringBuffer"];
         // var mesh = subMesh.getMesh();
 
@@ -648,6 +650,52 @@ export class PatchRenderer {
         }
 
         return null;
+    }
+
+    public gatherDirectLightOnly() : { hasShot: boolean, energyShot: number } {
+        if (!this.isRadiosityDataEffectReady() || !this.isGatheringEffectReady() || !this.isPatchEffectReady() || !this.isDilateEffectReady() || !this.isNextShooterEffectReady()) {
+            if (PatchRenderer.WARNING_LOGS) {
+                console.log("Not ready yet");
+            }
+
+            return {
+                hasShot: false,
+                energyShot: 0
+            };
+        }
+
+        this.nextShooter(true);
+
+        let emissiveMeshes = this._activeShooters;
+
+        // Shooting ALL direct light in no particular order
+        let shooter;
+        let energyShot = 0;
+        for (let k = 0; k < emissiveMeshes.length; k++) {
+            shooter = emissiveMeshes[k].subMeshes[0]; // TODO : mesh ? submesh ?
+
+            // TODO : factorize code with gatherRadiosity
+            energyShot += this.updatePatches(shooter);
+            this.consumeEnergyInTexture(shooter);
+
+            for (let i = 0; i < shooter.radiosityPatches.length; i++) {
+                this._currentPatch = shooter.radiosityPatches[i];
+                this._patchMap.render(false);
+
+                for (let j = 0; j < this._patchedSubMeshes.length; j++) {
+                    if (this._patchedSubMeshes[j] === shooter) {
+                        continue;
+                    }
+
+                    this.renderToRadiosityTexture(this._patchedSubMeshes[j], shooter.radiosityPatches[i], true);
+                }
+            }
+        }
+
+        return {
+            hasShot: true,
+            energyShot: energyShot
+        };
     }
 
     public gatherRadiosity(): boolean {
@@ -781,7 +829,7 @@ export class PatchRenderer {
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
-    public nextShooter(): Nullable<SubMesh> {
+    public nextShooter(trackShooters = false): Nullable<SubMesh> {
         if (!this.isNextShooterEffectReady()) {
             return null;
         }
@@ -797,6 +845,10 @@ export class PatchRenderer {
         let vb: any = {};
         vb[VertexBuffer.PositionKind] = this._vertexBuffer;
         engine.bindBuffers(vb, this._indexBuffer, this._nextShooterEffect);
+
+        if (trackShooters) {
+            this._activeShooters.length = 0;
+        }
 
         for (let i = 0; i < this._meshes.length; i++) {
             var mesh = this._meshes[i];
@@ -821,6 +873,14 @@ export class PatchRenderer {
                 console.log(`Mesh ${mesh.name} has for Lod ${lod} and dimensions : ${mrt.getRenderWidth()} x ${mrt.getRenderWidth()}`);
                 console.log("Current value of the nextShooter texture readback : ");
                 console.log(engine.readPixelsFloat(0, 0, 1, 1));
+            }
+
+            if (trackShooters) {
+                let invEnergy = engine.readPixelsFloat(0, 0, 1, 1)[3];
+                if (invEnergy !== 1) {
+                    this._activeShooters.push(this._meshes[i]);
+                }
+                engine.clear(new Color4(0.0, 0.0, 0.0, 0.0), true, true, true);
             }
         }
         // Read result directly after render

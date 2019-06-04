@@ -16,6 +16,7 @@ uniform vec3 shootPos;     // world-space position of shooter
 uniform vec3 shootNormal;  // world-space normal of shooter
 uniform vec3 shootEnergy;  // energy from shooter residual texture
 uniform float shootDArea;  // the delta area of the shooter
+uniform float gatheringScale;  // scaling of the value written to gathering texture
 
 uniform vec3 recvColor;  // reflectivity
 
@@ -80,5 +81,5 @@ void main(void) {
     
     vec3 energy = formFactorEnergy();
 	  glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
-    glFragData[1] = vec4(energy + texture(gatheringBuffer, vUV).xyz, worldPos4.a);
+    glFragData[1] = vec4(energy * gatheringScale + texture(gatheringBuffer, vUV).xyz, worldPos4.a);
 }
