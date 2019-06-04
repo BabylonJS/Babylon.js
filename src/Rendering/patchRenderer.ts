@@ -100,6 +100,7 @@ export class PatchRenderer {
 
     public useDepthCompare: boolean = true;
     public useHemicube: boolean = true;
+    private _patchMapResolution: number = 512;
 
     public static PERFORMANCE_LOGS_LEVEL: number = 1;
     public static RADIOSITY_INFO_LOGS_LEVEL: number = 1;
@@ -712,7 +713,7 @@ export class PatchRenderer {
     }
 
     public buildVisibilityMapCube() {
-        this._patchMap = new RenderTargetTexture("patch", 256, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false)
+        this._patchMap = new RenderTargetTexture("patch", this._patchMapResolution, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false)
         this._patchMap.renderParticles = false;
         this._patchMap.renderList = this._meshes;
         this._patchMap.activeCamera = null;
@@ -791,15 +792,15 @@ export class PatchRenderer {
             [0, 0],
             [0, 0],
             [0.5, 0],
-            [0, 0.5],
+            [0, 0],
             [0, 0.5],
         ];
         let cubeSides = [
             gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
             gl.TEXTURE_CUBE_MAP_POSITIVE_X,
             gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
-            gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
             gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+            gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
         ];
         for (let j = 0; j < 5; j++) {
             // Full cube viewport when rendering the front face
