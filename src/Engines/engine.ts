@@ -3142,7 +3142,7 @@ export class Engine {
     private _drawMode(fillMode: number): number {
         switch (fillMode) {
             // Triangle views
-              case Constants.MATERIAL_TriangleFillMode:
+            case Constants.MATERIAL_TriangleFillMode:
                 return this._gl.TRIANGLES;
             case Constants.MATERIAL_PointFillMode:
                 return this._gl.POINTS;
@@ -5604,10 +5604,10 @@ export class Engine {
             let texture = textures[i].getInternalTexture();
 
             if (texture) {
-                this._textureUnits[channel + i] = channel + i;
+                this._textureUnits[i] = channel + i;
                 texture._associatedChannel = channel + i;
             } else {
-                this._textureUnits[channel + i] = -1;
+                this._textureUnits[i] = -1;
             }
         }
         this._gl.uniform1iv(uniform, this._textureUnits);
