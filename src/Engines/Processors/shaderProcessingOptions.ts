@@ -1,4 +1,5 @@
 import { IShaderProcessor } from './iShaderProcessor';
+import { Nullable } from '../../types';
 
 /** @hidden */
 export interface ProcessingOptions {
@@ -9,7 +10,7 @@ export interface ProcessingOptions {
     supportsUniformBuffers: boolean;
     shadersRepository: string;
     includesShadersStore: { [key: string]: string };
-    processor?: IShaderProcessor;
+    processor: Nullable<IShaderProcessor>;
     version: string;
     platformName: string;
     lookForClosingBracketForUniformBuffer?: boolean;
