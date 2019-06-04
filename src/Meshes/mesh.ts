@@ -386,7 +386,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
                 "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw",
                 "onAfterWorldMatrixUpdateObservable", "onCollideObservable", "onCollisionPositionChangeObservable", "onRebuildObservable",
-                "onDisposeObservable"
+                "onDisposeObservable", "lightSources"
             ],
                 ["_poseMatrix"]);
 
