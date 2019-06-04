@@ -227,6 +227,20 @@ export class GeometryBufferRenderer {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
 
+        // Morph targets
+        const morphTargetManager = (mesh as Mesh).morphTargetManager;
+        let numMorphInfluencers = 0;
+        if (morphTargetManager) {
+            if (morphTargetManager.numInfluencers > 0) {
+                numMorphInfluencers = morphTargetManager.numInfluencers;
+
+                defines.push("#define MORPHTARGETS");
+                defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
+
+                MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, { "NUM_MORPH_INFLUENCERS": numMorphInfluencers });
+            }
+        }
+
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
@@ -242,10 +256,10 @@ export class GeometryBufferRenderer {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("geometry",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones"],
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones", "morphTargetInfluences"],
                 ["diffuseSampler"], join,
                 undefined, undefined, undefined,
-                { buffersCount: this._enablePosition ? 3 : 2 });
+                { buffersCount: this._enablePosition ? 3 : 2, maxSimultaneousMorphTargets: numMorphInfluencers});
         }
 
         return this._effect.isReady();
@@ -371,6 +385,9 @@ export class GeometryBufferRenderer {
                         this._effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[mesh.uniqueId]);
                     }
                 }
+
+                // Morph targets
+                MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
 
                 // Velocity
                 if (this._enableVelocity) {
