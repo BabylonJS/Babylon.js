@@ -18,6 +18,8 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { IShaderProcessor } from "./Processors/iShaderProcessor";
+import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
 
 /**
  * Options to create the WebGPU engine
@@ -332,6 +334,14 @@ export class WebGPUEngine extends Engine {
             stencilStoreOp: WebGPUConstants.GPUStoreOp_store,
             clearDepth: 1.0
         };
+    }
+
+    /**
+     * Gets a shader processor implementation fitting with the current engine type.
+     * @returns The shader processor implementation.
+     */
+    protected _getShaderProcessor(): Nullable<IShaderProcessor> {
+        return new WebGPUShaderProcessor();
     }
 
     //------------------------------------------------------------------------------
@@ -743,7 +753,7 @@ export class WebGPUEngine extends Engine {
     private _compilePipelineStageDescriptor(vertexCode: string, fragmentCode: string, defines: Nullable<string>): GPURenderPipelineStageDescriptor {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
-        var shaderVersion = "#version 450\n#define WEBGPU \n";
+        var shaderVersion = "#version 450\n";
         var vertexShader = this._compileShaderToSpirV(vertexCode, "vertex", defines, shaderVersion);
         var fragmentShader = this._compileShaderToSpirV(fragmentCode, "fragment", defines, shaderVersion);
 

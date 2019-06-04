@@ -558,7 +558,7 @@ export class Engine {
     // Public members
 
     /** @hidden */
-    public _shaderProcessor: IShaderProcessor;
+    public _shaderProcessor: Nullable<IShaderProcessor>;
 
     /**
      * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
@@ -1216,11 +1216,6 @@ export class Engine {
             this.initWebVR();
         }
 
-        // Shader processor
-        if (this.webGLVersion > 1) {
-            this._shaderProcessor = new WebGL2ShaderProcessor();
-        }
-
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
 
@@ -1285,6 +1280,20 @@ export class Engine {
         if (!Engine.audioEngine && audioEngine && Engine.AudioEngineFactory) {
             Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
         }
+
+        // Shader processor
+        this._shaderProcessor = this._getShaderProcessor();
+    }
+
+    /**
+     * Gets a shader processor implementation fitting with the current engine type.
+     * @returns The shader processor implementation.
+     */
+    protected _getShaderProcessor(): Nullable<IShaderProcessor> {
+        if (this.webGLVersion > 1) {
+            return new WebGL2ShaderProcessor();
+        }
+        return null;
     }
 
     // WebVR
