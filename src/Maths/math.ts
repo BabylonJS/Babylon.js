@@ -65,9 +65,9 @@ export class Color3 {
      * @returns an unique number that can be used to hash Color3 objects
      */
     public getHashCode(): number {
-        let hash = (this.r * 255) || 0;
-        hash = (hash * 397) ^ ((this.g * 255) || 0);
-        hash = (hash * 397) ^ ((this.b * 255) || 0);
+        let hash = (this.r * 255) | 0;
+        hash = (hash * 397) ^ ((this.g * 255) | 0);
+        hash = (hash * 397) ^ ((this.b * 255) | 0);
         return hash;
     }
 
@@ -779,10 +779,10 @@ export class Color4 {
      * @returns an unique number that can be used to hash Color4 objects
      */
     public getHashCode(): number {
-        let hash = (this.r * 255) || 0;
-        hash = (hash * 397) ^ ((this.g * 255) || 0);
-        hash = (hash * 397) ^ ((this.b * 255) || 0);
-        hash = (hash * 397) ^ ((this.a * 255) || 0);
+        let hash = (this.r * 255) | 0;
+        hash = (hash * 397) ^ ((this.g * 255) | 0);
+        hash = (hash * 397) ^ ((this.b * 255) | 0);
+        hash = (hash * 397) ^ ((this.a * 255) | 0);
         return hash;
     }
 
@@ -1035,8 +1035,8 @@ export class Vector2 {
      * @returns the Vector2 hash code as a number
      */
     public getHashCode(): number {
-        let hash = this.x || 0;
-        hash = (hash * 397) ^ (this.y || 0);
+        let hash = this.x | 0;
+        hash = (hash * 397) ^ (this.y | 0);
         return hash;
     }
 
@@ -1690,9 +1690,9 @@ export class Vector3 {
      * @returns a number which tends to be unique between Vector3 instances
      */
     public getHashCode(): number {
-        let hash = this.x || 0;
-        hash = (hash * 397) ^ (this.y || 0);
-        hash = (hash * 397) ^ (this.z || 0);
+        let hash = this.x | 0;
+        hash = (hash * 397) ^ (this.y | 0);
+        hash = (hash * 397) ^ (this.z | 0);
         return hash;
     }
 
@@ -2913,10 +2913,10 @@ export class Vector4 {
      * @returns a unique hash code
      */
     public getHashCode(): number {
-        let hash = this.x || 0;
-        hash = (hash * 397) ^ (this.y || 0);
-        hash = (hash * 397) ^ (this.z || 0);
-        hash = (hash * 397) ^ (this.w || 0);
+        let hash = this.x | 0;
+        hash = (hash * 397) ^ (this.y | 0);
+        hash = (hash * 397) ^ (this.z | 0);
+        hash = (hash * 397) ^ (this.w | 0);
         return hash;
     }
 
@@ -3614,8 +3614,8 @@ export class Size implements ISize {
      * @returns a hash code for a unique width and height
      */
     public getHashCode(): number {
-        let hash = this.width || 0;
-        hash = (hash * 397) ^ (this.height || 0);
+        let hash = this.width | 0;
+        hash = (hash * 397) ^ (this.height | 0);
         return hash;
     }
     /**
@@ -3766,10 +3766,10 @@ export class Quaternion {
      * @returns the quaternion hash code
      */
     public getHashCode(): number {
-        let hash = this.x || 0;
-        hash = (hash * 397) ^ (this.y || 0);
-        hash = (hash * 397) ^ (this.z || 0);
-        hash = (hash * 397) ^ (this.w || 0);
+        let hash = this.x | 0;
+        hash = (hash * 397) ^ (this.y | 0);
+        hash = (hash * 397) ^ (this.z | 0);
+        hash = (hash * 397) ^ (this.w | 0);
         return hash;
     }
 
@@ -5010,9 +5010,9 @@ export class Matrix {
      * @returns the hash code
      */
     public getHashCode(): number {
-        let hash = this._m[0] || 0;
+        let hash = this._m[0] | 0;
         for (let i = 1; i < 16; i++) {
-            hash = (hash * 397) ^ (this._m[i] || 0);
+            hash = (hash * 397) ^ (this._m[i] | 0);
         }
         return hash;
     }
@@ -6430,7 +6430,7 @@ export class Plane {
      */
     public getHashCode(): number {
         let hash = this.normal.getHashCode();
-        hash = (hash * 397) ^ (this.d || 0);
+        hash = (hash * 397) ^ (this.d | 0);
         return hash;
     }
     /**

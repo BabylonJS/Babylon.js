@@ -18,6 +18,8 @@
 - Added support for PBR [irradiance map](https://doc.babylonjs.com/how_to/physically_based_rendering_master#irradiance-map)
 - Ability to set render camera on utility layer instead of using the latest active camera ([TrevorDev](https://github.com/TrevorDev))
 - Move normalizeToUnitCube to transformNode instead of abstract mesh and add predicate to exclude sub objects when scaling ([TrevorDev](https://github.com/TrevorDev))
+- Method to check if device orientation is available ([TrevorDev](https://github.com/TrevorDev))
+- Added MorphTarget support to the DepthRenderer ([MarkusBillharz](https://github.com/MarkusBillharz))
 
 ### Engine
 - Added preprocessors for shaders to improve how shaders are compiled for WebGL1/2 or WebGPU ([Deltakosh](https://github.com/deltakosh/))
@@ -31,6 +33,8 @@
 - Added context menu to add `SSAORenderingPipeline` and `SSAO2RenderingPipeline` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for texture creation and assignments per material ([Deltakosh](https://github.com/deltakosh/))
 - Added support for occlusion properties ([Deltakosh](https://github.com/deltakosh/))
+- Texture channels are now displayed in grayscale ([Deltakosh](https://github.com/deltakosh/))
+- Ambiant and metallic maps are displayed correctly on PBR material even when using ORM packed texture ([Deltakosh](https://github.com/deltakosh/))
 
 ### Tools
 - Added `Color3.toHSV()`, `Color3.toHSVToRef()` and `Color3.HSVtoRGBToRef()` ([Deltakosh](https://github.com/deltakosh/))

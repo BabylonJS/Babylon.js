@@ -66,7 +66,7 @@ class _InstanceDataStorage {
     public instancesData: Float32Array;
     public overridenInstanceCount: number;
     public isFrozen: boolean;
-    public previousBatch: _InstancesBatch;
+    public previousBatch: Nullable<_InstancesBatch>;
     public hardwareInstancedRendering: boolean;
     public sideOrientation: number;
 }
@@ -1563,6 +1563,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @hidden */
     public _unFreeze() {
         this._instanceDataStorage.isFrozen = false;
+        this._instanceDataStorage.previousBatch = null;
     }
 
     /**
