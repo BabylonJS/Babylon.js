@@ -1,5 +1,6 @@
 import { Nullable } from "../types";
 import { Color4 } from "../Maths/math";
+import { Mesh } from "../Meshes/mesh";
 import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SmartArray } from "../Misc/smartArray";
@@ -118,6 +119,9 @@ export class DepthRenderer {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                 }
 
+                // Morph targets
+                MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
+
                 // Draw
                 mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                     (isInstance, world) => this._effect.setMatrix("world", world));
@@ -190,6 +194,20 @@ export class DepthRenderer {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
 
+        // Morph targets
+        const morphTargetManager = (mesh as Mesh).morphTargetManager;
+        let numMorphInfluencers = 0;
+        if (morphTargetManager) {
+            if (morphTargetManager.numInfluencers > 0) {
+                numMorphInfluencers = morphTargetManager.numInfluencers;
+
+                defines.push("#define MORPHTARGETS");
+                defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
+
+                MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, { "NUM_MORPH_INFLUENCERS": numMorphInfluencers });
+            }
+        }
+
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
@@ -202,8 +220,9 @@ export class DepthRenderer {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("depth",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues"],
-                ["diffuseSampler"], join);
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences"],
+                ["diffuseSampler"], join,
+                undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 
         return this._effect.isReady();

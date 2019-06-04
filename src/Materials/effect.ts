@@ -1038,11 +1038,18 @@ export class Effect implements IDisposable {
      */
     public setTextureArray(channel: string, textures: BaseTexture[]): void {
         let exName = channel + "Ex";
-        if (this._samplerList.indexOf(exName) === -1) {
-            var initialPos = this._samplers[channel];
+        if (this._samplerList.indexOf(exName + "0") === -1) {
+            const initialPos = this._samplerList.indexOf(channel);
             for (var index = 1; index < textures.length; index++) {
-                this._samplerList.splice(initialPos + index, 0, exName);
-                this._samplers[exName] = initialPos + index;
+                const currentExName = exName + (index - 1).toString();
+                this._samplerList.splice(initialPos + index, 0, currentExName);
+            }
+
+            // Reset every channels
+            let channelIndex = 0;
+            for (var key of this._samplerList) {
+                this._samplers[key] = channelIndex;
+                channelIndex += 1;
             }
         }
 
