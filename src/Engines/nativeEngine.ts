@@ -17,6 +17,7 @@ import { Scene } from "../scene";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
 import { WebRequest } from '../Misc/webRequest';
+import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
 
 interface INativeEngine {
     requestAnimationFrame(callback: () => void): void;
@@ -215,9 +216,11 @@ export class NativeEngine extends Engine {
 
         this._options = options;
 
-        // TODO: Initialize this more correctly based on the hardware capabilities reported by Spectre.
+        this._webGLVersion = 2;
+        this.disableUniformBuffers = true;
+
+        // TODO: Initialize this more correctly based on the hardware capabilities.
         // Init caps
-        // We consider we are on a webgl1 capable device
 
         this._caps = new EngineCapabilities();
         this._caps.maxTexturesImageUnits = 16;
@@ -273,6 +276,9 @@ export class NativeEngine extends Engine {
         if (typeof Blob === "undefined") {
             (window.Blob as any) = function() { };
         }
+
+        // Shader processor
+        this._shaderProcessor = new NativeShaderProcessor();
     }
 
     /**
@@ -486,18 +492,9 @@ export class NativeEngine extends Engine {
     }
 
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
-        context = context || this._gl;
-
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
-
-        const shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
-        const vertexShader = Engine._concatenateShader(vertexCode, defines, shaderVersion);
-        const fragmentShader = Engine._concatenateShader(fragmentCode, defines, shaderVersion);
-
-        const program = this._native.createProgram(vertexShader, fragmentShader);
-
+        const program = this._native.createProgram(vertexCode, fragmentCode);
         this.onAfterShaderCompilationObservable.notifyObservers(this);
-
         return program;
     }
 
