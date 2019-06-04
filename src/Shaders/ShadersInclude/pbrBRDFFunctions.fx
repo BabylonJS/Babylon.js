@@ -15,12 +15,12 @@
 #endif
 
 #ifdef ENVIRONMENTBRDF
-    vec3 getBRDFLookup(float NdotV, float perceptualRoughness, sampler2D brdfSampler) {
+    vec3 getBRDFLookup(float NdotV, float perceptualRoughness) {
         // Indexed on cos(theta) and roughness
         vec2 UV = vec2(NdotV, perceptualRoughness);
         
         // We can find the scale and offset to apply to the specular value.
-        vec4 brdfLookup = texture2D(brdfSampler, UV);
+        vec4 brdfLookup = texture2D(environmentBrdfSampler, UV);
 
         #ifdef ENVIRONMENTBRDF_RGBD
             brdfLookup.rgb = fromRGBD(brdfLookup.rgba);

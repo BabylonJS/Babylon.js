@@ -18,6 +18,10 @@ export class ShaderCodeNode {
             let value: string = this.line;
             let processor = options.processor;
             if (processor) {
+                if (processor.linePreProcessor) {
+                    value = processor.linePreProcessor(value, options.isFragment);
+                }
+
                 if (processor.attributeProcessor && Tools.StartsWith(this.line, "attribute")) {
                     value = processor.attributeProcessor(this.line);
                 } else if (processor.varyingProcessor && Tools.StartsWith(this.line, "varying")) {
@@ -42,10 +46,6 @@ export class ShaderCodeNode {
                         options.lookForClosingBracketForUniformBuffer = false;
                         value = processor.endOfUniformBufferProcessor(this.line, options.isFragment);
                     }
-                }
-
-                if (processor.lineProcessor) {
-                    value = processor.lineProcessor(value, options.isFragment);
                 }
             }
 
