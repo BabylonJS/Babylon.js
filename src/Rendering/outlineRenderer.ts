@@ -1,6 +1,6 @@
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
-import { _InstancesBatch } from "../Meshes/mesh";
+import {_InstancesBatch, Mesh} from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
@@ -188,6 +188,9 @@ export class OutlineRenderer implements ISceneComponent {
             this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
         }
 
+        // Morph targets
+        MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
+
         mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
 
         // Alpha test
@@ -253,6 +256,20 @@ export class OutlineRenderer implements ISceneComponent {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
 
+        // Morph targets
+        const morphTargetManager = (mesh as Mesh).morphTargetManager;
+        let numMorphInfluencers = 0;
+        if (morphTargetManager) {
+            if (morphTargetManager.numInfluencers > 0) {
+                numMorphInfluencers = morphTargetManager.numInfluencers;
+
+                defines.push("#define MORPHTARGETS");
+                defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
+
+                MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, { "NUM_MORPH_INFLUENCERS": numMorphInfluencers });
+            }
+        }
+
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
@@ -265,8 +282,10 @@ export class OutlineRenderer implements ISceneComponent {
             this._cachedDefines = join;
             this._effect = this.scene.getEngine().createEffect("outline",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant"],
-                ["diffuseSampler"], join);
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant", "morphTargetInfluences"],
+                ["diffuseSampler"], join,
+                undefined, undefined, undefined,
+                { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 
         return this._effect.isReady();
