@@ -161,6 +161,7 @@ export class WebGPUEngine extends Engine {
         }
 
         this._isWebGPU = true;
+        this._shaderPlatformName = "WEBGPU";
 
         if (options.deterministicLockstep === undefined) {
             options.deterministicLockstep = false;

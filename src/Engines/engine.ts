@@ -959,14 +959,23 @@ export class Engine {
      */
     public readonly premultipliedAlpha: boolean = true;
 
+    /** @hidden */
     protected _isWebGPU: boolean = false;
-
     /**
      * Gets a boolean indicating if the engine runs in WebGPU or not.
      */
     public get isWebGPU(): boolean {
         return this._isWebGPU;
     }
+
+    /** @hidden */
+    protected _shaderPlatformName: string;
+    /**
+     * Gets the shader platfrom name used by the effects.
+     */
+    public get shaderPlatformName: string {
+        return this._shaderPlatformName;
+    };
 
     /**
      * Creates a new engine
@@ -1070,10 +1079,12 @@ export class Engine {
                     this._gl = <any>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
                     if (this._gl) {
                         this._webGLVersion = 2.0;
+                        this._shaderPlatformName = "WEBGL2";
 
                         // Prevent weird browsers to lie :-)
                         if (!this._gl.deleteQuery) {
                             this._webGLVersion = 1.0;
+                            this._shaderPlatformName = "WEBGL1";
                         }
                     }
                 } catch (e) {
@@ -1139,6 +1150,7 @@ export class Engine {
 
             if (this._gl.renderbufferStorageMultisample) {
                 this._webGLVersion = 2.0;
+                this._shaderPlatformName = "WEBGL2";
             }
 
             const attributes = this._gl.getContextAttributes();
