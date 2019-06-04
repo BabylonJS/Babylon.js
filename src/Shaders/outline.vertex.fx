@@ -4,6 +4,9 @@ attribute vec3 normal;
 
 #include<bonesDeclaration>
 
+#include<morphTargetsVertexGlobalDeclaration>
+#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
+
 // Uniform
 uniform float offset;
 
@@ -25,7 +28,11 @@ attribute vec2 uv2;
 
 void main(void)
 {
-	vec3 offsetPosition = position + normal * offset;
+    vec3 positionUpdated = position;
+    vec3 normalUpdated = normal;
+    #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+
+	vec3 offsetPosition = positionUpdated + (normalUpdated * offset);
 
 #include<instancesVertex>
 #include<bonesVertex>
