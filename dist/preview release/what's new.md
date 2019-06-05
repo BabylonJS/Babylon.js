@@ -49,6 +49,9 @@
 - Update Ammo.js library to support global collision contact callbacks ([MackeyK24](https://github.com/MackeyK24/))
 - Update AmmoJSPlugin to allow your own broadphase overlapping pair cache ([MackeyK24](https://github.com/MackeyK24/))
 
+### Loaders
+- Added support for non-float accessors in animation data for glTF loader. ([bghgary](https://github.com/bghgary))
+
 ## Bug fixes
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Removing assetContainer from scene will also remove gui layers ([TrevorDev](https://github.com/TrevorDev))
