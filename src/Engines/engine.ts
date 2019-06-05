@@ -973,9 +973,9 @@ export class Engine {
     /**
      * Gets the shader platfrom name used by the effects.
      */
-    public get shaderPlatformName: string {
+    public get shaderPlatformName(): string {
         return this._shaderPlatformName;
-    };
+    }
 
     /**
      * Creates a new engine
