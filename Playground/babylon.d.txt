@@ -5939,7 +5939,7 @@ declare module BABYLON {
          * @param byteStride the byte stride of the data
          * @param componentCount the number of components per element
          * @param componentType the type of the component
-         * @param count the total number of components
+         * @param count the number of values to enumerate
          * @param normalized whether the data is normalized
          * @param callback the callback function called for each value
          */
@@ -49753,7 +49753,11 @@ declare module BABYLON {
         /** Color3 or Color4 */
         Color3OrColor4 = 96,
         /** Vector3 or Color3 */
-        Vector3OrColor3OrVector4OrColor4 = 120
+        Vector3OrColor3OrVector4OrColor4 = 120,
+        /** Detect type based on connection */
+        AutoDetect = 1024,
+        /** Output type that will be defined by input type */
+        BasedOnInput = 2048
     }
 }
 declare module BABYLON {
@@ -50426,7 +50430,9 @@ declare module BABYLON {
         private _valueCallback;
         private _mode;
         /** @hidden */private _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        /** @hidden */private _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */private _needToEmitVarying: boolean;
+        private _type;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -51025,6 +51031,36 @@ declare module BABYLON {
          * Gets the value input component
          */
         readonly value: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to scale a value
+     */
+    export class ScaleBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ScaleBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the value operand input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the scale operand input component
+         */
+        readonly scale: NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        readonly right: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
