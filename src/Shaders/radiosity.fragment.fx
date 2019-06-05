@@ -67,7 +67,7 @@ vec3 visible()
   depthProj = depthProj * 0.5 + 0.5;
 
   float depth = texture(itemBuffer, proj.xy).r;
-  return float(depthProj - depth <= 1e-4);
+  return float(depthProj - depth <= 1e-6);
   #else
   // Compare the value in item buffer to the ID of the fragment
   proj = normalize(proj);

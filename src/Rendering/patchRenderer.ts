@@ -100,6 +100,7 @@ export class PatchRenderer {
 
     public useDepthCompare: boolean = true;
     public useHemicube: boolean = true;
+    private _cachePatches: boolean = false;
     private _patchMapResolution: number = 512;
 
     public static PERFORMANCE_LOGS_LEVEL: number = 1;
@@ -287,7 +288,7 @@ export class PatchRenderer {
             // TODO : merge functions ?
             var uniformCb = (effect: Effect, data: any[]): void => {
                 var mesh = (<SubMesh>data[0]).getMesh();
-                var width = (<any>mesh).__lightmapSize.width; // TODO : necessary only or individual patches mode
+                var width = (<any>mesh).__lightmapSize.width; // TODO : necessary only on individual patches mode
                 var res = (<any>mesh).residualTexture;
                 effect.setFloat("texSize", width);
                 effect.setFloat("patchOffset", res.patchOffset);
@@ -458,7 +459,7 @@ export class PatchRenderer {
 
         let updatePatchDate = Date.now();
 
-        var energyLeft = this.updatePatches(shooter);
+        var { patches, energyLeft } = this.updatePatches(shooter);
 
         if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
             duration = Date.now() - updatePatchDate;
@@ -478,13 +479,13 @@ export class PatchRenderer {
         if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
             duration = Date.now() - consumeEnergyDate;
             console.log(`Consuming energy for shooter took ${duration}ms.`);
-            console.log(`Now shooting radiosity for ${shooter.radiosityPatches.length} patches.`)
+            console.log(`Now shooting radiosity for ${patches.length} patches.`)
         }
 
         let shootingDate = Date.now();
 
-        for (let i = 0; i < shooter.radiosityPatches.length; i++) {
-            this._currentPatch = shooter.radiosityPatches[i];
+        for (let i = 0; i < patches.length; i++) {
+            this._currentPatch = patches[i];
 
             let patchMapDate = Date.now();
 
@@ -509,7 +510,7 @@ export class PatchRenderer {
                 }
 
                 let subMeshDate = Date.now();
-                this.renderToRadiosityTexture(this._patchedSubMeshes[j], shooter.radiosityPatches[i]);
+                this.renderToRadiosityTexture(this._patchedSubMeshes[j], patches[i]);
 
                 if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 3) {
                     duration = Date.now() - subMeshDate;
@@ -534,7 +535,7 @@ export class PatchRenderer {
         if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
             duration = Date.now() - shootingDate;
             console.log(`Shooting radiosity for all patches took ${duration}ms.`);
-            console.log(`Currently shooting ${shooter.radiosityPatches.length * 1000 / duration} patches/s.`);
+            console.log(`Currently shooting ${patches.length * 1000 / duration} patches/s.`);
             console.log("\n========================")
             console.log("ENDING RADIOSITY PASS")
             console.log("========================")
@@ -646,31 +647,35 @@ export class PatchRenderer {
         if (this._patchedSubMeshes.indexOf(subMesh) !== -1) {
             return;
         }
-        subMesh.radiosityPatches = [];
 
-        // Read pixels
         var mesh = subMesh.getMesh();
         var map = (<MultiRenderTarget>(<any>mesh).residualTexture);
-        var size = map.getSize();
-        var width = size.width;
-        var height = size.height;
-        var engine = this._scene.getEngine();
 
-        var positions = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[0], width, height);
-        var normals = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[1], width, height);
-        var ids = <Uint8Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[2], width, height);
-        var residualEnergy = <Uint8Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[3], width, height);
+        if (this._cachePatches) {
+            subMesh.radiosityPatches = [];
 
-        for (let i = 0; i < positions.length; i += 4) {
-            if (positions[i + 3] === 0) {
-                // add only rendered patches
-                continue;
+            var size = map.getSize();
+            var width = size.width;
+            var height = size.height;
+            var engine = this._scene.getEngine();
+
+            var positions = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[0], width, height);
+            var normals = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[1], width, height);
+            var ids = <Uint8Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[2], width, height);
+            var residualEnergy = <Uint8Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[3], width, height);
+
+            for (let i = 0; i < positions.length; i += 4) {
+                if (positions[i + 3] === 0) {
+                    // add only rendered patches
+                    continue;
+                }
+                subMesh.radiosityPatches.push(new Patch(new Vector3(positions[i], positions[i + 1], positions[i + 2]),
+                    new Vector3(normals[i], normals[i + 1], normals[i + 2]),
+                    RadiosityUtils.decodeId(new Vector3(ids[i], ids[i + 1], ids[i + 2])),
+                    new Vector3(residualEnergy[i] / 255., residualEnergy[i + 1] / 255., residualEnergy[i + 2] / 255.)));
             }
-            subMesh.radiosityPatches.push(new Patch(new Vector3(positions[i], positions[i + 1], positions[i + 2]),
-                new Vector3(normals[i], normals[i + 1], normals[i + 2]),
-                RadiosityUtils.decodeId(new Vector3(ids[i], ids[i + 1], ids[i + 2])),
-                new Vector3(residualEnergy[i] / 255., residualEnergy[i + 1] / 255., residualEnergy[i + 2] / 255.)));
         }
+
         this._patchedSubMeshes.push(subMesh);
         this._scene.customRenderTargets.splice(this._scene.customRenderTargets.indexOf(map), 1);
         this._patchMaps.splice(this._patchMaps.indexOf(map), 1);
@@ -679,7 +684,7 @@ export class PatchRenderer {
         }
     }
 
-    public updatePatches(subMesh: SubMesh): number {
+    public updatePatches(subMesh: SubMesh) {
         // Requires residualTexture to be filled
         var mesh = subMesh.getMesh();
         var map = (<MultiRenderTarget>(<any>mesh).residualTexture);
@@ -688,7 +693,19 @@ export class PatchRenderer {
         var height = size.height;
         var engine = this._scene.getEngine();
         var residualEnergy = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[3], width, height);
-        var sum = 0;
+        var positions, normals, ids;
+        var patches: Patch[];
+
+        if (!this._cachePatches) {
+            positions = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[0], width, height);
+            normals = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[1], width, height);
+            ids = <Uint8Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[2], width, height);
+            patches = [];
+        } else {
+            patches = subMesh.radiosityPatches;
+        }
+
+        var energyLeft = 0;
         var currentIndex = 0;
 
         if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
@@ -700,16 +717,25 @@ export class PatchRenderer {
                 // add only rendered patches
                 continue;
             }
-            subMesh.radiosityPatches[currentIndex].residualEnergy.copyFromFloats(residualEnergy[i], residualEnergy[i + 1], residualEnergy[i + 2]);
-            sum += (residualEnergy[i] + residualEnergy[i + 1] + residualEnergy[i + 2]) / 3;
+
+            if (this._cachePatches) {
+                patches[currentIndex].residualEnergy.copyFromFloats(residualEnergy[i], residualEnergy[i + 1], residualEnergy[i + 2]);
+            } else {
+                patches.push(new Patch(new Vector3((<Float32Array>positions)[i], (<Float32Array>positions)[i + 1], (<Float32Array>positions)[i + 2]),
+                new Vector3((<Float32Array>normals)[i], (<Float32Array>normals)[i + 1], (<Float32Array>normals)[i + 2]),
+                RadiosityUtils.decodeId(new Vector3((<Float32Array>ids)[i], (<Float32Array>ids)[i + 1], (<Float32Array>ids)[i + 2])),
+                new Vector3(residualEnergy[i], residualEnergy[i + 1], residualEnergy[i + 2]))); // TODO : why not /255 ?
+            }
+
+            energyLeft += (residualEnergy[i] + residualEnergy[i + 1] + residualEnergy[i + 2]) / 3;
             currentIndex++;
         }
 
         if (PatchRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 1) {
-            console.log("Residual energy gathered from surface : " + sum);
+            console.log("Residual energy gathered from surface : " + energyLeft);
         }
 
-        return sum;
+        return { patches, energyLeft };
     }
 
     public buildVisibilityMapCube() {
