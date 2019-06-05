@@ -370,7 +370,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     /**
     * An event triggered after rendering the scene for an active camera (When scene.render is called this will be called after each camera)
     */
-   public onAfterRenderCameraObservable = new Observable<Camera>();
+    public onAfterRenderCameraObservable = new Observable<Camera>();
 
     private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
     /** Sets a function to be executed after rendering this scene */
@@ -4200,7 +4200,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean,
         fastCheck?: boolean, camera?: Nullable<Camera>,
-        trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3) => boolean
+        trianglePredicate?: TrianglePickingPredicate
     ): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
         const pi = new PickingInfo();
