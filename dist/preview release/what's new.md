@@ -27,6 +27,7 @@
 
 ### Inspector
 - Added support for Euler edition only for angles (can be turned off in the new inspector settings) ([Deltakosh](https://github.com/deltakosh/))
+- Added an option to ignore backfaces for picking (can be turned on and off in the new inspector settings) ([Deltakosh](https://github.com/deltakosh/))
 - Added support for `ShadowGenerator` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for scene normalization ([Deltakosh](https://github.com/deltakosh/))
 - Added support for morph targets ([Deltakosh](https://github.com/deltakosh/))
