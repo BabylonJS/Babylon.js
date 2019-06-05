@@ -58806,20 +58806,20 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * This represents the different options avilable for the video capture.
+     * This represents the different options available for the video capture.
      */
     export interface VideoRecorderOptions {
-        /** Defines the mime type of the video */
+        /** Defines the mime type of the video. */
         mimeType: string;
-        /** Defines the video the video should be recorded at */
+        /** Defines the FPS the video should be recorded at. */
         fps: number;
-        /** Defines the chunk size for the recording data */
+        /** Defines the chunk size for the recording data. */
         recordChunckSize: number;
-        /** The audio tracks to attach to the record */
+        /** The audio tracks to attach to the recording. */
         audioTracks?: MediaStreamTrack[];
     }
     /**
-     * This can helps recording videos from BabylonJS.
+     * This can help with recording videos from BabylonJS.
      * This is based on the available WebRTC functionalities of the browser.
      *
      * @see http://doc.babylonjs.com/how_to/render_scene_on_a_video
@@ -58827,9 +58827,9 @@ declare module BABYLON {
     export class VideoRecorder {
         private static readonly _defaultOptions;
         /**
-         * Returns wehther or not the VideoRecorder is available in your browser.
-         * @param engine Defines the Babylon Engine to check the support for
-         * @returns true if supported otherwise false
+         * Returns whether or not the VideoRecorder is available in your browser.
+         * @param engine Defines the Babylon Engine.
+         * @returns true if supported otherwise false.
          */
         static IsSupported(engine: Engine): boolean;
         private readonly _options;
@@ -58840,27 +58840,26 @@ declare module BABYLON {
         private _resolve;
         private _reject;
         /**
-         * True wether a recording is already in progress.
+         * True when a recording is already in progress.
          */
         readonly isRecording: boolean;
         /**
-         * Create a new VideoCapture object which can help converting what you see in Babylon to
-         * a video file.
-         * @param engine Defines the BabylonJS Engine you wish to record
-         * @param options Defines options that can be used to customized the capture
+         * Create a new VideoCapture object which can help converting what you see in Babylon to a video file.
+         * @param engine Defines the BabylonJS Engine you wish to record.
+         * @param options Defines options that can be used to customize the capture.
          */
         constructor(engine: Engine, options?: Nullable<VideoRecorderOptions>);
         /**
-         * Stops the current recording before the default capture timeout passed in the startRecording
-         * functions.
+         * Stops the current recording before the default capture timeout passed in the startRecording function.
          */
         stopRecording(): void;
         /**
          * Starts recording the canvas for a max duration specified in parameters.
-         * @param fileName Defines the name of the file to be downloaded when the recording stop. If null no automatic download will start and you can rely on the promise to get the data back.
+         * @param fileName Defines the name of the file to be downloaded when the recording stop.
+         * If null no automatic download will start and you can rely on the promise to get the data back.
          * @param maxDuration Defines the maximum recording time in seconds.
-         * It default to 7 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
-         * @return a promise callback at the end of the recording with the video data in Blob.
+         * It defaults to 7 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
+         * @return A promise callback at the end of the recording with the video data in Blob.
          */
         startRecording(fileName?: Nullable<string>, maxDuration?: number): Promise<Blob>;
         /**
