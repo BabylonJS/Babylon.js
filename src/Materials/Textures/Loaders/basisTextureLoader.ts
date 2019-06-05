@@ -71,19 +71,20 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
      */
     public loadData(data: ArrayBuffer, texture: InternalTexture,
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void {
-        // Verify Basis Module is loaded and detect file info and format
-        BasisTools.VerifyBasisModuleAsync().then(() => {
-            var loadedFile = BasisTools.LoadBasisFile(data);
-            var fileInfo = BasisTools.GetFileInfo(loadedFile);
-            var format = BasisTools.GetSupportedTranscodeFormat(texture.getEngine(), fileInfo);
-            texture._invertVScale = true;
-
-            // TODO this should be done in web worker
-            var transcodeResult = BasisTools.TranscodeFile(format, fileInfo, loadedFile);
-
-            // Upload data to texture
-            callback(fileInfo.width, fileInfo.height, false, true, () => {
-                if (transcodeResult.fallbackToRgb565) {
+        var caps = texture.getEngine().getCaps();
+        var transcodeConfig = {
+            supportedCompressionFormats: {
+                etc1: caps.etc1 ? true : false,
+                s3tc: caps.s3tc ? true : false,
+                pvrtc: caps.pvrtc ? true : false,
+                etc2: caps.etc2 ? true : false
+            }
+        };
+        BasisTools.TranscodeAsync(data, transcodeConfig).then((result)=>{
+            callback(result.fileInfo.width, result.fileInfo.height, false, true, () => {
+                texture._invertVScale = true;
+                if(result.format === -1){
+                    // No compatable compressed format found, fallback to RGB
                     texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
                     texture.format = Engine.TEXTUREFORMAT_RGB;
 
@@ -92,27 +93,27 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
 
                     source.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
                     source.format = Engine.TEXTUREFORMAT_RGB;
-                    source.width = fileInfo.alignedWidth;
-                    source.height = fileInfo.alignedHeight;
+                    source.width = result.fileInfo.alignedWidth;
+                    source.height = result.fileInfo.alignedHeight;
                     texture.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, source, true);
-                    texture.getEngine()._uploadDataToTextureDirectly(source, transcodeResult.pixels, 0, 0, Engine.TEXTUREFORMAT_RGB, true);
+                    texture.getEngine()._uploadDataToTextureDirectly(source, result.pixels, 0, 0, Engine.TEXTUREFORMAT_RGB, true);
 
                     // Resize to power of two
                     source.getEngine()._rescaleTexture(source, texture, texture.getEngine().scenes[0], source.getEngine()._getInternalFormat(Engine.TEXTUREFORMAT_RGB), () => {
                         source.getEngine()._releaseTexture(source);
                         source.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, texture, true);
                     });
-                }else {
-                    texture.width = fileInfo.width;
-                    texture.height = fileInfo.height;
-                    texture.getEngine()._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(format!), fileInfo.width, fileInfo.height, transcodeResult.pixels, 0, 0);
+                }else{
+                    texture.width = result.fileInfo.width;
+                    texture.height = result.fileInfo.height;
+                    texture.getEngine()._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(result.format!), result.fileInfo.width, result.fileInfo.height, result.pixels, 0, 0);
                     if(texture.getEngine().webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)){
                         Tools.Warn("Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1.");
                         texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
                     }
                 }
-            });
-        });
+            })
+        })
     }
 }
 
