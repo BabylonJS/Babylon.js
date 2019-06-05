@@ -212,7 +212,7 @@ export class NodeMaterialBlock {
     public getFirstAvailableInput(forOutput: Nullable<NodeMaterialConnectionPoint> = null) {
         for (var input of this._inputs) {
             if (!input.isUniform && !input.isAttribute && !input.connectedPoint) {
-                if (!forOutput || (forOutput.type & input.type) !== 0) {
+                if (!forOutput || (forOutput.type & input.type) !== 0 || input.type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
                     return input;
                 }
             }
