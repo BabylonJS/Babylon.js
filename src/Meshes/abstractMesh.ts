@@ -1550,6 +1550,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         var index: number;
 
+        // mesh map release.
+        if (this._scene.useMaterialMeshMap) {
+            // remove from material mesh map id needed
+            if (this._material && this._material.meshMap) {
+                this._material.meshMap[this.uniqueId] = undefined;
+            }
+        }
+
         // Smart Array Retainers.
         this.getScene().freeActiveMeshes();
         this.getScene().freeRenderingGroups();
