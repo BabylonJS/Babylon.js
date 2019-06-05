@@ -18,6 +18,8 @@ export class ScaleBlock extends NodeMaterialBlock {
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
+
+        this.scale.value = 1;
     }
 
     /**
@@ -39,13 +41,6 @@ export class ScaleBlock extends NodeMaterialBlock {
      * Gets the scale operand input component
      */
     public get scale(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the right operand input component
-     */
-    public get right(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
