@@ -1,5 +1,4 @@
 import { Nullable } from '../types';
-import { Engine } from '../Engines/engine';
 import { Tools } from './tools';
 
 /**
@@ -29,14 +28,140 @@ class BasisFileInfo {
 }
 
 /**
+ * Configuration options for the Basis transcoder
+ */
+export class BasisTranscodeConfiguration {
+    /**
+     * Supported compression formats used to determine the supported output format of the transcoder
+     */
+    supportedCompressionFormats?: {
+        /**
+         * etc1 compression format
+         */
+        etc1?:boolean;
+        /**
+         * s3tc compression format
+         */
+        s3tc?:boolean;
+        /**
+         * pvrtc compression format
+         */
+        pvrtc?:boolean;
+        /**
+         * etc2 compression format
+         */
+        etc2?:boolean;
+    };
+}
+
+/**
+ * @hidden
+ * Enum of basis transcoder formats
+ */
+enum BASIS_FORMATS {
+    cTFETC1 = 0,
+    cTFBC1 = 1,
+    cTFBC4 = 2,
+    cTFPVRTC1_4_OPAQUE_ONLY = 3,
+    cTFBC7_M6_OPAQUE_ONLY = 4,
+    cTFETC2 = 5,
+    cTFBC3 = 6,
+    cTFBC5 = 7
+}
+
+/**
  * Used to load .Basis files
  * See https://github.com/BinomialLLC/basis_universal/tree/master/webgl
  */
 export class BasisTools {
     private static _IgnoreSupportedFormats = false;
-    private static _LoadScriptPromise: any = null;
-    private static _FallbackURL = "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.js";
-    private static _BASIS_FORMAT = {
+    /**
+     * URL to use when loading the basis transcoder
+     */
+    public static JSModuleURL = "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.js";
+    /**
+     * URL to use when loading the wasm module for the transcoder
+     */
+    public static WasmModuleURL = "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.wasm";
+
+    /**
+     * Get the internal format to be passed to texImage2D corresponding to the .basis format value
+     * @param basisFormat format chosen from GetSupportedTranscodeFormat
+     * @returns internal format corresponding to the Basis format
+     */
+    public static GetInternalFormatFromBasisFormat(basisFormat: number) {
+        // Corrisponding internal formats 
+        var COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F0;
+        var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
+        var RGB_ETC1_Format = 36196;
+
+        if (basisFormat === BASIS_FORMATS.cTFETC1) {
+            return RGB_ETC1_Format;
+        }else if (basisFormat === BASIS_FORMATS.cTFBC1) {
+            return COMPRESSED_RGB_S3TC_DXT1_EXT;
+        }else if (basisFormat === BASIS_FORMATS.cTFBC3) {
+            return COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        }else {
+            throw "The chosen Basis transcoder format is not currently supported";
+        }
+    }
+
+    private static _WorkerPromise:Nullable<Promise<Worker>> = null;
+    private static _Worker:Nullable<Worker> = null;
+    private static _CreateWorkerAsync(){
+        if(!this._WorkerPromise){
+            this._WorkerPromise = new Promise((res)=>{
+                if(this._Worker){
+                    res(this._Worker)
+                }else{
+                    Tools.loadFileAsync(BasisTools.WasmModuleURL).then((wasmBinary)=>{
+                        const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
+                        this._Worker = new Worker(workerBlobUrl)
+                        
+                        var initHandler = (msg:any)=>{
+                            if(msg.data.action === "init"){
+                                this._Worker!.removeEventListener("message", initHandler);
+                                res(this._Worker!);
+                            }
+                        };
+                        this._Worker.addEventListener("message", initHandler);
+                        this._Worker.postMessage({action: "init", url: BasisTools.JSModuleURL, wasmBinary: wasmBinary});
+                    })
+                }
+            });
+        }
+        return this._WorkerPromise;
+    }
+
+    /**
+     * Transcodes a loaded image file to compressed pixel data 
+     * @param imageData image data to transcode
+     * @param config configuration options for the transcoding
+     * @returns a promise resulting in the transcoded image
+     */
+    public static TranscodeAsync(imageData: ArrayBuffer, config:BasisTranscodeConfiguration):Promise<{fileInfo:any, pixels: any, format:number}>{
+        return new Promise((res)=>{
+            this._CreateWorkerAsync().then(()=>{
+                var messageHandler = (msg:any)=>{
+                    if(msg.data.action === "transcode"){
+                        this._Worker!.removeEventListener("message", messageHandler);
+                        res(msg.data);
+                    }
+                };
+                this._Worker!.addEventListener("message", messageHandler);
+                this._Worker!.postMessage({action: "transcode", imageData: imageData, config:config, ignoreSupportedFormats: this._IgnoreSupportedFormats}, [imageData])
+            })
+        })
+    }
+}
+
+
+// WorkerGlobalScope
+declare function importScripts(...urls: string[]): void;
+declare function postMessage(message: any, transfer?: any[]): void;
+declare var Module:any;
+function workerFunc(): void {
+    var _BASIS_FORMAT = {
         cTFETC1: 0,
         cTFBC1: 1,
         cTFBC4: 2,
@@ -46,101 +171,59 @@ export class BasisTools {
         cTFBC3: 6,
         cTFBC5: 7,
     };
-    /**
-     * Basis module can be aquired from https://github.com/BinomialLLC/basis_universal/tree/master/webgl
-     * This should be set prior to loading a .basis texture
-     */
-    public static BasisModule: Nullable<any> = null;
-
-    /**
-     * Verifies that the BasisModule has been populated and falls back to loading from the web if not availible
-     * @returns promise which will resolve if the basis module was loaded
-     */
-    public static VerifyBasisModuleAsync() {
-        // Complete if module has been populated
-        if (BasisTools.BasisModule) {
-            return Promise.resolve();
-        }
-
-        // Otherwise load script from fallback url
-        if (!this._LoadScriptPromise) {
-            this._LoadScriptPromise = Tools.LoadScriptAsync(BasisTools._FallbackURL, "basis_transcoder").then((success) => {
-                return new Promise((res, rej) => {
-                    if ((window as any).Module) {
-                        (window as any).Module.onRuntimeInitialized = () => {
-                            BasisTools.BasisModule = (window as any).Module;
-                            BasisTools.BasisModule.initializeBasis();
-                            res();
-                        };
-                    }else {
-                        rej("Unable to load .basis texture, BasisTools.BasisModule should be populated");
-                    }
+    var transcoderModulePromise:Nullable<Promise<any>> = null;
+    onmessage = (event) => {
+        if(event.data.action === "init"){
+             // Load the transcoder if it hasn't been yet
+            if(!transcoderModulePromise){
+                // Override wasm binary
+                Module = { wasmBinary: (event.data.wasmBinary) };
+                importScripts(event.data.url)
+                transcoderModulePromise = new Promise((res)=>{
+                    Module.onRuntimeInitialized = () => {
+                        Module.initializeBasis();
+                        res();
+                    };
                 });
-            });
+            }
+            transcoderModulePromise.then(()=>{
+                postMessage({action: "init"})
+            })
+        }else if(event.data.action === "transcode"){
+            // Transcode the basis image and return the resulting pixels
+            var imgData = event.data.imageData;
+            var loadedFile = new Module.BasisFile(new Uint8Array(imgData));
+            var fileInfo = GetFileInfo(loadedFile);
+            var format = event.data.ignoreSupportedFormats ? null : GetSupportedTranscodeFormat(event.data.config, fileInfo);
+            var transcodeResult = TranscodeFile(format, fileInfo, loadedFile);
+            if(transcodeResult.fallbackToRgb565){
+                format = -1;
+            }
+            postMessage({action: "transcode", pixels:transcodeResult.pixels, fileInfo: fileInfo, format: format}, [transcodeResult.pixels.buffer]);
         }
-        return this._LoadScriptPromise;
-    }
-
-    /**
-     * Verifies that the basis module has been populated and creates a bsis file from the image data
-     * @param data array buffer of the .basis file
-     * @returns the Basis file
-     */
-    public static LoadBasisFile(data: ArrayBuffer) {
-        return new BasisTools.BasisModule.BasisFile(new Uint8Array(data));
-    }
+       
+    };
 
     /**
      * Detects the supported transcode format for the file
-     * @param engine Babylon engine
+     * @param config transcode config
      * @param fileInfo info about the file
      * @returns the chosed format or null if none are supported
      */
-    public static GetSupportedTranscodeFormat(engine: Engine, fileInfo: BasisFileInfo): Nullable<number> {
-        var caps = engine.getCaps();
+    function GetSupportedTranscodeFormat(config: BasisTranscodeConfiguration, fileInfo: BasisFileInfo): Nullable<number> {
         var format = null;
-        if (caps.etc1) {
-            format = BasisTools._BASIS_FORMAT.cTFETC1;
-        }else if (caps.s3tc) {
-            format = fileInfo.hasAlpha ? BasisTools._BASIS_FORMAT.cTFBC3 : BasisTools._BASIS_FORMAT.cTFBC1;
-        }else if (caps.pvrtc) {
-            format = BasisTools._BASIS_FORMAT.cTFPVRTC1_4_OPAQUE_ONLY;
-        }else if (caps.etc2) {
-            format = BasisTools._BASIS_FORMAT.cTFETC2;
+        if(config.supportedCompressionFormats){
+            if (config.supportedCompressionFormats.etc1) {
+                format = _BASIS_FORMAT.cTFETC1;
+            }else if (config.supportedCompressionFormats.s3tc) {
+                format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
+            }else if (config.supportedCompressionFormats.pvrtc) {
+                format = _BASIS_FORMAT.cTFPVRTC1_4_OPAQUE_ONLY;
+            }else if (config.supportedCompressionFormats.etc2) {
+                format = _BASIS_FORMAT.cTFETC2;
+            }
         }
         return format;
-    }
-
-    /**
-     * Get the internal format to be passed to texImage2D corresponding to the .basis format value
-     * @param basisFormat format chosen from GetSupportedTranscodeFormat
-     * @returns internal format corresponding to the Basis format
-     */
-    public static GetInternalFormatFromBasisFormat(basisFormat: number) {
-        // TODO more formats need to be added here and validated
-        var COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F0;
-        var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
-        var RGB_ETC1_Format = 36196;
-
-        // var COMPRESSED_RGBA_S3TC_DXT1_EXT = 0x83F1;
-        // var COMPRESSED_RGBA_S3TC_DXT3_EXT = 0x83F2;
-
-        if (basisFormat === this._BASIS_FORMAT.cTFETC1) {
-            return RGB_ETC1_Format;
-        }else if (basisFormat === this._BASIS_FORMAT.cTFBC1) {
-            return COMPRESSED_RGB_S3TC_DXT1_EXT;
-        }else if (basisFormat === this._BASIS_FORMAT.cTFBC3) {
-            return COMPRESSED_RGBA_S3TC_DXT5_EXT;
-        }else {
-            // TODO find value for these formats
-            // else if(basisFormat === this.BASIS_FORMAT.cTFBC4){
-            // }else if(basisFormat === this.BASIS_FORMAT.cTFPVRTC1_4_OPAQUE_ONLY){
-            // }else if(basisFormat === this.BASIS_FORMAT.cTFBC7_M6_OPAQUE_ONLY){
-            // }else if(basisFormat === this.BASIS_FORMAT.cTFETC2){
-            // }else if(basisFormat === this.BASIS_FORMAT.cTFBC5){
-            // }
-            throw "Basis format not found or supported";
-        }
     }
 
     /**
@@ -148,7 +231,7 @@ export class BasisTools {
      * @param basisFile the basis file to get the info from
      * @returns information about the basis file
      */
-    public static GetFileInfo(basisFile: any): BasisFileInfo {
+    function GetFileInfo(basisFile: any): BasisFileInfo {
         var hasAlpha = basisFile.getHasAlpha();
         var width = basisFile.getImageWidth(0, 0);
         var height = basisFile.getImageHeight(0, 0);
@@ -165,14 +248,11 @@ export class BasisTools {
      * @param loadedFile the loaded basis file
      * @returns the resulting pixels and if the transcode fell back to using Rgb565
      */
-    public static TranscodeFile(format: Nullable<number>, fileInfo: BasisFileInfo, loadedFile: any) {
-        if (BasisTools._IgnoreSupportedFormats) {
-            format = null;
-        }
+    function TranscodeFile(format: Nullable<number>, fileInfo: BasisFileInfo, loadedFile: any) {
         var needsConversion = false;
         if (format === null) {
             needsConversion = true;
-            format = fileInfo.hasAlpha ? BasisTools._BASIS_FORMAT.cTFBC3 : BasisTools._BASIS_FORMAT.cTFBC1;
+            format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
         }
 
         if (!loadedFile.startTranscoding()) {
@@ -192,7 +272,7 @@ export class BasisTools {
 
         // If no supported format is found, load as dxt and convert to rgb565
         if (needsConversion) {
-            dst = BasisTools.ConvertDxtToRgb565(dst, 0, fileInfo.alignedWidth, fileInfo.alignedHeight);
+            dst = ConvertDxtToRgb565(dst, 0, fileInfo.alignedWidth, fileInfo.alignedHeight);
         }
 
         return {
@@ -211,7 +291,7 @@ export class BasisTools {
      * @param  height aligned height of the image
      * @return the converted pixels
      */
-    public static ConvertDxtToRgb565(src: Uint16Array, srcByteOffset: number, width: number, height: number): Uint16Array {
+    function ConvertDxtToRgb565(src: Uint16Array, srcByteOffset: number, width: number, height: number): Uint16Array {
         var c = new Uint16Array(4);
         var dst = new Uint16Array(width * height);
 
