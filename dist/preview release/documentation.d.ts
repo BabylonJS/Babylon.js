@@ -31310,6 +31310,12 @@ declare module BABYLON {
          */
         static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
         /**
+         * Loads a file from a url
+         * @param url the file url to load
+         * @returns a promise containing an ArrayBuffer corrisponding to the loaded file
+         */
+        static LoadFileAsync(url: string): Promise<ArrayBuffer>;
+        /**
          * Load a script (identified by an url). When the url returns, the
          * content of this file is added into a new script element, attached to the DOM (body element)
          * @param scriptUrl defines the url of the script to laod
@@ -50070,21 +50076,49 @@ declare module BABYLON {
          */
         hasAlpha: boolean;
         /**
-         * Width of the image
+         * Info about each image of the basis file
          */
-        width: number;
+        images: Array<{
+            levels: Array<{
+                width: number;
+                height: number;
+                transcodedPixels: ArrayBufferView;
+            }>;
+        }>;
+    }
+    /**
+     * Configuration options for the Basis transcoder
+     */
+    export class BasisTranscodeConfiguration {
         /**
-         * Height of the image
+         * Supported compression formats used to determine the supported output format of the transcoder
          */
-        height: number;
+        supportedCompressionFormats?: {
+            /**
+             * etc1 compression format
+             */
+            etc1?: boolean;
+            /**
+             * s3tc compression format
+             */
+            s3tc?: boolean;
+            /**
+             * pvrtc compression format
+             */
+            pvrtc?: boolean;
+            /**
+             * etc2 compression format
+             */
+            etc2?: boolean;
+        };
         /**
-         * Aligned width used when falling back to Rgb565 ((width + 3) & ~3)
+         * If mipmap levels should be loaded for transcoded images (Default: true)
          */
-        alignedWidth: number;
+        loadMipmapLevels?: boolean;
         /**
-         * Aligned height used when falling back to Rgb565 ((height + 3) & ~3)
+         * Index of a single image to load (Default: all images)
          */
-        alignedHeight: number;
+        loadSingleImage?: number;
     }
     /**
      * Used to load .Basis files
@@ -50092,67 +50126,33 @@ declare module BABYLON {
      */
     export class BasisTools {
         private static _IgnoreSupportedFormats;
-        private static _LoadScriptPromise;
-        private static _FallbackURL;
-        private static _BASIS_FORMAT;
         /**
-         * Basis module can be aquired from https://github.com/BinomialLLC/basis_universal/tree/master/webgl
-         * This should be set prior to loading a .basis texture
+         * URL to use when loading the basis transcoder
          */
-        static BasisModule: Nullable<any>;
+        static JSModuleURL: string;
         /**
-         * Verifies that the BasisModule has been populated and falls back to loading from the web if not availible
-         * @returns promise which will resolve if the basis module was loaded
+         * URL to use when loading the wasm module for the transcoder
          */
-        static VerifyBasisModuleAsync(): any;
-        /**
-         * Verifies that the basis module has been populated and creates a bsis file from the image data
-         * @param data array buffer of the .basis file
-         * @returns the Basis file
-         */
-        static LoadBasisFile(data: ArrayBuffer): any;
-        /**
-         * Detects the supported transcode format for the file
-         * @param engine Babylon engine
-         * @param fileInfo info about the file
-         * @returns the chosed format or null if none are supported
-         */
-        static GetSupportedTranscodeFormat(engine: Engine, fileInfo: BasisFileInfo): Nullable<number>;
+        static WasmModuleURL: string;
         /**
          * Get the internal format to be passed to texImage2D corresponding to the .basis format value
          * @param basisFormat format chosen from GetSupportedTranscodeFormat
          * @returns internal format corresponding to the Basis format
          */
         static GetInternalFormatFromBasisFormat(basisFormat: number): number;
+        private static _WorkerPromise;
+        private static _Worker;
+        private static _CreateWorkerAsync;
         /**
-         * Retreives information about the basis file eg. dimensions
-         * @param basisFile the basis file to get the info from
-         * @returns information about the basis file
+         * Transcodes a loaded image file to compressed pixel data
+         * @param imageData image data to transcode
+         * @param config configuration options for the transcoding
+         * @returns a promise resulting in the transcoded image
          */
-        static GetFileInfo(basisFile: any): BasisFileInfo;
-        /**
-         * Transcodes the basis file to the requested format to be transferred to the gpu
-         * @param format fromat to be transferred to
-         * @param fileInfo information about the loaded file
-         * @param loadedFile the loaded basis file
-         * @returns the resulting pixels and if the transcode fell back to using Rgb565
-         */
-        static TranscodeFile(format: Nullable<number>, fileInfo: BasisFileInfo, loadedFile: any): {
-            fallbackToRgb565: boolean;
-            pixels: Uint8Array;
-        };
-        /**
-         * From https://github.com/BinomialLLC/basis_universal/blob/master/webgl/texture/dxt-to-rgb565.js
-         * An unoptimized version of dxtToRgb565.  Also, the floating
-         * point math used to compute the colors actually results in
-         * slightly different colors compared to hardware DXT decoders.
-         * @param src dxt src pixels
-         * @param srcByteOffset offset for the start of src
-         * @param  width aligned width of the image
-         * @param  height aligned height of the image
-         * @return the converted pixels
-         */
-        static ConvertDxtToRgb565(src: Uint16Array, srcByteOffset: number, width: number, height: number): Uint16Array;
+        static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<{
+            fileInfo: BasisFileInfo;
+            format: number;
+        }>;
     }
 }
 declare module BABYLON {
@@ -51854,10 +51854,6 @@ declare module BABYLON {
          * Gets the scale operand input component
          */
         readonly scale: NodeMaterialConnectionPoint;
-        /**
-         * Gets the right operand input component
-         */
-        readonly right: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }

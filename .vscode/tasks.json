@@ -3,7 +3,9 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "command": "gulp",
-    "args": ["--max-old-space-size=8192"],
+    "args": [
+        "--max-old-space-size=8192"
+    ],
     "type": "shell",
     "options": {
         "cwd": "${workspaceRoot}/Tools/Gulp"
@@ -17,6 +19,9 @@
     "tasks": [
         {
             "label": "run",
+            "args": [
+                "run"
+            ],
             "group": {
                 "kind": "build",
                 "isDefault": true

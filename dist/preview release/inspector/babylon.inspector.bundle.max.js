@@ -36175,15 +36175,19 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
     }
     CommonControlPropertyGridComponent.prototype.renderGridInformation = function () {
         var control = this.props.control;
-        if (!control.parent || !control.parent.parent) {
+        if (!control.parent) {
             return null;
         }
-        var gridParent = control.parent.parent;
+        var gridParent = control.parent;
         if (gridParent.rowCount === undefined) {
             return null;
         }
         var grid = gridParent;
-        var cellInfos = grid.getChildCellInfo(control).split(":");
+        var childCellInfo = grid.getChildCellInfo(control);
+        if (childCellInfo === undefined) {
+            return null;
+        }
+        var cellInfos = childCellInfo.split(":");
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GRID" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Row", value: cellInfos[0] }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Column", value: cellInfos[1] })));

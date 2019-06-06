@@ -566,6 +566,47 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/color3Pr
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        constructor(props: IFloatLineComponentProps);
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/propertyTab/properties/floatPropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+    interface IFloatPropertyTabComponentProps {
+        globalState: GlobalState;
+        connection: NodeMaterialConnectionPoint;
+    }
+    export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/diagram/input/inputNodePropertyComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1252,6 +1293,41 @@ declare module NODEEDITOR {
         connection: BABYLON.NodeMaterialConnectionPoint;
     }
     export class Color3PropertyTabComponent extends React.Component<IColor3PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        constructor(props: IFloatLineComponentProps);
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IFloatPropertyTabComponentProps {
+        globalState: GlobalState;
+        connection: BABYLON.NodeMaterialConnectionPoint;
+    }
+    export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTabComponentProps> {
         render(): JSX.Element;
     }
 }
