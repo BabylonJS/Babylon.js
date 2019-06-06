@@ -12,7 +12,7 @@ class BasisFileInfo {
     /**
      * Info about each image of the basis file
      */
-    public images: Array<{levels: Array<{width: number, height: number, transcodedPixels: ArrayBufferView}>}>
+    public images: Array<{levels: Array<{width: number, height: number, transcodedPixels: ArrayBufferView}>}>;
 }
 
 /**
@@ -26,28 +26,28 @@ export class BasisTranscodeConfiguration {
         /**
          * etc1 compression format
          */
-        etc1?:boolean;
+        etc1?: boolean;
         /**
          * s3tc compression format
          */
-        s3tc?:boolean;
+        s3tc?: boolean;
         /**
          * pvrtc compression format
          */
-        pvrtc?:boolean;
+        pvrtc?: boolean;
         /**
          * etc2 compression format
          */
-        etc2?:boolean;
+        etc2?: boolean;
     };
     /**
      * If mipmap levels should be loaded for transcoded images (Default: true)
      */
-    loadMipmapLevels?:boolean
+    loadMipmapLevels?: boolean;
     /**
      * Index of a single image to load (Default: all images)
      */
-    loadSingleImage?:number
+    loadSingleImage?: number;
 }
 
 /**
@@ -86,7 +86,7 @@ export class BasisTools {
      * @returns internal format corresponding to the Basis format
      */
     public static GetInternalFormatFromBasisFormat(basisFormat: number) {
-        // Corrisponding internal formats 
+        // Corrisponding internal formats
         var COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F0;
         var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
         var RGB_ETC1_Format = 36196;
@@ -102,27 +102,27 @@ export class BasisTools {
         }
     }
 
-    private static _WorkerPromise:Nullable<Promise<Worker>> = null;
-    private static _Worker:Nullable<Worker> = null;
-    private static _CreateWorkerAsync(){
-        if(!this._WorkerPromise){
-            this._WorkerPromise = new Promise((res)=>{
-                if(this._Worker){
-                    res(this._Worker)
-                }else{
-                    Tools.loadFileAsync(BasisTools.WasmModuleURL).then((wasmBinary)=>{
+    private static _WorkerPromise: Nullable<Promise<Worker>> = null;
+    private static _Worker: Nullable<Worker> = null;
+    private static _CreateWorkerAsync() {
+        if (!this._WorkerPromise) {
+            this._WorkerPromise = new Promise((res) => {
+                if (this._Worker) {
+                    res(this._Worker);
+                }else {
+                    Tools.LoadFileAsync(BasisTools.WasmModuleURL).then((wasmBinary) => {
                         const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
-                        this._Worker = new Worker(workerBlobUrl)
-                        
-                        var initHandler = (msg:any)=>{
-                            if(msg.data.action === "init"){
+                        this._Worker = new Worker(workerBlobUrl);
+
+                        var initHandler = (msg: any) => {
+                            if (msg.data.action === "init") {
                                 this._Worker!.removeEventListener("message", initHandler);
                                 res(this._Worker!);
                             }
                         };
                         this._Worker.addEventListener("message", initHandler);
                         this._Worker.postMessage({action: "init", url: BasisTools.JSModuleURL, wasmBinary: wasmBinary});
-                    })
+                    });
                 }
             });
         }
@@ -130,32 +130,31 @@ export class BasisTools {
     }
 
     /**
-     * Transcodes a loaded image file to compressed pixel data 
+     * Transcodes a loaded image file to compressed pixel data
      * @param imageData image data to transcode
      * @param config configuration options for the transcoding
      * @returns a promise resulting in the transcoded image
      */
-    public static TranscodeAsync(imageData: ArrayBuffer, config:BasisTranscodeConfiguration):Promise<{fileInfo:BasisFileInfo, format:number}>{
-        return new Promise((res)=>{
-            this._CreateWorkerAsync().then(()=>{
-                var messageHandler = (msg:any)=>{
-                    if(msg.data.action === "transcode"){
+    public static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<{fileInfo: BasisFileInfo, format: number}> {
+        return new Promise((res) => {
+            this._CreateWorkerAsync().then(() => {
+                var messageHandler = (msg: any) => {
+                    if (msg.data.action === "transcode") {
                         this._Worker!.removeEventListener("message", messageHandler);
                         res(msg.data);
                     }
                 };
                 this._Worker!.addEventListener("message", messageHandler);
-                this._Worker!.postMessage({action: "transcode", imageData: imageData, config:config, ignoreSupportedFormats: this._IgnoreSupportedFormats}, [imageData])
-            })
-        })
+                this._Worker!.postMessage({action: "transcode", imageData: imageData, config: config, ignoreSupportedFormats: this._IgnoreSupportedFormats}, [imageData]);
+            });
+        });
     }
 }
-
 
 // WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;
 declare function postMessage(message: any, transfer?: any[]): void;
-declare var Module:any;
+declare var Module: any;
 function workerFunc(): void {
     var _BASIS_FORMAT = {
         cTFETC1: 0,
@@ -167,27 +166,27 @@ function workerFunc(): void {
         cTFBC3: 6,
         cTFBC5: 7,
     };
-    var transcoderModulePromise:Nullable<Promise<any>> = null;
+    var transcoderModulePromise: Nullable<Promise<any>> = null;
     onmessage = (event) => {
-        if(event.data.action === "init"){
+        if (event.data.action === "init") {
              // Load the transcoder if it hasn't been yet
-            if(!transcoderModulePromise){
+            if (!transcoderModulePromise) {
                 // Override wasm binary
                 Module = { wasmBinary: (event.data.wasmBinary) };
-                importScripts(event.data.url)
-                transcoderModulePromise = new Promise((res)=>{
+                importScripts(event.data.url);
+                transcoderModulePromise = new Promise((res) => {
                     Module.onRuntimeInitialized = () => {
                         Module.initializeBasis();
                         res();
                     };
                 });
             }
-            transcoderModulePromise.then(()=>{
-                postMessage({action: "init"})
-            })
-        }else if(event.data.action === "transcode"){
+            transcoderModulePromise.then(() => {
+                postMessage({action: "init"});
+            });
+        }else if (event.data.action === "transcode") {
             // Transcode the basis image and return the resulting pixels
-            var config:BasisTranscodeConfiguration = event.data.config;
+            var config: BasisTranscodeConfiguration = event.data.config;
             var imgData = event.data.imageData;
             var loadedFile = new Module.BasisFile(new Uint8Array(imgData));
             var fileInfo = GetFileInfo(loadedFile);
@@ -206,34 +205,33 @@ function workerFunc(): void {
                 throw "transcode failed";
             }
 
-            var buffers:Array<any> = [];
-            fileInfo.images.forEach((image, imageIndex)=>{
-                if(config.loadSingleImage === undefined || config.loadSingleImage === imageIndex){
-                    if(config.loadMipmapLevels === false){
+            var buffers: Array<any> = [];
+            fileInfo.images.forEach((image, imageIndex) => {
+                if (config.loadSingleImage === undefined || config.loadSingleImage === imageIndex) {
+                    if (config.loadMipmapLevels === false) {
                         var levelInfo = image.levels[0];
                         levelInfo.transcodedPixels = TranscodeLevel(loadedFile, imageIndex, 0, format!, needsConversion);
-                        buffers.push(levelInfo.transcodedPixels.buffer)
-                    }else{
-                        image.levels.forEach((levelInfo, levelIndex)=>{
+                        buffers.push(levelInfo.transcodedPixels.buffer);
+                    }else {
+                        image.levels.forEach((levelInfo, levelIndex) => {
                             levelInfo.transcodedPixels = TranscodeLevel(loadedFile, imageIndex, levelIndex, format!, needsConversion);
-                            buffers.push(levelInfo.transcodedPixels.buffer)
-                            
-                        })
+                            buffers.push(levelInfo.transcodedPixels.buffer);
+
+                        });
                     }
                 }
-            })
+            });
 
             // Close file
             loadedFile.close();
             loadedFile.delete();
 
-           
-            if(needsConversion){
+            if (needsConversion) {
                 format = -1;
             }
             postMessage({action: "transcode", fileInfo: fileInfo, format: format}, buffers);
         }
-       
+
     };
 
     /**
@@ -244,7 +242,7 @@ function workerFunc(): void {
      */
     function GetSupportedTranscodeFormat(config: BasisTranscodeConfiguration, fileInfo: BasisFileInfo): Nullable<number> {
         var format = null;
-        if(config.supportedCompressionFormats){
+        if (config.supportedCompressionFormats) {
             if (config.supportedCompressionFormats.etc1) {
                 format = _BASIS_FORMAT.cTFETC1;
             }else if (config.supportedCompressionFormats.s3tc) {
@@ -266,26 +264,26 @@ function workerFunc(): void {
     function GetFileInfo(basisFile: any): BasisFileInfo {
         var hasAlpha = basisFile.getHasAlpha();
         var imageCount = basisFile.getNumImages();
-        var images = []
-        for(var i = 0;i<imageCount;i++){
+        var images = [];
+        for (var i = 0; i < imageCount; i++) {
             var imageInfo = {
                 levels: ([] as Array<any>)
-            }
+            };
             var levelCount = basisFile.getNumLevels(i);
-            for(var level = 0;level < levelCount;level++){
+            for (var level = 0; level < levelCount; level++) {
                 var levelInfo = {
                     width: basisFile.getImageWidth(i, level),
                     height: basisFile.getImageHeight(i, level)
-                }
+                };
                 imageInfo.levels.push(levelInfo);
             }
-            images.push(imageInfo)
+            images.push(imageInfo);
         }
         var info = { hasAlpha, images };
         return info;
     }
 
-    function TranscodeLevel(loadedFile:any, imageIndex:number, levelIndex:number, format: number, convertToRgb565: boolean){
+    function TranscodeLevel(loadedFile: any, imageIndex: number, levelIndex: number, format: number, convertToRgb565: boolean) {
         var dstSize = loadedFile.getImageTranscodedSizeInBytes(imageIndex, levelIndex, format);
         var dst = new Uint8Array(dstSize);
         if (!loadedFile.transcodeImage(dst, imageIndex, levelIndex, format, 1, 0)) {

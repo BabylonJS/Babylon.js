@@ -80,11 +80,11 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                 etc2: caps.etc2 ? true : false
             }
         };
-        BasisTools.TranscodeAsync(data, transcodeConfig).then((result)=>{
+        BasisTools.TranscodeAsync(data, transcodeConfig).then((result) => {
             var rootImage = result.fileInfo.images[0].levels[0];
             callback(rootImage.width, rootImage.height, false, true, () => {
                 texture._invertVScale = true;
-                if(result.format === -1){
+                if (result.format === -1) {
                     // No compatable compressed format found, fallback to RGB
                     texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
                     texture.format = Engine.TEXTUREFORMAT_RGB;
@@ -95,8 +95,8 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                     source.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
                     source.format = Engine.TEXTUREFORMAT_RGB;
                     // Fallback requires aligned width/height
-                    source.width = (rootImage.width + 3) & ~3;;
-                    source.height =(rootImage.height + 3) & ~3;
+                    source.width = (rootImage.width + 3) & ~3;
+                    source.height = (rootImage.height + 3) & ~3;
                     texture.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, source, true);
                     texture.getEngine()._uploadDataToTextureDirectly(source, rootImage.transcodedPixels, 0, 0, Engine.TEXTUREFORMAT_RGB, true);
 
@@ -105,23 +105,23 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                         source.getEngine()._releaseTexture(source);
                         source.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, texture, true);
                     });
-                }else{
+                }else {
                     texture.width = rootImage.width;
                     texture.height = rootImage.height;
 
                     // Upload all mip levels in the file
-                    result.fileInfo.images[0].levels.forEach((level, index)=>{
+                    result.fileInfo.images[0].levels.forEach((level, index) => {
                         texture.getEngine()._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(result.format!), level.width, level.height, level.transcodedPixels, 0, index);
-                    })
+                    });
 
-                    if(texture.getEngine().webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)){
+                    if (texture.getEngine().webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
                         Tools.Warn("Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1.");
                         texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
                     }
-                    
+
                 }
-            })
-        })
+            });
+        });
     }
 }
 
