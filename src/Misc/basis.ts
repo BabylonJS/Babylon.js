@@ -10,21 +10,9 @@ class BasisFileInfo {
      */
     public hasAlpha: boolean;
     /**
-     * Width of the image
+     * Info about each image of the basis file
      */
-    public width: number;
-    /**
-     * Height of the image
-     */
-    public height: number;
-    /**
-     * Aligned width used when falling back to Rgb565 ((width + 3) & ~3)
-     */
-    public alignedWidth: number;
-    /**
-     * Aligned height used when falling back to Rgb565 ((height + 3) & ~3)
-     */
-    public alignedHeight: number;
+    public images: Array<{levels: Array<{width: number, height: number, transcodedPixels: ArrayBufferView}>}>
 }
 
 /**
@@ -52,6 +40,14 @@ export class BasisTranscodeConfiguration {
          */
         etc2?:boolean;
     };
+    /**
+     * If mipmap levels should be loaded for transcoded images (Default: true)
+     */
+    loadMipmapLevels?:boolean
+    /**
+     * Index of a single image to load (Default: all images)
+     */
+    loadSingleImage?:number
 }
 
 /**
@@ -139,7 +135,7 @@ export class BasisTools {
      * @param config configuration options for the transcoding
      * @returns a promise resulting in the transcoded image
      */
-    public static TranscodeAsync(imageData: ArrayBuffer, config:BasisTranscodeConfiguration):Promise<{fileInfo:any, pixels: any, format:number}>{
+    public static TranscodeAsync(imageData: ArrayBuffer, config:BasisTranscodeConfiguration):Promise<{fileInfo:BasisFileInfo, format:number}>{
         return new Promise((res)=>{
             this._CreateWorkerAsync().then(()=>{
                 var messageHandler = (msg:any)=>{
@@ -191,15 +187,51 @@ function workerFunc(): void {
             })
         }else if(event.data.action === "transcode"){
             // Transcode the basis image and return the resulting pixels
+            var config:BasisTranscodeConfiguration = event.data.config;
             var imgData = event.data.imageData;
             var loadedFile = new Module.BasisFile(new Uint8Array(imgData));
             var fileInfo = GetFileInfo(loadedFile);
             var format = event.data.ignoreSupportedFormats ? null : GetSupportedTranscodeFormat(event.data.config, fileInfo);
-            var transcodeResult = TranscodeFile(format, fileInfo, loadedFile);
-            if(transcodeResult.fallbackToRgb565){
+
+            var needsConversion = false;
+            if (format === null) {
+                needsConversion = true;
+                format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
+            }
+
+            // Begin transcode
+            if (!loadedFile.startTranscoding()) {
+                loadedFile.close();
+                loadedFile.delete();
+                throw "transcode failed";
+            }
+
+            var buffers:Array<any> = [];
+            fileInfo.images.forEach((image, imageIndex)=>{
+                if(config.loadSingleImage === undefined || config.loadSingleImage === imageIndex){
+                    if(config.loadMipmapLevels === false){
+                        var levelInfo = image.levels[0];
+                        levelInfo.transcodedPixels = TranscodeLevel(loadedFile, imageIndex, 0, format!, needsConversion);
+                        buffers.push(levelInfo.transcodedPixels.buffer)
+                    }else{
+                        image.levels.forEach((levelInfo, levelIndex)=>{
+                            levelInfo.transcodedPixels = TranscodeLevel(loadedFile, imageIndex, levelIndex, format!, needsConversion);
+                            buffers.push(levelInfo.transcodedPixels.buffer)
+                            
+                        })
+                    }
+                }
+            })
+
+            // Close file
+            loadedFile.close();
+            loadedFile.delete();
+
+           
+            if(needsConversion){
                 format = -1;
             }
-            postMessage({action: "transcode", pixels:transcodeResult.pixels, fileInfo: fileInfo, format: format}, [transcodeResult.pixels.buffer]);
+            postMessage({action: "transcode", fileInfo: fileInfo, format: format}, buffers);
         }
        
     };
@@ -233,51 +265,41 @@ function workerFunc(): void {
      */
     function GetFileInfo(basisFile: any): BasisFileInfo {
         var hasAlpha = basisFile.getHasAlpha();
-        var width = basisFile.getImageWidth(0, 0);
-        var height = basisFile.getImageHeight(0, 0);
-        var alignedWidth = (width + 3) & ~3;
-        var alignedHeight = (height + 3) & ~3;
-        var info = { hasAlpha, width, height, alignedWidth, alignedHeight };
+        var imageCount = basisFile.getNumImages();
+        var images = []
+        for(var i = 0;i<imageCount;i++){
+            var imageInfo = {
+                levels: ([] as Array<any>)
+            }
+            var levelCount = basisFile.getNumLevels(i);
+            for(var level = 0;level < levelCount;level++){
+                var levelInfo = {
+                    width: basisFile.getImageWidth(i, level),
+                    height: basisFile.getImageHeight(i, level)
+                }
+                imageInfo.levels.push(levelInfo);
+            }
+            images.push(imageInfo)
+        }
+        var info = { hasAlpha, images };
         return info;
     }
 
-    /**
-     * Transcodes the basis file to the requested format to be transferred to the gpu
-     * @param format fromat to be transferred to
-     * @param fileInfo information about the loaded file
-     * @param loadedFile the loaded basis file
-     * @returns the resulting pixels and if the transcode fell back to using Rgb565
-     */
-    function TranscodeFile(format: Nullable<number>, fileInfo: BasisFileInfo, loadedFile: any) {
-        var needsConversion = false;
-        if (format === null) {
-            needsConversion = true;
-            format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
-        }
-
-        if (!loadedFile.startTranscoding()) {
-            loadedFile.close();
-            loadedFile.delete();
-            throw "transcode failed";
-        }
-        var dstSize = loadedFile.getImageTranscodedSizeInBytes(0, 0, format);
+    function TranscodeLevel(loadedFile:any, imageIndex:number, levelIndex:number, format: number, convertToRgb565: boolean){
+        var dstSize = loadedFile.getImageTranscodedSizeInBytes(imageIndex, levelIndex, format);
         var dst = new Uint8Array(dstSize);
-        if (!loadedFile.transcodeImage(dst, 0, 0, format, 1, 0)) {
+        if (!loadedFile.transcodeImage(dst, imageIndex, levelIndex, format, 1, 0)) {
             loadedFile.close();
             loadedFile.delete();
             throw "transcode failed";
         }
-        loadedFile.close();
-        loadedFile.delete();
-
         // If no supported format is found, load as dxt and convert to rgb565
-        if (needsConversion) {
-            dst = ConvertDxtToRgb565(dst, 0, fileInfo.alignedWidth, fileInfo.alignedHeight);
+        if (convertToRgb565) {
+            var alignedWidth = (loadedFile.getImageWidth(imageIndex, levelIndex) + 3) & ~3;
+            var alignedHeight = (loadedFile.getImageHeight(imageIndex, levelIndex) + 3) & ~3;
+            dst = ConvertDxtToRgb565(dst, 0, alignedWidth, alignedHeight);
         }
-
-        return {
-            fallbackToRgb565: needsConversion, pixels: dst
-        };
+        return dst;
     }
 
     /**
