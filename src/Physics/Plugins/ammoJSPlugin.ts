@@ -901,7 +901,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         switch (impostor.type) {
             case PhysicsImpostor.SphereImpostor:
                 // Is there a better way to compare floats number? With an epsylon or with a Math function
-                if (extendSize.x == extendSize.y && extendSize.x == extendSize.z) {
+                if (extendSize.x === extendSize.y && extendSize.x === extendSize.z) {
                     returnValue = new Ammo.btSphereShape(extendSize.x / 2);
                 } else {
                     // create a btMultiSphereShape because it's not possible to set a local scaling on a btSphereShape
