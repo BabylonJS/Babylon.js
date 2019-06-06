@@ -1017,7 +1017,7 @@ export class Tools {
      * @param url the file url to load
      * @returns a promise containing an ArrayBuffer corrisponding to the loaded file
      */
-    public static loadFileAsync(url: string): Promise<ArrayBuffer> {
+    public static LoadFileAsync(url: string): Promise<ArrayBuffer> {
         return new Promise((resolve, reject) => {
             Tools.LoadFile(url, (data) => {
                 resolve(data as ArrayBuffer);

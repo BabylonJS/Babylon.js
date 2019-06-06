@@ -289,26 +289,26 @@ export class Texture extends BaseTexture {
         scene.getEngine().onBeforeTextureInitObservable.notifyObservers(this);
 
         let load = () => {
-            if(this._texture){
+            if (this._texture) {
                 if (this._texture._invertVScale) {
                     this.vScale = -1;
                 }
-                
+
                 // Update texutre to match internal texture's wrapping
-                if(this._texture._cachedWrapU !== null){
+                if (this._texture._cachedWrapU !== null) {
                     this.wrapU = this._texture._cachedWrapU;
                     this._texture._cachedWrapU = null;
                 }
-                if(this._texture._cachedWrapV !== null){
+                if (this._texture._cachedWrapV !== null) {
                     this.wrapV = this._texture._cachedWrapV;
                     this._texture._cachedWrapV = null;
                 }
-                if(this._texture._cachedWrapR !== null){
+                if (this._texture._cachedWrapR !== null) {
                     this.wrapR = this._texture._cachedWrapR;
                     this._texture._cachedWrapR = null;
                 }
             }
-            
+
             if (this.onLoadObservable.hasObservers()) {
                 this.onLoadObservable.notifyObservers(this);
             }
