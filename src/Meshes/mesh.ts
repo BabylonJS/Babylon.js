@@ -1547,7 +1547,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _rebuild(): void {
-        if(this._instanceDataStorage.instancesBuffer){
+        if (this._instanceDataStorage.instancesBuffer) {
             // Dispose instance buffer to be recreated in _renderWithInstances when rendered
             this._instanceDataStorage.instancesBuffer.dispose();
             this._instanceDataStorage.instancesBuffer = null;
