@@ -4,7 +4,7 @@
 - WIP: Node Material (NEED DOC AND SAMPLES) ([Deltakosh](https://github.com/deltakosh/))
 - WIP: Node material editor (NEED DOC AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
 - WIP: WebGPU support (NEED DOC AND SAMPLES) ([Sebavan](https://github.com/sebavan/)
-- WIP: .basis texture file format support [Demo](https://www.babylonjs-playground.com/#4RN0VF) ([TrevorDev](https://github.com/TrevorDev))
+- WIP: .basis texture file format support (mipmaps, web worker) [Demo](https://www.babylonjs-playground.com/#4RN0VF) ([TrevorDev](https://github.com/TrevorDev))
 
 ## Optimizations
 
@@ -48,6 +48,9 @@
 ### Physics
 - Update Ammo.js library to support global collision contact callbacks ([MackeyK24](https://github.com/MackeyK24/))
 - Update AmmoJSPlugin to allow your own broadphase overlapping pair cache ([MackeyK24](https://github.com/MackeyK24/))
+
+### Loaders
+- Added support for non-float accessors in animation data for glTF loader. ([bghgary](https://github.com/bghgary))
 
 ## Bug fixes
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))

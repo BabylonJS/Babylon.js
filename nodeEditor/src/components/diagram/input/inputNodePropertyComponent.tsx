@@ -11,6 +11,7 @@ import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMateri
 import { Vector2, Vector3, Matrix } from 'babylonjs/Maths/math';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 import { Color3PropertyTabComponent } from '../../propertyTab/properties/color3PropertyTabComponent';
+import { FloatPropertyTabComponent } from '../../propertyTab/properties/floatPropertyTabComponent';
 
 interface IInputPropertyTabComponentProps {
     globalState: GlobalState;
@@ -26,6 +27,10 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
     renderValue(globalState: GlobalState) {
         let connection = this.props.inputNode.connection!;
         switch (connection.type) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                return (
+                    <FloatPropertyTabComponent globalState={globalState} connection={connection} />
+                );
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 return (
                     <Vector2PropertyTabComponent globalState={globalState} connection={connection} />
@@ -48,6 +53,9 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
     setDefaultValue() {
         let connection = this.props.inputNode.connection!;
         switch (connection.type) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                connection.value = 0;
+                break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 connection.value = Vector2.Zero();
                 break;

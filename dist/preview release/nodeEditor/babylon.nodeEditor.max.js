@@ -5129,7 +5129,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#propertyTab {\n  color: white; }\n  #propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #propertyTab #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #propertyTab #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #propertyTab .vector3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n  #propertyTab .checkBoxLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .checkBoxLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .checkBoxLine .checkBox {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      #propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #propertyTab .listLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .listLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #propertyTab .listLine .options select {\n        width: 115px; }\n  #propertyTab .color3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .color3Line .firstLine {\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      #propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        display: flex;\n        align-items: center; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"] {\n          -webkit-appearance: none;\n          border: 1px solid rgba(255, 255, 255, 0.5);\n          padding: 0;\n          width: 30px;\n          height: 20px; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n          padding: 0; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n          border: none; }\n        #propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .textLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #propertyTab .textLine .value.check {\n        color: green; }\n      #propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
+exports.push([module.i, "#propertyTab {\n  color: white; }\n  #propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #propertyTab #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #propertyTab #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #555555;\n        height: 30px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #propertyTab .floatLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .floatLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .floatLine .value {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .floatLine .value input {\n        width: 110px; }\n  #propertyTab .vector3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n  #propertyTab .checkBoxLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .checkBoxLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .checkBoxLine .checkBox {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      #propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #propertyTab .listLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .listLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #propertyTab .listLine .options select {\n        width: 115px; }\n  #propertyTab .color3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .color3Line .firstLine {\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      #propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        display: flex;\n        align-items: center; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"] {\n          -webkit-appearance: none;\n          border: 1px solid rgba(255, 255, 255, 0.5);\n          padding: 0;\n          width: 30px;\n          height: 20px; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n          padding: 0; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n          border: none; }\n        #propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .textLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #propertyTab .textLine .value.check {\n        color: green; }\n      #propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
 
 // exports
 
@@ -46878,6 +46878,9 @@ var DefaultNodeModel = /** @class */ (function (_super) {
                 else if (connection.type & babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3OrVector4OrColor4) {
                     type = "Vector4";
                 }
+                else if (connection.type & babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Float) {
+                    type = "Float";
+                }
                 // Create links
                 var localNode = graphEditor.addValueNode(type, options.column + 1, connection);
                 if (localNode) {
@@ -47336,6 +47339,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
 /* harmony import */ var _propertyTab_properties_color3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../propertyTab/properties/color3PropertyTabComponent */ "./components/propertyTab/properties/color3PropertyTabComponent.tsx");
+/* harmony import */ var _propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../propertyTab/properties/floatPropertyTabComponent */ "./components/propertyTab/properties/floatPropertyTabComponent.tsx");
+
 
 
 
@@ -47355,6 +47360,8 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
     InputPropertyTabComponentProps.prototype.renderValue = function (globalState) {
         var connection = this.props.inputNode.connection;
         switch (connection.type) {
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Float:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_9__["FloatPropertyTabComponent"], { globalState: globalState, connection: connection }));
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__["Vector2PropertyTabComponent"], { globalState: globalState, connection: connection }));
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector3:
@@ -47370,6 +47377,9 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
     InputPropertyTabComponentProps.prototype.setDefaultValue = function () {
         var connection = this.props.inputNode.connection;
         switch (connection.type) {
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Float:
+                connection.value = 0;
+                break;
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                 connection.value = babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["Vector2"].Zero();
                 break;
@@ -47909,6 +47919,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./nodeList.scss */ "./components/nodeList/nodeList.scss");
 var NodeListComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeListComponent, _super);
@@ -47923,7 +47934,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Fragment: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AlphaTestBlock"], , babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ImageProcessingBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBAMergerBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBASplitterBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["TextureBlock"]],
             Outputs: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["VertexOutputBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FragmentOutputBlock"]],
             Dual: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FogBlock"]],
-            Math: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AddBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ClampBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MatrixMultiplicationBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MultiplyBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector2TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector3TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector4TransformBlock"]],
+            Math: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AddBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ClampBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MatrixMultiplicationBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MultiplyBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ScaleBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector2TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector3TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector4TransformBlock"]],
             Inputs: ["Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
         };
         // Create node menu
@@ -47976,6 +47987,38 @@ var Color3PropertyTabComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Value", target: this.props.connection, propertyName: "value" }));
     };
     return Color3PropertyTabComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/propertyTab/properties/floatPropertyTabComponent.tsx":
+/*!*************************************************************************!*\
+  !*** ./components/propertyTab/properties/floatPropertyTabComponent.tsx ***!
+  \*************************************************************************/
+/*! exports provided: FloatPropertyTabComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FloatPropertyTabComponent", function() { return FloatPropertyTabComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+
+
+
+var FloatPropertyTabComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FloatPropertyTabComponent, _super);
+    function FloatPropertyTabComponent() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    FloatPropertyTabComponent.prototype.render = function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { label: "Value", target: this.props.connection, propertyName: "value" }));
+    };
+    return FloatPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -48090,6 +48133,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+
 
 
 
@@ -48121,10 +48166,12 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "NODE MATERIAL EDITOR")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
-                        _this.props.globalState.nodeMaterial.setToDefault();
-                        _this.props.globalState.onResetRequiredObservable.notifyObservers();
-                    } }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "PROPERTIES" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
+                            _this.props.globalState.nodeMaterial.setToDefault();
+                            _this.props.globalState.onResetRequiredObservable.notifyObservers();
+                        } })))));
     };
     return PropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -48369,7 +48416,7 @@ var GraphEditor = /** @class */ (function (_super) {
             _this._toAdd = null;
             _this._engine.setDiagramModel(_this._model);
             _this.forceUpdate();
-        }, 15);
+        }, 250);
     };
     GraphEditor.prototype.addNodeFromClass = function (ObjectClass) {
         var _this = this;
@@ -48879,6 +48926,92 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "upload", id: "file-upload", type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
     };
     return FileButtonLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedComponents/floatLineComponent.tsx":
+/*!*************************************************!*\
+  !*** ./sharedComponents/floatLineComponent.tsx ***!
+  \*************************************************/
+/*! exports provided: FloatLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FloatLineComponent", function() { return FloatLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var FloatLineComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FloatLineComponent, _super);
+    function FloatLineComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._localChange = false;
+        var currentValue = _this.props.target[_this.props.propertyName];
+        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 3)) : "0" };
+        _this._store = currentValue;
+        return _this;
+    }
+    FloatLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        if (this._localChange) {
+            this._localChange = false;
+            return true;
+        }
+        var newValue = nextProps.target[nextProps.propertyName];
+        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
+        if (newValueString !== nextState.value) {
+            nextState.value = newValueString;
+            return true;
+        }
+        return false;
+    };
+    FloatLineComponent.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
+        if (this.props.onChange) {
+            this.props.onChange(newValue);
+        }
+        if (!this.props.onPropertyChangedObservable) {
+            return;
+        }
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.target,
+            property: this.props.propertyName,
+            value: newValue,
+            initialValue: previousValue
+        });
+    };
+    FloatLineComponent.prototype.updateValue = function (valueString) {
+        if (/[^0-9\.\-]/g.test(valueString)) {
+            return;
+        }
+        var valueAsNumber;
+        if (this.props.isInteger) {
+            valueAsNumber = parseInt(valueString);
+        }
+        else {
+            valueAsNumber = parseFloat(valueString);
+        }
+        this._localChange = true;
+        this.setState({ value: valueString });
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
+        this.raiseOnPropertyChanged(valueAsNumber, this._store);
+        this.props.target[this.props.propertyName] = valueAsNumber;
+        this._store = valueAsNumber;
+    };
+    FloatLineComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || "0.01", className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt.target.value); } })))));
+    };
+    return FloatLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
