@@ -77,6 +77,9 @@ export class DefaultNodeModel extends NodeModel {
                 } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4) {
                     type = "Vector4"
                 }
+                else if (connection.type & NodeMaterialBlockConnectionPointTypes.Float) {
+                    type = "Float"
+                }
 
                 // Create links
                 var localNode = graphEditor.addValueNode(type, options.column + 1, connection);

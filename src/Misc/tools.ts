@@ -1013,6 +1013,21 @@ export class Tools {
     }
 
     /**
+     * Loads a file from a url
+     * @param url the file url to load
+     * @returns a promise containing an ArrayBuffer corrisponding to the loaded file
+     */
+    public static LoadFileAsync(url: string): Promise<ArrayBuffer> {
+        return new Promise((resolve, reject) => {
+            Tools.LoadFile(url, (data) => {
+                resolve(data as ArrayBuffer);
+            }, undefined, undefined, true, (request, exception) => {
+                reject(exception);
+            });
+        });
+    }
+
+    /**
      * Load a script (identified by an url). When the url returns, the
      * content of this file is added into a new script element, attached to the DOM (body element)
      * @param scriptUrl defines the url of the script to laod

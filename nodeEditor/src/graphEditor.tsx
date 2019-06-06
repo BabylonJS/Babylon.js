@@ -227,7 +227,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this._toAdd = null;
             this._engine.setDiagramModel(this._model);
             this.forceUpdate();
-        }, 15);
+        }, 250);
     }
 
     addNodeFromClass(ObjectClass: typeof NodeMaterialBlock) {

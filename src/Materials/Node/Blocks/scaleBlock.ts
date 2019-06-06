@@ -3,21 +3,23 @@ import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConne
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 /**
- * Block used to add 2 vector4
+ * Block used to scale a value
  */
-export class AddBlock extends NodeMaterialBlock {
+export class ScaleBlock extends NodeMaterialBlock {
     /**
-     * Creates a new AddBlock
+     * Creates a new ScaleBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("left", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("scale", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
+
+        this.scale.value = 1;
     }
 
     /**
@@ -25,20 +27,20 @@ export class AddBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "AddBlock";
+        return "ScaleBlock";
     }
 
     /**
-     * Gets the left operand input component
+     * Gets the value operand input component
      */
-    public get left(): NodeMaterialConnectionPoint {
+    public get value(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the right operand input component
+     * Gets the scale operand input component
      */
-    public get right(): NodeMaterialConnectionPoint {
+    public get scale(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
@@ -47,7 +49,7 @@ export class AddBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${this.left.associatedVariableName} + ${this.right.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${this.value.associatedVariableName} * ${this.scale.associatedVariableName};\r\n`;
 
         return this;
     }
