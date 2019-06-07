@@ -83,7 +83,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
         BasisTools.TranscodeAsync(data, transcodeConfig).then((result) => {
             var rootImage = result.fileInfo.images[0].levels[0];
             callback(rootImage.width, rootImage.height, false, true, () => {
-                texture._invertVScale = true;
+                texture._invertVScale = texture.invertY;
                 if (result.format === -1) {
                     // No compatable compressed format found, fallback to RGB
                     texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
@@ -117,6 +117,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                     if (texture.getEngine().webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
                         Tools.Warn("Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1.");
                         texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
+                        texture._cachedWrapV = Texture.CLAMP_ADDRESSMODE;
                     }
 
                 }
