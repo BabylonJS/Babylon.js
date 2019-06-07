@@ -12,7 +12,7 @@ import { ShapeBuilder } from "../../Meshes/Builders/shapeBuilder";
 import { LinesBuilder } from "../../Meshes/Builders/linesBuilder";
 import { LinesMesh } from '../../Meshes/linesMesh';
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
-import { Scalar } from "../../Maths/math.scalar"
+import { Scalar } from "../../Maths/math.scalar";
 
 declare var Ammo: any;
 
