@@ -41,14 +41,56 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface ILineContainerComponentProps {
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+    }> {
+        private static _InMemoryStorage;
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+    }
+}
+declare module NODEEDITOR {
+    interface ITextInputLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        value?: string;
+        onChange?: (value: string) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        constructor(props: ITextInputLineComponentProps);
+        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
+        updateValue(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     /**
      * Generic node model which stores information about a node editor block
      */
     export class GenericNodeModel extends DefaultNodeModel {
-        /**
-         * Labels for the block
-         */
-        header: string;
         /**
          * BABYLON.Vector2 for the node if it exists
          */
@@ -120,22 +162,6 @@ declare module NODEEDITOR {
          * @returns generic node model
          */
         getNewInstance(): GenericNodeModel;
-    }
-}
-declare module NODEEDITOR {
-    interface ILineContainerComponentProps {
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-    }> {
-        private static _InMemoryStorage;
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        render(): JSX.Element;
     }
 }
 declare module NODEEDITOR {
@@ -315,14 +341,6 @@ declare module NODEEDITOR {
         }): boolean;
         updateValue(evt: any): void;
         render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
     }
 }
 declare module NODEEDITOR {
@@ -595,6 +613,19 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface ILogComponentProps {
+        globalState: GlobalState;
+    }
+    export class LogComponent extends React.Component<ILogComponentProps, {
+        logs: string[];
+    }> {
+        constructor(props: ILogComponentProps);
+        componentWillMount(): void;
+        componentDidUpdate(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -622,6 +653,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
+        buildMaterial(): void;
         build(): void;
         addNodeFromClass(ObjectClass: typeof BABYLON.NodeMaterialBlock): DefaultNodeModel;
         addValueNode(type: string, column?: number, connection?: BABYLON.NodeMaterialConnectionPoint): DefaultNodeModel;
@@ -657,6 +689,8 @@ declare module NODEEDITOR {
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
+        onZoomToFitRequiredObservable: BABYLON.Observable<void>;
+        onLogRequiredObservable: BABYLON.Observable<string>;
     }
 }
 declare module NODEEDITOR {

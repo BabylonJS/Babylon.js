@@ -72,7 +72,7 @@ export class TextureNodeWidget extends React.Component<TextureNodeWidgetProps> {
         return (
             <div className={"diagramBlock"}>
                 <div className="header">
-                    {`Texture (${this.props.node && this.props.node.texture ? this.props.node.texture.name : "not set"})`}
+                    {this.props.node!.block!.name}
                 </div>
                 <div className="inputs">
                     {inputPorts}
