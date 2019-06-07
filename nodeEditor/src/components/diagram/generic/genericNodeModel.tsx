@@ -7,15 +7,12 @@ import { GraphEditor, NodeCreationOptions } from '../../../graphEditor';
 import { GlobalState } from '../../../globalState';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
+import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
 
 /**
  * Generic node model which stores information about a node editor block
  */
 export class GenericNodeModel extends DefaultNodeModel {
-	/**
-	 * Labels for the block
-	 */
-    public header = "";
 	/**
 	 * Vector2 for the node if it exists
 	 */
@@ -41,10 +38,6 @@ export class GenericNodeModel extends DefaultNodeModel {
     }
 
     prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
-        if (options.nodeMaterialBlock) {
-            this.header = options.nodeMaterialBlock.name;
-        }
-
         super.prepare(options, nodes, model, graphEditor, filterInputs);
     }
 
@@ -52,6 +45,7 @@ export class GenericNodeModel extends DefaultNodeModel {
 
         return (
             <LineContainerComponent title="GENERAL">
+                <TextInputLineComponent label="Name" propertyName="name" target={this.block!} onChange={() => globalState.onUpdateRequiredObservable.notifyObservers()} />
                 <TextLineComponent label="Type" value={this.block!.getClassName()} />
             </LineContainerComponent>
         );
