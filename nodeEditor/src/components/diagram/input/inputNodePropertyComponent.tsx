@@ -12,6 +12,7 @@ import { Vector2, Vector3, Matrix } from 'babylonjs/Maths/math';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 import { Color3PropertyTabComponent } from '../../propertyTab/properties/color3PropertyTabComponent';
 import { FloatPropertyTabComponent } from '../../propertyTab/properties/floatPropertyTabComponent';
+import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
 
 interface IInputPropertyTabComponentProps {
     globalState: GlobalState;
@@ -116,49 +117,53 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
 
         return (
             <div>
-                <TextLineComponent label="Type" value={getBaseType(connection.type)} />
-                <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {
-                    if (!value) {
-                        connection.isUniform = true;
-                    } else {
-                        connection.isAttribute = true;
-                    }
-                    this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-                    this.forceUpdate();
-                }} isSelected={() => connection!.isAttribute} />
-                {
-                    connection.isAttribute &&
-                    <OptionsLineComponent label="Attribute" valuesAreStrings={true} options={attributeOptions} target={connection} propertyName="name" onSelect={(value: any) => {
-                        connection.setAsAttribute(value);
-                        this.forceUpdate();
-                        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-                    }} />
-                }
-                {
-                    connection.isUniform &&
-                    <CheckBoxLineComponent label="Is well known value" onSelect={value => {
-                        if (value) {
-                            connection!.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+                <LineContainerComponent title="GENERAL">
+                    <TextLineComponent label="Type" value={getBaseType(connection.type)} />
+                </LineContainerComponent>
+                <LineContainerComponent title="PROPERTIES">
+                    <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {
+                        if (!value) {
+                            connection.isUniform = true;
                         } else {
-                            connection!.setAsWellKnownValue(null);
-                            this.setDefaultValue();
+                            connection.isAttribute = true;
                         }
                         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         this.forceUpdate();
-                    }} isSelected={() => connection!.isWellKnownValue} />
-                }
-                {
-                    connection.isUniform && !connection.isWellKnownValue &&
-                    this.renderValue(this.props.globalState)
-                }
-                {
-                    connection.isUniform && connection.isWellKnownValue &&
-                    <OptionsLineComponent label="Well known value" options={wellKnownOptions} target={connection} propertyName="wellKnownValue" onSelect={(value: any) => {
-                        connection.setAsWellKnownValue(value);
-                        this.forceUpdate();
-                        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-                    }} />
-                }
+                    }} isSelected={() => connection!.isAttribute} />
+                    {
+                        connection.isAttribute &&
+                        <OptionsLineComponent label="Attribute" valuesAreStrings={true} options={attributeOptions} target={connection} propertyName="name" onSelect={(value: any) => {
+                            connection.setAsAttribute(value);
+                            this.forceUpdate();
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        }} />
+                    }
+                    {
+                        connection.isUniform &&
+                        <CheckBoxLineComponent label="Is well known value" onSelect={value => {
+                            if (value) {
+                                connection!.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+                            } else {
+                                connection!.setAsWellKnownValue(null);
+                                this.setDefaultValue();
+                            }
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            this.forceUpdate();
+                        }} isSelected={() => connection!.isWellKnownValue} />
+                    }
+                    {
+                        connection.isUniform && !connection.isWellKnownValue &&
+                        this.renderValue(this.props.globalState)
+                    }
+                    {
+                        connection.isUniform && connection.isWellKnownValue &&
+                        <OptionsLineComponent label="Well known value" options={wellKnownOptions} target={connection} propertyName="wellKnownValue" onSelect={(value: any) => {
+                            connection.setAsWellKnownValue(value);
+                            this.forceUpdate();
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        }} />
+                    }
+                </LineContainerComponent>
             </div>
         );
     }

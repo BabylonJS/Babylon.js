@@ -11,4 +11,5 @@ export class GlobalState {
     onRebuildRequiredObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
+    onZoomToFitRequiredObservable = new Observable<void>();
 }

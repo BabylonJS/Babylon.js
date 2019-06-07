@@ -6,6 +6,7 @@ import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/Diagra
 import { GraphEditor, NodeCreationOptions } from '../../../graphEditor';
 import { GlobalState } from '../../../globalState';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
+import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
 
 /**
  * Generic node model which stores information about a node editor block
@@ -50,9 +51,9 @@ export class GenericNodeModel extends DefaultNodeModel {
     renderProperties(globalState: GlobalState) {
 
         return (
-            <div>
+            <LineContainerComponent title="GENERAL">
                 <TextLineComponent label="Type" value={this.block!.getClassName()} />
-            </div>
+            </LineContainerComponent>
         );
     }
 }
