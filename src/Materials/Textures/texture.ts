@@ -291,7 +291,8 @@ export class Texture extends BaseTexture {
         let load = () => {
             if (this._texture) {
                 if (this._texture._invertVScale) {
-                    this.vScale = -1;
+                    this.vScale *= -1;
+                    this.vOffset += 1;
                 }
 
                 // Update texutre to match internal texture's wrapping

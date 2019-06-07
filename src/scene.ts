@@ -1169,7 +1169,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._transientComponents.push(component);
 
         const serializableComponent = component as ISceneSerializableComponent;
-        if (serializableComponent.addFromContainer) {
+        if (serializableComponent.addFromContainer && serializableComponent.serialize) {
             this._serializableComponents.push(serializableComponent);
         }
     }
@@ -3240,6 +3240,14 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public unfreezeActiveMeshes(): Scene {
+
+        for (var index = 0; index < this.meshes.length; index++) {
+            const mesh = this.meshes[index];
+            if (mesh._internalAbstractMeshDataInfo) {
+                mesh._internalAbstractMeshDataInfo._isActive = false;
+            }
+        }
+
         for (var index = 0; index < this._activeMeshes.length; index++) {
             this._activeMeshes.data[index]._unFreeze();
         }
