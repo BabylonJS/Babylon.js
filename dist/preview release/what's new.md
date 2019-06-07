@@ -4,7 +4,7 @@
 - WIP: Node Material (NEED DOC AND SAMPLES) ([Deltakosh](https://github.com/deltakosh/))
 - WIP: Node material editor (NEED DOC AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
 - WIP: WebGPU support (NEED DOC AND SAMPLES) ([Sebavan](https://github.com/sebavan/)
-- WIP: .basis texture file format support (mipmaps, web worker) [Demo](https://www.babylonjs-playground.com/#4RN0VF) ([TrevorDev](https://github.com/TrevorDev))
+- WIP: .basis texture file format support (mipmaps, web worker, webGL 1) [Demo](https://www.babylonjs-playground.com/#4RN0VF) ([TrevorDev](https://github.com/TrevorDev))
 
 ## Optimizations
 
@@ -48,6 +48,7 @@
 ### Physics
 - Update Ammo.js library to support global collision contact callbacks ([MackeyK24](https://github.com/MackeyK24/))
 - Update AmmoJSPlugin to allow your own broadphase overlapping pair cache ([MackeyK24](https://github.com/MackeyK24/))
+- Update Ammo.js library and AmmoJS plugin to support ellipsoid ([CedricGuillemet](https://github.com/CedricGuillemet/)) 
 
 ### Loaders
 - Added support for non-float accessors in animation data for glTF loader. ([bghgary](https://github.com/bghgary))
@@ -59,7 +60,7 @@
 - Runtime animation `goToFrame` when going back in time now correctly triggers future events when reached ([zakhenry](https://github.com/zakhenry))
 - Fixed bug in Ray.intersectsTriangle where the barycentric coordinates `bu` and `bv` being returned is actually `bv` and `bw`. ([bghgary](https://github.com/bghgary))
 - Do not call onError when creating a texture when falling back to another loader ([TrevorDev](https://github.com/TrevorDev))
-- Context loss should not cause PBR materials to render black ([TrevorDev](https://github.com/TrevorDev))
+- Context loss should not cause PBR materials to render black or instances to stop rendering ([TrevorDev](https://github.com/TrevorDev))
 - Only cast pointer ray input when pointer is locked in webVR ([TrevorDev](https://github.com/TrevorDev))
 - Avoid using default utility layer in gizmo manager to support multiple scenes ([TrevorDev](https://github.com/TrevorDev))
 
