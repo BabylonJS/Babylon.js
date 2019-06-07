@@ -24,6 +24,7 @@ import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
 import { InputNodeModel } from './components/diagram/input/inputNodeModel';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
 import { Vector2, Vector3, Vector4, Matrix, Color3, Color4 } from 'babylonjs/Maths/math';
+import { LogComponent } from './components/log/logComponent';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -91,6 +92,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             } else {
                 newNode = new GenericNodeModel();
             }
+
+            if (options.nodeMaterialBlock.isFinalMerger) {
+                this.props.globalState.nodeMaterial!.addOutputNode(options.nodeMaterialBlock);
+            }
+
         } else {
             newNode = new InputNodeModel();
             (newNode as InputNodeModel).connection = options.connection;
@@ -133,7 +139,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
             if (this.props.globalState.nodeMaterial) {
-                this.props.globalState.nodeMaterial.build(true);
+                this.buildMaterial();
             }
             this.forceUpdate();
         });
@@ -142,7 +148,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this._rowPos = [];
             this.build();
             if (this.props.globalState.nodeMaterial) {
-                this.props.globalState.nodeMaterial.build(true);
+                this.buildMaterial();
             }
         });
 
@@ -157,25 +163,57 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this.build();
     }
 
+    buildMaterial() {
+        if (!this.props.globalState.nodeMaterial) {
+            return;
+        }
+
+        try {
+            this.props.globalState.nodeMaterial.build(true);
+            this.props.globalState.onLogRequiredObservable.notifyObservers("Node material build successful");
+        }
+        catch (err) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(err);
+        }
+    }
+
     build() {
         // setup the diagram model
         this._model = new DiagramModel();
 
         // Listen to events
         this._model.addListener({
+            nodesUpdated: (e) => {
+                if (!e.isCreated) {
+                    // Block is deleted
+                    let targetBlock = (e.node as GenericNodeModel).block;
+
+                    if (targetBlock && targetBlock.isFinalMerger) {
+                        this.props.globalState.nodeMaterial!.removeOutputNode(targetBlock);
+                    }
+                }
+            },
             linksUpdated: (e) => {
                 if (!e.isCreated) {
                     // Link is deleted
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     var link = DefaultPortModel.SortInputOutput(e.link.sourcePort as DefaultPortModel, e.link.targetPort as DefaultPortModel);
                     if (link) {
-                        if (link.output.connection && link.input.connection) {
-                            // Disconnect standard nodes
-                            link.output.connection.disconnectFrom(link.input.connection)
-                            link.input.syncWithNodeMaterialConnectionPoint(link.input.connection)
-                            link.output.syncWithNodeMaterialConnectionPoint(link.output.connection)
-                        } else if (link.input.connection && link.input.connection.value) {
-                            link.input.connection.value = null;
+                        if (link.input.connection) {
+                            let targetBlock = link.input.connection.ownerBlock;
+
+                            if (targetBlock.isFinalMerger) {
+                                this.props.globalState.nodeMaterial!.removeOutputNode(targetBlock);
+                            }
+
+                            if (link.output.connection) {
+                                // Disconnect standard nodes
+                                link.output.connection.disconnectFrom(link.input.connection)
+                                link.input.syncWithNodeMaterialConnectionPoint(link.input.connection)
+                                link.output.syncWithNodeMaterialConnectionPoint(link.output.connection)
+                            } else if (link.input.connection.value) {
+                                link.input.connection.value = null;
+                            }
                         }
                     }
                 }
@@ -201,7 +239,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                 }
                             }
                             if (this.props.globalState.nodeMaterial) {
-                                this.props.globalState.nodeMaterial.build()
+                                this.buildMaterial();
                             }
                         }
                     }
@@ -291,6 +329,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
                     {/* Property tab */}
                     <PropertyTabComponent globalState={this.props.globalState} />
+
+                    <LogComponent globalState={this.props.globalState} />
                 </div>
             </Portal>
         );

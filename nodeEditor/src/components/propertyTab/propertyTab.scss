@@ -1,6 +1,7 @@
 #propertyTab {
     $line-padding-left: 5px;
     color:white;
+    background: #333333;
 
       #header {
         height: 30px;
@@ -35,6 +36,28 @@
         }
     }
 
+    .textInputLine {
+        padding-left: $line-padding-left;
+        height: 30px;
+        display: grid;
+        grid-template-columns: 1fr 120px;
+
+        .label {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .value {                        
+            display: flex;
+            align-items: center;
+            grid-column: 2;
+            
+            input {
+                width: 110px;
+            }
+        }
+    }
     
     .paneContainer {
         margin-top: 3px;

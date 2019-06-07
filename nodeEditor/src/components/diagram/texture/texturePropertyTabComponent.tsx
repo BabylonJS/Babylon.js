@@ -8,6 +8,7 @@ import { Engine } from 'babylonjs/Engines/engine';
 import { TextureNodeModel } from './textureNodeModel';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
+import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
@@ -49,6 +50,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
             }
 
             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
         }, undefined, true);
     }
 
@@ -56,6 +58,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
+                    <TextInputLineComponent label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                     <TextLineComponent label="Type" value="Texture" />
                 </LineContainerComponent>
 
