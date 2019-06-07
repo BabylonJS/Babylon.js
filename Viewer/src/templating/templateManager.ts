@@ -604,7 +604,7 @@ export class Template {
                             function: binding
                         });
                     } else if (typeof this._configuration.events[eventName] === 'object') {
-                        let selectorsArray: Array<string> = Object.keys(this._configuration.events[eventName] || {});
+                        let selectorsArray: Array<string> = Object.keys((this._configuration.events[eventName] as object) || {});
                         // strict null checl is working incorrectly, must override:
                         let event = this._configuration.events[eventName] || {};
                         selectorsArray.filter((selector) => event[selector]).forEach((selector) => {
