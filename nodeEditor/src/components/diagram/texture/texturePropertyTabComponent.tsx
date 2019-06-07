@@ -7,6 +7,7 @@ import { Tools } from 'babylonjs/Misc/tools';
 import { Engine } from 'babylonjs/Engines/engine';
 import { TextureNodeModel } from './textureNodeModel';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
+import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
@@ -46,14 +47,21 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
             } else {
                 (texture as Texture).updateURL(url, null, () => this.props.globalState.onUpdateRequiredObservable.notifyObservers());
             }
+
+            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         }, undefined, true);
     }
 
     render() {
         return (
             <div>
-                <TextLineComponent label="Type" value="Texture" />
-                <FileButtonLineComponent label="Replace texture" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                <LineContainerComponent title="GENERAL">
+                    <TextLineComponent label="Type" value="Texture" />
+                </LineContainerComponent>
+
+                <LineContainerComponent title="PROPERTIES">
+                    <FileButtonLineComponent label="Replace texture" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                </LineContainerComponent>
             </div>
         );
     }

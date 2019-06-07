@@ -57,6 +57,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this.props.globalState.onResetRequiredObservable.notifyObservers();
                         }} />
                     </LineContainerComponent>
+                    <LineContainerComponent title="UI">
+                        <ButtonLineComponent label="Zoom to fit" onClick={() => {
+                            this.props.globalState.onZoomToFitRequiredObservable.notifyObservers();
+                        }} />
+                    </LineContainerComponent>
                 </div>
             </div>
         );

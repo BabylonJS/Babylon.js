@@ -150,6 +150,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this.forceUpdate();
         });
 
+        this.props.globalState.onZoomToFitRequiredObservable.add(() => {
+            this._engine.zoomToFit();
+        });
+
         this.build();
     }
 
@@ -157,7 +161,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         // setup the diagram model
         this._model = new DiagramModel();
 
-        // Listen to events to connect/disconnect blocks or
+        // Listen to events
         this._model.addListener({
             linksUpdated: (e) => {
                 if (!e.isCreated) {
@@ -216,9 +220,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             })
         }
 
-        // Zoom out a bit at the start
-        this._model.setZoomLevel(80)
-
         // load model into engine
         setTimeout(() => {
             if (this._toAdd) {
@@ -227,7 +228,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this._toAdd = null;
             this._engine.setDiagramModel(this._model);
             this.forceUpdate();
-        }, 250);
+        }, 550);
     }
 
     addNodeFromClass(ObjectClass: typeof NodeMaterialBlock) {
