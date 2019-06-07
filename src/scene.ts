@@ -3240,6 +3240,14 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public unfreezeActiveMeshes(): Scene {
+
+        for (var index = 0; index < this.meshes.length; index++) {
+            const mesh = this.meshes[index];
+            if (mesh._internalAbstractMeshDataInfo) {
+                mesh._internalAbstractMeshDataInfo._isActive = false;
+            }
+        }
+
         for (var index = 0; index < this._activeMeshes.length; index++) {
             this._activeMeshes.data[index]._unFreeze();
         }
