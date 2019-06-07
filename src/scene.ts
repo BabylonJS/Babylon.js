@@ -1169,7 +1169,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._transientComponents.push(component);
 
         const serializableComponent = component as ISceneSerializableComponent;
-        if (serializableComponent.addFromContainer) {
+        if (serializableComponent.addFromContainer && serializableComponent.serialize) {
             this._serializableComponents.push(serializableComponent);
         }
     }
