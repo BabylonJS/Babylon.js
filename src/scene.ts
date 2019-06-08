@@ -35,7 +35,7 @@ import { PostProcess } from "./PostProcesses/postProcess";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
-import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
+import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction, SceneComponentConstants } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
 import { Node } from "./node";
 import { MorphTarget } from "./Morph/morphTarget";
@@ -47,6 +47,9 @@ import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
 import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
+import { IPhysicsEngine, IPhysicsEnginePlugin } from "./Physics/IPhysicsEngine";
+import { PhysicsEngine } from "./Physics/physicsEngine";
+import { PhysicsEngineSceneComponent } from "./Physics/physicsEngineComponent";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -1299,6 +1302,19 @@ export class Scene extends AbstractScene implements IAnimatable {
      * an optional map from Geometry Id to Geometry index in the 'geometries' array
      */
     private geometriesByUniqueId: Nullable<{ [uniqueId: string]: number | undefined }> = null;
+
+    /** @hidden (Backing field) */
+    _physicsEngine: Nullable<IPhysicsEngine>;
+
+        /**
+        * An event triggered when physic simulation is about to be run
+        */
+        onBeforePhysicsObservable: Observable<Scene>;
+
+        /**
+         * An event triggered when physic simulation has been done
+         */
+        onAfterPhysicsObservable: Observable<Scene>;
 
     /**
      * Creates a new Scene
@@ -3609,8 +3625,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /** @hidden */
     public _advancePhysicsEngineStep(step: number) {
-        // Do nothing. Code will be replaced if physics engine component is referenced
-    }
+        if (this._physicsEngine) {
+            this.onBeforePhysicsObservable.notifyObservers(this);
+            this._physicsEngine._step(step / 1000);
+            this.onAfterPhysicsObservable.notifyObservers(this);
+        }
+      }
 
     /**
      * User updatable function that will return a deterministic frame time when engine is in deterministic lock step mode
@@ -4457,4 +4477,75 @@ export class Scene extends AbstractScene implements IAnimatable {
             });
         });
     }
+
+    // physics engines
+
+    /**
+     * Gets the current physics engine
+     * @returns a IPhysicsEngine or null if none attached
+     */
+    public getPhysicsEngine(): Nullable<IPhysicsEngine> {
+        return this._physicsEngine;
+    }
+
+    /**
+     * Enables physics to the current scene
+     * @param gravity defines the scene's gravity for the physics engine
+     * @param plugin defines the physics engine to be used. defaults to OimoJS.
+     * @return a boolean indicating if the physics engine was initialized
+     */
+    public enablePhysics(gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePlugin): boolean {
+        if (this._physicsEngine) {
+            return true;
+        }
+
+        // Register the component to the scene
+        let component = this._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE) as PhysicsEngineSceneComponent;
+        if (!component) {
+            component = new PhysicsEngineSceneComponent(this);
+            this._addComponent(component);
+        }
+
+        try {
+            this._physicsEngine = new PhysicsEngine(gravity, plugin);
+            return true;
+        } catch (e) {
+            Logger.Error(e.message);
+            return false;
+        }
+    }
+
+    /**
+     * Disables and disposes the physics engine associated with the scene
+     */
+    public disablePhysicsEngine(): void {
+        if (!this._physicsEngine) {
+            return;
+        }
+
+        this._physicsEngine.dispose();
+        this._physicsEngine = null;
+    }
+
+    /**
+     * Gets a boolean indicating if there is an active physics engine
+     * @returns a boolean indicating if there is an active physics engine
+     */
+    public isPhysicsEnabled(): boolean {
+        return this._physicsEngine !== undefined;
+    }
+
+    /**
+     * Deletes a physics compound impostor
+     * @param compound defines the compound to delete
+     */
+    public deleteCompoundImpostor(compound: any): void {
+        var mesh: AbstractMesh = compound.parts[0].mesh;
+
+        if (mesh.physicsImpostor) {
+            mesh.physicsImpostor.dispose(/*true*/);
+            mesh.physicsImpostor = null;
+        }
+    }
+
 }

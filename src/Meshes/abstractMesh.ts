@@ -1,5 +1,5 @@
 import { Tools } from "../Misc/tools";
-import { Observable } from "../Misc/observable";
+import { Observable, Observer } from "../Misc/observable";
 import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene, IDisposable } from "../scene";
@@ -23,11 +23,14 @@ import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { _MeshCollisionData } from '../Collisions/meshCollisionData';
 import { _DevTools } from '../Misc/devTools';
+import { PhysicsImpostor } from "../Physics/physicsImpostor";
+import { PhysicsJoint } from "../Physics/physicsJoint";
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
 declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
 declare type RenderingGroup = import("../Rendering/renderingGroup").RenderingGroup;
+declare type Mesh = import("../Meshes/mesh").Mesh;
 
 /** @hidden */
 class _FacetDataStorage {
@@ -639,6 +642,45 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * An event triggered when the mesh is rebuilt.
      */
     public onRebuildObservable = new Observable<AbstractMesh>();
+
+    /** @hidden */
+    public _physicsImpostor: Nullable<PhysicsImpostor>;
+
+    /** @hidden */
+    public _disposePhysicsObserver: Nullable<Observer<Node>> = null;
+
+    /**
+     * Gets impostor used for physic simulation
+     * @see http://doc.babylonjs.com/features/physics_engine
+     */
+    public get physicsImpostor(): Nullable<PhysicsImpostor> {
+        return this._physicsImpostor;
+    }
+
+    /**
+     * Sets impostor used for physic simulation
+     * @see http://doc.babylonjs.com/features/physics_engine
+     */
+    public set physicsImpostor(value: Nullable<PhysicsImpostor>) {
+        if (this._physicsImpostor === value) {
+            return;
+        }
+        if (this._disposePhysicsObserver) {
+            this.onDisposeObservable.remove(this._disposePhysicsObserver);
+        }
+
+        this._physicsImpostor = value;
+
+        if (value) {
+            this._disposePhysicsObserver = this.onDisposeObservable.add(() => {
+                // Physics
+                if (this._physicsImpostor) {
+                    this._physicsImpostor.dispose(/*!doNotRecurse*/);
+                    this._physicsImpostor = null;
+                }
+            });
+        }
+    }
 
     // Constructor
 
@@ -2116,6 +2158,51 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh {
         throw _DevTools.WarnImport("EdgesRenderer");
+    }
+
+    /**
+    * Gets the current physics impostor
+    * @see http://doc.babylonjs.com/features/physics_engine
+    * @returns a physics impostor or null
+    */
+    public getPhysicsImpostor(): Nullable<PhysicsImpostor> {
+        return this._physicsImpostor;
+    }
+
+    /**
+     * Apply a physic impulse to the mesh
+     * @param force defines the force to apply
+     * @param contactPoint defines where to apply the force
+     * @returns the current mesh
+     * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
+     */
+    public applyImpulse(force: Vector3, contactPoint: Vector3): AbstractMesh {
+        if (!this._physicsImpostor) {
+            return this;
+        }
+        this._physicsImpostor.applyImpulse(force, contactPoint);
+        return this;
+    }
+
+    /**
+     * Creates a physic joint between two meshes
+     * @param otherMesh defines the other mesh to use
+     * @param pivot1 defines the pivot to use on this mesh
+     * @param pivot2 defines the pivot to use on the other mesh
+     * @param options defines additional options (can be plugin dependent)
+     * @returns the current mesh
+     * @see https://www.babylonjs-playground.com/#0BS5U0#0
+     */
+    public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): AbstractMesh {
+        if (!this._physicsImpostor || !otherMesh._physicsImpostor) {
+            return this;
+        }
+        this._physicsImpostor.createJoint(otherMesh._physicsImpostor, PhysicsJoint.HingeJoint, {
+            mainPivot: pivot1,
+            connectedPivot: pivot2,
+            nativeParams: options
+        });
+        return this;
     }
 
 }
