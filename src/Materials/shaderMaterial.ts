@@ -79,6 +79,7 @@ export class ShaderMaterial extends Material {
     private _matrices2x2: { [name: string]: Float32Array } = {};
     private _vectors2Arrays: { [name: string]: number[] } = {};
     private _vectors3Arrays: { [name: string]: number[] } = {};
+    private _vectors4Arrays: { [name: string]: number[] } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
@@ -383,6 +384,19 @@ export class ShaderMaterial extends Material {
         return this;
     }
 
+    /**
+     * Set a vec4 array in the shader from a number array.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setArray4(name: string, value: number[]): ShaderMaterial {
+        this._checkUniform(name);
+        this._vectors4Arrays[name] = value;
+
+        return this;
+    }
+
     private _checkCache(mesh?: AbstractMesh, useInstances?: boolean): boolean {
         if (!mesh) {
             return true;
@@ -660,6 +674,11 @@ export class ShaderMaterial extends Material {
             for (name in this._vectors3Arrays) {
                 this._effect.setArray3(name, this._vectors3Arrays[name]);
             }
+
+            // Vector4Array
+            for (name in this._vectors4Arrays) {
+                this._effect.setArray4(name, this._vectors4Arrays[name]);
+            }
         }
 
         this._afterBind(mesh);
@@ -865,6 +884,12 @@ export class ShaderMaterial extends Material {
             serializationObject.vectors3Arrays[name] = this._vectors3Arrays[name];
         }
 
+        // Vector4Array
+        serializationObject.vectors4Arrays = {};
+        for (name in this._vectors4Arrays) {
+            serializationObject.vectors4Arrays[name] = this._vectors4Arrays[name];
+        }
+
         return serializationObject;
     }
 
@@ -980,6 +1005,11 @@ export class ShaderMaterial extends Material {
         // Vector3Array
         for (name in source.vectors3Arrays) {
             material.setArray3(name, source.vectors3Arrays[name]);
+        }
+
+        // Vector4Array
+        for (name in source.vectors4Arrays) {
+            material.setArray4(name, source.vectors4Arrays[name]);
         }
 
         return material;

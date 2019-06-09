@@ -55,6 +55,7 @@
 
 ### Materials
 - Added `ShaderMaterial.setColor4Array` ([JonathanTron](https://github.com/JonathanTron/))
+- Added `ShaderMaterial.setArray4` ([JonathanTron](https://github.com/JonathanTron/))
 
 ## Bug fixes
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
