@@ -53,6 +53,9 @@
 ### Loaders
 - Added support for non-float accessors in animation data for glTF loader. ([bghgary](https://github.com/bghgary))
 
+### Materials
+- Added `ShaderMaterial.setArray4` ([JonathanTron](https://github.com/JonathanTron/))
+
 ## Bug fixes
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Removing assetContainer from scene will also remove gui layers ([TrevorDev](https://github.com/TrevorDev))
