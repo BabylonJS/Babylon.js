@@ -1,0 +1,15 @@
+#log-console {
+    background: #333333;
+    height: 100px;
+    margin: 0;
+    padding: 10px;
+    width: calc(100% - 20px); 
+    overflow: hidden;
+    overflow-y: auto;
+
+    .log {
+        color: white;
+        font-size: 14px;
+        font-family: 'Courier New', Courier, monospace;
+    }
+}

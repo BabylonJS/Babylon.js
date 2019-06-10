@@ -27,12 +27,30 @@ export class NodeMaterialConnectionPoint {
     public _wellKnownValue: Nullable<NodeMaterialWellKnownValues> = null;
 
     /** @hidden */
+    public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
+
+    /** @hidden */
     public _needToEmitVarying = true;
 
+    private _type = NodeMaterialBlockConnectionPointTypes.Float;
     /**
      * Gets or sets the connection point type (default is float)
      */
-    public type: NodeMaterialBlockConnectionPointTypes = NodeMaterialBlockConnectionPointTypes.Float;
+    public get type(): NodeMaterialBlockConnectionPointTypes {
+        if (this._type === NodeMaterialBlockConnectionPointTypes.AutoDetect && this._connectedPoint) {
+            return this._connectedPoint.type;
+        }
+
+        if (this._type === NodeMaterialBlockConnectionPointTypes.BasedOnInput && this._typeConnectionSource) {
+            return this._typeConnectionSource.type;
+        }
+
+        return this._type;
+    }
+
+    public set type(value: NodeMaterialBlockConnectionPointTypes) {
+        this._type = value;
+    }
 
     /**
      * Gets or sets the connection point name
@@ -247,7 +265,7 @@ export class NodeMaterialConnectionPoint {
      * @returns the current connection point
      */
     public connectTo(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint {
-        if ((this.type & connectionPoint.type) === 0) {
+        if ((this.type & connectionPoint.type) === 0 && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
             let fail = true;
             // Check swizzle
             if (this.swizzle) {

@@ -779,7 +779,7 @@ export class Sound {
     /**
      * Sets a dedicated volume for this sounds
      * @param newVolume Define the new volume of the sound
-     * @param time Define in how long the sound should be at this value
+     * @param time Define time for gradual change to new volume
      */
     public setVolume(newVolume: number, time?: number): void {
         if (Engine.audioEngine.canUseWebAudio && this._soundGain) {

@@ -5939,7 +5939,7 @@ declare module BABYLON {
          * @param byteStride the byte stride of the data
          * @param componentCount the number of components per element
          * @param componentType the type of the component
-         * @param count the total number of components
+         * @param count the number of values to enumerate
          * @param normalized whether the data is normalized
          * @param callback the callback function called for each value
          */
@@ -8731,6 +8731,14 @@ declare module BABYLON {
          * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+        /**
+         * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
+         * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
+         * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
+         * @param predicate predicate that is passed in to getHierarchyBoundingVectors when selecting which object should be included when scaling
+         * @returns the current mesh
+         */
+        normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean, predicate?: Nullable<(node: AbstractMesh) => boolean>): TransformNode;
     }
 }
 declare module BABYLON {
@@ -14177,6 +14185,7 @@ declare module BABYLON {
         /** @hidden */private _getInstancesRenderList(subMeshId: number): _InstancesBatch;
         /** @hidden */private _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
         /** @hidden */private _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
+        /** @hidden */private _rebuild(): void;
         /** @hidden */private _freeze(): void;
         /** @hidden */private _unFreeze(): void;
         /**
@@ -24395,9 +24404,10 @@ declare module BABYLON {
          * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
          * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
          * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
+         * @param predicate predicate that is passed in to getHierarchyBoundingVectors when selecting which object should be included when scaling
          * @returns the current mesh
          */
-        normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean): AbstractMesh;
+        normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean, predicate?: Nullable<(node: AbstractMesh) => boolean>): AbstractMesh;
         /**
          * Overwrite the current bounding info
          * @param boundingInfo defines the new bounding info
@@ -30691,6 +30701,12 @@ declare module BABYLON {
          */
         static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
         /**
+         * Loads a file from a url
+         * @param url the file url to load
+         * @returns a promise containing an ArrayBuffer corrisponding to the loaded file
+         */
+        static LoadFileAsync(url: string): Promise<ArrayBuffer>;
+        /**
          * Load a script (identified by an url). When the url returns, the
          * content of this file is added into a new script element, attached to the DOM (body element)
          * @param scriptUrl defines the url of the script to laod
@@ -33173,7 +33189,7 @@ declare module BABYLON {
          * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns a PickingInfo
          */
-        pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>, trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3) => boolean): Nullable<PickingInfo>;
+        pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
@@ -36696,7 +36712,7 @@ declare module BABYLON {
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */
-        static WaitForOrientationChangeAsync(timeout?: number): Promise<{}>;
+        static WaitForOrientationChangeAsync(timeout?: number): Promise<unknown>;
         /**
          * @hidden
          */private _onDeviceOrientationChangedObservable: Observable<void>;
@@ -40392,9 +40408,9 @@ declare module BABYLON {
         private _snapDistance;
         private _scaleRatio;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         /**
          * If set to true, planar drag is enabled
          */
@@ -42254,9 +42270,9 @@ declare module BABYLON {
         private _uniformScalingMesh;
         private _octahedron;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         attachedMesh: Nullable<AbstractMesh>;
         /**
          * Creates a ScaleGizmo
@@ -42515,9 +42531,9 @@ declare module BABYLON {
          */
         zGizmo: PlaneRotationGizmo;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         private _meshAttached;
         attachedMesh: Nullable<AbstractMesh>;
         /**
@@ -49286,21 +49302,49 @@ declare module BABYLON {
          */
         hasAlpha: boolean;
         /**
-         * Width of the image
+         * Info about each image of the basis file
          */
-        width: number;
+        images: Array<{
+            levels: Array<{
+                width: number;
+                height: number;
+                transcodedPixels: ArrayBufferView;
+            }>;
+        }>;
+    }
+    /**
+     * Configuration options for the Basis transcoder
+     */
+    export class BasisTranscodeConfiguration {
         /**
-         * Height of the image
+         * Supported compression formats used to determine the supported output format of the transcoder
          */
-        height: number;
+        supportedCompressionFormats?: {
+            /**
+             * etc1 compression format
+             */
+            etc1?: boolean;
+            /**
+             * s3tc compression format
+             */
+            s3tc?: boolean;
+            /**
+             * pvrtc compression format
+             */
+            pvrtc?: boolean;
+            /**
+             * etc2 compression format
+             */
+            etc2?: boolean;
+        };
         /**
-         * Aligned width used when falling back to Rgb565 ((width + 3) & ~3)
+         * If mipmap levels should be loaded for transcoded images (Default: true)
          */
-        alignedWidth: number;
+        loadMipmapLevels?: boolean;
         /**
-         * Aligned height used when falling back to Rgb565 ((height + 3) & ~3)
+         * Index of a single image to load (Default: all images)
          */
-        alignedHeight: number;
+        loadSingleImage?: number;
     }
     /**
      * Used to load .Basis files
@@ -49308,67 +49352,33 @@ declare module BABYLON {
      */
     export class BasisTools {
         private static _IgnoreSupportedFormats;
-        private static _LoadScriptPromise;
-        private static _FallbackURL;
-        private static _BASIS_FORMAT;
         /**
-         * Basis module can be aquired from https://github.com/BinomialLLC/basis_universal/tree/master/webgl
-         * This should be set prior to loading a .basis texture
+         * URL to use when loading the basis transcoder
          */
-        static BasisModule: Nullable<any>;
+        static JSModuleURL: string;
         /**
-         * Verifies that the BasisModule has been populated and falls back to loading from the web if not availible
-         * @returns promise which will resolve if the basis module was loaded
+         * URL to use when loading the wasm module for the transcoder
          */
-        static VerifyBasisModuleAsync(): any;
-        /**
-         * Verifies that the basis module has been populated and creates a bsis file from the image data
-         * @param data array buffer of the .basis file
-         * @returns the Basis file
-         */
-        static LoadBasisFile(data: ArrayBuffer): any;
-        /**
-         * Detects the supported transcode format for the file
-         * @param engine Babylon engine
-         * @param fileInfo info about the file
-         * @returns the chosed format or null if none are supported
-         */
-        static GetSupportedTranscodeFormat(engine: Engine, fileInfo: BasisFileInfo): Nullable<number>;
+        static WasmModuleURL: string;
         /**
          * Get the internal format to be passed to texImage2D corresponding to the .basis format value
          * @param basisFormat format chosen from GetSupportedTranscodeFormat
          * @returns internal format corresponding to the Basis format
          */
         static GetInternalFormatFromBasisFormat(basisFormat: number): number;
+        private static _WorkerPromise;
+        private static _Worker;
+        private static _CreateWorkerAsync;
         /**
-         * Retreives information about the basis file eg. dimensions
-         * @param basisFile the basis file to get the info from
-         * @returns information about the basis file
+         * Transcodes a loaded image file to compressed pixel data
+         * @param imageData image data to transcode
+         * @param config configuration options for the transcoding
+         * @returns a promise resulting in the transcoded image
          */
-        static GetFileInfo(basisFile: any): BasisFileInfo;
-        /**
-         * Transcodes the basis file to the requested format to be transferred to the gpu
-         * @param format fromat to be transferred to
-         * @param fileInfo information about the loaded file
-         * @param loadedFile the loaded basis file
-         * @returns the resulting pixels and if the transcode fell back to using Rgb565
-         */
-        static TranscodeFile(format: Nullable<number>, fileInfo: BasisFileInfo, loadedFile: any): {
-            fallbackToRgb565: boolean;
-            pixels: Uint8Array;
-        };
-        /**
-         * From https://github.com/BinomialLLC/basis_universal/blob/master/webgl/texture/dxt-to-rgb565.js
-         * An unoptimized version of dxtToRgb565.  Also, the floating
-         * point math used to compute the colors actually results in
-         * slightly different colors compared to hardware DXT decoders.
-         * @param src dxt src pixels
-         * @param srcByteOffset offset for the start of src
-         * @param  width aligned width of the image
-         * @param  height aligned height of the image
-         * @return the converted pixels
-         */
-        static ConvertDxtToRgb565(src: Uint16Array, srcByteOffset: number, width: number, height: number): Uint16Array;
+        static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<{
+            fileInfo: BasisFileInfo;
+            format: number;
+        }>;
     }
 }
 declare module BABYLON {
@@ -49744,7 +49754,11 @@ declare module BABYLON {
         /** Color3 or Color4 */
         Color3OrColor4 = 96,
         /** Vector3 or Color3 */
-        Vector3OrColor3OrVector4OrColor4 = 120
+        Vector3OrColor3OrVector4OrColor4 = 120,
+        /** Detect type based on connection */
+        AutoDetect = 1024,
+        /** Output type that will be defined by input type */
+        BasedOnInput = 2048
     }
 }
 declare module BABYLON {
@@ -50417,7 +50431,9 @@ declare module BABYLON {
         private _valueCallback;
         private _mode;
         /** @hidden */private _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        /** @hidden */private _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */private _needToEmitVarying: boolean;
+        private _type;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -51016,6 +51032,32 @@ declare module BABYLON {
          * Gets the value input component
          */
         readonly value: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to scale a value
+     */
+    export class ScaleBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ScaleBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the value operand input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the scale operand input component
+         */
+        readonly scale: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -57946,20 +57988,20 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * This represents the different options avilable for the video capture.
+     * This represents the different options available for the video capture.
      */
     export interface VideoRecorderOptions {
-        /** Defines the mime type of the video */
+        /** Defines the mime type of the video. */
         mimeType: string;
-        /** Defines the video the video should be recorded at */
+        /** Defines the FPS the video should be recorded at. */
         fps: number;
-        /** Defines the chunk size for the recording data */
+        /** Defines the chunk size for the recording data. */
         recordChunckSize: number;
-        /** The audio tracks to attach to the record */
+        /** The audio tracks to attach to the recording. */
         audioTracks?: MediaStreamTrack[];
     }
     /**
-     * This can helps recording videos from BabylonJS.
+     * This can help with recording videos from BabylonJS.
      * This is based on the available WebRTC functionalities of the browser.
      *
      * @see http://doc.babylonjs.com/how_to/render_scene_on_a_video
@@ -57967,9 +58009,9 @@ declare module BABYLON {
     export class VideoRecorder {
         private static readonly _defaultOptions;
         /**
-         * Returns wehther or not the VideoRecorder is available in your browser.
-         * @param engine Defines the Babylon Engine to check the support for
-         * @returns true if supported otherwise false
+         * Returns whether or not the VideoRecorder is available in your browser.
+         * @param engine Defines the Babylon Engine.
+         * @returns true if supported otherwise false.
          */
         static IsSupported(engine: Engine): boolean;
         private readonly _options;
@@ -57980,27 +58022,26 @@ declare module BABYLON {
         private _resolve;
         private _reject;
         /**
-         * True wether a recording is already in progress.
+         * True when a recording is already in progress.
          */
         readonly isRecording: boolean;
         /**
-         * Create a new VideoCapture object which can help converting what you see in Babylon to
-         * a video file.
-         * @param engine Defines the BabylonJS Engine you wish to record
-         * @param options Defines options that can be used to customized the capture
+         * Create a new VideoCapture object which can help converting what you see in Babylon to a video file.
+         * @param engine Defines the BabylonJS Engine you wish to record.
+         * @param options Defines options that can be used to customize the capture.
          */
         constructor(engine: Engine, options?: Nullable<VideoRecorderOptions>);
         /**
-         * Stops the current recording before the default capture timeout passed in the startRecording
-         * functions.
+         * Stops the current recording before the default capture timeout passed in the startRecording function.
          */
         stopRecording(): void;
         /**
          * Starts recording the canvas for a max duration specified in parameters.
-         * @param fileName Defines the name of the file to be downloaded when the recording stop. If null no automatic download will start and you can rely on the promise to get the data back.
+         * @param fileName Defines the name of the file to be downloaded when the recording stop.
+         * If null no automatic download will start and you can rely on the promise to get the data back.
          * @param maxDuration Defines the maximum recording time in seconds.
-         * It default to 7 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
-         * @return a promise callback at the end of the recording with the video data in Blob.
+         * It defaults to 7 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
+         * @return A promise callback at the end of the recording with the video data in Blob.
          */
         startRecording(fileName?: Nullable<string>, maxDuration?: number): Promise<Blob>;
         /**
