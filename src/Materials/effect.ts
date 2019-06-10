@@ -7,7 +7,6 @@ import { Logger } from "../Misc/logger";
 import { IDisposable } from '../scene';
 import { IPipelineContext } from '../Engines/IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
-import { WebGPUPipelineContext } from '../Engines/WebGPU/webgpuPipelineContext';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { ProcessingOptions } from '../Engines/Processors/shaderProcessingOptions';
 
@@ -263,8 +262,6 @@ export class Effect implements IDisposable {
     public _key: string = "";
     private _indexParameters: any;
     private _fallbacks: Nullable<EffectFallbacks> = null;
-    private _vertexSourceCode: string = "";
-    private _fragmentSourceCode: string = "";
     private _vertexSourceCodeOverride: string = "";
     private _fragmentSourceCodeOverride: string = "";
     private _transformFeedbackVaryings: Nullable<string[]> = null;
@@ -273,6 +270,10 @@ export class Effect implements IDisposable {
      * @hidden
      */
     public _pipelineContext: Nullable<IPipelineContext> = null;
+    /** @hidden */
+    public _vertexSourceCode: string = "";
+    /** @hidden */
+    public _fragmentSourceCode: string = "";
     private _valueCache: { [key: string]: any } = {};
     private static _baseCache: { [key: number]: DataBuffer } = {};
 
@@ -721,57 +722,15 @@ export class Effect implements IDisposable {
             }
 
             engine._executeWhenRenderingStateIsCompiled(this._pipelineContext, () => {
-                // TODO. Move the WebGL Part out.
-                if (engine.supportsUniformBuffers) {
-                    for (var name in this._uniformBuffersNames) {
-                        this.bindUniformBlock(name, this._uniformBuffersNames[name]);
-                    }
-                }
-
-                let uniforms = engine.getUniforms(this._pipelineContext!, this._uniformsNames);
-                uniforms.forEach((uniform, index) => {
-                    this._uniforms[this._uniformsNames[index]] = uniform;
-                });
-
-                if (!engine.isWebGPU) {
-                    let index: number;
-                    for (index = 0; index < this._samplerList.length; index++) {
-                        const sampler = this.getUniform(this._samplerList[index]);
-                        if (sampler == null) {
-                            this._samplerList.splice(index, 1);
-                            index--;
-                        }
-                    }
-
-                    this._samplerList.forEach((name, index) => {
-                        this._samplers[name] = index;
-                    });
-                }
-                else {
-                    // TODO. CLEANUP THIS STUFF (FOR SEB) !!!
-                    this._fragmentSourceCode = "";
-                    // this._fragmentSourceCodeOverride = "";
-                    this._vertexSourceCode = "";
-                    // this._vertexSourceCodeOverride = "";
-
-                    const foundSamplers = (this._pipelineContext as WebGPUPipelineContext).availableUBOs;
-                    let index: number;
-                    for (index = 0; index < this._samplerList.length; index++) {
-                        const name = this._samplerList[index];
-                        const sampler = foundSamplers[this._samplerList[index]];
-
-                        if (sampler == null || sampler == undefined) {
-                            this._samplerList.splice(index, 1);
-                            index--;
-                        }
-                        else {
-                            this._samplers[name] = sampler;
-                        }
-                    }
-                }
-
-                // Generic WebGL WebGPU part.
-                this._attributes = engine.getAttributes(this._pipelineContext!, attributesNames);
+                this._attributes = [];
+                this._pipelineContext!._fillEffectInformation(this,
+                    this._uniformBuffersNames,
+                    this._uniformsNames,
+                    this._uniforms,
+                    this._samplerList,
+                    this._samplers,
+                    attributesNames,
+                    this._attributes);
 
                 this._compilationError = "";
                 this._isReady = true;
