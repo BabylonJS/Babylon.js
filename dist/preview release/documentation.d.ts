@@ -12222,6 +12222,7 @@ declare module BABYLON {
         private _colors3;
         private _colors3Arrays;
         private _colors4;
+        private _colors4Arrays;
         private _vectors2;
         private _vectors3;
         private _vectors4;
@@ -12230,6 +12231,7 @@ declare module BABYLON {
         private _matrices2x2;
         private _vectors2Arrays;
         private _vectors3Arrays;
+        private _vectors4Arrays;
         private _cachedWorldViewMatrix;
         private _cachedWorldViewProjectionMatrix;
         private _renderId;
@@ -12326,6 +12328,13 @@ declare module BABYLON {
          */
         setColor4(name: string, value: Color4): ShaderMaterial;
         /**
+         * Set a vec4 array in the shader from a Color4 array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setColor4Array(name: string, value: Color4[]): ShaderMaterial;
+        /**
          * Set a vec2 in the shader from a Vector2.
          * @param name Define the name of the uniform as defined in the shader
          * @param value Define the value to give to the uniform
@@ -12381,6 +12390,13 @@ declare module BABYLON {
          * @return the material itself allowing "fluent" like uniform updates
          */
         setArray3(name: string, value: number[]): ShaderMaterial;
+        /**
+         * Set a vec4 array in the shader from a number array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setArray4(name: string, value: number[]): ShaderMaterial;
         private _checkCache;
         /**
          * Specifies that the submesh is ready to be used
@@ -34360,7 +34376,7 @@ declare module BABYLON {
         /**
          * Sets a dedicated volume for this sounds
          * @param newVolume Define the new volume of the sound
-         * @param time Define in how long the sound should be at this value
+         * @param time Define time for gradual change to new volume
          */
         setVolume(newVolume: number, time?: number): void;
         /**
@@ -50144,6 +50160,7 @@ declare module BABYLON {
         static GetInternalFormatFromBasisFormat(basisFormat: number): number;
         private static _WorkerPromise;
         private static _Worker;
+        private static _actionId;
         private static _CreateWorkerAsync;
         /**
          * Transcodes a loaded image file to compressed pixel data

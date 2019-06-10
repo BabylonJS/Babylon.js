@@ -104,6 +104,7 @@ export class BasisTools {
 
     private static _WorkerPromise: Nullable<Promise<Worker>> = null;
     private static _Worker: Nullable<Worker> = null;
+    private static _actionId = 0;
     private static _CreateWorkerAsync() {
         if (!this._WorkerPromise) {
             this._WorkerPromise = new Promise((res) => {
@@ -138,14 +139,15 @@ export class BasisTools {
     public static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<{fileInfo: BasisFileInfo, format: number}> {
         return new Promise((res) => {
             this._CreateWorkerAsync().then(() => {
+                var actionId = this._actionId++;
                 var messageHandler = (msg: any) => {
-                    if (msg.data.action === "transcode") {
+                    if (msg.data.action === "transcode" && msg.data.id === actionId) {
                         this._Worker!.removeEventListener("message", messageHandler);
                         res(msg.data);
                     }
                 };
                 this._Worker!.addEventListener("message", messageHandler);
-                this._Worker!.postMessage({action: "transcode", imageData: imageData, config: config, ignoreSupportedFormats: this._IgnoreSupportedFormats}, [imageData]);
+                this._Worker!.postMessage({action: "transcode", id: actionId, imageData: imageData, config: config, ignoreSupportedFormats: this._IgnoreSupportedFormats}, [imageData]);
             });
         });
     }
@@ -229,7 +231,7 @@ function workerFunc(): void {
             if (needsConversion) {
                 format = -1;
             }
-            postMessage({action: "transcode", fileInfo: fileInfo, format: format}, buffers);
+            postMessage({action: "transcode", id: event.data.id, fileInfo: fileInfo, format: format}, buffers);
         }
 
     };
