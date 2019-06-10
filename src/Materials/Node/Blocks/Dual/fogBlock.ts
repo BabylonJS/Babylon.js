@@ -78,6 +78,13 @@ export class FogBlock extends NodeMaterialBlock {
         return this._inputs[4];
     }
 
+    /**
+     * Gets the output component
+     */
+    public get output(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
     public autoConfigure() {
         if (this.view.isUndefined) {
             this.view.setAsWellKnownValue(NodeMaterialWellKnownValues.View);

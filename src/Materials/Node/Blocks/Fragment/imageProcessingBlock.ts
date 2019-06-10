@@ -39,6 +39,13 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the output component
+     */
+    public get output(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
+    /**
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */

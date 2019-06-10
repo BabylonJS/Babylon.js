@@ -302,6 +302,12 @@ export class NodeMaterialBuildState {
     public _emitUniformOrAttributes(point: NodeMaterialConnectionPoint, define?: string) {
         define = define || point.define;
 
+        // Lights
+        if (point.type === NodeMaterialBlockConnectionPointTypes.Light) {
+            // Do nothing
+            return;
+        }
+
         // Samplers
         if (point.type === NodeMaterialBlockConnectionPointTypes.Texture) {
             point.name = this._getFreeVariableName(point.name);

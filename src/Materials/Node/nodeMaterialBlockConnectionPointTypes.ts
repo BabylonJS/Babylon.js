@@ -35,5 +35,7 @@ export enum NodeMaterialBlockConnectionPointTypes {
     /** Detect type based on connection */
     AutoDetect = 1024,
     /** Output type that will be defined by input type */
-    BasedOnInput = 2048
+    BasedOnInput = 2048,
+    /** Light */
+    Light = 4096
 }
