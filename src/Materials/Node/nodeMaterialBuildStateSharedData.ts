@@ -115,23 +115,20 @@ export class NodeMaterialBuildStateSharedData {
      * Emits console errors and exceptions if there is a failing check
      */
     public emitErrors() {
-        let shouldThrowError = false;
+        let errorMessage = "";
 
         if (!this.checks.emitVertex) {
-            shouldThrowError = true;
-            console.error("NodeMaterial does not have a vertex output. You need to at least add a block that generates a glPosition value.");
+            errorMessage += "NodeMaterial does not have a vertex output. You need to at least add a block that generates a glPosition value.\r\n";
         }
         if (!this.checks.emitFragment) {
-            shouldThrowError = true;
-            console.error("NodeMaterial does not have a fragment output. You need to at least add a block that generates a glFragColor value.");
+            errorMessage += "NodeMaterial does not have a fragment output. You need to at least add a block that generates a glFragColor value.\r\n";
         }
         for (var notConnectedInput of this.checks.notConnectedNonOptionalInputs) {
-            shouldThrowError = true;
-            console.error(`input ${notConnectedInput.name} from block ${notConnectedInput.ownerBlock.name}[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.`);
+            errorMessage += `input ${notConnectedInput.name} from block ${notConnectedInput.ownerBlock.name}[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.\r\n`;
         }
 
-        if (shouldThrowError) {
-            throw "Build of NodeMaterial failed.";
+        if (errorMessage) {
+            throw "Build of NodeMaterial failed:\r\n" + errorMessage;
         }
     }
 }

@@ -386,7 +386,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
                 "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw",
                 "onAfterWorldMatrixUpdateObservable", "onCollideObservable", "onCollisionPositionChangeObservable", "onRebuildObservable",
-                "onDisposeObservable"
+                "onDisposeObservable", "lightSources"
             ],
                 ["_poseMatrix"]);
 
@@ -1543,6 +1543,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
         return this;
+    }
+
+    /** @hidden */
+    public _rebuild(): void {
+        if (this._instanceDataStorage.instancesBuffer) {
+            // Dispose instance buffer to be recreated in _renderWithInstances when rendered
+            this._instanceDataStorage.instancesBuffer.dispose();
+            this._instanceDataStorage.instancesBuffer = null;
+        }
+        super._rebuild();
     }
 
     /** @hidden */

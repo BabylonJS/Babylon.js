@@ -370,7 +370,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     /**
     * An event triggered after rendering the scene for an active camera (When scene.render is called this will be called after each camera)
     */
-   public onAfterRenderCameraObservable = new Observable<Camera>();
+    public onAfterRenderCameraObservable = new Observable<Camera>();
 
     private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
     /** Sets a function to be executed after rendering this scene */
@@ -1169,7 +1169,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._transientComponents.push(component);
 
         const serializableComponent = component as ISceneSerializableComponent;
-        if (serializableComponent.addFromContainer) {
+        if (serializableComponent.addFromContainer && serializableComponent.serialize) {
             this._serializableComponents.push(serializableComponent);
         }
     }
@@ -3240,6 +3240,14 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public unfreezeActiveMeshes(): Scene {
+
+        for (var index = 0; index < this.meshes.length; index++) {
+            const mesh = this.meshes[index];
+            if (mesh._internalAbstractMeshDataInfo) {
+                mesh._internalAbstractMeshDataInfo._isActive = false;
+            }
+        }
+
         for (var index = 0; index < this._activeMeshes.length; index++) {
             this._activeMeshes.data[index]._unFreeze();
         }
@@ -4216,7 +4224,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean,
         fastCheck?: boolean, camera?: Nullable<Camera>,
-        trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3) => boolean
+        trianglePredicate?: TrianglePickingPredicate
     ): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
         const pi = new PickingInfo();
