@@ -40,8 +40,25 @@ export class NodeMaterialConnectionPoint {
      * Gets or sets the connection point type (default is float)
      */
     public get type(): NodeMaterialBlockConnectionPointTypes {
-        if (this._type === NodeMaterialBlockConnectionPointTypes.AutoDetect && this._connectedPoint) {
-            return this._connectedPoint.type;
+        if (this._type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+            if (this._connectedPoint) {
+                return this._connectedPoint.type;
+            }
+
+            if (this.isUniform && this.value != null) {
+                switch (this.value.getClassName()) {
+                    case "Vector2":
+                        return NodeMaterialBlockConnectionPointTypes.Vector2;
+                    case "Vector3":
+                        return NodeMaterialBlockConnectionPointTypes.Vector3;
+                    case "Vector4":
+                        return NodeMaterialBlockConnectionPointTypes.Vector4;
+                    case "Color3":
+                        return NodeMaterialBlockConnectionPointTypes.Color3;
+                    case "Color4":
+                        return NodeMaterialBlockConnectionPointTypes.Color4;
+                }
+            }
         }
 
         if (this._type === NodeMaterialBlockConnectionPointTypes.BasedOnInput && this._typeConnectionSource) {

@@ -87,6 +87,13 @@ export class TextureBlock extends NodeMaterialBlock {
         return this._inputs[4];
     }
 
+    /**
+     * Gets the output component
+     */
+    public get output(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
     public autoConfigure() {
         if (this.uv.isUndefined) {
             this.uv.setAsAttribute();

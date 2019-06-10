@@ -7,3 +7,4 @@ export * from "./rgbaSplitterBlock";
 export * from "./rgbSplitterBlock";
 export * from "./textureBlock";
 export * from "./imageProcessingBlock";
+export * from "./lightBlock";
