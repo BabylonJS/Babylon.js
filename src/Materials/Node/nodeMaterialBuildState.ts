@@ -330,8 +330,14 @@ export class NodeMaterialBuildState {
         // Uniforms
         if (point.isUniform) {
             if (!point.associatedVariableName) {
-                point.associatedVariableName = this._getFreeVariableName(point.name);
+                point.associatedVariableName = this._getFreeVariableName("u_" + point.name);
             }
+
+            if (point._forceUniformInVertexShaderOnly && this._vertexState) { // Uniform for fragment need to be carried over by varyings
+                this._vertexState._emitUniformOrAttributes(point);
+                return;
+            }
+
             if (this.uniforms.indexOf(point.associatedVariableName) !== -1) {
                 return;
             }
@@ -371,8 +377,8 @@ export class NodeMaterialBuildState {
                 this._vertexState._emitUniformOrAttributes(point);
 
                 if (point._needToEmitVarying) {
-                    this._vertexState._emitVaryings(point, undefined, true, true, "v" + point.associatedVariableName);
-                    point.associatedVariableName = "v" + point.associatedVariableName;
+                    this._vertexState._emitVaryings(point, undefined, true, true, "v_" + point.associatedVariableName);
+                    point.associatedVariableName = "v_" + point.associatedVariableName;
                 }
                 return;
             }

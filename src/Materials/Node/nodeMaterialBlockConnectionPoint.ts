@@ -32,6 +32,9 @@ export class NodeMaterialConnectionPoint {
     /** @hidden */
     public _needToEmitVarying = true;
 
+    /** @hidden */
+    public _forceUniformInVertexShaderOnly = false;
+
     private _type = NodeMaterialBlockConnectionPointTypes.Float;
     /**
      * Gets or sets the connection point type (default is float)
@@ -117,6 +120,13 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
+     * Gets a boolean indicating that this connection point not defined yet
+     */
+    public get isUndefined(): boolean {
+        return this._mode === NodeMaterialBlockConnectionPointMode.Undefined;
+    }
+
+    /**
      * Gets or sets a boolean indicating that this connection point is coming from an uniform.
      * In this case the connection point name must be the name of the uniform to use.
      * Can only be set on inputs
@@ -127,6 +137,7 @@ export class NodeMaterialConnectionPoint {
 
     public set isUniform(value: boolean) {
         this._mode = value ? NodeMaterialBlockConnectionPointMode.Uniform : NodeMaterialBlockConnectionPointMode.Undefined;
+        this.associatedVariableName = "";
     }
 
     /**
@@ -140,6 +151,7 @@ export class NodeMaterialConnectionPoint {
 
     public set isAttribute(value: boolean) {
         this._mode = value ? NodeMaterialBlockConnectionPointMode.Attribute : NodeMaterialBlockConnectionPointMode.Undefined;
+        this.associatedVariableName = "";
     }
 
     /**
@@ -152,6 +164,7 @@ export class NodeMaterialConnectionPoint {
 
     public set isVarying(value: boolean) {
         this._mode = value ? NodeMaterialBlockConnectionPointMode.Varying : NodeMaterialBlockConnectionPointMode.Undefined;
+        this.associatedVariableName = "";
     }
 
     /** Get the other side of the connection (if any) */
@@ -239,6 +252,7 @@ export class NodeMaterialConnectionPoint {
 
     public set wellKnownValue(value: Nullable<NodeMaterialWellKnownValues>) {
         this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
+        this.associatedVariableName = "";
         this._wellKnownValue = value;
     }
 

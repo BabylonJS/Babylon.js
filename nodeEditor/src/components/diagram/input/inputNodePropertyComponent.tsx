@@ -124,6 +124,7 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {
                         if (!value) {
                             connection.isUniform = true;
+                            this.setDefaultValue();
                         } else {
                             connection.isAttribute = true;
                         }
