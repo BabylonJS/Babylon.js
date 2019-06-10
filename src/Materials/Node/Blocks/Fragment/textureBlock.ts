@@ -41,6 +41,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         // Setup
         this._inputs[0]._needToEmitVarying = false;
+        this._inputs[0]._forceUniformInVertexShaderOnly = true;
     }
 
     /**
@@ -87,8 +88,12 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public autoConfigure() {
-        if (!this.uv.connectedPoint) {
+        if (this.uv.isUndefined) {
             this.uv.setAsAttribute();
+            this.uv.connectTo(this.transformedUV);
+        }
+
+        if (this.transformedUV.isUndefined) {
             this.uv.connectTo(this.transformedUV);
         }
     }
