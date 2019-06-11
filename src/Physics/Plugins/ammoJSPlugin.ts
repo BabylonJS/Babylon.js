@@ -912,6 +912,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     returnValue.setLocalScaling(new Ammo.btVector3(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2));
                 }
                 break;
+            case PhysicsImpostor.CapsuleImpostor:
+                returnValue = new Ammo.btCapsuleShape(extendSize.x / 2, extendSize.y / 2);
+                break;
             case PhysicsImpostor.CylinderImpostor:
                 this._tmpAmmoVectorA.setValue(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2);
                 returnValue = new Ammo.btCylinderShape(this._tmpAmmoVectorA);
