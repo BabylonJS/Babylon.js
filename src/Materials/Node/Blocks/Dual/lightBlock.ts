@@ -6,8 +6,9 @@ import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPo
 import { MaterialHelper } from '../../../materialHelper';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { Effect } from '../../../../Materials/effect';
+import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
+import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
 
 /**
  * Block used to add light in the fragment shader
@@ -20,13 +21,15 @@ export class LightBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+        super(name, NodeMaterialBlockTargets.VertexAndFragment);
 
-        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4);
-        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4);
-        this.registerInput("light", NodeMaterialBlockConnectionPointTypes.Light);
-        this.registerOutput("diffuseOutput", NodeMaterialBlockConnectionPointTypes.Color3);
-        this.registerOutput("specularOutput", NodeMaterialBlockConnectionPointTypes.Color3);
+        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
+
+        this.registerInput("light", NodeMaterialBlockConnectionPointTypes.Light, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("diffuseOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("specularOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
     }
 
     /**
@@ -59,6 +62,13 @@ export class LightBlock extends NodeMaterialBlock {
     }
 
     /**
+    * Gets the camera (or eye) position component
+    */
+    public get cameraPosition(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
+    }
+
+    /**
      * Gets the diffuse output component
      */
     public get diffuseOutput(): NodeMaterialConnectionPoint {
@@ -70,6 +80,12 @@ export class LightBlock extends NodeMaterialBlock {
      */
     public get specularOutput(): NodeMaterialConnectionPoint {
         return this._outputs[1];
+    }
+
+    public autoConfigure() {
+        if (this.cameraPosition.isUndefined) {
+            this.cameraPosition.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+        }
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -118,6 +134,10 @@ export class LightBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
+        if (state.target !== NodeMaterialBlockTargets.Fragment) {
+            return;
+        }
+
         // Vertex
         this._injectVertexCode(state._vertexState);
 
@@ -125,7 +145,7 @@ export class LightBlock extends NodeMaterialBlock {
         state.sharedData.bindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
 
-        this._lightId = (state.counters["lightCounter"] | -1) + 1;
+        this._lightId = (state.counters["lightCounter"] !== undefined ? state.counters["lightCounter"] : -1) + 1;
         state.counters["lightCounter"] = this._lightId;
 
         let comments = `//${this.name}`;
@@ -139,15 +159,16 @@ export class LightBlock extends NodeMaterialBlock {
             ]
         });
 
-        state._emitFunctionFromInclude("lightFragmentDeclaration", comments, {
+        state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
             replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }]
-        });
+        }, this._lightId.toString());
 
         // Uniforms and samplers
         MaterialHelper.PrepareUniformsAndSamplersForLight(this._lightId, state.uniforms, state.samplers, undefined, state.uniformBuffers);
 
         // Code
         if (this._lightId === 0) {
+            state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${"v_" + worldPos.associatedVariableName});\r\n`;
             state.compilationString += `lightingInfo info;\r\n`;
             state.compilationString += `float shadow = 1.;\r\n`;
             state.compilationString += `float glossiness = 0.;\r\n`;
@@ -166,6 +187,7 @@ export class LightBlock extends NodeMaterialBlock {
                 { search: /{X}/g, replace: this._lightId.toString() },
                 { search: /diffuseBase/g, replace: diffuseOutput.associatedVariableName },
                 { search: /specularBase/g, replace: specularOutput.associatedVariableName },
+                { search: /normalW/g, replace: "v_" + worldNormal.associatedVariableName }
             ]
         });
 

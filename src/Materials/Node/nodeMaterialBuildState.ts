@@ -10,6 +10,8 @@ import { Nullable } from '../../types';
  * Class used to store node based material build state
  */
 export class NodeMaterialBuildState {
+    /** Gets or sets a boolean indicating if the current state can emit uniform buffers */
+    public supportUniformBuffers = false;
     /**
      * Gets the list of emitted attributes
      */
@@ -216,55 +218,56 @@ export class NodeMaterialBuildState {
         removeVaryings?: boolean,
         removeIfDef?: boolean,
         replaceStrings?: { search: RegExp, replace: string }[],
-    }) {
-        if (this.functions[includeName]) {
+    }, storeKey: string = "") {
+        let key = includeName + storeKey;
+        if (this.functions[key]) {
             return;
         }
 
         if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
 
             if (options && options.repeatKey) {
-                this.functions[includeName] = `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
+                this.functions[key] = `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
             } else {
-                this.functions[includeName] = `#include<${includeName}>\r\n`;
+                this.functions[key] = `#include<${includeName}>\r\n`;
             }
 
             if (this.sharedData.emitComments) {
-                this.functions[includeName] = comments + `\r\n` + this.functions[includeName];
+                this.functions[key] = comments + `\r\n` + this.functions[key];
             }
 
             return;
         }
 
-        this.functions[includeName] = Effect.IncludesShadersStore[includeName];
+        this.functions[key] = Effect.IncludesShadersStore[includeName];
 
         if (this.sharedData.emitComments) {
-            this.functions[includeName] = comments + `\r\n` + this.functions[includeName];
+            this.functions[key] = comments + `\r\n` + this.functions[key];
         }
 
         if (options.removeIfDef) {
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#ifdef.+$/gm, "");
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#endif.*$/gm, "");
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#else.*$/gm, "");
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#elif.*$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?#ifdef.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?#endif.*$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?#else.*$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?#elif.*$/gm, "");
         }
 
         if (options.removeAttributes) {
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?attribute.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?attribute.+$/gm, "");
         }
 
         if (options.removeUniforms) {
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?uniform.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?uniform.+$/gm, "");
         }
 
         if (options.removeVaryings) {
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?varying.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?varying.+$/gm, "");
         }
 
         if (options.replaceStrings) {
             for (var index = 0; index < options.replaceStrings.length; index++) {
                 let replaceString = options.replaceStrings[index];
-                this.functions[includeName] = this.functions[includeName].replace(replaceString.search, replaceString.replace);
+                this.functions[key] = this.functions[key].replace(replaceString.search, replaceString.replace);
             }
         }
     }
