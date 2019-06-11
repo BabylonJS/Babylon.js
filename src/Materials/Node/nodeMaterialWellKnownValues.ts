@@ -14,6 +14,8 @@ export enum NodeMaterialWellKnownValues {
     WorldView = 5,
     /** WorldViewProjection */
     WorldViewProjection = 6,
+    /** CameraPosition */
+    CameraPosition = 7,
     /** Will be filled by the block itself */
-    Automatic = 7
+    Automatic = 8
 }
