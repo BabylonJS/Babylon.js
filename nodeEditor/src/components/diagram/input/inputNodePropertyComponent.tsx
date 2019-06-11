@@ -36,13 +36,13 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                 return (
                     <Vector2PropertyTabComponent globalState={globalState} connection={connection} />
                 );
-            case NodeMaterialBlockConnectionPointTypes.Vector3:
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
                     <Color3PropertyTabComponent globalState={globalState} connection={connection} />
                 );
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
             case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
                 return (
                     <Vector3PropertyTabComponent globalState={globalState} connection={connection} />
@@ -81,6 +81,7 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
             { label: "View", value: NodeMaterialWellKnownValues.View },
             { label: "ViewxProjection", value: NodeMaterialWellKnownValues.ViewProjection },
             { label: "Projection", value: NodeMaterialWellKnownValues.Projection },
+            { label: "Camera position", value: NodeMaterialWellKnownValues.CameraPosition },
             { label: "Automatic", value: NodeMaterialWellKnownValues.Automatic },
         ];
 

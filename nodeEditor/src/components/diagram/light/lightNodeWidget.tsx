@@ -1,7 +1,6 @@
 import * as React from "react";
 import { PortWidget } from "storm-react-diagrams";
-import { TextureNodeModel } from './textureNodeModel';
-import { TextureLineComponent } from "../../../sharedComponents/textureLineComponent"
+import { LightNodeModel } from './lightNodeModel';
 import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
 import { DefaultPortModel } from '../defaultPortModel';
@@ -9,20 +8,20 @@ import { DefaultPortModel } from '../defaultPortModel';
 /**
  * GenericNodeWidgetProps
  */
-export interface ITextureNodeWidgetProps {
-    node: Nullable<TextureNodeModel>;
+export interface ILightNodeWidgetProps {
+    node: Nullable<LightNodeModel>;
     globalState: GlobalState;
 }
 
 /**
  * Used to display a node block for the node editor
  */
-export class TextureNodeWidget extends React.Component<ITextureNodeWidgetProps> {
+export class LightNodeWidget extends React.Component<ILightNodeWidgetProps> {
 	/**
 	 * Creates a GenericNodeWidget
 	 * @param props 
 	 */
-    constructor(props: ITextureNodeWidgetProps) {
+    constructor(props: ILightNodeWidgetProps) {
         super(props);
         this.state = {};
 
@@ -43,7 +42,20 @@ export class TextureNodeWidget extends React.Component<ITextureNodeWidgetProps> 
             // Input/Output ports
             for (var key in this.props.node.ports) {
                 var port = this.props.node.ports[key] as DefaultPortModel;
-                if (port.position === "output") {
+                if (port.position === "input") {
+                    if (port.name !== "light") {
+                        inputPorts.push(
+                            <div key={key} className="input-port">
+                                <div className="input-port-plug">
+                                    <PortWidget key={key} name={port.name} node={this.props.node} />
+                                </div>
+                                <div className="input-port-label">
+                                    {port.name}
+                                </div>
+                            </div>
+                        )
+                    }
+                } else {
                     outputPorts.push(
                         <div key={key} className="output-port">
                             <div className="output-port-label">
@@ -51,17 +63,6 @@ export class TextureNodeWidget extends React.Component<ITextureNodeWidgetProps> 
                             </div>
                             <div className="output-port-plug">
                                 <PortWidget key={key} name={port.name} node={this.props.node} />
-                            </div>
-                        </div>
-                    );
-                } else if (port.name === "uv") {
-                    inputPorts.push(
-                        <div key={key} className="input-port">
-                            <div className="input-port-plug">
-                                <PortWidget key={key} name={port.name} node={this.props.node} />
-                            </div>
-                            <div className="input-port-label">
-                                {port.name}
                             </div>
                         </div>
                     )
@@ -80,10 +81,6 @@ export class TextureNodeWidget extends React.Component<ITextureNodeWidgetProps> 
                 <div className="outputs">
                     {outputPorts}
                 </div>
-                {
-                    this.props.node && this.props.node.texture &&
-                    <TextureLineComponent ref="textureView" width={200} height={180} texture={this.props.node.texture} hideChannelSelect={true} />
-                }
             </div>
         );
     }
