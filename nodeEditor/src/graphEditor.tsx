@@ -200,12 +200,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     var link = DefaultPortModel.SortInputOutput(e.link.sourcePort as DefaultPortModel, e.link.targetPort as DefaultPortModel);
                     if (link) {
                         if (link.input.connection) {
-                            let targetBlock = link.input.connection.ownerBlock;
-
-                            if (targetBlock.isFinalMerger) {
-                                this.props.globalState.nodeMaterial!.removeOutputNode(targetBlock);
-                            }
-
                             if (link.output.connection) {
                                 // Disconnect standard nodes
                                 link.output.connection.disconnectFrom(link.input.connection)
