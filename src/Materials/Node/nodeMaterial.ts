@@ -576,6 +576,17 @@ export class NodeMaterial extends PushMaterial {
                 }
             });
 
+            // Uniform buffers
+            let mergedUniformBuffers = this._vertexCompilationState.uniformBuffers;
+
+            this._fragmentCompilationState.uniformBuffers.forEach((u) => {
+                let index = mergedUniformBuffers.indexOf(u);
+
+                if (index === -1) {
+                    mergedUniformBuffers.push(u);
+                }
+            });
+
             // Samplers
             let mergedSamplers = this._vertexCompilationState.samplers;
 
@@ -604,6 +615,7 @@ export class NodeMaterial extends PushMaterial {
             }, <EffectCreationOptions>{
                 attributes: this._vertexCompilationState.attributes,
                 uniformsNames: mergedUniforms,
+                uniformBuffersNames: mergedUniformBuffers,
                 samplers: mergedSamplers,
                 defines: join,
                 fallbacks: fallbacks,
