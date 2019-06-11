@@ -4,6 +4,7 @@ import { NodeMaterialWellKnownValues } from './nodeMaterialWellKnownValues';
 import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { Effect } from '../effect';
+import { Nullable } from '../../types';
 
 /**
  * Class used to store node based material build state
@@ -18,6 +19,10 @@ export class NodeMaterialBuildState {
      */
     public uniforms = new Array<string>();
     /**
+     * Gets the list of emitted uniform buffers
+     */
+    public uniformBuffers = new Array<string>();
+    /**
      * Gets the list of emitted samplers
      */
     public samplers = new Array<string>();
@@ -29,6 +34,10 @@ export class NodeMaterialBuildState {
      * Gets the target of the compilation state
      */
     public target: NodeMaterialBlockTargets;
+    /**
+     * Gets the list of emitted counters
+     */
+    public counters: { [key: string]: number } = {};
 
     /**
      * Shared data between multiple NodeMaterialBuildState instances
@@ -261,7 +270,7 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
-    public _emitVaryings(point: NodeMaterialConnectionPoint, define: string = "", force = false, fromFragment = false, replacementName: string = "") {
+    public _emitVaryings(point: NodeMaterialConnectionPoint, define: string = "", force = false, fromFragment = false, replacementName: string = "", type: Nullable<NodeMaterialBlockConnectionPointTypes> = null) {
         let name = replacementName || point.associatedVariableName;
         if (point.isVarying || force) {
             if (this.sharedData.varyings.indexOf(name) !== -1) {
@@ -273,7 +282,7 @@ export class NodeMaterialBuildState {
             if (define) {
                 this.sharedData.varyingDeclaration += `#ifdef ${define}\r\n`;
             }
-            this.sharedData.varyingDeclaration += `varying ${this._getGLType(point.type)} ${name};\r\n`;
+            this.sharedData.varyingDeclaration += `varying ${this._getGLType(type || point.type)} ${name};\r\n`;
             if (define) {
                 this.sharedData.varyingDeclaration += `#endif\r\n`;
             }
