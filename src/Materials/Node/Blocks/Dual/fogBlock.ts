@@ -109,8 +109,8 @@ export class FogBlock extends NodeMaterialBlock {
         }
 
         const scene = mesh.getScene();
-        effect.setColor3("fogColor", scene.fogColor);
-        effect.setFloat4("fogParameters", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+        effect.setColor3("u_fogColor", scene.fogColor);
+        effect.setFloat4("u_fogParameters", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
