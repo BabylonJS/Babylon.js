@@ -383,6 +383,9 @@ export class NodeMaterialConnectionPoint {
                 case NodeMaterialWellKnownValues.ViewProjection:
                     effect.setMatrix(variableName, scene.getTransformMatrix());
                     break;
+                case NodeMaterialWellKnownValues.CameraPosition:
+                    effect.setVector3(variableName, scene.activeCamera!.globalPosition);
+                    break;
             }
             return;
         }
