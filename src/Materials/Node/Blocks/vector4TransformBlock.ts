@@ -41,6 +41,13 @@ export class Vector4TransformBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the output component
+     */
+    public get output(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
+    /**
      * Gets the matrix transform input
      */
     public get transform(): NodeMaterialConnectionPoint {

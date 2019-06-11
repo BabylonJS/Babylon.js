@@ -50552,7 +50552,9 @@ declare module BABYLON {
         /** Detect type based on connection */
         AutoDetect = 1024,
         /** Output type that will be defined by input type */
-        BasedOnInput = 2048
+        BasedOnInput = 2048,
+        /** Light */
+        Light = 4096
     }
 }
 declare module BABYLON {
@@ -50792,6 +50794,10 @@ declare module BABYLON {
          * Gets the vector input
          */
         readonly vector: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         /**
          * Gets the matrix transform input
          */
@@ -51248,6 +51254,8 @@ declare module BABYLON {
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
         _needToEmitVarying: boolean;
+        /** @hidden */
+        _forceUniformInVertexShaderOnly: boolean;
         private _type;
         /**
          * Gets or sets the connection point type (default is float)
@@ -51285,6 +51293,10 @@ declare module BABYLON {
          * Gets or sets the associated variable name in the shader
          */
         associatedVariableName: string;
+        /**
+         * Gets a boolean indicating that this connection point not defined yet
+         */
+        readonly isUndefined: boolean;
         /**
          * Gets or sets a boolean indicating that this connection point is coming from an uniform.
          * In this case the connection point name must be the name of the uniform to use.
@@ -51410,6 +51422,10 @@ declare module BABYLON {
          * Gets the world input component
          */
         readonly world: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         autoConfigure(): void;
         provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
@@ -51572,6 +51588,10 @@ declare module BABYLON {
          * Gets the R input component
          */
         readonly a: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -51602,6 +51622,10 @@ declare module BABYLON {
          * Gets the B component input
          */
         readonly b: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -51693,6 +51717,10 @@ declare module BABYLON {
          * Gets the texture transform input component
          */
         readonly textureTransform: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         autoConfigure(): void;
         initialize(state: NodeMaterialBuildState): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
@@ -51721,6 +51749,10 @@ declare module BABYLON {
          */
         readonly color: NodeMaterialConnectionPoint;
         /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        /**
          * Initialize the block and prepare the context for build
          * @param state defines the state that will be used for the build
          */
@@ -51728,6 +51760,27 @@ declare module BABYLON {
         isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): boolean;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to add light in the fragment shader
+     */
+    export class LightBlock extends NodeMaterialBlock {
+        /**
+         * Create a new LightBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+        * Gets the light input component
+        */
+        readonly light: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -51766,6 +51819,10 @@ declare module BABYLON {
          * Gets the for parameter input component
          */
         readonly fogParameters: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         autoConfigure(): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
@@ -51795,6 +51852,10 @@ declare module BABYLON {
          * Gets the right operand input component
          */
         readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -51821,6 +51882,10 @@ declare module BABYLON {
          * Gets the right operand input component
          */
         readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -51847,6 +51912,10 @@ declare module BABYLON {
          * Gets the value input component
          */
         readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -51873,6 +51942,10 @@ declare module BABYLON {
          * Gets the scale operand input component
          */
         readonly scale: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -51902,6 +51975,10 @@ declare module BABYLON {
          * Gets the matrix transform input
          */
         readonly transform: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         /**
          * Gets the current class name
          * @returns the class name
@@ -51933,6 +52010,10 @@ declare module BABYLON {
          */
         readonly transform: NodeMaterialConnectionPoint;
         /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        /**
          * Gets the current class name
          * @returns the class name
          */
@@ -51958,6 +52039,10 @@ declare module BABYLON {
          * Gets the right operand
          */
         readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         /**
          * Gets the current class name
          * @returns the class name

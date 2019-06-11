@@ -249,6 +249,33 @@ declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" 
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    export interface ICheckBoxLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        isSelected?: () => boolean;
+        onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
+        isSelected: boolean;
+    }> {
+        private static _UniqueIdSeed;
+        private _uniqueId;
+        private _localChange;
+        constructor(props: ICheckBoxLineComponentProps);
+        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
+            isSelected: boolean;
+        }): boolean;
+        onChange(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/diagram/texture/texturePropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -484,33 +511,6 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/vector3P
         connection: NodeMaterialConnectionPoint;
     }
     export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
-    export interface ICheckBoxLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        isSelected?: () => boolean;
-        onSelect?: (value: boolean) => void;
-        onValueChanged?: () => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
-        isSelected: boolean;
-    }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
-        private _localChange;
-        constructor(props: ICheckBoxLineComponentProps);
-        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
-            isSelected: boolean;
-        }): boolean;
-        onChange(): void;
         render(): JSX.Element;
     }
 }
@@ -1062,6 +1062,30 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface ICheckBoxLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        isSelected?: () => boolean;
+        onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
+        isSelected: boolean;
+    }> {
+        private static _UniqueIdSeed;
+        private _uniqueId;
+        private _localChange;
+        constructor(props: ICheckBoxLineComponentProps);
+        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
+            isSelected: boolean;
+        }): boolean;
+        onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface ITexturePropertyTabComponentProps {
         globalState: GlobalState;
         node: TextureNodeModel;
@@ -1263,30 +1287,6 @@ declare module NODEEDITOR {
         connection: BABYLON.NodeMaterialConnectionPoint;
     }
     export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export interface ICheckBoxLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        isSelected?: () => boolean;
-        onSelect?: (value: boolean) => void;
-        onValueChanged?: () => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
-        isSelected: boolean;
-    }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
-        private _localChange;
-        constructor(props: ICheckBoxLineComponentProps);
-        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
-            isSelected: boolean;
-        }): boolean;
-        onChange(): void;
         render(): JSX.Element;
     }
 }

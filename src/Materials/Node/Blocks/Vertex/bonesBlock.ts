@@ -84,20 +84,27 @@ export class BonesBlock extends NodeMaterialBlock {
         return this._inputs[4];
     }
 
+    /**
+     * Gets the output component
+     */
+    public get output(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
     public autoConfigure() {
-        if (!this.matricesIndices.connectedPoint) {
+        if (this.matricesIndices.isUndefined) {
             this.matricesIndices.setAsAttribute();
         }
-        if (!this.matricesWeights.connectedPoint) {
+        if (this.matricesWeights.isUndefined) {
             this.matricesWeights.setAsAttribute();
         }
-        if (!this.matricesIndicesExtra.connectedPoint) {
+        if (this.matricesIndicesExtra.isUndefined) {
             this.matricesIndicesExtra.setAsAttribute();
         }
-        if (!this.matricesWeightsExtra.connectedPoint) {
+        if (this.matricesWeightsExtra.isUndefined) {
             this.matricesWeightsExtra.setAsAttribute();
         }
-        if (!this.world.connectedPoint) {
+        if (this.world.isUndefined) {
             this.world.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
         }
     }
