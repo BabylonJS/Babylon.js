@@ -45,6 +45,13 @@ export class Vector2TransformBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the output component
+     */
+    public get output(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
+    /**
      * Gets the current class name
      * @returns the class name
      */

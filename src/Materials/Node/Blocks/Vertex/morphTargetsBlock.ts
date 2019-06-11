@@ -87,14 +87,14 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     public autoConfigure() {
-        if (!this.position.connectedPoint) {
+        if (this.position.isUndefined) {
             this.position.setAsAttribute();
         }
-        if (!this.normal.connectedPoint) {
+        if (this.normal.isUndefined) {
             this.normal.setAsAttribute();
             this.normal.define = "NORMAL";
         }
-        if (!this.tangent.connectedPoint) {
+        if (this.tangent.isUndefined) {
             this.tangent.setAsAttribute();
             this.tangent.define = "TANGENT";
         }
