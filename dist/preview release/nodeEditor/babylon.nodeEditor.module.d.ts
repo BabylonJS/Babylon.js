@@ -356,19 +356,19 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureNodeWidg
     /**
      * GenericNodeWidgetProps
      */
-    export interface TextureNodeWidgetProps {
+    export interface ITextureNodeWidgetProps {
         node: Nullable<TextureNodeModel>;
         globalState: GlobalState;
     }
     /**
      * Used to display a node block for the node editor
      */
-    export class TextureNodeWidget extends React.Component<TextureNodeWidgetProps> {
+    export class TextureNodeWidget extends React.Component<ITextureNodeWidgetProps> {
         /**
          * Creates a GenericNodeWidget
          * @param props
          */
-        constructor(props: TextureNodeWidgetProps);
+        constructor(props: ITextureNodeWidgetProps);
         render(): JSX.Element;
     }
 }
@@ -555,6 +555,7 @@ declare module "babylonjs-node-editor/sharedComponents/color3LineComponent" {
         target: any;
         propertyName: string;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        onChange?: () => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -680,6 +681,7 @@ declare module "babylonjs-node-editor/components/diagram/input/inputNodeWidget" 
          * @param props
          */
         constructor(props: InputNodeWidgetProps);
+        renderValue(value: string): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -723,6 +725,93 @@ declare module "babylonjs-node-editor/components/log/logComponent" {
         componentWillMount(): void;
         componentDidUpdate(): void;
         render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/light/lightPropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { LightNodeModel } from "babylonjs-node-editor/components/diagram/light/lightNodeModel";
+    interface ILightPropertyTabComponentProps {
+        globalState: GlobalState;
+        node: LightNodeModel;
+    }
+    export class LightPropertyTabComponent extends React.Component<ILightPropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/light/lightNodeModel" {
+    import { Nullable } from 'babylonjs/types';
+    import { Light } from 'babylonjs/Lights/light';
+    import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { NodeCreationOptions, GraphEditor } from "babylonjs-node-editor/graphEditor";
+    import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
+    /**
+     * Light node model which stores information about a node editor block
+     */
+    export class LightNodeModel extends DefaultNodeModel {
+        private _block;
+        /**
+         * Light for the node if it exists
+         */
+        light: Nullable<Light>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/light/lightNodeWidget" {
+    import * as React from "react";
+    import { LightNodeModel } from "babylonjs-node-editor/components/diagram/light/lightNodeModel";
+    import { Nullable } from 'babylonjs/types';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface ILightNodeWidgetProps {
+        node: Nullable<LightNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class LightNodeWidget extends React.Component<ILightNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: ILightNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/light/lightNodeFactory" {
+    import * as SRD from "storm-react-diagrams";
+    import { LightNodeModel } from "babylonjs-node-editor/components/diagram/light/lightNodeModel";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class LightNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a LightNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: LightNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns light node model
+         */
+        getNewInstance(): LightNodeModel;
     }
 }
 declare module "babylonjs-node-editor/graphEditor" {
@@ -1150,19 +1239,19 @@ declare module NODEEDITOR {
     /**
      * GenericNodeWidgetProps
      */
-    export interface TextureNodeWidgetProps {
+    export interface ITextureNodeWidgetProps {
         node: BABYLON.Nullable<TextureNodeModel>;
         globalState: GlobalState;
     }
     /**
      * Used to display a node block for the node editor
      */
-    export class TextureNodeWidget extends React.Component<TextureNodeWidgetProps> {
+    export class TextureNodeWidget extends React.Component<ITextureNodeWidgetProps> {
         /**
          * Creates a GenericNodeWidget
          * @param props
          */
-        constructor(props: TextureNodeWidgetProps);
+        constructor(props: ITextureNodeWidgetProps);
         render(): JSX.Element;
     }
 }
@@ -1324,6 +1413,7 @@ declare module NODEEDITOR {
         target: any;
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onChange?: () => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -1430,6 +1520,7 @@ declare module NODEEDITOR {
          * @param props
          */
         constructor(props: InputNodeWidgetProps);
+        renderValue(value: string): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -1468,6 +1559,77 @@ declare module NODEEDITOR {
         componentWillMount(): void;
         componentDidUpdate(): void;
         render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ILightPropertyTabComponentProps {
+        globalState: GlobalState;
+        node: LightNodeModel;
+    }
+    export class LightPropertyTabComponent extends React.Component<ILightPropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * BABYLON.Light node model which stores information about a node editor block
+     */
+    export class LightNodeModel extends DefaultNodeModel {
+        private _block;
+        /**
+         * BABYLON.Light for the node if it exists
+         */
+        light: BABYLON.Nullable<BABYLON.Light>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface ILightNodeWidgetProps {
+        node: BABYLON.Nullable<LightNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class LightNodeWidget extends React.Component<ILightNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: ILightNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class LightNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a LightNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: LightNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns light node model
+         */
+        getNewInstance(): LightNodeModel;
     }
 }
 declare module NODEEDITOR {

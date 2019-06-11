@@ -36025,7 +36025,7 @@ var FogPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FogPropertyGridComponent, _super);
     function FogPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { mode: 0 };
+        _this.state = { mode: _this.props.scene.fogMode };
         return _this;
     }
     FogPropertyGridComponent.prototype.render = function () {
