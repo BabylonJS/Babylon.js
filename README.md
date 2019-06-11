@@ -48,6 +48,10 @@ To update the Babylon.js version:
 * Follow the [Babylon.js contribution documentation](http://doc.babylonjs.com/how_to/how_to_start) instructions to install prerequisites and do your first full build.
 * Run `UpdateBabylon.cmd core loaders`.
 
+## Feature Roadmap
+
+Feature roadmap is tracked in an [issue](https://github.com/BabylonJS/BabylonNative/issues/6#issue-454432466), which will be updated and maintained as development progresses.
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests.
