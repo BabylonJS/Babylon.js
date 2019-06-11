@@ -1239,6 +1239,10 @@ export class PhysicsImpostor {
      */
     public static MeshImpostor = 4;
     /**
+     * Capsule-Impostor type (Ammo.js plugin only)
+     */
+    public static CapsuleImpostor = 6;
+    /**
      * Cylinder-Imposter type
      */
     public static CylinderImpostor = 7;
