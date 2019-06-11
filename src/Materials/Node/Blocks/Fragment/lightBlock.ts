@@ -23,6 +23,7 @@ export class LightBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment);
 
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerInput("light", NodeMaterialBlockConnectionPointTypes.Light);
         this.registerOutput("diffuseOutput", NodeMaterialBlockConnectionPointTypes.Color3);
         this.registerOutput("specularOutput", NodeMaterialBlockConnectionPointTypes.Color3);
@@ -44,10 +45,17 @@ export class LightBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the world normal input component
+     */
+    public get worldNormal(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
     * Gets the light input component
     */
     public get light(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
+        return this._inputs[2];
     }
 
     /**
@@ -78,6 +86,10 @@ export class LightBlock extends NodeMaterialBlock {
         };
 
         MaterialHelper.PrepareDefinesForLight(mesh.getScene(), mesh, this.light.value, this._lightId, defines, true, state);
+
+        if (state.needRebuild) {
+            defines.rebuild();
+        }
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
@@ -90,12 +102,17 @@ export class LightBlock extends NodeMaterialBlock {
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
         let worldPos = this.worldPosition;
+        let worldNormal = this.worldNormal;
 
         // Inject code in vertex
-        let varyingName = "v_" + worldPos.associatedVariableName;
-        state._emitVaryings(worldPos, undefined, true, false, varyingName, NodeMaterialBlockConnectionPointTypes.Vector3);
+        let worldPosVaryingName = "v_" + worldPos.associatedVariableName;
+        state._emitVaryings(worldPos, undefined, true, false, worldPosVaryingName, NodeMaterialBlockConnectionPointTypes.Vector3);
 
-        state.compilationString += `${varyingName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
+        let worldNormalVaryingName = "v_" + worldNormal.associatedVariableName;
+        state._emitVaryings(worldNormal, undefined, true, false, worldNormalVaryingName, NodeMaterialBlockConnectionPointTypes.Vector3);
+
+        state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
+        state.compilationString += `${worldNormalVaryingName} = ${worldNormal.associatedVariableName}.xyz;\r\n`;
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -113,9 +130,13 @@ export class LightBlock extends NodeMaterialBlock {
 
         let comments = `//${this.name}`;
         let worldPos = this.worldPosition;
+        let worldNormal = this.worldNormal;
 
         state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName }]
+            replaceStrings: [
+                { search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName },
+                { search: /normalW/g, replace: "v_" + worldNormal.associatedVariableName }
+            ]
         });
 
         state._emitFunctionFromInclude("lightFragmentDeclaration", comments, {
