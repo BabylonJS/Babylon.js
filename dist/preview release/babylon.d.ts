@@ -50614,8 +50614,10 @@ declare module BABYLON {
         WorldView = 5,
         /** WorldViewProjection */
         WorldViewProjection = 6,
+        /** CameraPosition */
+        CameraPosition = 7,
         /** Will be filled by the block itself */
-        Automatic = 7
+        Automatic = 8
     }
 }
 declare module BABYLON {
@@ -50716,6 +50718,8 @@ declare module BABYLON {
      * Class used to store node based material build state
      */
     export class NodeMaterialBuildState {
+        /** Gets or sets a boolean indicating if the current state can emit uniform buffers */
+        supportUniformBuffers: boolean;
         /**
          * Gets the list of emitted attributes
          */
@@ -50800,7 +50804,7 @@ declare module BABYLON {
                 search: RegExp;
                 replace: string;
             }[];
-        }): void;
+        }, storeKey?: string): void;
         /** @hidden */
         _emitVaryings(point: NodeMaterialConnectionPoint, define?: string, force?: boolean, fromFragment?: boolean, replacementName?: string, type?: Nullable<NodeMaterialBlockConnectionPointTypes>): void;
         private _emitDefine;
@@ -51815,44 +51819,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to add light in the fragment shader
-     */
-    export class LightBlock extends NodeMaterialBlock {
-        private _lightId;
-        /**
-         * Create a new LightBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the world position input component
-         */
-        readonly worldPosition: NodeMaterialConnectionPoint;
-        /**
-        * Gets the light input component
-        */
-        readonly light: NodeMaterialConnectionPoint;
-        /**
-         * Gets the diffuse output component
-         */
-        readonly diffuseOutput: NodeMaterialConnectionPoint;
-        /**
-         * Gets the specular output component
-         */
-        readonly specularOutput: NodeMaterialConnectionPoint;
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
-        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
-        private _injectVertexCode;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
@@ -51894,6 +51860,53 @@ declare module BABYLON {
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to add light in the fragment shader
+     */
+    export class LightBlock extends NodeMaterialBlock {
+        private _lightId;
+        /**
+         * Create a new LightBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position input component
+         */
+        readonly worldPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world normal input component
+         */
+        readonly worldNormal: NodeMaterialConnectionPoint;
+        /**
+        * Gets the light input component
+        */
+        readonly light: NodeMaterialConnectionPoint;
+        /**
+        * Gets the camera (or eye) position component
+        */
+        readonly cameraPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the diffuse output component
+         */
+        readonly diffuseOutput: NodeMaterialConnectionPoint;
+        /**
+         * Gets the specular output component
+         */
+        readonly specularOutput: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        private _injectVertexCode;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
