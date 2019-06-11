@@ -66,7 +66,7 @@ namespace babylon
 
             if (FAILED(D3DCompile(hlsl.data(), hlsl.size(), nullptr, nullptr, nullptr, "main", target, flags, 0, blob, &errorMsgs)))
             {
-                throw new std::exception(static_cast<const char*>(errorMsgs->GetBufferPointer()));
+                throw std::exception(static_cast<const char*>(errorMsgs->GetBufferPointer()));
             }
 
             return std::move(compiler);

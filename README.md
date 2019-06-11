@@ -8,7 +8,41 @@ See [this blog entry](https://medium.com/@babylonjs/babylon-native-821f1694fffc)
 
 ## Getting Started
 
-*Coming soon...*
+### Windows
+
+#### Prerequisites
+
+- CMake 3.12 or higher
+- Python 3.x
+- Visual Studio 2017 or 2019
+
+#### Build
+
+- Clone this repo.
+- Update the submodules.
+  ```
+  C:\BabylonNative>git submodule update --init --recursive
+  ```
+- Create a new directory for the build files, e.g. `Build` at the root of the repo.
+  ```
+  C:\BabylonNative>mkdir Build
+  ```
+- Change your working directory to the new directory.
+  ```
+  C:\BabylonNative>cd Build
+  ```
+- Run CMake from the new directory and point to the root of the repo.
+  ```
+  C:\BabylonNative\Build>cmake ..
+  ```
+- Open the generated solution `BabylonNative.sln`.
+  ```
+  C:\BabylonNative\Build>start BabylonNative.sln
+  ```
+
+### Android / iOS / MacOS
+
+*Planned but not yet implemented*
 
 ## Development Notes
 
@@ -37,16 +71,6 @@ This project uses [base-n](https://github.com/azawadzki/base-n) to implement bas
 ### curl
 
 This project uses [curl](https://curl.haxx.se/) (or, more accurately, [libcurl](https://curl.haxx.se/libcurl/)) as the backend for the provided implementation of XMLHttpRequest. At present, only a "golden path" is supported, but additional features will be added as they are required.
-
-### Updating Babylon.js
-
-To update the Babylon.js version:
-
-* The Babylon.js repo exists as a submodule in the [Modules/Babylon.js](Modules/Babylon.js) directory pointing to the [native](https://github.com/BabylonJS/Babylon.js/tree/native) branch.
-* If desired, merge in changes from other Babylon.js branches, including from the master branch.
-  * This may require making changes to `src/Engine/babylon.nativeEngine.ts` to adapt to breaking changes in `src/Engine/babylon.engine.ts`.
-* Follow the [Babylon.js contribution documentation](http://doc.babylonjs.com/how_to/how_to_start) instructions to install prerequisites and do your first full build.
-* Run `UpdateBabylon.cmd core loaders`.
 
 ## Contributing
 
