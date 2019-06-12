@@ -137,13 +137,17 @@ export class BasisTools {
      * @returns a promise resulting in the transcoded image
      */
     public static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<{fileInfo: BasisFileInfo, format: number}> {
-        return new Promise((res) => {
+        return new Promise((res, rej) => {
             this._CreateWorkerAsync().then(() => {
                 var actionId = this._actionId++;
                 var messageHandler = (msg: any) => {
+                    this._Worker!.removeEventListener("message", messageHandler);
                     if (msg.data.action === "transcode" && msg.data.id === actionId) {
-                        this._Worker!.removeEventListener("message", messageHandler);
-                        res(msg.data);
+                        if (!msg.data.success) {
+                            rej("Transcode is not supported on this device");
+                        }else {
+                            res(msg.data);
+                        }
                     }
                 };
                 this._Worker!.addEventListener("message", messageHandler);
@@ -201,29 +205,35 @@ function workerFunc(): void {
             }
 
             // Begin transcode
+            var success = true;
             if (!loadedFile.startTranscoding()) {
-                loadedFile.close();
-                loadedFile.delete();
-                throw "transcode failed";
+                success = false;
             }
 
             var buffers: Array<any> = [];
-            fileInfo.images.forEach((image, imageIndex) => {
+            for (var imageIndex = 0; imageIndex < fileInfo.images.length; imageIndex++) {
+                if (!success) {
+                    break;
+                }
+                var image = fileInfo.images[imageIndex];
                 if (config.loadSingleImage === undefined || config.loadSingleImage === imageIndex) {
+                    var mipCount = image.levels.length;
                     if (config.loadMipmapLevels === false) {
-                        var levelInfo = image.levels[0];
-                        levelInfo.transcodedPixels = TranscodeLevel(loadedFile, imageIndex, 0, format!, needsConversion);
-                        buffers.push(levelInfo.transcodedPixels.buffer);
-                    }else {
-                        image.levels.forEach((levelInfo, levelIndex) => {
-                            levelInfo.transcodedPixels = TranscodeLevel(loadedFile, imageIndex, levelIndex, format!, needsConversion);
-                            buffers.push(levelInfo.transcodedPixels.buffer);
+                        mipCount = 1;
+                    }
+                    for (var levelIndex = 0; levelIndex < mipCount; levelIndex++) {
+                        var levelInfo = image.levels[levelIndex];
 
-                        });
+                        var pixels = TranscodeLevel(loadedFile, imageIndex, levelIndex, format!, needsConversion);
+                        if (!pixels) {
+                            success = false;
+                            break;
+                        }
+                        levelInfo.transcodedPixels = pixels;
+                        buffers.push(levelInfo.transcodedPixels.buffer);
                     }
                 }
-            });
-
+            }
             // Close file
             loadedFile.close();
             loadedFile.delete();
@@ -231,7 +241,12 @@ function workerFunc(): void {
             if (needsConversion) {
                 format = -1;
             }
-            postMessage({action: "transcode", id: event.data.id, fileInfo: fileInfo, format: format}, buffers);
+            if (!success) {
+                postMessage({action: "transcode", success: success, id: event.data.id});
+            }else {
+                postMessage({action: "transcode", success: success, id: event.data.id, fileInfo: fileInfo, format: format}, buffers);
+            }
+
         }
 
     };
@@ -289,9 +304,7 @@ function workerFunc(): void {
         var dstSize = loadedFile.getImageTranscodedSizeInBytes(imageIndex, levelIndex, format);
         var dst = new Uint8Array(dstSize);
         if (!loadedFile.transcodeImage(dst, imageIndex, levelIndex, format, 1, 0)) {
-            loadedFile.close();
-            loadedFile.delete();
-            throw "transcode failed";
+            return null;
         }
         // If no supported format is found, load as dxt and convert to rgb565
         if (convertToRgb565) {
