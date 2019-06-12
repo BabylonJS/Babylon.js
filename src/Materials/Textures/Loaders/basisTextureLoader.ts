@@ -82,7 +82,8 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
         };
         BasisTools.TranscodeAsync(data, transcodeConfig).then((result) => {
             var rootImage = result.fileInfo.images[0].levels[0];
-            callback(rootImage.width, rootImage.height, false, true, () => {
+            var hasMipmap = result.fileInfo.images[0].levels.length > 1;
+            callback(rootImage.width, rootImage.height, hasMipmap, result.format !== -1, () => {
                 texture._invertVScale = texture.invertY;
                 if (result.format === -1) {
                     // No compatable compressed format found, fallback to RGB
@@ -121,6 +122,10 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                     }
 
                 }
+            });
+        }).catch((err) => {
+            Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
+            callback(0, 0, false, false, () => {
             });
         });
     }
