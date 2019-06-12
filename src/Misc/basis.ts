@@ -265,7 +265,9 @@ function workerFunc(): void {
             }else if (config.supportedCompressionFormats.s3tc) {
                 format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
             }else if (config.supportedCompressionFormats.pvrtc) {
-                format = _BASIS_FORMAT.cTFPVRTC1_4_OPAQUE_ONLY;
+                // TODO uncomment this after pvrtc bug is fixed is basis transcoder
+                // See discussion here: https://github.com/mrdoob/three.js/issues/16524#issuecomment-498929924
+                // format = _BASIS_FORMAT.cTFPVRTC1_4_OPAQUE_ONLY;
             }else if (config.supportedCompressionFormats.etc2) {
                 format = _BASIS_FORMAT.cTFETC2;
             }
