@@ -10,7 +10,7 @@
 
 ## Updates
 
-### Core Engine
+### General
 - Support Vive Focus 3Dof controller ([TrevorDev](https://github.com/TrevorDev))
 - Planar positioning support for GizmoManager ([Balupg](https://github.com/balupg))
 - Individual gizmos can now be enabled/disabled ([Balupg](https://github.com/balupg))
@@ -19,9 +19,10 @@
 - Ability to set render camera on utility layer instead of using the latest active camera ([TrevorDev](https://github.com/TrevorDev))
 - Move normalizeToUnitCube to transformNode instead of abstract mesh and add predicate to exclude sub objects when scaling ([TrevorDev](https://github.com/TrevorDev))
 - Method to check if device orientation is available ([TrevorDev](https://github.com/TrevorDev))
-- Added MorphTarget support to the DepthRenderer, GeometryBufferRenderer and OutlineRenderer ([MarkusBillharz](https://github.com/MarkusBillharz))
 
 ### Engine
+- Morph targets now can morph UV channel as well ([Deltakosh](https://github.com/deltakosh/))
+- Added MorphTarget support to the DepthRenderer, GeometryBufferRenderer and OutlineRenderer ([MarkusBillharz](https://github.com/MarkusBillharz))
 - Added preprocessors for shaders to improve how shaders are compiled for WebGL1/2 or WebGPU ([Deltakosh](https://github.com/deltakosh/))
 - Added enterPointerlock and exitPointerlock (Separated from enterFullscreen) ([aWeirdo](https://github.com/aWeirdo/))
 
