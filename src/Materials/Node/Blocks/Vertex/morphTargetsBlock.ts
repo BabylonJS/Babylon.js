@@ -27,9 +27,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("tangent", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerOutput("positionOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("normalOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("tangentOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerOutput("uvOutput", NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
     /**
@@ -62,6 +64,13 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the tangent input component
+     */
+    public get uv(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
+    }
+
+    /**
      * Gets the position output component
      */
     public get positionOutput(): NodeMaterialConnectionPoint {
@@ -80,6 +89,13 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
      */
     public get tangentOutput(): NodeMaterialConnectionPoint {
         return this._outputs[2];
+    }
+
+    /**
+     * Gets the tangent output component
+     */
+    public get uvOutput(): NodeMaterialConnectionPoint {
+        return this._outputs[3];
     }
 
     public initialize(state: NodeMaterialBuildState) {
@@ -117,9 +133,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         let position = this.position;
         let normal = this.normal;
         let tangent = this.tangent;
+        let uv = this.uv;
         let positionOutput = this.positionOutput;
         let normalOutput = this.normalOutput;
         let tangentOutput = this.tangentOutput;
+        let uvOutput = this.uvOutput;
         let state = vertexShaderState;
         let repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
         this._repeatebleContentGenerated = repeatCount;
@@ -127,6 +145,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         var manager = (<Mesh>mesh).morphTargetManager;
         var hasNormals = manager && manager.supportsNormals && defines["NORMAL"];
         var hasTangents = manager && manager.supportsTangents && defines["TANGENT"];
+        var hasUVs = manager && manager.supportsUVs && defines["UV1"];
 
         let injectionCode = "";
 
@@ -143,6 +162,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             if (hasTangents) {
                 injectionCode += `#ifdef MORPHTARGETS_TANGENT\r\n`;
                 injectionCode += `${tangentOutput.associatedVariableName}.xyz += (tangent${index} - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
+                injectionCode += `#endif\r\n`;
+            }
+
+            if (hasUVs) {
+                injectionCode += `#ifdef MORPHTARGETS_UV\r\n`;
+                injectionCode += `${uvOutput.associatedVariableName}.xyz += (uv_${index} - ${uv.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
                 injectionCode += `#endif\r\n`;
             }
 
