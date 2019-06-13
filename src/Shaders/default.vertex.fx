@@ -105,6 +105,9 @@ void main(void) {
 #ifdef TANGENT
 	vec4 tangentUpdated = tangent;
 #endif
+#ifdef UV1
+	vec2 uvUpdated = uv;
+#endif
 
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
@@ -153,14 +156,14 @@ void main(void) {
 
 	// Texture coordinates
 #ifndef UV1
-	vec2 uv = vec2(0., 0.);
+	vec2 uvUpdated = vec2(0., 0.);
 #endif
 #ifndef UV2
 	vec2 uv2 = vec2(0., 0.);
 #endif
 
 #ifdef MAINUV1
-	vMainUV1 = uv;
+	vMainUV1 = uvUpdated;
 #endif
 
 #ifdef MAINUV2
@@ -170,7 +173,7 @@ void main(void) {
 #if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0
 	if (vDiffuseInfos.x == 0.)
 	{
-		vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
+		vDiffuseUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
 	}
 	else
 	{
@@ -181,7 +184,7 @@ void main(void) {
 #if defined(AMBIENT) && AMBIENTDIRECTUV == 0
 	if (vAmbientInfos.x == 0.)
 	{
-		vAmbientUV = vec2(ambientMatrix * vec4(uv, 1.0, 0.0));
+		vAmbientUV = vec2(ambientMatrix * vec4(uvUpdated, 1.0, 0.0));
 	}
 	else
 	{
@@ -192,7 +195,7 @@ void main(void) {
 #if defined(OPACITY) && OPACITYDIRECTUV == 0
 	if (vOpacityInfos.x == 0.)
 	{
-		vOpacityUV = vec2(opacityMatrix * vec4(uv, 1.0, 0.0));
+		vOpacityUV = vec2(opacityMatrix * vec4(uvUpdated, 1.0, 0.0));
 	}
 	else
 	{
@@ -203,7 +206,7 @@ void main(void) {
 #if defined(EMISSIVE) && EMISSIVEDIRECTUV == 0
 	if (vEmissiveInfos.x == 0.)
 	{
-		vEmissiveUV = vec2(emissiveMatrix * vec4(uv, 1.0, 0.0));
+		vEmissiveUV = vec2(emissiveMatrix * vec4(uvUpdated, 1.0, 0.0));
 	}
 	else
 	{
@@ -214,7 +217,7 @@ void main(void) {
 #if defined(LIGHTMAP) && LIGHTMAPDIRECTUV == 0
 	if (vLightmapInfos.x == 0.)
 	{
-		vLightmapUV = vec2(lightmapMatrix * vec4(uv, 1.0, 0.0));
+		vLightmapUV = vec2(lightmapMatrix * vec4(uvUpdated, 1.0, 0.0));
 	}
 	else
 	{
@@ -225,7 +228,7 @@ void main(void) {
 #if defined(SPECULAR) && defined(SPECULARTERM) && SPECULARDIRECTUV == 0
 	if (vSpecularInfos.x == 0.)
 	{
-		vSpecularUV = vec2(specularMatrix * vec4(uv, 1.0, 0.0));
+		vSpecularUV = vec2(specularMatrix * vec4(uvUpdated, 1.0, 0.0));
 	}
 	else
 	{
@@ -236,7 +239,7 @@ void main(void) {
 #if defined(BUMP) && BUMPDIRECTUV == 0
 	if (vBumpInfos.x == 0.)
 	{
-		vBumpUV = vec2(bumpMatrix * vec4(uv, 1.0, 0.0));
+		vBumpUV = vec2(bumpMatrix * vec4(uvUpdated, 1.0, 0.0));
 	}
 	else
 	{
