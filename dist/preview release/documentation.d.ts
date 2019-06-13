@@ -10208,6 +10208,7 @@ declare module BABYLON {
         private _positions;
         private _normals;
         private _tangents;
+        private _uvs;
         private _influence;
         /**
          * Observable raised when the influence changes
@@ -10250,6 +10251,10 @@ declare module BABYLON {
          */
         readonly hasTangents: boolean;
         /**
+         * Gets a boolean defining if the target contains texture coordinates data
+         */
+        readonly hasUVs: boolean;
+        /**
          * Affects position data to this target
          * @param data defines the position data to use
          */
@@ -10279,6 +10284,16 @@ declare module BABYLON {
          * @returns a FloatArray containing the tangent data (or null if not present)
          */
         getTangents(): Nullable<FloatArray>;
+        /**
+         * Affects texture coordinates data to this target
+         * @param data defines the texture coordinates data to use
+         */
+        setUVs(data: Nullable<FloatArray>): void;
+        /**
+         * Gets the texture coordinates data stored in this target
+         * @returns a FloatArray containing the texture coordinates data (or null if not present)
+         */
+        getUVs(): Nullable<FloatArray>;
         /**
          * Serializes the current target into a Serialization object
          * @returns the serialized object
@@ -10319,6 +10334,7 @@ declare module BABYLON {
         private _influences;
         private _supportsNormals;
         private _supportsTangents;
+        private _supportsUVs;
         private _vertexCount;
         private _uniqueId;
         private _tempInfluences;
@@ -10343,6 +10359,10 @@ declare module BABYLON {
          * Gets a boolean indicating if this manager supports morphing of tangents
          */
         readonly supportsTangents: boolean;
+        /**
+         * Gets a boolean indicating if this manager supports morphing of texture coordinates
+         */
+        readonly supportsUVs: boolean;
         /**
          * Gets the number of targets stored in this manager
          */
@@ -39086,6 +39106,7 @@ declare module BABYLON {
         MORPHTARGETS: boolean;
         MORPHTARGETS_NORMAL: boolean;
         MORPHTARGETS_TANGENT: boolean;
+        MORPHTARGETS_UV: boolean;
         NUM_MORPH_INFLUENCERS: number;
         NONUNIFORMSCALING: boolean;
         PREMULTIPLYALPHA: boolean;
@@ -44701,10 +44722,12 @@ declare module BABYLON {
          */
         serialize(): any;
         /**
-         * Parses a Clear Coat Configuration from a serialized object.
+         * Parses a anisotropy Configuration from a serialized object.
          * @param source - Serialized object.
+         * @param scene Defines the scene we are parsing for
+         * @param rootUrl Defines the rootUrl to load from
          */
-        parse(source: any): void;
+        parse(source: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -44836,8 +44859,10 @@ declare module BABYLON {
         /**
          * Parses a anisotropy Configuration from a serialized object.
          * @param source - Serialized object.
+         * @param scene Defines the scene we are parsing for
+         * @param rootUrl Defines the rootUrl to load from
          */
-        parse(source: any): void;
+        parse(source: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -44925,10 +44950,12 @@ declare module BABYLON {
          */
         serialize(): any;
         /**
-         * Parses a BRDF Configuration from a serialized object.
+         * Parses a anisotropy Configuration from a serialized object.
          * @param source - Serialized object.
+         * @param scene Defines the scene we are parsing for
+         * @param rootUrl Defines the rootUrl to load from
          */
-        parse(source: any): void;
+        parse(source: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -45061,10 +45088,12 @@ declare module BABYLON {
          */
         serialize(): any;
         /**
-         * Parses a Sheen Configuration from a serialized object.
+         * Parses a anisotropy Configuration from a serialized object.
          * @param source - Serialized object.
+         * @param scene Defines the scene we are parsing for
+         * @param rootUrl Defines the rootUrl to load from
          */
-        parse(source: any): void;
+        parse(source: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -45303,10 +45332,12 @@ declare module BABYLON {
          */
         serialize(): any;
         /**
-         * Parses a Sub Surface Configuration from a serialized object.
+         * Parses a anisotropy Configuration from a serialized object.
          * @param source - Serialized object.
+         * @param scene Defines the scene we are parsing for
+         * @param rootUrl Defines the rootUrl to load from
          */
-        parse(source: any): void;
+        parse(source: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -45507,6 +45538,7 @@ declare module BABYLON {
         MORPHTARGETS: boolean;
         MORPHTARGETS_NORMAL: boolean;
         MORPHTARGETS_TANGENT: boolean;
+        MORPHTARGETS_UV: boolean;
         NUM_MORPH_INFLUENCERS: number;
         IMAGEPROCESSING: boolean;
         VIGNETTE: boolean;
@@ -50925,6 +50957,7 @@ declare module BABYLON {
         MORPHTARGETS: boolean;
         MORPHTARGETS_NORMAL: boolean;
         MORPHTARGETS_TANGENT: boolean;
+        MORPHTARGETS_UV: boolean;
         NUM_MORPH_INFLUENCERS: number;
         /** IMAGE PROCESSING */
         IMAGEPROCESSING: boolean;
@@ -51562,6 +51595,10 @@ declare module BABYLON {
          */
         readonly tangent: NodeMaterialConnectionPoint;
         /**
+         * Gets the tangent input component
+         */
+        readonly uv: NodeMaterialConnectionPoint;
+        /**
          * Gets the position output component
          */
         readonly positionOutput: NodeMaterialConnectionPoint;
@@ -51573,6 +51610,10 @@ declare module BABYLON {
          * Gets the tangent output component
          */
         readonly tangentOutput: NodeMaterialConnectionPoint;
+        /**
+         * Gets the tangent output component
+         */
+        readonly uvOutput: NodeMaterialConnectionPoint;
         initialize(state: NodeMaterialBuildState): void;
         autoConfigure(): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
@@ -65498,11 +65539,11 @@ declare module BABYLON.GLTF2.Exporter {
          */
         static _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number;
         /**
-         * Gets the glTF alpha mode from the Babylon Material
-         * @param babylonMaterial Babylon Material
-         * @returns The Babylon alpha mode value
+         * Sets the glTF alpha mode to a glTF material from the Babylon Material
+         * @param glTFMaterial glTF material
+         * @param babylonMaterial Babylon material
          */
-        _getAlphaMode(babylonMaterial: Material): MaterialAlphaMode;
+        private static _SetAlphaMode;
         /**
          * Converts a Babylon Standard Material to a glTF Material
          * @param babylonStandardMaterial BJS Standard Material
