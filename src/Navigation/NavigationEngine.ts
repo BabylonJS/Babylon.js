@@ -1,6 +1,5 @@
-//import { Nullable } from "../types";
-//import { Vector3 } from "../Maths/math";
-import { INavigationEngine, INavigationEnginePlugin } from "./INavigationEngine";
+import { Vector3 } from "../Maths/math";
+import { INavigationEngine, INavigationEnginePlugin, ICrowd } from "./INavigationEngine";
 import { _DevTools } from '../Misc/devTools';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -28,14 +27,25 @@ export class NavigationEngine implements INavigationEngine {
             throw new Error("Navigation Engine " + this._navigationPlugin.name + " cannot be found. "
                 + "Please make sure it is included.");
         }
-
     }
+
     createMavMesh(mesh: AbstractMesh): void {
         this._navigationPlugin.createMavMesh(mesh);
     }
 
     createDebugNavMesh(scene: Scene): Mesh {
         return this._navigationPlugin.createDebugNavMesh(scene);
+    }
+
+    getClosestPoint(position: Vector3): Vector3
+    {
+        return this._navigationPlugin.getClosestPoint(position);
+    }
+
+    createCrowd(maxAgents: number, maxAgentRadius: number, scene: Scene) : ICrowd
+    {
+        var crowd = this._navigationPlugin.createCrowd(maxAgents, maxAgentRadius, scene);
+        return crowd;
     }
 
     /**
