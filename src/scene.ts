@@ -47,6 +47,7 @@ import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
 import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
+import { ICrowd } from './Navigation/INavigationEngine';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -164,6 +165,11 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public ambientColor = new Color3(0, 0, 0);
 
+    public crowd: Nullable<ICrowd> = null;
+
+    addCrowd(crowd:ICrowd): void {
+        this.crowd = crowd;
+    }
     /**
      * This is use to store the default BRDF lookup for PBR materials in your scene.
      * It should only be one of the following (if not the default embedded one):
@@ -3706,6 +3712,11 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Animations
         if (!ignoreAnimations) {
             this.animate();
+        }
+
+        // Navigation
+        if (this.crowd) {
+            this.crowd.update(0.016);
         }
 
         // Before camera update steps
