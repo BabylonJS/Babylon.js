@@ -87,15 +87,15 @@ set(SOURCES
     "Source/ScriptHost/XMLHttpRequest.h"
     "Source/ScriptHost/XMLHttpRequest${BABYLON_NATIVE_PLATFORM}.cpp")
 
-add_library(BabylonNativeLib ${SOURCES})
+add_library(Library ${SOURCES})
 
-target_compile_definitions(BabylonNativeLib PUBLIC NODE_ADDON_API_DISABLE_DEPRECATED)
+target_compile_definitions(Library PUBLIC NODE_ADDON_API_DISABLE_DEPRECATED)
 
-target_compile_definitions(BabylonNativeLib PRIVATE NOMINMAX)
-target_compile_definitions(BabylonNativeLib PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+target_compile_definitions(Library PRIVATE NOMINMAX)
+target_compile_definitions(Library PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 
 if(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "Chakra")
-    target_compile_definitions(BabylonNativeLib PRIVATE USE_EDGEMODE_JSRT)
+    target_compile_definitions(Library PRIVATE USE_EDGEMODE_JSRT)
 elseif(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "V8")
     set(NUGET_EXE "${NUGET_PATH}/nuget.exe")
     if(NOT EXISTS ${NUGET_EXE})
@@ -103,27 +103,26 @@ elseif(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "V8")
     endif()
     file(COPY "packages.config" DESTINATION ${NUGET_PATH})
     execute_process(COMMAND ${NUGET_EXE} install WORKING_DIRECTORY ${NUGET_PATH})
-    message(STATUS "${NUGET_EXE} install")
 endif()
 
-target_include_directories(BabylonNativeLib PUBLIC "Source")
+target_include_directories(Library PUBLIC "Source")
 
-target_include_directories(BabylonNativeLib PRIVATE "Dependencies/arcana.cpp/Source/Shared")
-target_include_directories(BabylonNativeLib PRIVATE "Dependencies/arcana.cpp/Source/Submodules/GSL/include")
-target_include_directories(BabylonNativeLib PRIVATE "Dependencies/base-n/include")
-target_include_directories(BabylonNativeLib PRIVATE "Dependencies/bgfx.cmake/bgfx/include")
-target_include_directories(BabylonNativeLib PRIVATE "Dependencies/bgfx.cmake/bimg/include")
-target_include_directories(BabylonNativeLib PRIVATE "Dependencies/bgfx.cmake/bx/include")
-target_include_directories(BabylonNativeLib PRIVATE "Dependencies/bgfx.cmake/bx/include/compat/msvc")
-target_include_directories(BabylonNativeLib PRIVATE "Dependencies/curl/include")
-target_include_directories(BabylonNativeLib PRIVATE "Dependencies/glslang")
-target_include_directories(BabylonNativeLib PRIVATE "Dependencies/SPIRV-Cross")
+target_include_directories(Library PRIVATE "Dependencies/arcana.cpp/Source/Shared")
+target_include_directories(Library PRIVATE "Dependencies/arcana.cpp/Source/Submodules/GSL/include")
+target_include_directories(Library PRIVATE "Dependencies/base-n/include")
+target_include_directories(Library PRIVATE "Dependencies/bgfx.cmake/bgfx/include")
+target_include_directories(Library PRIVATE "Dependencies/bgfx.cmake/bimg/include")
+target_include_directories(Library PRIVATE "Dependencies/bgfx.cmake/bx/include")
+target_include_directories(Library PRIVATE "Dependencies/bgfx.cmake/bx/include/compat/msvc")
+target_include_directories(Library PRIVATE "Dependencies/curl/include")
+target_include_directories(Library PRIVATE "Dependencies/glslang")
+target_include_directories(Library PRIVATE "Dependencies/SPIRV-Cross")
 
 if(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "V8")
-    target_include_directories(BabylonNativeLib PRIVATE "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/include")
+    target_include_directories(Library PRIVATE "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/include")
 endif()
 
-target_link_libraries(BabylonNativeLib
+target_link_libraries(Library
     PRIVATE bx
     PRIVATE bimg
     PRIVATE bgfx
@@ -132,7 +131,7 @@ target_link_libraries(BabylonNativeLib
     PRIVATE SPIRV
     PRIVATE spirv-cross-hlsl)
 
-target_link_libraries(BabylonNativeLib
+target_link_libraries(Library
     PRIVATE "crypt32.lib"
     PRIVATE "d2d1.lib"
     PRIVATE "d3d11.lib"
@@ -147,10 +146,10 @@ target_link_libraries(BabylonNativeLib
     PRIVATE "wldap32.lib")
 
 if(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "Chakra")
-    target_link_libraries(BabylonNativeLib
+    target_link_libraries(Library
         PRIVATE "chakrart.lib")
 elseif(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "V8")
-    target_link_libraries(BabylonNativeLib
+    target_link_libraries(Library
         PRIVATE debug "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Debug/v8.dll.lib"               optimized "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Release/v8.dll.lib"
         PRIVATE debug "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Debug/v8_libbase.dll.lib"       optimized "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Release/v8_libbase.dll.lib"
         PRIVATE debug "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Debug/v8_libplatform.dll.lib"   optimized "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Release/v8_libplatform.dll.lib")

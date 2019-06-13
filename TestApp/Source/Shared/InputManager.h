@@ -3,7 +3,7 @@
 #include <Runtime/Runtime.h>
 #include <Napi/Napi.h>
 
-class InputManagerUWP final : public Napi::ObjectWrap<InputManagerUWP>
+class InputManager final : public Napi::ObjectWrap<InputManager>
 {
 public:
     class InputBuffer
@@ -66,20 +66,20 @@ public:
                 env,
                 "InputManager",
                 {
-                    InstanceAccessor("pointerX", &InputManagerUWP::PointerX, nullptr),
-                    InstanceAccessor("pointerY", &InputManagerUWP::PointerY, nullptr),
-                    InstanceAccessor("isPointerDown", &InputManagerUWP::IsPointerDown, nullptr),
+                    InstanceAccessor("pointerX", &InputManager::PointerX, nullptr),
+                    InstanceAccessor("pointerY", &InputManager::PointerY, nullptr),
+                    InstanceAccessor("isPointerDown", &InputManager::IsPointerDown, nullptr),
                 },
                 data);
 
-            InputManagerUWP::constructor = Napi::Persistent(func);
-            InputManagerUWP::constructor.SuppressDestruct();
+            InputManager::constructor = Napi::Persistent(func);
+            InputManager::constructor.SuppressDestruct();
 
             env.Global().Set("InputManager", func);
         });
     }
 
-    explicit InputManagerUWP(const Napi::CallbackInfo& info);
+    explicit InputManager(const Napi::CallbackInfo& info);
 
 private:
     static inline Napi::FunctionReference constructor{};
