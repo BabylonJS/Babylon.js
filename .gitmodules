@@ -1,18 +1,18 @@
-[submodule "Dependencies/base-n"]
-	path = Dependencies/base-n
+[submodule "base-n"]
+	path = Library/Dependencies/base-n
 	url = https://github.com/azawadzki/base-n
-[submodule "Dependencies/arcana.cpp"]
-	path = Dependencies/arcana.cpp
+[submodule "arcana.cpp"]
+	path = Library/Dependencies/arcana.cpp
 	url = https://github.com/microsoft/arcana.cpp
-[submodule "Dependencies/glslang"]
-	path = Dependencies/glslang
+[submodule "glslang"]
+	path = Library/Dependencies/glslang
 	url = https://github.com/KhronosGroup/glslang
-[submodule "Dependencies/SPIRV-Cross"]
-	path = Dependencies/SPIRV-Cross
+[submodule "SPIRV-Cross"]
+	path = Library/Dependencies/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross
-[submodule "Dependencies/curl"]
-	path = Dependencies/curl
+[submodule "curl"]
+	path = Library/Dependencies/curl
 	url = https://github.com/curl/curl
-[submodule "Dependencies/bgfx.cmake"]
-	path = Dependencies/bgfx.cmake
+[submodule "bgfx.cmake"]
+	path = Library/Dependencies/bgfx.cmake
 	url = https://github.com/BabylonJS/bgfx.cmake
