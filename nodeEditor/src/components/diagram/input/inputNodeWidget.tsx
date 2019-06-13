@@ -5,6 +5,8 @@ import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
 import { DefaultPortModel } from '../defaultPortModel';
 import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { Color3 } from 'babylonjs/Maths/math';
 
 /**
  * GenericNodeWidgetProps
@@ -34,6 +36,34 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                 }
             });
         }
+    }
+
+    renderValue(value: string) {
+        if (value) {
+            return (
+                <div>
+                    {value}
+                </div>
+            )
+        }
+
+        let connection = this.props.node!.connection;
+        if (!connection || !connection.isUniform) {
+            return null;
+        }
+
+        switch (connection.type) {
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
+            case NodeMaterialBlockConnectionPointTypes.Color4: {
+                let color = connection.value as Color3;
+                return (
+                    <div className="fullColor" style={{ background: color.toHexString() }}></div>
+                )
+            }
+        }
+
+        return null;
     }
 
     render() {
@@ -83,6 +113,9 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                     case NodeMaterialWellKnownValues.Projection:
                         value = "Projection";
                         break;
+                    case NodeMaterialWellKnownValues.CameraPosition:
+                        value = "Camera position";
+                        break;
                     case NodeMaterialWellKnownValues.Automatic:
                         value = "Automatic";
                         break;
@@ -101,7 +134,9 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                     {outputPorts}
                 </div>
                 <div className="value">
-                    {value}
+                    {
+                        this.renderValue(value)
+                    }
                 </div>
             </div>
         );

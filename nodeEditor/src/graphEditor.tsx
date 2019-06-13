@@ -25,6 +25,9 @@ import { InputNodeModel } from './components/diagram/input/inputNodeModel';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
 import { Vector2, Vector3, Vector4, Matrix, Color3, Color4 } from 'babylonjs/Maths/math';
 import { LogComponent } from './components/log/logComponent';
+import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
+import { LightNodeModel } from './components/diagram/light/lightNodeModel';
+import { LightNodeFactory } from './components/diagram/light/lightNodeFactory';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -89,6 +92,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             if (options.nodeMaterialBlock instanceof TextureBlock) {
                 newNode = new TextureNodeModel();
                 filterInputs.push("uv");
+            } else if (options.nodeMaterialBlock instanceof LightBlock) {
+                newNode = new LightNodeModel();
+                filterInputs.push("worldPosition");
+                filterInputs.push("worldNormal");
+                filterInputs.push("cameraPosition");
             } else {
                 newNode = new GenericNodeModel();
             }
@@ -135,6 +143,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine.installDefaultFactories()
         this._engine.registerNodeFactory(new GenericNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new TextureNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new LightNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new InputNodeFactory(this.props.globalState));
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {

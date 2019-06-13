@@ -54,7 +54,7 @@
             grid-column: 2;
             
             input {
-                width: 110px;
+                width: calc(100% - 5px);
             }
         }
     }

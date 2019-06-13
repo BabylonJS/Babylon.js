@@ -36025,7 +36025,7 @@ var FogPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FogPropertyGridComponent, _super);
     function FogPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { mode: 0 };
+        _this.state = { mode: _this.props.scene.fogMode };
         return _this;
     }
     FogPropertyGridComponent.prototype.render = function () {
@@ -38269,8 +38269,13 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         }
         var wireframeOver = mesh.clone();
         wireframeOver.reservedDataStore = { hidden: true };
+        // Sets up the mesh to be attached to the parent.
+        // So all neutral in local space.
+        wireframeOver.parent = mesh;
         wireframeOver.position = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
-        wireframeOver.setParent(mesh);
+        wireframeOver.scaling = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"](1, 1, 1);
+        wireframeOver.rotation = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
+        wireframeOver.rotationQuaternion = null;
         var material = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("wireframeOver", scene);
         material.reservedDataStore = { hidden: true };
         wireframeOver.material = material;
