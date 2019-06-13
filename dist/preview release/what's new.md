@@ -54,6 +54,7 @@
 
 ### Loaders
 - Added support for non-float accessors in animation data for glTF loader. ([bghgary](https://github.com/bghgary))
+- Support loading cube data in .basis loader ([TrevorDev](https://github.com/TrevorDev))
 
 ### Materials
 - Added `ShaderMaterial.setColor4Array` ([JonathanTron](https://github.com/JonathanTron/))
