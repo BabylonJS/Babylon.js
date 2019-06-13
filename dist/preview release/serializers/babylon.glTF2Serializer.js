@@ -2741,19 +2741,17 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         return babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp((-b + Math.sqrt(D)) / (2.0 * a), 0, 1);
     };
     /**
-     * Gets the glTF alpha mode from the Babylon Material
-     * @param babylonMaterial Babylon Material
-     * @returns The Babylon alpha mode value
+     * Sets the glTF alpha mode to a glTF material from the Babylon Material
+     * @param glTFMaterial glTF material
+     * @param babylonMaterial Babylon material
      */
-    _GLTFMaterialExporter.prototype._getAlphaMode = function (babylonMaterial) {
+    _GLTFMaterialExporter._SetAlphaMode = function (glTFMaterial, babylonMaterial) {
         if (babylonMaterial.needAlphaBlending()) {
-            return "BLEND" /* BLEND */;
+            glTFMaterial.alphaMode = "BLEND" /* BLEND */;
         }
         else if (babylonMaterial.needAlphaTesting()) {
-            return "MASK" /* MASK */;
-        }
-        else {
-            return "OPAQUE" /* OPAQUE */;
+            glTFMaterial.alphaMode = "MASK" /* MASK */;
+            glTFMaterial.alphaCutoff = babylonMaterial.alphaCutOff;
         }
     };
     /**
@@ -2769,7 +2767,6 @@ var _GLTFMaterialExporter = /** @class */ (function () {
     _GLTFMaterialExporter.prototype._convertStandardMaterialAsync = function (babylonStandardMaterial, mimeType, hasTextureCoords) {
         var materialMap = this._exporter._materialMap;
         var materials = this._exporter._materials;
-        var alphaMode = this._getAlphaMode(babylonStandardMaterial);
         var promises = [];
         var glTFPbrMetallicRoughness = this._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
         var glTFMaterial = { name: babylonStandardMaterial.name };
@@ -2829,22 +2826,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             glTFMaterial.emissiveFactor = babylonStandardMaterial.emissiveColor.asArray();
         }
         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
-        if (alphaMode !== "OPAQUE" /* OPAQUE */) {
-            switch (alphaMode) {
-                case "BLEND" /* BLEND */: {
-                    glTFMaterial.alphaMode = "BLEND" /* BLEND */;
-                    break;
-                }
-                case "MASK" /* MASK */: {
-                    glTFMaterial.alphaMode = "MASK" /* MASK */;
-                    glTFMaterial.alphaCutoff = babylonStandardMaterial.alphaCutOff;
-                    break;
-                }
-                default: {
-                    babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Unsupported alpha mode " + alphaMode);
-                }
-            }
-        }
+        _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonStandardMaterial);
         materials.push(glTFMaterial);
         materialMap[babylonStandardMaterial.uniqueId] = materials.length - 1;
         return Promise.all(promises).then(function () { });
@@ -2884,18 +2866,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         if (babylonPBRMetalRoughMaterial.doubleSided) {
             glTFMaterial.doubleSided = babylonPBRMetalRoughMaterial.doubleSided;
         }
-        var alphaMode = null;
-        if (babylonPBRMetalRoughMaterial.transparencyMode != null) {
-            alphaMode = this._getAlphaMode(babylonPBRMetalRoughMaterial);
-            if (alphaMode) {
-                if (alphaMode !== "OPAQUE" /* OPAQUE */) { //glTF defaults to opaque
-                    glTFMaterial.alphaMode = alphaMode;
-                    if (alphaMode === "MASK" /* MASK */) {
-                        glTFMaterial.alphaCutoff = babylonPBRMetalRoughMaterial.alphaCutOff;
-                    }
-                }
-            }
-        }
+        _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonPBRMetalRoughMaterial);
         if (hasTextureCoords) {
             if (babylonPBRMetalRoughMaterial.baseTexture != null) {
                 promises.push(this._exportTextureAsync(babylonPBRMetalRoughMaterial.baseTexture, mimeType).then(function (glTFTexture) {
@@ -3462,18 +3433,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var materials = this._exporter._materials;
         var promises = [];
         if (metallicRoughness) {
-            var alphaMode = null;
-            if (babylonPBRMaterial.transparencyMode != null) {
-                alphaMode = this._getAlphaMode(babylonPBRMaterial);
-                if (alphaMode) {
-                    if (alphaMode !== "OPAQUE" /* OPAQUE */) { //glTF defaults to opaque
-                        glTFMaterial.alphaMode = alphaMode;
-                        if (alphaMode === "MASK" /* MASK */) {
-                            glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
-                        }
-                    }
-                }
-            }
+            _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonPBRMaterial);
             if (!(_GLTFMaterialExporter.FuzzyEquals(metallicRoughness.baseColor, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].White(), _GLTFMaterialExporter._Epsilon) && babylonPBRMaterial.alpha >= _GLTFMaterialExporter._Epsilon)) {
                 glTFPbrMetallicRoughness.baseColorFactor = [
                     metallicRoughness.baseColor.r,
