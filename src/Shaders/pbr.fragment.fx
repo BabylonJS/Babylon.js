@@ -892,7 +892,7 @@ void main(void) {
     #endif
 
     // _________________________ Clear Coat Environment Oclusion __________________________
-    #if defined(CLEARCOAT)
+    #ifdef CLEARCOAT
         #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
             // BRDF Lookup
             vec3 environmentClearCoatBrdf = getBRDFLookup(clearCoatNdotV, clearCoatRoughness, environmentBrdfSampler);
@@ -918,7 +918,7 @@ void main(void) {
 
         clearCoatEnvironmentReflectance *= clearCoatIntensity;
 
-        #ifdef defined(REFLECTION) && CLEARCOAT_TINT
+        #if defined(REFLECTION) && defined(CLEARCOAT_TINT)
             // NdotL = NdotV in IBL
             absorption = computeClearCoatAbsorption(clearCoatNdotVRefract, clearCoatNdotVRefract, clearCoatColor, clearCoatThickness, clearCoatIntensity);
 
