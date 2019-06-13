@@ -1130,10 +1130,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "VERTEXCOLOR");
         }
 
-        if (defines.NUM_BONE_INFLUENCERS > 0) {
-            fallbacks.addCPUSkinningFallback(fallbackRank++, mesh);
-        }
-
         if (defines.MORPHTARGETS) {
             fallbacks.addFallback(fallbackRank++, "MORPHTARGETS");
         }
