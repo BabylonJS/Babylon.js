@@ -1218,7 +1218,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 defines.push("#define MORPHTARGETS");
                 morphInfluencers = manager.numInfluencers;
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
-                MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, { "NUM_MORPH_INFLUENCERS": morphInfluencers });
+                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
             }
         }
 
