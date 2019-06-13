@@ -1,5 +1,9 @@
 import { Nullable } from '../types';
 import { Tools } from './tools';
+import { Texture } from '../Materials/Textures/texture';
+import { InternalTexture } from '../Materials/Textures/internalTexture';
+import { Engine } from '../Engines/engine';
+import { Scalar } from '../Maths/math.scalar';
 
 /**
  * Info about the .basis files
@@ -13,6 +17,20 @@ class BasisFileInfo {
      * Info about each image of the basis file
      */
     public images: Array<{levels: Array<{width: number, height: number, transcodedPixels: ArrayBufferView}>}>;
+}
+
+/**
+ * Result of transcoding a basis file
+ */
+class TranscodeResult {
+    /**
+     * Info about the .basis file
+     */
+    public fileInfo: BasisFileInfo;
+    /**
+     * Format to use when loading the file
+     */
+    public format: number;
 }
 
 /**
@@ -136,7 +154,7 @@ export class BasisTools {
      * @param config configuration options for the transcoding
      * @returns a promise resulting in the transcoded image
      */
-    public static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<{fileInfo: BasisFileInfo, format: number}> {
+    public static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<TranscodeResult> {
         return new Promise((res, rej) => {
             this._CreateWorkerAsync().then(() => {
                 var actionId = this._actionId++;
@@ -154,6 +172,63 @@ export class BasisTools {
                 this._Worker!.postMessage({action: "transcode", id: actionId, imageData: imageData, config: config, ignoreSupportedFormats: this._IgnoreSupportedFormats}, [imageData]);
             });
         });
+    }
+
+    /**
+     * Loads a texture from the transcode result
+     * @param texture texture load to
+     * @param transcodeResult the result of transcoding the basis file to load from
+     */
+    public static LoadTextureFromTranscodeResult(texture: InternalTexture, transcodeResult: TranscodeResult) {
+        texture._invertVScale = texture.invertY;
+        for (var i = 0; i < transcodeResult.fileInfo.images.length; i++) {
+            var rootImage = transcodeResult.fileInfo.images[i].levels[0];
+            texture._invertVScale = texture.invertY;
+            if (transcodeResult.format === -1) {
+                // No compatable compressed format found, fallback to RGB
+                texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                texture.format = Engine.TEXTUREFORMAT_RGB;
+
+                if (texture.getEngine().webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
+                    // Create non power of two texture
+                    let source = new InternalTexture(texture.getEngine(), InternalTexture.DATASOURCE_TEMP);
+
+                    source.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                    source.format = Engine.TEXTUREFORMAT_RGB;
+                    // Fallback requires aligned width/height
+                    source.width = (rootImage.width + 3) & ~3;
+                    source.height = (rootImage.height + 3) & ~3;
+                    texture.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, source, true);
+                    texture.getEngine()._uploadDataToTextureDirectly(source, rootImage.transcodedPixels, i, 0, Engine.TEXTUREFORMAT_RGB, true);
+
+                    // Resize to power of two
+                    source.getEngine()._rescaleTexture(source, texture, texture.getEngine().scenes[0], source.getEngine()._getInternalFormat(Engine.TEXTUREFORMAT_RGB), () => {
+                        source.getEngine()._releaseTexture(source);
+                        source.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, texture, true);
+                    });
+                }else {
+                    // Upload directly
+                    texture.width = (rootImage.width + 3) & ~3;
+                    texture.height = (rootImage.height + 3) & ~3;
+                    texture.getEngine()._uploadDataToTextureDirectly(texture, rootImage.transcodedPixels, i, 0, Engine.TEXTUREFORMAT_RGB, true);
+                }
+
+            }else {
+                texture.width = rootImage.width;
+                texture.height = rootImage.height;
+
+                // Upload all mip levels in the file
+                transcodeResult.fileInfo.images[i].levels.forEach((level: any, index: number) => {
+                    texture.getEngine()._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!), level.width, level.height, level.transcodedPixels, i, index);
+                });
+
+                if (texture.getEngine().webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
+                    Tools.Warn("Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1.");
+                    texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
+                    texture._cachedWrapV = Texture.CLAMP_ADDRESSMODE;
+                }
+            }
+        }
     }
 }
 
