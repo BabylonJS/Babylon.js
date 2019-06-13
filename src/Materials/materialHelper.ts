@@ -196,11 +196,13 @@ export class MaterialHelper {
     public static PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) {
         var manager = (<Mesh>mesh).morphTargetManager;
         if (manager) {
+            defines["MORPHTARGETS_UV"] = manager.supportsUVs && defines["UV1"];
             defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
             defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
             defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
             defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
         } else {
+            defines["MORPHTARGETS_UV"] = false;
             defines["MORPHTARGETS_TANGENT"] = false;
             defines["MORPHTARGETS_NORMAL"] = false;
             defines["MORPHTARGETS"] = false;
@@ -566,6 +568,7 @@ export class MaterialHelper {
             var manager = (<Mesh>mesh).morphTargetManager;
             var normal = manager && manager.supportsNormals && defines["NORMAL"];
             var tangent = manager && manager.supportsTangents && defines["TANGENT"];
+            var uv = manager && manager.supportsUVs && defines["UV1"];
             for (var index = 0; index < influencers; index++) {
                 attribs.push(VertexBuffer.PositionKind + index);
 
@@ -575,6 +578,10 @@ export class MaterialHelper {
 
                 if (tangent) {
                     attribs.push(VertexBuffer.TangentKind + index);
+                }
+
+                if (uv) {
+                    attribs.push(VertexBuffer.UVKind + index);
                 }
 
                 if (attribs.length > maxAttributesCount) {
