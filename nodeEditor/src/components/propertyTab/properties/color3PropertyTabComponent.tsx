@@ -13,7 +13,9 @@ export class Color3PropertyTabComponent extends React.Component<IColor3PropertyT
 
     render() {
         return (
-            <Color3LineComponent label="Value" target={this.props.connection} propertyName="value"></Color3LineComponent>
+            <Color3LineComponent label="Value" target={this.props.connection} propertyName="value" onChange={() => {
+                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+            }}></Color3LineComponent>
         );
     }
 }
