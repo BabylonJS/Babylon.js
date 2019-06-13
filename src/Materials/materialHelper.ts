@@ -554,6 +554,18 @@ export class MaterialHelper {
         return lightFallbackRank++;
     }
 
+    private static _TmpMorphInfluencers = { "NUM_MORPH_INFLUENCERS": 0 };
+    /**
+     * Prepares the list of attributes required for morph targets according to the effect defines.
+     * @param attribs The current list of supported attribs
+     * @param mesh The mesh to prepare the morph targets attributes for
+     * @param influencers The number of influencers
+     */
+    public static PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void {
+        this._TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
+        this.PrepareAttributesForMorphTargets(attribs, mesh, this._TmpMorphInfluencers);
+    }
+
     /**
      * Prepares the list of attributes required for morph targets according to the effect defines.
      * @param attribs The current list of supported attribs
