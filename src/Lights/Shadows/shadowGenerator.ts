@@ -13,7 +13,7 @@ import { Light } from "../../Lights/light";
 import { Material } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { Effect } from "../../Materials/effect";
+import { Effect, EffectFallbacks } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
@@ -1186,6 +1186,7 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Bones
+        const fallbacks = new EffectFallbacks();
         if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
@@ -1195,6 +1196,9 @@ export class ShadowGenerator implements IShadowGenerator {
             }
             const skeleton = mesh.skeleton;
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+            if (mesh.numBoneInfluencers > 0) {
+                fallbacks.addCPUSkinningFallback(0, mesh);
+            }
 
             if (skeleton.isUsingTextureForMatrices) {
                 defines.push("#define BONETEXTURE");
@@ -1275,7 +1279,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._effect = this._scene.getEngine().createEffect(shaderName,
                 attribs, uniforms,
                 samplers, join,
-                undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
+                fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
         }
 
         if (!this._effect.isReady()) {

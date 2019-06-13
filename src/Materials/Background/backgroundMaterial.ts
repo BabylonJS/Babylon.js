@@ -848,10 +848,6 @@ export class BackgroundMaterial extends PushMaterial {
 
             MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
 
-            if (defines.NUM_BONE_INFLUENCERS > 0) {
-                fallbacks.addCPUSkinningFallback(0, mesh);
-            }
-
             //Attributes
             var attribs = [VertexBuffer.PositionKind];
 
