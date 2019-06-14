@@ -70,5 +70,6 @@
 - Context loss should not cause PBR materials to render black or instances to stop rendering ([TrevorDev](https://github.com/TrevorDev))
 - Only cast pointer ray input when pointer is locked in webVR ([TrevorDev](https://github.com/TrevorDev))
 - Avoid using default utility layer in gizmo manager to support multiple scenes ([TrevorDev](https://github.com/TrevorDev))
+- Fix bug when adding and removing observers in quick succession ([sable](https://github.com/thscott))
 
 ## Breaking changes
