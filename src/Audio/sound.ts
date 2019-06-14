@@ -9,62 +9,65 @@ import { TransformNode } from "../Meshes/transformNode";
 import { Logger } from "../Misc/logger";
 import { _DevTools } from '../Misc/devTools';
 
+/**
+ * Interface used to define options for Sound class
+ */
 export interface ISoundOptions {
     /**
     * Does the sound autoplay once loaded.
     */
-    autoplay?: boolean,
+    autoplay?: boolean;
     /**
      * Does the sound loop after it finishes playing once.
      */
-    loop?: boolean,
+    loop?: boolean;
     /**
      * Sound's volume
      */
-    volume?: number,
+    volume?: number;
     /**
      * Is it a spatial sound?
      */
-    spatialSound?: boolean,
+    spatialSound?: boolean;
     /**
      * Maximum distance to hear that sound
      */
-    maxDistance?: number,
+    maxDistance?: number;
     /**
      * Uses user defined attenuation function
      */
-    useCustomAttenuation?: boolean,
+    useCustomAttenuation?: boolean;
     /**
     * Define the roll off factor of spatial sounds.
     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
     */
-    rolloffFactor?: number,
+    rolloffFactor?: number;
     /**
      * Define the reference distance the sound should be heard perfectly.
      * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
-    refDistance?: number,
+    refDistance?: number;
     /**
      * Define the distance attenuation model the sound will follow.
      * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
-    distanceModel?: string,
+    distanceModel?: string;
     /**
      * Defines the playback speed (1 by default)
      */
-    playbackRate?: number,
+    playbackRate?: number;
     /**
      * Defines if the sound is from a streaming source
      */
-    streaming?: boolean,
+    streaming?: boolean;
     /**
      * Defines an optional length (in ms) inside the sound file
      */
-    length?: number,
+    length?: number;
     /**
      * Defines an optional offset (in ms) inside the sound file
      */
-    offset?: number
+    offset?: number;
 }
 
 /**
@@ -672,7 +675,8 @@ export class Sound {
     /**
     * Play the sound
     * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-    * @param offset (optional) Start the sound setting it at a specific time
+    * @param offset (optional) Start the sound at a specific time in seconds
+    * @param length (optional) Sound duration (in seconds)
     */
     public play(time?: number, offset?: number, length?: number): void {
         if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine.audioContext) {
