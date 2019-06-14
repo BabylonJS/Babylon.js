@@ -32,7 +32,5 @@ else()
     message(FATAL_ERROR "Unrecognized compiler: ${CMAKE_CXX_COMPILER}")
 endif()
 
-set(NUGET_PATH "${CMAKE_BINARY_DIR}/NuGet")
-
 add_subdirectory(Library)
 add_subdirectory(TestApp)

@@ -97,12 +97,32 @@ target_compile_definitions(Library PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECA
 if(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "Chakra")
     target_compile_definitions(Library PRIVATE USE_EDGEMODE_JSRT)
 elseif(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "V8")
+    set(NUGET_PATH "${CMAKE_BINARY_DIR}/NuGet")
     set(NUGET_EXE "${NUGET_PATH}/nuget.exe")
     if(NOT EXISTS ${NUGET_EXE})
         file(DOWNLOAD "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" ${NUGET_EXE})
     endif()
     file(COPY "packages.config" DESTINATION ${NUGET_PATH})
     execute_process(COMMAND ${NUGET_EXE} install WORKING_DIRECTORY ${NUGET_PATH})
+    add_library(v8_libbase SHARED IMPORTED)
+    set_target_properties(v8_libbase PROPERTIES IMPORTED_IMPLIB "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Release/v8_libbase.dll.lib")
+    add_library(v8_libplatform SHARED IMPORTED)
+    set_target_properties(v8_libplatform PROPERTIES IMPORTED_IMPLIB "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Release/v8_libplatform.dll.lib")
+    add_library(v8 SHARED IMPORTED)
+    set_target_properties(v8 PROPERTIES IMPORTED_IMPLIB "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Release/v8.dll.lib")
+    target_link_libraries(v8 INTERFACE v8_libbase INTERFACE v8_libplatform)
+    target_include_directories(v8 INTERFACE "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/include")
+
+    set(BABYLON_NATIVE_DEPENDENCIES ${BABYLON_NATIVE_DEPENDENCIES}
+        "${NUGET_PATH}/v8.redist-v141-${ARCH}.7.4.288.26/lib/Release/icudtl.dat"
+        "${NUGET_PATH}/v8.redist-v141-${ARCH}.7.4.288.26/lib/Release/icui18n.dll"
+        "${NUGET_PATH}/v8.redist-v141-${ARCH}.7.4.288.26/lib/Release/icuuc.dll"
+        "${NUGET_PATH}/v8.redist-v141-${ARCH}.7.4.288.26/lib/Release/natives_blob.bin"
+        "${NUGET_PATH}/v8.redist-v141-${ARCH}.7.4.288.26/lib/Release/snapshot_blob.bin"
+        "${NUGET_PATH}/v8.redist-v141-${ARCH}.7.4.288.26/lib/Release/v8.dll"
+        "${NUGET_PATH}/v8.redist-v141-${ARCH}.7.4.288.26/lib/Release/v8_libbase.dll"
+        "${NUGET_PATH}/v8.redist-v141-${ARCH}.7.4.288.26/lib/Release/v8_libplatform.dll"
+        PARENT_SCOPE)
 endif()
 
 target_include_directories(Library PUBLIC "Source")
@@ -117,10 +137,6 @@ target_include_directories(Library PRIVATE "Dependencies/bgfx.cmake/bx/include/c
 target_include_directories(Library PRIVATE "Dependencies/curl/include")
 target_include_directories(Library PRIVATE "Dependencies/glslang")
 target_include_directories(Library PRIVATE "Dependencies/SPIRV-Cross")
-
-if(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "V8")
-    target_include_directories(Library PRIVATE "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/include")
-endif()
 
 target_link_libraries(Library
     PRIVATE bx
@@ -150,7 +166,5 @@ if(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "Chakra")
         PRIVATE "chakrart.lib")
 elseif(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "V8")
     target_link_libraries(Library
-        PRIVATE debug "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Debug/v8.dll.lib"               optimized "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Release/v8.dll.lib"
-        PRIVATE debug "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Debug/v8_libbase.dll.lib"       optimized "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Release/v8_libbase.dll.lib"
-        PRIVATE debug "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Debug/v8_libplatform.dll.lib"   optimized "${NUGET_PATH}/v8-v141-${ARCH}.7.4.288.26/lib/Release/v8_libplatform.dll.lib")
+        PRIVATE v8)
 endif()
