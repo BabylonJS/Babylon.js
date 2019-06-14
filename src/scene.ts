@@ -171,7 +171,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Adds an agent crowd to the scene
      * Once added, every agent will have its position updated based on crowd update
      */
-    addCrowd(crowd:ICrowd): void {
+    addCrowd(crowd: ICrowd): void {
         this.crowds.push(crowd);
     }
 
@@ -179,7 +179,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Removes a crowd from the scene
      * Once removed, there will be no more updats to the crowd agents
      */
-    removeCrowd(crowd:ICrowd): void {
+    removeCrowd(crowd: ICrowd): void {
         var item = this.crowds.indexOf(crowd);
         if (item > -1) {
             this.crowds.splice(item, 1);

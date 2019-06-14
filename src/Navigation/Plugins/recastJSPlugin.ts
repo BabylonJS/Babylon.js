@@ -39,7 +39,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     /**
      * Creates a navigation mesh
      * @param mesh of all the geometry used to compute the navigatio mesh
-     * @param parameters bunch of parameters used to filter geometry 
+     * @param parameters bunch of parameters used to filter geometry
      */
     createMavMesh(mesh: AbstractMesh, parameters: NavMeshParameters): void {
         var rc = new this.bjsRECAST.rcConfig();
@@ -59,7 +59,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
 
         this.navMesh = new this.bjsRECAST.NavMesh();
         var meshIndices = mesh.getIndices();
-        var positions = mesh.getVerticesData('position');	
+        var positions = mesh.getVerticesData('position');
         this.navMesh.build(positions, mesh.getTotalVertices(), meshIndices, mesh.getTotalIndices(), rc);
     }
 
@@ -76,11 +76,11 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
 
         var indices = [];
         var positions = [];
-        for (tri = 0; tri < triangleCount*3; tri++) 
+        for (tri = 0; tri < triangleCount * 3; tri++)
         {
             indices.push(tri);
         }
-        for (tri = 0; tri < triangleCount; tri++) 
+        for (tri = 0; tri < triangleCount; tri++)
         {
             for (pt = 0; pt < 3 ; pt++)
             {
@@ -88,7 +88,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                 positions.push(point.x, point.y, point.z);
             }
         }
-        
+
         var mesh = new Mesh("NavMeshDebug", scene);
         var vertexData = new VertexData();
 
@@ -139,7 +139,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * Disposes
      */
     public dispose() {
-        
+
     }
 
     public isSupported(): boolean {
@@ -170,7 +170,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param transform hooked to the agent that will be update by the scene
      * @returns agent index
      */
-    addAgent(pos: Vector3, parameters: AgentParameters, transform:TransformNode): number
+    addAgent(pos: Vector3, parameters: AgentParameters, transform: TransformNode): number
     {
         var agentParams = new this.bjsRECASTPlugin.bjsRECAST.dtCrowdAgentParams();
         agentParams.radius = parameters.radius;
@@ -192,7 +192,7 @@ export class RecastJSCrowd implements ICrowd {
     }
 
     /**
-     * 
+     *
      * @param index agent index returned by addAgent
      * @returns world space position
      */
@@ -202,7 +202,7 @@ export class RecastJSCrowd implements ICrowd {
     }
 
     /**
-     * 
+     *
      * @param index agent index returned by addAgent
      * @returns world space velocity
      */
@@ -252,8 +252,8 @@ export class RecastJSCrowd implements ICrowd {
         this.recastCrowd.update(deltaTime);
 
         // update transforms
-        var index:number;
-        for (index = 0; index < this.agents.length; index++) 
+        var index: number;
+        for (index = 0; index < this.agents.length; index++)
         {
             this.transforms[index].position = this.getAgentPosition(this.agents[index]);
         }
