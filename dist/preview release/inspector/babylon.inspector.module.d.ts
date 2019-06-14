@@ -60,6 +60,8 @@ declare module "babylonjs-inspector/components/globalState" {
         recorder: ReplayRecorder;
         private _onlyUseEulers;
         onlyUseEulers: boolean;
+        private _ignoreBackfacesForPicking;
+        ignoreBackfacesForPicking: boolean;
         init(propertyChangedObservable: Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: GLTFFileLoader): void;
         lightGizmos: Array<LightGizmo>;
@@ -2299,6 +2301,8 @@ declare module INSPECTOR {
         recorder: ReplayRecorder;
         private _onlyUseEulers;
         onlyUseEulers: boolean;
+        private _ignoreBackfacesForPicking;
+        ignoreBackfacesForPicking: boolean;
         init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;

@@ -49,6 +49,8 @@ declare module INSPECTOR {
         recorder: ReplayRecorder;
         private _onlyUseEulers;
         onlyUseEulers: boolean;
+        private _ignoreBackfacesForPicking;
+        ignoreBackfacesForPicking: boolean;
         init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;

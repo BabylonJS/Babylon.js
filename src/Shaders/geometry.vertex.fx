@@ -48,8 +48,11 @@ varying vec4 vPreviousPosition;
 
 void main(void)
 {
-vec3 positionUpdated = position;
-vec3 normalUpdated = normal;
+    vec3 positionUpdated = position;
+    vec3 normalUpdated = normal;
+#ifdef UV1
+    vec2 uvUpdated = uv;
+#endif
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include<instancesVertex>
@@ -109,7 +112,7 @@ vec3 normalUpdated = normal;
 
 #if defined(ALPHATEST) || defined(BASIC_RENDER)
 #ifdef UV1
-	vUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
+	vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
 #endif
 #ifdef UV2
 	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));

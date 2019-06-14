@@ -151,6 +151,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public MORPHTARGETS = false;
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
+    public MORPHTARGETS_UV = false;
     public NUM_MORPH_INFLUENCERS = 0;
 
     public IMAGEPROCESSING = false;
@@ -1128,10 +1129,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         if (defines.VERTEXCOLOR) {
             fallbacks.addFallback(fallbackRank++, "VERTEXCOLOR");
-        }
-
-        if (defines.NUM_BONE_INFLUENCERS > 0) {
-            fallbacks.addCPUSkinningFallback(fallbackRank++, mesh);
         }
 
         if (defines.MORPHTARGETS) {

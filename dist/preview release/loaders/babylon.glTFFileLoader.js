@@ -5113,23 +5113,29 @@ var GLTFLoader = /** @class */ (function () {
         return accessor._data;
     };
     GLTFLoader.prototype._loadFloatAccessorAsync = function (context, accessor) {
-        // TODO: support normalized and stride
         var _this = this;
-        if (accessor.componentType !== 5126 /* FLOAT */) {
-            throw new Error("Invalid component type " + accessor.componentType);
-        }
         if (accessor._data) {
             return accessor._data;
         }
         var numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
+        var byteStride = numComponents * babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].GetTypeByteLength(accessor.componentType);
         var length = numComponents * accessor.count;
         if (accessor.bufferView == undefined) {
             accessor._data = Promise.resolve(new Float32Array(length));
         }
         else {
-            var bufferView = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
-            accessor._data = this.loadBufferViewAsync("/bufferViews/" + bufferView.index, bufferView).then(function (data) {
-                return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
+            var bufferView_1 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
+            accessor._data = this.loadBufferViewAsync("/bufferViews/" + bufferView_1.index, bufferView_1).then(function (data) {
+                if (accessor.componentType === 5126 /* FLOAT */ && !accessor.normalized) {
+                    return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
+                }
+                else {
+                    var floatData_1 = new Float32Array(length);
+                    babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ForEach(data, accessor.byteOffset || 0, bufferView_1.byteStride || byteStride, numComponents, accessor.componentType, floatData_1.length, accessor.normalized || false, function (value, index) {
+                        floatData_1[index] = value;
+                    });
+                    return floatData_1;
+                }
             });
         }
         if (accessor.sparse) {
@@ -5144,7 +5150,18 @@ var GLTFLoader = /** @class */ (function () {
                 ]).then(function (_a) {
                     var indicesData = _a[0], valuesData = _a[1];
                     var indices = GLTFLoader._GetTypedArray(context + "/sparse/indices", sparse_1.indices.componentType, indicesData, sparse_1.indices.byteOffset, sparse_1.count);
-                    var values = GLTFLoader._GetTypedArray(context + "/sparse/values", accessor.componentType, valuesData, sparse_1.values.byteOffset, numComponents * sparse_1.count);
+                    var sparseLength = numComponents * sparse_1.count;
+                    var values;
+                    if (accessor.componentType === 5126 /* FLOAT */ && !accessor.normalized) {
+                        values = GLTFLoader._GetTypedArray(context + "/sparse/values", accessor.componentType, valuesData, sparse_1.values.byteOffset, sparseLength);
+                    }
+                    else {
+                        var sparseData = GLTFLoader._GetTypedArray(context + "/sparse/values", accessor.componentType, valuesData, sparse_1.values.byteOffset, sparseLength);
+                        values = new Float32Array(sparseLength);
+                        babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ForEach(sparseData, 0, byteStride, numComponents, accessor.componentType, values.length, accessor.normalized || false, function (value, index) {
+                            values[index] = value;
+                        });
+                    }
                     var valuesIndex = 0;
                     for (var indicesIndex = 0; indicesIndex < indices.length; indicesIndex++) {
                         var dataIndex = indices[indicesIndex] * numComponents;
@@ -5186,10 +5203,10 @@ var GLTFLoader = /** @class */ (function () {
             });
         }
         else {
-            var bufferView_1 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
-            accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView_1, kind).then(function (babylonBuffer) {
+            var bufferView_2 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
+            accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView_2, kind).then(function (babylonBuffer) {
                 var size = GLTFLoader._GetNumComponents(context, accessor.type);
-                return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView_1.byteStride, false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
+                return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView_2.byteStride, false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
             });
         }
         return accessor._babylonVertexBuffer;

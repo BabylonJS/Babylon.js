@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -36025,7 +36025,7 @@ var FogPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FogPropertyGridComponent, _super);
     function FogPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { mode: 0 };
+        _this.state = { mode: _this.props.scene.fogMode };
         return _this;
     }
     FogPropertyGridComponent.prototype.render = function () {
@@ -36153,7 +36153,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
@@ -36175,15 +36175,19 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
     }
     CommonControlPropertyGridComponent.prototype.renderGridInformation = function () {
         var control = this.props.control;
-        if (!control.parent || !control.parent.parent) {
+        if (!control.parent) {
             return null;
         }
-        var gridParent = control.parent.parent;
+        var gridParent = control.parent;
         if (gridParent.rowCount === undefined) {
             return null;
         }
         var grid = gridParent;
-        var cellInfos = grid.getChildCellInfo(control).split(":");
+        var childCellInfo = grid.getChildCellInfo(control);
+        if (childCellInfo === undefined) {
+            return null;
+        }
+        var cellInfos = childCellInfo.split(":");
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GRID" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Row", value: cellInfos[0] }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Column", value: cellInfos[1] })));
@@ -36454,7 +36458,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
@@ -36868,7 +36872,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
@@ -37721,7 +37725,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Index of Refraction", target: material.subSurface, propertyName: "indexOfRefraction", minimum: 1, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Tint at Distance", target: material.subSurface, propertyName: "tintColorAtDistance", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Link refraction with transparency", target: material.subSurface, propertyName: "linkRefractionWithTransparency", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Transluency Enabled", target: material.subSurface, propertyName: "isTranslucencyEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Translucency Enabled", target: material.subSurface, propertyName: "isTranslucencyEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.subSurface.isTranslucencyEnabled &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.subSurface, propertyName: "translucencyIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -38005,7 +38009,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/valueLineComponent */ "./components/actionTabs/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 
@@ -38265,8 +38269,13 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         }
         var wireframeOver = mesh.clone();
         wireframeOver.reservedDataStore = { hidden: true };
+        // Sets up the mesh to be attached to the parent.
+        // So all neutral in local space.
+        wireframeOver.parent = mesh;
         wireframeOver.position = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
-        wireframeOver.setParent(mesh);
+        wireframeOver.scaling = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"](1, 1, 1);
+        wireframeOver.rotation = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
+        wireframeOver.rotationQuaternion = null;
         var material = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("wireframeOver", scene);
         material.reservedDataStore = { hidden: true };
         wireframeOver.material = material;
@@ -39372,6 +39381,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _paneComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../paneComponent */ "./components/actionTabs/paneComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+
 
 
 
@@ -39384,7 +39395,9 @@ var SettingsTabComponent = /** @class */ (function (_super) {
     SettingsTabComponent.prototype.render = function () {
         var state = this.props.globalState;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Only display Euler values", target: state, propertyName: "onlyUseEulers" })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "UI" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Only display Euler values", target: state, propertyName: "onlyUseEulers" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Ignore backfaces when picking", target: state, propertyName: "ignoreBackfacesForPicking" }))));
     };
     return SettingsTabComponent;
 }(_paneComponent__WEBPACK_IMPORTED_MODULE_2__["PaneComponent"]));
@@ -40012,6 +40025,7 @@ var GlobalState = /** @class */ (function () {
         this.selectedLineContainerTitle = "";
         this.recorder = new _replayRecorder__WEBPACK_IMPORTED_MODULE_1__["ReplayRecorder"]();
         this._onlyUseEulers = null;
+        this._ignoreBackfacesForPicking = null;
         // Light gizmos
         this.lightGizmos = [];
     }
@@ -40025,6 +40039,20 @@ var GlobalState = /** @class */ (function () {
         set: function (value) {
             this._onlyUseEulers = value;
             _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].StoreLocalBooleanSettings("settings_onlyUseEulers", value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GlobalState.prototype, "ignoreBackfacesForPicking", {
+        get: function () {
+            if (this._ignoreBackfacesForPicking === null) {
+                this._ignoreBackfacesForPicking = _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadLocalBooleanSettings("settings_ignoreBackfacesForPicking", false);
+            }
+            return this._ignoreBackfacesForPicking;
+        },
+        set: function (value) {
+            this._ignoreBackfacesForPicking = value;
+            _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].StoreLocalBooleanSettings("settings_ignoreBackfacesForPicking", value);
         },
         enumerable: true,
         configurable: true
@@ -40839,6 +40867,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var SceneTreeItemComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneTreeItemComponent, _super);
     function SceneTreeItemComponent(props) {
@@ -40936,7 +40965,18 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
         if (!this.state.isInPickingMode) {
             this._onPointerObserver = scene.onPointerObservable.add(function () {
                 var pickPosition = scene.unTranslatedPointer;
-                var pickInfo = scene.pick(pickPosition.x, pickPosition.y, function (mesh) { return mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0; });
+                var pickInfo = scene.pick(pickPosition.x, pickPosition.y, function (mesh) { return mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0; }, false, undefined, function (p0, p1, p2, ray) {
+                    if (!_this.props.globalState.ignoreBackfacesForPicking) {
+                        return true;
+                    }
+                    var p0p1 = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Tmp"].Vector3[0];
+                    var p1p2 = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Tmp"].Vector3[1];
+                    var normal = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Tmp"].Vector3[2];
+                    p1.subtractToRef(p0, p0p1);
+                    p2.subtractToRef(p1, p1p2);
+                    normal = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Cross(p0p1, p1p2);
+                    return babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(normal, ray.direction) < 0;
+                });
                 // Pick light gizmos first
                 if (_this.props.globalState.lightGizmos.length > 0) {
                     var gizmoScene = _this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
@@ -42659,14 +42699,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/adtInstrumentation":
+/***/ "babylonjs-gui/2D/controls/image":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
 
 /***/ }),
 

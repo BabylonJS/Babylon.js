@@ -41,14 +41,56 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface ILineContainerComponentProps {
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+    }> {
+        private static _InMemoryStorage;
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+    }
+}
+declare module NODEEDITOR {
+    interface ITextInputLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        value?: string;
+        onChange?: (value: string) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        constructor(props: ITextInputLineComponentProps);
+        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
+        updateValue(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     /**
      * Generic node model which stores information about a node editor block
      */
     export class GenericNodeModel extends DefaultNodeModel {
-        /**
-         * Labels for the block
-         */
-        header: string;
         /**
          * BABYLON.Vector2 for the node if it exists
          */
@@ -123,22 +165,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    interface ILineContainerComponentProps {
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-    }> {
-        private static _InMemoryStorage;
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     export interface IButtonLineComponentProps {
         label: string;
         onClick: () => void;
@@ -187,6 +213,30 @@ declare module NODEEDITOR {
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface ICheckBoxLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        isSelected?: () => boolean;
+        onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
+        isSelected: boolean;
+    }> {
+        private static _UniqueIdSeed;
+        private _uniqueId;
+        private _localChange;
+        constructor(props: ICheckBoxLineComponentProps);
+        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
+            isSelected: boolean;
+        }): boolean;
+        onChange(): void;
         render(): JSX.Element;
     }
 }
@@ -255,19 +305,19 @@ declare module NODEEDITOR {
     /**
      * GenericNodeWidgetProps
      */
-    export interface TextureNodeWidgetProps {
+    export interface ITextureNodeWidgetProps {
         node: BABYLON.Nullable<TextureNodeModel>;
         globalState: GlobalState;
     }
     /**
      * Used to display a node block for the node editor
      */
-    export class TextureNodeWidget extends React.Component<TextureNodeWidgetProps> {
+    export class TextureNodeWidget extends React.Component<ITextureNodeWidgetProps> {
         /**
          * Creates a GenericNodeWidget
          * @param props
          */
-        constructor(props: TextureNodeWidgetProps);
+        constructor(props: ITextureNodeWidgetProps);
         render(): JSX.Element;
     }
 }
@@ -315,14 +365,6 @@ declare module NODEEDITOR {
         }): boolean;
         updateValue(evt: any): void;
         render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
     }
 }
 declare module NODEEDITOR {
@@ -404,30 +446,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export interface ICheckBoxLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        isSelected?: () => boolean;
-        onSelect?: (value: boolean) => void;
-        onValueChanged?: () => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
-        isSelected: boolean;
-    }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
-        private _localChange;
-        constructor(props: ICheckBoxLineComponentProps);
-        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
-            isSelected: boolean;
-        }): boolean;
-        onChange(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     class ListLineOption {
         label: string;
         value: number | string;
@@ -461,6 +479,7 @@ declare module NODEEDITOR {
         target: any;
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onChange?: () => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -487,6 +506,41 @@ declare module NODEEDITOR {
         connection: BABYLON.NodeMaterialConnectionPoint;
     }
     export class Color3PropertyTabComponent extends React.Component<IColor3PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        constructor(props: IFloatLineComponentProps);
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IFloatPropertyTabComponentProps {
+        globalState: GlobalState;
+        connection: BABYLON.NodeMaterialConnectionPoint;
+    }
+    export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTabComponentProps> {
         render(): JSX.Element;
     }
 }
@@ -532,6 +586,7 @@ declare module NODEEDITOR {
          * @param props
          */
         constructor(props: InputNodeWidgetProps);
+        renderValue(value: string): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -557,6 +612,90 @@ declare module NODEEDITOR {
          * @returns input node model
          */
         getNewInstance(): InputNodeModel;
+    }
+}
+declare module NODEEDITOR {
+    interface ILogComponentProps {
+        globalState: GlobalState;
+    }
+    export class LogComponent extends React.Component<ILogComponentProps, {
+        logs: string[];
+    }> {
+        constructor(props: ILogComponentProps);
+        componentWillMount(): void;
+        componentDidUpdate(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ILightPropertyTabComponentProps {
+        globalState: GlobalState;
+        node: LightNodeModel;
+    }
+    export class LightPropertyTabComponent extends React.Component<ILightPropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * BABYLON.Light node model which stores information about a node editor block
+     */
+    export class LightNodeModel extends DefaultNodeModel {
+        private _block;
+        /**
+         * BABYLON.Light for the node if it exists
+         */
+        light: BABYLON.Nullable<BABYLON.Light>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface ILightNodeWidgetProps {
+        node: BABYLON.Nullable<LightNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class LightNodeWidget extends React.Component<ILightNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: ILightNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class LightNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a LightNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: LightNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns light node model
+         */
+        getNewInstance(): LightNodeModel;
     }
 }
 declare module NODEEDITOR {
@@ -587,6 +726,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
+        buildMaterial(): void;
         build(): void;
         addNodeFromClass(ObjectClass: typeof BABYLON.NodeMaterialBlock): DefaultNodeModel;
         addValueNode(type: string, column?: number, connection?: BABYLON.NodeMaterialConnectionPoint): DefaultNodeModel;
@@ -622,6 +762,8 @@ declare module NODEEDITOR {
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
+        onZoomToFitRequiredObservable: BABYLON.Observable<void>;
+        onLogRequiredObservable: BABYLON.Observable<string>;
     }
 }
 declare module NODEEDITOR {

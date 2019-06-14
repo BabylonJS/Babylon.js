@@ -1,6 +1,6 @@
 #node-editor-graph-root {
     display: grid;
-    grid-template-rows: 100%;
+    grid-template-rows: calc(100% - 120px) 120px;
     grid-template-columns: 200px calc(100% - 500px) 300px;
     height: 100%;
     width: 100%;
@@ -9,7 +9,7 @@
 }
 
 #nodeList {
-    grid-row: 1;
+    grid-row: 1 / span 2;
     grid-column: 1;
 }
 
@@ -20,6 +20,11 @@
 }
 
 #propertyTab {
-    grid-row: 1;
+    grid-row: 1 / span 2;
     grid-column: 3;
+}
+
+#log-console {
+    grid-row: 2;
+    grid-column: 2;
 }

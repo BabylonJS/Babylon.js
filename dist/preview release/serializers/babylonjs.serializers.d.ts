@@ -153,11 +153,11 @@ declare module BABYLON.GLTF2.Exporter {
          */
         static _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number;
         /**
-         * Gets the glTF alpha mode from the Babylon Material
-         * @param babylonMaterial Babylon Material
-         * @returns The Babylon alpha mode value
+         * Sets the glTF alpha mode to a glTF material from the Babylon Material
+         * @param glTFMaterial glTF material
+         * @param babylonMaterial Babylon material
          */
-        _getAlphaMode(babylonMaterial: Material): MaterialAlphaMode;
+        private static _SetAlphaMode;
         /**
          * Converts a Babylon Standard Material to a glTF Material
          * @param babylonStandardMaterial BJS Standard Material

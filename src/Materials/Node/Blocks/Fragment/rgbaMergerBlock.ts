@@ -67,6 +67,13 @@ export class RGBAMergerBlock extends NodeMaterialBlock {
         return this._inputs[4];
     }
 
+    /**
+     * Gets the output component
+     */
+    public get output(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 

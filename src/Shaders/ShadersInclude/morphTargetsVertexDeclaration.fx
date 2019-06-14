@@ -8,4 +8,8 @@
 	#ifdef MORPHTARGETS_TANGENT
 	attribute vec3 tangent{X};
 	#endif
+
+    #ifdef MORPHTARGETS_UV
+	attribute vec2 uv_{X};
+	#endif
 #endif

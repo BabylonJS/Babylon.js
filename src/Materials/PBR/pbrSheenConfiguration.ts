@@ -27,19 +27,19 @@ export interface IMaterialSheenDefines {
  */
 export class PBRSheenConfiguration {
 
-    @serialize()
     private _isEnabled = false;
     /**
      * Defines if the material uses sheen.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
-    @serialize()
     private _linkSheenWithAlbedo = false;
     /**
      * Defines if the sheen is linked to the sheen color.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public linkSheenWithAlbedo = false;
 
@@ -55,13 +55,13 @@ export class PBRSheenConfiguration {
     @serializeAsColor3()
     public color = Color3.White();
 
-    @serializeAsTexture()
     private _texture: Nullable<BaseTexture> = null;
     /**
      * Stores the sheen tint values in a texture.
      * rgb is tint
      * a is a intensity
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
 
@@ -267,10 +267,12 @@ export class PBRSheenConfiguration {
     }
 
     /**
-     * Parses a Sheen Configuration from a serialized object.
+     * Parses a anisotropy Configuration from a serialized object.
      * @param source - Serialized object.
+     * @param scene Defines the scene we are parsing for
+     * @param rootUrl Defines the rootUrl to load from
      */
-    public parse(source: any): void {
-        SerializationHelper.Parse(() => this, source, null);
+    public parse(source: any, scene: Scene, rootUrl: string): void {
+        SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }

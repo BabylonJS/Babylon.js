@@ -4,11 +4,14 @@ import { NodeMaterialWellKnownValues } from './nodeMaterialWellKnownValues';
 import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { Effect } from '../effect';
+import { Nullable } from '../../types';
 
 /**
  * Class used to store node based material build state
  */
 export class NodeMaterialBuildState {
+    /** Gets or sets a boolean indicating if the current state can emit uniform buffers */
+    public supportUniformBuffers = false;
     /**
      * Gets the list of emitted attributes
      */
@@ -17,6 +20,10 @@ export class NodeMaterialBuildState {
      * Gets the list of emitted uniforms
      */
     public uniforms = new Array<string>();
+    /**
+     * Gets the list of emitted uniform buffers
+     */
+    public uniformBuffers = new Array<string>();
     /**
      * Gets the list of emitted samplers
      */
@@ -29,6 +36,10 @@ export class NodeMaterialBuildState {
      * Gets the target of the compilation state
      */
     public target: NodeMaterialBlockTargets;
+    /**
+     * Gets the list of emitted counters
+     */
+    public counters: { [key: string]: number } = {};
 
     /**
      * Shared data between multiple NodeMaterialBuildState instances
@@ -207,61 +218,62 @@ export class NodeMaterialBuildState {
         removeVaryings?: boolean,
         removeIfDef?: boolean,
         replaceStrings?: { search: RegExp, replace: string }[],
-    }) {
-        if (this.functions[includeName]) {
+    }, storeKey: string = "") {
+        let key = includeName + storeKey;
+        if (this.functions[key]) {
             return;
         }
 
         if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
 
             if (options && options.repeatKey) {
-                this.functions[includeName] = `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
+                this.functions[key] = `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
             } else {
-                this.functions[includeName] = `#include<${includeName}>\r\n`;
+                this.functions[key] = `#include<${includeName}>\r\n`;
             }
 
             if (this.sharedData.emitComments) {
-                this.functions[includeName] = comments + `\r\n` + this.functions[includeName];
+                this.functions[key] = comments + `\r\n` + this.functions[key];
             }
 
             return;
         }
 
-        this.functions[includeName] = Effect.IncludesShadersStore[includeName];
+        this.functions[key] = Effect.IncludesShadersStore[includeName];
 
         if (this.sharedData.emitComments) {
-            this.functions[includeName] = comments + `\r\n` + this.functions[includeName];
+            this.functions[key] = comments + `\r\n` + this.functions[key];
         }
 
         if (options.removeIfDef) {
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#ifdef.+$/gm, "");
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#endif.*$/gm, "");
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#else.*$/gm, "");
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?#elif.*$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?#ifdef.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?#endif.*$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?#else.*$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?#elif.*$/gm, "");
         }
 
         if (options.removeAttributes) {
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?attribute.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?attribute.+$/gm, "");
         }
 
         if (options.removeUniforms) {
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?uniform.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?uniform.+$/gm, "");
         }
 
         if (options.removeVaryings) {
-            this.functions[includeName] = this.functions[includeName].replace(/^\s*?varying.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?varying.+$/gm, "");
         }
 
         if (options.replaceStrings) {
             for (var index = 0; index < options.replaceStrings.length; index++) {
                 let replaceString = options.replaceStrings[index];
-                this.functions[includeName] = this.functions[includeName].replace(replaceString.search, replaceString.replace);
+                this.functions[key] = this.functions[key].replace(replaceString.search, replaceString.replace);
             }
         }
     }
 
     /** @hidden */
-    public _emitVaryings(point: NodeMaterialConnectionPoint, define: string = "", force = false, fromFragment = false, replacementName: string = "") {
+    public _emitVaryings(point: NodeMaterialConnectionPoint, define: string = "", force = false, fromFragment = false, replacementName: string = "", type: Nullable<NodeMaterialBlockConnectionPointTypes> = null) {
         let name = replacementName || point.associatedVariableName;
         if (point.isVarying || force) {
             if (this.sharedData.varyings.indexOf(name) !== -1) {
@@ -273,7 +285,7 @@ export class NodeMaterialBuildState {
             if (define) {
                 this.sharedData.varyingDeclaration += `#ifdef ${define}\r\n`;
             }
-            this.sharedData.varyingDeclaration += `varying ${this._getGLType(point.type)} ${name};\r\n`;
+            this.sharedData.varyingDeclaration += `varying ${this._getGLType(type || point.type)} ${name};\r\n`;
             if (define) {
                 this.sharedData.varyingDeclaration += `#endif\r\n`;
             }
@@ -301,6 +313,12 @@ export class NodeMaterialBuildState {
     /** @hidden */
     public _emitUniformOrAttributes(point: NodeMaterialConnectionPoint, define?: string) {
         define = define || point.define;
+
+        // Lights
+        if (point.type === NodeMaterialBlockConnectionPointTypes.Light) {
+            // Do nothing
+            return;
+        }
 
         // Samplers
         if (point.type === NodeMaterialBlockConnectionPointTypes.Texture) {
@@ -330,8 +348,14 @@ export class NodeMaterialBuildState {
         // Uniforms
         if (point.isUniform) {
             if (!point.associatedVariableName) {
-                point.associatedVariableName = this._getFreeVariableName(point.name);
+                point.associatedVariableName = this._getFreeVariableName("u_" + point.name);
             }
+
+            if (point._forceUniformInVertexShaderOnly && this._vertexState) { // Uniform for fragment need to be carried over by varyings
+                this._vertexState._emitUniformOrAttributes(point);
+                return;
+            }
+
             if (this.uniforms.indexOf(point.associatedVariableName) !== -1) {
                 return;
             }
@@ -371,8 +395,8 @@ export class NodeMaterialBuildState {
                 this._vertexState._emitUniformOrAttributes(point);
 
                 if (point._needToEmitVarying) {
-                    this._vertexState._emitVaryings(point, undefined, true, true, "v" + point.associatedVariableName);
-                    point.associatedVariableName = "v" + point.associatedVariableName;
+                    this._vertexState._emitVaryings(point, undefined, true, true, "v_" + point.associatedVariableName);
+                    point.associatedVariableName = "v_" + point.associatedVariableName;
                 }
                 return;
             }

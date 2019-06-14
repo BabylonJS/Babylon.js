@@ -38,6 +38,13 @@ export class ClampBlock extends NodeMaterialBlock {
         return this._inputs[0];
     }
 
+    /**
+     * Gets the output component
+     */
+    public get output(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 

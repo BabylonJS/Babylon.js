@@ -48,8 +48,8 @@ export class GenericNodeWidget extends React.Component<GenericNodeWidgetProps, G
         var outputPorts = new Array<JSX.Element>()
         if (this.props.node) {
             // Header label
-            if (this.props.node.header) {
-                header = this.props.node.header;
+            if (this.props.node.block) {
+                header = this.props.node.block.name;
             }
 
             // Input/Output ports
