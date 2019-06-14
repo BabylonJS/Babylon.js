@@ -233,8 +233,12 @@ export class Observable<T> {
     public removeCallback(callback: (eventData: T, eventState: EventState) => void, scope?: any): boolean {
 
         for (var index = 0; index < this._observers.length; index++) {
-            if (this._observers[index].callback === callback && (!scope || scope === this._observers[index].scope)) {
-                this._deferUnregister(this._observers[index]);
+            const observer = this._observers[index];
+            if (observer._willBeUnregistered) {
+                continue;
+            }
+            if (observer.callback === callback && (!scope || scope === observer.scope)) {
+                this._deferUnregister(observer);
                 return true;
             }
         }
