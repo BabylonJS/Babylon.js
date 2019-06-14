@@ -5,6 +5,7 @@ import { IInternalTextureLoader } from "../../../Materials/Textures/internalText
 import { _TimeToken } from "../../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 import { BasisTools } from "../../../Misc/basis";
+import { Tools } from '../../../Misc/tools';
 
 /**
  * Loader for .basis file format
@@ -13,7 +14,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
     /**
      * Defines whether the loader supports cascade loading the different faces.
      */
-    public readonly supportCascades = false;
+    public readonly supportCascades = true;
 
     /**
      * This returns if the loader support the current file information.
@@ -57,7 +58,27 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
      * @param onError defines the callback to trigger in case of error
      */
     public loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void {
-        throw ".basis not supported in Cube.";
+        if (Array.isArray(data)) {
+            return;
+        }
+        var caps = texture.getEngine().getCaps();
+        var transcodeConfig = {
+            supportedCompressionFormats: {
+                etc1: caps.etc1 ? true : false,
+                s3tc: caps.s3tc ? true : false,
+                pvrtc: caps.pvrtc ? true : false,
+                etc2: caps.etc2 ? true : false
+            }
+        };
+        BasisTools.TranscodeAsync(data as ArrayBuffer, transcodeConfig).then((result) => {
+            var hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
+            BasisTools.LoadTextureFromTranscodeResult(texture, result);
+            texture.getEngine()._setCubeMapTextureParams(hasMipmap);
+            texture.isReady = true;
+        }).catch((err) => {
+            Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
+            texture.isReady = true;
+        });
     }
 
     /**
@@ -68,40 +89,24 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
      */
     public loadData(data: ArrayBuffer, texture: InternalTexture,
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void {
-        // Verify Basis Module is loaded and detect file info and format
-        BasisTools.VerifyBasisModuleAsync().then(() => {
-            var loadedFile = BasisTools.LoadBasisFile(data);
-            var fileInfo = BasisTools.GetFileInfo(loadedFile);
-            var format = BasisTools.GetSupportedTranscodeFormat(texture.getEngine(), fileInfo);
-            texture._invertVScale = true;
-
-            // TODO this should be done in web worker
-            var transcodeResult = BasisTools.TranscodeFile(format, fileInfo, loadedFile);
-
-            // Upload data to texture
-            callback(fileInfo.width, fileInfo.height, false, true, () => {
-                if (transcodeResult.fallbackToRgb565) {
-                    texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                    texture.format = Engine.TEXTUREFORMAT_RGB;
-
-                    // Create non power of two texture
-                    let source = new InternalTexture(texture.getEngine(), InternalTexture.DATASOURCE_TEMP);
-
-                    source.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                    source.format = Engine.TEXTUREFORMAT_RGB;
-                    source.width = fileInfo.alignedWidth;
-                    source.height = fileInfo.alignedHeight;
-                    texture.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, source, true);
-                    texture.getEngine()._uploadDataToTextureDirectly(source, transcodeResult.pixels, 0, 0, Engine.TEXTUREFORMAT_RGB, true);
-
-                    // Resize to power of two
-                    source.getEngine()._rescaleTexture(source, texture, texture.getEngine().scenes[0], source.getEngine()._getInternalFormat(Engine.TEXTUREFORMAT_RGB), () => {
-                        source.getEngine()._releaseTexture(source);
-                        source.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, texture, true);
-                    });
-                }else {
-                    texture.getEngine()._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(format!), fileInfo.width, fileInfo.height, transcodeResult.pixels, 0, 0);
-                }
+        var caps = texture.getEngine().getCaps();
+        var transcodeConfig = {
+            supportedCompressionFormats: {
+                etc1: caps.etc1 ? true : false,
+                s3tc: caps.s3tc ? true : false,
+                pvrtc: caps.pvrtc ? true : false,
+                etc2: caps.etc2 ? true : false
+            }
+        };
+        BasisTools.TranscodeAsync(data, transcodeConfig).then((result) => {
+            var rootImage = result.fileInfo.images[0].levels[0];
+            var hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
+            callback(rootImage.width, rootImage.height, hasMipmap, result.format !== -1, () => {
+                BasisTools.LoadTextureFromTranscodeResult(texture, result);
+            });
+        }).catch((err) => {
+            Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
+            callback(0, 0, false, false, () => {
             });
         });
     }

@@ -109,19 +109,19 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial {
         const material = SerializationHelper.Parse(() => new PBRSpecularGlossinessMaterial(source.name, scene), source, scene, rootUrl);
         if (source.clearCoat) {
-            material.clearCoat.parse(source.clearCoat);
+            material.clearCoat.parse(source.clearCoat, scene, rootUrl);
         }
         if (source.anisotropy) {
-            material.anisotropy.parse(source.anisotropy);
+            material.anisotropy.parse(source.anisotropy, scene, rootUrl);
         }
         if (source.brdf) {
-            material.brdf.parse(source.brdf);
+            material.brdf.parse(source.brdf, scene, rootUrl);
         }
         if (source.sheen) {
-            material.sheen.parse(source.sheen);
+            material.sheen.parse(source.sheen, scene, rootUrl);
         }
         if (source.subSurface) {
-            material.subSurface.parse(source.subSurface);
+            material.subSurface.parse(source.subSurface, scene, rootUrl);
         }
         return material;
     }

@@ -196,11 +196,13 @@ export class MaterialHelper {
     public static PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) {
         var manager = (<Mesh>mesh).morphTargetManager;
         if (manager) {
+            defines["MORPHTARGETS_UV"] = manager.supportsUVs && defines["UV1"];
             defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
             defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
             defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
             defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
         } else {
+            defines["MORPHTARGETS_UV"] = false;
             defines["MORPHTARGETS_TANGENT"] = false;
             defines["MORPHTARGETS_NORMAL"] = false;
             defines["MORPHTARGETS"] = false;
@@ -276,6 +278,93 @@ export class MaterialHelper {
      * Prepares the defines related to the light information passed in parameter
      * @param scene The scene we are intending to draw
      * @param mesh The mesh the effect is compiling for
+     * @param light The light the effect is compiling for
+     * @param lightIndex The index of the light
+     * @param defines The defines to update
+     * @param specularSupported Specifies whether specular is supported or not (override lights data)
+     * @param state Defines the current state regarding what is needed (normals, etc...)
+     */
+    public static PrepareDefinesForLight(scene: Scene, mesh: AbstractMesh, light: Light, lightIndex: number, defines: any, specularSupported: boolean, state: {
+        needNormals: boolean,
+        needRebuild: boolean,
+        shadowEnabled: boolean,
+        specularEnabled: boolean,
+        lightmapMode: boolean
+    }) {
+        state.needNormals = true;
+
+        if (defines["LIGHT" + lightIndex] === undefined) {
+            state.needRebuild = true;
+        }
+
+        defines["LIGHT" + lightIndex] = true;
+
+        defines["SPOTLIGHT" + lightIndex] = false;
+        defines["HEMILIGHT" + lightIndex] = false;
+        defines["POINTLIGHT" + lightIndex] = false;
+        defines["DIRLIGHT" + lightIndex] = false;
+
+        light.prepareLightSpecificDefines(defines, lightIndex);
+
+        // FallOff.
+        defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = false;
+        defines["LIGHT_FALLOFF_GLTF" + lightIndex] = false;
+        defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = false;
+
+        switch (light.falloffType) {
+            case Light.FALLOFF_GLTF:
+                defines["LIGHT_FALLOFF_GLTF" + lightIndex] = true;
+                break;
+            case Light.FALLOFF_PHYSICAL:
+                defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = true;
+                break;
+            case Light.FALLOFF_STANDARD:
+                defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = true;
+                break;
+        }
+
+        // Specular
+        if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
+            state.specularEnabled = true;
+        }
+
+        // Shadows
+        defines["SHADOW" + lightIndex] = false;
+        defines["SHADOWPCF" + lightIndex] = false;
+        defines["SHADOWPCSS" + lightIndex] = false;
+        defines["SHADOWPOISSON" + lightIndex] = false;
+        defines["SHADOWESM" + lightIndex] = false;
+        defines["SHADOWCUBE" + lightIndex] = false;
+        defines["SHADOWLOWQUALITY" + lightIndex] = false;
+        defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
+
+        if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
+            var shadowGenerator = light.getShadowGenerator();
+            if (shadowGenerator) {
+                const shadowMap = shadowGenerator.getShadowMap();
+                if (shadowMap) {
+                    if (shadowMap.renderList && shadowMap.renderList.length > 0) {
+                        state.shadowEnabled = true;
+                        shadowGenerator.prepareDefines(defines, lightIndex);
+                    }
+                }
+            }
+        }
+
+        if (light.lightmapMode != Light.LIGHTMAP_DEFAULT) {
+            state.lightmapMode = true;
+            defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
+            defines["LIGHTMAPNOSPECULAR" + lightIndex] = (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY);
+        } else {
+            defines["LIGHTMAPEXCLUDED" + lightIndex] = false;
+            defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
+        }
+    }
+
+    /**
+     * Prepares the defines related to the light information passed in parameter
+     * @param scene The scene we are intending to draw
+     * @param mesh The mesh the effect is compiling for
      * @param defines The defines to update
      * @param specularSupported Specifies whether specular is supported or not (override lights data)
      * @param maxSimultaneousLights Specfies how manuy lights can be added to the effect at max
@@ -288,82 +377,17 @@ export class MaterialHelper {
         }
 
         var lightIndex = 0;
-        var needNormals = false;
-        var needRebuild = false;
-        var lightmapMode = false;
-        var shadowEnabled = false;
-        var specularEnabled = false;
+        let state = {
+            needNormals: false,
+            needRebuild: false,
+            lightmapMode: false,
+            shadowEnabled: false,
+            specularEnabled: false
+        };
 
         if (scene.lightsEnabled && !disableLighting) {
             for (var light of mesh.lightSources) {
-                needNormals = true;
-
-                if (defines["LIGHT" + lightIndex] === undefined) {
-                    needRebuild = true;
-                }
-
-                defines["LIGHT" + lightIndex] = true;
-
-                defines["SPOTLIGHT" + lightIndex] = false;
-                defines["HEMILIGHT" + lightIndex] = false;
-                defines["POINTLIGHT" + lightIndex] = false;
-                defines["DIRLIGHT" + lightIndex] = false;
-
-                light.prepareLightSpecificDefines(defines, lightIndex);
-
-                // FallOff.
-                defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = false;
-                defines["LIGHT_FALLOFF_GLTF" + lightIndex] = false;
-                defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = false;
-
-                switch (light.falloffType) {
-                    case Light.FALLOFF_GLTF:
-                        defines["LIGHT_FALLOFF_GLTF" + lightIndex] = true;
-                        break;
-                    case Light.FALLOFF_PHYSICAL:
-                        defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = true;
-                        break;
-                    case Light.FALLOFF_STANDARD:
-                        defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = true;
-                        break;
-                }
-
-                // Specular
-                if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
-                    specularEnabled = true;
-                }
-
-                // Shadows
-                defines["SHADOW" + lightIndex] = false;
-                defines["SHADOWPCF" + lightIndex] = false;
-                defines["SHADOWPCSS" + lightIndex] = false;
-                defines["SHADOWPOISSON" + lightIndex] = false;
-                defines["SHADOWESM" + lightIndex] = false;
-                defines["SHADOWCUBE" + lightIndex] = false;
-                defines["SHADOWLOWQUALITY" + lightIndex] = false;
-                defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
-
-                if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
-                    var shadowGenerator = light.getShadowGenerator();
-                    if (shadowGenerator) {
-                        const shadowMap = shadowGenerator.getShadowMap();
-                        if (shadowMap) {
-                            if (shadowMap.renderList && shadowMap.renderList.length > 0) {
-                                shadowEnabled = true;
-                                shadowGenerator.prepareDefines(defines, lightIndex);
-                            }
-                        }
-                    }
-                }
-
-                if (light.lightmapMode != Light.LIGHTMAP_DEFAULT) {
-                    lightmapMode = true;
-                    defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
-                    defines["LIGHTMAPNOSPECULAR" + lightIndex] = (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY);
-                } else {
-                    defines["LIGHTMAPEXCLUDED" + lightIndex] = false;
-                    defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
-                }
+                this.PrepareDefinesForLight(scene, mesh, light, lightIndex, defines, specularSupported, state);
 
                 lightIndex++;
                 if (lightIndex === maxSimultaneousLights) {
@@ -372,8 +396,8 @@ export class MaterialHelper {
             }
         }
 
-        defines["SPECULARTERM"] = specularEnabled;
-        defines["SHADOWS"] = shadowEnabled;
+        defines["SPECULARTERM"] = state.specularEnabled;
+        defines["SHADOWS"] = state.shadowEnabled;
 
         // Resetting all other lights if any
         for (var index = lightIndex; index < maxSimultaneousLights; index++) {
@@ -397,26 +421,61 @@ export class MaterialHelper {
         let caps = scene.getEngine().getCaps();
 
         if (defines["SHADOWFLOAT"] === undefined) {
-            needRebuild = true;
+            state.needRebuild = true;
         }
 
-        defines["SHADOWFLOAT"] = shadowEnabled &&
+        defines["SHADOWFLOAT"] = state.shadowEnabled &&
             ((caps.textureFloatRender && caps.textureFloatLinearFiltering) ||
                 (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering));
-        defines["LIGHTMAPEXCLUDED"] = lightmapMode;
+        defines["LIGHTMAPEXCLUDED"] = state.lightmapMode;
 
-        if (needRebuild) {
+        if (state.needRebuild) {
             defines.rebuild();
         }
 
-        return needNormals;
+        return state.needNormals;
     }
 
     /**
-     * Prepares the uniforms and samplers list to be used in the effect. This can automatically remove from the list uniforms
-     * that won t be acctive due to defines being turned off.
+     * Prepares the uniforms and samplers list to be used in the effect (for a specific light)
+     * @param lightIndex defines the light index
+     * @param uniformsList The uniform list
+     * @param samplersList The sampler list
+     * @param projectedLightTexture defines if projected texture must be used
+     * @param uniformBuffersList defines an optional list of uniform buffers
+     */
+    public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null) {
+        uniformsList.push(
+            "vLightData" + lightIndex,
+            "vLightDiffuse" + lightIndex,
+            "vLightSpecular" + lightIndex,
+            "vLightDirection" + lightIndex,
+            "vLightFalloff" + lightIndex,
+            "vLightGround" + lightIndex,
+            "lightMatrix" + lightIndex,
+            "shadowsInfo" + lightIndex,
+            "depthValues" + lightIndex,
+        );
+
+        if (uniformBuffersList) {
+            uniformBuffersList.push("Light" + lightIndex);
+        }
+
+        samplersList.push("shadowSampler" + lightIndex);
+        samplersList.push("depthSampler" + lightIndex);
+
+        if (projectedLightTexture) {
+            samplersList.push("projectionLightSampler" + lightIndex);
+            uniformsList.push(
+                "textureProjectionMatrix" + lightIndex,
+            );
+        }
+    }
+
+    /**
+     * Prepares the uniforms and samplers list to be used in the effect
      * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the liist and extra information
-     * @param samplersList The samplers list
+     * @param samplersList The sampler list
      * @param defines The defines helping in the list generation
      * @param maxSimultaneousLights The maximum number of simultanous light allowed in the effect
      */
@@ -442,32 +501,7 @@ export class MaterialHelper {
             if (!defines["LIGHT" + lightIndex]) {
                 break;
             }
-
-            uniformsList.push(
-                "vLightData" + lightIndex,
-                "vLightDiffuse" + lightIndex,
-                "vLightSpecular" + lightIndex,
-                "vLightDirection" + lightIndex,
-                "vLightFalloff" + lightIndex,
-                "vLightGround" + lightIndex,
-                "lightMatrix" + lightIndex,
-                "shadowsInfo" + lightIndex,
-                "depthValues" + lightIndex,
-            );
-
-            if (uniformBuffersList) {
-                uniformBuffersList.push("Light" + lightIndex);
-            }
-
-            samplersList.push("shadowSampler" + lightIndex);
-            samplersList.push("depthSampler" + lightIndex);
-
-            if (defines["PROJECTEDLIGHTTEXTURE" + lightIndex]) {
-                samplersList.push("projectionLightSampler" + lightIndex);
-                uniformsList.push(
-                    "textureProjectionMatrix" + lightIndex,
-                );
-            }
+            this.PrepareUniformsAndSamplersForLight(lightIndex, uniformsList, samplersList, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffersList);
         }
 
         if (defines["NUM_MORPH_INFLUENCERS"]) {
@@ -520,6 +554,18 @@ export class MaterialHelper {
         return lightFallbackRank++;
     }
 
+    private static _TmpMorphInfluencers = { "NUM_MORPH_INFLUENCERS": 0 };
+    /**
+     * Prepares the list of attributes required for morph targets according to the effect defines.
+     * @param attribs The current list of supported attribs
+     * @param mesh The mesh to prepare the morph targets attributes for
+     * @param influencers The number of influencers
+     */
+    public static PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void {
+        this._TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
+        this.PrepareAttributesForMorphTargets(attribs, mesh, this._TmpMorphInfluencers);
+    }
+
     /**
      * Prepares the list of attributes required for morph targets according to the effect defines.
      * @param attribs The current list of supported attribs
@@ -534,6 +580,7 @@ export class MaterialHelper {
             var manager = (<Mesh>mesh).morphTargetManager;
             var normal = manager && manager.supportsNormals && defines["NORMAL"];
             var tangent = manager && manager.supportsTangents && defines["TANGENT"];
+            var uv = manager && manager.supportsUVs && defines["UV1"];
             for (var index = 0; index < influencers; index++) {
                 attribs.push(VertexBuffer.PositionKind + index);
 
@@ -543,6 +590,10 @@ export class MaterialHelper {
 
                 if (tangent) {
                     attribs.push(VertexBuffer.TangentKind + index);
+                }
+
+                if (uv) {
+                    attribs.push(VertexBuffer.UVKind + index);
                 }
 
                 if (attribs.length > maxAttributesCount) {
@@ -623,6 +674,38 @@ export class MaterialHelper {
 
     /**
      * Binds the lights information from the scene to the effect for the given mesh.
+     * @param light Light to bind
+     * @param lightIndex Light index
+     * @param scene The scene where the light belongs to
+     * @param mesh The mesh we are binding the information to render
+     * @param effect The effect we are binding the data to
+     * @param useSpecular Defines if specular is supported
+     * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+     */
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false): void {
+        let iAsString = lightIndex.toString();
+
+        let scaledIntensity = light.getScaledIntensity();
+        light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
+
+        MaterialHelper.BindLightProperties(light, effect, lightIndex);
+
+        light.diffuse.scaleToRef(scaledIntensity, Tmp.Color3[0]);
+        light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
+        if (useSpecular) {
+            light.specular.scaleToRef(scaledIntensity, Tmp.Color3[1]);
+            light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], iAsString);
+        }
+
+        // Shadows
+        if (scene.shadowsEnabled) {
+            this.BindLightShadow(light, mesh, iAsString, effect);
+        }
+        light._uniformBuffer.update();
+    }
+
+    /**
+     * Binds the lights information from the scene to the effect for the given mesh.
      * @param scene The scene the lights belongs to
      * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
@@ -636,25 +719,7 @@ export class MaterialHelper {
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            let iAsString = i.toString();
-
-            let scaledIntensity = light.getScaledIntensity();
-            light._uniformBuffer.bindToEffect(effect, "Light" + i);
-
-            MaterialHelper.BindLightProperties(light, effect, i);
-
-            light.diffuse.scaleToRef(scaledIntensity, Tmp.Color3[0]);
-            light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
-            if (defines["SPECULARTERM"]) {
-                light.specular.scaleToRef(scaledIntensity, Tmp.Color3[1]);
-                light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], iAsString);
-            }
-
-            // Shadows
-            if (scene.shadowsEnabled) {
-                this.BindLightShadow(light, mesh, iAsString, effect);
-            }
-            light._uniformBuffer.update();
+            this.BindLight(light, i, scene, mesh, effect, defines, usePhysicalLightFalloff);
         }
     }
 

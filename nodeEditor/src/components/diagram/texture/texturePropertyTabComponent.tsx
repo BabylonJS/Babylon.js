@@ -7,6 +7,9 @@ import { Tools } from 'babylonjs/Misc/tools';
 import { Engine } from 'babylonjs/Engines/engine';
 import { TextureNodeModel } from './textureNodeModel';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
+import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
+import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
+import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
@@ -46,14 +49,24 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
             } else {
                 (texture as Texture).updateURL(url, null, () => this.props.globalState.onUpdateRequiredObservable.notifyObservers());
             }
+
+            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
         }, undefined, true);
     }
 
     render() {
         return (
             <div>
-                <TextLineComponent label="Type" value="Texture" />
-                <FileButtonLineComponent label="Replace texture" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                <LineContainerComponent title="GENERAL">
+                    <TextLineComponent label="Type" value="Texture" />
+                    <TextInputLineComponent label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                </LineContainerComponent>
+
+                <LineContainerComponent title="PROPERTIES">
+                    <CheckBoxLineComponent label="Auto select UV" propertyName="autoSelectUV" target={this.props.node.block!} />
+                    <FileButtonLineComponent label="Replace texture" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                </LineContainerComponent>
             </div>
         );
     }
