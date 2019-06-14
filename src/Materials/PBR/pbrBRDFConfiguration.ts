@@ -37,15 +37,14 @@ export class PBRBRDFConfiguration {
      */
     public static DEFAULT_USE_SPHERICAL_HARMONICS = true;
 
-    @serialize()
     private _useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
     /**
      * Defines if the material uses energy conservation.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
     public useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
 
-    @serialize()
     private _useSmithVisibilityHeightCorrelated = PBRBRDFConfiguration.DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED;
     /**
      * LEGACY Mode set to false
@@ -55,10 +54,10 @@ export class PBRBRDFConfiguration {
      * or https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds to have more precision
      * Not relying on height correlated will also disable energy conservation.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
     public useSmithVisibilityHeightCorrelated = PBRBRDFConfiguration.DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED;
 
-    @serialize()
     private _useSphericalHarmonics = PBRBRDFConfiguration.DEFAULT_USE_SPHERICAL_HARMONICS;
     /**
      * LEGACY Mode set to false
@@ -67,6 +66,7 @@ export class PBRBRDFConfiguration {
      * The harmonics despite a tiny bigger cost has been proven to provide closer results
      * to the ground truth.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
     public useSphericalHarmonics = PBRBRDFConfiguration.DEFAULT_USE_SPHERICAL_HARMONICS;
 
