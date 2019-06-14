@@ -29,11 +29,11 @@ export interface IMaterialAnisotropicDefines {
  */
 export class PBRAnisotropicConfiguration {
 
-    @serialize()
     private _isEnabled = false;
     /**
      * Defines if the anisotropy is enabled in the material.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
@@ -50,13 +50,13 @@ export class PBRAnisotropicConfiguration {
     @serializeAsVector2()
     public direction = new Vector2(1, 0);
 
-    @serializeAsTexture()
     private _texture: Nullable<BaseTexture> = null;
     /**
      * Stores the anisotropy values in a texture.
      * rg is direction (like normal from -1 to 1)
      * b is a intensity
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
 

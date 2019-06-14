@@ -27,19 +27,19 @@ export interface IMaterialSheenDefines {
  */
 export class PBRSheenConfiguration {
 
-    @serialize()
     private _isEnabled = false;
     /**
      * Defines if the material uses sheen.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
-    @serialize()
     private _linkSheenWithAlbedo = false;
     /**
      * Defines if the sheen is linked to the sheen color.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public linkSheenWithAlbedo = false;
 
@@ -55,13 +55,13 @@ export class PBRSheenConfiguration {
     @serializeAsColor3()
     public color = Color3.White();
 
-    @serializeAsTexture()
     private _texture: Nullable<BaseTexture> = null;
     /**
      * Stores the sheen tint values in a texture.
      * rgb is tint
      * a is a intensity
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
 
