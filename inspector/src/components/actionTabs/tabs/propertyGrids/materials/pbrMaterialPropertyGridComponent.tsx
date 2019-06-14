@@ -224,7 +224,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         </div>
                     }
 
-                    <CheckBoxLineComponent label="Transluency Enabled" target={material.subSurface} propertyName="isTranslucencyEnabled"
+                    <CheckBoxLineComponent label="Translucency Enabled" target={material.subSurface} propertyName="isTranslucencyEnabled"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
