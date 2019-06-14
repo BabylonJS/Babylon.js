@@ -10859,6 +10859,14 @@ declare module BABYLON {
          * @returns The newly affected rank
          */
         static HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbacks, maxSimultaneousLights?: number, rank?: number): number;
+        private static _TmpMorphInfluencers;
+        /**
+         * Prepares the list of attributes required for morph targets according to the effect defines.
+         * @param attribs The current list of supported attribs
+         * @param mesh The mesh to prepare the morph targets attributes for
+         * @param influencers The number of influencers
+         */
+        static PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void;
         /**
          * Prepares the list of attributes required for morph targets according to the effect defines.
          * @param attribs The current list of supported attribs
@@ -49401,6 +49409,19 @@ declare module BABYLON {
         }>;
     }
     /**
+     * Result of transcoding a basis file
+     */
+    class TranscodeResult {
+        /**
+         * Info about the .basis file
+         */
+        fileInfo: BasisFileInfo;
+        /**
+         * Format to use when loading the file
+         */
+        format: number;
+    }
+    /**
      * Configuration options for the Basis transcoder
      */
     export class BasisTranscodeConfiguration {
@@ -49464,10 +49485,13 @@ declare module BABYLON {
          * @param config configuration options for the transcoding
          * @returns a promise resulting in the transcoded image
          */
-        static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<{
-            fileInfo: BasisFileInfo;
-            format: number;
-        }>;
+        static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<TranscodeResult>;
+        /**
+         * Loads a texture from the transcode result
+         * @param texture texture load to
+         * @param transcodeResult the result of transcoding the basis file to load from
+         */
+        static LoadTextureFromTranscodeResult(texture: InternalTexture, transcodeResult: TranscodeResult): void;
     }
 }
 declare module BABYLON {
@@ -58387,20 +58411,6 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var blurPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var bones300Declaration: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var instances300Declaration: {
         name: string;
         shader: string;
     };
