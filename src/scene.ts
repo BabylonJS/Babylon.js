@@ -165,11 +165,27 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public ambientColor = new Color3(0, 0, 0);
 
-    public crowd: Nullable<ICrowd> = null;
+    public crowds: ICrowd[];
 
+    /**
+     * Adds an agent crowd to the scene
+     * Once added, every agent will have its position updated based on crowd update
+     */
     addCrowd(crowd:ICrowd): void {
-        this.crowd = crowd;
+        this.crowds.push(crowd);
     }
+
+    /**
+     * Removes a crowd from the scene
+     * Once removed, there will be no more updats to the crowd agents
+     */
+    removeCrowd(crowd:ICrowd): void {
+        var item = this.crowds.indexOf(crowd);
+        if (item > -1) {
+            this.crowds.splice(item, 1);
+        }
+    }
+
     /**
      * This is use to store the default BRDF lookup for PBR materials in your scene.
      * It should only be one of the following (if not the default embedded one):
@@ -1351,6 +1367,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (!options || !options.virtual) {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
         }
+
+        this.crowds = new Array<ICrowd>();
     }
 
     /**
@@ -3715,8 +3733,8 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Navigation
-        if (this.crowd) {
-            this.crowd.update(0.016);
+        for (let crowd of this.crowds) {
+            crowd.update(this._engine.getDeltaTime() * 0.001);
         }
 
         // Before camera update steps
