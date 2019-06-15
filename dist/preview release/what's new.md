@@ -19,6 +19,7 @@
 - Ability to set render camera on utility layer instead of using the latest active camera ([TrevorDev](https://github.com/TrevorDev))
 - Move normalizeToUnitCube to transformNode instead of abstract mesh and add predicate to exclude sub objects when scaling ([TrevorDev](https://github.com/TrevorDev))
 - Method to check if device orientation is available ([TrevorDev](https://github.com/TrevorDev))
+- Added support for sound sprites [Doc](https://doc.babylonjs.com/how_to/playing_sounds_and_music#playing-a-sound-sprite) ([Deltakosh](https://github.com/deltakosh/))
 
 ### Engine
 - Morph targets now can morph UV channel as well ([Deltakosh](https://github.com/deltakosh/))
@@ -70,5 +71,6 @@
 - Context loss should not cause PBR materials to render black or instances to stop rendering ([TrevorDev](https://github.com/TrevorDev))
 - Only cast pointer ray input when pointer is locked in webVR ([TrevorDev](https://github.com/TrevorDev))
 - Avoid using default utility layer in gizmo manager to support multiple scenes ([TrevorDev](https://github.com/TrevorDev))
+- Fix bug when adding and removing observers in quick succession ([sable](https://github.com/thscott))
 
 ## Breaking changes

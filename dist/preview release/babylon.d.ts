@@ -11000,6 +11000,14 @@ declare module BABYLON {
          * @returns The newly affected rank
          */
         static HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbacks, maxSimultaneousLights?: number, rank?: number): number;
+        private static _TmpMorphInfluencers;
+        /**
+         * Prepares the list of attributes required for morph targets according to the effect defines.
+         * @param attribs The current list of supported attribs
+         * @param mesh The mesh to prepare the morph targets attributes for
+         * @param influencers The number of influencers
+         */
+        static PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void;
         /**
          * Prepares the list of attributes required for morph targets according to the effect defines.
          * @param attribs The current list of supported attribs
@@ -34227,6 +34235,66 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Interface used to define options for Sound class
+     */
+    export interface ISoundOptions {
+        /**
+        * Does the sound autoplay once loaded.
+        */
+        autoplay?: boolean;
+        /**
+         * Does the sound loop after it finishes playing once.
+         */
+        loop?: boolean;
+        /**
+         * Sound's volume
+         */
+        volume?: number;
+        /**
+         * Is it a spatial sound?
+         */
+        spatialSound?: boolean;
+        /**
+         * Maximum distance to hear that sound
+         */
+        maxDistance?: number;
+        /**
+         * Uses user defined attenuation function
+         */
+        useCustomAttenuation?: boolean;
+        /**
+        * Define the roll off factor of spatial sounds.
+        * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+        */
+        rolloffFactor?: number;
+        /**
+         * Define the reference distance the sound should be heard perfectly.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        refDistance?: number;
+        /**
+         * Define the distance attenuation model the sound will follow.
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        distanceModel?: string;
+        /**
+         * Defines the playback speed (1 by default)
+         */
+        playbackRate?: number;
+        /**
+         * Defines if the sound is from a streaming source
+         */
+        streaming?: boolean;
+        /**
+         * Defines an optional length (in ms) inside the sound file
+         */
+        length?: number;
+        /**
+         * Defines an optional offset (in ms) inside the sound file
+         */
+        offset?: number;
+    }
+    /**
      * Defines a sound that can be played in the application.
      * The sound can either be an ambient track or a simple sound played in reaction to a user action.
      * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
@@ -34326,6 +34394,8 @@ declare module BABYLON {
         private _isOutputConnected;
         private _htmlAudioElement;
         private _urlType;
+        private _length?;
+        private _offset?;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
@@ -34336,7 +34406,7 @@ declare module BABYLON {
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
         * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
         */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: any);
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: ISoundOptions);
         /**
          * Release the sound and its associated resources
          */
@@ -34356,7 +34426,7 @@ declare module BABYLON {
          * Updates the current sounds options such as maxdistance, loop...
          * @param options A JSON object containing values named as the object properties
          */
-        updateOptions(options: any): void;
+        updateOptions(options: ISoundOptions): void;
         private _createSpatialParameters;
         private _updateSpatialParameters;
         /**
@@ -34420,9 +34490,10 @@ declare module BABYLON {
         /**
         * Play the sound
         * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-        * @param offset (optional) Start the sound setting it at a specific time
+        * @param offset (optional) Start the sound at a specific time in seconds
+        * @param length (optional) Sound duration (in seconds)
         */
-        play(time?: number, offset?: number): void;
+        play(time?: number, offset?: number, length?: number): void;
         private _onended;
         /**
         * Stop the sound
@@ -50177,6 +50248,19 @@ declare module BABYLON {
         }>;
     }
     /**
+     * Result of transcoding a basis file
+     */
+    class TranscodeResult {
+        /**
+         * Info about the .basis file
+         */
+        fileInfo: BasisFileInfo;
+        /**
+         * Format to use when loading the file
+         */
+        format: number;
+    }
+    /**
      * Configuration options for the Basis transcoder
      */
     export class BasisTranscodeConfiguration {
@@ -50240,10 +50324,13 @@ declare module BABYLON {
          * @param config configuration options for the transcoding
          * @returns a promise resulting in the transcoded image
          */
-        static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<{
-            fileInfo: BasisFileInfo;
-            format: number;
-        }>;
+        static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<TranscodeResult>;
+        /**
+         * Loads a texture from the transcode result
+         * @param texture texture load to
+         * @param transcodeResult the result of transcoding the basis file to load from
+         */
+        static LoadTextureFromTranscodeResult(texture: InternalTexture, transcodeResult: TranscodeResult): void;
     }
 }
 declare module BABYLON {
@@ -59241,20 +59328,6 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var blurPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var bones300Declaration: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var instances300Declaration: {
         name: string;
         shader: string;
     };
