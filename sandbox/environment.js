@@ -52,7 +52,25 @@ addEnvironmentLoader = function(index) {
         }
         defaultSkyboxIndex = index;
         skyboxPath = skyboxes[defaultSkyboxIndex];
-        filesInput.reload();
+        if (filesInput) {
+            filesInput.reload();
+        }
+        else {
+            var currentScene = BABYLON.Engine.LastCreatedScene;
+            currentScene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(skyboxPath, currentScene);
+            for (var i = 0; i < currentScene.materials.length; i++) {
+                var material = currentScene.materials[i];
+                if (material.name === "skyBox") {
+                    var reflectionTexture = material.reflectionTexture;
+                    if (reflectionTexture && reflectionTexture.coordinatesMode === BABYLON.Texture.SKYBOX_MODE) {
+                        material.reflectionTexture = currentScene.environmentTexture.clone();
+                        if (material.reflectionTexture) {
+                            material.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                        }
+                    }
+                }
+            }
+        }
     });
 
     return env;
