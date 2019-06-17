@@ -8,6 +8,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/ind
 import { WebVRController } from "./webVRController";
 import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
 import { GamepadButtonChanges } from "../../Gamepads/gamepad";
+import { Engine } from '../../Engines/engine';
 /**
  * Oculus Touch Controller
  */
@@ -24,6 +25,17 @@ export class OculusTouchController extends WebVRController {
      * File name for the right controller model.
      */
     public static MODEL_RIGHT_FILENAME: string = 'right.babylon';
+
+    /**
+     * Base Url for the Quest controller model.
+     */
+    public static QUEST_MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/oculusQuest/';
+
+    /**
+     * @hidden
+     * If the controllers are running on a device that needs the updated Quest controller models
+     */
+    public static _IsQuest = false;
 
     /**
      * Fired when the secondary trigger on this controller is modified
@@ -60,7 +72,7 @@ export class OculusTouchController extends WebVRController {
             meshName = OculusTouchController.MODEL_RIGHT_FILENAME;
         }
 
-        SceneLoader.ImportMesh("", OculusTouchController.MODEL_BASE_URL, meshName, scene, (newMeshes) => {
+        SceneLoader.ImportMesh("",  OculusTouchController._IsQuest ? OculusTouchController.QUEST_MODEL_BASE_URL : OculusTouchController.MODEL_BASE_URL, meshName, scene, (newMeshes) => {
             /*
             Parent Mesh name: oculus_touch_left
             - body
@@ -144,7 +156,7 @@ export class OculusTouchController extends WebVRController {
                 this.onPadStateChangedObservable.notifyObservers(notifyObject);
                 return;
             case 1: // index trigger
-                if (this._defaultModel) {
+                if (!OculusTouchController._IsQuest && this._defaultModel) {
                     (<AbstractMesh>(this._defaultModel.getChildren()[3])).rotation.x = -notifyObject.value * 0.20;
                     (<AbstractMesh>(this._defaultModel.getChildren()[3])).position.y = -notifyObject.value * 0.005;
                     (<AbstractMesh>(this._defaultModel.getChildren()[3])).position.z = -notifyObject.value * 0.005;
@@ -152,13 +164,13 @@ export class OculusTouchController extends WebVRController {
                 this.onTriggerStateChangedObservable.notifyObservers(notifyObject);
                 return;
             case 2:  // secondary trigger
-                if (this._defaultModel) {
+                if (!OculusTouchController._IsQuest && this._defaultModel) {
                     (<AbstractMesh>(this._defaultModel.getChildren()[4])).position.x = triggerDirection * notifyObject.value * 0.0035;
                 }
                 this.onSecondaryTriggerStateChangedObservable.notifyObservers(notifyObject);
                 return;
             case 3:
-                if (this._defaultModel) {
+                if (!OculusTouchController._IsQuest && this._defaultModel) {
                     if (notifyObject.pressed) {
                         (<AbstractMesh>(this._defaultModel.getChildren()[1])).position.y = -0.001;
                     }
@@ -169,7 +181,7 @@ export class OculusTouchController extends WebVRController {
                 this.onMainButtonStateChangedObservable.notifyObservers(notifyObject);
                 return;
             case 4:
-                if (this._defaultModel) {
+                if (!OculusTouchController._IsQuest && this._defaultModel) {
                     if (notifyObject.pressed) {
                         (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = -0.001;
                     }
@@ -188,6 +200,10 @@ export class OculusTouchController extends WebVRController {
 
 PoseEnabledControllerHelper._ControllerFactories.push({
     canCreate: (gamepadInfo) => {
+        // If the headset reports being an Oculus Quest, use the Quest controller models
+        if (Engine.LastCreatedEngine && Engine.LastCreatedEngine._vrDisplay && Engine.LastCreatedEngine._vrDisplay.displayName === "Oculus Quest") {
+            OculusTouchController._IsQuest = true;
+        }
         return gamepadInfo.id.indexOf('Oculus Touch') !== -1;
     },
     create: (gamepadInfo) => {
