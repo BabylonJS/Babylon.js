@@ -2224,7 +2224,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         let dragGradients = particleSystem.getDragGradients();
         if (dragGradients) {
-            serializationObject.dragyGradients = [];
+            serializationObject.dragGradients = [];
             for (var dragGradient of dragGradients) {
 
                 var serializedGradient: any = {
