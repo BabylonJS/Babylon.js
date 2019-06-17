@@ -159,8 +159,8 @@ export class BasisTools {
             this._CreateWorkerAsync().then(() => {
                 var actionId = this._actionId++;
                 var messageHandler = (msg: any) => {
-                    this._Worker!.removeEventListener("message", messageHandler);
                     if (msg.data.action === "transcode" && msg.data.id === actionId) {
+                        this._Worker!.removeEventListener("message", messageHandler);
                         if (!msg.data.success) {
                             rej("Transcode is not supported on this device");
                         }else {
