@@ -593,7 +593,7 @@ export class MaterialHelper {
                 }
 
                 if (uv) {
-                    attribs.push(VertexBuffer.UVKind + index);
+                    attribs.push(VertexBuffer.UVKind + "_" + index);
                 }
 
                 if (attribs.length > maxAttributesCount) {

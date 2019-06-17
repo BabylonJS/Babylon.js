@@ -2686,7 +2686,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 vertex_data.uvs = uvs;
             }
             if (currentColors !== null && currentColors !== void 0) {
-             vertex_data.colors = colors;
+                vertex_data.colors = colors;
             }
 
             vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
@@ -2970,6 +2970,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (tangents) {
                     this.geometry.setVerticesData(VertexBuffer.TangentKind + index, tangents, false, 3);
                 }
+
+                const uvs = morphTarget.getUVs();
+                if (uvs) {
+                    this.geometry.setVerticesData(VertexBuffer.UVKind + "_" + index, uvs, false, 2);
+                }
             }
         } else {
             var index = 0;
@@ -2983,6 +2988,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 if (this.geometry.isVerticesDataPresent(VertexBuffer.TangentKind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.TangentKind + index);
+                }
+                if (this.geometry.isVerticesDataPresent(VertexBuffer.UVKind + index)) {
+                    this.geometry.removeVerticesData(VertexBuffer.UVKind + "_" + index);
                 }
                 index++;
             }
