@@ -112,8 +112,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     }
 
     /**
-     * Get a navigation mesh constrained position, closest to the parameter position
+     * Get a navigation mesh constrained position, within a particular radius
      * @param position world position
+     * @param maxRadius the maximum distance to the constrained world position
      * @returns the closest point to position constrained by the navigation mesh
      */
     getRandomPointAround(position: Vector3, maxRadius: number): Vector3 {
@@ -124,9 +125,11 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     }
 
     /**
-     * Get a navigation mesh constrained position, closest to the parameter position
-     * @param position world position
-     * @returns the closest point to position constrained by the navigation mesh
+     * Create a new Crowd so you can add agents
+     * @param maxAgents the maximum agent count in the crowd
+     * @param maxAgentRadius the maximum radius an agent can have
+     * @param scene to attach the crowd to
+     * @returns the crowd you can add agents to
      */
     createCrowd(maxAgents: number, maxAgentRadius: number, scene: Scene) : ICrowd
     {
@@ -142,6 +145,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
 
     }
 
+    /**
+     * 
+     */
     public isSupported(): boolean {
         return this.bjsRECAST !== undefined;
     }
@@ -154,6 +160,14 @@ export class RecastJSCrowd implements ICrowd {
     public agents: number[];
     private scene: Scene;
 
+    /**
+     * Constructor
+     * @param plugin recastJS plugin
+     * @param maxAgents the maximum agent count in the crowd
+     * @param maxAgentRadius the maximum radius an agent can have
+     * @param scene to attach the crowd to
+     * @returns the crowd you can add agents to
+     */
     public constructor(plugin: RecastJSPlugin, maxAgents: number, maxAgentRadius: number, scene: Scene) {
         this.bjsRECASTPlugin = plugin;
         this.recastCrowd = new this.bjsRECASTPlugin.bjsRECAST.Crowd(maxAgents, maxAgentRadius, this.bjsRECASTPlugin.navMesh.getNavMesh());
@@ -192,7 +206,7 @@ export class RecastJSCrowd implements ICrowd {
     }
 
     /**
-     *
+     * Returns the agent position in world space
      * @param index agent index returned by addAgent
      * @returns world space position
      */
@@ -202,7 +216,7 @@ export class RecastJSCrowd implements ICrowd {
     }
 
     /**
-     *
+     * Returns the agent velocity in world space
      * @param index agent index returned by addAgent
      * @returns world space velocity
      */
@@ -259,6 +273,9 @@ export class RecastJSCrowd implements ICrowd {
         }
     }
 
+    /**
+     * Release all resources
+     */
     dispose() : void
     {
         this.recastCrowd.destroy();
