@@ -316,8 +316,6 @@ function workerFunc(): void {
             if (needsConversion) {
                 format = -1;
             }
-
-            debugger
             if (!success) {
                 postMessage({action: "transcode", success: success, id: event.data.id});
             }else {
