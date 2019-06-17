@@ -6,6 +6,8 @@ import { Mesh } from "../../Meshes/mesh";
 import { Scene } from "../../scene";
 import { Vector3 } from '../../Maths/math';
 import { TransformNode } from "../../Meshes/transformNode";
+import { Observer } from "../../Misc/observable";
+import { Nullable } from "../../types";
 
 declare var Recast: any;
 
@@ -17,11 +19,20 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * Reference to the Recast library
      */
     public bjsRECAST: any = {};
+
+    /**
+     * plugin name
+     */
     public name: string = "RecastJSPlugin";
+
+    /**
+     * the first navmesh created. We might extend this to support multiple navmeshes
+     */
     public navMesh: any;
 
     /**
      * Initializes the recastJS plugin
+     * @param recastInjection can be used to inject your own recast reference
      */
     public constructor(recastInjection: any = Recast) {
         if (typeof recastInjection === "function") {
@@ -42,7 +53,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param parameters bunch of parameters used to filter geometry
      */
     createMavMesh(mesh: AbstractMesh, parameters: NavMeshParameters): void {
-        var rc = new this.bjsRECAST.rcConfig();
+        const rc = new this.bjsRECAST.rcConfig();
         rc.cs = parameters.cs;
         rc.ch = parameters.ch;
         rc.walkableSlopeAngle = parameters.walkableSlopeAngle;
@@ -58,8 +69,8 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         rc.detailSampleMaxError = parameters.detailSampleMaxError;
 
         this.navMesh = new this.bjsRECAST.NavMesh();
-        var meshIndices = mesh.getIndices();
-        var positions = mesh.getVerticesData('position');
+        const meshIndices = mesh.getIndices();
+        const positions = mesh.getVerticesData('position');
         this.navMesh.build(positions, mesh.getTotalVertices(), meshIndices, mesh.getTotalIndices(), rc);
     }
 
@@ -134,7 +145,6 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     createCrowd(maxAgents: number, maxAgentRadius: number, scene: Scene) : ICrowd
     {
         var crowd = new RecastJSCrowd(this, maxAgents, maxAgentRadius, scene);
-        scene.addCrowd(crowd);
         return crowd;
     }
 
@@ -146,19 +156,43 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     }
 
     /**
-     *
+     * If this plugin is supported
+     * @returns true if plugin is supported
      */
     public isSupported(): boolean {
         return this.bjsRECAST !== undefined;
     }
 }
 
+/**
+ * Recast detour crowd implementation
+ */
 export class RecastJSCrowd implements ICrowd {
+    /**
+     * Recast/detour plugin
+     */
     public bjsRECASTPlugin: RecastJSPlugin;
+    /**
+     * Link to the detour crowd
+     */
     public recastCrowd: any = {};
-    public transforms: TransformNode[];
-    public agents: number[];
-    private scene: Scene;
+    /**
+     * One transform per agent
+     */
+    public transforms: TransformNode[] = new Array<TransformNode>();
+    /**
+     * All agents created
+     */
+    public agents: number[] = new Array<number>();
+    /**
+     * Link to the scene is kept to unregister the crowd from the scene
+     */
+    private _scene: Scene;
+
+    /**
+     * Observer for crowd updates
+     */
+    private _onBeforeAnimationsObserver: Nullable<Observer<Scene>> = null;
 
     /**
      * Constructor
@@ -171,9 +205,11 @@ export class RecastJSCrowd implements ICrowd {
     public constructor(plugin: RecastJSPlugin, maxAgents: number, maxAgentRadius: number, scene: Scene) {
         this.bjsRECASTPlugin = plugin;
         this.recastCrowd = new this.bjsRECASTPlugin.bjsRECAST.Crowd(maxAgents, maxAgentRadius, this.bjsRECASTPlugin.navMesh.getNavMesh());
-        this.transforms = new Array<TransformNode>();
-        this.agents = new Array<number>();
-        this.scene = scene;
+        this._scene = scene;
+
+        this._onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
+            this.update(scene.getEngine().getDeltaTime() * 0.001);
+        });
     }
 
     /**
@@ -229,7 +265,6 @@ export class RecastJSCrowd implements ICrowd {
      * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
      * @param index agent index returned by addAgent
      * @param destination targeted world position
-     * @returns the closest point to position constrained by the navigation mesh
      */
     agentGoto(index: number, destination: Vector3): void {
         this.recastCrowd.agentGoto(index, new this.bjsRECASTPlugin.bjsRECAST.Vec3(destination.x, destination.y, destination.z));
@@ -266,8 +301,7 @@ export class RecastJSCrowd implements ICrowd {
         this.recastCrowd.update(deltaTime);
 
         // update transforms
-        var index: number;
-        for (index = 0; index < this.agents.length; index++)
+        for (let index = 0; index < this.agents.length; index++)
         {
             this.transforms[index].position = this.getAgentPosition(this.agents[index]);
         }
@@ -279,6 +313,7 @@ export class RecastJSCrowd implements ICrowd {
     dispose() : void
     {
         this.recastCrowd.destroy();
-        this.scene.removeCrowd(this);
+        this._scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
+        this._onBeforeAnimationsObserver = null;
     }
 }

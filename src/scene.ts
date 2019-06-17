@@ -47,7 +47,6 @@ import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
 import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
-import { ICrowd } from './Navigation/INavigationEngine';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -164,27 +163,6 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Defines the color used to simulate the ambient color (Default is (0, 0, 0))
      */
     public ambientColor = new Color3(0, 0, 0);
-
-    public crowds: ICrowd[];
-
-    /**
-     * Adds an agent crowd to the scene
-     * Once added, every agent will have its position updated based on crowd update
-     */
-    addCrowd(crowd: ICrowd): void {
-        this.crowds.push(crowd);
-    }
-
-    /**
-     * Removes a crowd from the scene
-     * Once removed, there will be no more updats to the crowd agents
-     */
-    removeCrowd(crowd: ICrowd): void {
-        var item = this.crowds.indexOf(crowd);
-        if (item > -1) {
-            this.crowds.splice(item, 1);
-        }
-    }
 
     /**
      * This is use to store the default BRDF lookup for PBR materials in your scene.
@@ -1367,8 +1345,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (!options || !options.virtual) {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
         }
-
-        this.crowds = new Array<ICrowd>();
     }
 
     /**
@@ -3738,11 +3714,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Animations
         if (!ignoreAnimations) {
             this.animate();
-        }
-
-        // Navigation
-        for (let crowd of this.crowds) {
-            crowd.update(this._engine.getDeltaTime() * 0.001);
         }
 
         // Before camera update steps

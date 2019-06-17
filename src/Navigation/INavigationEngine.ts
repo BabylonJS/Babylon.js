@@ -8,11 +8,14 @@ import { Scene } from "../scene";
  * Navigation plugin interface to add navigation constrained by a navigation mesh
  */
 export interface INavigationEnginePlugin {
+    /**
+     * plugin name
+     */
     name: string;
 
     /**
      * Creates a navigation mesh
-     * @param mesh of all the geometry used to compute the navigatio mesh
+     * @param mesh of all the geometry used to compute the navigation mesh
      * @param parameters bunch of parameters used to filter geometry
      */
     createMavMesh(mesh: AbstractMesh, parameters: NavMeshParameters): void;
@@ -39,7 +42,10 @@ export interface INavigationEnginePlugin {
      */
     getRandomPointAround(position: Vector3, maxRadius: number): Vector3;
 
-    ///
+    /**
+     * If this plugin is supported
+     * @returns true if plugin is supported
+     */
     isSupported(): boolean;
 
     /**
@@ -107,7 +113,6 @@ export interface ICrowd {
      * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
      * @param index agent index returned by addAgent
      * @param destination targeted world position
-     * @returns the closest point to position constrained by the navigation mesh
      */
     agentGoto(index: number, destination: Vector3): void;
 
@@ -120,7 +125,7 @@ export interface ICrowd {
 /**
  * Configures an agent
  */
-export class AgentParameters {
+export interface AgentParameters {
     /**
      *  Agent radius. [Limit: >= 0]
      */
@@ -160,7 +165,7 @@ export class AgentParameters {
 /**
  * Configures the navigation mesh creation
  */
-export class NavMeshParameters {
+export interface NavMeshParameters {
     /**
      * The xz-plane cell size to use for fields. [Limit: > 0] [Units: wu]
      */
