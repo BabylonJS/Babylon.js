@@ -146,7 +146,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     }
 
     /**
-     * 
+     *
      */
     public isSupported(): boolean {
         return this.bjsRECAST !== undefined;
