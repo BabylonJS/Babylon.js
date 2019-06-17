@@ -34286,11 +34286,11 @@ declare module BABYLON {
          */
         streaming?: boolean;
         /**
-         * Defines an optional length (in ms) inside the sound file
+         * Defines an optional length (in seconds) inside the sound file
          */
         length?: number;
         /**
-         * Defines an optional offset (in ms) inside the sound file
+         * Defines an optional offset (in seconds) inside the sound file
          */
         offset?: number;
     }
