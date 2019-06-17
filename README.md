@@ -72,6 +72,10 @@ This project uses [base-n](https://github.com/azawadzki/base-n) to implement bas
 
 This project uses [curl](https://curl.haxx.se/) (or, more accurately, [libcurl](https://curl.haxx.se/libcurl/)) as the backend for the provided implementation of XMLHttpRequest. At present, only a "golden path" is supported, but additional features will be added as they are required.
 
+## Feature Roadmap
+
+Feature roadmap is tracked in an [issue](https://github.com/BabylonJS/BabylonNative/issues/6#issue-454432466), which will be updated and maintained as development progresses.
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests.
