@@ -13,7 +13,7 @@ namespace babylon
     class RuntimeWin32 final : public Runtime
     {
     public:
-        using DefaultInitializationScriptsArray = const std::array<std::string, 3>;
+        using DefaultInitializationScriptsArray = const std::array<std::string, 2>;
         static DefaultInitializationScriptsArray DEFAULT_INITIALIZATION_SCRIPTS;
 
         explicit RuntimeWin32(HWND hWnd, const std::string& rootUrl = {});

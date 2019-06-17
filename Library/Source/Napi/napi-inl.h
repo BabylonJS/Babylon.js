@@ -1971,7 +1971,7 @@ inline Error Error::New(napi_env env, const std::string& message) {
 inline void Error::Fatal(const char*, const char* message) {
   // $HACK
   //napi_fatal_error(location, NAPI_AUTO_LENGTH, message, NAPI_AUTO_LENGTH);
-  throw new std::runtime_error(message);
+  throw std::exception(message);
 }
 
 inline Error::Error() : ObjectReference() {

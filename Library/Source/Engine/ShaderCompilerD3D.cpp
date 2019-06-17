@@ -1,4 +1,5 @@
 #include "ShaderCompiler.h"
+#include "ResourceLimits.h"
 #include <arcana/experimental/array.h>
 #include <bgfx/bgfx.h>
 #include <glslang/Public/ShaderLang.h>
@@ -28,7 +29,7 @@ namespace babylon
             // TODO: Do this to avoid the work around for dFdy?
             //shader->setInvertY(true);
 
-            if (!shader.parse(&glslang::DefaultTBuiltInResource, 450, false, EShMsgDefault))
+            if (!shader.parse(&DefaultTBuiltInResource, 450, false, EShMsgDefault))
             {
                 throw std::exception(shader.getInfoDebugLog());
             }
@@ -65,7 +66,7 @@ namespace babylon
 
             if (FAILED(D3DCompile(hlsl.data(), hlsl.size(), nullptr, nullptr, nullptr, "main", target, flags, 0, blob, &errorMsgs)))
             {
-                throw new std::exception(static_cast<const char*>(errorMsgs->GetBufferPointer()));
+                throw std::exception(static_cast<const char*>(errorMsgs->GetBufferPointer()));
             }
 
             return std::move(compiler);

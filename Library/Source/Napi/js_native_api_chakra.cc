@@ -1009,7 +1009,7 @@ NAPI_EXTERN napi_status napi_has_own_property(napi_env env,
   //JsValueRef obj = reinterpret_cast<JsValueRef>(object);
   //CHECK_JSRT(JsHasOwnProperty(obj, propertyId, result));
   //return napi_ok;
-  throw new std::runtime_error("not implemented");
+  throw std::exception("not implemented");
 }
 
 napi_status napi_set_named_property(napi_env env,
@@ -2841,7 +2841,7 @@ napi_status napi_get_dataview_info(napi_env env,
   //}
 
   //return napi_ok;
-  throw new std::runtime_error("not implemented");
+  throw std::exception("not implemented");
 }
 
 //napi_status napi_get_version(napi_env env, uint32_t* result) {
@@ -3136,7 +3136,7 @@ NAPI_EXTERN napi_status napi_create_promise(napi_env env,
   //*promise = reinterpret_cast<napi_value>(js_promise);
 
   //return napi_ok;
-  throw new std::runtime_error("not implemented");
+  throw std::exception("not implemented");
 }
 
 NAPI_EXTERN napi_status napi_resolve_deferred(napi_env env,

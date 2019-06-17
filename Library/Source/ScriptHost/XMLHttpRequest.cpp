@@ -1,8 +1,5 @@
 #include "XMLHttpRequest.h"
-
-#define CURL_STATICLIB
 #include <curl/curl.h>
-
 #include <sstream>
 
 namespace babylon

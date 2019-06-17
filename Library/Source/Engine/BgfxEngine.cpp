@@ -1106,10 +1106,10 @@ namespace babylon
         auto r = info[0].As<Napi::Number>().FloatValue();
         auto g = info[1].As<Napi::Number>().FloatValue();
         auto b = info[2].As<Napi::Number>().FloatValue();
-        auto a = info[3].As<Napi::Number>().FloatValue();
-        auto backBuffer = info[4].As<Napi::Boolean>().Value();
-        auto depth = info[5].As<Napi::Boolean>().Value();
-        auto stencil = info[6].As<Napi::Boolean>().Value();
+        auto a = info[3].IsUndefined() ? 1.f : info[3].As<Napi::Number>().FloatValue();
+        auto backBuffer = info[4].IsUndefined() ? true : info[4].As<Napi::Boolean>().Value();
+        auto depth = info[5].IsUndefined() ? true : info[5].As<Napi::Boolean>().Value();
+        auto stencil = info[6].IsUndefined() ? true : info[6].As<Napi::Boolean>().Value();
 
         // TODO CHECK: Does this have meaning for BGFX?  BGFX seems to call clear()
         // on its own, depending on the settings.

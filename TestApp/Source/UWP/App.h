@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "InputManagerUWP.h"
+#include <Shared/InputManager.h>
 #include <Runtime/RuntimeUWP.h>
 
 #include <ppltasks.h>
@@ -41,7 +41,7 @@ private:
     concurrency::task<void> RestartRuntimeAsync();
 
     std::unique_ptr<babylon::RuntimeUWP> m_runtime{};
-    std::unique_ptr<InputManagerUWP::InputBuffer> m_inputBuffer{};
+    std::unique_ptr<InputManager::InputBuffer> m_inputBuffer{};
     Windows::ApplicationModel::Activation::FileActivatedEventArgs^ m_fileActivatedArgs;
     bool m_windowClosed;
     bool m_windowVisible;
