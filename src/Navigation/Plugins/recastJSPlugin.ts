@@ -1,4 +1,4 @@
-import { INavigationEnginePlugin, ICrowd, AgentParameters, NavMeshParameters } from "../../Navigation/INavigationEngine";
+import { INavigationEnginePlugin, ICrowd, IAgentParameters, INavMeshParameters } from "../../Navigation/INavigationEngine";
 import { Logger } from "../../Misc/logger";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -52,7 +52,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param mesh of all the geometry used to compute the navigatio mesh
      * @param parameters bunch of parameters used to filter geometry
      */
-    createMavMesh(mesh: AbstractMesh, parameters: NavMeshParameters): void {
+    createMavMesh(mesh: AbstractMesh, parameters: INavMeshParameters): void {
         const rc = new this.bjsRECAST.rcConfig();
         rc.cs = parameters.cs;
         rc.ch = parameters.ch;
@@ -220,7 +220,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param transform hooked to the agent that will be update by the scene
      * @returns agent index
      */
-    addAgent(pos: Vector3, parameters: AgentParameters, transform: TransformNode): number
+    addAgent(pos: Vector3, parameters: IAgentParameters, transform: TransformNode): number
     {
         var agentParams = new this.bjsRECASTPlugin.bjsRECAST.dtCrowdAgentParams();
         agentParams.radius = parameters.radius;
