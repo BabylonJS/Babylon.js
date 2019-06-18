@@ -183,7 +183,7 @@ function showError(errorMessage, errorEvent) {
                     window.location.href = location.protocol + "//" + location.host + "/ts.html" + window.location.hash;
                     return false;
                 }
-                else if (filename !== "ts.html") {
+                else if (filename !== "ts.html" && filename !== "ts-local.html") {
                     window.location.href = location.protocol + "//" + location.host + location.pathname.replace(filename, "ts.html") + window.location.hash;
                     return false;
                 }
