@@ -20,6 +20,7 @@
 - Move normalizeToUnitCube to transformNode instead of abstract mesh and add predicate to exclude sub objects when scaling ([TrevorDev](https://github.com/TrevorDev))
 - Method to check if device orientation is available ([TrevorDev](https://github.com/TrevorDev))
 - Added support for sound sprites [Doc](https://doc.babylonjs.com/how_to/playing_sounds_and_music#playing-a-sound-sprite) ([Deltakosh](https://github.com/deltakosh/))
+- Display Oculus Quest controller when using a Quest in WebVR ([TrevorDev](https://github.com/TrevorDev))
 
 ### Engine
 - Morph targets now can morph UV channel as well ([Deltakosh](https://github.com/deltakosh/))
@@ -43,6 +44,7 @@
 - Added `Color3.toHSV()`, `Color3.toHSVToRef()` and `Color3.HSVtoRGBToRef()` ([Deltakosh](https://github.com/deltakosh/))
 - Added `ShadowGenerator.onAfterShadowMapRenderObservable` and `ShadowGenerator.onAfterShadowMapMeshRenderObservable` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for side by side and top bottom images in the `PhotoDome` ([Deltakosh](https://github.com/deltakosh/))
+- Added playground ts-local (TypeScript support for local playground) ([pjoe](https://github.com/pjoe/))
 
 ### Meshes
 - Added new CreateTiledPlane and CreateTiledBox ([JohnK](https://github.com/BabylonJSGuide/))
@@ -72,5 +74,7 @@
 - Only cast pointer ray input when pointer is locked in webVR ([TrevorDev](https://github.com/TrevorDev))
 - Avoid using default utility layer in gizmo manager to support multiple scenes ([TrevorDev](https://github.com/TrevorDev))
 - Fix bug when adding and removing observers in quick succession ([sable](https://github.com/thscott))
+- Cannon and Ammo forceUpdate will no longer cause an unexpected exception ([TrevorDev](https://github.com/TrevorDev))
 
 ## Breaking changes
+- Setting mesh.scaling to a new vector will no longer automatically call forceUpdate (this should be done manually when needed) ([TrevorDev](https://github.com/TrevorDev))
