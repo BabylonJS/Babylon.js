@@ -42878,6 +42878,15 @@ declare module BABYLON {
          */
         static MODEL_RIGHT_FILENAME: string;
         /**
+         * Base Url for the Quest controller model.
+         */
+        static QUEST_MODEL_BASE_URL: string;
+        /**
+         * @hidden
+         * If the controllers are running on a device that needs the updated Quest controller models
+         */
+        static _IsQuest: boolean;
+        /**
          * Fired when the secondary trigger on this controller is modified
          */
         onSecondaryTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
@@ -49105,13 +49114,14 @@ declare module BABYLON {
         private _fixedTimeStep;
         private _cannonRaycastResult;
         private _raycastResult;
-        private _removeAfterStep;
+        private _physicsBodysToRemoveAfterStep;
         BJSCANNON: any;
         constructor(_useDeltaForWorldStep?: boolean, iterations?: number, cannonInjection?: any);
         setGravity(gravity: Vector3): void;
         setTimeStep(timeStep: number): void;
         getTimeStep(): number;
         executeStep(delta: number): void;
+        private _removeMarkedPhysicsBodiesFromWorld;
         applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
         applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
         generatePhysicsBody(impostor: PhysicsImpostor): void;
