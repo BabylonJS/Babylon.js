@@ -18,7 +18,7 @@ export interface INavigationEnginePlugin {
      * @param mesh of all the geometry used to compute the navigation mesh
      * @param parameters bunch of parameters used to filter geometry
      */
-    createMavMesh(mesh: AbstractMesh, parameters: NavMeshParameters): void;
+    createMavMesh(mesh: AbstractMesh, parameters: INavMeshParameters): void;
 
     /**
      * Create a navigation mesh debug mesh
@@ -75,7 +75,7 @@ export interface ICrowd {
      * @param transform hooked to the agent that will be update by the scene
      * @returns agent index
      */
-    addAgent(pos: Vector3, parameters: AgentParameters, transform: TransformNode): number;
+    addAgent(pos: Vector3, parameters: IAgentParameters, transform: TransformNode): number;
 
     /**
      * Returns the agent position in world space
@@ -125,7 +125,7 @@ export interface ICrowd {
 /**
  * Configures an agent
  */
-export interface AgentParameters {
+export interface IAgentParameters {
     /**
      *  Agent radius. [Limit: >= 0]
      */
@@ -165,7 +165,7 @@ export interface AgentParameters {
 /**
  * Configures the navigation mesh creation
  */
-export interface NavMeshParameters {
+export interface INavMeshParameters {
     /**
      * The xz-plane cell size to use for fields. [Limit: > 0] [Units: wu]
      */
