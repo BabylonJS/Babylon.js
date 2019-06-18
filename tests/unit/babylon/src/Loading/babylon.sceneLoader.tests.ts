@@ -513,6 +513,19 @@ describe('Babylon Scene Loader', function() {
             });
         });
 
+        it('Load Box with extras', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/Box/", "Box_extras.gltf", scene).then((scene) => {
+                expect(scene.meshes.length, "scene.meshes.length").to.equal(2);
+                expect(scene.materials.length, "scene.materials.length").to.equal(1);
+                const mesh = scene.getMeshByName("Box001")
+                expect(mesh, "Box001").to.exist;
+                expect(mesh.metadata, "metadata").to.exist;
+                expect(mesh.metadata.kind, "extras.kind").to.equal("nice cube");
+                expect(mesh.metadata.magic, "extras.magic").to.equal(42);
+            });
+        });
+
         // TODO: test animation group callback
         // TODO: test material instancing
         // TODO: test KHR_materials_pbrSpecularGlossiness
