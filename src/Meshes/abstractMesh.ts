@@ -833,9 +833,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     public set scaling(newScaling: Vector3) {
         this._scaling = newScaling;
-        if (this.physicsImpostor) {
-            this.physicsImpostor.forceUpdate();
-        }
     }
 
     // Methods
