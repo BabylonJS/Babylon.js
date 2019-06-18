@@ -468,6 +468,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 impostor._pluginData.toDispose.forEach((d: any) => {
                     this.bjsAMMO.destroy(d);
                 });
+                impostor._pluginData.toDispose = [];
             }
         }
     }
