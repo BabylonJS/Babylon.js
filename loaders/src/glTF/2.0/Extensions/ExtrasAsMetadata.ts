@@ -2,16 +2,16 @@ import { Nullable } from "babylonjs/types";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Camera } from "babylonjs/Cameras/camera";
 
-import { IProperty } from 'babylonjs-gltf2interface';
+import { IProperty } from "babylonjs-gltf2interface";
 import { INode, ICamera, IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { Material } from 'babylonjs/Materials/material';
+import { Material } from "babylonjs/Materials/material";
 
 const NAME = "ExtrasAsMetadata";
 
 interface ObjectWithMetadata {
-    metadata: any
+    metadata: any;
 }
 
 /**
@@ -26,7 +26,10 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    private _assignExtras(babylonObject: ObjectWithMetadata, gltfProp: IProperty): void {
+    private _assignExtras(
+        babylonObject: ObjectWithMetadata,
+        gltfProp: IProperty
+    ): void {
         if (gltfProp.extras && Object.keys(gltfProp.extras).length > 0) {
             if (!babylonObject.metadata) {
                 babylonObject.metadata = {};
@@ -62,22 +65,37 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
     }
 
     /** @hidden */
-    public loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>> {
-        return this._loader.loadCameraAsync(context, camera, (babylonCamera): void => {
-            this._assignExtras(babylonCamera, camera);
-            assign(babylonCamera);
-        });
+    public loadCameraAsync(
+        context: string,
+        camera: ICamera,
+        assign: (babylonCamera: Camera) => void
+    ): Nullable<Promise<Camera>> {
+        return this._loader.loadCameraAsync(
+            context,
+            camera,
+            (babylonCamera): void => {
+                this._assignExtras(babylonCamera, camera);
+                assign(babylonCamera);
+            }
+        );
     }
 
     /** @hidden */
-    public createMaterial(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material> {
-        const babylonMaterial = this._loader.createMaterial(context, material, babylonDrawMode);
-        if(babylonMaterial) {
+    public createMaterial(
+        context: string,
+        material: IMaterial,
+        babylonDrawMode: number
+    ): Nullable<Material> {
+        const babylonMaterial = this._loader.createMaterial(
+            context,
+            material,
+            babylonDrawMode
+        );
+        if (babylonMaterial) {
             this._assignExtras(babylonMaterial, material);
         }
         return babylonMaterial;
     }
-
 }
 
 GLTFLoader.RegisterExtension(
