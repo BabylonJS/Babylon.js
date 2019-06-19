@@ -958,7 +958,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined
+     * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined.
+     * Note that it returns a shallow bounding of the mesh (i.e. it does not include children).
+     * To get the full bounding of all children, call `getHierarchyBoundingVectors` instead.
      * @returns a BoundingInfo
      */
     public getBoundingInfo(): BoundingInfo {
