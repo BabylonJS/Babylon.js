@@ -8,4 +8,4 @@ export * from "./MSFT_audio_emitter";
 export * from "./MSFT_lod";
 export * from "./MSFT_minecraftMesh";
 export * from "./MSFT_sRGBFactors";
-export * from "./node_extras_as_metadata";
+export * from "./ExtrasAsMetadata";

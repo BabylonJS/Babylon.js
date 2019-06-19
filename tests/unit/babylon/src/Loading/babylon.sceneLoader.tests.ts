@@ -518,11 +518,20 @@ describe('Babylon Scene Loader', function() {
             return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/Box/", "Box_extras.gltf", scene).then((scene) => {
                 expect(scene.meshes.length, "scene.meshes.length").to.equal(2);
                 expect(scene.materials.length, "scene.materials.length").to.equal(1);
-                const mesh = scene.getMeshByName("Box001")
+                const mesh = scene.getMeshByName("Box001");
                 expect(mesh, "Box001").to.exist;
-                expect(mesh.metadata, "metadata").to.exist;
-                expect(mesh.metadata.kind, "extras.kind").to.equal("nice cube");
-                expect(mesh.metadata.magic, "extras.magic").to.equal(42);
+                expect(mesh.metadata, "Box001 metadata").to.exist;
+                expect(mesh.metadata.kind, "Box001 extras.kind").to.equal("nice cube");
+                expect(mesh.metadata.magic, "Box001 extras.magic").to.equal(42);
+                const camera = scene.getCameraByName("Camera");
+                expect(camera, "Camera").to.exist;
+                expect(camera.metadata, "Camera metadata").to.exist;
+                expect(camera.metadata.custom, "Camera extras.custom").to.equal("cameraProp");
+                const material = scene.getMaterialByName("01___Default")
+                expect(material, "Material").to.exist;
+                expect(material.metadata, "Material metadata").to.exist;
+                expect(material.metadata.custom, "Material extras.custom").to.equal("materialProp");
+
             });
         });
 
