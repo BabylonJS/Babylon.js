@@ -2434,14 +2434,26 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
-     * get a material using its id (If multiple materials have the same id the last one will be returned)
+     * get a material using its id
      * @param id defines the material's ID
      * @return the material or null if none found.
      */
     public getMaterialByID(id: string): Nullable<Material> {
-        // When loading a multimaterial it will lookup its materials by id, if the same multimaterial is loaded twice
-        // the 2nd multimaterial needs to reference the latest material by that id which is why this lookup will return
-        // the last material with that id instead of the first
+        for (var index = 0; index < this.materials.length; index++) {
+            if (this.materials[index].id === id) {
+                return this.materials[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets a the last added material using a given id
+     * @param id defines the material's ID
+     * @return the last material with the given id or null if none found.
+     */
+    public getLastMaterialByID(id: string): Nullable<Material> {
         for (var index = this.materials.length - 1; index >= 0; index--) {
             if (this.materials[index].id === id) {
                 return this.materials[index];
