@@ -1259,6 +1259,11 @@ export class _Exporter {
                     glTFNodeIndex = this._nodeMap[babylonNode.uniqueId];
                     if (glTFNodeIndex !== undefined) {
                         glTFNode = this._nodes[glTFNodeIndex];
+
+                        if (babylonNode.metadata) {
+                            glTFNode.extras = babylonNode.metadata;
+                        }
+
                         if (!babylonNode.parent) {
                             if (!this._shouldExportNode(babylonNode)) {
                                 Tools.Log("Omitting " + babylonNode.name + " from scene.");
