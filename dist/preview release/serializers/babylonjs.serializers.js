@@ -2462,7 +2462,7 @@ var _Exporter = /** @class */ (function () {
         };
         var idleGLTFAnimations = [];
         var _loop_1 = function (babylonNode) {
-            if (this_1._options.shouldExportNode && this_1._options.shouldExportNode(babylonNode)) {
+            if (!this_1._options.shouldExportNode || this_1._options.shouldExportNode(babylonNode)) {
                 promiseChain = promiseChain.then(function () {
                     return _this.createNodeAsync(babylonNode, binaryWriter).then(function (node) {
                         var promise = _this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode);
