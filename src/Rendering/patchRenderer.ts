@@ -22,6 +22,8 @@ import { Tools } from "../misc/tools"
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _DevTools } from '../Misc/devTools';
+import { UvMapper } from "../misc/uvMapper";
+
 
 /**
  * This represents a depth renderer in Babylon.
@@ -152,6 +154,10 @@ export class PatchRenderer {
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
      */
     constructor(scene: Scene, meshes: Mesh[], texelSize: number) {
+
+        // DEBUG UVMapper
+        let uvm = new UvMapper();
+        
         this._scene = scene;
         this._near = 0.1;
         this._far = 1000;

@@ -144,7 +144,7 @@ var createScene = function() {
         var observer;
         observer = scene.onAfterRenderTargetsRenderObservable.add(() => {
             frameCount++;
-            if (true && (frameCount % 60) === 0) {
+            if (false && (frameCount % 60) === 0) {
                 engine.stopRenderLoop();
                 var energyLeft = pr.gatherRadiosity(true);
                 engine.runRenderLoop(renderLoop);
