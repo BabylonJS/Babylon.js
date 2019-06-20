@@ -6694,7 +6694,7 @@ declare module BABYLON {
          */
         easeInCore(gradient: number): number;
         /**
-         * Given an input gradient between 0 and 1, this returns the corrseponding value
+         * Given an input gradient between 0 and 1, this returns the corresponding value
          * of the easing function.
          * @param gradient Defines the value between 0 and 1 we want the easing value for
          * @returns the corresponding value on the curve defined by the easing function
@@ -11138,6 +11138,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var instancesDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var helperFunctions: {
         name: string;
         shader: string;
     };
