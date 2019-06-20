@@ -1210,9 +1210,8 @@ var _Exporter = /** @class */ (function () {
         this._animations = [];
         this._imageData = {};
         this._convertToRightHandedSystem = this._babylonScene.useRightHandedSystem ? false : true;
-        var _options = options || {};
-        this._shouldExportNode = _options.shouldExportNode ? _options.shouldExportNode : function (babylonNode) { return true; };
-        this._animationSampleRate = _options.animationSampleRate ? _options.animationSampleRate : 1 / 60;
+        this._options = options || {};
+        this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
         this._glTFMaterialExporter = new _glTFMaterialExporter__WEBPACK_IMPORTED_MODULE_1__["_GLTFMaterialExporter"](this);
         this._loadExtensions();
     }
@@ -2210,7 +2209,7 @@ var _Exporter = /** @class */ (function () {
         var directDescendents;
         var nodes = babylonScene.transformNodes.concat(babylonScene.meshes, babylonScene.lights);
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, "image/png" /* PNG */, true).then(function () {
-            return _this.createNodeMapAndAnimationsAsync(babylonScene, nodes, _this._shouldExportNode, binaryWriter).then(function (nodeMap) {
+            return _this.createNodeMapAndAnimationsAsync(babylonScene, nodes, binaryWriter).then(function (nodeMap) {
                 _this._nodeMap = nodeMap;
                 _this._totalByteLength = binaryWriter.getByteOffset();
                 if (_this._totalByteLength == undefined) {
@@ -2222,8 +2221,16 @@ var _Exporter = /** @class */ (function () {
                     glTFNodeIndex = _this._nodeMap[babylonNode.uniqueId];
                     if (glTFNodeIndex !== undefined) {
                         glTFNode = _this._nodes[glTFNodeIndex];
+                        if (babylonNode.metadata) {
+                            if (_this._options.metadataSelector) {
+                                glTFNode.extras = _this._options.metadataSelector(babylonNode.metadata);
+                            }
+                            else if (babylonNode.metadata.gltf) {
+                                glTFNode.extras = babylonNode.metadata.gltf.extras;
+                            }
+                        }
                         if (!babylonNode.parent) {
-                            if (!_this._shouldExportNode(babylonNode)) {
+                            if (_this._options.shouldExportNode && !_this._options.shouldExportNode(babylonNode)) {
                                 babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Omitting " + babylonNode.name + " from scene.");
                             }
                             else {
@@ -2262,11 +2269,10 @@ var _Exporter = /** @class */ (function () {
      * Creates a mapping of Node unique id to node index and handles animations
      * @param babylonScene Babylon Scene
      * @param nodes Babylon transform nodes
-     * @param shouldExportNode Callback specifying if a transform node should be exported
      * @param binaryWriter Buffer to write binary data to
      * @returns Node mapping of unique id to index
      */
-    _Exporter.prototype.createNodeMapAndAnimationsAsync = function (babylonScene, nodes, shouldExportNode, binaryWriter) {
+    _Exporter.prototype.createNodeMapAndAnimationsAsync = function (babylonScene, nodes, binaryWriter) {
         var _this = this;
         var promiseChain = Promise.resolve();
         var nodeMap = {};
@@ -2278,7 +2284,7 @@ var _Exporter = /** @class */ (function () {
         };
         var idleGLTFAnimations = [];
         var _loop_1 = function (babylonNode) {
-            if (shouldExportNode(babylonNode)) {
+            if (this_1._options.shouldExportNode && this_1._options.shouldExportNode(babylonNode)) {
                 promiseChain = promiseChain.then(function () {
                     return _this.createNodeAsync(babylonNode, binaryWriter).then(function (node) {
                         var promise = _this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode);
@@ -2306,6 +2312,7 @@ var _Exporter = /** @class */ (function () {
                 "Excluding node " + babylonNode.name;
             }
         };
+        var this_1 = this;
         for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
             var babylonNode = nodes_2[_i];
             _loop_1(babylonNode);
