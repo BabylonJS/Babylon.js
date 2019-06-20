@@ -131,10 +131,7 @@ export class _Exporter {
      */
     private _animationSampleRate: number;
 
-    /**
-     * Callback which specifies if a node should be exported or not
-     */
-    private _shouldExportNode: ((babylonNode: Node) => boolean);
+    private _options: IExportOptions;
 
     private _localEngine: Engine;
 
@@ -230,9 +227,8 @@ export class _Exporter {
         this._animations = [];
         this._imageData = {};
         this._convertToRightHandedSystem = this._babylonScene.useRightHandedSystem ? false : true;
-        const _options = options || {};
-        this._shouldExportNode = _options.shouldExportNode ? _options.shouldExportNode : (babylonNode: Node) => true;
-        this._animationSampleRate = _options.animationSampleRate ? _options.animationSampleRate : 1 / 60;
+        this._options = options || {};
+        this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
 
         this._glTFMaterialExporter = new _GLTFMaterialExporter(this);
         this._loadExtensions();
@@ -1246,7 +1242,7 @@ export class _Exporter {
         const nodes: Node[] = [...babylonScene.transformNodes, ...babylonScene.meshes, ...babylonScene.lights];
 
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, true).then(() => {
-            return this.createNodeMapAndAnimationsAsync(babylonScene, nodes, this._shouldExportNode, binaryWriter).then((nodeMap) => {
+            return this.createNodeMapAndAnimationsAsync(babylonScene, nodes, binaryWriter).then((nodeMap) => {
                 this._nodeMap = nodeMap;
 
                 this._totalByteLength = binaryWriter.getByteOffset();
@@ -1259,8 +1255,17 @@ export class _Exporter {
                     glTFNodeIndex = this._nodeMap[babylonNode.uniqueId];
                     if (glTFNodeIndex !== undefined) {
                         glTFNode = this._nodes[glTFNodeIndex];
+
+                        if (babylonNode.metadata) {
+                            if (this._options.metadataSelector) {
+                                glTFNode.extras = this._options.metadataSelector(babylonNode.metadata);
+                            } else if (babylonNode.metadata.gltf) {
+                                glTFNode.extras = babylonNode.metadata.gltf.extras;
+                            }
+                        }
+
                         if (!babylonNode.parent) {
-                            if (!this._shouldExportNode(babylonNode)) {
+                            if (this._options.shouldExportNode && !this._options.shouldExportNode(babylonNode)) {
                                 Tools.Log("Omitting " + babylonNode.name + " from scene.");
                             }
                             else {
@@ -1301,11 +1306,10 @@ export class _Exporter {
      * Creates a mapping of Node unique id to node index and handles animations
      * @param babylonScene Babylon Scene
      * @param nodes Babylon transform nodes
-     * @param shouldExportNode Callback specifying if a transform node should be exported
      * @param binaryWriter Buffer to write binary data to
      * @returns Node mapping of unique id to index
      */
-    private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: Node[], shouldExportNode: (babylonNode: Node) => boolean, binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }> {
+    private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: Node[], binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }> {
         let promiseChain = Promise.resolve();
         const nodeMap: { [key: number]: number } = {};
         let nodeIndex: number;
@@ -1317,7 +1321,7 @@ export class _Exporter {
         let idleGLTFAnimations: IAnimation[] = [];
 
         for (let babylonNode of nodes) {
-            if (shouldExportNode(babylonNode)) {
+            if (this._options.shouldExportNode && this._options.shouldExportNode(babylonNode)) {
                 promiseChain = promiseChain.then(() => {
                     return this.createNodeAsync(babylonNode, binaryWriter).then((node) => {
                         const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode);
