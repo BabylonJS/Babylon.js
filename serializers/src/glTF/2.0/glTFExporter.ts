@@ -1321,7 +1321,7 @@ export class _Exporter {
         let idleGLTFAnimations: IAnimation[] = [];
 
         for (let babylonNode of nodes) {
-            if (this._options.shouldExportNode && this._options.shouldExportNode(babylonNode)) {
+            if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
                 promiseChain = promiseChain.then(() => {
                     return this.createNodeAsync(babylonNode, binaryWriter).then((node) => {
                         const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode);
