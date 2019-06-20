@@ -3,21 +3,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project(BabylonNative)
 
-set(SUPPORTED_JAVASCRIPT_ENGINES
-    "Chakra"
-    "V8")
-
-set(SUPPORTED_PLATFORMS
-    "Win32")
-
-# Build options
-set(BABYLON_NATIVE_JAVASCRIPT_ENGINE "Chakra" CACHE STRING "JavaScript engine for Babylon Native.")
+set(SUPPORTED_PLATFORMS "Win32")
 set(BABYLON_NATIVE_PLATFORM "Win32" CACHE STRING "Target platform for Babylon Native.")
-
-if(NOT(BABYLON_NATIVE_JAVASCRIPT_ENGINE IN_LIST SUPPORTED_JAVASCRIPT_ENGINES))
-    message(FATAL_ERROR "Unrecognized engine: ${BABYLON_NATIVE_JAVASCRIPT_ENGINE}")
-endif()
-
 if(NOT(BABYLON_NATIVE_PLATFORM IN_LIST SUPPORTED_PLATFORMS))
     message(FATAL_ERROR "Unrecognized platform: ${BABYLON_NATIVE_PLATFORM}")
 endif()
