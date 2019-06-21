@@ -521,16 +521,22 @@ describe('Babylon Scene Loader', function() {
                 const mesh = scene.getMeshByName("Box001");
                 expect(mesh, "Box001").to.exist;
                 expect(mesh.metadata, "Box001 metadata").to.exist;
-                expect(mesh.metadata.kind, "Box001 extras.kind").to.equal("nice cube");
-                expect(mesh.metadata.magic, "Box001 extras.magic").to.equal(42);
+                expect(mesh.metadata.gltf, "Box001 metadata.gltf").to.exist;
+                expect(mesh.metadata.gltf.extras, "Box001 metadata.gltf.extras").to.exist;
+                expect(mesh.metadata.gltf.extras.kind, "Box001 extras.kind").to.equal("nice cube");
+                expect(mesh.metadata.gltf.extras.magic, "Box001 extras.magic").to.equal(42);
                 const camera = scene.getCameraByName("Camera");
                 expect(camera, "Camera").to.exist;
                 expect(camera.metadata, "Camera metadata").to.exist;
-                expect(camera.metadata.custom, "Camera extras.custom").to.equal("cameraProp");
+                expect(mesh.metadata.gltf, "Camera metadata.gltf").to.exist;
+                expect(mesh.metadata.gltf.extras, "Camera metadata.gltf.extras").to.exist;
+                expect(camera.metadata.gltf.extras.custom, "Camera extras.custom").to.equal("cameraProp");
                 const material = scene.getMaterialByName("01___Default")
                 expect(material, "Material").to.exist;
                 expect(material.metadata, "Material metadata").to.exist;
-                expect(material.metadata.custom, "Material extras.custom").to.equal("materialProp");
+                expect(mesh.metadata.gltf, "Material metadata.gltf").to.exist;
+                expect(mesh.metadata.gltf.extras, "Material metadata.gltf.extras").to.exist;
+                expect(material.metadata.gltf.extras.custom, "Material extras.custom").to.equal("materialProp");
 
             });
         });
