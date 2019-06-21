@@ -56,7 +56,7 @@ target_compile_definitions(napi PRIVATE NOMINMAX)
 
 target_compile_definitions(napi PUBLIC NODE_ADDON_API_DISABLE_DEPRECATED)
 
-if(BABYLON_NATIVE_JAVASCRIPT_ENGINE STREQUAL "Chakra")
+if(NAPI_JAVASCRIPT_ENGINE STREQUAL "Chakra")
     target_compile_definitions(napi PRIVATE USE_EDGEMODE_JSRT)
 endif()
 
