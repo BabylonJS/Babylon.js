@@ -63,6 +63,9 @@
 - Added `ShaderMaterial.setColor4Array` ([JonathanTron](https://github.com/JonathanTron/))
 - Added `ShaderMaterial.setArray4` ([JonathanTron](https://github.com/JonathanTron/))
 
+### Sounds
+- Added `ISoundOptions.skipCodecCheck` to make `Sound` more flexible with URLs ([nbduke](https://github.com/nbduke))
+
 ## Bug fixes
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Removing assetContainer from scene will also remove gui layers ([TrevorDev](https://github.com/TrevorDev))

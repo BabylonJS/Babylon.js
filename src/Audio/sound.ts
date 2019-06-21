@@ -68,6 +68,10 @@ export interface ISoundOptions {
      * Defines an optional offset (in seconds) inside the sound file
      */
     offset?: number;
+    /**
+     * If true, URLs will not be required to state the audio file codec to use.
+     */
+    skipCodecCheck?: boolean;
 }
 
 /**
@@ -278,18 +282,11 @@ export class Sound {
                             // If we found a supported format, we load it immediately and stop the loop
                             for (var i = 0; i < urls.length; i++) {
                                 var url = urls[i];
-                                if (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) {
-                                    codecSupportedFound = true;
-                                }
-                                if (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) {
-                                    codecSupportedFound = true;
-                                }
-                                if (url.indexOf(".wav", url.length - 4) !== -1) {
-                                    codecSupportedFound = true;
-                                }
-                                if (url.indexOf("blob:") !== -1) {
-                                    codecSupportedFound = true;
-                                }
+                                codecSupportedFound = (options && options.skipCodecCheck) ||
+                                    (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) ||
+                                    (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) ||
+                                    (url.indexOf(".wav", url.length - 4) !== -1) ||
+                                    (url.indexOf("blob:") !== -1);
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
                                     if (!this._streaming) {
