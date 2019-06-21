@@ -20,8 +20,6 @@ namespace babylon
     {
         m_cancelSource.cancel();
         m_thread.join();
-
-        m_dispatcher.clear(); // TODO: fix arcana instead of doing this
     }
 
     void RuntimeImpl::UpdateSize(float width, float height)

@@ -1,3 +1,4 @@
+set(NAPI_JAVASCRIPT_ENGINE "Chakra" CACHE STRING "JavaScript engine for N-API.")
 add_subdirectory(Dependencies/napi EXCLUDE_FROM_ALL)
 set_property(TARGET napi PROPERTY FOLDER Dependencies/napi)
 set(BABYLON_NATIVE_DEPENDENCIES ${NAPI_DEPENDENCIES} PARENT_SCOPE)
