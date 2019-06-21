@@ -50805,6 +50805,10 @@ declare module BABYLON {
         */
         repeatableContentBlocks: NodeMaterialBlock[];
         /**
+        * List of blocks that can provide a dynamic list of uniforms
+        */
+        dynamicUniformBlocks: NodeMaterialBlock[];
+        /**
          * List of blocks that can block the isReady function for the material
          */
         blockingBlocks: NodeMaterialBlock[];
@@ -50928,6 +50932,7 @@ declare module BABYLON {
                 search: RegExp;
                 replace: string;
             }[];
+            repeatKey?: string;
         }): string;
         /** @hidden */
         _emitFunctionFromInclude(includeName: string, comments: string, options?: {
@@ -51382,6 +51387,13 @@ declare module BABYLON {
             outputSwizzle?: string;
         }): this | undefined;
         protected _buildBlock(state: NodeMaterialBuildState): void;
+        /**
+         * Add uniforms, samplers and uniform buffers at compilation time
+         * @param state defines the state to update
+         * @param nodeMaterial defines the node material requesting the update
+         * @param defines defines the material defines to update
+         */
+        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         /**
          * Add potential fallbacks if shader compilation fails
          * @param mesh defines the mesh to be rendered
@@ -52032,7 +52044,8 @@ declare module BABYLON {
          */
         readonly worldNormal: NodeMaterialConnectionPoint;
         /**
-        * Gets the light input component
+        * Gets the light input component.
+        * If not defined, all lights will be considered
         */
         readonly light: NodeMaterialConnectionPoint;
         /**
@@ -52049,6 +52062,7 @@ declare module BABYLON {
         readonly specularOutput: NodeMaterialConnectionPoint;
         autoConfigure(): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private _injectVertexCode;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
