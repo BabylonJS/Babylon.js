@@ -31,10 +31,9 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
         gltfProp: IProperty
     ): void {
         if (gltfProp.extras && Object.keys(gltfProp.extras).length > 0) {
-            if (!babylonObject.metadata) {
-                babylonObject.metadata = {};
-            }
-            Object.assign(babylonObject.metadata, gltfProp.extras);
+            const metadata = (babylonObject.metadata = babylonObject.metadata || {});
+            const gltf = (metadata.gltf = metadata.gltf || {});
+            gltf.extras = gltfProp.extras;
         }
     }
 
@@ -91,9 +90,7 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
             material,
             babylonDrawMode
         );
-        if (babylonMaterial) {
-            this._assignExtras(babylonMaterial, material);
-        }
+        this._assignExtras(babylonMaterial, material);
         return babylonMaterial;
     }
 }
