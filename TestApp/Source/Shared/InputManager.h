@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Runtime/Runtime.h>
+#include <Babylon/Runtime.h>
 #include <Napi/Napi.h>
 
 class InputManager final : public Napi::ObjectWrap<InputManager>
