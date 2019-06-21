@@ -33548,6 +33548,12 @@ declare module BABYLON {
          */
         getMaterialByID(id: string): Nullable<Material>;
         /**
+         * Gets a the last added material using a given id
+         * @param id defines the material's ID
+         * @return the last material with the given id or null if none found.
+         */
+        getLastMaterialByID(id: string): Nullable<Material>;
+        /**
          * Gets a material using its name
          * @param name defines the material's name
          * @return the material or null if none found.
