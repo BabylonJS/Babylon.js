@@ -177,7 +177,7 @@ export class Camera extends Node {
     public inertia = 0.9;
 
     /**
-     * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.PERSPECTIVE_ORTHOGRAPHIC)
+     * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
      */
     @serialize()
     public mode = Camera.PERSPECTIVE_CAMERA;

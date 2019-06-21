@@ -6625,7 +6625,7 @@ declare module BABYLON {
          */
         easeInCore(gradient: number): number;
         /**
-         * Given an input gradient between 0 and 1, this returns the corrseponding value
+         * Given an input gradient between 0 and 1, this returns the corresponding value
          * of the easing function.
          * @param gradient Defines the value between 0 and 1 we want the easing value for
          * @returns the corresponding value on the curve defined by the easing function
@@ -7879,7 +7879,6 @@ declare module BABYLON {
         /** @hidden */private _computeLocalCameraSpeed(): number;
         /**
          * Defines the target the camera should look at.
-         * This will automatically adapt alpha beta and radius to fit within the new target.
          * @param target Defines the new target as a Vector or a mesh
          */
         setTarget(target: Vector3): void;
@@ -24480,7 +24479,9 @@ declare module BABYLON {
          */
         isVerticesDataPresent(kind: string): boolean;
         /**
-         * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined
+         * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined.
+         * Note that it returns a shallow bounding of the mesh (i.e. it does not include children).
+         * To get the full bounding of all children, call `getHierarchyBoundingVectors` instead.
          * @returns a BoundingInfo
          */
         getBoundingInfo(): BoundingInfo;
@@ -30039,7 +30040,7 @@ declare module BABYLON {
          */
         inertia: number;
         /**
-         * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.PERSPECTIVE_ORTHOGRAPHIC)
+         * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
          */
         mode: number;
         /**
@@ -32883,6 +32884,12 @@ declare module BABYLON {
          * @return the material or null if none found.
          */
         getMaterialByID(id: string): Nullable<Material>;
+        /**
+         * Gets a the last added material using a given id
+         * @param id defines the material's ID
+         * @return the last material with the given id or null if none found.
+         */
+        getLastMaterialByID(id: string): Nullable<Material>;
         /**
          * Gets a material using its name
          * @param name defines the material's name
@@ -64160,6 +64167,29 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
     }
 }
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * Store glTF extras (if present) in BJS objects' metadata
+     */
+    export class ExtrasAsMetadata implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        private _assignExtras;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
+        /** @hidden */
+        loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
+        /** @hidden */
+        createMaterial(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material>;
+    }
+}
 declare module BABYLON {
     /**
      * Class reading and parsing the MTL file bundled with the obj file.
@@ -64772,6 +64802,12 @@ declare module BABYLON {
          */
         shouldExportNode?(node: Node): boolean;
         /**
+         * Function used to extract the part of node's metadata that will be exported into glTF node extras
+         * @param metadata source metadata to read from
+         * @returns the data to store to glTF node extras
+         */
+        metadataSelector?(metadata: any): any;
+        /**
          * The sample rate to bake animation curves
          */
         animationSampleRate?: number;
@@ -64960,10 +64996,7 @@ declare module BABYLON.GLTF2.Exporter {
          * Baked animation sample rate
          */
         private _animationSampleRate;
-        /**
-         * Callback which specifies if a node should be exported or not
-         */
-        private _shouldExportNode;
+        private _options;
         private _localEngine;private _glTFMaterialExporter: _GLTFMaterialExporter;
         private _extensions;
         private static _ExtensionNames;
@@ -65143,7 +65176,6 @@ declare module BABYLON.GLTF2.Exporter {
          * Creates a mapping of Node unique id to node index and handles animations
          * @param babylonScene Babylon Scene
          * @param nodes Babylon transform nodes
-         * @param shouldExportNode Callback specifying if a transform node should be exported
          * @param binaryWriter Buffer to write binary data to
          * @returns Node mapping of unique id to index
          */

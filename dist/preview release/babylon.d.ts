@@ -6694,7 +6694,7 @@ declare module BABYLON {
          */
         easeInCore(gradient: number): number;
         /**
-         * Given an input gradient between 0 and 1, this returns the corrseponding value
+         * Given an input gradient between 0 and 1, this returns the corresponding value
          * of the easing function.
          * @param gradient Defines the value between 0 and 1 we want the easing value for
          * @returns the corresponding value on the curve defined by the easing function
@@ -7986,7 +7986,6 @@ declare module BABYLON {
         _computeLocalCameraSpeed(): number;
         /**
          * Defines the target the camera should look at.
-         * This will automatically adapt alpha beta and radius to fit within the new target.
          * @param target Defines the new target as a Vector or a mesh
          */
         setTarget(target: Vector3): void;
@@ -24935,7 +24934,9 @@ declare module BABYLON {
          */
         isVerticesDataPresent(kind: string): boolean;
         /**
-         * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined
+         * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined.
+         * Note that it returns a shallow bounding of the mesh (i.e. it does not include children).
+         * To get the full bounding of all children, call `getHierarchyBoundingVectors` instead.
          * @returns a BoundingInfo
          */
         getBoundingInfo(): BoundingInfo;
@@ -30622,7 +30623,7 @@ declare module BABYLON {
          */
         inertia: number;
         /**
-         * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.PERSPECTIVE_ORTHOGRAPHIC)
+         * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
          */
         mode: number;
         /**
@@ -33546,6 +33547,12 @@ declare module BABYLON {
          * @return the material or null if none found.
          */
         getMaterialByID(id: string): Nullable<Material>;
+        /**
+         * Gets a the last added material using a given id
+         * @param id defines the material's ID
+         * @return the last material with the given id or null if none found.
+         */
+        getLastMaterialByID(id: string): Nullable<Material>;
         /**
          * Gets a material using its name
          * @param name defines the material's name
