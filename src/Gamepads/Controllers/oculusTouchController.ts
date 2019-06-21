@@ -84,7 +84,7 @@ export class OculusTouchController extends WebVRController {
             - button_enter
             */
 
-            this._defaultModel = newMeshes[1];
+            this._defaultModel = OculusTouchController._IsQuest ? newMeshes[0] : newMeshes[1];
             this.attachToMesh(this._defaultModel);
             if (meshLoaded) {
                 meshLoaded(this._defaultModel);
