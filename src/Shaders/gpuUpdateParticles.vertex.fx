@@ -279,7 +279,7 @@ void main() {
     float s = 2.0 * PI * randoms2.x;
 
     #ifdef CONEEMITTERSPAWNPOINT
-        float h = 0.00001;
+        float h = 0.0001;
     #else
         float h = randoms2.y * height.y;
         
@@ -301,7 +301,7 @@ void main() {
         direction = vec3(0., 1.0, 0.);
     } else {
         vec3 randoms3 = getRandomVec3(seed.z);
-        direction = position + directionRandomizer * randoms3;
+        direction = normalize(position + directionRandomizer * randoms3);        
     }
 #else    
     // Create the particle at origin
