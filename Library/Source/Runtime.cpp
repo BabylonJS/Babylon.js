@@ -4,7 +4,7 @@
 namespace babylon
 {
     Runtime::Runtime(std::unique_ptr<RuntimeImpl> impl)
-        : m_impl(std::move(impl))
+        : m_impl{ std::move(impl) }
     {
     }
 
