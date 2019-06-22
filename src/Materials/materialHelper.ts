@@ -719,7 +719,7 @@ export class MaterialHelper {
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULAR"], usePhysicalLightFalloff);
+            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff);
         }
     }
 
