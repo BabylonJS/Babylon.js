@@ -50778,6 +50778,12 @@ declare module BABYLON {
         wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
         private _getTypeLength;
         /**
+         * Gets an boolean indicating if the current point can be connected to another point
+         * @param connectionPoint defines the other connection point
+         * @returns true if the connection is possible
+         */
+        canConnectTo(connectionPoint: NodeMaterialConnectionPoint): boolean;
+        /**
          * Connect this point to another connection point
          * @param connectionPoint defines the other connection point
          * @returns the current connection point

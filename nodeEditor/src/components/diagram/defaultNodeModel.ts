@@ -63,7 +63,7 @@ export class DefaultNodeModel extends NodeModel {
                 } else {
                     model.addAll(link);
                 }
-            } else {
+            } else if (!connection.isUndefined) {
                 // Create value node for the connection
                 var type = ""
                 if (connection.type == NodeMaterialBlockConnectionPointTypes.Texture) {
