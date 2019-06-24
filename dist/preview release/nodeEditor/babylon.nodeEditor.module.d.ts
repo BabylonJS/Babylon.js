@@ -1,4 +1,13 @@
 /// <reference types="react" />
+declare module "babylonjs-node-editor/dataStorage" {
+    export class DataStorage {
+        private static _InMemoryStorage;
+        static ReadBoolean(key: string, defaultValue: boolean): boolean;
+        static StoreBoolean(key: string, value: boolean): void;
+        static ReadNumber(key: string, defaultValue: number): number;
+        static StoreNumber(key: string, value: number): void;
+    }
+}
 declare module "babylonjs-node-editor/components/diagram/defaultPortModel" {
     import { LinkModel, PortModel } from "storm-react-diagrams";
     import { Nullable } from 'babylonjs/types';
@@ -56,7 +65,6 @@ declare module "babylonjs-node-editor/sharedComponents/lineContainerComponent" {
     export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
         isExpanded: boolean;
     }> {
-        private static _InMemoryStorage;
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         renderHeader(): JSX.Element;
@@ -870,6 +878,14 @@ declare module "babylonjs-node-editor/graphEditor" {
         build(): void;
         addNodeFromClass(ObjectClass: typeof NodeMaterialBlock): DefaultNodeModel;
         addValueNode(type: string, column?: number, connection?: NodeMaterialConnectionPoint): DefaultNodeModel;
+        private _startX;
+        private _moveInProgress;
+        private _leftWidth;
+        private _rightWidth;
+        onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
+        buildColumnLayout(): string;
         render(): JSX.Element;
     }
 }
@@ -953,6 +969,15 @@ declare module "babylonjs-node-editor" {
 }
 /// <reference types="react" />
 declare module NODEEDITOR {
+    export class DataStorage {
+        private static _InMemoryStorage;
+        static ReadBoolean(key: string, defaultValue: boolean): boolean;
+        static StoreBoolean(key: string, value: boolean): void;
+        static ReadNumber(key: string, defaultValue: number): number;
+        static StoreNumber(key: string, value: number): void;
+    }
+}
+declare module NODEEDITOR {
     /**
      * Port model
      */
@@ -1003,7 +1028,6 @@ declare module NODEEDITOR {
     export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
         isExpanded: boolean;
     }> {
-        private static _InMemoryStorage;
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         renderHeader(): JSX.Element;
@@ -1700,6 +1724,14 @@ declare module NODEEDITOR {
         build(): void;
         addNodeFromClass(ObjectClass: typeof BABYLON.NodeMaterialBlock): DefaultNodeModel;
         addValueNode(type: string, column?: number, connection?: BABYLON.NodeMaterialConnectionPoint): DefaultNodeModel;
+        private _startX;
+        private _moveInProgress;
+        private _leftWidth;
+        private _rightWidth;
+        onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
+        buildColumnLayout(): string;
         render(): JSX.Element;
     }
 }
