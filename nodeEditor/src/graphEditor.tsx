@@ -24,7 +24,7 @@ import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
 import { InputNodeModel } from './components/diagram/input/inputNodeModel';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
 import { Vector2, Vector3, Vector4, Matrix, Color3, Color4 } from 'babylonjs/Maths/math';
-import { LogComponent } from './components/log/logComponent';
+import { LogComponent, LogEntry } from './components/log/logComponent';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { LightNodeModel } from './components/diagram/light/lightNodeModel';
 import { LightNodeFactory } from './components/diagram/light/lightNodeFactory';
@@ -179,10 +179,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         try {
             this.props.globalState.nodeMaterial.build(true);
-            this.props.globalState.onLogRequiredObservable.notifyObservers("Node material build successful");
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
         }
         catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(err);
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
     }
 
