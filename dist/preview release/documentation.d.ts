@@ -51577,6 +51577,7 @@ declare module BABYLON {
          */
         wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
         private _getTypeLength;
+        canConnectTo(connectionPoint: NodeMaterialConnectionPoint): boolean;
         /**
          * Connect this point to another connection point
          * @param connectionPoint defines the other connection point

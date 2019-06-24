@@ -13,6 +13,7 @@ import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 import { Color3PropertyTabComponent } from '../../propertyTab/properties/color3PropertyTabComponent';
 import { FloatPropertyTabComponent } from '../../propertyTab/properties/floatPropertyTabComponent';
 import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
+import { StringTools } from '../../../stringTools';
 
 interface IInputPropertyTabComponentProps {
     globalState: GlobalState;
@@ -94,32 +95,10 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
             { label: "uv2", value: "uv2" },
         ];
 
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        function getBaseType(type: NodeMaterialBlockConnectionPointTypes): string {
-            switch (type) {
-                case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
-                case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
-                case NodeMaterialBlockConnectionPointTypes.Vector3OrVector4:
-                case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4:
-                    return "Vector";
-                case NodeMaterialBlockConnectionPointTypes.Color3:
-                case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
-                case NodeMaterialBlockConnectionPointTypes.Color4: {
-                    return "Color";
-                }
-                default: {
-                    return NodeMaterialBlockConnectionPointTypes[type];
-                }
-            }
-        }
-
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextLineComponent label="Type" value={getBaseType(connection.type)} />
+                    <TextLineComponent label="Type" value={StringTools.GetBaseType(connection.type)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {

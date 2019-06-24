@@ -5110,7 +5110,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#log-console {\n  background: #333333;\n  height: 100px;\n  margin: 0;\n  padding: 10px;\n  width: calc(100% - 20px);\n  overflow: hidden;\n  overflow-y: auto; }\n  #log-console .log {\n    color: white;\n    font-size: 14px;\n    font-family: 'Courier New', Courier, monospace; }\n", ""]);
+exports.push([module.i, "#log-console {\n  background: #333333;\n  border: #555555 solid 1px;\n  height: 120px;\n  box-sizing: border-box;\n  margin: 0;\n  padding: 10px;\n  width: 100%;\n  overflow: hidden;\n  overflow-y: auto; }\n  #log-console .log {\n    color: white;\n    font-size: 14px;\n    font-family: 'Courier New', Courier, monospace; }\n    #log-console .log.error {\n      color: red; }\n", ""]);
 
 // exports
 
@@ -5129,7 +5129,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 200px;\n  overflow: hidden; }\n  #nodeList .pane {\n    color: white;\n    overflow-x: hidden;\n    overflow-y: auto;\n    height: 100%;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #nodeList .pane .underline {\n      border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n    #nodeList .pane .buttonLine {\n      height: 30px;\n      display: grid;\n      align-items: center;\n      justify-items: stretch; }\n      #nodeList .pane .buttonLine button {\n        background: #222222;\n        border: 1px solid #337ab7;\n        margin: 5px 10px 5px 10px;\n        color: white;\n        padding: 4px 5px;\n        opacity: 0.9; }\n      #nodeList .pane .buttonLine button:hover {\n        opacity: 1.0; }\n      #nodeList .pane .buttonLine button:active {\n        background: #282828; }\n      #nodeList .pane .buttonLine button:focus {\n        border: 1px solid #337ab7;\n        outline: 0px; }\n    #nodeList .pane .paneContainer {\n      margin-top: 3px;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #nodeList .pane .paneContainer .paneList {\n        border-left: 3px solid transparent; }\n      #nodeList .pane .paneContainer:hover .paneList {\n        border-left: 3px solid rgba(51, 122, 183, 0.8); }\n      #nodeList .pane .paneContainer:hover .paneContainer-content .header .title {\n        border-left: 3px solid #337ab7; }\n      #nodeList .pane .paneContainer .paneContainer-content {\n        grid-row: 1;\n        grid-column: 1; }\n        #nodeList .pane .paneContainer .paneContainer-content .header {\n          display: grid;\n          grid-template-columns: 1fr auto;\n          background: #555555;\n          height: 30px;\n          padding-right: 5px;\n          cursor: pointer; }\n          #nodeList .pane .paneContainer .paneContainer-content .header .title {\n            border-left: 3px solid transparent;\n            padding-left: 5px;\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #nodeList .pane .paneContainer .paneContainer-content .header .collapse {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            justify-items: center;\n            transform-origin: center; }\n            #nodeList .pane .paneContainer .paneContainer-content .header .collapse.closed {\n              transform: rotate(180deg); }\n        #nodeList .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n        #nodeList .pane .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .pane {\n    color: white;\n    overflow-x: hidden;\n    overflow-y: auto;\n    height: 100%;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #nodeList .pane .underline {\n      border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n    #nodeList .pane .buttonLine {\n      height: 30px;\n      display: grid;\n      align-items: center;\n      justify-items: stretch; }\n      #nodeList .pane .buttonLine button {\n        background: #222222;\n        border: 1px solid #337ab7;\n        margin: 5px 10px 5px 10px;\n        color: white;\n        padding: 4px 5px;\n        opacity: 0.9; }\n      #nodeList .pane .buttonLine button:hover {\n        opacity: 1.0; }\n      #nodeList .pane .buttonLine button:active {\n        background: #282828; }\n      #nodeList .pane .buttonLine button:focus {\n        border: 1px solid #337ab7;\n        outline: 0px; }\n    #nodeList .pane .paneContainer {\n      margin-top: 3px;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%; }\n      #nodeList .pane .paneContainer .paneList {\n        border-left: 3px solid transparent; }\n      #nodeList .pane .paneContainer:hover .paneList {\n        border-left: 3px solid rgba(51, 122, 183, 0.8); }\n      #nodeList .pane .paneContainer:hover .paneContainer-content .header .title {\n        border-left: 3px solid #337ab7; }\n      #nodeList .pane .paneContainer .paneContainer-content {\n        grid-row: 1;\n        grid-column: 1; }\n        #nodeList .pane .paneContainer .paneContainer-content .header {\n          display: grid;\n          grid-template-columns: 1fr auto;\n          background: #555555;\n          height: 30px;\n          padding-right: 5px;\n          cursor: pointer; }\n          #nodeList .pane .paneContainer .paneContainer-content .header .title {\n            border-left: 3px solid transparent;\n            padding-left: 5px;\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #nodeList .pane .paneContainer .paneContainer-content .header .collapse {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            justify-items: center;\n            transform-origin: center; }\n            #nodeList .pane .paneContainer .paneContainer-content .header .collapse.closed {\n              transform: rotate(180deg); }\n        #nodeList .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n        #nodeList .pane .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
 
 // exports
 
@@ -46879,7 +46879,7 @@ var DefaultNodeModel = /** @class */ (function (_super) {
                     model.addAll(link);
                 }
             }
-            else {
+            else if (!connection.isUndefined) {
                 // Create value node for the connection
                 var type = "";
                 if (connection.type == babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Texture) {
@@ -46958,6 +46958,12 @@ var DefaultPortModel = /** @class */ (function (_super) {
         DefaultPortModel.idCounter++;
         return _this;
     }
+    DefaultPortModel.prototype.canLinkToPort = function (port) {
+        if (!this.connection || !port.connection) {
+            return true;
+        }
+        return this.connection.canConnectTo(port.connection);
+    };
     DefaultPortModel.prototype.syncWithNodeMaterialConnectionPoint = function (connection) {
         this.connection = connection;
         this.name = connection.name;
@@ -47358,6 +47364,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyTab_properties_color3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../propertyTab/properties/color3PropertyTabComponent */ "./components/propertyTab/properties/color3PropertyTabComponent.tsx");
 /* harmony import */ var _propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../propertyTab/properties/floatPropertyTabComponent */ "./components/propertyTab/properties/floatPropertyTabComponent.tsx");
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
+
 
 
 
@@ -47433,30 +47441,9 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
             { label: "uv", value: "uv" },
             { label: "uv2", value: "uv2" },
         ];
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        function getBaseType(type) {
-            switch (type) {
-                case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3:
-                case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector4OrColor4:
-                case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector3OrVector4:
-                case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3OrVector4OrColor4:
-                    return "Vector";
-                case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color3OrColor4:
-                case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color4: {
-                    return "Color";
-                }
-                default: {
-                    return babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"][type];
-                }
-            }
-        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_10__["LineContainerComponent"], { title: "GENERAL" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextLineComponent"], { label: "Type", value: getBaseType(connection.type) })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextLineComponent"], { label: "Type", value: _stringTools__WEBPACK_IMPORTED_MODULE_11__["StringTools"].GetBaseType(connection.type) })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_10__["LineContainerComponent"], { title: "PROPERTIES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Is mesh attribute", onSelect: function (value) {
                         if (!value) {
@@ -47520,6 +47507,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialWellKnownValues */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
+
 
 
 
@@ -47580,8 +47569,9 @@ var InputNodeWidget = /** @class */ (function (_super) {
         }
         var connection = this.props.node.connection;
         var value = "";
-        var name = port.name;
+        var name = "";
         if (connection) {
+            name = _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].GetBaseType(connection.type);
             if (connection.isAttribute) {
                 value = "mesh." + connection.name;
             }
@@ -47853,13 +47843,19 @@ var LightPropertyTabComponent = /** @class */ (function (_super) {
         var lightOptions = scene.lights.map(function (l) {
             return { label: l.name, value: l.name };
         });
+        lightOptions.splice(0, 0, { label: "All", value: "" });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { label: "Type", value: "Light" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { label: "Name", propertyName: "name", target: this.props.node.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "PROPERTIES" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Light", noDirectUpdate: true, valuesAreStrings: true, options: lightOptions, target: this.props.node.light, propertyName: "name", onSelect: function (name) {
-                        _this.props.node.light = scene.getLightByName(name);
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Light", defaultIfNull: 0, noDirectUpdate: true, valuesAreStrings: true, options: lightOptions, target: this.props.node.light, propertyName: "name", onSelect: function (name) {
+                        if (name === "") {
+                            _this.props.node.light = null;
+                        }
+                        else {
+                            _this.props.node.light = scene.getLightByName(name);
+                        }
                         _this.forceUpdate();
                         _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                     } }))));
@@ -48183,11 +48179,12 @@ if(false) {}
 /*!*****************************************!*\
   !*** ./components/log/logComponent.tsx ***!
   \*****************************************/
-/*! exports provided: LogComponent */
+/*! exports provided: LogEntry, LogComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LogEntry", function() { return LogEntry; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LogComponent", function() { return LogComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
@@ -48198,6 +48195,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 __webpack_require__(/*! ./log.scss */ "./components/log/log.scss");
+var LogEntry = /** @class */ (function () {
+    function LogEntry(message, isError) {
+        this.message = message;
+        this.isError = isError;
+    }
+    return LogEntry;
+}());
+
 var LogComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LogComponent, _super);
     function LogComponent(props) {
@@ -48209,7 +48214,7 @@ var LogComponent = /** @class */ (function (_super) {
         var _this = this;
         this.props.globalState.onLogRequiredObservable.add(function (log) {
             var currentLogs = _this.state.logs;
-            currentLogs.push.apply(currentLogs, log.split("\r\n"));
+            currentLogs.push(log);
             _this.setState({ logs: currentLogs });
         });
     };
@@ -48222,7 +48227,7 @@ var LogComponent = /** @class */ (function (_super) {
     };
     LogComponent.prototype.render = function () {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "log-console", ref: "log-console" }, this.state.logs.map(function (l, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: i, className: "log" }, l));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: i, className: "log" + (l.isError ? " error" : "") }, l.message));
         })));
     };
     return LogComponent;
@@ -48762,10 +48767,10 @@ var GraphEditor = /** @class */ (function (_super) {
         }
         try {
             this.props.globalState.nodeMaterial.build(true);
-            this.props.globalState.onLogRequiredObservable.notifyObservers("Node material build successful");
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"]("Node material build successful", false));
         }
         catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(err);
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"](err, true));
         }
     };
     GraphEditor.prototype.build = function () {
@@ -49628,15 +49633,18 @@ var OptionsLineComponent = /** @class */ (function (_super) {
     function OptionsLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { value: props.target[props.propertyName] };
+        _this.state = { value: _this._getValue(props) };
         return _this;
     }
+    OptionsLineComponent.prototype._getValue = function (props) {
+        return props.target ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
+    };
     OptionsLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         if (this._localChange) {
             this._localChange = false;
             return true;
         }
-        var newValue = nextProps.target[nextProps.propertyName];
+        var newValue = this._getValue(nextProps);
         if (newValue != null && newValue !== nextState.value) {
             nextState.value = newValue;
             return true;
@@ -50249,6 +50257,50 @@ var Vector3LineComponent = /** @class */ (function (_super) {
     };
     return Vector3LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./stringTools.ts":
+/*!************************!*\
+  !*** ./stringTools.ts ***!
+  \************************/
+/*! exports provided: StringTools */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StringTools", function() { return StringTools; });
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__);
+
+var StringTools = /** @class */ (function () {
+    function StringTools() {
+    }
+    /**
+     * Gets the base math type of node material block connection point.
+     * @param type Type to parse.
+     */
+    StringTools.GetBaseType = function (type) {
+        switch (type) {
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3:
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4OrColor4:
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3OrVector4:
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3OrVector4OrColor4:
+                return "Vector";
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3:
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3OrColor4:
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4: {
+                return "Color";
+            }
+            default: {
+                return babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"][type];
+            }
+        }
+    };
+    return StringTools;
+}());
 
 
 

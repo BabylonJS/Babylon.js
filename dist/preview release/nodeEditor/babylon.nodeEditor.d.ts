@@ -15,6 +15,7 @@ declare module NODEEDITOR {
         defaultValue: any;
         static idCounter: number;
         constructor(name: string, type?: string);
+        canLinkToPort(port: DefaultPortModel): boolean;
         syncWithNodeMaterialConnectionPoint(connection: BABYLON.NodeMaterialConnectionPoint): void;
         getNodeModel(): DefaultNodeModel;
         link(outPort: DefaultPortModel): LinkModel<import("storm-react-diagrams").LinkModelListener>;
@@ -459,11 +460,13 @@ declare module NODEEDITOR {
         onSelect?: (value: number | string) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         valuesAreStrings?: boolean;
+        defaultIfNull?: number;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
         value: number | string;
     }> {
         private _localChange;
+        private _getValue;
         constructor(props: IOptionsLineComponentProps);
         shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
             value: number;
@@ -545,6 +548,15 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class StringTools {
+        /**
+         * Gets the base math type of node material block connection point.
+         * @param type Type to parse.
+         */
+        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
+    }
+}
+declare module NODEEDITOR {
     interface IInputPropertyTabComponentProps {
         globalState: GlobalState;
         inputNode: InputNodeModel;
@@ -618,8 +630,13 @@ declare module NODEEDITOR {
     interface ILogComponentProps {
         globalState: GlobalState;
     }
+    export class LogEntry {
+        message: string;
+        isError: boolean;
+        constructor(message: string, isError: boolean);
+    }
     export class LogComponent extends React.Component<ILogComponentProps, {
-        logs: string[];
+        logs: LogEntry[];
     }> {
         constructor(props: ILogComponentProps);
         componentWillMount(): void;
@@ -763,7 +780,7 @@ declare module NODEEDITOR {
         onResetRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
-        onLogRequiredObservable: BABYLON.Observable<string>;
+        onLogRequiredObservable: BABYLON.Observable<LogEntry>;
     }
 }
 declare module NODEEDITOR {
