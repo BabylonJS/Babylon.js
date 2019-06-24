@@ -7,6 +7,7 @@ import { DefaultPortModel } from '../defaultPortModel';
 import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { Color3 } from 'babylonjs/Maths/math';
+import { StringTools } from '../../../stringTools';
 
 /**
  * GenericNodeWidgetProps
@@ -88,9 +89,11 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
 
         let connection = this.props.node!.connection;
         let value = "";
-        let name = port!.name;
+        let name = "";
 
         if (connection) {
+            name = StringTools.GetBaseType(connection.type)
+
             if (connection.isAttribute) {
                 value = "mesh." + connection.name;
             } else if (connection.isWellKnownValue) {
