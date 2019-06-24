@@ -269,6 +269,16 @@ export class NodeMaterialBlock {
     }
 
     /**
+     * Add uniforms, samplers and uniform buffers at compilation time
+     * @param state defines the state to update
+     * @param nodeMaterial defines the node material requesting the update
+     * @param defines defines the material defines to update
+     */
+    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        // Do nothing
+    }
+
+    /**
      * Add potential fallbacks if shader compilation fails
      * @param mesh defines the mesh to be rendered
      * @param fallbacks defines the current prioritized list of fallbacks

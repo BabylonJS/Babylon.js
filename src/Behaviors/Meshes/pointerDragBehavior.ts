@@ -82,6 +82,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      *  If the drag behavior will react to drag events (Default: true)
      */
     public enabled = true;
+
+    /**
+     * If pointer events should start and release the drag (Default: true)
+     */
+    public startAndReleaseDragOnPointerEvents = true;
     /**
      * If camera controls should be detached during the drag
      */
@@ -171,11 +176,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
 
-                if (!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.pickedPoint && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)) {
+                if (this.startAndReleaseDragOnPointerEvents && !this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.pickedPoint && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)) {
                     this._startDrag((<PointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
-                if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
+                if (this.startAndReleaseDragOnPointerEvents && this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
                     this.releaseDrag();
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {

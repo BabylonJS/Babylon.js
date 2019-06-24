@@ -4353,6 +4353,10 @@ declare module BABYLON {
         private _eventState;
         private _onObserverAdded;
         /**
+         * Gets the list of observers
+         */
+        readonly observers: Array<Observer<T>>;
+        /**
          * Creates a new observable
          * @param onObserverAdded defines a callback to call when a new observer is added
          */
@@ -10337,6 +10341,18 @@ declare module BABYLON {
         private _vertexCount;
         private _uniqueId;
         private _tempInfluences;
+        /**
+         * Gets or sets a boolean indicating if normals must be morphed
+         */
+        enableNormalMorphing: boolean;
+        /**
+         * Gets or sets a boolean indicating if tangents must be morphed
+         */
+        enableTangentMorphing: boolean;
+        /**
+         * Gets or sets a boolean indicating if UV must be morphed
+         */
+        enableUVMorphing: boolean;
         /**
          * Creates a new MorphTargetManager
          * @param scene defines the current scene
@@ -34300,6 +34316,10 @@ declare module BABYLON {
          * Defines an optional offset (in seconds) inside the sound file
          */
         offset?: number;
+        /**
+         * If true, URLs will not be required to state the audio file codec to use.
+         */
+        skipCodecCheck?: boolean;
     }
     /**
      * Defines a sound that can be played in the application.
@@ -36230,6 +36250,10 @@ declare module BABYLON {
          *  If the drag behavior will react to drag events (Default: true)
          */
         enabled: boolean;
+        /**
+         * If pointer events should start and release the drag (Default: true)
+         */
+        startAndReleaseDragOnPointerEvents: boolean;
         /**
          * If camera controls should be detached during the drag
          */
@@ -41563,15 +41587,11 @@ declare module BABYLON {
         static InspectorURL: string;
         private _scene;
         private BJSINSPECTOR;
+        private _onPropertyChangedObservable?;
         /**
          * Observable triggered when a property is changed through the inspector.
          */
-        onPropertyChangedObservable: Observable<{
-            object: any;
-            property: string;
-            value: any;
-            initialValue: any;
-        }>;
+        readonly onPropertyChangedObservable: any;
         /**
          * Instantiates a new debug layer.
          * The debug layer (aka Inspector) is the go to tool in order to better understand
@@ -50805,6 +50825,10 @@ declare module BABYLON {
         */
         repeatableContentBlocks: NodeMaterialBlock[];
         /**
+        * List of blocks that can provide a dynamic list of uniforms
+        */
+        dynamicUniformBlocks: NodeMaterialBlock[];
+        /**
          * List of blocks that can block the isReady function for the material
          */
         blockingBlocks: NodeMaterialBlock[];
@@ -50928,6 +50952,7 @@ declare module BABYLON {
                 search: RegExp;
                 replace: string;
             }[];
+            repeatKey?: string;
         }): string;
         /** @hidden */
         _emitFunctionFromInclude(includeName: string, comments: string, options?: {
@@ -51382,6 +51407,13 @@ declare module BABYLON {
             outputSwizzle?: string;
         }): this | undefined;
         protected _buildBlock(state: NodeMaterialBuildState): void;
+        /**
+         * Add uniforms, samplers and uniform buffers at compilation time
+         * @param state defines the state to update
+         * @param nodeMaterial defines the node material requesting the update
+         * @param defines defines the material defines to update
+         */
+        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         /**
          * Add potential fallbacks if shader compilation fails
          * @param mesh defines the mesh to be rendered
@@ -52032,7 +52064,8 @@ declare module BABYLON {
          */
         readonly worldNormal: NodeMaterialConnectionPoint;
         /**
-        * Gets the light input component
+        * Gets the light input component.
+        * If not defined, all lights will be considered
         */
         readonly light: NodeMaterialConnectionPoint;
         /**
@@ -52049,6 +52082,7 @@ declare module BABYLON {
         readonly specularOutput: NodeMaterialConnectionPoint;
         autoConfigure(): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private _injectVertexCode;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
@@ -65187,6 +65221,29 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         constructor(loader: GLTFLoader);
         dispose(): void;
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * Store glTF extras (if present) in BJS objects' metadata
+     */
+    export class ExtrasAsMetadata implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        private _assignExtras;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
+        /** @hidden */
+        loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
+        /** @hidden */
+        createMaterial(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material>;
     }
 }
 declare module BABYLON {
