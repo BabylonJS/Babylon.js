@@ -291,11 +291,11 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
-     * Connect this point to another connection point
+     * Gets an boolean indicating if the current point can be connected to another point
      * @param connectionPoint defines the other connection point
-     * @returns the current connection point
+     * @returns true if the connection is possible
      */
-    public connectTo(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint {
+    public canConnectTo(connectionPoint: NodeMaterialConnectionPoint) {
         if ((this.type & connectionPoint.type) === 0 && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
             let fail = true;
             // Check swizzle
@@ -308,9 +308,20 @@ export class NodeMaterialConnectionPoint {
                 }
             }
 
-            if (fail) {
-                throw "Cannot connect two different connection types.";
-            }
+            return !fail;
+        }
+
+        return true;
+    }
+
+    /**
+     * Connect this point to another connection point
+     * @param connectionPoint defines the other connection point
+     * @returns the current connection point
+     */
+    public connectTo(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint {
+        if (!this.canConnectTo(connectionPoint)) {
+            throw "Cannot connect two different connection types.";
         }
 
         this._endpoints.push(connectionPoint);
