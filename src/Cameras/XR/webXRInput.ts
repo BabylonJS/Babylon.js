@@ -52,16 +52,16 @@ export class WebXRInput implements IDisposable {
      * @param helper experience helper which the input should be created for
      */
     public constructor(private helper: WebXRExperienceHelper) {
-        this._frameObserver = helper._sessionManager.onXRFrameObservable.add(() => {
-            if (!helper._sessionManager._currentXRFrame || !helper._sessionManager._currentXRFrame.getDevicePose) {
+        this._frameObserver = helper.sessionManager.onXRFrameObservable.add(() => {
+            if (!helper.sessionManager._currentXRFrame || !helper.sessionManager._currentXRFrame.getDevicePose) {
                 return;
             }
 
-            var xrFrame = helper._sessionManager._currentXRFrame;
-            var inputSources = helper._sessionManager._xrSession.getInputSources();
+            var xrFrame = helper.sessionManager._currentXRFrame;
+            var inputSources = helper.sessionManager._xrSession.getInputSources();
 
             inputSources.forEach((input, i) => {
-                let inputPose = xrFrame.getInputPose(input, helper._sessionManager._frameOfReference);
+                let inputPose = xrFrame.getInputPose(input, helper.sessionManager._frameOfReference);
                 if (inputPose) {
                     if (this.controllers.length <= i) {
                         this.controllers.push(new WebXRController(helper.container.getScene()));
@@ -103,6 +103,6 @@ export class WebXRInput implements IDisposable {
         this.controllers.forEach((c) => {
             c.dispose();
         });
-        this.helper._sessionManager.onXRFrameObservable.remove(this._frameObserver);
+        this.helper.sessionManager.onXRFrameObservable.remove(this._frameObserver);
     }
 }

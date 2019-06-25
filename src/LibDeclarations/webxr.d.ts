@@ -5,17 +5,22 @@ interface XRDevice {
 interface XRSession {
     getInputSources(): Array<any>;
     baseLayer: XRWebGLLayer;
-    requestFrameOfReference(type: string): Promise<void>;
+    requestReferenceSpace(options: ReferenceSpaceOptions): Promise<void>;
     requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
     end(): Promise<void>;
+    updateRenderState(state:any):Promise<void>;
     requestAnimationFrame: Function;
     addEventListener: Function;
 }
 interface XRSessionCreationOptions {
-    outputContext?: WebGLRenderingContext | null;
-    immersive?: boolean;
-    environmentIntegration?: boolean;
+    mode?: string;
 }
+
+interface ReferenceSpaceOptions {
+    type?: string;
+    subtype?: string;
+}
+
 interface XRLayer {
     getViewport: Function;
     framebufferWidth: number;
