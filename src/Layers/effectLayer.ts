@@ -120,6 +120,9 @@ export abstract class EffectLayer {
     public get renderingGroupId(): number {
         return this._effectLayerOptions.renderingGroupId;
     }
+    public set renderingGroupId(renderingGroupId: number) {
+        this._effectLayerOptions.renderingGroupId = renderingGroupId;
+    }
 
     /**
      * An event triggered when the effect layer has been disposed.
