@@ -32,13 +32,33 @@ export class NodeMaterialConnectionPoint {
     /** @hidden */
     public _needToEmitVarying = true;
 
+    /** @hidden */
+    public _forceUniformInVertexShaderOnly = false;
+
     private _type = NodeMaterialBlockConnectionPointTypes.Float;
     /**
      * Gets or sets the connection point type (default is float)
      */
     public get type(): NodeMaterialBlockConnectionPointTypes {
-        if (this._type === NodeMaterialBlockConnectionPointTypes.AutoDetect && this._connectedPoint) {
-            return this._connectedPoint.type;
+        if (this._type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+            if (this._connectedPoint) {
+                return this._connectedPoint.type;
+            }
+
+            if (this.isUniform && this.value != null) {
+                switch (this.value.getClassName()) {
+                    case "Vector2":
+                        return NodeMaterialBlockConnectionPointTypes.Vector2;
+                    case "Vector3":
+                        return NodeMaterialBlockConnectionPointTypes.Vector3;
+                    case "Vector4":
+                        return NodeMaterialBlockConnectionPointTypes.Vector4;
+                    case "Color3":
+                        return NodeMaterialBlockConnectionPointTypes.Color3;
+                    case "Color4":
+                        return NodeMaterialBlockConnectionPointTypes.Color4;
+                }
+            }
         }
 
         if (this._type === NodeMaterialBlockConnectionPointTypes.BasedOnInput && this._typeConnectionSource) {
@@ -117,6 +137,13 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
+     * Gets a boolean indicating that this connection point not defined yet
+     */
+    public get isUndefined(): boolean {
+        return this._mode === NodeMaterialBlockConnectionPointMode.Undefined;
+    }
+
+    /**
      * Gets or sets a boolean indicating that this connection point is coming from an uniform.
      * In this case the connection point name must be the name of the uniform to use.
      * Can only be set on inputs
@@ -127,6 +154,7 @@ export class NodeMaterialConnectionPoint {
 
     public set isUniform(value: boolean) {
         this._mode = value ? NodeMaterialBlockConnectionPointMode.Uniform : NodeMaterialBlockConnectionPointMode.Undefined;
+        this.associatedVariableName = "";
     }
 
     /**
@@ -140,6 +168,7 @@ export class NodeMaterialConnectionPoint {
 
     public set isAttribute(value: boolean) {
         this._mode = value ? NodeMaterialBlockConnectionPointMode.Attribute : NodeMaterialBlockConnectionPointMode.Undefined;
+        this.associatedVariableName = "";
     }
 
     /**
@@ -152,6 +181,7 @@ export class NodeMaterialConnectionPoint {
 
     public set isVarying(value: boolean) {
         this._mode = value ? NodeMaterialBlockConnectionPointMode.Varying : NodeMaterialBlockConnectionPointMode.Undefined;
+        this.associatedVariableName = "";
     }
 
     /** Get the other side of the connection (if any) */
@@ -239,6 +269,7 @@ export class NodeMaterialConnectionPoint {
 
     public set wellKnownValue(value: Nullable<NodeMaterialWellKnownValues>) {
         this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
+        this.associatedVariableName = "";
         this._wellKnownValue = value;
     }
 
@@ -260,11 +291,11 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
-     * Connect this point to another connection point
+     * Gets an boolean indicating if the current point can be connected to another point
      * @param connectionPoint defines the other connection point
-     * @returns the current connection point
+     * @returns true if the connection is possible
      */
-    public connectTo(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint {
+    public canConnectTo(connectionPoint: NodeMaterialConnectionPoint) {
         if ((this.type & connectionPoint.type) === 0 && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
             let fail = true;
             // Check swizzle
@@ -277,9 +308,20 @@ export class NodeMaterialConnectionPoint {
                 }
             }
 
-            if (fail) {
-                throw "Cannot connect two different connection types.";
-            }
+            return !fail;
+        }
+
+        return true;
+    }
+
+    /**
+     * Connect this point to another connection point
+     * @param connectionPoint defines the other connection point
+     * @returns the current connection point
+     */
+    public connectTo(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint {
+        if (!this.canConnectTo(connectionPoint)) {
+            throw "Cannot connect two different connection types.";
         }
 
         this._endpoints.push(connectionPoint);
@@ -351,6 +393,9 @@ export class NodeMaterialConnectionPoint {
                     break;
                 case NodeMaterialWellKnownValues.ViewProjection:
                     effect.setMatrix(variableName, scene.getTransformMatrix());
+                    break;
+                case NodeMaterialWellKnownValues.CameraPosition:
+                    effect.setVector3(variableName, scene.activeCamera!.globalPosition);
                     break;
             }
             return;

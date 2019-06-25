@@ -87,7 +87,7 @@ export class EffectFallbacks {
      */
     public reduce(currentDefines: string, effect: Effect): string {
         // First we try to switch to CPU skinning
-        if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0 && this._mesh.material) {
+        if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0) {
             this._mesh.computeBonesUsingShaders = false;
             currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
             effect._bonesComputationForcedToCPU = true;
@@ -97,6 +97,9 @@ export class EffectFallbacks {
                 var otherMesh = scene.meshes[index];
 
                 if (!otherMesh.material) {
+                    if (!this._mesh.material && otherMesh.computeBonesUsingShaders && otherMesh.numBoneInfluencers > 0) {
+                        otherMesh.computeBonesUsingShaders = false;
+                    }
                     continue;
                 }
 

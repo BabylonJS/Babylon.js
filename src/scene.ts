@@ -2449,6 +2449,21 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
+     * Gets a the last added material using a given id
+     * @param id defines the material's ID
+     * @return the last material with the given id or null if none found.
+     */
+    public getLastMaterialByID(id: string): Nullable<Material> {
+        for (var index = this.materials.length - 1; index >= 0; index--) {
+            if (this.materials[index].id === id) {
+                return this.materials[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Gets a material using its name
      * @param name defines the material's name
      * @return the material or null if none found.

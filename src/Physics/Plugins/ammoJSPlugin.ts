@@ -468,6 +468,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 impostor._pluginData.toDispose.forEach((d: any) => {
                     this.bjsAMMO.destroy(d);
                 });
+                impostor._pluginData.toDispose = [];
             }
         }
     }
@@ -911,6 +912,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     returnValue = new Ammo.btMultiSphereShape(positions, radii, 1);
                     returnValue.setLocalScaling(new Ammo.btVector3(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2));
                 }
+                break;
+            case PhysicsImpostor.CapsuleImpostor:
+                returnValue = new Ammo.btCapsuleShape(extendSize.x / 2, extendSize.y / 2);
                 break;
             case PhysicsImpostor.CylinderImpostor:
                 this._tmpAmmoVectorA.setValue(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2);

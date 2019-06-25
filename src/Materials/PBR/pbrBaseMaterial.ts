@@ -151,6 +151,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public MORPHTARGETS = false;
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
+    public MORPHTARGETS_UV = false;
     public NUM_MORPH_INFLUENCERS = 0;
 
     public IMAGEPROCESSING = false;
@@ -1130,10 +1131,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "VERTEXCOLOR");
         }
 
-        if (defines.NUM_BONE_INFLUENCERS > 0) {
-            fallbacks.addCPUSkinningFallback(fallbackRank++, mesh);
-        }
-
         if (defines.MORPHTARGETS) {
             fallbacks.addFallback(fallbackRank++, "MORPHTARGETS");
         }
@@ -1477,13 +1474,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 defines.TWOSIDEDLIGHTING = false;
             }
 
+            defines.SPECULARAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
+        }
+
+        if (defines._areTexturesDirty || defines._areMiscDirty) {
             defines.ALPHATESTVALUE = `${this._alphaCutOff}${this._alphaCutOff % 1 === 0 ? "." : ""}`;
             defines.PREMULTIPLYALPHA = (this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF);
             defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
             defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
             defines.LINEARALPHAFRESNEL = this._useLinearAlphaFresnel;
-
-            defines.SPECULARAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {

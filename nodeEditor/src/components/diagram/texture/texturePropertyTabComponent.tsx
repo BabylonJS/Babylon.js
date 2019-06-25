@@ -9,6 +9,7 @@ import { TextureNodeModel } from './textureNodeModel';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
 import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
+import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
@@ -58,11 +59,12 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextInputLineComponent label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                     <TextLineComponent label="Type" value="Texture" />
+                    <TextInputLineComponent label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                 </LineContainerComponent>
 
                 <LineContainerComponent title="PROPERTIES">
+                    <CheckBoxLineComponent label="Auto select UV" propertyName="autoSelectUV" target={this.props.node.block!} />
                     <FileButtonLineComponent label="Replace texture" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 </LineContainerComponent>
             </div>

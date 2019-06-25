@@ -1922,6 +1922,36 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_sRGBFactors" {
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
     }
 }
+declare module "babylonjs-loaders/glTF/2.0/Extensions/ExtrasAsMetadata" {
+    import { Nullable } from "babylonjs/types";
+    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Camera } from "babylonjs/Cameras/camera";
+    import { INode, ICamera, IMaterial } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    import { Material } from "babylonjs/Materials/material";
+    /**
+     * Store glTF extras (if present) in BJS objects' metadata
+     */
+    export class ExtrasAsMetadata implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        private _assignExtras;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
+        /** @hidden */
+        loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
+        /** @hidden */
+        createMaterial(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material>;
+    }
+}
 declare module "babylonjs-loaders/glTF/2.0/Extensions/index" {
     export * from "babylonjs-loaders/glTF/2.0/Extensions/EXT_lights_image_based";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_draco_mesh_compression";
@@ -1933,6 +1963,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/index" {
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_minecraftMesh";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_sRGBFactors";
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/ExtrasAsMetadata";
 }
 declare module "babylonjs-loaders/glTF/2.0/index" {
     export * from "babylonjs-loaders/glTF/2.0/glTFLoader";
@@ -4078,6 +4109,29 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         constructor(loader: GLTFLoader);
         dispose(): void;
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * Store glTF extras (if present) in BJS objects' metadata
+     */
+    export class ExtrasAsMetadata implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        private _assignExtras;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
+        /** @hidden */
+        loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
+        /** @hidden */
+        createMaterial(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material>;
     }
 }
 declare module BABYLON {
