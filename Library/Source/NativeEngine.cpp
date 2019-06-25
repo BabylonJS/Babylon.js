@@ -197,8 +197,21 @@ namespace babylon
 
         struct VertexArray final
         {
-            bgfx::IndexBufferHandle indexBuffer;
-            std::vector<bgfx::VertexBufferHandle> vertexBuffers;
+            struct IndexBuffer
+            {
+                bgfx::IndexBufferHandle handle;
+            };
+
+            IndexBuffer indexBuffer;
+
+            struct VertexBuffer
+            {
+                bgfx::VertexBufferHandle handle;
+                uint32_t startVertex;
+                bgfx::VertexDeclHandle declHandle;
+            };
+
+            std::vector<VertexBuffer> vertexBuffers;
         };
 
         enum BlendMode {}; // TODO DEBUG
@@ -377,13 +390,13 @@ namespace babylon
     {
         const auto& vertexArray = *(info[0].As<Napi::External<VertexArray>>().Data());
 
-        bgfx::setIndexBuffer(vertexArray.indexBuffer);
+        bgfx::setIndexBuffer(vertexArray.indexBuffer.handle);
 
-        const auto numVertexBuffers = vertexArray.vertexBuffers.size();
-        for (size_t index = 0; index < numVertexBuffers; ++index)
+        const auto& vertexBuffers = vertexArray.vertexBuffers;
+        for (uint8_t index = 0; index < vertexBuffers.size(); ++index)
         {
-            const auto& vertexBuffer = vertexArray.vertexBuffers[index];
-            bgfx::setVertexBuffer(static_cast<uint8_t>(index), vertexBuffer);
+            const auto& vertexBuffer = vertexBuffers[index];
+            bgfx::setVertexBuffer(index, vertexBuffer.handle, vertexBuffer.startVertex, UINT32_MAX, vertexBuffer.declHandle);
         }
     }
 
@@ -406,33 +419,17 @@ namespace babylon
     {
         VertexArray& vertexArray = *(info[0].As<Napi::External<VertexArray>>().Data());
         const bgfx::IndexBufferHandle handle{ static_cast<uint16_t>(info[1].As<Napi::Number>().Uint32Value()) };
-        vertexArray.indexBuffer = handle;
+        vertexArray.indexBuffer.handle = handle;
     }
 
     Napi::Value NativeEngine::Impl::CreateVertexBuffer(const Napi::CallbackInfo& info)
     {
         const Napi::Uint8Array data = info[0].As<Napi::Uint8Array>();
-        const uint32_t byteStride = info[1].As<Napi::Number>().Uint32Value();
-        const Napi::Array infos = info[2].As<Napi::Array>();
 
+        // HACK: Create an empty valid vertex decl which will never be used. Consider fixing in bgfx.
         bgfx::VertexDecl decl;
         decl.begin();
-        const uint32_t infosLength = infos.Length();
-        for (uint32_t index = 0; index < infosLength; index++)
-        {
-            const Napi::Object info = infos[index].As<Napi::Object>();
-            const uint32_t location = info["location"].As<Napi::Number>().Uint32Value();
-            const uint32_t numElements = info["numElements"].As<Napi::Number>().Uint32Value();
-            const uint32_t type = info["type"].As<Napi::Number>().Uint32Value();
-            const bool normalized = info["normalized"].As<Napi::Boolean>().Value();
-            const uint32_t byteOffset = info["byteOffset"].As<Napi::Number>().Uint32Value();
-
-            const bgfx::Attrib::Enum attrib = static_cast<bgfx::Attrib::Enum>(location);
-            const bgfx::AttribType::Enum attribType = ConvertAttribType(static_cast<WebGLAttribType>(type));
-            decl.add(attrib, numElements, attribType, normalized);
-            decl.m_offset[attrib] = static_cast<uint16_t>(byteOffset);
-        }
-        decl.m_stride = static_cast<uint16_t>(byteStride);
+        decl.m_stride = 1;
         decl.end();
 
         const bgfx::Memory* ref = bgfx::copy(data.Data(), static_cast<uint32_t>(data.ByteLength()));
@@ -450,12 +447,28 @@ namespace babylon
     {
         VertexArray& vertexArray = *(info[0].As<Napi::External<VertexArray>>().Data());
         const bgfx::VertexBufferHandle handle{ static_cast<uint16_t>(info[1].As<Napi::Number>().Uint32Value()) };
-        vertexArray.vertexBuffers.push_back(handle);
+        const uint32_t location = info[2].As<Napi::Number>().Uint32Value();
+        const uint32_t byteOffset = info[3].As<Napi::Number>().Uint32Value();
+        const uint32_t byteStride = info[4].As<Napi::Number>().Uint32Value();
+        const uint32_t numElements = info[5].As<Napi::Number>().Uint32Value();
+        const uint32_t type = info[6].As<Napi::Number>().Uint32Value();
+        const bool normalized = info[7].As<Napi::Boolean>().Value();
+
+        // REVIEW: is _asInt useful for decl.add?
+        bgfx::VertexDecl decl;
+        decl.begin();
+        const bgfx::Attrib::Enum attrib = static_cast<bgfx::Attrib::Enum>(location);
+        const bgfx::AttribType::Enum attribType = ConvertAttribType(static_cast<WebGLAttribType>(type));
+        decl.add(attrib, numElements, attribType, normalized);
+        decl.m_stride = static_cast<uint16_t>(byteStride);
+        decl.end();
+
+        vertexArray.vertexBuffers.push_back({ std::move(handle), byteOffset / byteStride, bgfx::createVertexDecl(decl) });
     }
 
     Napi::Value NativeEngine::Impl::CreateProgram(const Napi::CallbackInfo& info)
     {
-        auto vertexSource = info[0].As<Napi::String>().Utf8Value();
+        const auto vertexSource = info[0].As<Napi::String>().Utf8Value();
         // TODO: This is a HACK to account for the fact that DirectX and OpenGL disagree about the vertical orientation of screen space.
         // Remove this ASAP when we have a more long-term plan to account for this behavior.
         const auto fragmentSource = std::regex_replace(info[1].As<Napi::String>().Utf8Value(), std::regex("dFdy\\("), "-dFdy(");
