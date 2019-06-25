@@ -519,9 +519,9 @@ export class PBRMaterial extends PBRBaseMaterial {
     /**
      * Let user defines the brdf lookup texture used for IBL.
      * A default 8bit version is embedded but you could point at :
-     * * Default texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.png
+     * * Default texture: https://assets.babylonjs.com/environments/correlatedMSBRDF_RGBD.png
      * * Default 16bit pixel depth texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
-     * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF.png
+     * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF_RGBD.png
      * * LEGACY Default None correlated 16bit pixel depth https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
      */
     @serializeAsTexture()
