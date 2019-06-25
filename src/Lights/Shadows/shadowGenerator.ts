@@ -1001,7 +1001,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 const skeleton = mesh.skeleton;
 
                 if (skeleton.isUsingTextureForMatrices) {
-                    const boneTexture = skeleton.getTransformMatrixTexture();
+                    const boneTexture = skeleton.getTransformMatrixTexture(mesh);
 
                     if (!boneTexture) {
                         return;

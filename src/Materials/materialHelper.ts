@@ -762,7 +762,7 @@ export class MaterialHelper {
             const skeleton = mesh.skeleton;
 
             if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
-                const boneTexture = skeleton.getTransformMatrixTexture();
+                const boneTexture = skeleton.getTransformMatrixTexture(mesh);
                 effect.setTexture("boneSampler", boneTexture);
                 effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
             } else {
