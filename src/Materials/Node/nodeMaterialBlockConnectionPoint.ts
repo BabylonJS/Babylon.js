@@ -46,6 +46,10 @@ export class NodeMaterialConnectionPoint {
             }
 
             if (this.isUniform && this.value != null) {
+                if (!isNaN(this.value)) {
+                    return NodeMaterialBlockConnectionPointTypes.Float;
+                }
+
                 switch (this.value.getClassName()) {
                     case "Vector2":
                         return NodeMaterialBlockConnectionPointTypes.Vector2;
