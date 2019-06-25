@@ -64,7 +64,7 @@ export class WebXREnterExitUI implements IDisposable {
     public static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI> {
         var ui = new WebXREnterExitUI(scene, options);
         var supportedPromises = ui._buttons.map((btn) => {
-            return helper.supportsSessionAsync(btn.initializationOptions);
+            return null;//helper.supportsSessionAsync(btn.initializationOptions);
         });
         helper.onStateChangedObservable.add((state) => {
             if (state == WebXRState.NOT_IN_XR) {
@@ -82,7 +82,7 @@ export class WebXREnterExitUI implements IDisposable {
                             return;
                         } else if (helper.state == WebXRState.NOT_IN_XR) {
                             ui._updateButtons(ui._buttons[i]);
-                            await helper.enterXRAsync(ui._buttons[i].initializationOptions, "eye-level");
+                            //await helper.enterXRAsync(ui._buttons[i].initializationOptions, "eye-level");
                         }
                     };
                 }
@@ -101,20 +101,20 @@ export class WebXREnterExitUI implements IDisposable {
             var hmdBtn = document.createElement("button");
             hmdBtn.style.cssText = "color: #868686; border-color: #868686; border-style: solid; margin-left: 10px; height: 50px; width: 80px; background-color: rgba(51,51,51,0.7); background-repeat:no-repeat; background-position: center; outline: none;";
             hmdBtn.innerText = "HMD";
-            this._buttons.push(new WebXREnterExitUIButton(hmdBtn, { immersive: true, outputContext: options.outputCanvasContext }));
-            this._buttons[this._buttons.length - 1].update = function(activeButton: WebXREnterExitUIButton) {
-                this.element.style.display = (activeButton === null || activeButton === this) ? "" : "none";
-                this.element.innerText = activeButton === this ? "EXIT" : "HMD";
-            };
+            // this._buttons.push(new WebXREnterExitUIButton(hmdBtn, { immersive: true, outputContext: options.outputCanvasContext }));
+            // this._buttons[this._buttons.length - 1].update = function(activeButton: WebXREnterExitUIButton) {
+            //     this.element.style.display = (activeButton === null || activeButton === this) ? "" : "none";
+            //     this.element.innerText = activeButton === this ? "EXIT" : "HMD";
+            // };
 
-            var windowBtn = document.createElement("button");
-            windowBtn.style.cssText = hmdBtn.style.cssText;
-            windowBtn.innerText = "Window";
-            this._buttons.push(new WebXREnterExitUIButton(windowBtn, { immersive: false, environmentIntegration: true, outputContext: options.outputCanvasContext }));
-            this._buttons[this._buttons.length - 1].update = function(activeButton: WebXREnterExitUIButton) {
-                this.element.style.display = (activeButton === null || activeButton === this) ? "" : "none";
-                this.element.innerText = activeButton === this ? "EXIT" : "Window";
-            };
+            // var windowBtn = document.createElement("button");
+            // windowBtn.style.cssText = hmdBtn.style.cssText;
+            // windowBtn.innerText = "Window";
+            // this._buttons.push(new WebXREnterExitUIButton(windowBtn, { immersive: false, environmentIntegration: true, outputContext: options.outputCanvasContext }));
+            // this._buttons[this._buttons.length - 1].update = function(activeButton: WebXREnterExitUIButton) {
+            //     this.element.style.display = (activeButton === null || activeButton === this) ? "" : "none";
+            //     this.element.innerText = activeButton === this ? "EXIT" : "Window";
+            // };
             this._updateButtons(null);
         }
 

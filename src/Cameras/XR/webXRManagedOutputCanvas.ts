@@ -9,13 +9,21 @@ export class WebXRManagedOutputCanvas implements IDisposable {
     /**
      * xrpresent context of the canvas which can be used to display/mirror xr content
      */
-    public canvasContext: Nullable<WebGLRenderingContext> = null;
+    public canvasContext: WebGLRenderingContext;
+    public xrLayer:any;
+    
+    public initializeXRLayerAsync(xrSession:any){
+        return (this.canvasContext as any).makeXRCompatible().then(()=>{
+            this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext);
+        });
+    }
+
     /**
      * Initializes the canvas to be added/removed upon entering/exiting xr
      * @param helper the xr experience helper used to trigger adding/removing of the canvas
      * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
      */
-    public constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement) {
+    constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement) {
         if (!canvas) {
             canvas = document.createElement('canvas');
             canvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:100%;height:100%;background-color: #000000;";
@@ -42,10 +50,10 @@ export class WebXRManagedOutputCanvas implements IDisposable {
         this._removeCanvas();
         if (!canvas) {
             this._canvas = null;
-            this.canvasContext = null;
+            (this.canvasContext as any) = null;
         } else {
             this._canvas = canvas;
-            this.canvasContext = <any>this._canvas.getContext('xrpresent');
+            this.canvasContext = <any>this._canvas.getContext('webgl');
         }
     }
 
