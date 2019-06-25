@@ -47,6 +47,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public MORPHTARGETS = false;
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
+    public MORPHTARGETS_UV = false;
     public NUM_MORPH_INFLUENCERS = 0;
 
     /** IMAGE PROCESSING */
@@ -411,6 +412,8 @@ export class NodeMaterial extends PushMaterial {
      */
     public build(verbose: boolean = false) {
         this._buildWasSuccessful = false;
+        var engine = this.getScene().getEngine();
+
         if (this._vertexOutputNodes.length === 0) {
             throw "You must define at least one vertexOutputNode";
         }
@@ -421,8 +424,10 @@ export class NodeMaterial extends PushMaterial {
 
         // Compilation state
         this._vertexCompilationState = new NodeMaterialBuildState();
+        this._vertexCompilationState.supportUniformBuffers = engine.supportsUniformBuffers;
         this._vertexCompilationState.target = NodeMaterialBlockTargets.Vertex;
         this._fragmentCompilationState = new NodeMaterialBuildState();
+        this._fragmentCompilationState.supportUniformBuffers = engine.supportsUniformBuffers;
         this._fragmentCompilationState.target = NodeMaterialBlockTargets.Fragment;
 
         // Shared data
@@ -566,6 +571,10 @@ export class NodeMaterial extends PushMaterial {
             });
 
             // Uniforms
+            this._sharedData.dynamicUniformBlocks.forEach((b) => {
+                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines);
+            });
+
             let mergedUniforms = this._vertexCompilationState.uniforms;
 
             this._fragmentCompilationState.uniforms.forEach((u) => {
@@ -573,6 +582,17 @@ export class NodeMaterial extends PushMaterial {
 
                 if (index === -1) {
                     mergedUniforms.push(u);
+                }
+            });
+
+            // Uniform buffers
+            let mergedUniformBuffers = this._vertexCompilationState.uniformBuffers;
+
+            this._fragmentCompilationState.uniformBuffers.forEach((u) => {
+                let index = mergedUniformBuffers.indexOf(u);
+
+                if (index === -1) {
+                    mergedUniformBuffers.push(u);
                 }
             });
 
@@ -604,6 +624,7 @@ export class NodeMaterial extends PushMaterial {
             }, <EffectCreationOptions>{
                 attributes: this._vertexCompilationState.attributes,
                 uniformsNames: mergedUniforms,
+                uniformBuffersNames: mergedUniformBuffers,
                 samplers: mergedSamplers,
                 defines: join,
                 fallbacks: fallbacks,

@@ -78,14 +78,21 @@ export class FogBlock extends NodeMaterialBlock {
         return this._inputs[4];
     }
 
+    /**
+     * Gets the output component
+     */
+    public get output(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
     public autoConfigure() {
-        if (!this.view.connectedPoint) {
+        if (this.view.isUndefined) {
             this.view.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
         }
-        if (!this.fogColor.connectedPoint) {
+        if (this.fogColor.isUndefined) {
             this.fogColor.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
         }
-        if (!this.fogParameters.connectedPoint) {
+        if (this.fogParameters.isUndefined) {
             this.fogParameters.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
         }
         this._outputs[0].isVarying = true;
@@ -102,8 +109,8 @@ export class FogBlock extends NodeMaterialBlock {
         }
 
         const scene = mesh.getScene();
-        effect.setColor3("fogColor", scene.fogColor);
-        effect.setFloat4("fogParameters", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+        effect.setColor3("u_fogColor", scene.fogColor);
+        effect.setFloat4("u_fogParameters", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -112,6 +119,8 @@ export class FogBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
 
         if (state.target === NodeMaterialBlockTargets.Fragment) {
+            state.sharedData.bindableBlocks.push(this);
+
             state._emitFunctionFromInclude("fogFragmentDeclaration", `//${this.name}`, {
                 removeUniforms: true,
                 removeVaryings: true,

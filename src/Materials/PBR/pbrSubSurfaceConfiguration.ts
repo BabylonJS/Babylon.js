@@ -44,27 +44,27 @@ export interface IMaterialSubSurfaceDefines {
  * Define the code related to the sub surface parameters of the pbr material.
  */
 export class PBRSubSurfaceConfiguration {
-    @serialize()
     private _isRefractionEnabled = false;
     /**
      * Defines if the refraction is enabled in the material.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isRefractionEnabled = false;
 
-    @serialize()
     private _isTranslucencyEnabled = false;
     /**
      * Defines if the translucency is enabled in the material.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isTranslucencyEnabled = false;
 
-    @serialize()
     private _isScatteringEnabled = false;
     // /**
     //  * Defines if the sub surface scattering is enabled in the material.
     //  */
+    // @serialize()
     // @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     // public isScatteringEnabled = false;
 
@@ -92,7 +92,6 @@ export class PBRSubSurfaceConfiguration {
     @serialize()
     public scatteringIntensity: number = 1;
 
-    @serializeAsTexture()
     private _thicknessTexture: Nullable<BaseTexture> = null;
     /**
      * Stores the average thickness of a mesh in a texture (The texture is holding the values linearly).
@@ -101,6 +100,7 @@ export class PBRSubSurfaceConfiguration {
      * 1 would mean maximumThickness
      * The other channels might be use as a mask to vary the different effects intensity.
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public thicknessTexture: Nullable<BaseTexture> = null;
 
@@ -172,7 +172,6 @@ export class PBRSubSurfaceConfiguration {
     @serializeAsColor3()
     public diffusionDistance = Color3.White();
 
-    @serialize()
     private _useMaskFromThicknessTexture = false;
     /**
      * Stores the intensity of the different subsurface effects in the thickness texture.
@@ -180,6 +179,7 @@ export class PBRSubSurfaceConfiguration {
      * * the blue channel is the scattering intensity.
      * * the alpha channel is the refraction intensity.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useMaskFromThicknessTexture: boolean = false;
 
@@ -545,10 +545,12 @@ export class PBRSubSurfaceConfiguration {
     }
 
     /**
-     * Parses a Sub Surface Configuration from a serialized object.
+     * Parses a anisotropy Configuration from a serialized object.
      * @param source - Serialized object.
+     * @param scene Defines the scene we are parsing for
+     * @param rootUrl Defines the rootUrl to load from
      */
-    public parse(source: any): void {
-        SerializationHelper.Parse(() => this, source, null);
+    public parse(source: any, scene: Scene, rootUrl: string): void {
+        SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }
