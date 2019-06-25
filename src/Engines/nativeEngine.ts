@@ -30,9 +30,9 @@ interface INativeEngine {
     deleteIndexBuffer(buffer: any): void;
     recordIndexBuffer(vertexArray: any, buffer: any): void;
 
-    createVertexBuffer(data: ArrayBufferView, byteStride: number, infos: Array<{ location: number, numElements: number, type: number, normalized: boolean, byteOffset: number }>): any;
+    createVertexBuffer(data: ArrayBufferView): any;
     deleteVertexBuffer(buffer: any): void;
-    recordVertexBuffer(vertexArray: any, buffer: any): void;
+    recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
 
     createProgram(vertexShader: string, fragmentShader: string): any;
     getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
@@ -100,18 +100,11 @@ class NativePipelineContext implements IPipelineContext {
 }
 
 class NativeDataBuffer extends DataBuffer {
-    constructor(id: number, data: DataArray) {
-        super();
-        this.id = id;
-        this.data = data;
-    }
-
-    public readonly id: number;
-    public readonly data: DataArray;
     public nativeIndexBuffer?: any;
     public nativeVertexBuffer?: any;
 }
 
+// TODO: change this to match bgfx.
 // Must match Filter enum in SpectreEngine.h.
 class NativeFilter {
     public static readonly POINT = 0;
@@ -131,6 +124,7 @@ class NativeFilter {
     public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 10;
 }
 
+// TODO: change this to match bgfx.
 // Must match AddressMode enum in SpectreEngine.h.
 class NativeAddressMode {
     public static readonly WRAP = 0;
@@ -140,6 +134,7 @@ class NativeAddressMode {
     public static readonly MIRROR_ONCE = 4;
 }
 
+// TODO: change this to match bgfx.
 // Must match BlendMode in SpectreEngine.h.
 class NativeBlendMode {
     public static readonly REPLACE = 0;
@@ -177,44 +172,15 @@ class NativeBlendMode {
 declare var nativeEngine: INativeEngine;
 
 /** @hidden */
-export class NativeEngineOptions {
-    public textureSize = 512;
-
-    public deterministicLockstep = false;
-    public lockstepMaxSteps = 4;
-}
-
-/** @hidden */
 export class NativeEngine extends Engine {
     private readonly _native: INativeEngine = nativeEngine;
-    private readonly _options: NativeEngineOptions;
-
-    private _nextBufferId = 0;
-
-    public isDeterministicLockStep(): boolean {
-        return this._options.deterministicLockstep;
-    }
-
-    public getLockstepMaxSteps(): number {
-        return this._options.lockstepMaxSteps;
-    }
 
     public getHardwareScalingLevel(): number {
         return 1.0;
     }
 
-    public constructor(options: NativeEngineOptions = new NativeEngineOptions()) {
+    public constructor() {
         super(null);
-
-        if (options.deterministicLockstep === undefined) {
-            options.deterministicLockstep = false;
-        }
-
-        if (options.lockstepMaxSteps === undefined) {
-            options.lockstepMaxSteps = 4;
-        }
-
-        this._options = options;
 
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
@@ -296,34 +262,27 @@ export class NativeEngine extends Engine {
 
     public createIndexBuffer(indices: IndicesArray): NativeDataBuffer {
         const data = this._normalizeIndexData(indices);
-        const buffer = new NativeDataBuffer(this._nextBufferId++, data);
+        const buffer = new NativeDataBuffer();
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
+        buffer.nativeIndexBuffer = this._native.createIndexBuffer(data);
         return buffer;
     }
 
     public createVertexBuffer(data: DataArray): NativeDataBuffer {
-        const buffer = new NativeDataBuffer(this._nextBufferId++, data);
+        const buffer = new NativeDataBuffer();
         buffer.references = 1;
+        buffer.nativeVertexBuffer = this._native.createVertexBuffer(ArrayBuffer.isView(data) ? data : new Float32Array(data));
         return buffer;
     }
 
     public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
         const vertexArray = this._native.createVertexArray();
 
-        // Index
         if (indexBuffer) {
-            if (!indexBuffer.nativeIndexBuffer) {
-                indexBuffer.nativeIndexBuffer = this._native.createIndexBuffer(indexBuffer.data as ArrayBufferView);
-            }
-
             this._native.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer);
         }
 
-        // Vertex
-
-        // Map the vertex buffers that point to the same underlying buffer.
-        const map: { [id: number]: { buffer: NativeDataBuffer, byteStride: number, infos: Array<{ location: number, numElements: number, type: number, normalized: boolean, byteOffset: number }> } } = {};
         const attributes = effect.getAttributesNames();
         for (let index = 0; index < attributes.length; index++) {
             const location = effect.getAttributeLocation(index);
@@ -333,37 +292,10 @@ export class NativeEngine extends Engine {
                 if (vertexBuffer) {
                     const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
                     if (buffer) {
-                        let entry = map[buffer.id];
-                        if (!entry) {
-                            entry = { buffer: buffer, byteStride: vertexBuffer.byteStride, infos: [] };
-                            map[buffer.id] = entry;
-                        }
-
-                        // TODO: check if byteStride matches for all vertex buffers??
-
-                        entry.infos.push({
-                            location: location,
-                            numElements: vertexBuffer.getSize(),
-                            type: vertexBuffer.type,
-                            normalized: vertexBuffer.normalized,
-                            byteOffset: vertexBuffer.byteOffset
-                        });
+                        this._native.recordVertexBuffer(vertexArray, buffer.nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized);
                     }
                 }
             }
-        }
-
-        // Record vertex buffer for each unique buffer.
-        for (const id in map) {
-            const entry = map[id];
-            const buffer = entry.buffer;
-            if (!buffer.nativeVertexBuffer) {
-                // TODO: handle non-normalized non-float data (shader always expects float data)
-
-                const data = ArrayBuffer.isView(buffer.data) ? buffer.data : new Float32Array(buffer.data);
-                buffer.nativeVertexBuffer = this._native.createVertexBuffer(data, entry.byteStride, entry.infos);
-            }
-            this._native.recordVertexBuffer(vertexArray, buffer.nativeVertexBuffer);
         }
 
         return vertexArray;
