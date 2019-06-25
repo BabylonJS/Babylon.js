@@ -189,13 +189,14 @@ export class Skeleton implements IAnimatable {
 
     /**
      * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
+     * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
      * @returns a raw texture containing the data
      */
     public getTransformMatrixTexture(mesh: AbstractMesh): Nullable<RawTexture> {
         if (this.needInitialSkinMatrix && mesh._transformMatrixTexture) {
             return mesh._transformMatrixTexture;
         }
-        
+
         return this._transformMatrixTexture;
     }
 
@@ -483,9 +484,9 @@ export class Skeleton implements IAnimatable {
                     if (this.isUsingTextureForMatrices) {
                         const textureWidth = (this.bones.length + 1) * 4;
                         if (!mesh._transformMatrixTexture || mesh._transformMatrixTexture.getSize().width !== textureWidth) {
-                            
+
                             if (mesh._transformMatrixTexture) {
-                                mesh._transformMatrixTexture.dispose();                     
+                                mesh._transformMatrixTexture.dispose();
                             }
 
                             mesh._transformMatrixTexture = RawTexture.CreateRGBATexture(mesh._bonesTransformMatrices, (this.bones.length + 1) * 4, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
