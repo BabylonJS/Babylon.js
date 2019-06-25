@@ -49,6 +49,29 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     <Vector3PropertyTabComponent globalState={globalState} connection={connection} />
                 );
         }
+
+        switch (this.props.inputNode.outputType) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                return (
+                    <FloatPropertyTabComponent globalState={globalState} connection={connection} />
+                );
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                return (
+                    <Vector2PropertyTabComponent globalState={globalState} connection={connection} />
+                );
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                return (
+                    <Color3PropertyTabComponent globalState={globalState} connection={connection} />
+                );
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+            case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
+                return (
+                    <Vector3PropertyTabComponent globalState={globalState} connection={connection} />
+                );
+        }
+
         return null;
     }
 
@@ -98,7 +121,7 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextLineComponent label="Type" value={StringTools.GetBaseType(connection.type)} />
+                    <TextLineComponent label="Type" value={StringTools.GetBaseType(this.props.inputNode.outputType)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {

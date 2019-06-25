@@ -1,5 +1,7 @@
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlock } from './nodeMaterialBlock';
+import { InputBlock } from './Blocks/Input/inputBlock';
+import { TextureBlock } from './Blocks/Fragment/textureBlock';
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -16,9 +18,14 @@ export class NodeMaterialBuildStateSharedData {
     public varyingDeclaration = "";
 
     /**
-     * Uniform connection points
+     * Input blocks
      */
-    public uniformConnectionPoints = new Array<NodeMaterialConnectionPoint>();
+    public inputBlocks = new Array<InputBlock>();
+
+    /**
+     * Input blocks
+     */
+    public textureBlocks = new Array<TextureBlock>();
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)

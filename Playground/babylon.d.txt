@@ -51298,7 +51298,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to multiply 2 vector4
+     * Block used to multiply 2 values
      */
     export class MultiplyBlock extends NodeMaterialBlock {
         /**
@@ -51388,36 +51388,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to scale a value
-     */
-    export class ScaleBlock extends NodeMaterialBlock {
-        /**
-         * Creates a new ScaleBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the value operand input component
-         */
-        readonly value: NodeMaterialConnectionPoint;
-        /**
-         * Gets the scale operand input component
-         */
-        readonly scale: NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        readonly output: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
      * Block used to transform a vector2 with a matrix
      */
     export class Vector2TransformBlock extends NodeMaterialBlock {
@@ -51476,36 +51446,6 @@ declare module BABYLON {
          * Gets the matrix transform input
          */
         readonly transform: NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        readonly output: NodeMaterialConnectionPoint;
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to multiply two matrices
-     */
-    export class MatrixMultiplicationBlock extends NodeMaterialBlock {
-        /**
-         * Creates a new MatrixMultiplicationBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the left operand
-         */
-        readonly left: NodeMaterialConnectionPoint;
-        /**
-         * Gets the right operand
-         */
-        readonly right: NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */

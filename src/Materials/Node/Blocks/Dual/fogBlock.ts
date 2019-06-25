@@ -9,6 +9,7 @@ import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPo
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { MaterialHelper } from '../../../materialHelper';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
+import { InputBlock } from '../Input/inputBlock';
 
 /**
  * Block used to add support for scene fog
@@ -86,16 +87,22 @@ export class FogBlock extends NodeMaterialBlock {
     }
 
     public autoConfigure() {
-        if (this.view.isUndefined) {
-            this.view.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+        if (!this.view.isConnected) {
+            let viewInput = new InputBlock("view");
+            viewInput.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+            viewInput.output.connectTo(this.view);
         }
-        if (this.fogColor.isUndefined) {
-            this.fogColor.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
+        if (!this.fogColor.isConnected) {
+            let fogColorInput = new InputBlock("fogColor");
+            fogColorInput.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
+            fogColorInput.output.connectTo(this.fogColor);
         }
-        if (this.fogParameters.isUndefined) {
-            this.fogParameters.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
+        if (!this.fogParameters.isConnected) {
+            let fogParametersInput = new InputBlock("fogParameters");
+            fogParametersInput.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
+            fogParametersInput.output.connectTo(this.fogParameters);
         }
-        this._outputs[0].isVarying = true;
+        this._outputs[0]._needToEmitVarying = true;
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {

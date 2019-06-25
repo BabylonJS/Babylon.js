@@ -9,12 +9,20 @@ import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { InputBlock } from '../Input/inputBlock';
+import { Light } from '../../../../Lights/light';
+import { Nullable } from '../../../../types';
 
 /**
  * Block used to add light in the fragment shader
  */
 export class LightBlock extends NodeMaterialBlock {
     private _lightId: number;
+
+    /**
+     * Gets or sets the light associated with this block
+     */
+    public light: Nullable<Light>;
 
     /**
      * Create a new LightBlock
@@ -26,7 +34,6 @@ export class LightBlock extends NodeMaterialBlock {
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
 
-        this.registerInput("light", NodeMaterialBlockConnectionPointTypes.Light, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuseOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("specularOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -55,18 +62,10 @@ export class LightBlock extends NodeMaterialBlock {
     }
 
     /**
-    * Gets the light input component.
-    * If not defined, all lights will be considered
-    */
-    public get light(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
-    }
-
-    /**
     * Gets the camera (or eye) position component
     */
     public get cameraPosition(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[2];
     }
 
     /**
@@ -84,15 +83,17 @@ export class LightBlock extends NodeMaterialBlock {
     }
 
     public autoConfigure() {
-        if (this.cameraPosition.isUndefined) {
-            this.cameraPosition.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+        if (!this.cameraPosition.isConnected) {
+            let cameraPositionInput = new InputBlock("cameraPosition");
+            cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+            cameraPositionInput.output.connectTo(this.cameraPosition);
         }
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         const scene = mesh.getScene();
 
-        if (!this.light.value) {
+        if (!this.light) {
             MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, nodeMaterial.maxSimultaneousLights);
         } else {
             let state = {
@@ -103,7 +104,7 @@ export class LightBlock extends NodeMaterialBlock {
                 specularEnabled: false
             };
 
-            MaterialHelper.PrepareDefinesForLight(scene, mesh, this.light.value, this._lightId, defines, true, state);
+            MaterialHelper.PrepareDefinesForLight(scene, mesh, this.light, this._lightId, defines, true, state);
 
             if (state.needRebuild) {
                 defines.rebuild();
@@ -127,10 +128,10 @@ export class LightBlock extends NodeMaterialBlock {
 
         const scene = mesh.getScene();
 
-        if (!this.light.value) {
+        if (!this.light) {
             MaterialHelper.BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights, false);
         } else {
-            MaterialHelper.BindLight(this.light.value, this._lightId, scene, mesh, effect, true, false);
+            MaterialHelper.BindLight(this.light, this._lightId, scene, mesh, effect, true, false);
         }
     }
 
@@ -172,7 +173,7 @@ export class LightBlock extends NodeMaterialBlock {
             ]
         });
 
-        if (!this.light.value) { // Emit for all lights
+        if (!this.light) { // Emit for all lights
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
                 repeatKey: "maxSimultaneousLights"
             });
@@ -203,7 +204,7 @@ export class LightBlock extends NodeMaterialBlock {
             state.compilationString += `vec3 normalW = v_${this.worldNormal.associatedVariableName};\r\n`;
         }
 
-        if (this.light.value) {
+        if (this.light) {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                 replaceStrings: [
                     { search: /{X}/g, replace: this._lightId.toString() }

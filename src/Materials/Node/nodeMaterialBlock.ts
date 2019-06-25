@@ -15,6 +15,7 @@ export class NodeMaterialBlock {
     private _buildId: number;
     private _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
+    private _isInput = false;
 
     /** @hidden */
     public _inputs = new Array<NodeMaterialConnectionPoint>();
@@ -31,6 +32,13 @@ export class NodeMaterialBlock {
      */
     public get isFinalMerger(): boolean {
         return this._isFinalMerger;
+    }
+
+    /**
+     * Gets a boolean indicating that this block is an input (e.g. it sends data to the shader)
+     */
+    public get isInput(): boolean {
+        return this._isInput;
     }
 
     /**
@@ -105,15 +113,15 @@ export class NodeMaterialBlock {
      * @param name defines the block name
      * @param target defines the target of that block (Vertex by default)
      * @param isFinalMerger defines a boolean indicating that this block is an end block (e.g. it is generating a system value). Default is false
+     * @param isInput defines a boolean indicating that this block is an input (e.g. it sends data to the shader). Default is false
      */
-    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false) {
+    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false, isInput = false) {
         this.name = name;
 
         this._target = target;
 
-        if (isFinalMerger) {
-            this._isFinalMerger = true;
-        }
+        this._isFinalMerger = isFinalMerger;
+        this._isInput = isInput;
     }
 
     /**
@@ -135,9 +143,9 @@ export class NodeMaterialBlock {
     }
 
     protected _declareOutput(output: NodeMaterialConnectionPoint, state: NodeMaterialBuildState): string {
-        if (output.isVarying) {
-            return `${output.associatedVariableName}`;
-        }
+        // if (output.isVarying) {
+        //     return `${output.associatedVariableName}`;
+        // }
 
         return `${state._getGLType(output.type)} ${output.associatedVariableName}`;
     }
@@ -211,7 +219,7 @@ export class NodeMaterialBlock {
      */
     public getFirstAvailableInput(forOutput: Nullable<NodeMaterialConnectionPoint> = null) {
         for (var input of this._inputs) {
-            if (!input.isUniform && !input.isAttribute && !input.connectedPoint) {
+            if (!input.connectedPoint) {
                 if (!forOutput || (forOutput.type & input.type) !== 0 || input.type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
                     return input;
                 }
@@ -265,6 +273,10 @@ export class NodeMaterialBlock {
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
+        // Empty. Must be defined by child nodes
+    }
+
+    protected _emit(state: NodeMaterialBuildState, define?: string) {
         // Empty. Must be defined by child nodes
     }
 
@@ -341,7 +353,7 @@ export class NodeMaterialBlock {
         // Check if "parent" blocks are compiled
         for (var input of this._inputs) {
             if (!input.connectedPoint) {
-                if (!input.isOptional && !input.isAttribute && !input.isUniform) { // Emit a warning
+                if (!input.isOptional) { // Emit a warning
                     state.sharedData.checks.notConnectedNonOptionalInputs.push(input);
                 }
                 continue;
@@ -370,6 +382,10 @@ export class NodeMaterialBlock {
             console.log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
         }
 
+
+        /** Emit input blocks */
+        this._emit(state);
+
         /** Prepare outputs */
         for (var output of this._outputs) {
             if ((output.target & this.target!) === 0) {
@@ -378,19 +394,10 @@ export class NodeMaterialBlock {
             if ((output.target & state.target!) === 0) {
                 continue;
             }
-            output.associatedVariableName = state._getFreeVariableName(output.name);
-            state._emitVaryings(output);
-        }
 
-        // Build
-        for (var input of this._inputs) {
-            if ((input.target & this.target!) === 0) {
-                continue;
+            if (!output.associatedVariableName) {
+                output.associatedVariableName = state._getFreeVariableName(output.name);
             }
-            if ((input.target & state.target!) === 0) {
-                continue;
-            }
-            state._emitUniformOrAttributes(input);
         }
 
         // Checks final outputs
@@ -405,7 +412,7 @@ export class NodeMaterialBlock {
             }
         }
 
-        if (state.sharedData.emitComments) {
+        if (!this.isInput && state.sharedData.emitComments) {
             state.compilationString += `\r\n//${this.name}\r\n`;
         }
 

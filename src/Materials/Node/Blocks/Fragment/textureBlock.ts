@@ -6,22 +6,24 @@ import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPo
 import { BaseTexture } from '../../../Textures/baseTexture';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
+import { InputBlock } from '../Input/inputBlock';
+import { Effect } from '../../../../Materials/effect';
+import { Mesh } from '../../../../Meshes/mesh';
 
 /**
  * Block used to read a texture from a sampler
  */
 export class TextureBlock extends NodeMaterialBlock {
     private _defineName: string;
+    private _samplerName: string;
+    private _transformedUVName: string;
+    private _textureTransformName: string;
+    private _textureInfoName: string;
 
     /**
-     * Gets or sets a boolean indicating that the block can automatically fetch the texture matrix
+     * Gets or sets the texture associated with the node
      */
-    public autoConnectTextureMatrix = true;
-
-    /**
-     * Gets or sets a boolean indicating that the block can automatically select the uv channel based on texture
-     */
-    public autoSelectUV = true;
+    public texture: BaseTexture;
 
     /**
      * Create a new TextureBlock
@@ -31,17 +33,11 @@ export class TextureBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment);
 
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2);
-        this.registerInput("textureInfo", NodeMaterialBlockConnectionPointTypes.Vector2, true);
-
-        this.registerInput("transformedUV", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.Vertex);
-        this.registerInput("texture", NodeMaterialBlockConnectionPointTypes.Texture, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("textureTransform", NodeMaterialBlockConnectionPointTypes.Matrix, true, NodeMaterialBlockTargets.Vertex);
 
         this.registerOutput("color", NodeMaterialBlockConnectionPointTypes.Color4);
 
         // Setup
         this._inputs[0]._needToEmitVarying = false;
-        this._inputs[0]._forceUniformInVertexShaderOnly = true;
     }
 
     /**
@@ -60,34 +56,6 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the texture information input component
-     */
-    public get textureInfo(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the transformed uv input component
-     */
-    public get transformedUV(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
-    }
-
-    /**
-     * Gets the texture input component
-     */
-    public get texture(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
-    }
-
-    /**
-     * Gets the texture transform input component
-     */
-    public get textureTransform(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
-    }
-
-    /**
      * Gets the output component
      */
     public get output(): NodeMaterialConnectionPoint {
@@ -95,42 +63,22 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public autoConfigure() {
-        if (this.uv.isUndefined) {
-            this.uv.setAsAttribute();
-            this.uv.connectTo(this.transformedUV);
-        }
-
-        if (this.transformedUV.isUndefined) {
-            this.uv.connectTo(this.transformedUV);
-        }
-    }
-
-    public initialize(state: NodeMaterialBuildState) {
-        if (this.texture.value && this.texture.value.getTextureMatrix) {
-            const texture = this.texture.value as BaseTexture;
-
-            if (this.autoConnectTextureMatrix) {
-                this.textureTransform.valueCallback = () => texture.getTextureMatrix();
-            }
-            if (this.autoSelectUV) {
-                this.uv.setAsAttribute("uv" + (texture.coordinatesIndex ? (texture.coordinatesIndex + 1) : ""));
-            }
+        if (!this.uv.isConnected) {
+            let uvInput = new InputBlock("uv");
+            uvInput.setAsAttribute();
+            uvInput.output.connectTo(this.uv);
         }
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        if (!this.texture.value || !this.texture.value.getTextureMatrix) {
+        if (!this.texture || !this.texture.getTextureMatrix) {
             return;
         }
 
         let uvInput = this.uv;
-        let textureTransform = this.textureTransform;
-        let isTextureTransformConnected = textureTransform.connectedPoint != null || textureTransform.isUniform;
-
-        const texture = this.texture.value as BaseTexture;
         let mainUVName = ("vMain" + uvInput.associatedVariableName).toUpperCase();
 
-        if (isTextureTransformConnected && !texture.getTextureMatrix().isIdentityAs3x2()) {
+        if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
             defines.setValue(this._defineName, true);
             defines.setValue(mainUVName, false);
         } else {
@@ -140,49 +88,59 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public isReady() {
-        let texture = this.texture.value as BaseTexture;
-        if (texture && !texture.isReadyOrNotBlocking()) {
+        if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
         }
 
         return true;
     }
 
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+        if (!mesh) {
+            return;
+        }
+
+        effect.setFloat(this._textureInfoName, this.texture.level);
+        effect.setMatrix(this._textureTransformName, this.texture.getTextureMatrix());
+        effect.setTexture(this._samplerName, this.texture);
+    }
+
     private _injectVertexCode(state: NodeMaterialBuildState) {
         let uvInput = this.uv;
-        let transformedUV = this.transformedUV;
-        let textureTransform = this.textureTransform;
-        let isTextureTransformConnected = textureTransform.connectedPoint != null || textureTransform.isUniform;
 
         // Inject code in vertex
         this._defineName = state._getFreeDefineName("UVTRANSFORM");
         let mainUVName = "vMain" + uvInput.associatedVariableName;
 
-        transformedUV.associatedVariableName = state._getFreeVariableName(transformedUV.name);
-        state._emitVaryings(transformedUV, this._defineName, true);
-        state._emitVaryings(transformedUV, mainUVName.toUpperCase(), true, false, mainUVName);
+        this._transformedUVName = state._getFreeVariableName("transformedUV");
+        this._textureTransformName = state._getFreeVariableName("textureTransform");
+        this._textureInfoName = state._getFreeVariableName("textureInfoName");
 
-        textureTransform.associatedVariableName = state._getFreeVariableName(textureTransform.name);
-        state._emitUniformOrAttributes(textureTransform, this._defineName);
+        state._emitVaryingFromString(this._transformedUVName, "vec2", this._defineName);
 
-        if (isTextureTransformConnected) {
-            if (state.sharedData.emitComments) {
-                state.compilationString += `\r\n//${this.name}\r\n`;
-            }
-            state.compilationString += `#ifdef ${this._defineName}\r\n`;
-            state.compilationString += `${transformedUV.associatedVariableName} = vec2(${textureTransform.associatedVariableName} * vec4(${uvInput.associatedVariableName}, 1.0, 0.0));\r\n`;
-            state.compilationString += `#else\r\n`;
-            state.compilationString += `${mainUVName} = ${uvInput.associatedVariableName};\r\n`;
-            state.compilationString += `#endif\r\n`;
-        } else {
-            state.compilationString += `${mainUVName} = ${uvInput.associatedVariableName};\r\n`;
+        state.uniforms.push(this._textureTransformName);
+        state.uniforms.push(this._textureInfoName);
+
+        state.compilationString += `mat4 ${this._textureTransformName};\r\n`;
+        state.compilationString += `float ${this._textureInfoName};\r\n`;
+
+        if (state.sharedData.emitComments) {
+            state.compilationString += `\r\n//${this.name}\r\n`;
         }
+        state.compilationString += `#ifdef ${this._defineName}\r\n`;
+        state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}, 1.0, 0.0));\r\n`;
+        state.compilationString += `#else\r\n`;
+        state.compilationString += `${mainUVName} = ${uvInput.associatedVariableName};\r\n`;
+        state.compilationString += `#endif\r\n`;
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         state.sharedData.blockingBlocks.push(this);
+
+        this._samplerName = state._getFreeVariableName(this.name + "Sampler");
+        state.samplers.push(this._samplerName);
 
         // Vertex
         this._injectVertexCode(state._vertexState);
@@ -191,17 +149,13 @@ export class TextureBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
 
         let uvInput = this.uv;
-        let transformedUV = this.transformedUV;
-        let textureInfo = this.textureInfo;
-        let samplerInput = this.texture;
         let output = this._outputs[0];
-        let isTextureInfoConnected = textureInfo.connectedPoint != null || textureInfo.isUniform;
-        const complement = isTextureInfoConnected ? ` * ${textureInfo.associatedVariableName}.y` : "";
+        const complement = ` * ${this._textureInfoName}`;
 
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
-        state.compilationString += `vec4 ${output.associatedVariableName} = texture2D(${samplerInput.associatedVariableName}, ${transformedUV.associatedVariableName})${complement};\r\n`;
+        state.compilationString += `vec4 ${output.associatedVariableName} = texture2D(${this._samplerName}, ${this._transformedUVName})${complement};\r\n`;
         state.compilationString += `#else\r\n`;
-        state.compilationString += `vec4 ${output.associatedVariableName} = texture2D(${samplerInput.associatedVariableName}, ${"vMain" + uvInput.associatedVariableName})${complement};\r\n`;
+        state.compilationString += `vec4 ${output.associatedVariableName} = texture2D(${this._samplerName}, ${"vMain" + uvInput.associatedVariableName})${complement};\r\n`;
         state.compilationString += `#endif\r\n`;
 
         return this;

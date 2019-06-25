@@ -5091,7 +5091,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, ".diagramBlock {\n  background: white;\n  width: 100%;\n  border: 4px solid black; }\n  .diagramBlock.input {\n    background: green;\n    color: white; }\n  .diagramBlock.attribute {\n    background: orange; }\n  .diagramBlock.output {\n    background: blue;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    margin: 10px;\n    font-size: 16px;\n    text-align: center;\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden; }\n  .diagramBlock .value {\n    height: 34px;\n    text-align: center;\n    font-size: 20px;\n    font-weight: bold; }\n    .diagramBlock .value .fullColor {\n      height: 100%; }\n  .diagramBlock .inputs .input-port {\n    display: grid;\n    grid-template-columns: 4px calc(100% - 4px);\n    grid-template-rows: 100%; }\n    .diagramBlock .inputs .input-port .input-port-plug {\n      grid-column: 1;\n      grid-row: 1;\n      display: grid;\n      align-content: center;\n      margin-left: -11px; }\n      .diagramBlock .inputs .input-port .input-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .inputs .input-port .input-port-label {\n      margin-left: 10px;\n      grid-column: 2;\n      grid-row: 1;\n      margin-bottom: 2px; }\n  .diagramBlock .outputs .output-port {\n    display: grid;\n    grid-template-columns: calc(100% - 4px) 4px;\n    grid-template-rows: 100%; }\n    .diagramBlock .outputs .output-port .output-port-plug {\n      grid-column: 2;\n      grid-row: 1;\n      display: grid;\n      align-content: center; }\n      .diagramBlock .outputs .output-port .output-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .outputs .output-port .output-port-label {\n      text-align: right;\n      margin-right: 10px;\n      grid-column: 1;\n      grid-row: 1;\n      margin-bottom: 2px; }\n", ""]);
+exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.diagramBlock {\n  background: white;\n  width: 100%;\n  border: 4px solid black; }\n  .diagramBlock.input {\n    background: green;\n    color: white; }\n  .diagramBlock.attribute {\n    background: orange; }\n  .diagramBlock.output {\n    background: blue;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    margin: 10px;\n    font-size: 16px;\n    text-align: center;\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden; }\n  .diagramBlock .value {\n    height: 34px;\n    text-align: center;\n    font-size: 20px;\n    font-weight: bold; }\n    .diagramBlock .value .fullColor {\n      height: 100%; }\n  .diagramBlock .inputs .input-port {\n    display: grid;\n    grid-template-columns: 4px calc(100% - 4px);\n    grid-template-rows: 100%; }\n    .diagramBlock .inputs .input-port .input-port-plug {\n      grid-column: 1;\n      grid-row: 1;\n      display: grid;\n      align-content: center;\n      margin-left: -11px; }\n      .diagramBlock .inputs .input-port .input-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .inputs .input-port .input-port-label {\n      margin-left: 10px;\n      grid-column: 2;\n      grid-row: 1;\n      margin-bottom: 2px; }\n  .diagramBlock .outputs .output-port {\n    display: grid;\n    grid-template-columns: calc(100% - 4px) 4px;\n    grid-template-rows: 100%; }\n    .diagramBlock .outputs .output-port .output-port-plug {\n      grid-column: 2;\n      grid-row: 1;\n      display: grid;\n      align-content: center; }\n      .diagramBlock .outputs .output-port .output-port-plug .srd-port {\n        background: grey; }\n    .diagramBlock .outputs .output-port .output-port-label {\n      text-align: right;\n      margin-right: 10px;\n      grid-column: 1;\n      grid-row: 1;\n      margin-bottom: 2px; }\n", ""]);
 
 // exports
 
@@ -48306,8 +48306,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-
 __webpack_require__(/*! ./nodeList.scss */ "./components/nodeList/nodeList.scss");
 var NodeListComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeListComponent, _super);
@@ -48322,8 +48320,8 @@ var NodeListComponent = /** @class */ (function (_super) {
             Fragment: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AlphaTestBlock"], , babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ImageProcessingBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBAMergerBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["RGBASplitterBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["TextureBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["LightBlock"]],
             Outputs: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["VertexOutputBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FragmentOutputBlock"]],
             Dual: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["FogBlock"]],
-            Math: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AddBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ClampBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MatrixMultiplicationBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MultiplyBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ScaleBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector2TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector3TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector4TransformBlock"]],
-            Inputs: ["Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
+            Math: [babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["AddBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["ClampBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["MultiplyBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector2TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector3TransformBlock"], babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_4__["Vector4TransformBlock"]],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
         };
         // Create node menu
         var blockMenu = [];
@@ -48889,8 +48887,13 @@ var GraphEditor = /** @class */ (function (_super) {
                                 link.input.syncWithNodeMaterialConnectionPoint(link.input.connection);
                                 link.output.syncWithNodeMaterialConnectionPoint(link.output.connection);
                             }
-                            else if (link.input.connection.value) {
-                                link.input.connection.value = null;
+                            else {
+                                var inputNode = link.output.parent;
+                                inputNode.connection = undefined;
+                                if (link.input.connection.value) {
+                                    inputNode.ports[link.output.name].defaultValue = link.input.connection.value;
+                                    link.input.connection.value = null;
+                                }
                             }
                         }
                     }
@@ -48964,6 +48967,9 @@ var GraphEditor = /** @class */ (function (_super) {
         localNode.addPort(outPort);
         if (!connection) {
             switch (type) {
+                case "Float":
+                    outPort.defaultValue = 0;
+                    break;
                 case "Vector2":
                     outPort.defaultValue = babylonjs_Materials_Node_Blocks_Fragment_textureBlock__WEBPACK_IMPORTED_MODULE_13__["Vector2"].Zero();
                     break;
