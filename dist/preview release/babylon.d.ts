@@ -37597,7 +37597,7 @@ declare module BABYLON {
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */
-        static WaitForOrientationChangeAsync(timeout?: number): Promise<{}>;
+        static WaitForOrientationChangeAsync(timeout?: number): Promise<unknown>;
         /**
          * @hidden
          */
@@ -41316,9 +41316,9 @@ declare module BABYLON {
         private _snapDistance;
         private _scaleRatio;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         /**
          * If set to true, planar drag is enabled
          */
@@ -43206,9 +43206,9 @@ declare module BABYLON {
         private _uniformScalingMesh;
         private _octahedron;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         attachedMesh: Nullable<AbstractMesh>;
         /**
          * Creates a ScaleGizmo
@@ -43467,9 +43467,9 @@ declare module BABYLON {
          */
         zGizmo: PlaneRotationGizmo;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         private _meshAttached;
         attachedMesh: Nullable<AbstractMesh>;
         /**
@@ -46507,9 +46507,9 @@ declare module BABYLON {
         /**
          * Let user defines the brdf lookup texture used for IBL.
          * A default 8bit version is embedded but you could point at :
-         * * Default texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.png
+         * * Default texture: https://assets.babylonjs.com/environments/correlatedMSBRDF_RGBD.png
          * * Default 16bit pixel depth texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
-         * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF.png
+         * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF_RGBD.png
          * * LEGACY Default None correlated 16bit pixel depth https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
          */
         environmentBRDFTexture: Nullable<BaseTexture>;
@@ -47529,7 +47529,7 @@ declare module BABYLON {
         /**
          * Gets the rendering group id the layer should render in.
          */
-        readonly renderingGroupId: number;
+        renderingGroupId: number;
         /**
          * An event triggered when the effect layer has been disposed.
          */
