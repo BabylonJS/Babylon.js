@@ -10012,7 +10012,7 @@ declare module BABYLON {
         private _useTextureToStoreBoneMatrices;
         /**
          * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
-         * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
+         * Please note that this option is not available if the hardware does not support it
          */
         useTextureToStoreBoneMatrices: boolean;
         private _animationPropertiesOverride;
@@ -10066,9 +10066,10 @@ declare module BABYLON {
         getTransformMatrices(mesh: AbstractMesh): Float32Array;
         /**
          * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
+         * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
          * @returns a raw texture containing the data
          */
-        getTransformMatrixTexture(): Nullable<RawTexture>;
+        getTransformMatrixTexture(mesh: AbstractMesh): Nullable<RawTexture>;
         /**
          * Gets the current hosting scene
          * @returns a scene object
@@ -24805,6 +24806,8 @@ declare module BABYLON {
         };
         /** @hidden */
         _bonesTransformMatrices: Nullable<Float32Array>;
+        /** @hidden */
+        _transformMatrixTexture: Nullable<RawTexture>;
         /**
          * Gets or sets a skeleton to apply skining transformations
          * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
@@ -37594,7 +37597,7 @@ declare module BABYLON {
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */
-        static WaitForOrientationChangeAsync(timeout?: number): Promise<unknown>;
+        static WaitForOrientationChangeAsync(timeout?: number): Promise<{}>;
         /**
          * @hidden
          */
@@ -41313,9 +41316,9 @@ declare module BABYLON {
         private _snapDistance;
         private _scaleRatio;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<unknown>;
+        onDragStartObservable: Observable<{}>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<unknown>;
+        onDragEndObservable: Observable<{}>;
         /**
          * If set to true, planar drag is enabled
          */
@@ -43203,9 +43206,9 @@ declare module BABYLON {
         private _uniformScalingMesh;
         private _octahedron;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<unknown>;
+        onDragStartObservable: Observable<{}>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<unknown>;
+        onDragEndObservable: Observable<{}>;
         attachedMesh: Nullable<AbstractMesh>;
         /**
          * Creates a ScaleGizmo
@@ -43464,9 +43467,9 @@ declare module BABYLON {
          */
         zGizmo: PlaneRotationGizmo;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<unknown>;
+        onDragStartObservable: Observable<{}>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<unknown>;
+        onDragEndObservable: Observable<{}>;
         private _meshAttached;
         attachedMesh: Nullable<AbstractMesh>;
         /**

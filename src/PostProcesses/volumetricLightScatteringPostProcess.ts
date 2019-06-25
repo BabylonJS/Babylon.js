@@ -213,7 +213,11 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                 { vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" },
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix"],
-                ["diffuseSampler"], join);
+                ["diffuseSampler"],
+                join,
+                undefined, undefined, undefined,
+                { maxSimultaneousMorphTargets: mesh.numBoneInfluencers }
+        );
         }
 
         return this._volumetricLightScatteringPass.isReady();
