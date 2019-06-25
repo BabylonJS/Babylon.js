@@ -29,6 +29,7 @@ import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { LightNodeModel } from './components/diagram/light/lightNodeModel';
 import { LightNodeFactory } from './components/diagram/light/lightNodeFactory';
 import { DataStorage } from './dataStorage';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -108,7 +109,32 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         } else {
             newNode = new InputNodeModel();
-            (newNode as InputNodeModel).connection = options.connection;
+            let inputNodeModel = newNode as InputNodeModel;
+            inputNodeModel.connection = options.connection;
+
+            switch (options.type) {
+                case "Float":
+                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Float;
+                    break;
+                case "Vector2":
+                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Vector2;
+                    break;
+                case "Vector3":
+                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Vector3;
+                    break;
+                case "Vector4":
+                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Vector4;
+                    break;
+                case "Matrix":
+                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Matrix;
+                    break;
+                case "Color3":
+                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Color3;
+                    break;
+                case "Color4":
+                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Color4;
+                    break;
+            }
         }
         this._nodes.push(newNode)
         newNode.setPosition(1600 - (300 * options.column), 210 * this._rowPos[options.column])

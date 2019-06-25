@@ -9,6 +9,7 @@ import { Effect, EffectFallbacks } from '../../../effect';
 import { MaterialHelper } from '../../../materialHelper';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
+import { InputBlock } from '../Input/inputBlock';
 
 /**
  * Block used to add support for vertex skinning (bones)
@@ -92,20 +93,30 @@ export class BonesBlock extends NodeMaterialBlock {
     }
 
     public autoConfigure() {
-        if (this.matricesIndices.isUndefined) {
-            this.matricesIndices.setAsAttribute();
+        if (!this.matricesIndices.isConnected) {
+            let matricesIndicesInput = new InputBlock("matricesIndices");
+            matricesIndicesInput.setAsAttribute("matricesIndices");
+            matricesIndicesInput.output.connectTo(this.matricesIndices);
         }
-        if (this.matricesWeights.isUndefined) {
-            this.matricesWeights.setAsAttribute();
+        if (!this.matricesWeights.isConnected) {
+            let matricesWeightsInput = new InputBlock("matricesWeights");
+            matricesWeightsInput.setAsAttribute("matricesWeights");
+            matricesWeightsInput.output.connectTo(this.matricesWeights);
         }
-        if (this.matricesIndicesExtra.isUndefined) {
-            this.matricesIndicesExtra.setAsAttribute();
+        if (!this.matricesIndicesExtra.isConnected) {
+            let matricesIndicesExtraInput = new InputBlock("matricesIndicesExtra");
+            matricesIndicesExtraInput.setAsAttribute("matricesIndicesExtra");
+            matricesIndicesExtraInput.output.connectTo(this.matricesIndicesExtra);
         }
-        if (this.matricesWeightsExtra.isUndefined) {
-            this.matricesWeightsExtra.setAsAttribute();
+        if (!this.matricesWeightsExtra.isConnected) {
+            let matricesWeightsExtraInput = new InputBlock("matricesWeightsExtra");
+            matricesWeightsExtraInput.setAsAttribute("matricesWeightsExtra");
+            matricesWeightsExtraInput.output.connectTo(this.matricesWeightsExtra);
         }
-        if (this.world.isUndefined) {
-            this.world.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+        if (!this.world.isConnected) {
+            let worldInput = new InputBlock("world");
+            worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+            worldInput.output.connectTo(this.world);
         }
     }
 

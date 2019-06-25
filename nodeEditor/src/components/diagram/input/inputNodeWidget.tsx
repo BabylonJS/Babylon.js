@@ -89,11 +89,9 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
 
         let connection = this.props.node!.connection;
         let value = "";
-        let name = "";
+        let name = StringTools.GetBaseType(this.props.node!.outputType);
 
         if (connection) {
-            name = StringTools.GetBaseType(connection.type)
-
             if (connection.isAttribute) {
                 value = "mesh." + connection.name;
             } else if (connection.isWellKnownValue) {
