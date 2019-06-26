@@ -7,12 +7,14 @@ import { Effect, EffectFallbacks } from '../effect';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
 import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
+import { InputBlock } from './Blocks';
 
 /**
  * Defines a block that can be used inside a node based material
  */
 export class NodeMaterialBlock {
     private _buildId: number;
+    private _buildTarget: NodeMaterialBlockTargets;
     private _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
     private _isInput = false;
@@ -306,6 +308,18 @@ export class NodeMaterialBlock {
         // Do nothing
     }
 
+
+    /**
+     * Initialize defines for shader compilation
+     * @param mesh defines the mesh to be rendered
+     * @param nodeMaterial defines the node material requesting the update
+     * @param defines defines the material defines to be prepared
+     * @param useInstances specifies that instances should be used
+     */
+    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+        // Do nothing
+    }
+
     /**
      * Lets the block try to connect some inputs automatically
      */
@@ -336,14 +350,31 @@ export class NodeMaterialBlock {
         return true;
     }
 
+    private _processBuild(block: NodeMaterialBlock, state: NodeMaterialBuildState, input: NodeMaterialConnectionPoint) {
+        block.build(state);
+
+        if (state._vertexState && (block.target & this.target) === 0) { // context switch! We need a varying
+            if ((!block.isInput && state.target !== block._buildTarget) // block was already emitted by vertex shader
+                || (block.isInput && (block as InputBlock).isAttribute) // block is an attribute
+            ) {
+                let connectedPoint = input.connectedPoint!;
+                state._vertexState._emitVaryingFromString("v_" + connectedPoint.associatedVariableName, state._getGLType(connectedPoint.type));
+                state._vertexState.compilationString += `${"v_" + connectedPoint.associatedVariableName} = ${connectedPoint.associatedVariableName};\r\n`;
+                input.associatedVariableName = "v_" + connectedPoint.associatedVariableName;
+                input._enforceAssociatedVariableName = true;
+            }
+        }
+    }
+
     /**
      * Compile the current node and generate the shader code
      * @param state defines the current compilation state (uniforms, samplers, current string)
-     * @returns the current block
+     * @param contextSwitched indicates that the previous block was built for a different context (vertex vs. fragment)
+     * @returns true if already built
      */
-    public build(state: NodeMaterialBuildState) {
+    public build(state: NodeMaterialBuildState, contextSwitched = false): boolean {
         if (this._buildId === state.sharedData.buildId) {
-            return;
+            return true;
         }
 
         // Check if "parent" blocks are compiled
@@ -364,13 +395,13 @@ export class NodeMaterialBlock {
             }
 
             let block = input.connectedPoint.ownerBlock;
-            if (block && block !== this && block.buildId !== state.sharedData.buildId) {
-                block.build(state);
+            if (block && block !== this) {
+                this._processBuild(block, state, input);
             }
         }
 
         if (this._buildId === state.sharedData.buildId) {
-            return; // Need to check again as inputs can be connected multiple time to this endpoint
+            return true; // Need to check again as inputs can be connected multiple time to this endpoint
         }
 
         // Logs
@@ -413,6 +444,7 @@ export class NodeMaterialBlock {
         this._buildBlock(state);
 
         this._buildId = state.sharedData.buildId;
+        this._buildTarget = state.target;
 
         // Compile connected blocks
         for (var output of this._outputs) {
@@ -420,12 +452,14 @@ export class NodeMaterialBlock {
                 continue;
             }
 
-            for (var block of output.connectedBlocks) {
+            for (var endpoint of output.endpoints) {
+                let block = endpoint.ownerBlock;
+
                 if (block && (block.target & state.target) !== 0) {
-                    block.build(state);
+                    this._processBuild(block, state, endpoint);
                 }
             }
         }
-        return this;
+        return false;
     }
 }

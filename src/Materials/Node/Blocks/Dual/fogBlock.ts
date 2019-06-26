@@ -15,6 +15,7 @@ import { InputBlock } from '../Input/inputBlock';
  * Block used to add support for scene fog
  */
 export class FogBlock extends NodeMaterialBlock {
+    private _fogDistanceName: string;
     /**
      * Create a new FogBlock
      * @param name defines the block name
@@ -25,8 +26,6 @@ export class FogBlock extends NodeMaterialBlock {
         // Vertex
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
-
-        this.registerOutput("vFogDistance", NodeMaterialBlockConnectionPointTypes.Vector3, NodeMaterialBlockTargets.Vertex);
 
         // Fragment
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3OrColor4, false, NodeMaterialBlockTargets.Fragment);
@@ -93,12 +92,12 @@ export class FogBlock extends NodeMaterialBlock {
             viewInput.output.connectTo(this.view);
         }
         if (!this.fogColor.isConnected) {
-            let fogColorInput = new InputBlock("fogColor");
+            let fogColorInput = new InputBlock("fogColor", undefined, NodeMaterialBlockConnectionPointTypes.Color3);
             fogColorInput.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
             fogColorInput.output.connectTo(this.fogColor);
         }
         if (!this.fogParameters.isConnected) {
-            let fogParametersInput = new InputBlock("fogParameters");
+            let fogParametersInput = new InputBlock("fogParameters", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
             fogParametersInput.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
             fogParametersInput.output.connectTo(this.fogParameters);
         }
@@ -138,19 +137,19 @@ export class FogBlock extends NodeMaterialBlock {
             let color = this.color;
             let fogColor = this.fogColor;
             let fogParameters = this.fogParameters;
-            let output = this._outputs[1];
-            let vFogDistance = this._outputs[0];
+            let output = this._outputs[0];
 
             state.compilationString += `#ifdef FOG\r\n`;
-            state.compilationString += `float ${tempFogVariablename} = CalcFogFactor(${vFogDistance.associatedVariableName}, ${fogParameters.associatedVariableName});\r\n`;
+            state.compilationString += `float ${tempFogVariablename} = CalcFogFactor(${this._fogDistanceName}, ${fogParameters.associatedVariableName});\r\n`;
             state.compilationString += this._declareOutput(output, state) + ` = ${tempFogVariablename} * ${color.associatedVariableName}.rgb + (1.0 - ${tempFogVariablename}) * ${fogColor.associatedVariableName};\r\n`;
             state.compilationString += `#else\r\n${this._declareOutput(output, state)} =  ${color.associatedVariableName}.rgb;\r\n`;
             state.compilationString += `#endif\r\n`;
         } else {
             let worldPos = this.worldPosition;
             let view = this.view;
-            let vFogDistance = this._outputs[0];
-            state.compilationString += this._declareOutput(vFogDistance, state) + ` = (${view.associatedVariableName} * ${worldPos.associatedVariableName}).xyz;\r\n`;
+            this._fogDistanceName = state._getFreeVariableName("vFogDistance");
+            state._emitVaryingFromString(this._fogDistanceName, "vec3");
+            state.compilationString += `${this._fogDistanceName} = (${view.associatedVariableName} * ${worldPos.associatedVariableName}).xyz;\r\n`;
         }
 
         return this;

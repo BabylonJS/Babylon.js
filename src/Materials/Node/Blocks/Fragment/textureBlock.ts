@@ -15,7 +15,6 @@ import { Mesh } from '../../../../Meshes/mesh';
  */
 export class TextureBlock extends NodeMaterialBlock {
     private _defineName: string;
-    private _mainUVDefineName: string;
     private _samplerName: string;
     private _transformedUVName: string;
     private _textureTransformName: string;
@@ -32,7 +31,7 @@ export class TextureBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+        super(name, NodeMaterialBlockTargets.VertexAndFragment);
 
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false);
 
@@ -76,10 +75,8 @@ export class TextureBlock extends NodeMaterialBlock {
 
         if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
             defines.setValue(this._defineName, true);
-            defines.setValue(this._mainUVDefineName, false);
         } else {
             defines.setValue(this._defineName, false);
-            defines.setValue(this._mainUVDefineName, true);
         }
     }
 
@@ -106,7 +103,6 @@ export class TextureBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         this._defineName = state._getFreeDefineName("UVTRANSFORM");
-        this._mainUVDefineName = ("vMain" + uvInput.associatedVariableName).toUpperCase();
 
         this._mainUVName = "vMain" + uvInput.associatedVariableName;
         this._transformedUVName = state._getFreeVariableName("transformedUV");
@@ -114,9 +110,9 @@ export class TextureBlock extends NodeMaterialBlock {
         this._textureInfoName = state._getFreeVariableName("textureInfoName");
 
         state._emitVaryingFromString(this._transformedUVName, "vec2", this._defineName);
-        state._emitVaryingFromString(this._mainUVName, "vec2", this._mainUVDefineName);
+        state._emitVaryingFromString(this._mainUVName, "vec2", this._defineName, true);
 
-        state._emitUniformFromString(this._transformedUVName, "mat4", this._defineName)
+        state._emitUniformFromString(this._textureTransformName, "mat4", this._defineName)
 
         if (state.sharedData.emitComments) {
             state.compilationString += `\r\n//${this.name}\r\n`;
@@ -130,6 +126,10 @@ export class TextureBlock extends NodeMaterialBlock {
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
+
+        if (state.target !== NodeMaterialBlockTargets.Fragment) {
+            return;
+        }
 
         state.sharedData.blockingBlocks.push(this);
 

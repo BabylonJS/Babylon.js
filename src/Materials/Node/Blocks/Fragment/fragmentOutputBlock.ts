@@ -19,7 +19,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment, true);
 
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Vector2OrColor3OrColor4);
+        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Vector2OrVector3OrColor3OrVector4OrColor4);
     }
 
     /**
@@ -45,7 +45,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         if (input.connectedPoint && input.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector2) {
             state.compilationString += `gl_FragColor = vec4(${input.associatedVariableName}.r, ${input.associatedVariableName}.g, 0., 1.0);\r\n`;
-        } else if (input.connectedPoint && input.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color3) {
+        } else if (input.connectedPoint && (input.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color3 || input.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector3)) {
             state.compilationString += `gl_FragColor = vec4(${input.associatedVariableName}, 1.0);\r\n`;
         } else {
             state.compilationString += `gl_FragColor = ${input.associatedVariableName};\r\n`;
