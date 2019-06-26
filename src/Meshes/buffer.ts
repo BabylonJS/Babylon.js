@@ -19,21 +19,6 @@ export class Buffer {
     public readonly byteStride: number;
 
     /**
-     * Gets the byte length.
-     */
-    public get byteLength(): number {
-        if (!this._data) {
-            return 0;
-        }
-
-        if (this._data instanceof Array) {
-            return this._data.length * Float32Array.BYTES_PER_ELEMENT;
-        }
-
-        return this._data.byteLength;
-    }
-
-    /**
      * Constructor
      * @param engine the engine
      * @param data the data to use for this buffer
@@ -274,13 +259,6 @@ export class VertexBuffer {
      * Gets the data type of each component in the array.
      */
     public readonly type: number;
-
-    /**
-     * Gets the byte length.
-     */
-    public get byteLength(): number {
-        return this._buffer.byteLength - this.byteOffset;
-    }
 
     /**
      * Constructor
