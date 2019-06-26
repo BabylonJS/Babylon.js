@@ -12,6 +12,7 @@ import { ShapeBuilder } from "../../Meshes/Builders/shapeBuilder";
 import { LinesBuilder } from "../../Meshes/Builders/linesBuilder";
 import { LinesMesh } from '../../Meshes/linesMesh';
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
+import { Scalar } from "../../Maths/math.scalar";
 
 declare var Ammo: any;
 
@@ -467,6 +468,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 impostor._pluginData.toDispose.forEach((d: any) => {
                     this.bjsAMMO.destroy(d);
                 });
+                impostor._pluginData.toDispose = [];
             }
         }
     }
@@ -900,7 +902,19 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
         switch (impostor.type) {
             case PhysicsImpostor.SphereImpostor:
-                returnValue = new Ammo.btSphereShape(extendSize.x / 2);
+                // Is there a better way to compare floats number? With an epsylon or with a Math function
+                if (Scalar.WithinEpsilon(extendSize.x, extendSize.y, 0.0001) && Scalar.WithinEpsilon(extendSize.x, extendSize.z, 0.0001)) {
+                    returnValue = new Ammo.btSphereShape(extendSize.x / 2);
+                } else {
+                    // create a btMultiSphereShape because it's not possible to set a local scaling on a btSphereShape
+                    var positions = [new Ammo.btVector3(0, 0, 0)];
+                    var radii = [1];
+                    returnValue = new Ammo.btMultiSphereShape(positions, radii, 1);
+                    returnValue.setLocalScaling(new Ammo.btVector3(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2));
+                }
+                break;
+            case PhysicsImpostor.CapsuleImpostor:
+                returnValue = new Ammo.btCapsuleShape(extendSize.x / 2, extendSize.y / 2);
                 break;
             case PhysicsImpostor.CylinderImpostor:
                 this._tmpAmmoVectorA.setValue(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2);

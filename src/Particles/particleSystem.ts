@@ -1698,6 +1698,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (this._vertexBuffer) {
             this._vertexBuffer._rebuild();
         }
+
+        for (var key in this._vertexBuffers) {
+            this._vertexBuffers[key]._rebuild();
+        }
     }
 
     /**
@@ -2220,7 +2224,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         let dragGradients = particleSystem.getDragGradients();
         if (dragGradients) {
-            serializationObject.dragyGradients = [];
+            serializationObject.dragGradients = [];
             for (var dragGradient of dragGradients) {
 
                 var serializedGradient: any = {

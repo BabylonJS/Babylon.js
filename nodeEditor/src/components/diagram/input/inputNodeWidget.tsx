@@ -5,6 +5,9 @@ import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
 import { DefaultPortModel } from '../defaultPortModel';
 import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { Color3 } from 'babylonjs/Maths/math';
+import { StringTools } from '../../../stringTools';
 
 /**
  * GenericNodeWidgetProps
@@ -36,6 +39,34 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
         }
     }
 
+    renderValue(value: string) {
+        if (value) {
+            return (
+                <div>
+                    {value}
+                </div>
+            )
+        }
+
+        let connection = this.props.node!.connection;
+        if (!connection || !connection.isUniform) {
+            return null;
+        }
+
+        switch (connection.type) {
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
+            case NodeMaterialBlockConnectionPointTypes.Color4: {
+                let color = connection.value as Color3;
+                return (
+                    <div className="fullColor" style={{ background: color.toHexString() }}></div>
+                )
+            }
+        }
+
+        return null;
+    }
+
     render() {
         var outputPorts = new Array<JSX.Element>()
         let port: DefaultPortModel;
@@ -58,9 +89,11 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
 
         let connection = this.props.node!.connection;
         let value = "";
-        let name = port!.name;
+        let name = "";
 
         if (connection) {
+            name = StringTools.GetBaseType(connection.type)
+
             if (connection.isAttribute) {
                 value = "mesh." + connection.name;
             } else if (connection.isWellKnownValue) {
@@ -83,6 +116,9 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                     case NodeMaterialWellKnownValues.Projection:
                         value = "Projection";
                         break;
+                    case NodeMaterialWellKnownValues.CameraPosition:
+                        value = "Camera position";
+                        break;
                     case NodeMaterialWellKnownValues.Automatic:
                         value = "Automatic";
                         break;
@@ -101,7 +137,9 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                     {outputPorts}
                 </div>
                 <div className="value">
-                    {value}
+                    {
+                        this.renderValue(value)
+                    }
                 </div>
             </div>
         );

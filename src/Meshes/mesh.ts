@@ -66,7 +66,7 @@ class _InstanceDataStorage {
     public instancesData: Float32Array;
     public overridenInstanceCount: number;
     public isFrozen: boolean;
-    public previousBatch: _InstancesBatch;
+    public previousBatch: Nullable<_InstancesBatch>;
     public hardwareInstancedRendering: boolean;
     public sideOrientation: number;
 }
@@ -386,7 +386,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
                 "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw",
                 "onAfterWorldMatrixUpdateObservable", "onCollideObservable", "onCollisionPositionChangeObservable", "onRebuildObservable",
-                "onDisposeObservable"
+                "onDisposeObservable", "lightSources"
             ],
                 ["_poseMatrix"]);
 
@@ -1546,6 +1546,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
+    public _rebuild(): void {
+        if (this._instanceDataStorage.instancesBuffer) {
+            // Dispose instance buffer to be recreated in _renderWithInstances when rendered
+            this._instanceDataStorage.instancesBuffer.dispose();
+            this._instanceDataStorage.instancesBuffer = null;
+        }
+        super._rebuild();
+    }
+
+    /** @hidden */
     public _freeze() {
         if (!this.subMeshes) {
             return;
@@ -1563,6 +1573,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @hidden */
     public _unFreeze() {
         this._instanceDataStorage.isFrozen = false;
+        this._instanceDataStorage.previousBatch = null;
     }
 
     /**
@@ -2601,15 +2612,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var currentUVs = vertex_data.uvs;
         var currentIndices = vertex_data.indices;
         var currentPositions = vertex_data.positions;
-        var currentNormals = vertex_data.normals;
+        var currentColors = vertex_data.colors;
 
-        if (currentIndices === null || currentPositions === null || currentNormals === null || currentUVs === null) {
-            Logger.Warn("VertexData contains null entries");
+        if (currentIndices === void 0 || currentPositions === void 0 || currentIndices === null || currentPositions === null) {
+            Logger.Warn("VertexData contains empty entries");
         }
         else {
             var positions: Array<number> = new Array();
             var indices: Array<number> = new Array();
             var uvs: Array<number> = new Array();
+            var colors: Array<number> = new Array();
             var pstring: Array<string> = new Array(); //lists facet vertex positions (a,b,c) as string "a|b|c"
 
             var indexPtr: number = 0; // pointer to next available index value
@@ -2646,8 +2658,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                             for (var k = 0; k < 3; k++) {
                                 positions.push(currentPositions[3 * facet[j] + k]);
                             }
-                            for (var k = 0; k < 2; k++) {
-                                uvs.push(currentUVs[2 * facet[j] + k]);
+                            if (currentColors !== null && currentColors !== void 0) {
+                                for (var k = 0; k < 4; k++) {
+                                    colors.push(currentColors[4 * facet[j] + k]);
+                                }
+                            }
+                            if (currentUVs !== null && currentUVs !== void 0) {
+                                for (var k = 0; k < 2; k++) {
+                                    uvs.push(currentUVs[2 * facet[j] + k]);
+                                }
                             }
                         }
                         // add new index pointer to indices array
@@ -2663,7 +2682,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             vertex_data.positions = positions;
             vertex_data.indices = indices;
             vertex_data.normals = normals;
-            vertex_data.uvs = uvs;
+            if (currentUVs !== null && currentUVs !== void 0) {
+                vertex_data.uvs = uvs;
+            }
+            if (currentColors !== null && currentColors !== void 0) {
+                vertex_data.colors = colors;
+            }
 
             vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
         }
@@ -2946,6 +2970,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (tangents) {
                     this.geometry.setVerticesData(VertexBuffer.TangentKind + index, tangents, false, 3);
                 }
+
+                const uvs = morphTarget.getUVs();
+                if (uvs) {
+                    this.geometry.setVerticesData(VertexBuffer.UVKind + "_" + index, uvs, false, 2);
+                }
             }
         } else {
             var index = 0;
@@ -2959,6 +2988,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 if (this.geometry.isVerticesDataPresent(VertexBuffer.TangentKind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.TangentKind + index);
+                }
+                if (this.geometry.isVerticesDataPresent(VertexBuffer.UVKind + index)) {
+                    this.geometry.removeVerticesData(VertexBuffer.UVKind + "_" + index);
                 }
                 index++;
             }

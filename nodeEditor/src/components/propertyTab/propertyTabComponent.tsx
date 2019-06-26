@@ -4,6 +4,7 @@ import { GlobalState } from '../../globalState';
 import { Nullable } from 'babylonjs/types';
 import { DefaultNodeModel } from '../../components/diagram/defaultNodeModel';
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
+import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -48,10 +49,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </div>
                 </div>
                 <div>
-                    <ButtonLineComponent label="Reset to default" onClick={() => {
-                        this.props.globalState.nodeMaterial!.setToDefault();
-                        this.props.globalState.onResetRequiredObservable.notifyObservers();
-                    }} />
+                    <LineContainerComponent title="PROPERTIES">
+                    </LineContainerComponent>
+                    <LineContainerComponent title="GENERAL">
+                        <ButtonLineComponent label="Reset to default" onClick={() => {
+                            this.props.globalState.nodeMaterial!.setToDefault();
+                            this.props.globalState.onResetRequiredObservable.notifyObservers();
+                        }} />
+                    </LineContainerComponent>
+                    <LineContainerComponent title="UI">
+                        <ButtonLineComponent label="Zoom to fit" onClick={() => {
+                            this.props.globalState.onZoomToFitRequiredObservable.notifyObservers();
+                        }} />
+                    </LineContainerComponent>
                 </div>
             </div>
         );

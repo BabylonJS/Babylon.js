@@ -9,7 +9,7 @@ import { DefaultPortModel } from '../defaultPortModel';
 /**
  * GenericNodeWidgetProps
  */
-export interface TextureNodeWidgetProps {
+export interface ITextureNodeWidgetProps {
     node: Nullable<TextureNodeModel>;
     globalState: GlobalState;
 }
@@ -17,12 +17,12 @@ export interface TextureNodeWidgetProps {
 /**
  * Used to display a node block for the node editor
  */
-export class TextureNodeWidget extends React.Component<TextureNodeWidgetProps> {
+export class TextureNodeWidget extends React.Component<ITextureNodeWidgetProps> {
 	/**
 	 * Creates a GenericNodeWidget
 	 * @param props 
 	 */
-    constructor(props: TextureNodeWidgetProps) {
+    constructor(props: ITextureNodeWidgetProps) {
         super(props);
         this.state = {};
 
@@ -72,7 +72,7 @@ export class TextureNodeWidget extends React.Component<TextureNodeWidgetProps> {
         return (
             <div className={"diagramBlock"}>
                 <div className="header">
-                    {`Texture (${this.props.node && this.props.node.texture ? this.props.node.texture.name : "not set"})`}
+                    {this.props.node!.block!.name}
                 </div>
                 <div className="inputs">
                     {inputPorts}

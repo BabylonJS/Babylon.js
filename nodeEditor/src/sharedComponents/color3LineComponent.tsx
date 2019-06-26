@@ -11,6 +11,7 @@ export interface IColor3LineComponentProps {
     target: any;
     propertyName: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onChange?: () => void;
 }
 
 export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { isExpanded: boolean, color: Color3 }> {
@@ -48,6 +49,10 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this.props.target[this.props.propertyName] = newColor;
 
         this.setState({ color: newColor });
+
+        if (this.props.onChange) {
+            this.props.onChange();
+        }
     }
 
     switchExpandState() {
@@ -56,7 +61,6 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     }
 
     raiseOnPropertyChanged(previousValue: Color3) {
-
         if (!this.props.onPropertyChangedObservable) {
             return;
         }

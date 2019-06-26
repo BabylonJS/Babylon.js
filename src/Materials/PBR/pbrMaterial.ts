@@ -519,9 +519,9 @@ export class PBRMaterial extends PBRBaseMaterial {
     /**
      * Let user defines the brdf lookup texture used for IBL.
      * A default 8bit version is embedded but you could point at :
-     * * Default texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.png
+     * * Default texture: https://assets.babylonjs.com/environments/correlatedMSBRDF_RGBD.png
      * * Default 16bit pixel depth texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
-     * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF.png
+     * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF_RGBD.png
      * * LEGACY Default None correlated 16bit pixel depth https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
      */
     @serializeAsTexture()
@@ -753,19 +753,19 @@ export class PBRMaterial extends PBRBaseMaterial {
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
         const material = SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
         if (source.clearCoat) {
-            material.clearCoat.parse(source.clearCoat);
+            material.clearCoat.parse(source.clearCoat, scene, rootUrl);
         }
         if (source.anisotropy) {
-            material.anisotropy.parse(source.anisotropy);
+            material.anisotropy.parse(source.anisotropy, scene, rootUrl);
         }
         if (source.brdf) {
-            material.brdf.parse(source.brdf);
+            material.brdf.parse(source.brdf, scene, rootUrl);
         }
         if (source.sheen) {
-            material.sheen.parse(source.sheen);
+            material.sheen.parse(source.sheen, scene, rootUrl);
         }
         if (source.subSurface) {
-            material.subSurface.parse(source.subSurface);
+            material.subSurface.parse(source.subSurface, scene, rootUrl);
         }
         return material;
     }

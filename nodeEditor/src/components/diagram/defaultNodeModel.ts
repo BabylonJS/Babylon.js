@@ -63,7 +63,7 @@ export class DefaultNodeModel extends NodeModel {
                 } else {
                     model.addAll(link);
                 }
-            } else {
+            } else if (!connection.isUndefined) {
                 // Create value node for the connection
                 var type = ""
                 if (connection.type == NodeMaterialBlockConnectionPointTypes.Texture) {
@@ -76,6 +76,9 @@ export class DefaultNodeModel extends NodeModel {
                     type = "Vector2"
                 } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4) {
                     type = "Vector4"
+                }
+                else if (connection.type & NodeMaterialBlockConnectionPointTypes.Float) {
+                    type = "Float"
                 }
 
                 // Create links

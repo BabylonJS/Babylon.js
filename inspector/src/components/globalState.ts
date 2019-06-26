@@ -46,6 +46,22 @@ export class GlobalState {
         Tools.StoreLocalBooleanSettings("settings_onlyUseEulers", value);
     }
 
+    private _ignoreBackfacesForPicking: Nullable<boolean> = null;
+
+    public get ignoreBackfacesForPicking(): boolean {
+        if (this._ignoreBackfacesForPicking === null) {
+            this._ignoreBackfacesForPicking = Tools.ReadLocalBooleanSettings("settings_ignoreBackfacesForPicking", false);
+        }
+
+        return this._ignoreBackfacesForPicking!;
+    }
+
+    public set ignoreBackfacesForPicking(value: boolean) {
+        this._ignoreBackfacesForPicking = value;
+
+        Tools.StoreLocalBooleanSettings("settings_ignoreBackfacesForPicking", value);
+    }
+
     public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
         this.onPropertyChangedObservable = propertyChangedObservable;
 

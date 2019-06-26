@@ -23,6 +23,7 @@ import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { _MeshCollisionData } from '../Collisions/meshCollisionData';
 import { _DevTools } from '../Misc/devTools';
+import { RawTexture } from '../Materials/Textures/rawTexture';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -608,6 +609,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _bonesTransformMatrices: Nullable<Float32Array> = null;
 
+    /** @hidden */
+    public _transformMatrixTexture: Nullable<RawTexture> = null;
+
     /**
      * Gets or sets a skeleton to apply skining transformations
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
@@ -833,9 +837,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     public set scaling(newScaling: Vector3) {
         this._scaling = newScaling;
-        if (this.physicsImpostor) {
-            this.physicsImpostor.forceUpdate();
-        }
     }
 
     // Methods
@@ -961,7 +962,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined
+     * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined.
+     * Note that it returns a shallow bounding of the mesh (i.e. it does not include children).
+     * To get the full bounding of all children, call `getHierarchyBoundingVectors` instead.
      * @returns a BoundingInfo
      */
     public getBoundingInfo(): BoundingInfo {
@@ -981,45 +984,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
      * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
      * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
+     * @param predicate predicate that is passed in to getHierarchyBoundingVectors when selecting which object should be included when scaling
      * @returns the current mesh
      */
-    public normalizeToUnitCube(includeDescendants = true, ignoreRotation = false): AbstractMesh {
-        let storedRotation: Nullable<Vector3> = null;
-        let storedRotationQuaternion: Nullable<Quaternion> = null;
-
-        if (ignoreRotation) {
-            if (this.rotationQuaternion) {
-                storedRotationQuaternion = this.rotationQuaternion.clone();
-                this.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
-            } else if (this.rotation) {
-                storedRotation = this.rotation.clone();
-                this.rotation.copyFromFloats(0, 0, 0);
-            }
-        }
-
-        let boundingVectors = this.getHierarchyBoundingVectors(includeDescendants);
-        let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
-        let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
-
-        if (maxDimension === 0) {
-            return this;
-        }
-
-        let scale = 1 / maxDimension;
-
-        this.scaling.scaleInPlace(scale);
-
-        if (ignoreRotation) {
-            if (this.rotationQuaternion && storedRotationQuaternion) {
-                this.rotationQuaternion.copyFrom(storedRotationQuaternion);
-            } else if (this.rotation && storedRotation) {
-                this.rotation.copyFrom(storedRotation);
-            }
-        }
-
-        return this;
+    public normalizeToUnitCube(includeDescendants = true, ignoreRotation = false, predicate?: Nullable<(node: AbstractMesh) => boolean>): AbstractMesh {
+        return <AbstractMesh>super.normalizeToUnitCube(includeDescendants, ignoreRotation, predicate);
     }
-
     /**
      * Overwrite the current bounding info
      * @param boundingInfo defines the new bounding info
@@ -1583,6 +1553,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         var index: number;
 
+        // mesh map release.
+        if (this._scene.useMaterialMeshMap) {
+            // remove from material mesh map id needed
+            if (this._material && this._material.meshMap) {
+                this._material.meshMap[this.uniqueId] = undefined;
+            }
+        }
+
         // Smart Array Retainers.
         this.getScene().freeActiveMeshes();
         this.getScene().freeRenderingGroups();
@@ -1595,6 +1573,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         // Skeleton
         this._internalAbstractMeshDataInfo._skeleton = null;
+
+        if (this._transformMatrixTexture) {
+            this._transformMatrixTexture.dispose();
+            this._transformMatrixTexture = null;
+        }
 
         // Intersections in progress
         for (index = 0; index < this._intersectionsInProgress.length; index++) {
