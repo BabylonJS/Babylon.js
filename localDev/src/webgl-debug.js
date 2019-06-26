@@ -201,3 +201,4 @@ var createNodeMaterial = function(scene) {
   - morph
   - bones
   - multi textures
+  - Direct connection from attributes to fragment output
