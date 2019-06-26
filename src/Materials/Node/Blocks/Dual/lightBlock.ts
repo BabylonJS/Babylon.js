@@ -91,6 +91,10 @@ export class LightBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        if (!defines._areLightsDirty) {
+            return;
+        }
+        
         const scene = mesh.getScene();
 
         if (!this.light) {

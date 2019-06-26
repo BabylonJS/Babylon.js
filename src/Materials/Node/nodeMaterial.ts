@@ -75,10 +75,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
             this._keys.push(name);
         }
 
-        if (this[name] !== value) {
-            this[name] = value;
-            this.markAsUnprocessed();
-        }
+        this[name] = value;
     }
 }
 
@@ -553,6 +550,10 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Shared defines
+        this._sharedData.blocksWithDefines.forEach((b) => {
+            b.initializeDefines(mesh, this, defines, useInstances);
+        });
+
         this._sharedData.blocksWithDefines.forEach((b) => {
             b.prepareDefines(mesh, this, defines, useInstances);
         });

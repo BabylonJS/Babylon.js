@@ -20,6 +20,7 @@ export class TextureBlock extends NodeMaterialBlock {
     private _textureTransformName: string;
     private _textureInfoName: string;
     private _mainUVName: string;
+    private _mainUVDefineName: string;
 
     /**
      * Gets or sets the texture associated with the node
@@ -68,7 +69,19 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+        if (!defines._areTexturesDirty) {
+            return;
+        }
+        
+        defines.setValue(this._mainUVDefineName, false);
+    }
+
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        if (!defines._areTexturesDirty) {
+            return;
+        }
+    
         if (!this.texture || !this.texture.getTextureMatrix) {
             return;
         }
@@ -77,6 +90,7 @@ export class TextureBlock extends NodeMaterialBlock {
             defines.setValue(this._defineName, true);
         } else {
             defines.setValue(this._defineName, false);
+            defines.setValue(this._mainUVDefineName, true);
         }
     }
 
@@ -103,6 +117,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         this._defineName = state._getFreeDefineName("UVTRANSFORM");
+        this._mainUVDefineName = state._getFreeDefineName("vMain" + uvInput.associatedVariableName);
 
         this._mainUVName = "vMain" + uvInput.associatedVariableName;
         this._transformedUVName = state._getFreeVariableName("transformedUV");
@@ -110,7 +125,7 @@ export class TextureBlock extends NodeMaterialBlock {
         this._textureInfoName = state._getFreeVariableName("textureInfoName");
 
         state._emitVaryingFromString(this._transformedUVName, "vec2", this._defineName);
-        state._emitVaryingFromString(this._mainUVName, "vec2", this._defineName, true);
+        state._emitVaryingFromString(this._mainUVName, "vec2", this._mainUVDefineName);
 
         state._emitUniformFromString(this._textureTransformName, "mat4", this._defineName)
 
