@@ -10,6 +10,7 @@ import { _AlphaState } from "../../States/index";
 import { _TypeStore } from '../../Misc/typeStore';
 import { _DevTools } from '../../Misc/devTools';
 import { IInspectable } from '../../Misc/iInspectable';
+import { Engine } from '../../Engines/engine';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -257,7 +258,7 @@ export class Texture extends BaseTexture {
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see http://doc.babylonjs.com/babylon101/materials#texture
      * @param url define the url of the picture to load as a texture
-     * @param scene define the scene the texture will belong to
+     * @param scene define the scene or engine the texture will belong to
      * @param noMipmap define if the texture will require mip maps or not
      * @param invertY define if the texture needs to be inverted on the y axis during loading
      * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
@@ -267,8 +268,8 @@ export class Texture extends BaseTexture {
      * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      */
-    constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
-        super(scene);
+    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | Engine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
+        super((sceneOrEngine && (sceneOrEngine as Scene).getClassName && (sceneOrEngine as Scene).getClassName() === "Scene") ? (sceneOrEngine as Scene) : null);
 
         this.name = url || "";
         this.url = url;
@@ -281,12 +282,13 @@ export class Texture extends BaseTexture {
             this._format = format;
         }
 
-        scene = this.getScene();
+        var scene = this.getScene();
+        var engine = (sceneOrEngine && (sceneOrEngine as Engine).getCaps) ? (sceneOrEngine as Engine) : (scene ? scene.getEngine() : null);
 
-        if (!scene) {
+        if (!engine) {
             return;
         }
-        scene.getEngine().onBeforeTextureInitObservable.notifyObservers(this);
+        engine.onBeforeTextureInitObservable.notifyObservers(this);
 
         let load = () => {
             if (this._texture) {
@@ -331,8 +333,8 @@ export class Texture extends BaseTexture {
         this._texture = this._getFromCache(this.url, noMipmap, samplingMode, invertY);
 
         if (!this._texture) {
-            if (!scene.useDelayedTextureLoading) {
-                this._texture = scene.getEngine().createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format);
+            if (!scene || !scene.useDelayedTextureLoading) {
+                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format);
                 if (deleteBuffer) {
                     delete this._buffer;
                 }
