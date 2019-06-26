@@ -212,7 +212,7 @@ export class NodeMaterialBlock {
     public getFirstAvailableInput(forOutput: Nullable<NodeMaterialConnectionPoint> = null) {
         for (var input of this._inputs) {
             if (!input.isUniform && !input.isAttribute && !input.connectedPoint) {
-                if (!forOutput || (forOutput.type & input.type) !== 0) {
+                if (!forOutput || (forOutput.type & input.type) !== 0 || input.type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
                     return input;
                 }
             }
@@ -266,6 +266,16 @@ export class NodeMaterialBlock {
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         // Empty. Must be defined by child nodes
+    }
+
+    /**
+     * Add uniforms, samplers and uniform buffers at compilation time
+     * @param state defines the state to update
+     * @param nodeMaterial defines the node material requesting the update
+     * @param defines defines the material defines to update
+     */
+    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        // Do nothing
     }
 
     /**

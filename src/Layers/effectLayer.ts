@@ -18,7 +18,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Effect } from "../Materials/effect";
+import { Effect, EffectFallbacks } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Constants } from "../Engines/constants";
@@ -119,6 +119,9 @@ export abstract class EffectLayer {
     @serialize()
     public get renderingGroupId(): number {
         return this._effectLayerOptions.renderingGroupId;
+    }
+    public set renderingGroupId(renderingGroupId: number) {
+        this._effectLayerOptions.renderingGroupId = renderingGroupId;
     }
 
     /**
@@ -468,6 +471,7 @@ export abstract class EffectLayer {
         }
 
         // Bones
+        const fallbacks = new EffectFallbacks();
         if (mesh.useBones && mesh.computeBonesUsingShaders) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
@@ -477,6 +481,9 @@ export abstract class EffectLayer {
             }
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
             defines.push("#define BonesPerMesh " + (mesh.skeleton ? (mesh.skeleton.bones.length + 1) : 0));
+            if (mesh.numBoneInfluencers > 0) {
+                fallbacks.addCPUSkinningFallback(0, mesh);
+            }
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
@@ -489,7 +496,7 @@ export abstract class EffectLayer {
                 defines.push("#define MORPHTARGETS");
                 morphInfluencers = manager.numInfluencers;
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
-                MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, { "NUM_MORPH_INFLUENCERS": morphInfluencers });
+                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
             }
         }
 
@@ -511,7 +518,7 @@ export abstract class EffectLayer {
                     "glowColor", "morphTargetInfluences",
                     "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity"],
                 ["diffuseSampler", "emissiveSampler", "opacitySampler"], join,
-                undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
+                fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
         }
 
         return this._effectLayerMapGenerationEffect.isReady();

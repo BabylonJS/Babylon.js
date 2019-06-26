@@ -12,7 +12,7 @@ interface ITextureLineComponentProps {
     width: number;
     height: number;
     globalState?: any;
-    hideChannelSelect?:boolean;
+    hideChannelSelect?: boolean;
 }
 
 export class TextureLineComponent extends React.Component<ITextureLineComponentProps, { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }> {
@@ -29,7 +29,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
     }
 
     shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }): boolean {
-        return (nextProps.texture !== this.props.texture || nextState.displayRed !== this.state.displayRed || nextState.displayGreen !== this.state.displayGreen || nextState.displayBlue !== this.state.displayBlue || nextState.displayAlpha !== this.state.displayAlpha || nextState.face !== this.state.face);
+        return true;
     }
 
     componentDidMount() {
@@ -42,8 +42,8 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
     updatePreview() {
         var texture = this.props.texture;
-        if(!texture.isReady() && texture._texture){
-            texture._texture.onLoadedObservable.addOnce(()=>{
+        if (!texture.isReady() && texture._texture) {
+            texture._texture.onLoadedObservable.addOnce(() => {
                 this.updatePreview();
             })
         }
@@ -76,10 +76,10 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
         const previewCanvas = this.refs.canvas as HTMLCanvasElement;
 
-        if(this.props.globalState){
+        if (this.props.globalState) {
             this.props.globalState.blockMutationUpdates = true;
         }
-        
+
         let rtt = new RenderTargetTexture(
             "temp",
             { width: width, height: height },
@@ -163,10 +163,10 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         passPostProcess.dispose();
 
         previewCanvas.style.height = height + "px";
-        if(this.props.globalState){
+        if (this.props.globalState) {
             this.props.globalState.blockMutationUpdates = false;
         }
-        
+
     }
 
     render() {

@@ -20,7 +20,7 @@ export class FogPropertyGridComponent extends React.Component<IFogPropertyGridCo
 
     constructor(props: IFogPropertyGridComponentProps) {
         super(props);
-        this.state = { mode: 0 };
+        this.state = { mode: this.props.scene.fogMode };
     }
 
     render() {

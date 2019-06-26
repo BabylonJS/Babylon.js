@@ -86,7 +86,7 @@ export class EffectFallbacks {
      */
     public reduce(currentDefines: string, effect: Effect): string {
         // First we try to switch to CPU skinning
-        if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0 && this._mesh.material) {
+        if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0) {
             this._mesh.computeBonesUsingShaders = false;
             currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
             effect._bonesComputationForcedToCPU = true;
@@ -96,6 +96,9 @@ export class EffectFallbacks {
                 var otherMesh = scene.meshes[index];
 
                 if (!otherMesh.material) {
+                    if (!this._mesh.material && otherMesh.computeBonesUsingShaders && otherMesh.numBoneInfluencers > 0) {
+                        otherMesh.computeBonesUsingShaders = false;
+                    }
                     continue;
                 }
 
@@ -777,21 +780,24 @@ export class Effect implements IDisposable {
                 this.onErrorObservable.notifyObservers(this);
             }
 
-            if (fallbacks && fallbacks.isMoreFallbacks) {
-                Logger.Error("Trying next fallback.");
-                this.defines = fallbacks.reduce(this.defines, this);
-                this._prepareEffect();
-            } else { // Sorry we did everything we can
+            if (fallbacks) {
+                this._pipelineContext = null;
+                if (fallbacks.isMoreFallbacks) {
+                    Logger.Error("Trying next fallback.");
+                    this.defines = fallbacks.reduce(this.defines, this);
+                    this._prepareEffect();
+                } else { // Sorry we did everything we can
 
-                if (this.onError) {
-                    this.onError(this, this._compilationError);
-                }
-                this.onErrorObservable.notifyObservers(this);
-                this.onErrorObservable.clear();
+                    if (this.onError) {
+                        this.onError(this, this._compilationError);
+                    }
+                    this.onErrorObservable.notifyObservers(this);
+                    this.onErrorObservable.clear();
 
-                // Unbind mesh reference in fallbacks
-                if (this._fallbacks) {
-                    this._fallbacks.unBindMesh();
+                    // Unbind mesh reference in fallbacks
+                    if (this._fallbacks) {
+                        this._fallbacks.unBindMesh();
+                    }
                 }
             }
         }
@@ -839,11 +845,18 @@ export class Effect implements IDisposable {
      */
     public setTextureArray(channel: string, textures: BaseTexture[]): void {
         let exName = channel + "Ex";
-        if (this._samplerList.indexOf(exName) === -1) {
-            var initialPos = this._samplers[channel];
+        if (this._samplerList.indexOf(exName + "0") === -1) {
+            const initialPos = this._samplerList.indexOf(channel);
             for (var index = 1; index < textures.length; index++) {
-                this._samplerList.splice(initialPos + index, 0, exName);
-                this._samplers[exName] = initialPos + index;
+                const currentExName = exName + (index - 1).toString();
+                this._samplerList.splice(initialPos + index, 0, currentExName);
+            }
+
+            // Reset every channels
+            let channelIndex = 0;
+            for (var key of this._samplerList) {
+                this._samplers[key] = channelIndex;
+                channelIndex += 1;
             }
         }
 

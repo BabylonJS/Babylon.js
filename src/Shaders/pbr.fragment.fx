@@ -920,7 +920,7 @@ void main(void) {
 
         clearCoatEnvironmentReflectance *= clearCoatIntensity;
 
-        #ifdef CLEARCOAT_TINT
+        #if defined(REFLECTION) && defined(CLEARCOAT_TINT)
             // NdotL = NdotV in IBL
             absorption = computeClearCoatAbsorption(clearCoatNdotVRefract, clearCoatNdotVRefract, clearCoatColor, clearCoatThickness, clearCoatIntensity);
 

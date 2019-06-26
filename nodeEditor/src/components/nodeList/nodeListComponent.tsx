@@ -22,6 +22,8 @@ import { Vector2TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector2Tr
 import { Vector3TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector3TransformBlock';
 import { Vector4TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector4TransformBlock';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
+import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 
 require("./nodeList.scss");
 
@@ -36,10 +38,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps> 
         // Block types used to create the menu from
         const allBlocks = {
             Vertex: [BonesBlock, InstancesBlock, MorphTargetsBlock],
-            Fragment: [AlphaTestBlock, , ImageProcessingBlock, RGBAMergerBlock, RGBASplitterBlock, TextureBlock],
+            Fragment: [AlphaTestBlock, , ImageProcessingBlock, RGBAMergerBlock, RGBASplitterBlock, TextureBlock, LightBlock],
             Outputs: [VertexOutputBlock, FragmentOutputBlock],
             Dual: [FogBlock],
-            Math: [AddBlock, ClampBlock, MatrixMultiplicationBlock, MultiplyBlock, Vector2TransformBlock, Vector3TransformBlock, Vector4TransformBlock],
+            Math: [AddBlock, ClampBlock, MatrixMultiplicationBlock, MultiplyBlock, ScaleBlock, Vector2TransformBlock, Vector3TransformBlock, Vector4TransformBlock],
             Inputs: ["Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
         }
 

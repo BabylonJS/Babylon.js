@@ -70,6 +70,7 @@ export class ShaderMaterial extends Material {
     private _colors3: { [name: string]: Color3 } = {};
     private _colors3Arrays: { [name: string]: number[] } = {};
     private _colors4: { [name: string]: Color4 } = {};
+    private _colors4Arrays: { [name: string]: number[] } = {};
     private _vectors2: { [name: string]: Vector2 } = {};
     private _vectors3: { [name: string]: Vector3 } = {};
     private _vectors4: { [name: string]: Vector4 } = {};
@@ -78,6 +79,7 @@ export class ShaderMaterial extends Material {
     private _matrices2x2: { [name: string]: Float32Array } = {};
     private _vectors2Arrays: { [name: string]: number[] } = {};
     private _vectors3Arrays: { [name: string]: number[] } = {};
+    private _vectors4Arrays: { [name: string]: number[] } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
@@ -264,6 +266,21 @@ export class ShaderMaterial extends Material {
     }
 
     /**
+     * Set a vec4 array in the shader from a Color4 array.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setColor4Array(name: string, value: Color4[]): ShaderMaterial {
+        this._checkUniform(name);
+        this._colors4Arrays[name] = value.reduce((arr, color) => {
+            color.toArray(arr, arr.length);
+            return arr;
+        }, []);
+        return this;
+    }
+
+    /**
      * Set a vec2 in the shader from a Vector2.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
@@ -363,6 +380,19 @@ export class ShaderMaterial extends Material {
     public setArray3(name: string, value: number[]): ShaderMaterial {
         this._checkUniform(name);
         this._vectors3Arrays[name] = value;
+
+        return this;
+    }
+
+    /**
+     * Set a vec4 array in the shader from a number array.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setArray4(name: string, value: number[]): ShaderMaterial {
+        this._checkUniform(name);
+        this._vectors4Arrays[name] = value;
 
         return this;
     }
@@ -589,6 +619,7 @@ export class ShaderMaterial extends Material {
                 this._effect.setColor3(name, this._colors3[name]);
             }
 
+            // Color3Array
             for (name in this._colors3Arrays) {
                 this._effect.setArray3(name, this._colors3Arrays[name]);
             }
@@ -597,6 +628,11 @@ export class ShaderMaterial extends Material {
             for (name in this._colors4) {
                 var color = this._colors4[name];
                 this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
+            }
+
+            // Color4Array
+            for (name in this._colors4Arrays) {
+                this._effect.setArray4(name, this._colors4Arrays[name]);
             }
 
             // Vector2
@@ -637,6 +673,11 @@ export class ShaderMaterial extends Material {
             // Vector3Array
             for (name in this._vectors3Arrays) {
                 this._effect.setArray3(name, this._vectors3Arrays[name]);
+            }
+
+            // Vector4Array
+            for (name in this._vectors4Arrays) {
+                this._effect.setArray4(name, this._vectors4Arrays[name]);
             }
         }
 
@@ -789,6 +830,12 @@ export class ShaderMaterial extends Material {
             serializationObject.colors4[name] = this._colors4[name].asArray();
         }
 
+        // Color4 array
+        serializationObject.colors4Arrays = {};
+        for (name in this._colors4Arrays) {
+            serializationObject.colors4Arrays[name] = this._colors4Arrays[name];
+        }
+
         // Vector2
         serializationObject.vectors2 = {};
         for (name in this._vectors2) {
@@ -835,6 +882,12 @@ export class ShaderMaterial extends Material {
         serializationObject.vectors3Arrays = {};
         for (name in this._vectors3Arrays) {
             serializationObject.vectors3Arrays[name] = this._vectors3Arrays[name];
+        }
+
+        // Vector4Array
+        serializationObject.vectors4Arrays = {};
+        for (name in this._vectors4Arrays) {
+            serializationObject.vectors4Arrays[name] = this._vectors4Arrays[name];
         }
 
         return serializationObject;
@@ -901,6 +954,19 @@ export class ShaderMaterial extends Material {
             material.setColor4(name, Color4.FromArray(source.colors4[name]));
         }
 
+        // Color4 arrays
+        for (name in source.colors4Arrays) {
+            const colors: Color4[] = source.colors4Arrays[name].reduce((arr: Array<Array<number>>, num: number, i: number) => {
+                if (i % 4 === 0) {
+                    arr.push([num]);
+                } else {
+                    arr[arr.length - 1].push(num);
+                }
+                return arr;
+            }, []).map((color: ArrayLike<number>) => Color4.FromArray(color));
+            material.setColor4Array(name, colors);
+        }
+
         // Vector2
         for (name in source.vectors2) {
             material.setVector2(name, Vector2.FromArray(source.vectors2[name]));
@@ -939,6 +1005,11 @@ export class ShaderMaterial extends Material {
         // Vector3Array
         for (name in source.vectors3Arrays) {
             material.setArray3(name, source.vectors3Arrays[name]);
+        }
+
+        // Vector4Array
+        for (name in source.vectors4Arrays) {
+            material.setArray4(name, source.vectors4Arrays[name]);
         }
 
         return material;

@@ -1424,17 +1424,12 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
-        // TODO: support normalized and stride
-
-        if (accessor.componentType !== AccessorComponentType.FLOAT) {
-            throw new Error(`Invalid component type ${accessor.componentType}`);
-        }
-
         if (accessor._data) {
             return accessor._data as Promise<Float32Array>;
         }
 
         const numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
+        const byteStride = numComponents * VertexBuffer.GetTypeByteLength(accessor.componentType);
         const length = numComponents * accessor.count;
 
         if (accessor.bufferView == undefined) {
@@ -1443,7 +1438,16 @@ export class GLTFLoader implements IGLTFLoader {
         else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
             accessor._data = this.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
-                return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
+                if (accessor.componentType === AccessorComponentType.FLOAT && !accessor.normalized) {
+                    return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
+                }
+                else {
+                    const floatData = new Float32Array(length);
+                    VertexBuffer.ForEach(data, accessor.byteOffset || 0, bufferView.byteStride || byteStride, numComponents, accessor.componentType, floatData.length, accessor.normalized || false, (value, index) => {
+                        floatData[index] = value;
+                    });
+                    return floatData;
+                }
             });
         }
 
@@ -1458,7 +1462,20 @@ export class GLTFLoader implements IGLTFLoader {
                     this.loadBufferViewAsync(`/bufferViews/${valuesBufferView.index}`, valuesBufferView)
                 ]).then(([indicesData, valuesData]) => {
                     const indices = GLTFLoader._GetTypedArray(`${context}/sparse/indices`, sparse.indices.componentType, indicesData, sparse.indices.byteOffset, sparse.count) as IndicesArray;
-                    const values = GLTFLoader._GetTypedArray(`${context}/sparse/values`, accessor.componentType, valuesData, sparse.values.byteOffset, numComponents * sparse.count) as Float32Array;
+
+                    const sparseLength = numComponents * sparse.count;
+                    let values: Float32Array;
+
+                    if (accessor.componentType === AccessorComponentType.FLOAT && !accessor.normalized) {
+                        values = GLTFLoader._GetTypedArray(`${context}/sparse/values`, accessor.componentType, valuesData, sparse.values.byteOffset, sparseLength) as Float32Array;
+                    }
+                    else {
+                        const sparseData = GLTFLoader._GetTypedArray(`${context}/sparse/values`, accessor.componentType, valuesData, sparse.values.byteOffset, sparseLength);
+                        values = new Float32Array(sparseLength);
+                        VertexBuffer.ForEach(sparseData, 0, byteStride, numComponents, accessor.componentType, values.length, accessor.normalized || false, (value, index) => {
+                            values[index] = value;
+                        });
+                    }
 
                     let valuesIndex = 0;
                     for (let indicesIndex = 0; indicesIndex < indices.length; indicesIndex++) {

@@ -13,9 +13,11 @@ export class MultiplyBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("left", NodeMaterialBlockConnectionPointTypes.Vector4OrColor4);
-        this.registerInput("right", NodeMaterialBlockConnectionPointTypes.Vector4OrColor4);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4OrColor4);
+        this.registerInput("left", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
+
+        this._outputs[0]._typeConnectionSource = this._inputs[0];
     }
 
     /**
@@ -38,6 +40,13 @@ export class MultiplyBlock extends NodeMaterialBlock {
      */
     public get right(): NodeMaterialConnectionPoint {
         return this._inputs[1];
+    }
+
+    /**
+     * Gets the output component
+     */
+    public get output(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {

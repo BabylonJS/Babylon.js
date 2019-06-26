@@ -386,6 +386,8 @@ a:visited {
     bottom: var(--footer-height);
     min-width: 135px;
     width: 200px;
+    max-height: 50vh;
+    overflow-y: auto;
     flex-direction: column;
     transition: all 0.3s ease; /* Add transition for hover effects */
 }

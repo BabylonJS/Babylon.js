@@ -38,13 +38,13 @@ export class PBRClearCoatConfiguration {
      * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
      * The default fits with a polyurethane material.
      */
-    private static readonly _DefaultIndiceOfRefraction = 1.5;
+    private static readonly _DefaultIndexOfRefraction = 1.5;
 
-    @serialize()
     private _isEnabled = false;
     /**
      * Defines if the clear coat is enabled in the material.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
@@ -60,38 +60,38 @@ export class PBRClearCoatConfiguration {
     @serialize()
     public roughness: number = 0;
 
-    @serialize()
-    private _indiceOfRefraction = PBRClearCoatConfiguration._DefaultIndiceOfRefraction;
+    private _indexOfRefraction = PBRClearCoatConfiguration._DefaultIndexOfRefraction;
     /**
-     * Defines the indice of refraction of the clear coat.
+     * Defines the index of refraction of the clear coat.
      * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
      * The default fits with a polyurethane material.
      * Changing the default value is more performance intensive.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public indiceOfRefraction = PBRClearCoatConfiguration._DefaultIndiceOfRefraction;
+    public indexOfRefraction = PBRClearCoatConfiguration._DefaultIndexOfRefraction;
 
-    @serializeAsTexture()
     private _texture: Nullable<BaseTexture> = null;
     /**
      * Stores the clear coat values in a texture.
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
 
-    @serializeAsTexture()
     private _bumpTexture: Nullable<BaseTexture> = null;
     /**
      * Define the clear coat specific bump texture.
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public bumpTexture: Nullable<BaseTexture> = null;
 
-    @serialize()
     private _isTintEnabled = false;
     /**
      * Defines if the clear coat tint is enabled in the material.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isTintEnabled = false;
 
@@ -117,13 +117,13 @@ export class PBRClearCoatConfiguration {
     @serialize()
     public tintThickness: number = 1;
 
-    @serializeAsTexture()
     private _tintTexture: Nullable<BaseTexture> = null;
     /**
      * Stores the clear tint values in a texture.
      * rgb is tint
      * a is a thickness factor
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public tintTexture: Nullable<BaseTexture> = null;
 
@@ -201,7 +201,7 @@ export class PBRClearCoatConfiguration {
                         defines.CLEARCOAT_BUMP = false;
                     }
 
-                    defines.CLEARCOAT_DEFAULTIOR = this._indiceOfRefraction === PBRClearCoatConfiguration._DefaultIndiceOfRefraction;
+                    defines.CLEARCOAT_DEFAULTIOR = this._indexOfRefraction === PBRClearCoatConfiguration._DefaultIndexOfRefraction;
 
                     if (this._isTintEnabled) {
                         defines.CLEARCOAT_TINT = true;
@@ -265,10 +265,10 @@ export class PBRClearCoatConfiguration {
             uniformBuffer.updateFloat2("vClearCoatParams", this.intensity, this.roughness);
 
             // Clear Coat Refraction params
-            const a = 1 - this._indiceOfRefraction;
-            const b = 1 + this._indiceOfRefraction;
+            const a = 1 - this._indexOfRefraction;
+            const b = 1 + this._indexOfRefraction;
             const f0 = Math.pow((-a / b), 2); // Schlicks approx: (ior1 - ior2) / (ior1 + ior2) where ior2 for air is close to vacuum = 1.
-            const eta = 1 / this._indiceOfRefraction;
+            const eta = 1 / this._indexOfRefraction;
             uniformBuffer.updateFloat4("vClearCoatRefractionParams", f0, eta, a,  b);
 
             if (this._isTintEnabled) {
@@ -456,10 +456,12 @@ export class PBRClearCoatConfiguration {
     }
 
     /**
-     * Parses a Clear Coat Configuration from a serialized object.
+     * Parses a anisotropy Configuration from a serialized object.
      * @param source - Serialized object.
+     * @param scene Defines the scene we are parsing for
+     * @param rootUrl Defines the rootUrl to load from
      */
-    public parse(source: any): void {
-        SerializationHelper.Parse(() => this, source, null);
+    public parse(source: any, scene: Scene, rootUrl: string): void {
+        SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }

@@ -125,10 +125,21 @@ export class DebugLayer {
 
     private BJSINSPECTOR = this._getGlobalInspector();
 
+    private _onPropertyChangedObservable?: Observable<{ object: any, property: string, value: any, initialValue: any }>;
     /**
      * Observable triggered when a property is changed through the inspector.
      */
-    public onPropertyChangedObservable = new Observable<{ object: any, property: string, value: any, initialValue: any }>();
+    public get onPropertyChangedObservable() {
+        if (this.BJSINSPECTOR && this.BJSINSPECTOR.Inspector) {
+            return this.BJSINSPECTOR.Inspector.OnPropertyChangedObservable;
+        }
+
+        if (!this._onPropertyChangedObservable) {
+            this._onPropertyChangedObservable = new Observable<{ object: any, property: string, value: any, initialValue: any }>();
+        }
+
+        return this._onPropertyChangedObservable;
+    }
 
     /**
      * Instantiates a new debug layer.
@@ -151,6 +162,14 @@ export class DebugLayer {
     private _createInspector(config?: Partial<IInspectorOptions>) {
         if (this.isVisible()) {
             return;
+        }
+
+        if (this._onPropertyChangedObservable) {
+            for (var observer of this._onPropertyChangedObservable!.observers) {
+                this.BJSINSPECTOR.Inspector.OnPropertyChangedObservable.add(observer);
+            }
+            this._onPropertyChangedObservable.clear();
+            this._onPropertyChangedObservable = undefined;
         }
 
         const userOptions: IInspectorOptions = {

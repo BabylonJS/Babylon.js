@@ -107,6 +107,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public MORPHTARGETS = false;
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
+    public MORPHTARGETS_UV = false;
     public NUM_MORPH_INFLUENCERS = 0;
     public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
     public PREMULTIPLYALPHA = false; // https://playground.babylonjs.com#LNVJJ7
@@ -371,7 +372,7 @@ export class StandardMaterial extends PushMaterial {
     public roughness: number;
 
     /**
-     * In case of refraction, define the value of the indice of refraction.
+     * In case of refraction, define the value of the index of refraction.
      * @see http://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
      */
     @serialize()

@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!********************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \********************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \**************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2070,9 +2070,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-regular-svg-icons/index.es.js":
-/*!**********************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
-  \**********************************************************************************************/
+/*!****************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
+  \****************************************************************************************/
 /*! exports provided: far, prefix, faAddressBook, faAddressCard, faAngry, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faBell, faBellSlash, faBookmark, faBuilding, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faChartBar, faCheckCircle, faCheckSquare, faCircle, faClipboard, faClock, faClone, faClosedCaptioning, faComment, faCommentAlt, faCommentDots, faComments, faCompass, faCopy, faCopyright, faCreditCard, faDizzy, faDotCircle, faEdit, faEnvelope, faEnvelopeOpen, faEye, faEyeSlash, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileExcel, faFileImage, faFilePdf, faFilePowerpoint, faFileVideo, faFileWord, faFlag, faFlushed, faFolder, faFolderOpen, faFontAwesomeLogoFull, faFrown, faFrownOpen, faFutbol, faGem, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHandshake, faHdd, faHeart, faHospital, faHourglass, faIdBadge, faIdCard, faImage, faImages, faKeyboard, faKiss, faKissBeam, faKissWinkHeart, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLemon, faLifeRing, faLightbulb, faListAlt, faMap, faMeh, faMehBlank, faMehRollingEyes, faMinusSquare, faMoneyBillAlt, faMoon, faNewspaper, faObjectGroup, faObjectUngroup, faPaperPlane, faPauseCircle, faPlayCircle, faPlusSquare, faQuestionCircle, faRegistered, faSadCry, faSadTear, faSave, faShareSquare, faSmile, faSmileBeam, faSmileWink, faSnowflake, faSquare, faStar, faStarHalf, faStickyNote, faStopCircle, faSun, faSurprise, faThumbsDown, faThumbsUp, faTimesCircle, faTired, faTrashAlt, faUser, faUserCircle, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2550,9 +2550,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!********************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \********************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \**************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBackspace, faBackward, faBalanceScale, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBinoculars, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookOpen, faBookReader, faBookmark, faBowlingBall, faBox, faBoxOpen, faBoxes, faBraille, faBrain, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCamera, faCameraRetro, faCampground, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCartArrowDown, faCartPlus, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMoon, faCloudSun, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCube, faCubes, faCut, faDatabase, faDeaf, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDungeon, faEdit, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFastBackward, faFastForward, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGlassMartini, faGlassMartiniAlt, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripVertical, faHSquare, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingUsd, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHands, faHandsHelping, faHandshake, faHanukiah, faHashtag, faHatWizard, faHaykal, faHdd, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHome, faHorse, faHospital, faHospitalAlt, faHospitalSymbol, faHotTub, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHryvnia, faICursor, faIdBadge, faIdCard, faIdCardAlt, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMousePointer, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleCarry, faPercent, faPercentage, faPhone, faPhoneSlash, faPhoneSquare, faPhoneVolume, faPiggyBank, faPills, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRandom, faReceipt, faRecycle, faRedo, faRedoAlt, faRegistered, faReply, faReplyAll, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSave, faSchool, faScrewdriver, faScroll, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSitemap, faSkull, faSkullCrossbones, faSlash, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmoking, faSmokingBan, faSnowflake, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaUp, faSortAmountDown, faSortAmountUp, faSortDown, faSortNumericDown, faSortNumericUp, faSortUp, faSpa, faSpaceShuttle, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStore, faStoreAlt, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToiletPaper, faToolbox, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrain, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVrCardboard, faWalking, faWallet, faWarehouse, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -5130,9 +5130,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!*****************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \*****************************************************************************************/
+/*!***********************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \***********************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -5560,9 +5560,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!******************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/classnames/index.js ***!
-  \******************************************************************/
+/*!************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/classnames/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5622,9 +5622,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/actionTabs/actionTabs.scss":
-/*!******************************************************************************************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/css-loader!c:/Dev/Babylon/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/actionTabs/actionTabs.scss ***!
-  \******************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/actionTabs/actionTabs.scss ***!
+  \******************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5641,9 +5641,9 @@ exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/embedHost/embedHost.scss":
-/*!****************************************************************************************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/css-loader!c:/Dev/Babylon/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/embedHost/embedHost.scss ***!
-  \****************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/embedHost/embedHost.scss ***!
+  \****************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5660,9 +5660,9 @@ exports.push([module.i, "#embed-host {\n  position: absolute;\n  right: 0px;\n  
 /***/ }),
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!************************************************************************************************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/css-loader!c:/Dev/Babylon/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \************************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5679,9 +5679,9 @@ exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 
 /***/ }),
 
 /***/ "../../node_modules/css-loader/lib/css-base.js":
-/*!*************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/css-loader/lib/css-base.js ***!
-  \*************************************************************************/
+/*!*******************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader/lib/css-base.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -5766,9 +5766,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!*********************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
-  \*********************************************************************/
+/*!***************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5868,9 +5868,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!***************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \***************************************************************************/
+/*!*********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5971,9 +5971,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \************************************************************************************/
+/*!******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6538,9 +6538,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!******************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
-  \******************************************************************/
+/*!************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6573,9 +6573,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6597,9 +6597,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/re-resizable/lib/index.es5.js":
-/*!****************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
-  \****************************************************************************/
+/*!**********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7346,9 +7346,9 @@ module.exports = Resizable;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \************************************************************************************/
+/*!******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \******************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -7543,9 +7543,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!***********************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \***********************************************************************************/
+/*!*****************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \*****************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -7853,9 +7853,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!******************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \******************************************************************************************/
+/*!************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8036,9 +8036,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!********************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \********************************************************************************/
+/*!**************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \**************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8170,9 +8170,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!*******************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \*************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8504,9 +8504,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!*******************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \*************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8564,9 +8564,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!***********************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \***********************************************************************************/
+/*!*****************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \*****************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8662,9 +8662,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!*******************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \*******************************************************************************************/
+/*!*************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \*************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8724,9 +8724,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!*******************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \*******************************************************************************/
+/*!*************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \*************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8773,9 +8773,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!*****************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \***********************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -8811,9 +8811,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -28550,9 +28550,9 @@ module.exports = reactDom;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!*****************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -28595,9 +28595,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!*****************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \*****************************************************************************/
+/*!***********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30447,9 +30447,9 @@ module.exports = react;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/react/index.js ***!
-  \*************************************************************/
+/*!*******************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/react/index.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30464,9 +30464,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!*********************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \*********************************************************************************************/
+/*!***************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30896,9 +30896,9 @@ exports.unstable_unsubscribe = unstable_unsubscribe;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*************************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*************************************************************************************/
+/*!*******************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -31543,9 +31543,9 @@ exports.unstable_shouldYield = unstable_shouldYield;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!*****************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -31560,9 +31560,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*******************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*******************************************************************/
+/*!*************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -31577,9 +31577,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/split.js/dist/split.es.js":
-/*!************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/split.js/dist/split.es.js ***!
-  \************************************************************************/
+/*!******************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/split.js/dist/split.es.js ***!
+  \******************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -32361,9 +32361,9 @@ var Split = function (idsOption, options) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/lib/addStyles.js":
-/*!****************************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/style-loader/lib/addStyles.js ***!
-  \****************************************************************************/
+/*!**********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/style-loader/lib/addStyles.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -32752,9 +32752,9 @@ function updateLink (link, options, obj) {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/lib/urls.js":
-/*!***********************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/style-loader/lib/urls.js ***!
-  \***********************************************************************/
+/*!*****************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/style-loader/lib/urls.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -32852,9 +32852,9 @@ module.exports = function (css) {
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -34435,21 +34435,26 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var ChannelToDisplay;
+(function (ChannelToDisplay) {
+    ChannelToDisplay[ChannelToDisplay["R"] = 0] = "R";
+    ChannelToDisplay[ChannelToDisplay["G"] = 1] = "G";
+    ChannelToDisplay[ChannelToDisplay["B"] = 2] = "B";
+    ChannelToDisplay[ChannelToDisplay["A"] = 3] = "A";
+    ChannelToDisplay[ChannelToDisplay["All"] = 4] = "All";
+})(ChannelToDisplay || (ChannelToDisplay = {}));
 var TextureLineComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureLineComponent, _super);
     function TextureLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
-            displayRed: true,
-            displayGreen: true,
-            displayBlue: true,
-            displayAlpha: true,
+            channel: ChannelToDisplay.All,
             face: 0
         };
         return _this;
     }
     TextureLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        return (nextProps.texture !== this.props.texture || nextState.displayRed !== this.state.displayRed || nextState.displayGreen !== this.state.displayGreen || nextState.displayBlue !== this.state.displayBlue || nextState.displayAlpha !== this.state.displayAlpha || nextState.face !== this.state.face);
+        return (nextProps.texture !== this.props.texture || nextState.channel !== this.state.channel || nextState.face !== this.state.face);
     };
     TextureLineComponent.prototype.componentDidMount = function () {
         this.updatePreview();
@@ -34503,23 +34508,30 @@ var TextureLineComponent = /** @class */ (function (_super) {
             //Reading datas from WebGL
             var data = engine.readPixels(0, 0, width, height);
             if (!texture.isCube) {
-                if (!this.state.displayRed || !this.state.displayGreen || !this.state.displayBlue) {
+                if (this.state.channel != ChannelToDisplay.All) {
                     for (var i = 0; i < width * height * 4; i += 4) {
-                        if (!this.state.displayRed) {
-                            data[i] = 0;
-                        }
-                        if (!this.state.displayGreen) {
-                            data[i + 1] = 0;
-                        }
-                        if (!this.state.displayBlue) {
-                            data[i + 2] = 0;
-                        }
-                        if (this.state.displayAlpha) {
-                            var alpha = data[i + 2];
-                            data[i] = alpha;
-                            data[i + 1] = alpha;
-                            data[i + 2] = alpha;
-                            data[i + 2] = 0;
+                        switch (this.state.channel) {
+                            case ChannelToDisplay.R:
+                                data[i + 1] = data[i];
+                                data[i + 2] = data[i];
+                                data[i + 3] = 255;
+                                break;
+                            case ChannelToDisplay.G:
+                                data[i] = data[i + 1];
+                                data[i + 2] = data[i];
+                                data[i + 3] = 255;
+                                break;
+                            case ChannelToDisplay.B:
+                                data[i] = data[i + 2];
+                                data[i + 1] = data[i + 2];
+                                data[i + 3] = 255;
+                                break;
+                            case ChannelToDisplay.A:
+                                data[i] = data[i + 3];
+                                data[i + 1] = data[i + 3];
+                                data[i + 2] = data[i + 3];
+                                data[i + 3] = 255;
+                                break;
                         }
                     }
                 }
@@ -34571,11 +34583,11 @@ var TextureLineComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 5 ? "nz command selected" : "nz command", onClick: function () { return _this.setState({ face: 5 }); } }, "NZ")),
             !this.props.hideChannelSelect && !texture.isCube &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && !this.state.displayGreen ? "red command selected" : "red command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: false, displayBlue: false, displayAlpha: false }); } }, "R"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayGreen && !this.state.displayBlue ? "green command selected" : "green command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: true, displayBlue: false, displayAlpha: false }); } }, "G"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayBlue && !this.state.displayAlpha ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: true, displayAlpha: false }); } }, "B"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayAlpha && !this.state.displayRed ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: false, displayAlpha: true }); } }, "A"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && this.state.displayGreen ? "all command selected" : "all command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: true, displayBlue: true, displayAlpha: true }); } }, "ALL")),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.R ? "red command selected" : "red command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.R }); } }, "R"),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.G ? "green command selected" : "green command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.G }); } }, "G"),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.B ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.B }); } }, "B"),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.A ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.A }); } }, "A"),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.All ? "all command selected" : "all command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.All }); } }, "ALL")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: "canvas", className: "preview" })));
     };
     return TextureLineComponent;
@@ -34639,6 +34651,12 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         }
     };
     TextureLinkLineComponent.prototype.debugTexture = function () {
+        if (this.props.customDebugAction) {
+            var newState = !this.state.isDebugSelected;
+            this.props.customDebugAction(newState);
+            this.setState({ isDebugSelected: newState });
+            return;
+        }
         var texture = this.props.texture;
         var material = this.props.material;
         if (!material || !texture) {
@@ -35841,7 +35859,7 @@ var CommonCameraPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Inertia", target: camera, propertyName: "inertia", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: camera, propertyName: "mode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
                 camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].PERSPECTIVE_CAMERA &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Field of view", target: camera, propertyName: "fov", minimum: 0.1, maximum: Math.PI, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Field of view", target: camera, useEuler: this.props.globalState.onlyUseEulers, propertyName: "fov", minimum: 0.1, maximum: Math.PI, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Left", target: camera, propertyName: "orthoLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].ORTHOGRAPHIC_CAMERA &&
@@ -36007,7 +36025,7 @@ var FogPropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FogPropertyGridComponent, _super);
     function FogPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { mode: 0 };
+        _this.state = { mode: _this.props.scene.fogMode };
         return _this;
     }
     FogPropertyGridComponent.prototype.render = function () {
@@ -36157,15 +36175,19 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
     }
     CommonControlPropertyGridComponent.prototype.renderGridInformation = function () {
         var control = this.props.control;
-        if (!control.parent || !control.parent.parent) {
+        if (!control.parent) {
             return null;
         }
-        var gridParent = control.parent.parent;
+        var gridParent = control.parent;
         if (gridParent.rowCount === undefined) {
             return null;
         }
         var grid = gridParent;
-        var cellInfos = grid.getChildCellInfo(control).split(":");
+        var childCellInfo = grid.getChildCellInfo(control);
+        if (childCellInfo === undefined) {
+            return null;
+        }
+        var cellInfos = childCellInfo.split(":");
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GRID" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Row", value: cellInfos[0] }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Column", value: cellInfos[1] })));
@@ -37556,18 +37578,25 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
         _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
         return _this;
     }
+    PBRMaterialPropertyGridComponent.prototype.switchAmbientMode = function (state) {
+        this.props.material.debugMode = state ? 21 : 0;
+    };
+    PBRMaterialPropertyGridComponent.prototype.switchMetallicMode = function (state) {
+        this.props.material.debugMode = state ? 62 : 0;
+    };
     PBRMaterialPropertyGridComponent.prototype.renderTextures = function (onDebugSelectionChangeObservable) {
+        var _this = this;
         var material = this.props.material;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Albedo", texture: material.albedoTexture, propertyName: "albedoTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Metallic", texture: material.metallicTexture, propertyName: "metallicTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { customDebugAction: function (state) { return _this.switchMetallicMode(state); }, label: "Metallic", texture: material.metallicTexture, propertyName: "metallicTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, propertyName: "reflectionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Refraction", texture: material.refractionTexture, propertyName: "refractionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Micro-surface", texture: material.microSurfaceTexture, propertyName: "microSurfaceTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Bump", texture: material.bumpTexture, propertyName: "bumpTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Emissive", texture: material.emissiveTexture, propertyName: "emissiveTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Opacity", texture: material.opacityTexture, propertyName: "opacityTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Ambient", texture: material.ambientTexture, propertyName: "ambientTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { customDebugAction: function (state) { return _this.switchAmbientMode(state); }, label: "Ambient", texture: material.ambientTexture, propertyName: "ambientTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, propertyName: "lightmapTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use lightmap as shadowmap", target: material, propertyName: "useLightmapAsShadowmap ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
@@ -37616,23 +37645,24 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
             // Lighting Params
             { label: "Surface Albedo", value: 60 },
             { label: "Reflectance 0", value: 61 },
-            { label: "Roughness", value: 62 },
-            { label: "AlphaG", value: 63 },
-            { label: "NdotV", value: 64 },
-            { label: "ClearCoat Color", value: 65 },
-            { label: "ClearCoat Roughness", value: 66 },
-            { label: "ClearCoat NdotV", value: 67 },
-            { label: "Transmittance", value: 68 },
-            { label: "Refraction Transmittance", value: 69 },
+            { label: "Metallic", value: 62 },
+            { label: "Roughness", value: 63 },
+            { label: "AlphaG", value: 64 },
+            { label: "NdotV", value: 65 },
+            { label: "ClearCoat Color", value: 66 },
+            { label: "ClearCoat Roughness", value: 67 },
+            { label: "ClearCoat NdotV", value: 68 },
+            { label: "Transmittance", value: 69 },
+            { label: "Refraction Transmittance", value: 70 },
             // Misc
-            { label: "SEO", value: 70 },
-            { label: "EHO", value: 71 },
-            { label: "Energy Factor", value: 72 },
-            { label: "Specular Reflectance", value: 73 },
-            { label: "Clear Coat Reflectance", value: 74 },
-            { label: "Sheen Reflectance", value: 75 },
-            { label: "Luminance Over Alpha", value: 76 },
-            { label: "Alpha", value: 77 },
+            { label: "SEO", value: 80 },
+            { label: "EHO", value: 81 },
+            { label: "Energy Factor", value: 82 },
+            { label: "Specular Reflectance", value: 83 },
+            { label: "Clear Coat Reflectance", value: 84 },
+            { label: "Sheen Reflectance", value: 85 },
+            { label: "Luminance Over Alpha", value: 86 },
+            { label: "Alpha", value: 87 },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -37653,7 +37683,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.clearCoat, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Roughness", target: material.clearCoat, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "IOR", target: material.clearCoat, propertyName: "indiceOfRefraction", minimum: 1.0, maximum: 3, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "IOR", target: material.clearCoat, propertyName: "indexOfRefraction", minimum: 1.0, maximum: 3, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Texture", texture: material.clearCoat.texture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Bump", texture: material.clearCoat.bumpTexture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }),
                         material.clearCoat.bumpTexture &&
@@ -37695,7 +37725,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Index of Refraction", target: material.subSurface, propertyName: "indexOfRefraction", minimum: 1, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Tint at Distance", target: material.subSurface, propertyName: "tintColorAtDistance", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Link refraction with transparency", target: material.subSurface, propertyName: "linkRefractionWithTransparency", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Transluency Enabled", target: material.subSurface, propertyName: "isTranslucencyEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Translucency Enabled", target: material.subSurface, propertyName: "isTranslucencyEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.subSurface.isTranslucencyEnabled &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.subSurface, propertyName: "translucencyIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -38109,14 +38139,14 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "V offset", target: texture, propertyName: "vOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "U scale", target: texture, propertyName: "uScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "V scale", target: texture, propertyName: "vScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "U angle", target: texture, propertyName: "uAng", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "V angle", target: texture, propertyName: "vAng", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "W angle", target: texture, propertyName: "wAng", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "U angle", useEuler: this.props.globalState.onlyUseEulers, target: texture, propertyName: "uAng", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "V angle", useEuler: this.props.globalState.onlyUseEulers, target: texture, propertyName: "vAng", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "W angle", useEuler: this.props.globalState.onlyUseEulers, target: texture, propertyName: "wAng", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) { return texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].WRAP_ADDRESSMODE; } }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) { return texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"].WRAP_ADDRESSMODE; } })),
                 texture.isCube &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Rotation Y", minimum: 0, maximum: 2 * Math.PI, step: 0.1, target: texture, propertyName: "rotationY" })))));
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Rotation Y", useEuler: this.props.globalState.onlyUseEulers, minimum: 0, maximum: 2 * Math.PI, step: 0.1, target: texture, propertyName: "rotationY" })))));
     };
     return TexturePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -38239,8 +38269,13 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         }
         var wireframeOver = mesh.clone();
         wireframeOver.reservedDataStore = { hidden: true };
+        // Sets up the mesh to be attached to the parent.
+        // So all neutral in local space.
+        wireframeOver.parent = mesh;
         wireframeOver.position = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
-        wireframeOver.setParent(mesh);
+        wireframeOver.scaling = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"](1, 1, 1);
+        wireframeOver.rotation = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
+        wireframeOver.rotationQuaternion = null;
         var material = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("wireframeOver", scene);
         material.reservedDataStore = { hidden: true };
         wireframeOver.material = material;
@@ -39346,6 +39381,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _paneComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../paneComponent */ "./components/actionTabs/paneComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+
 
 
 
@@ -39358,7 +39395,9 @@ var SettingsTabComponent = /** @class */ (function (_super) {
     SettingsTabComponent.prototype.render = function () {
         var state = this.props.globalState;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Only display Euler values", target: state, propertyName: "onlyUseEulers" })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "UI" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Only display Euler values", target: state, propertyName: "onlyUseEulers" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Ignore backfaces when picking", target: state, propertyName: "ignoreBackfacesForPicking" }))));
     };
     return SettingsTabComponent;
 }(_paneComponent__WEBPACK_IMPORTED_MODULE_2__["PaneComponent"]));
@@ -39986,6 +40025,7 @@ var GlobalState = /** @class */ (function () {
         this.selectedLineContainerTitle = "";
         this.recorder = new _replayRecorder__WEBPACK_IMPORTED_MODULE_1__["ReplayRecorder"]();
         this._onlyUseEulers = null;
+        this._ignoreBackfacesForPicking = null;
         // Light gizmos
         this.lightGizmos = [];
     }
@@ -39999,6 +40039,20 @@ var GlobalState = /** @class */ (function () {
         set: function (value) {
             this._onlyUseEulers = value;
             _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].StoreLocalBooleanSettings("settings_onlyUseEulers", value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GlobalState.prototype, "ignoreBackfacesForPicking", {
+        get: function () {
+            if (this._ignoreBackfacesForPicking === null) {
+                this._ignoreBackfacesForPicking = _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadLocalBooleanSettings("settings_ignoreBackfacesForPicking", false);
+            }
+            return this._ignoreBackfacesForPicking;
+        },
+        set: function (value) {
+            this._ignoreBackfacesForPicking = value;
+            _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].StoreLocalBooleanSettings("settings_ignoreBackfacesForPicking", value);
         },
         enumerable: true,
         configurable: true
@@ -40813,6 +40867,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var SceneTreeItemComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneTreeItemComponent, _super);
     function SceneTreeItemComponent(props) {
@@ -40910,7 +40965,18 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
         if (!this.state.isInPickingMode) {
             this._onPointerObserver = scene.onPointerObservable.add(function () {
                 var pickPosition = scene.unTranslatedPointer;
-                var pickInfo = scene.pick(pickPosition.x, pickPosition.y, function (mesh) { return mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0; });
+                var pickInfo = scene.pick(pickPosition.x, pickPosition.y, function (mesh) { return mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0; }, false, undefined, function (p0, p1, p2, ray) {
+                    if (!_this.props.globalState.ignoreBackfacesForPicking) {
+                        return true;
+                    }
+                    var p0p1 = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Tmp"].Vector3[0];
+                    var p1p2 = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Tmp"].Vector3[1];
+                    var normal = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Tmp"].Vector3[2];
+                    p1.subtractToRef(p0, p0p1);
+                    p2.subtractToRef(p1, p1p2);
+                    normal = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Cross(p0p1, p1p2);
+                    return babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(normal, ray.direction) < 0;
+                });
                 // Pick light gizmos first
                 if (_this.props.globalState.lightGizmos.length > 0) {
                     var gizmoScene = _this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
@@ -42017,7 +42083,7 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
             var className = entity.getClassName();
             if (className.indexOf("Mesh") !== -1) {
                 var mesh = entity;
-                if (mesh.getTotalVertices() > 0) {
+                if (mesh.isAnInstance || mesh.getTotalVertices() > 0) {
                     return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_meshTreeItemComponent__WEBPACK_IMPORTED_MODULE_1__["MeshTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, mesh: mesh, onClick: function () { return _this.onClick(); } }));
                 }
                 else {

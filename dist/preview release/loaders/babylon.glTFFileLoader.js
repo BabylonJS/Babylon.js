@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** c:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2798,6 +2798,72 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 
 /***/ }),
 
+/***/ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts":
+/*!*************************************************!*\
+  !*** ./glTF/2.0/Extensions/ExtrasAsMetadata.ts ***!
+  \*************************************************/
+/*! exports provided: ExtrasAsMetadata */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return ExtrasAsMetadata; });
+/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+
+var NAME = "ExtrasAsMetadata";
+/**
+ * Store glTF extras (if present) in BJS objects' metadata
+ */
+var ExtrasAsMetadata = /** @class */ (function () {
+    /** @hidden */
+    function ExtrasAsMetadata(loader) {
+        /** The name of this extension. */
+        this.name = NAME;
+        /** Defines whether this extension is enabled. */
+        this.enabled = true;
+        this._loader = loader;
+    }
+    ExtrasAsMetadata.prototype._assignExtras = function (babylonObject, gltfProp) {
+        if (gltfProp.extras && Object.keys(gltfProp.extras).length > 0) {
+            var metadata = (babylonObject.metadata = babylonObject.metadata || {});
+            var gltf = (metadata.gltf = metadata.gltf || {});
+            gltf.extras = gltfProp.extras;
+        }
+    };
+    /** @hidden */
+    ExtrasAsMetadata.prototype.dispose = function () {
+        delete this._loader;
+    };
+    /** @hidden */
+    ExtrasAsMetadata.prototype.loadNodeAsync = function (context, node, assign) {
+        var _this = this;
+        return this._loader.loadNodeAsync(context, node, function (babylonTransformNode) {
+            _this._assignExtras(babylonTransformNode, node);
+            assign(babylonTransformNode);
+        });
+    };
+    /** @hidden */
+    ExtrasAsMetadata.prototype.loadCameraAsync = function (context, camera, assign) {
+        var _this = this;
+        return this._loader.loadCameraAsync(context, camera, function (babylonCamera) {
+            _this._assignExtras(babylonCamera, camera);
+            assign(babylonCamera);
+        });
+    };
+    /** @hidden */
+    ExtrasAsMetadata.prototype.createMaterial = function (context, material, babylonDrawMode) {
+        var babylonMaterial = this._loader.createMaterial(context, material, babylonDrawMode);
+        this._assignExtras(babylonMaterial, material);
+        return babylonMaterial;
+    };
+    return ExtrasAsMetadata;
+}());
+
+_glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new ExtrasAsMetadata(loader); });
+
+
+/***/ }),
+
 /***/ "./glTF/2.0/Extensions/KHR_draco_mesh_compression.ts":
 /*!***********************************************************!*\
   !*** ./glTF/2.0/Extensions/KHR_draco_mesh_compression.ts ***!
@@ -3824,7 +3890,7 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 /*!**************************************!*\
   !*** ./glTF/2.0/Extensions/index.ts ***!
   \**************************************/
-/*! exports provided: EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors */
+/*! exports provided: EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3858,6 +3924,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./MSFT_sRGBFactors */ "./glTF/2.0/Extensions/MSFT_sRGBFactors.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_9__["MSFT_sRGBFactors"]; });
+
+/* harmony import */ var _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./ExtrasAsMetadata */ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_10__["ExtrasAsMetadata"]; });
+
 
 
 
@@ -5113,23 +5183,29 @@ var GLTFLoader = /** @class */ (function () {
         return accessor._data;
     };
     GLTFLoader.prototype._loadFloatAccessorAsync = function (context, accessor) {
-        // TODO: support normalized and stride
         var _this = this;
-        if (accessor.componentType !== 5126 /* FLOAT */) {
-            throw new Error("Invalid component type " + accessor.componentType);
-        }
         if (accessor._data) {
             return accessor._data;
         }
         var numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
+        var byteStride = numComponents * babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].GetTypeByteLength(accessor.componentType);
         var length = numComponents * accessor.count;
         if (accessor.bufferView == undefined) {
             accessor._data = Promise.resolve(new Float32Array(length));
         }
         else {
-            var bufferView = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
-            accessor._data = this.loadBufferViewAsync("/bufferViews/" + bufferView.index, bufferView).then(function (data) {
-                return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
+            var bufferView_1 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
+            accessor._data = this.loadBufferViewAsync("/bufferViews/" + bufferView_1.index, bufferView_1).then(function (data) {
+                if (accessor.componentType === 5126 /* FLOAT */ && !accessor.normalized) {
+                    return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
+                }
+                else {
+                    var floatData_1 = new Float32Array(length);
+                    babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ForEach(data, accessor.byteOffset || 0, bufferView_1.byteStride || byteStride, numComponents, accessor.componentType, floatData_1.length, accessor.normalized || false, function (value, index) {
+                        floatData_1[index] = value;
+                    });
+                    return floatData_1;
+                }
             });
         }
         if (accessor.sparse) {
@@ -5144,7 +5220,18 @@ var GLTFLoader = /** @class */ (function () {
                 ]).then(function (_a) {
                     var indicesData = _a[0], valuesData = _a[1];
                     var indices = GLTFLoader._GetTypedArray(context + "/sparse/indices", sparse_1.indices.componentType, indicesData, sparse_1.indices.byteOffset, sparse_1.count);
-                    var values = GLTFLoader._GetTypedArray(context + "/sparse/values", accessor.componentType, valuesData, sparse_1.values.byteOffset, numComponents * sparse_1.count);
+                    var sparseLength = numComponents * sparse_1.count;
+                    var values;
+                    if (accessor.componentType === 5126 /* FLOAT */ && !accessor.normalized) {
+                        values = GLTFLoader._GetTypedArray(context + "/sparse/values", accessor.componentType, valuesData, sparse_1.values.byteOffset, sparseLength);
+                    }
+                    else {
+                        var sparseData = GLTFLoader._GetTypedArray(context + "/sparse/values", accessor.componentType, valuesData, sparse_1.values.byteOffset, sparseLength);
+                        values = new Float32Array(sparseLength);
+                        babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ForEach(sparseData, 0, byteStride, numComponents, accessor.componentType, values.length, accessor.normalized || false, function (value, index) {
+                            values[index] = value;
+                        });
+                    }
                     var valuesIndex = 0;
                     for (var indicesIndex = 0; indicesIndex < indices.length; indicesIndex++) {
                         var dataIndex = indices[indicesIndex] * numComponents;
@@ -5186,10 +5273,10 @@ var GLTFLoader = /** @class */ (function () {
             });
         }
         else {
-            var bufferView_1 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
-            accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView_1, kind).then(function (babylonBuffer) {
+            var bufferView_2 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
+            accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView_2, kind).then(function (babylonBuffer) {
                 var size = GLTFLoader._GetNumComponents(context, accessor.type);
-                return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView_1.byteStride, false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
+                return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), babylonBuffer, kind, false, false, bufferView_2.byteStride, false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
             });
         }
         return accessor._babylonVertexBuffer;
@@ -5892,7 +5979,7 @@ _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFFileLoader"]._CreateGLTF2Loade
 /*!***************************!*\
   !*** ./glTF/2.0/index.ts ***!
   \***************************/
-/*! exports provided: ArrayItem, GLTFLoader, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors */
+/*! exports provided: ArrayItem, GLTFLoader, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5922,6 +6009,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_minecraftMesh", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["MSFT_minecraftMesh"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["MSFT_sRGBFactors"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["ExtrasAsMetadata"]; });
 
 
 

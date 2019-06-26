@@ -134,6 +134,11 @@ export class CubeMapToSphericalPolynomialTools {
                     var g = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 1];
                     var b = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 2];
 
+                    // Prevent NaN harmonics with extreme HDRI data.
+                    if (isNaN(r)) { r = 0; }
+                    if (isNaN(g)) { g = 0; }
+                    if (isNaN(b)) { b = 0; }
+
                     // Handle Integer types.
                     if (cubeInfo.type === Constants.TEXTURETYPE_UNSIGNED_INT) {
                         r /= 255;

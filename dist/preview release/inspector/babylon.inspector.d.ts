@@ -49,6 +49,8 @@ declare module INSPECTOR {
         recorder: ReplayRecorder;
         private _onlyUseEulers;
         onlyUseEulers: boolean;
+        private _ignoreBackfacesForPicking;
+        ignoreBackfacesForPicking: boolean;
         init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
@@ -442,6 +444,7 @@ declare module INSPECTOR {
         onSelectionChangedObservable?: BABYLON.Observable<any>;
         onDebugSelectionChangeObservable?: BABYLON.Observable<BABYLON.BaseTexture>;
         propertyName?: string;
+        customDebugAction?: (state: boolean) => void;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
         isDebugSelected: boolean;
@@ -479,19 +482,20 @@ declare module INSPECTOR {
         globalState?: GlobalState;
         hideChannelSelect?: boolean;
     }
+    enum ChannelToDisplay {
+        R = 0,
+        G = 1,
+        B = 2,
+        A = 3,
+        All = 4
+    }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
-        displayRed: boolean;
-        displayGreen: boolean;
-        displayBlue: boolean;
-        displayAlpha: boolean;
+        channel: ChannelToDisplay;
         face: number;
     }> {
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
-            displayRed: boolean;
-            displayGreen: boolean;
-            displayBlue: boolean;
-            displayAlpha: boolean;
+            channel: ChannelToDisplay;
             face: number;
         }): boolean;
         componentDidMount(): void;
@@ -587,6 +591,8 @@ declare module INSPECTOR {
     export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
         private _onDebugSelectionChangeObservable;
         constructor(props: IPBRMaterialPropertyGridComponentProps);
+        switchAmbientMode(state: boolean): void;
+        switchMetallicMode(state: boolean): void;
         renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element;
         render(): JSX.Element;
     }
