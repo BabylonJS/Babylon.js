@@ -22,6 +22,9 @@ export class NodeMaterialConnectionPoint {
 
     private _type = NodeMaterialBlockConnectionPointTypes.Float;
 
+    /** @hidden */
+    public _enforceAssociatedVariableName = false;
+
     /**
      * Gets or sets the associated variable name in the shader
      */
@@ -30,7 +33,7 @@ export class NodeMaterialConnectionPoint {
             return (this._ownerBlock as InputBlock).associatedVariableName;
         }
 
-        if (this._connectedPoint) {
+        if (!this._enforceAssociatedVariableName && this._connectedPoint) {
             return this._connectedPoint.associatedVariableName;
         }
 
@@ -142,6 +145,11 @@ export class NodeMaterialConnectionPoint {
         return this._endpoints.map((e) => e.ownerBlock);
     }
 
+    /** Gets the list of connected endpoints */
+    public get endpoints() {
+        return this, this._endpoints;
+    }
+
     /**
      * Creates a new connection point
      * @param name defines the connection point name
@@ -213,6 +221,8 @@ export class NodeMaterialConnectionPoint {
 
         this._endpoints.push(connectionPoint);
         connectionPoint._connectedPoint = this;
+
+        this._enforceAssociatedVariableName = false;
         return this;
     }
 
@@ -230,6 +240,7 @@ export class NodeMaterialConnectionPoint {
 
         this._endpoints.splice(index, 1);
         endpoint._connectedPoint = null;
+        this._enforceAssociatedVariableName = false;
         return this;
     }
 }

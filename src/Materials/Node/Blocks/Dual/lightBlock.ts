@@ -143,7 +143,7 @@ export class LightBlock extends NodeMaterialBlock {
         let worldPosVaryingName = "v_" + worldPos.associatedVariableName;
         state._emitVaryingFromString(worldPosVaryingName, "vec3");
 
-        let worldNormalVaryingName = "v_" + worldNormal.associatedVariableName;     
+        let worldNormalVaryingName = "v_" + worldNormal.associatedVariableName;
         state._emitVaryingFromString(worldNormalVaryingName, "vec3");
 
         state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName}.xyz;\r\n`;

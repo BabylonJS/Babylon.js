@@ -28,8 +28,10 @@ export enum NodeMaterialBlockConnectionPointTypes {
     Color3OrColor4 = Color3 | Color4,
     /** Vector2 or Color3 or Color4 */
     Vector2OrColor3OrColor4 = Vector2 | Color3 | Color4,
-    /** Vector3 or Color3 */
+    /** Vector3 or Color3 or Color4 or Vector4 */
     Vector3OrColor3OrVector4OrColor4 = Vector3 | Color3 | Vector4 | Color4,
+    /** Vector2 or Vector3 or Color3 or Color4 or Vector4 */
+    Vector2OrVector3OrColor3OrVector4OrColor4 = Vector2 | Vector3 | Color3 | Vector4 | Color4,
     /** Detect type based on connection */
     AutoDetect = 1024,
     /** Output type that will be defined by input type */

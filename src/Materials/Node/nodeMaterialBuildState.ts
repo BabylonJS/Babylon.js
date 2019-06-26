@@ -1,9 +1,7 @@
-import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { Effect } from '../effect';
-import { Nullable } from '../../types';
 
 /**
  * Class used to store node based material build state
@@ -275,7 +273,7 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
-    public _emitVaryingFromString(name: string, type: string, define: string = "") {
+    public _emitVaryingFromString(name: string, type: string, define: string = "", notDefine = false) {
         if (this.sharedData.varyings.indexOf(name) !== -1) {
             return;
         }
@@ -283,7 +281,7 @@ export class NodeMaterialBuildState {
         this.sharedData.varyings.push(name);
 
         if (define) {
-            this.sharedData.varyingDeclaration += `#ifdef ${define}\r\n`;
+            this.sharedData.varyingDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
         }
         this.sharedData.varyingDeclaration += `varying ${type} ${name};\r\n`;
         if (define) {
@@ -291,17 +289,17 @@ export class NodeMaterialBuildState {
         }
     }
 
-    
+
     /** @hidden */
-    public _emitUniformFromString(name: string, type: string, define: string = "") {
+    public _emitUniformFromString(name: string, type: string, define: string = "", notDefine = false) {
         if (this.uniforms.indexOf(name) !== -1) {
             return;
         }
 
         this.uniforms.push(name);
-        
+
         if (define) {
-            this._uniformDeclaration += `#ifdef ${define}\r\n`;
+            this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
         }
         this._uniformDeclaration += `uniform ${type} ${name};\r\n`;
         if (define) {
