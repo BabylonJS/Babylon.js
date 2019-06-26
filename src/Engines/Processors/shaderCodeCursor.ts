@@ -15,6 +15,12 @@ export class ShaderCodeCursor {
         this._lines = [];
 
         for (var line of value) {
+            // Prevent removing line break in macros.
+            if (line[0] === "#") {
+                this._lines.push(line);
+                continue;
+            }
+
             const split = line.split(";");
 
             for (var index = 0; index < split.length; index++) {

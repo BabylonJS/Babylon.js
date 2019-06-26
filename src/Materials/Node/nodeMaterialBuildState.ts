@@ -189,7 +189,12 @@ export class NodeMaterialBuildState {
     /** @hidden */
     public _emitCodeFromInclude(includeName: string, comments: string, options?: {
         replaceStrings?: { search: RegExp, replace: string }[],
+        repeatKey?: string
     }) {
+        if (options && options.repeatKey) {
+            return `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
+        }
+
         let code = Effect.IncludesShadersStore[includeName] + "\r\n";
 
         if (this.sharedData.emitComments) {
