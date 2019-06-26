@@ -425,7 +425,10 @@ export class NativeEngine extends Engine {
 
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
-        const program = this._native.createProgram(vertexCode, fragmentCode);
+        const program = this._native.createProgram(
+            Engine._concatenateShader(vertexCode, defines),
+            Engine._concatenateShader(fragmentCode, defines)
+        );
         this.onAfterShaderCompilationObservable.notifyObservers(this);
         return program;
     }

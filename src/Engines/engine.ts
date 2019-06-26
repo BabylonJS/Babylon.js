@@ -3216,7 +3216,7 @@ export class Engine {
         return effect;
     }
 
-    protected static _concatenateShader(source: string, defines: Nullable<string>, shaderVersion: string): string {
+    protected static _concatenateShader(source: string, defines: Nullable<string>, shaderVersion: string = ""): string {
         return shaderVersion + (defines ? defines + "\n" : "") + source;
     }
 

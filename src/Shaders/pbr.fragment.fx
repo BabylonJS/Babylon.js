@@ -34,9 +34,7 @@ precision highp float;
 #include<pbrHelperFunctions>
 #include<imageProcessingFunctions>
 #include<shadowsFragmentFunctions>
-#ifndef USESPHERICALINVERTEX
-    #include<harmonicsFunctions>
-#endif
+#include<harmonicsFunctions>
 #include<pbrDirectLightingSetupFunctions>
 #include<pbrDirectLightingFalloffFunctions>
 #include<pbrBRDFFunctions>

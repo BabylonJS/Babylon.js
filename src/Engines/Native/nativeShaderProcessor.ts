@@ -1,20 +1,25 @@
 import { WebGL2ShaderProcessor } from "../WebGL/webGL2ShaderProcessors";
 import { VertexBuffer } from "../../Meshes/buffer";
 
-// These must match the values for bgfx::Attrib::Enum
+// These numbers must match the values for bgfx::Attrib::Enum
 const attributeLocations: { [kind: string]: number } = {
     [VertexBuffer.PositionKind]: 0,
     [VertexBuffer.NormalKind]: 1,
     [VertexBuffer.TangentKind]: 2,
-    [VertexBuffer.UVKind]: 10,
-    [VertexBuffer.UV2Kind]: 11,
     [VertexBuffer.ColorKind]: 4,
     [VertexBuffer.MatricesIndicesKind]: 8,
     [VertexBuffer.MatricesWeightsKind]: 9,
 };
 
+// Must match bgfx::Attrib::TexCoord0
+const firstGenericAttributeLocation = 10;
+
+// Must match bgfx::Attrib::TexCoord7
+const lastGenericAttributeLocation = 17;
+
 /** @hidden */
 export class NativeShaderProcessor extends WebGL2ShaderProcessor {
+    private _genericAttributeLocation: number;
     private _varyingLocationCount: number;
     private _varyingLocationMap: { [name: string]: number };
     private _replacements: Array<{ searchValue: RegExp, replaceValue: string }>;
@@ -30,12 +35,15 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
     }
 
     public attributeProcessor(attribute: string): string {
-        const match = attribute.match(/attribute\s+\w+\s+(\w+)\s*;/)!;
+        const match = attribute.match(/attribute\s+[^\s]+\s+([^\s]+)\s*(?:\[.+\])?\s*;/)!;
         const name = match[1];
 
-        const location = attributeLocations[name];
+        let location = attributeLocations[name];
         if (location === undefined) {
-            throw new Error(`Unsupported attribute ${name}`);
+            location = this._genericAttributeLocation++;
+            if (location > lastGenericAttributeLocation) {
+                throw new Error("Exceeded maximum custom attributes");
+            }
         }
 
         return `layout(location=${location}) ${super.attributeProcessor(attribute)}`;
@@ -52,11 +60,11 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
             this._varyingLocationMap[varying] = location;
         }
 
-        return `layout(location=${location}) ${super.varyingProcessor(varying, isFragment)}`
+        return `layout(location=${location}) ${super.varyingProcessor(varying, isFragment)}`;
     }
 
     public uniformProcessor(uniform: string): string {
-        const match = uniform.match(/uniform\s+(\w+)\s+(\w+)\s*;/)!;
+        const match = uniform.match(/uniform\s+([^\s]+)\s+([^\s]+)\s*(?:\[.+\])?\s*;/)!;
         const type = match[1];
         const name = match[2];
 
@@ -75,6 +83,8 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
     }
 
     public preProcessor(code: string, defines: string[], isFragment: boolean): string {
+        this._genericAttributeLocation = firstGenericAttributeLocation;
+
         if (!isFragment) {
             this._varyingLocationCount = 0;
             this._varyingLocationMap = {};
