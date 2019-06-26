@@ -114,11 +114,14 @@ export class WebXRExperienceHelper implements IDisposable {
             throw "XR session not supported by this browser";
         }
         this._setState(WebXRState.ENTERING_XR);
-        this.sessionManager.initializeSessionAsync(sessionCreationOptions).then(()=>{
+        return this.sessionManager.initializeSessionAsync(sessionCreationOptions).then(()=>{
+            console.log("init session")
             return this.sessionManager.setReferenceSpaceAsync(frameOfReference)
         }).then(()=>{
+            console.log("set ref space")
             return outputCanvas.initializeXRLayerAsync(this.sessionManager._xrSession);
         }).then(()=>{
+            console.log("init xr layer")
             return this.sessionManager.updateRenderStateAsync({baseLayer: outputCanvas.xrLayer, outputContext: outputCanvas.canvasContext})
         }).then(()=>{
             console.log("base layer set")
@@ -155,6 +158,7 @@ export class WebXRExperienceHelper implements IDisposable {
         }).catch((e:any)=>{
             console.log("FAILUE")
             console.log(e)
+            console.log(e.message)
         });
     }
 
