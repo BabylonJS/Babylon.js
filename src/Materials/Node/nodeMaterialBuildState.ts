@@ -275,36 +275,6 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
-    public _emitVaryings(point: NodeMaterialConnectionPoint, define: string = "", force = false, fromFragment = false, replacementName: string = "", type: Nullable<NodeMaterialBlockConnectionPointTypes> = null) {
-        let name = replacementName || point.associatedVariableName;
-        if (point._needToEmitVarying || force) {
-            if (this.sharedData.varyings.indexOf(name) !== -1) {
-                return;
-            }
-
-            this.sharedData.varyings.push(name);
-
-            if (define) {
-                this.sharedData.varyingDeclaration += `#ifdef ${define}\r\n`;
-            }
-            this.sharedData.varyingDeclaration += `varying ${this._getGLType(point.type)} ${name};\r\n`;
-            if (define) {
-                this.sharedData.varyingDeclaration += `#endif\r\n`;
-            }
-
-            if (this.target === NodeMaterialBlockTargets.Vertex && fromFragment) {
-                if (define) {
-                    this.sharedData.varyingDeclaration += `#ifdef ${define}\r\n`;
-                }
-                this._varyingTransfer += `${name} = ${point.name};\r\n`;
-                if (define) {
-                    this.sharedData.varyingDeclaration += `#endif\r\n`;
-                }
-            }
-        }
-    }
-
-    /** @hidden */
     public _emitVaryingFromString(name: string, type: string, define: string = "") {
         if (this.sharedData.varyings.indexOf(name) !== -1) {
             return;
@@ -318,6 +288,24 @@ export class NodeMaterialBuildState {
         this.sharedData.varyingDeclaration += `varying ${type} ${name};\r\n`;
         if (define) {
             this.sharedData.varyingDeclaration += `#endif\r\n`;
+        }
+    }
+
+    
+    /** @hidden */
+    public _emitUniformFromString(name: string, type: string, define: string = "") {
+        if (this.uniforms.indexOf(name) !== -1) {
+            return;
+        }
+
+        this.uniforms.push(name);
+        
+        if (define) {
+            this._uniformDeclaration += `#ifdef ${define}\r\n`;
+        }
+        this._uniformDeclaration += `uniform ${type} ${name};\r\n`;
+        if (define) {
+            this._uniformDeclaration += `#endif\r\n`;
         }
     }
 }

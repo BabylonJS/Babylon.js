@@ -20,9 +20,6 @@ export class NodeMaterialConnectionPoint {
     /** @hidden */
     public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
 
-    /** @hidden */
-    public _needToEmitVarying = true;
-
     private _type = NodeMaterialBlockConnectionPointTypes.Float;
 
     /**

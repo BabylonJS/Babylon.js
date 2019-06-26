@@ -80,10 +80,11 @@ export class InputBlock extends NodeMaterialBlock {
     /**
      * Creates a new InputBlock
      * @param name defines the block name
+     * @param target defines the target of that block (Vertex by default)
      * @param type defines the type of the input (can be set to NodeMaterialBlockConnectionPointTypes.AutoDetect)
      */
-    public constructor(name: string, type: NodeMaterialBlockConnectionPointTypes = NodeMaterialBlockConnectionPointTypes.AutoDetect) {
-        super(name, undefined, false, true);
+    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, type: NodeMaterialBlockConnectionPointTypes = NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+        super(name, target, false, true);
 
         this._type = type;
 
@@ -241,8 +242,7 @@ export class InputBlock extends NodeMaterialBlock {
         return `#ifdef ${define}\r\n`;
     }
 
-    /** @hidden */
-    public _emit(state: NodeMaterialBuildState, define?: string) {
+    private _emit(state: NodeMaterialBuildState, define?: string) {
         // Uniforms
         if (this.isUniform) {
             if (!this.associatedVariableName) {
@@ -282,13 +282,8 @@ export class InputBlock extends NodeMaterialBlock {
         if (this.isAttribute) {
             this.associatedVariableName = this.name;
 
-            if (this.target === NodeMaterialBlockTargets.Fragment) { // Attribute for fragment need to be carried over by varyings
+            if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) { // Attribute for fragment need to be carried over by varyings
                 this._emit(state._vertexState, define);
-
-                // if (this._needToEmitVarying) {
-                //     state._vertexState._emitVaryings(point, undefined, true, true, "v_" + this.associatedVariableName);
-                //     this.associatedVariableName = "v_" + this.associatedVariableName;
-                // }
                 return;
             }
 
@@ -397,6 +392,10 @@ export class InputBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        state.sharedData.inputBlocks.push(this);
+        if (this.isUniform || this.isWellKnownValue) {
+            state.sharedData.inputBlocks.push(this);
+        }
+
+        this._emit(state);
     }
 }

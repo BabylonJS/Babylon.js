@@ -15,10 +15,12 @@ import { Mesh } from '../../../../Meshes/mesh';
  */
 export class TextureBlock extends NodeMaterialBlock {
     private _defineName: string;
+    private _mainUVDefineName: string;
     private _samplerName: string;
     private _transformedUVName: string;
     private _textureTransformName: string;
     private _textureInfoName: string;
+    private _mainUVName: string;
 
     /**
      * Gets or sets the texture associated with the node
@@ -32,12 +34,9 @@ export class TextureBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2);
+        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false);
 
         this.registerOutput("color", NodeMaterialBlockConnectionPointTypes.Color4);
-
-        // Setup
-        this._inputs[0]._needToEmitVarying = false;
     }
 
     /**
@@ -75,15 +74,12 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        let uvInput = this.uv;
-        let mainUVName = ("vMain" + uvInput.associatedVariableName).toUpperCase();
-
         if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
             defines.setValue(this._defineName, true);
-            defines.setValue(mainUVName, false);
+            defines.setValue(this._mainUVDefineName, false);
         } else {
             defines.setValue(this._defineName, false);
-            defines.setValue(mainUVName, true);
+            defines.setValue(this._mainUVDefineName, true);
         }
     }
 
@@ -110,19 +106,17 @@ export class TextureBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         this._defineName = state._getFreeDefineName("UVTRANSFORM");
-        let mainUVName = "vMain" + uvInput.associatedVariableName;
+        this._mainUVDefineName = ("vMain" + uvInput.associatedVariableName).toUpperCase();
 
+        this._mainUVName = "vMain" + uvInput.associatedVariableName;
         this._transformedUVName = state._getFreeVariableName("transformedUV");
         this._textureTransformName = state._getFreeVariableName("textureTransform");
         this._textureInfoName = state._getFreeVariableName("textureInfoName");
 
         state._emitVaryingFromString(this._transformedUVName, "vec2", this._defineName);
+        state._emitVaryingFromString(this._mainUVName, "vec2", this._mainUVDefineName);
 
-        state.uniforms.push(this._textureTransformName);
-        state.uniforms.push(this._textureInfoName);
-
-        state.compilationString += `mat4 ${this._textureTransformName};\r\n`;
-        state.compilationString += `float ${this._textureInfoName};\r\n`;
+        state._emitUniformFromString(this._transformedUVName, "mat4", this._defineName)
 
         if (state.sharedData.emitComments) {
             state.compilationString += `\r\n//${this.name}\r\n`;
@@ -130,7 +124,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}, 1.0, 0.0));\r\n`;
         state.compilationString += `#else\r\n`;
-        state.compilationString += `${mainUVName} = ${uvInput.associatedVariableName};\r\n`;
+        state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName};\r\n`;
         state.compilationString += `#endif\r\n`;
     }
 
@@ -141,12 +135,16 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this._samplerName = state._getFreeVariableName(this.name + "Sampler");
         state.samplers.push(this._samplerName);
+        state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
 
         // Vertex
         this._injectVertexCode(state._vertexState);
 
         // Fragment
         state.sharedData.blocksWithDefines.push(this);
+        state.sharedData.bindableBlocks.push(this);
+
+        state._emitUniformFromString(this._textureInfoName, "float")
 
         let uvInput = this.uv;
         let output = this._outputs[0];

@@ -102,7 +102,6 @@ export class FogBlock extends NodeMaterialBlock {
             fogParametersInput.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
             fogParametersInput.output.connectTo(this.fogParameters);
         }
-        this._outputs[0]._needToEmitVarying = true;
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {

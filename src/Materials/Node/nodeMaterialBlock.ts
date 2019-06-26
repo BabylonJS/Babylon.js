@@ -276,10 +276,6 @@ export class NodeMaterialBlock {
         // Empty. Must be defined by child nodes
     }
 
-    protected _emit(state: NodeMaterialBuildState, define?: string) {
-        // Empty. Must be defined by child nodes
-    }
-
     /**
      * Add uniforms, samplers and uniform buffers at compilation time
      * @param state defines the state to update
@@ -382,21 +378,19 @@ export class NodeMaterialBlock {
             console.log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
         }
 
+        if (!this.isInput) {
+            /** Prepare outputs */
+            for (var output of this._outputs) {
+                if ((output.target & this.target!) === 0) {
+                    continue;
+                }
+                if ((output.target & state.target!) === 0) {
+                    continue;
+                }
 
-        /** Emit input blocks */
-        this._emit(state);
-
-        /** Prepare outputs */
-        for (var output of this._outputs) {
-            if ((output.target & this.target!) === 0) {
-                continue;
-            }
-            if ((output.target & state.target!) === 0) {
-                continue;
-            }
-
-            if (!output.associatedVariableName) {
-                output.associatedVariableName = state._getFreeVariableName(output.name);
+                if (!output.associatedVariableName) {
+                    output.associatedVariableName = state._getFreeVariableName(output.name);
+                }
             }
         }
 

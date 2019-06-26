@@ -141,10 +141,10 @@ export class LightBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         let worldPosVaryingName = "v_" + worldPos.associatedVariableName;
-        state._emitVaryings(worldPos, undefined, true, false, worldPosVaryingName, NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitVaryingFromString(worldPosVaryingName, "vec3");
 
-        let worldNormalVaryingName = "v_" + worldNormal.associatedVariableName;
-        state._emitVaryings(worldNormal, undefined, true, false, worldNormalVaryingName, NodeMaterialBlockConnectionPointTypes.Vector3);
+        let worldNormalVaryingName = "v_" + worldNormal.associatedVariableName;     
+        state._emitVaryingFromString(worldNormalVaryingName, "vec3");
 
         state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
         state.compilationString += `${worldNormalVaryingName} = ${worldNormal.associatedVariableName}.xyz;\r\n`;
