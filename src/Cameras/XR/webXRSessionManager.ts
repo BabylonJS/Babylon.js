@@ -56,7 +56,7 @@ export class WebXRSessionManager implements IDisposable {
     }
 
     public initializeSessionAsync(sessionCreationOptions: XRSessionCreationOptions){
-        return this._xrNavigator.xr.requestSession(sessionCreationOptions).then((session: XRSession) => {
+        return this._xrNavigator.xr.requestSession(sessionCreationOptions.mode).then((session: XRSession) => {
             this._xrSession = session;
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
@@ -157,10 +157,10 @@ export class WebXRSessionManager implements IDisposable {
      * @returns true if supported
      */
     public supportsSessionModeAsync(sessionMode: string) {
-        if(!(navigator as any).xr || !(navigator as any).xr.supportsSessionMode){
+        if(!(navigator as any).xr || !(navigator as any).xr.supportsSession){
             return Promise.resolve(false);
         }else{
-            return (navigator as any).xr.supportsSessionMode(sessionMode).then(()=>{
+            return (navigator as any).xr.supportsSession(sessionMode).then(()=>{
                 return Promise.resolve(true)
             }).catch((e:any)=>{
                 Logger.Warn(e)
