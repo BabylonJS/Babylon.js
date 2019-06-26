@@ -308,7 +308,6 @@ export class NodeMaterialBlock {
         // Do nothing
     }
 
-
     /**
      * Initialize defines for shader compilation
      * @param mesh defines the mesh to be rendered
