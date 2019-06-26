@@ -25,6 +25,21 @@ export class MorphTargetManager {
     private _tempInfluences = new Array<number>();
 
     /**
+     * Gets or sets a boolean indicating if normals must be morphed
+     */
+    public enableNormalMorphing = true;
+
+    /**
+     * Gets or sets a boolean indicating if tangents must be morphed
+     */
+    public enableTangentMorphing = true;
+
+    /**
+     * Gets or sets a boolean indicating if UV must be morphed
+     */
+    public enableUVMorphing = true;
+
+    /**
      * Creates a new MorphTargetManager
      * @param scene defines the current scene
      */
@@ -60,21 +75,21 @@ export class MorphTargetManager {
      * Gets a boolean indicating if this manager supports morphing of normals
      */
     public get supportsNormals(): boolean {
-        return this._supportsNormals;
+        return this._supportsNormals && this.enableNormalMorphing;
     }
 
     /**
      * Gets a boolean indicating if this manager supports morphing of tangents
      */
     public get supportsTangents(): boolean {
-        return this._supportsTangents;
+        return this._supportsTangents && this.enableTangentMorphing;
     }
 
     /**
      * Gets a boolean indicating if this manager supports morphing of texture coordinates
      */
     public get supportsUVs(): boolean {
-        return this._supportsUVs;
+        return this._supportsUVs && this.enableUVMorphing;
     }
 
     /**

@@ -24,10 +24,11 @@ import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
 import { InputNodeModel } from './components/diagram/input/inputNodeModel';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
 import { Vector2, Vector3, Vector4, Matrix, Color3, Color4 } from 'babylonjs/Maths/math';
-import { LogComponent } from './components/log/logComponent';
+import { LogComponent, LogEntry } from './components/log/logComponent';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { LightNodeModel } from './components/diagram/light/lightNodeModel';
 import { LightNodeFactory } from './components/diagram/light/lightNodeFactory';
+import { DataStorage } from './dataStorage';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -179,10 +180,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         try {
             this.props.globalState.nodeMaterial.build(true);
-            this.props.globalState.onLogRequiredObservable.notifyObservers("Node material build successful");
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
         }
         catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(err);
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
     }
 
@@ -320,15 +321,76 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         return localNode;
     }
 
+    private _startX: number;
+    private _moveInProgress: boolean;
+
+    private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
+    private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
+
+    onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
+        this._startX = evt.clientX;
+        this._moveInProgress = true;
+        evt.currentTarget.setPointerCapture(evt.pointerId);
+    }
+
+    onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
+        this._moveInProgress = false;
+        evt.currentTarget.releasePointerCapture(evt.pointerId);
+    }
+
+    resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft = true) {
+
+        if (!this._moveInProgress) {
+            return;
+        }
+
+        const deltaX = evt.clientX - this._startX;
+        const rootElement = evt.currentTarget.ownerDocument!.getElementById("node-editor-graph-root") as HTMLDivElement;
+
+        if (forLeft) {
+            this._leftWidth += deltaX;
+            this._leftWidth = Math.max(150, Math.min(400, this._leftWidth));
+            DataStorage.StoreNumber("LeftWidth", this._leftWidth);
+        } else {
+            this._rightWidth -= deltaX;
+            this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
+            DataStorage.StoreNumber("RightWidth", this._rightWidth);
+        }
+
+        rootElement.style.gridTemplateColumns = this.buildColumnLayout();
+
+        this._startX = evt.clientX;
+    }
+
+    buildColumnLayout() {
+        return `${this._leftWidth}px 4px calc(100% - ${this._leftWidth + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
+    }
+
     render() {
         return (
             <Portal globalState={this.props.globalState}>
-                <div id="node-editor-graph-root">
+                <div id="node-editor-graph-root" style={
+                    {
+                        gridTemplateColumns: this.buildColumnLayout()
+                    }
+                }>
                     {/* Node creation menu */}
                     <NodeListComponent globalState={this.props.globalState} onAddValueNode={b => this.addValueNode(b)} onAddNodeFromClass={b => this.addNodeFromClass(b)} />
 
+                    <div id="leftGrab"
+                        onPointerDown={evt => this.onPointerDown(evt)}
+                        onPointerUp={evt => this.onPointerUp(evt)}
+                        onPointerMove={evt => this.resizeColumns(evt)}
+                    ></div>
+
                     {/* The node graph diagram */}
                     <DiagramWidget deleteKeys={[46]} ref={"test"} inverseZoom={true} className="diagram-container" diagramEngine={this._engine} maxNumberPointsPerLink={0} />
+
+                    <div id="rightGrab"
+                        onPointerDown={evt => this.onPointerDown(evt)}
+                        onPointerUp={evt => this.onPointerUp(evt)}
+                        onPointerMove={evt => this.resizeColumns(evt, false)}
+                    ></div>
 
                     {/* Property tab */}
                     <PropertyTabComponent globalState={this.props.globalState} />

@@ -41,6 +41,11 @@ export class NodeMaterialBuildStateSharedData {
     public repeatableContentBlocks = new Array<NodeMaterialBlock>();
 
     /**
+    * List of blocks that can provide a dynamic list of uniforms
+    */
+    public dynamicUniformBlocks = new Array<NodeMaterialBlock>();
+
+    /**
      * List of blocks that can block the isReady function for the material
      */
     public blockingBlocks = new Array<NodeMaterialBlock>();
@@ -99,6 +104,8 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["matricesWeights"] = 0;
         this.variableNames["matricesIndicesExtra"] = 0;
         this.variableNames["matricesWeightsExtra"] = 0;
+        this.variableNames["diffuseBase"] = 0;
+        this.variableNames["specularBase"] = 0;
 
         // Exclude defines
         this.defineNames["MAINUV0"] = 0;

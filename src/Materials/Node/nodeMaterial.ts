@@ -571,6 +571,10 @@ export class NodeMaterial extends PushMaterial {
             });
 
             // Uniforms
+            this._sharedData.dynamicUniformBlocks.forEach((b) => {
+                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines);
+            });
+
             let mergedUniforms = this._vertexCompilationState.uniforms;
 
             this._fragmentCompilationState.uniforms.forEach((u) => {
