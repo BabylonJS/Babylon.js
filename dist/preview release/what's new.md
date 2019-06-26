@@ -21,7 +21,7 @@
 - Method to check if device orientation is available ([TrevorDev](https://github.com/TrevorDev))
 - Added support for sound sprites [Doc](https://doc.babylonjs.com/how_to/playing_sounds_and_music#playing-a-sound-sprite) ([Deltakosh](https://github.com/deltakosh/))
 - Display Oculus Quest controller when using a Quest in WebVR ([TrevorDev](https://github.com/TrevorDev))
-- Added startAndReleaseDragOnPointerEvents property to pointerDragBehavior which can be set to false when using custom drag triggering ([TrevorDev](https://github.com/TrevorDev))
+- Added startAndReleaseDragOnPointerEvents property to pointerDragBehavior which can be set to false for custom drag triggering ([TrevorDev](https://github.com/TrevorDev))
 - Effect renderer to render one or multiple shader effects to a texture ([TrevorDev](https://github.com/TrevorDev))
 
 ### Engine
@@ -73,6 +73,7 @@
 - Added a note on shallow bounding of getBoundingInfo ([tibotiber](https://github.com/tibotiber))
 
 ## Bug fixes
+- Fixed Xbox One gamepad controller button schemes ([MackeyK24](https://github.com/MackeyK24/))
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Removing assetContainer from scene will also remove gui layers ([TrevorDev](https://github.com/TrevorDev))
 - A scene's input manager not adding key listeners when the canvas is already focused ([Poolminer](https://github.com/Poolminer))
