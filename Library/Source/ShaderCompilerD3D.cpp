@@ -103,11 +103,17 @@ namespace babylon
             { bgfx::Attrib::Position,   "POSITION"      },
             { bgfx::Attrib::Normal,     "NORMAL"        },
             { bgfx::Attrib::Tangent,    "TANGENT"       },
-            { bgfx::Attrib::TexCoord0,  "TEXCOORD0"     },
-            { bgfx::Attrib::TexCoord1,  "TEXCOORD1"     },
             { bgfx::Attrib::Color0,     "COLOR"         },
             { bgfx::Attrib::Indices,    "BLENDINDICES"  },
-            { bgfx::Attrib::Weight,     "BLENDWEIGHT"   }
+            { bgfx::Attrib::Weight,     "BLENDWEIGHT"   },
+            { bgfx::Attrib::TexCoord0,  "TEXCOORD0"     },
+            { bgfx::Attrib::TexCoord1,  "TEXCOORD1"     },
+            { bgfx::Attrib::TexCoord2,  "TEXCOORD2"     },
+            { bgfx::Attrib::TexCoord3,  "TEXCOORD3"     },
+            { bgfx::Attrib::TexCoord4,  "TEXCOORD4"     },
+            { bgfx::Attrib::TexCoord5,  "TEXCOORD5"     },
+            { bgfx::Attrib::TexCoord6,  "TEXCOORD6"     },
+            { bgfx::Attrib::TexCoord7,  "TEXCOORD7"     },
         };
 
         Microsoft::WRL::ComPtr<ID3DBlob> vertexBlob;
