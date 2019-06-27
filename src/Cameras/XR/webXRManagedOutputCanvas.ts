@@ -23,7 +23,7 @@ export class WebXRManagedOutputCanvas implements IDisposable {
      * @param helper the xr experience helper used to trigger adding/removing of the canvas
      * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
      */
-    constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement) {
+    constructor(private helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement) {
         if (!canvas) {
             canvas = document.createElement('canvas');
             canvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:90%;height:100%;background-color: #000000;";
@@ -53,18 +53,21 @@ export class WebXRManagedOutputCanvas implements IDisposable {
             (this.canvasContext as any) = null;
         } else {
             this._canvas = canvas;
-            this.canvasContext = <any>this._canvas.getContext('webgl2');
+            this.canvasContext = <any>this._canvas.getContext('webgl');
+            if(!this.canvasContext){
+                this.canvasContext = <any>this._canvas.getContext('webgl2');
+            }
         }
     }
 
     private _addCanvas() {
-        if (this._canvas) {
+        if (this._canvas && this._canvas !== this.helper.container.getScene().getEngine().getRenderingCanvas()) {
             document.body.appendChild(this._canvas);
         }
     }
 
     private _removeCanvas() {
-        if (this._canvas && document.body.contains(this._canvas)) {
+        if (this._canvas && document.body.contains(this._canvas) && this._canvas !== this.helper.container.getScene().getEngine().getRenderingCanvas()) {
             document.body.removeChild(this._canvas);
         }
     }
