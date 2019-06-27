@@ -101,7 +101,6 @@ export class NodeMaterial extends PushMaterial {
     private _buildWasSuccessful = false;
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
-    private _textures: BaseTexture[];
     private _optimizers = new Array<NodeMaterialOptimizer>();
 
     /** Define the URl to load node editor script */
@@ -469,7 +468,6 @@ export class NodeMaterial extends PushMaterial {
         this._vertexCompilationState.finalize(this._vertexCompilationState);
         this._fragmentCompilationState.finalize(this._fragmentCompilationState);
 
-        this._textures = this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture);
         this._buildId++;
 
         // Errors
@@ -726,7 +724,7 @@ export class NodeMaterial extends PushMaterial {
     public getActiveTextures(): BaseTexture[] {
         var activeTextures = super.getActiveTextures();
 
-        activeTextures.push(...this._textures);
+        activeTextures.push(...this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture));
 
         return activeTextures;
     }
@@ -741,8 +739,8 @@ export class NodeMaterial extends PushMaterial {
             return true;
         }
 
-        for (var t of this._textures) {
-            if (t === texture) {
+        for (var t of this._sharedData.textureBlocks) {
+            if (t.texture === texture) {
                 return true;
             }
         }
@@ -759,12 +757,11 @@ export class NodeMaterial extends PushMaterial {
     public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
 
         if (forceDisposeTextures) {
-            for (var texture of this._textures) {
+            for (var texture of this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture)) {
                 texture.dispose();
             }
         }
 
-        this._textures = [];
         this.onBuildObservable.clear();
 
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
