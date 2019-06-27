@@ -9,7 +9,13 @@ interface ILogComponentProps {
     globalState: GlobalState;
 }
 
-export class LogComponent extends React.Component<ILogComponentProps, { logs: string[] }> {
+export class LogEntry {
+    constructor(public message: string, public isError: boolean) {
+
+    }
+}
+
+export class LogComponent extends React.Component<ILogComponentProps, { logs: LogEntry[] }> {
 
     constructor(props: ILogComponentProps) {
         super(props);
@@ -20,7 +26,7 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: st
     componentWillMount() {
         this.props.globalState.onLogRequiredObservable.add(log => {
             let currentLogs = this.state.logs;
-            currentLogs.push(...log.split("\r\n"));
+            currentLogs.push(log);
 
             this.setState({ logs: currentLogs });
         });
@@ -41,8 +47,8 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: st
                 {
                     this.state.logs.map((l, i) => {
                         return (
-                            <div key={i} className="log">
-                                {l}
+                            <div key={i} className={"log" + (l.isError ? " error" : "")}>
+                                {l.message}
                             </div>
                         )
                     })

@@ -23,6 +23,7 @@ import { Constants } from "../Engines/constants";
 import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { _MeshCollisionData } from '../Collisions/meshCollisionData';
 import { _DevTools } from '../Misc/devTools';
+import { RawTexture } from '../Materials/Textures/rawTexture';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -608,6 +609,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _bonesTransformMatrices: Nullable<Float32Array> = null;
 
+    /** @hidden */
+    public _transformMatrixTexture: Nullable<RawTexture> = null;
+
     /**
      * Gets or sets a skeleton to apply skining transformations
      * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
@@ -833,9 +837,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     public set scaling(newScaling: Vector3) {
         this._scaling = newScaling;
-        if (this.physicsImpostor) {
-            this.physicsImpostor.forceUpdate();
-        }
     }
 
     // Methods
@@ -961,7 +962,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined
+     * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined.
+     * Note that it returns a shallow bounding of the mesh (i.e. it does not include children).
+     * To get the full bounding of all children, call `getHierarchyBoundingVectors` instead.
      * @returns a BoundingInfo
      */
     public getBoundingInfo(): BoundingInfo {
@@ -1570,6 +1573,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         // Skeleton
         this._internalAbstractMeshDataInfo._skeleton = null;
+
+        if (this._transformMatrixTexture) {
+            this._transformMatrixTexture.dispose();
+            this._transformMatrixTexture = null;
+        }
 
         // Intersections in progress
         for (index = 0; index < this._intersectionsInProgress.length; index++) {

@@ -1,9 +1,11 @@
 #log-console {
     background: #333333;
-    height: 100px;
+    border: #555555 solid 1px;
+    height: 120px;
+    box-sizing: border-box;
     margin: 0;
     padding: 10px;
-    width: calc(100% - 20px); 
+    width: 100%; 
     overflow: hidden;
     overflow-y: auto;
 
@@ -11,5 +13,9 @@
         color: white;
         font-size: 14px;
         font-family: 'Courier New', Courier, monospace;
+
+        &.error {
+            color:red;
+        }
     }
 }

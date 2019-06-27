@@ -593,7 +593,7 @@ export class MaterialHelper {
                 }
 
                 if (uv) {
-                    attribs.push(VertexBuffer.UVKind + index);
+                    attribs.push(VertexBuffer.UVKind + "_" + index);
                 }
 
                 if (attribs.length > maxAttributesCount) {
@@ -719,7 +719,7 @@ export class MaterialHelper {
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, mesh, effect, defines, usePhysicalLightFalloff);
+            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff);
         }
     }
 
@@ -762,7 +762,7 @@ export class MaterialHelper {
             const skeleton = mesh.skeleton;
 
             if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
-                const boneTexture = skeleton.getTransformMatrixTexture();
+                const boneTexture = skeleton.getTransformMatrixTexture(mesh);
                 effect.setTexture("boneSampler", boneTexture);
                 effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
             } else {
