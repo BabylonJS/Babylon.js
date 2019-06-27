@@ -6,15 +6,16 @@
 
     #fpsLabel {
         position: fixed;
-        top: auto;
+        top: calc(100% - 35px);
         bottom: 0;
+        right: 0;
         box-shadow: none;
     }
     .navbarBottom {
         display: none;
     }
     .wrapper {
-        height: calc(100% - 55px);
+        height: calc(100% - 55px - 35px);
     }
 
     #JStoTSbar {
@@ -30,6 +31,7 @@
         left: 0;
         height: 35px;
         line-height: 35px;
+        width: 100%;
     }
     .navbar .categoryTitle .logo, .navbar .categoryTitle .version {
         vertical-align: top;
@@ -44,7 +46,7 @@
         position: fixed;
         left: 0;
         width: 100%;
-        height: 100%;
+        height: calc(100% - 55px);
         text-align: center;
         overflow-y: auto;
     }
@@ -66,11 +68,34 @@
         left: 0;
         top: 55px;
         width: 100%;
-        height: 100%;
+        height: calc(100% - 55px);
         text-align: center;
         overflow-y: auto;
     }
     .navbar .select .subSelect .toDisplaySub .option {
         margin-top: 1px;
+    }
+
+    .save-layer .save-form {
+        z-index: 15;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        top: 0;
+        left: 0;
+        right: 0;
+        border-radius: 0;
+        padding-bottom: 20px;
+        box-sizing: border-box;
+    }
+    .save-layer .save-form .separator, .save-layer .save-form input, .save-layer .save-form textarea {
+        box-sizing: border-box;
+        width: calc(100% - 20px);
+        margin: 10px auto;
+    }
+    .save-layer .save-form #saveFormButtons {
+        margin-top: 15px;
+        text-transform: uppercase;
     }
 }
