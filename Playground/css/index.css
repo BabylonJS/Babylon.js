@@ -419,8 +419,14 @@ body {
     text-transform: uppercase;
     background-color: #201936;
 }
+.navbar .select .toDisplay.languageJS {
+    background-color: #3f3461;
+}
 .navbar .select .toDisplay.languageJS .option {
     background-color: #9379e6;
+}
+.navbar .select .toDisplay.languageTS {
+    background-color: #bb464b;
 }
 .navbar .select .toDisplay.languageTS .option {
     background-color: #e0684b;
