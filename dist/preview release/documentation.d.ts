@@ -4353,6 +4353,10 @@ declare module BABYLON {
         private _eventState;
         private _onObserverAdded;
         /**
+         * Gets the list of observers
+         */
+        readonly observers: Array<Observer<T>>;
+        /**
          * Creates a new observable
          * @param onObserverAdded defines a callback to call when a new observer is added
          */
@@ -6694,7 +6698,7 @@ declare module BABYLON {
          */
         easeInCore(gradient: number): number;
         /**
-         * Given an input gradient between 0 and 1, this returns the corrseponding value
+         * Given an input gradient between 0 and 1, this returns the corresponding value
          * of the easing function.
          * @param gradient Defines the value between 0 and 1 we want the easing value for
          * @returns the corresponding value on the curve defined by the easing function
@@ -7986,7 +7990,6 @@ declare module BABYLON {
         _computeLocalCameraSpeed(): number;
         /**
          * Defines the target the camera should look at.
-         * This will automatically adapt alpha beta and radius to fit within the new target.
          * @param target Defines the new target as a Vector or a mesh
          */
         setTarget(target: Vector3): void;
@@ -10009,7 +10012,7 @@ declare module BABYLON {
         private _useTextureToStoreBoneMatrices;
         /**
          * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
-         * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
+         * Please note that this option is not available if the hardware does not support it
          */
         useTextureToStoreBoneMatrices: boolean;
         private _animationPropertiesOverride;
@@ -10063,9 +10066,10 @@ declare module BABYLON {
         getTransformMatrices(mesh: AbstractMesh): Float32Array;
         /**
          * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
+         * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
          * @returns a raw texture containing the data
          */
-        getTransformMatrixTexture(): Nullable<RawTexture>;
+        getTransformMatrixTexture(mesh: AbstractMesh): Nullable<RawTexture>;
         /**
          * Gets the current hosting scene
          * @returns a scene object
@@ -10338,6 +10342,18 @@ declare module BABYLON {
         private _vertexCount;
         private _uniqueId;
         private _tempInfluences;
+        /**
+         * Gets or sets a boolean indicating if normals must be morphed
+         */
+        enableNormalMorphing: boolean;
+        /**
+         * Gets or sets a boolean indicating if tangents must be morphed
+         */
+        enableTangentMorphing: boolean;
+        /**
+         * Gets or sets a boolean indicating if UV must be morphed
+         */
+        enableUVMorphing: boolean;
         /**
          * Creates a new MorphTargetManager
          * @param scene defines the current scene
@@ -24790,6 +24806,8 @@ declare module BABYLON {
         };
         /** @hidden */
         _bonesTransformMatrices: Nullable<Float32Array>;
+        /** @hidden */
+        _transformMatrixTexture: Nullable<RawTexture>;
         /**
          * Gets or sets a skeleton to apply skining transformations
          * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
@@ -24935,7 +24953,9 @@ declare module BABYLON {
          */
         isVerticesDataPresent(kind: string): boolean;
         /**
-         * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined
+         * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined.
+         * Note that it returns a shallow bounding of the mesh (i.e. it does not include children).
+         * To get the full bounding of all children, call `getHierarchyBoundingVectors` instead.
          * @returns a BoundingInfo
          */
         getBoundingInfo(): BoundingInfo;
@@ -30622,7 +30642,7 @@ declare module BABYLON {
          */
         inertia: number;
         /**
-         * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.PERSPECTIVE_ORTHOGRAPHIC)
+         * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
          */
         mode: number;
         /**
@@ -33547,6 +33567,12 @@ declare module BABYLON {
          */
         getMaterialByID(id: string): Nullable<Material>;
         /**
+         * Gets a the last added material using a given id
+         * @param id defines the material's ID
+         * @return the last material with the given id or null if none found.
+         */
+        getLastMaterialByID(id: string): Nullable<Material>;
+        /**
          * Gets a material using its name
          * @param name defines the material's name
          * @return the material or null if none found.
@@ -34286,13 +34312,17 @@ declare module BABYLON {
          */
         streaming?: boolean;
         /**
-         * Defines an optional length (in ms) inside the sound file
+         * Defines an optional length (in seconds) inside the sound file
          */
         length?: number;
         /**
-         * Defines an optional offset (in ms) inside the sound file
+         * Defines an optional offset (in seconds) inside the sound file
          */
         offset?: number;
+        /**
+         * If true, URLs will not be required to state the audio file codec to use.
+         */
+        skipCodecCheck?: boolean;
     }
     /**
      * Defines a sound that can be played in the application.
@@ -36223,6 +36253,10 @@ declare module BABYLON {
          *  If the drag behavior will react to drag events (Default: true)
          */
         enabled: boolean;
+        /**
+         * If pointer events should start and release the drag (Default: true)
+         */
+        startAndReleaseDragOnPointerEvents: boolean;
         /**
          * If camera controls should be detached during the drag
          */
@@ -41556,15 +41590,11 @@ declare module BABYLON {
         static InspectorURL: string;
         private _scene;
         private BJSINSPECTOR;
+        private _onPropertyChangedObservable?;
         /**
          * Observable triggered when a property is changed through the inspector.
          */
-        onPropertyChangedObservable: Observable<{
-            object: any;
-            property: string;
-            value: any;
-            initialValue: any;
-        }>;
+        readonly onPropertyChangedObservable: any;
         /**
          * Instantiates a new debug layer.
          * The debug layer (aka Inspector) is the go to tool in order to better understand
@@ -42877,6 +42907,15 @@ declare module BABYLON {
          * File name for the right controller model.
          */
         static MODEL_RIGHT_FILENAME: string;
+        /**
+         * Base Url for the Quest controller model.
+         */
+        static QUEST_MODEL_BASE_URL: string;
+        /**
+         * @hidden
+         * If the controllers are running on a device that needs the updated Quest controller models
+         */
+        static _IsQuest: boolean;
         /**
          * Fired when the secondary trigger on this controller is modified
          */
@@ -46468,9 +46507,9 @@ declare module BABYLON {
         /**
          * Let user defines the brdf lookup texture used for IBL.
          * A default 8bit version is embedded but you could point at :
-         * * Default texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.png
+         * * Default texture: https://assets.babylonjs.com/environments/correlatedMSBRDF_RGBD.png
          * * Default 16bit pixel depth texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
-         * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF.png
+         * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF_RGBD.png
          * * LEGACY Default None correlated 16bit pixel depth https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
          */
         environmentBRDFTexture: Nullable<BaseTexture>;
@@ -47490,7 +47529,7 @@ declare module BABYLON {
         /**
          * Gets the rendering group id the layer should render in.
          */
-        readonly renderingGroupId: number;
+        renderingGroupId: number;
         /**
          * An event triggered when the effect layer has been disposed.
          */
@@ -49105,13 +49144,14 @@ declare module BABYLON {
         private _fixedTimeStep;
         private _cannonRaycastResult;
         private _raycastResult;
-        private _removeAfterStep;
+        private _physicsBodysToRemoveAfterStep;
         BJSCANNON: any;
         constructor(_useDeltaForWorldStep?: boolean, iterations?: number, cannonInjection?: any);
         setGravity(gravity: Vector3): void;
         setTimeStep(timeStep: number): void;
         getTimeStep(): number;
         executeStep(delta: number): void;
+        private _removeMarkedPhysicsBodiesFromWorld;
         applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
         applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
         generatePhysicsBody(impostor: PhysicsImpostor): void;
@@ -50788,6 +50828,10 @@ declare module BABYLON {
         */
         repeatableContentBlocks: NodeMaterialBlock[];
         /**
+        * List of blocks that can provide a dynamic list of uniforms
+        */
+        dynamicUniformBlocks: NodeMaterialBlock[];
+        /**
          * List of blocks that can block the isReady function for the material
          */
         blockingBlocks: NodeMaterialBlock[];
@@ -50911,6 +50955,7 @@ declare module BABYLON {
                 search: RegExp;
                 replace: string;
             }[];
+            repeatKey?: string;
         }): string;
         /** @hidden */
         _emitFunctionFromInclude(includeName: string, comments: string, options?: {
@@ -51366,6 +51411,13 @@ declare module BABYLON {
         }): this | undefined;
         protected _buildBlock(state: NodeMaterialBuildState): void;
         /**
+         * Add uniforms, samplers and uniform buffers at compilation time
+         * @param state defines the state to update
+         * @param nodeMaterial defines the node material requesting the update
+         * @param defines defines the material defines to update
+         */
+        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        /**
          * Add potential fallbacks if shader compilation fails
          * @param mesh defines the mesh to be rendered
          * @param fallbacks defines the current prioritized list of fallbacks
@@ -51528,6 +51580,12 @@ declare module BABYLON {
          */
         wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
         private _getTypeLength;
+        /**
+         * Gets an boolean indicating if the current point can be connected to another point
+         * @param connectionPoint defines the other connection point
+         * @returns true if the connection is possible
+         */
+        canConnectTo(connectionPoint: NodeMaterialConnectionPoint): boolean;
         /**
          * Connect this point to another connection point
          * @param connectionPoint defines the other connection point
@@ -52015,7 +52073,8 @@ declare module BABYLON {
          */
         readonly worldNormal: NodeMaterialConnectionPoint;
         /**
-        * Gets the light input component
+        * Gets the light input component.
+        * If not defined, all lights will be considered
         */
         readonly light: NodeMaterialConnectionPoint;
         /**
@@ -52032,6 +52091,7 @@ declare module BABYLON {
         readonly specularOutput: NodeMaterialConnectionPoint;
         autoConfigure(): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private _injectVertexCode;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
@@ -65172,6 +65232,29 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
     }
 }
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * Store glTF extras (if present) in BJS objects' metadata
+     */
+    export class ExtrasAsMetadata implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        private _assignExtras;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
+        /** @hidden */
+        loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
+        /** @hidden */
+        createMaterial(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material>;
+    }
+}
 declare module BABYLON {
     /**
      * Class reading and parsing the MTL file bundled with the obj file.
@@ -65794,6 +65877,12 @@ declare module BABYLON {
          */
         shouldExportNode?(node: Node): boolean;
         /**
+         * Function used to extract the part of node's metadata that will be exported into glTF node extras
+         * @param metadata source metadata to read from
+         * @returns the data to store to glTF node extras
+         */
+        metadataSelector?(metadata: any): any;
+        /**
          * The sample rate to bake animation curves
          */
         animationSampleRate?: number;
@@ -66007,10 +66096,7 @@ declare module BABYLON.GLTF2.Exporter {
          * Baked animation sample rate
          */
         private _animationSampleRate;
-        /**
-         * Callback which specifies if a node should be exported or not
-         */
-        private _shouldExportNode;
+        private _options;
         private _localEngine;
         _glTFMaterialExporter: _GLTFMaterialExporter;
         private _extensions;
@@ -66197,7 +66283,6 @@ declare module BABYLON.GLTF2.Exporter {
          * Creates a mapping of Node unique id to node index and handles animations
          * @param babylonScene Babylon Scene
          * @param nodes Babylon transform nodes
-         * @param shouldExportNode Callback specifying if a transform node should be exported
          * @param binaryWriter Buffer to write binary data to
          * @returns Node mapping of unique id to index
          */

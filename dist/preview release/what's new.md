@@ -20,6 +20,8 @@
 - Move normalizeToUnitCube to transformNode instead of abstract mesh and add predicate to exclude sub objects when scaling ([TrevorDev](https://github.com/TrevorDev))
 - Method to check if device orientation is available ([TrevorDev](https://github.com/TrevorDev))
 - Added support for sound sprites [Doc](https://doc.babylonjs.com/how_to/playing_sounds_and_music#playing-a-sound-sprite) ([Deltakosh](https://github.com/deltakosh/))
+- Display Oculus Quest controller when using a Quest in WebVR ([TrevorDev](https://github.com/TrevorDev))
+- Added startAndReleaseDragOnPointerEvents property to pointerDragBehavior which can be set to false for custom drag triggering ([TrevorDev](https://github.com/TrevorDev))
 
 ### Engine
 - Morph targets now can morph UV channel as well ([Deltakosh](https://github.com/deltakosh/))
@@ -43,6 +45,7 @@
 - Added `Color3.toHSV()`, `Color3.toHSVToRef()` and `Color3.HSVtoRGBToRef()` ([Deltakosh](https://github.com/deltakosh/))
 - Added `ShadowGenerator.onAfterShadowMapRenderObservable` and `ShadowGenerator.onAfterShadowMapMeshRenderObservable` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for side by side and top bottom images in the `PhotoDome` ([Deltakosh](https://github.com/deltakosh/))
+- Added playground ts-local (TypeScript support for local playground) ([pjoe](https://github.com/pjoe/))
 
 ### Meshes
 - Added new CreateTiledPlane and CreateTiledBox ([JohnK](https://github.com/BabylonJSGuide/))
@@ -56,12 +59,20 @@
 ### Loaders
 - Added support for non-float accessors in animation data for glTF loader. ([bghgary](https://github.com/bghgary))
 - Support loading cube data in .basis loader ([TrevorDev](https://github.com/TrevorDev))
+- Load glTF extras into BJS metadata ([pjoe](https://github.com/pjoe))
 
 ### Materials
 - Added `ShaderMaterial.setColor4Array` ([JonathanTron](https://github.com/JonathanTron/))
 - Added `ShaderMaterial.setArray4` ([JonathanTron](https://github.com/JonathanTron/))
 
+### Sounds
+- Added `ISoundOptions.skipCodecCheck` to make `Sound` more flexible with URLs ([nbduke](https://github.com/nbduke))
+
+### Documentation
+- Added a note on shallow bounding of getBoundingInfo ([tibotiber](https://github.com/tibotiber))
+
 ## Bug fixes
+- Fixed Xbox One gamepad controller button schemes ([MackeyK24](https://github.com/MackeyK24/))
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Removing assetContainer from scene will also remove gui layers ([TrevorDev](https://github.com/TrevorDev))
 - A scene's input manager not adding key listeners when the canvas is already focused ([Poolminer](https://github.com/Poolminer))
@@ -72,5 +83,8 @@
 - Only cast pointer ray input when pointer is locked in webVR ([TrevorDev](https://github.com/TrevorDev))
 - Avoid using default utility layer in gizmo manager to support multiple scenes ([TrevorDev](https://github.com/TrevorDev))
 - Fix bug when adding and removing observers in quick succession ([sable](https://github.com/thscott))
+- Cannon and Ammo forceUpdate will no longer cause an unexpected exception ([TrevorDev](https://github.com/TrevorDev))
+- Loading the same multi-material twice and disposing one should not impact the other ([TrevorDev](https://github.com/TrevorDev))
 
 ## Breaking changes
+- Setting mesh.scaling to a new vector will no longer automatically call forceUpdate (this should be done manually when needed) ([TrevorDev](https://github.com/TrevorDev))

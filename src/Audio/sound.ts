@@ -61,13 +61,17 @@ export interface ISoundOptions {
      */
     streaming?: boolean;
     /**
-     * Defines an optional length (in ms) inside the sound file
+     * Defines an optional length (in seconds) inside the sound file
      */
     length?: number;
     /**
-     * Defines an optional offset (in ms) inside the sound file
+     * Defines an optional offset (in seconds) inside the sound file
      */
     offset?: number;
+    /**
+     * If true, URLs will not be required to state the audio file codec to use.
+     */
+    skipCodecCheck?: boolean;
 }
 
 /**
@@ -220,8 +224,8 @@ export class Sound {
             this.distanceModel = options.distanceModel || "linear";
             this._playbackRate = options.playbackRate || 1;
             this._streaming = options.streaming || false;
-            this._length = options.length ? options.length / 1000 : undefined;
-            this._offset = options.offset ? options.offset / 1000 : undefined;
+            this._length = options.length;
+            this._offset = options.offset;
         }
 
         if (Engine.audioEngine.canUseWebAudio && Engine.audioEngine.audioContext) {
@@ -278,18 +282,11 @@ export class Sound {
                             // If we found a supported format, we load it immediately and stop the loop
                             for (var i = 0; i < urls.length; i++) {
                                 var url = urls[i];
-                                if (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) {
-                                    codecSupportedFound = true;
-                                }
-                                if (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) {
-                                    codecSupportedFound = true;
-                                }
-                                if (url.indexOf(".wav", url.length - 4) !== -1) {
-                                    codecSupportedFound = true;
-                                }
-                                if (url.indexOf("blob:") !== -1) {
-                                    codecSupportedFound = true;
-                                }
+                                codecSupportedFound = (options && options.skipCodecCheck) ||
+                                    (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) ||
+                                    (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) ||
+                                    (url.indexOf(".wav", url.length - 4) !== -1) ||
+                                    (url.indexOf("blob:") !== -1);
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
                                     if (!this._streaming) {
@@ -746,21 +743,24 @@ export class Sound {
                 else {
                     var tryToPlay = () => {
                         if (Engine.audioEngine.audioContext) {
+                            length = length || this._length;
+                            offset = offset || this._offset;
+
                             this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
                             this._soundSource.buffer = this._audioBuffer;
                             this._soundSource.connect(this._inputAudioNode);
                             this._soundSource.loop = this.loop;
-                            if (this._offset !== undefined) {
-                                this._soundSource.loopStart = this._offset;
+                            if (offset !== undefined) {
+                                this._soundSource.loopStart = offset;
                             }
-                            if (this._length !== undefined) {
-                                this._soundSource.loopEnd = (this._offset! | 0) + this._length!;
+                            if (length !== undefined) {
+                                this._soundSource.loopEnd = (offset! | 0) + length!;
                             }
                             this._soundSource.playbackRate.value = this._playbackRate;
                             this._soundSource.onended = () => { this._onended(); };
                             startTime = time ? Engine.audioEngine.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
                             const actualOffset = this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0;
-                            this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : this._length);
+                            this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                         }
                     };
 
