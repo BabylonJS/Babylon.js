@@ -17,7 +17,7 @@ export class WebXREnterExitUIButton {
         public element: HTMLElement,
         /** XR initialization options for the button */
         public sessionMode: XRSessionMode,
-        public frameOfReference: XRReferenceSpaceType
+        public referenceSpaceType: XRReferenceSpaceType
     ) { }
     /**
      * Overwritable function which can be used to update the button's visuals when the state changes
@@ -66,7 +66,7 @@ export class WebXREnterExitUI implements IDisposable {
     public static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI> {
         var ui = new WebXREnterExitUI(scene, options);
         var supportedPromises = ui._buttons.map((btn) => {
-            return helper.sessionManager.supportsSessionModeAsync(btn.sessionMode);
+            return helper.sessionManager.supportsSessionAsync(btn.sessionMode);
         });
         helper.onStateChangedObservable.add((state) => {
             if (state == WebXRState.NOT_IN_XR) {
@@ -85,7 +85,7 @@ export class WebXREnterExitUI implements IDisposable {
                         } else if (helper.state == WebXRState.NOT_IN_XR) {
                             ui._updateButtons(ui._buttons[i]);
                             if(options.webXRManagedOutputCanvas){
-                                await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].frameOfReference, options.webXRManagedOutputCanvas);
+                                await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].referenceSpaceType, options.webXRManagedOutputCanvas);
                             }
                         }
                     };

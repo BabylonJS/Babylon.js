@@ -33,8 +33,8 @@ export class WebXRController {
         }
     }
 
-    updateFromXRFrame(xrFrame:XRFrame, xrFrameOfReference:XRReferenceSpaceType){
-        var pose = xrFrame.getPose(this.inputSource.targetRaySpace, xrFrameOfReference)
+    updateFromXRFrame(xrFrame:XRFrame, referenceSpaceType:XRReferenceSpaceType){
+        var pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpaceType)
         if(pose){
             Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMatrix);
             if (!this.pointer.getScene().useRightHandedSystem) {
@@ -46,7 +46,7 @@ export class WebXRController {
             this._tmpMatrix.decompose(this.pointer.scaling, this.pointer.rotationQuaternion!, this.pointer.position);
         }
 
-        var pose = xrFrame.getPose(this.inputSource.gripSpace, xrFrameOfReference)
+        var pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpaceType)
         if(pose){
             Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMatrix);
             if (!this.pointer.getScene().useRightHandedSystem) {
@@ -88,19 +88,19 @@ export class WebXRInput implements IDisposable {
      */
     public constructor(private helper: WebXRExperienceHelper) {
         this._frameObserver = helper.sessionManager.onXRFrameObservable.add(() => {
-            if (!helper.sessionManager._currentXRFrame) {
+            if (!helper.sessionManager.currentFrame) {
                 return;
             }
 
             // Start listing to input add/remove event
-            if(this.controllers.length == 0 && helper.sessionManager._xrSession.inputSources){
-                this._addAndRemoveControllers(helper.sessionManager._xrSession.inputSources, []);
-                helper.sessionManager._xrSession.addEventListener("inputsourceschange", this._onInputSourcesChange)
+            if(this.controllers.length == 0 && helper.sessionManager.session.inputSources){
+                this._addAndRemoveControllers(helper.sessionManager.session.inputSources, []);
+                helper.sessionManager.session.addEventListener("inputsourceschange", this._onInputSourcesChange)
             }
 
             // Update controller pose info
             this.controllers.forEach((controller)=>{
-                controller.updateFromXRFrame(helper.sessionManager._currentXRFrame!, helper.sessionManager._frameOfReference)
+                controller.updateFromXRFrame(helper.sessionManager.currentFrame!, helper.sessionManager.referenceSpaceType)
             })
 
         })
