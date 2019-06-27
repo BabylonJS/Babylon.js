@@ -73,7 +73,7 @@ export class TextureBlock extends NodeMaterialBlock {
         if (!defines._areTexturesDirty) {
             return;
         }
-        
+
         defines.setValue(this._mainUVDefineName, false);
     }
 
@@ -81,7 +81,7 @@ export class TextureBlock extends NodeMaterialBlock {
         if (!defines._areTexturesDirty) {
             return;
         }
-    
+
         if (!this.texture || !this.texture.getTextureMatrix) {
             return;
         }
@@ -147,6 +147,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         state.sharedData.blockingBlocks.push(this);
+        state.sharedData.textureBlocks.push(this);
 
         this._samplerName = state._getFreeVariableName(this.name + "Sampler");
         state.samplers.push(this._samplerName);
