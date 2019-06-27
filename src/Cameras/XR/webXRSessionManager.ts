@@ -5,7 +5,7 @@ import { IDisposable, Scene } from "../../scene";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 /**
- * Manages an XRSession
+ * Manages an XRSession to work with Babylon's engine
  * @see https://doc.babylonjs.com/how_to/webxr
  */
 export class WebXRSessionManager implements IDisposable {
@@ -118,7 +118,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param sessionMode session mode to check if supported eg. immersive-vr
      * @returns true if supported
      */
-    public supportsSessionModeAsync(sessionMode: string) {
+    public supportsSessionModeAsync(sessionMode: XRSessionMode) {
         if(!(navigator as any).xr || !(navigator as any).xr.supportsSession){
             return Promise.resolve(false);
         }else{

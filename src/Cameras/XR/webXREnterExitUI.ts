@@ -2,6 +2,7 @@ import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { IDisposable, Scene } from "../../scene";
 import { WebXRExperienceHelper, WebXRState } from "./webXRExperienceHelper";
+import { WebXRManagedOutputCanvas } from '../XR/webXRManagedOutputCanvas';
 /**
  * Button which can be used to enter a different mode of XR
  */
@@ -15,7 +16,8 @@ export class WebXREnterExitUIButton {
         /** button element */
         public element: HTMLElement,
         /** XR initialization options for the button */
-        //public initializationOptions: XRSessionCreationOptions
+        public sessionMode: XRSessionMode,
+        public frameOfReference: XRReferenceSpaceType
     ) { }
     /**
      * Overwritable function which can be used to update the button's visuals when the state changes
@@ -32,7 +34,7 @@ export class WebXREnterExitUIOptions {
     /**
      * Context to enter xr with
      */
-    outputCanvasContext?: Nullable<WebGLRenderingContext>;
+    webXRManagedOutputCanvas?: Nullable<WebXRManagedOutputCanvas>;
 
     /**
      * User provided buttons to enable/disable WebXR. The system will provide default if not set
@@ -64,7 +66,7 @@ export class WebXREnterExitUI implements IDisposable {
     public static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI> {
         var ui = new WebXREnterExitUI(scene, options);
         var supportedPromises = ui._buttons.map((btn) => {
-            return null;//helper.supportsSessionAsync(btn.initializationOptions);
+            return helper.sessionManager.supportsSessionModeAsync(btn.sessionMode);
         });
         helper.onStateChangedObservable.add((state) => {
             if (state == WebXRState.NOT_IN_XR) {
@@ -82,7 +84,9 @@ export class WebXREnterExitUI implements IDisposable {
                             return;
                         } else if (helper.state == WebXRState.NOT_IN_XR) {
                             ui._updateButtons(ui._buttons[i]);
-                            //await helper.enterXRAsync(ui._buttons[i].initializationOptions, "eye-level");
+                            if(options.webXRManagedOutputCanvas){
+                                await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].frameOfReference, options.webXRManagedOutputCanvas);
+                            }
                         }
                     };
                 }
@@ -101,11 +105,11 @@ export class WebXREnterExitUI implements IDisposable {
             var hmdBtn = document.createElement("button");
             hmdBtn.style.cssText = "color: #868686; border-color: #868686; border-style: solid; margin-left: 10px; height: 50px; width: 80px; background-color: rgba(51,51,51,0.7); background-repeat:no-repeat; background-position: center; outline: none;";
             hmdBtn.innerText = "HMD";
-            // this._buttons.push(new WebXREnterExitUIButton(hmdBtn, { immersive: true, outputContext: options.outputCanvasContext }));
-            // this._buttons[this._buttons.length - 1].update = function(activeButton: WebXREnterExitUIButton) {
-            //     this.element.style.display = (activeButton === null || activeButton === this) ? "" : "none";
-            //     this.element.innerText = activeButton === this ? "EXIT" : "HMD";
-            // };
+            this._buttons.push(new WebXREnterExitUIButton(hmdBtn, "immersive-vr", "local-floor"));
+            this._buttons[this._buttons.length - 1].update = function(activeButton: WebXREnterExitUIButton) {
+                this.element.style.display = (activeButton === null || activeButton === this) ? "" : "none";
+                this.element.innerText = activeButton === this ? "EXIT" : "HMD";
+            };
 
             // var windowBtn = document.createElement("button");
             // windowBtn.style.cssText = hmdBtn.style.cssText;

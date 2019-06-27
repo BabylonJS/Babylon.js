@@ -177,18 +177,6 @@ export class WebXRExperienceHelper implements IDisposable {
         this.container.position.rotateByQuaternionAroundPointToRef(rotation, this.camera.globalPosition, this.container.position);
     }
 
-    // /**
-    //  * Checks if the creation options are supported by the xr session
-    //  * @param options creation options
-    //  * @returns true if supported
-    //  */
-    // public supportsSessionAsync(options: XRSessionCreationOptions) {
-    //     if (!this._supported) {
-    //         return Promise.resolve(false);
-    //     }
-    //     return this.sessionManager.supportsSessionAsync(options);
-    // }
-
     /**
      * Disposes of the experience helper
      */

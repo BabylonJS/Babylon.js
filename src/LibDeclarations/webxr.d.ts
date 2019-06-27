@@ -1,29 +1,28 @@
-enum XRSessionMode {
-    "inline",
-    "immersive-vr",
-    "immersive-ar"
-};
+type XRSessionMode =
+    | "inline"
+    | "immersive-vr"
+    | "immersive-ar"
 
-enum XRReferenceSpaceType {
-    "viewer",
-    "local",
-    "local-floor",
-    "bounded-floor",
-    "unbounded"
-};
 
-enum XREnvironmentBlendMode {
-    "opaque",
-    "additive",
-    "alpha-blend",
-};
+type XRReferenceSpaceType =
+    | "viewer"
+    | "local"
+    | "local-floor"
+    | "bounded-floor"
+    | "unbounded"
 
-enum XRVisibilityState {
-    "visible",
-    "visible-blurred",
-    "hidden",
-};
 
+type XREnvironmentBlendMode =
+    | "opaque"
+    | "additive"
+    | "alpha-blend"
+
+
+type XRVisibilityState =
+    | "visible"
+    | "visible-blurred"
+    | "hidden"
+    
 interface XRInputSource {
     handedness:XRHandedness;
     targetRayMode:XRTargetRayMode;
