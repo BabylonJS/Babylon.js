@@ -24,6 +24,15 @@ enum XRVisibilityState {
     "hidden",
 };
 
+interface XRInputSource {
+    handedness:XRHandedness;
+    targetRayMode:XRTargetRayMode;
+    targetRaySpace:XRSpace;
+    gripSpace:XRSpace?;
+    gamepad:Gamepad?;
+    profiles:FrozenArray<DOMString>;
+};
+
 interface XRSession {
     addEventListener: Function
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<void>;
@@ -31,13 +40,15 @@ interface XRSession {
     requestAnimationFrame: Function;
     end():Promise<void>;
     renderState:XRRenderState;
+    inputSources:Array<XRInputSource>
 
 
 };
 
 interface XRFrame {
     session:XRSession
-    getViewerPose(referenceSpace:XRReferenceSpace):XRViewerPose?
+    getViewerPose(referenceSpace:XRReferenceSpace):XRViewerPose?;
+    getPose(space:XRSpace, baseSpace:XRSpace):XRPose?;
 }
 
 interface XRViewerPose extends XRPose {
@@ -72,51 +83,8 @@ interface XRView {
     transform:XRRigidTransform;
 };
 
-// interface XRDevice {
-//     requestSession(options: XRSessionCreationOptions): Promise<XRSession>;
-//     supportsSession(options: XRSessionCreationOptions): Promise<void>;
-// }
-// interface XRSession {
-//     getInputSources(): Array<any>;
-//     renderState: any;
-//     requestReferenceSpace(options: ReferenceSpaceOptions): Promise<void>;
-//     requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
-//     end(): Promise<void>;
-//     updateRenderState(state:any):Promise<void>;
-//     requestAnimationFrame: Function;
-//     addEventListener: Function;
-// }
-// interface XRSessionCreationOptions {
-//     mode?: string;
-// }
-
-
-
-// interface ReferenceSpaceOptions {
-//     type?: string;
-//     subtype?: string;
-// }
-
-// interface XRLayer {
-//     getViewport: Function;
-//     framebufferWidth: number;
-//     framebufferHeight: number;
-// }
-// interface XRView {
-//     projectionMatrix: Float32Array;
-// }
-// interface XRFrame {
-//     getViewerPose: Function;
-//     getInputPose: Function;
-//     views: Array<XRView>;
-//     baseLayer: XRLayer;
-// }
-// interface XRFrameOfReference {
-// }
-// interface XRWebGLLayer extends XRLayer {
-//     framebuffer: WebGLFramebuffer;
-// }
-// declare var XRWebGLLayer: {
-//     prototype: XRWebGLLayer;
-//     new(session: XRSession, context?: WebGLRenderingContext): XRWebGLLayer;
-// };
+interface XRInputSourceChangeEvent {
+    session:XRSession;
+    removed:Array<XRInputSource>;
+    added:Array<XRInputSource>;
+}
