@@ -26,7 +26,7 @@ export class WebXRManagedOutputCanvas implements IDisposable {
     constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement) {
         if (!canvas) {
             canvas = document.createElement('canvas');
-            canvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:100%;height:100%;background-color: #000000;";
+            canvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:90%;height:100%;background-color: #000000;";
         }
         this._setManagedOutputCanvas(canvas);
         helper.onStateChangedObservable.add((stateInfo) => {
@@ -53,7 +53,7 @@ export class WebXRManagedOutputCanvas implements IDisposable {
             (this.canvasContext as any) = null;
         } else {
             this._canvas = canvas;
-            this.canvasContext = <any>this._canvas.getContext('webgl');
+            this.canvasContext = <any>this._canvas.getContext('webgl2');
         }
     }
 

@@ -3,7 +3,6 @@ import { Observable } from "../../Misc/observable";
 import { IDisposable, Scene } from "../../scene";
 import { Quaternion, Vector3 } from "../../Maths/math";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Ray } from "../../Culling/ray";
 import { Camera } from "../../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
@@ -109,22 +108,18 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param frameOfReference frame of reference of the XR session
      * @returns promise that resolves after xr mode has entered
      */
-    public enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: ReferenceSpaceOptions, outputCanvas: WebXRManagedOutputCanvas) {
+    public enterXRAsync(sessionCreationOptions: XRSessionMode, frameOfReference: XRReferenceSpaceType, outputCanvas: WebXRManagedOutputCanvas) {
         if (!this._supported) {
             throw "XR session not supported by this browser";
         }
         this._setState(WebXRState.ENTERING_XR);
         return this.sessionManager.initializeSessionAsync(sessionCreationOptions).then(()=>{
-            console.log("init session")
             return this.sessionManager.setReferenceSpaceAsync(frameOfReference)
         }).then(()=>{
-            console.log("set ref space")
             return outputCanvas.initializeXRLayerAsync(this.sessionManager._xrSession);
         }).then(()=>{
-            console.log("init xr layer")
-            return this.sessionManager.updateRenderStateAsync({baseLayer: outputCanvas.xrLayer, outputContext: outputCanvas.canvasContext})
+            return this.sessionManager.updateRenderStateAsync({baseLayer: outputCanvas.xrLayer})
         }).then(()=>{
-            console.log("base layer set")
             return this.sessionManager.startRenderingToXRAsync();
         }).then(()=>{
             // Cache pre xr scene settings
@@ -136,7 +131,6 @@ export class WebXRExperienceHelper implements IDisposable {
             this.scene.activeCamera = this.camera;
 
             this.sessionManager.onXRFrameObservable.add(() => {
-                console.log("frame")
                 this.camera.updateFromXRSessionManager(this.sessionManager);
             });
 
@@ -154,21 +148,10 @@ export class WebXRExperienceHelper implements IDisposable {
                 this._setState(WebXRState.NOT_IN_XR);
             });
             this._setState(WebXRState.IN_XR);
-            console.log("started!")
         }).catch((e:any)=>{
-            console.log("FAILUE")
             console.log(e)
             console.log(e.message)
         });
-    }
-
-    /**
-     * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
-     * @param ray ray to cast into the environment
-     * @returns Promise which resolves with a collision point in the environment if it exists
-     */
-    public environmentPointHitTestAsync(ray: Ray): Promise<Nullable<Vector3>> {
-        return this.sessionManager.environmentPointHitTestAsync(ray);
     }
 
     /**

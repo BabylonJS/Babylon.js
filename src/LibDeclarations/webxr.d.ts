@@ -1,46 +1,122 @@
-interface XRDevice {
-    requestSession(options: XRSessionCreationOptions): Promise<XRSession>;
-    supportsSession(options: XRSessionCreationOptions): Promise<void>;
-}
+enum XRSessionMode {
+    "inline",
+    "immersive-vr",
+    "immersive-ar"
+};
+
+enum XRReferenceSpaceType {
+    "viewer",
+    "local",
+    "local-floor",
+    "bounded-floor",
+    "unbounded"
+};
+
+enum XREnvironmentBlendMode {
+    "opaque",
+    "additive",
+    "alpha-blend",
+};
+
+enum XRVisibilityState {
+    "visible",
+    "visible-blurred",
+    "hidden",
+};
+
 interface XRSession {
-    getInputSources(): Array<any>;
-    baseLayer: XRWebGLLayer;
-    requestReferenceSpace(options: ReferenceSpaceOptions): Promise<void>;
-    requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
-    end(): Promise<void>;
-    updateRenderState(state:any):Promise<void>;
+    addEventListener: Function
+    requestReferenceSpace(type: XRReferenceSpaceType): Promise<void>;
+    updateRenderState(XRRenderStateInit:any):Promise<void>;
     requestAnimationFrame: Function;
-    addEventListener: Function;
-}
-interface XRSessionCreationOptions {
-    mode?: string;
-}
+    end():Promise<void>;
+    renderState:XRRenderState;
 
-interface ReferenceSpaceOptions {
-    type?: string;
-    subtype?: string;
-}
 
-interface XRLayer {
-    getViewport: Function;
-    framebufferWidth: number;
-    framebufferHeight: number;
-}
-interface XRView {
-    projectionMatrix: Float32Array;
-}
+};
+
 interface XRFrame {
-    getDevicePose: Function;
-    getInputPose: Function;
-    views: Array<XRView>;
-    baseLayer: XRLayer;
+    session:XRSession
+    getViewerPose(referenceSpace:XRReferenceSpace):XRViewerPose?
 }
-interface XRFrameOfReference {
+
+interface XRViewerPose extends XRPose {
+    views:FrozenArray<XRView>;
 }
-interface XRWebGLLayer extends XRLayer {
-    framebuffer: WebGLFramebuffer;
+
+interface XRPose {
+    transform:XRRigidTransform;
+    emulatedPosition:boolean;
 }
+
 declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
     new(session: XRSession, context?: WebGLRenderingContext): XRWebGLLayer;
 };
+interface XRWebGLLayer extends XRLayer {
+    framebuffer: WebGLFramebuffer;
+    framebufferWidth: number
+    framebufferHeight: number
+}
+
+interface XRRigidTransform {
+    position:DOMPointReadOnly;
+    orientation:DOMPointReadOnly;
+    matrix:Float32Array;
+    inverse:XRRigidTransform;
+};
+
+interface XRView {
+    eye:XREye;
+    projectionMatrix:Float32Array;
+    transform:XRRigidTransform;
+};
+
+// interface XRDevice {
+//     requestSession(options: XRSessionCreationOptions): Promise<XRSession>;
+//     supportsSession(options: XRSessionCreationOptions): Promise<void>;
+// }
+// interface XRSession {
+//     getInputSources(): Array<any>;
+//     renderState: any;
+//     requestReferenceSpace(options: ReferenceSpaceOptions): Promise<void>;
+//     requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
+//     end(): Promise<void>;
+//     updateRenderState(state:any):Promise<void>;
+//     requestAnimationFrame: Function;
+//     addEventListener: Function;
+// }
+// interface XRSessionCreationOptions {
+//     mode?: string;
+// }
+
+
+
+// interface ReferenceSpaceOptions {
+//     type?: string;
+//     subtype?: string;
+// }
+
+// interface XRLayer {
+//     getViewport: Function;
+//     framebufferWidth: number;
+//     framebufferHeight: number;
+// }
+// interface XRView {
+//     projectionMatrix: Float32Array;
+// }
+// interface XRFrame {
+//     getViewerPose: Function;
+//     getInputPose: Function;
+//     views: Array<XRView>;
+//     baseLayer: XRLayer;
+// }
+// interface XRFrameOfReference {
+// }
+// interface XRWebGLLayer extends XRLayer {
+//     framebuffer: WebGLFramebuffer;
+// }
+// declare var XRWebGLLayer: {
+//     prototype: XRWebGLLayer;
+//     new(session: XRSession, context?: WebGLRenderingContext): XRWebGLLayer;
+// };

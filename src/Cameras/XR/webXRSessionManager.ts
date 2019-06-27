@@ -2,10 +2,8 @@ import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { IDisposable, Scene } from "../../scene";
-import { Vector3, Matrix } from "../../Maths/math";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { Ray } from "../../Culling/ray";
 /**
  * Manages an XRSession
  * @see https://doc.babylonjs.com/how_to/webxr
@@ -23,13 +21,12 @@ export class WebXRSessionManager implements IDisposable {
     /** @hidden */
     public _xrSession: XRSession;
     /** @hidden */
-    public _frameOfReference: XRFrameOfReference;
+    public _frameOfReference: XRReferenceSpaceType;
     /** @hidden */
     public _sessionRenderTargetTexture: Nullable<RenderTargetTexture> = null;
     /** @hidden */
     public _currentXRFrame: Nullable<XRFrame>;
     private _xrNavigator: any;
-    private _tmpMatrix = new Matrix();
     private baseLayer:Nullable<XRWebGLLayer> = null;
 
     /**
@@ -55,8 +52,8 @@ export class WebXRSessionManager implements IDisposable {
         return Promise.resolve();
     }
 
-    public initializeSessionAsync(sessionCreationOptions: XRSessionCreationOptions){
-        return this._xrNavigator.xr.requestSession(sessionCreationOptions.mode).then((session: XRSession) => {
+    public initializeSessionAsync(xrSessionMode: XRSessionMode){
+        return this._xrNavigator.xr.requestSession(xrSessionMode).then((session: XRSession) => {
             this._xrSession = session;
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
@@ -75,7 +72,7 @@ export class WebXRSessionManager implements IDisposable {
         });
     }
 
-    public setReferenceSpaceAsync(referenceSpaceOptions: ReferenceSpaceOptions){
+    public setReferenceSpaceAsync(referenceSpaceOptions: XRReferenceSpaceType){
         return this._xrSession.requestReferenceSpace(referenceSpaceOptions).then((referenceSpace: any)=>{
             this._frameOfReference = referenceSpace;
         })
@@ -104,7 +101,6 @@ export class WebXRSessionManager implements IDisposable {
 
         // Stop window's animation frame and trigger sessions animation frame
         window.cancelAnimationFrame(this.scene.getEngine()._frameHandler);
-        debugger;
         this.scene.getEngine()._renderLoop();
         return Promise.resolve();
     }
@@ -115,40 +111,6 @@ export class WebXRSessionManager implements IDisposable {
      */
     public exitXRAsync() {
         return this._xrSession.end();
-    }
-
-    /**
-     * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
-     * @param ray ray to cast into the environment
-     * @returns Promise which resolves with a collision point in the environment if it exists
-     */
-    public environmentPointHitTestAsync(ray: Ray): Promise<Nullable<Vector3>> {
-        return new Promise((res) => {
-            // Compute left handed inputs to request hit test
-            var origin = new Float32Array([ray.origin.x, ray.origin.y, ray.origin.z]);
-            var direction = new Float32Array([ray.direction.x, ray.direction.y, ray.direction.z]);
-            if (!this.scene.useRightHandedSystem) {
-                origin[2] *= -1;
-                direction[2] *= -1;
-            }
-
-            // Fire hittest
-            this._xrSession.requestHitTest(origin, direction, this._frameOfReference)
-                .then((hits: any) => {
-                    if (hits.length > 0) {
-                        Matrix.FromFloat32ArrayToRefScaled(hits[0].hitMatrix, 0, 1.0, this._tmpMatrix);
-                        var hitPoint = this._tmpMatrix.getTranslation();
-                        if (!this.scene.useRightHandedSystem) {
-                            hitPoint.z *= -1;
-                        }
-                        res(hitPoint);
-                    } else {
-                        res(null);
-                    }
-                }).catch(() => {
-                    res(null);
-                });
-        });
     }
 
     /**
@@ -176,11 +138,9 @@ export class WebXRSessionManager implements IDisposable {
      * @param scene scene the new render target should be created for
      */
     public static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer) {
-        console.log("creating render target")
         if(!baseLayer){
             throw "no layer"
         }
-        //debugger;
         // Create internal texture
         var internalTexture = new InternalTexture(scene.getEngine(), InternalTexture.DATASOURCE_UNKNOWN, true);
         internalTexture.width = baseLayer.framebufferWidth;

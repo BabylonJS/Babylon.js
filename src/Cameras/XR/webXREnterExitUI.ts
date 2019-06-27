@@ -15,7 +15,7 @@ export class WebXREnterExitUIButton {
         /** button element */
         public element: HTMLElement,
         /** XR initialization options for the button */
-        public initializationOptions: XRSessionCreationOptions
+        //public initializationOptions: XRSessionCreationOptions
     ) { }
     /**
      * Overwritable function which can be used to update the button's visuals when the state changes
