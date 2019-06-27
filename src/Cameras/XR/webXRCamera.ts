@@ -64,10 +64,10 @@ export class WebXRCamera extends FreeCamera {
      */
     public updateFromXRSessionManager(xrSessionManager: WebXRSessionManager) {
         // Ensure all frame data is available
-        if (!xrSessionManager._currentXRFrame || !xrSessionManager._currentXRFrame.getViewerPose) {
+        if (!xrSessionManager.currentFrame || !xrSessionManager.currentFrame.getViewerPose) {
             return false;
         }
-        var pose = xrSessionManager._currentXRFrame.getViewerPose(xrSessionManager._frameOfReference);
+        var pose = xrSessionManager.currentFrame.getViewerPose(xrSessionManager.referenceSpaceType);
         if (!pose || !pose.transform || !pose.transform.matrix) {
             return false;
         }
@@ -94,9 +94,9 @@ export class WebXRCamera extends FreeCamera {
             }
 
             // Update viewport
-            var viewport = xrSessionManager._xrSession.renderState.baseLayer.getViewport(view);
-            var width = xrSessionManager._xrSession.renderState.baseLayer.framebufferWidth;
-            var height = xrSessionManager._xrSession.renderState.baseLayer.framebufferHeight;
+            var viewport = xrSessionManager.session.renderState.baseLayer.getViewport(view);
+            var width = xrSessionManager.session.renderState.baseLayer.framebufferWidth;
+            var height = xrSessionManager.session.renderState.baseLayer.framebufferHeight;
             this.rigCameras[i].viewport.width = viewport.width / width;
             this.rigCameras[i].viewport.height = viewport.height / height;
             this.rigCameras[i].viewport.x = viewport.x / width;
