@@ -115,7 +115,7 @@ export class WebXRInput implements IDisposable {
         var sources = this.controllers.map((c)=>{return c.inputSource});
         addInputs.forEach((input)=>{
             if(sources.indexOf(input) === -1){
-                var controller = new WebXRController(this.helper.camera._scene, input);
+                var controller = new WebXRController(this.helper.camera._scene, input, this.helper.container);
                 this.controllers.push(controller)
                 this.onControllerAddedObservable.notifyObservers(controller)
             }
