@@ -1,6 +1,76 @@
 ﻿var jsEditor;
+
 var defaultScene = "scripts/basic scene.js";
 var monacoMode = "javascript";
+
+var scriptLanguage = localStorage.getItem("bjs-playground-scriptLanguage") || 'JS';
+if (scriptLanguage == "JS") {
+    defaultScene = "scripts/basic scene.js";
+    monacoMode = "javascript";
+}
+else if (scriptLanguage == "TS") {
+    defaultScene = "scripts/basic scene.txt";
+    monacoMode = "typescript";
+
+
+    var compilerTriggerTimeoutID;
+    function triggerCompile(d, func) {
+        if (compilerTriggerTimeoutID !== null) {
+            window.clearTimeout(compilerTriggerTimeoutID);
+        }
+        compilerTriggerTimeoutID = window.setTimeout(function () {
+            try {
+
+                var output = transpileModule(d, {
+                    module: ts.ModuleKind.AMD,
+                    target: ts.ScriptTarget.ES5,
+                    noLib: true,
+                    noResolve: true,
+                    suppressOutputPathCheck: true
+                });
+                if (typeof output === "string") {
+                    func(output);
+                }
+            }
+            catch (e) {
+                showError(e.message, e);
+            }
+        }, 100);
+    }
+    function transpileModule(input, options) {
+        var inputFileName = options.jsx ? "module.tsx" : "module.ts";
+        var sourceFile = ts.createSourceFile(inputFileName, input, options.target || ts.ScriptTarget.ES5);
+        // Output
+        var outputText;
+        var program = ts.createProgram([inputFileName], options, {
+            getSourceFile: function (fileName) { return fileName.indexOf("module") === 0 ? sourceFile : undefined; },
+            writeFile: function (_name, text) { outputText = text; },
+            getDefaultLibFileName: function () { return "lib.d.ts"; },
+            useCaseSensitiveFileNames: function () { return false; },
+            getCanonicalFileName: function (fileName) { return fileName; },
+            getCurrentDirectory: function () { return ""; },
+            getNewLine: function () { return "\r\n"; },
+            fileExists: function (fileName) { return fileName === inputFileName; },
+            readFile: function () { return ""; },
+            directoryExists: function () { return true; },
+            getDirectories: function () { return []; }
+        });
+        // Emit
+        program.emit();
+        if (outputText === undefined) {
+            throw new Error("Output generation failed");
+        }
+        return outputText;
+    }
+
+    function getRunCode(jsEditor, callBack) {
+        triggerCompile(jsEditor.getValue(), function (result) {
+            callBack(result + "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }")
+        });
+    }
+
+}
+
 
 function getRunCode(jsEditor, callBack) {
     var code = jsEditor.getValue();
@@ -30,22 +100,27 @@ function showError(errorMessage, errorEvent) {
     document.getElementById("errorZone").innerHTML = errorContent;
 
     // Close button error
-    document.getElementById("errorZone").querySelector('.close').addEventListener('click', function() {
+    document.getElementById("errorZone").querySelector('.close').addEventListener('click', function () {
         document.getElementById("errorZone").style.display = 'none';
     });
 }
 
-(function() {
+(function () {
 
-    var multipleSize = [1600, 1475, 1030, 750];
-    var setToMultipleID = function(id, thingToDo, param) {
-        multipleSize.forEach(function(size) {
-
+    var multipleSize = [1280, 920, 710, 550];
+    var setToMultipleID = function (id, thingToDo, param) {
+        multipleSize.forEach(function (size) {
             if (thingToDo == "innerHTML") {
                 document.getElementById(id + size).innerHTML = param
             }
             else if (thingToDo == "click") {
-                document.getElementById(id + size).addEventListener("click", param);
+                if (param.length > 1) {
+                    for (var i = 0; i < param.length; i++) {
+                        document.getElementById(id + size).addEventListener("click", param[i]);
+                    }
+                }
+                else
+                    document.getElementById(id + size).addEventListener("click", param);
             }
             else if (thingToDo == "addClass") {
                 document.getElementById(id + size).classList.add(param);
@@ -65,18 +140,21 @@ function showError(errorMessage, errorEvent) {
 
     var splitInstance = Split(['#jsEditor', '#canvasZone']);
 
-    var elementToTheme = [
-        '.wrapper .gutter',
-        '.wrapper #jsEditor',
+    var elementForscriptLanguage = [
+        '#exampleList #exampleBanner',
         '.navbar',
-        '.navbar .select .toDisplay .option',
-        '.navbar .select .toDisplayBig',
-        '.navbar .select .toDisplayBig a',
-        '.navbar .select .toDisplayBig ul li',
-        '.navbarBottom',
-        '.navbarBottom .links .link'];
+        '.navbar .category',
+        '.navbar .select .toDisplay',
+        '.navbar .select .toDisplay .subSelect .toDisplaySub',
+        '#fpsLabel',
+        '.save-form'
+    ];
+    var elementToTheme = [
+        '.wrapper #jsEditor',
+        '.wrapper .gutter'
+    ];
 
-    var run = function() {
+    var run = function () {
 
         // #region - Examples playgrounds
         var examplesButton = document.getElementsByClassName("examplesButton");
@@ -84,13 +162,15 @@ function showError(errorMessage, errorEvent) {
         if (examplesButton && examplesButton.length > 0) {
             var isExamplesDisplayed = false;
             for (var i = 0; i < examplesButton.length; i++) {
-                examplesButton[i].parentElement.onclick = function() {
+                examplesButton[i].parentElement.onclick = function () {
                     isExamplesDisplayed = !isExamplesDisplayed;
                     if (isExamplesDisplayed) {
+                        document.getElementById("fpsLabel").style.display = "none";
                         document.getElementById("exampleList").style.display = "block";
                         document.getElementsByClassName("wrapper")[0].style.width = "calc(100% - 400px)";
                     }
                     else {
+                        document.getElementById("fpsLabel").style.display = "block";
                         document.getElementById("exampleList").style.display = "none";
                         document.getElementsByClassName("wrapper")[0].style.width = "100%";
                     }
@@ -102,7 +182,7 @@ function showError(errorMessage, errorEvent) {
         var filterBar = document.getElementById("filterBar");
         if (filterBar) {
             var filterBarClear = document.getElementById("filterBarClear");
-            var filter = function() {
+            var filter = function () {
                 var filterText = filterBar.value.toLowerCase();
                 if (filterText == "") filterBarClear.style.display = "none";
                 else filterBarClear.style.display = "inline-block";
@@ -132,10 +212,10 @@ function showError(errorMessage, errorEvent) {
                 if (displayCount == 0) document.getElementById("noResultsContainer").style.display = "block";
                 else document.getElementById("noResultsContainer").style.display = "none";
             }
-            filterBar.oninput = function() {
+            filterBar.oninput = function () {
                 filter();
             }
-            filterBarClear.onclick = function() {
+            filterBarClear.onclick = function () {
                 filterBar.value = "";
                 filter();
             }
@@ -144,7 +224,7 @@ function showError(errorMessage, errorEvent) {
 
         var blockEditorChange = false;
 
-        var markDirty = function() {
+        var markDirty = function () {
             if (blockEditorChange) {
                 return;
             }
@@ -155,7 +235,7 @@ function showError(errorMessage, errorEvent) {
             setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
 
-        jsEditor.onKeyUp(function(evt) {
+        jsEditor.onKeyUp(function (evt) {
             markDirty();
         });
 
@@ -170,26 +250,27 @@ function showError(errorMessage, errorEvent) {
         var zipCode;
         BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
+        // TO DO : Rewrite this with unpkg.com
         if (location.href.indexOf("indexStable") !== -1) {
-            setToMultipleID("currentVersion", "innerHTML", "Version: Stable");
+            setToMultipleID("currentVersion", "innerHTML", "v.3.0");
         } else {
-            setToMultipleID("currentVersion", "innerHTML", "Version: Latest");
+            setToMultipleID("currentVersion", "innerHTML", "v.4.0");
         }
 
-        var checkTypescriptSupport = function(xhr) {
-            var filename = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
-            if (xhr.responseText.indexOf("class Playground") !== -1) {// Typescript content
-                if (!filename) {
-                    window.location.href = location.protocol + "//" + location.host + "/ts.html" + window.location.hash;
+        var checkTypescriptSupport = function (xhr) {
+            // If we're loading TS content and it's JS page
+            if (xhr.responseText.indexOf("class Playground") !== -1) {
+                if (scriptLanguage == "JS") {
+                    localStorage.setItem("bjs-playground-scriptLanguage", "TS");
+                    if (confirm("You need to reload the page to switch to Typescript. Do you want to reload now ?"))
+                        location.reload();
                     return false;
                 }
-                else if (filename !== "ts.html") {
-                    window.location.href = location.protocol + "//" + location.host + location.pathname.replace(filename, "ts.html") + window.location.hash;
-                    return false;
-                }
-            } else { // Javscript content
-                if (filename === "ts.html") {
-                    window.location.href = location.protocol + "//" + location.host + location.pathname.replace(filename, "index.html") + window.location.hash;
+            } else { // If we're loading JS content and it's TS page
+                if (scriptLanguage == "TS") {
+                    localStorage.setItem("bjs-playground-scriptLanguage", "JS");
+                    if (confirm("You need to reload the page to switch to Javascript. Do you want to reload now ?"))
+                        location.reload();
                     return false;
                 }
             }
@@ -197,12 +278,12 @@ function showError(errorMessage, errorEvent) {
             return true;
         }
 
-        var loadScript = function(scriptURL, title) {
+        var loadScript = function (scriptURL, title) {
             var xhr = new XMLHttpRequest();
 
             xhr.open('GET', scriptURL, true);
 
-            xhr.onreadystatechange = function() {
+            xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
 
@@ -227,7 +308,7 @@ function showError(errorMessage, errorEvent) {
             xhr.send(null);
         };
 
-        var loadScriptsList = function() {
+        var loadScriptsList = function () {
 
             var exampleList = document.getElementById("exampleList");
 
@@ -240,7 +321,7 @@ function showError(errorMessage, errorEvent) {
                 xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list_ts.json', true);
             }
 
-            xhr.onreadystatechange = function() {
+            xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         scripts = JSON.parse(xhr.response)["examples"];
@@ -383,9 +464,12 @@ function showError(errorMessage, errorEvent) {
                         // Restore theme
                         var theme = localStorage.getItem("bjs-playground-theme") || 'light';
                         toggleTheme(theme);
+                        // Restore language
+                        scriptLanguage = localStorage.getItem("bjs-playground-scriptLanguage") || 'JS';
+                        togglescriptLanguage(scriptLanguage);
 
                         // Remove editor if window size is less than 850px
-                        var removeEditorForSmallScreen = function() {
+                        var removeEditorForSmallScreen = function () {
                             if (mq.matches) {
                                 splitInstance.collapse(0);
                             } else {
@@ -401,7 +485,7 @@ function showError(errorMessage, errorEvent) {
             xhr.send(null);
         }
 
-        var createNewScript = function() {
+        var createNewScript = function () {
             // check if checked is on
             let iCanClear = checkSafeMode("Are you sure you want to create a new playground?");
             if (!iCanClear) return;
@@ -421,7 +505,7 @@ function showError(errorMessage, errorEvent) {
             compileAndRun();
         }
 
-        var clear = function() {
+        var clear = function () {
             // check if checked is on
             let iCanClear = checkSafeMode("Are you sure you want to clear the playground?");
             if (!iCanClear) return;
@@ -432,14 +516,14 @@ function showError(errorMessage, errorEvent) {
             jsEditor.focus();
         }
 
-        var checkSafeMode = function(message) {
-            var safeToggle = document.getElementById("safemodeToggle1600");
+        var checkSafeMode = function (message) {
+            var safeToggle = document.getElementById("safemodeToggle1280");
             if (safeToggle.classList.contains('checked')) {
                 let confirm = window.confirm(message);
                 if (!confirm) {
                     return false;
                 } else {
-                    document.getElementById("safemodeToggle1600").classList.toggle('checked');
+                    document.getElementById("safemodeToggle1280").classList.toggle('checked');
                     return true;
                 }
             } else {
@@ -447,7 +531,7 @@ function showError(errorMessage, errorEvent) {
             }
         }
 
-        var showNoMetadata = function() {
+        var showNoMetadata = function () {
             if (currentSnippetTitle) {
                 document.getElementById("saveFormTitle").value = currentSnippetTitle;
                 document.getElementById("saveFormTitle").readOnly = true;
@@ -477,7 +561,7 @@ function showError(errorMessage, errorEvent) {
         };
         showNoMetadata();
 
-        var hideNoMetadata = function() {
+        var hideNoMetadata = function () {
             document.getElementById("saveFormTitle").readOnly = true;
             document.getElementById("saveFormDescription").readOnly = true;
             document.getElementById("saveFormTags").readOnly = true;
@@ -485,7 +569,7 @@ function showError(errorMessage, errorEvent) {
             setToMultipleID("metadataButton", "display", "inline-block");
         };
 
-        compileAndRun = function() {
+        compileAndRun = function () {
             try {
                 var waitRing = document.getElementById("waitDiv");
                 if (waitRing) {
@@ -520,8 +604,8 @@ function showError(errorMessage, errorEvent) {
                 var createEngineFunction = "createDefaultEngine";
                 var createSceneFunction;
 
-                getRunCode(jsEditor, function(code) {
-                    var createDefaultEngine = function() {
+                getRunCode(jsEditor, function (code) {
+                    var createDefaultEngine = function () {
                         return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
                     }
 
@@ -586,7 +670,7 @@ function showError(errorMessage, errorEvent) {
 
                     }
 
-                    engine.runRenderLoop(function() {
+                    engine.runRenderLoop(function () {
                         if (engine.scenes.length === 0) {
                             return;
                         }
@@ -601,7 +685,6 @@ function showError(errorMessage, errorEvent) {
                             scene.render();
                         }
 
-                        fpsLabel.style.right = document.body.clientWidth - (jsEditor.domElement.clientWidth + canvas.clientWidth) + "px";
                         fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
                     });
 
@@ -615,11 +698,11 @@ function showError(errorMessage, errorEvent) {
                         showError("You must at least create a camera.", null);
                         return;
                     } else if (scene.then) {
-                        scene.then(function() {
+                        scene.then(function () {
                             document.getElementById("statusBar").innerHTML = "";
                         });
                     } else {
-                        engine.scenes[0].executeWhenReady(function() {
+                        engine.scenes[0].executeWhenReady(function () {
                             document.getElementById("statusBar").innerHTML = "";
                         });
                     }
@@ -628,7 +711,7 @@ function showError(errorMessage, errorEvent) {
                         if (showInspector) {
                             if (scene.then) {
                                 // Handle if scene is a promise
-                                scene.then(function(s) {
+                                scene.then(function (s) {
                                     if (!s.debugLayer.isVisible()) {
                                         s.debugLayer.show({ embedMode: true });
                                     }
@@ -649,7 +732,7 @@ function showError(errorMessage, errorEvent) {
             }
         };
         window.addEventListener("resize",
-            function() {
+            function () {
                 if (engine) {
                     engine.resize();
                 }
@@ -659,7 +742,7 @@ function showError(errorMessage, errorEvent) {
         loadScriptsList();
 
         // Zip
-        var addContentToZip = function(zip, name, url, replace, buffer, then) {
+        var addContentToZip = function (zip, name, url, replace, buffer, then) {
             if (url.substring(0, 5) == "data:" || url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
                 then();
                 return;
@@ -673,7 +756,7 @@ function showError(errorMessage, errorEvent) {
                 xhr.responseType = "arraybuffer";
             }
 
-            xhr.onreadystatechange = function() {
+            xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         var text;
@@ -701,7 +784,7 @@ function showError(errorMessage, errorEvent) {
             xhr.send(null);
         }
 
-        var addTexturesToZip = function(zip, index, textures, folder, then) {
+        var addTexturesToZip = function (zip, index, textures, folder, then) {
 
             if (index === textures.length || !textures[index].name) {
                 then();
@@ -754,7 +837,7 @@ function showError(errorMessage, errorEvent) {
                     url,
                     null,
                     true,
-                    function() {
+                    function () {
                         addTexturesToZip(zip, index + 1, textures, folder, then);
                     });
             }
@@ -763,7 +846,7 @@ function showError(errorMessage, errorEvent) {
             }
         }
 
-        var addImportedFilesToZip = function(zip, index, importedFiles, folder, then) {
+        var addImportedFilesToZip = function (zip, index, importedFiles, folder, then) {
             if (index === importedFiles.length) {
                 then();
                 return;
@@ -781,12 +864,12 @@ function showError(errorMessage, errorEvent) {
                 url,
                 null,
                 true,
-                function() {
+                function () {
                     addImportedFilesToZip(zip, index + 1, importedFiles, folder, then);
                 });
         }
 
-        var getZip = function() {
+        var getZip = function () {
             if (engine.scenes.length === 0) {
                 return;
             }
@@ -810,17 +893,17 @@ function showError(errorMessage, errorEvent) {
                 "zipContent/index.html",
                 zipCode,
                 false,
-                function() {
+                function () {
                     addTexturesToZip(zip,
                         0,
                         textures,
                         null,
-                        function() {
+                        function () {
                             addImportedFilesToZip(zip,
                                 0,
                                 importedFiles,
                                 null,
-                                function() {
+                                function () {
                                     var blob = zip.generate({ type: "blob" });
                                     saveAs(blob, "sample.zip");
                                     document.getElementById("statusBar").innerHTML = "";
@@ -830,7 +913,7 @@ function showError(errorMessage, errorEvent) {
         }
 
         // Versions
-        setVersion = function(version) {
+        setVersion = function (version) {
             switch (version) {
                 case "stable":
                     location.href = "indexStable.html" + location.hash;
@@ -842,42 +925,50 @@ function showError(errorMessage, errorEvent) {
         }
 
         // Fonts
-        setFontSize = function(size) {
+        setFontSize = function (size) {
             fontSize = size;
             jsEditor.updateOptions({ fontSize: size });
-            setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
+
+            var array = document.getElementsByClassName("displayFontSize");
+            for (var i = 0; i < array.length; i++) {
+                var subArray = array[i].children;
+                for (var j = 0; j < subArray.length; j++) {
+                    subArray[j].classList.remove("selected");
+                    if (subArray[j].innerText == size) subArray[j].classList.add("selected");
+                }
+            }
         };
 
-        showQRCode = function() {
+        showQRCode = function () {
             $("#qrCodeImage").empty();
             var playgroundCode = window.location.href.split("#");
             playgroundCode.shift();
-            $("#qrCodeImage").qrcode({text: "https://playground.babylonjs.com/frame.html#"+(playgroundCode.join("#"))});
+            $("#qrCodeImage").qrcode({ text: "https://playground.babylonjs.com/frame.html#" + (playgroundCode.join("#")) });
         };
 
         // Fullscreen
-        document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function() {
+        document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function () {
             if (document.webkitIsFullScreen) goFullPage();
             else exitFullPage();
         }, false);
 
-        var goFullPage = function() {
+        var goFullPage = function () {
             var canvasElement = document.getElementById("renderCanvas");
             canvasElement.style.position = "absolute";
             canvasElement.style.top = 0;
             canvasElement.style.left = 0;
             canvasElement.style.zIndex = 100;
         }
-        var exitFullPage = function() {
+        var exitFullPage = function () {
             document.getElementById("renderCanvas").style.position = "relative";
             document.getElementById("renderCanvas").style.zIndex = 0;
         }
-        var goFullscreen = function() {
+        var goFullscreen = function () {
             if (engine) {
                 engine.switchFullscreen(true);
             }
         }
-        var editorGoFullscreen = function() {
+        var editorGoFullscreen = function () {
             var editorDiv = document.getElementById("jsEditor");
             if (editorDiv.requestFullscreen) {
                 editorDiv.requestFullscreen();
@@ -889,15 +980,15 @@ function showError(errorMessage, errorEvent) {
 
         }
 
-        var toggleEditor = function() {
-            var editorButton = document.getElementById("editorButton1600");
+        var toggleEditor = function () {
+            var editorButton = document.getElementById("editorButton1280");
             var scene = engine.scenes[0];
 
             // If the editor is present
             if (editorButton.classList.contains('checked')) {
                 setToMultipleID("editorButton", "removeClass", 'checked');
                 splitInstance.collapse(0);
-                setToMultipleID("editorButton", "innerHTML", 'Editor <i class="far fa-square" aria-hidden="true"></i>');
+                setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-square" aria-hidden="true"></i>');
             } else {
                 setToMultipleID("editorButton", "addClass", 'checked');
                 splitInstance.setSizes([50, 50]);  // Reset
@@ -911,15 +1002,20 @@ function showError(errorMessage, errorEvent) {
         }
 
         /**
-         * Toggle the dark theme
+         * Set the theme (dark / light)
          */
-        var toggleTheme = function(theme) {
+        var toggleTheme = function (theme) {
+            setToMultipleID("darkTheme", "removeClass", "selected");
+            setToMultipleID("lightTheme", "removeClass", "selected");
+
             // Monaco
             var vsTheme;
             if (theme == 'dark') {
                 vsTheme = 'vs-dark'
+                setToMultipleID("darkTheme", "addClass", "selected");
             } else {
                 vsTheme = 'vs'
+                setToMultipleID("lightTheme", "addClass", "selected");
             }
 
             var oldCode = jsEditor.getValue();
@@ -943,12 +1039,12 @@ function showError(errorMessage, errorEvent) {
                     enabled: true
                 }
             };
-            editorOptions.minimap.enabled = document.getElementById("minimapToggle1600").classList.contains('checked');
+            editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
             jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
             jsEditor.setValue(oldCode);
             setFontSize(fontSize);
 
-            jsEditor.onKeyUp(function(evt) {
+            jsEditor.onKeyUp(function (evt) {
                 markDirty();
             });
 
@@ -965,8 +1061,32 @@ function showError(errorMessage, errorEvent) {
 
             localStorage.setItem("bjs-playground-theme", theme);
         }
+        /**
+         * Toggle Typescript / Javascript language
+         */
+        var togglescriptLanguage = function (scriptLanguage) {
+            for (var index = 0; index < elementForscriptLanguage.length; index++) {
+                var obj = elementForscriptLanguage[index];
+                var domObjArr = document.querySelectorAll(obj);
+                for (var domObjIndex = 0; domObjIndex < domObjArr.length; domObjIndex++) {
+                    var domObj = domObjArr[domObjIndex];
+                    domObj.classList.remove('languageJS');
+                    domObj.classList.remove('languageTS');
+                    domObj.classList.add("language" + scriptLanguage);
+                }
+            }
 
-        var toggleDebug = function() {
+            if (scriptLanguage == "JS") {
+                setToMultipleID("toJSbutton", "removeClass", "floatLeft");
+            }
+            else if (scriptLanguage == "TS") {
+                setToMultipleID("toJSbutton", "addClass", "floatLeft");
+            }
+
+            localStorage.setItem("bjs-playground-scriptLanguage", scriptLanguage);
+        }
+
+        var toggleDebug = function () {
             // Always showing the debug layer, because you can close it by itself
             var scene = engine.scenes[0];
             if (scene.debugLayer.isVisible()) {
@@ -977,20 +1097,20 @@ function showError(errorMessage, errorEvent) {
             }
         }
 
-        var toggleMetadata = function() {
+        var toggleMetadata = function () {
             var scene = engine.scenes[0];
             document.getElementById("saveLayer").style.display = "block";
         }
 
-        var formatCode = function() {
+        var formatCode = function () {
             jsEditor.getAction('editor.action.formatDocument').run();
         }
 
-        var toggleMinimap = function() {
-            var minimapToggle = document.getElementById("minimapToggle1600");
+        var toggleMinimap = function () {
+            var minimapToggle = document.getElementById("minimapToggle1280");
             if (minimapToggle.classList.contains('checked')) {
                 jsEditor.updateOptions({ minimap: { enabled: false } });
-                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="far fa-square" aria-hidden="true"></i>');
+                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-square" aria-hidden="true"></i>');
             } else {
                 jsEditor.updateOptions({ minimap: { enabled: true } });
                 setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-check-square" aria-hidden="true"></i>');
@@ -1000,8 +1120,8 @@ function showError(errorMessage, errorEvent) {
 
 
         //Navigation Overwrites
-        var exitPrompt = function(e) {
-            var safeToggle = document.getElementById("safemodeToggle1600");
+        var exitPrompt = function (e) {
+            var safeToggle = document.getElementById("safemodeToggle1280");
             if (safeToggle.classList.contains('checked')) {
                 e = e || window.event;
                 var message =
@@ -1016,7 +1136,7 @@ function showError(errorMessage, errorEvent) {
         window.onbeforeunload = exitPrompt;
 
         // Snippet
-        var save = function() {
+        var save = function () {
 
             // Retrieve title if necessary
             if (document.getElementById("saveLayer")) {
@@ -1026,7 +1146,7 @@ function showError(errorMessage, errorEvent) {
             }
 
             var xmlHttp = new XMLHttpRequest();
-            xmlHttp.onreadystatechange = function() {
+            xmlHttp.onreadystatechange = function () {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
                         var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
@@ -1061,7 +1181,7 @@ function showError(errorMessage, errorEvent) {
             xmlHttp.send(JSON.stringify(dataToSend));
         }
 
-        var askForSave = function() {
+        var askForSave = function () {
             if (currentSnippetTitle == null
                 || currentSnippetDescription == null
                 || currentSnippetTags == null) {
@@ -1072,18 +1192,18 @@ function showError(errorMessage, errorEvent) {
                 save();
             }
         };
-        document.getElementById("saveFormButtonOk").addEventListener("click", function() {
+        document.getElementById("saveFormButtonOk").addEventListener("click", function () {
             document.getElementById("saveLayer").style.display = "none";
             save();
         });
-        document.getElementById("saveFormButtonCancel").addEventListener("click", function() {
+        document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
             document.getElementById("saveLayer").style.display = "none";
         });
-        document.getElementById("mainTitle").innerHTML = "v" + BABYLON.Engine.Version;
+        setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
 
         var previousHash = "";
 
-        var cleanHash = function() {
+        var cleanHash = function () {
             var splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
             if (splits.length > 2) {
@@ -1093,7 +1213,7 @@ function showError(errorMessage, errorEvent) {
             location.hash = splits.join("#");
         }
 
-        var checkHash = function(firstTime) {
+        var checkHash = function (firstTime) {
             if (location.hash) {
                 if (previousHash !== location.hash) {
                     cleanHash();
@@ -1102,7 +1222,7 @@ function showError(errorMessage, errorEvent) {
 
                     try {
                         var xmlHttp = new XMLHttpRequest();
-                        xmlHttp.onreadystatechange = function() {
+                        xmlHttp.onreadystatechange = function () {
                             if (xmlHttp.readyState === 4) {
                                 if (xmlHttp.status === 200) {
 
@@ -1184,16 +1304,43 @@ function showError(errorMessage, errorEvent) {
         setToMultipleID("saveButton", "click", askForSave);
         // Zip
         setToMultipleID("zipButton", "click", getZip);
-        // Themes
-        setToMultipleID("darkTheme", "click", toggleTheme.bind(this, 'dark'));
-        setToMultipleID("lightTheme", "click", toggleTheme.bind(this, 'light'));
+        // // Themes
+        setToMultipleID("darkTheme", "click", [toggleTheme.bind(this, 'dark'), clickOptionSub]);
+        setToMultipleID("lightTheme", "click", [toggleTheme.bind(this, 'light'), clickOptionSub]);
+        // Size
+        var displayFontSize = document.getElementsByClassName('displayFontSize');
+        for (var i = 0; i < displayFontSize.length; i++) {
+            var options = displayFontSize[i].querySelectorAll('.option');
+            for (var j = 0; j < options.length; j++) {
+                options[j].addEventListener('click', clickOptionSub);
+            }
+        }
+        // Footer links
+        var displayFontSize = document.getElementsByClassName('displayFooterLinks');
+        for (var i = 0; i < displayFontSize.length; i++) {
+            var options = displayFontSize[i].querySelectorAll('.option');
+            for (var j = 0; j < options.length; j++) {
+                options[j].addEventListener('click', clickOptionSub);
+            }
+        }
+        // Language (JS / TS)
+        setToMultipleID("toTSbutton", "click", function () {
+            localStorage.setItem("bjs-playground-scriptLanguage", "TS");
+            if (confirm("You need to reload the page to switch to Typescript. Do you want to reload now ?"))
+                location.reload();
+        });
+        setToMultipleID("toJSbutton", "click", function () {
+            localStorage.setItem("bjs-playground-scriptLanguage", "JS");
+            if (confirm("You need to reload the page to switch to Javascript. Do you want to reload now ?"))
+                location.reload();
+        });
         // Safe mode
-        setToMultipleID("safemodeToggle", 'click', function() {
-            document.getElementById("safemodeToggle1600").classList.toggle('checked');
-            if (document.getElementById("safemodeToggle1600").classList.contains('checked')) {
+        setToMultipleID("safemodeToggle", 'click', function () {
+            document.getElementById("safemodeToggle1280").classList.toggle('checked');
+            if (document.getElementById("safemodeToggle1280").classList.contains('checked')) {
                 setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
             } else {
-                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="far fa-square" aria-hidden="true"></i>');
+                setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square" aria-hidden="true"></i>');
             }
         });
         // Editor
@@ -1216,6 +1363,9 @@ function showError(errorMessage, errorEvent) {
         var theme = localStorage.getItem("bjs-playground-theme") || 'light';
         toggleTheme(theme);
         toggleMinimap();
+        // Restore language
+        scriptLanguage = localStorage.getItem("bjs-playground-scriptLanguage") || 'JS';
+        togglescriptLanguage(scriptLanguage);
     }
 
     // Monaco
@@ -1224,11 +1374,11 @@ function showError(errorMessage, errorEvent) {
 
     xhr.open('GET', "babylon.d.txt", true);
 
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
                 require.config({ paths: { 'vs': 'node_modules/monaco-editor/min/vs' } });
-                require(['vs/editor/editor.main'], function() {
+                require(['vs/editor/editor.main'], function () {
                     if (monacoMode === "javascript") {
                         monaco.languages.typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
                     } else {
