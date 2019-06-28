@@ -8,6 +8,8 @@ VertexData.CreateCylinder = function(options: { height?: number, diameterTop?: n
     var height: number = options.height || 2;
     var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
     var diameterBottom: number = (options.diameterBottom === 0) ? 0 : options.diameterBottom || options.diameter || 1;
+    diameterTop = diameterTop || 0.00001; // Prevent broken normals
+    diameterBottom = diameterBottom || 0.00001; // Prevent broken normals
     var tessellation: number = options.tessellation || 24;
     var subdivisions: number = options.subdivisions || 1;
     var hasRings: boolean = options.hasRings ? true : false;
