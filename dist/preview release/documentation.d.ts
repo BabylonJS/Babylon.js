@@ -5030,7 +5030,7 @@ declare module BABYLON {
         /**
          * Add callback functions in this array to update all the requests before they get sent to the network
          */
-        static CustomRequestModifiers: ((request: XMLHttpRequest) => void)[];
+        static CustomRequestModifiers: ((request: XMLHttpRequest, url: string) => void)[];
         private _injectCustomRequestHeaders;
         /**
          * Gets or sets a function to be called when loading progress changes
@@ -37597,7 +37597,7 @@ declare module BABYLON {
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */
-        static WaitForOrientationChangeAsync(timeout?: number): Promise<unknown>;
+        static WaitForOrientationChangeAsync(timeout?: number): Promise<{}>;
         /**
          * @hidden
          */
@@ -41316,9 +41316,9 @@ declare module BABYLON {
         private _snapDistance;
         private _scaleRatio;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<unknown>;
+        onDragStartObservable: Observable<{}>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<unknown>;
+        onDragEndObservable: Observable<{}>;
         /**
          * If set to true, planar drag is enabled
          */
@@ -43206,9 +43206,9 @@ declare module BABYLON {
         private _uniformScalingMesh;
         private _octahedron;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<unknown>;
+        onDragStartObservable: Observable<{}>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<unknown>;
+        onDragEndObservable: Observable<{}>;
         attachedMesh: Nullable<AbstractMesh>;
         /**
          * Creates a ScaleGizmo
@@ -43467,9 +43467,9 @@ declare module BABYLON {
          */
         zGizmo: PlaneRotationGizmo;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<unknown>;
+        onDragStartObservable: Observable<{}>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<unknown>;
+        onDragEndObservable: Observable<{}>;
         private _meshAttached;
         attachedMesh: Nullable<AbstractMesh>;
         /**
@@ -58500,6 +58500,12 @@ declare module BABYLON {
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
          */
         useDefaultLoadingScreen: boolean;
+        /**
+         * Gets or sets a boolean defining if the AssetsManager should automatically hide the loading screen
+         * when all assets have been downloaded.
+         * If set to false, you need to manually call in hideLoadingUI() once your scene is ready.
+         */
+        autoHideLoadingUI: boolean;
         /**
          * Creates a new AssetsManager
          * @param scene defines the scene to work on
