@@ -69,6 +69,14 @@ export class EffectRenderer {
         if (!Array.isArray(effectWrappers)) {
             effectWrappers = [effectWrappers];
         }
+
+        // Ensure all effects are ready
+        for (var wrapper of effectWrappers) {
+            if (!wrapper.effect.isReady()) {
+                return;
+            }
+        }
+
         effectWrappers.forEach((effectWrapper, i) => {
             var renderTo = outputTexture;
 
