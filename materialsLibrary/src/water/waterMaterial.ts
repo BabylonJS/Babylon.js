@@ -15,6 +15,7 @@ import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
+import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "babylonjs/Materials/imageProcessingConfiguration";
 import { Camera } from "babylonjs/Cameras/camera";
 import { Scene } from "babylonjs/scene";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
@@ -46,6 +47,8 @@ class WaterMaterialDefines extends MaterialDefines {
     public FRESNELSEPARATE = false;
     public BUMPSUPERIMPOSE = false;
     public BUMPAFFECTSREFLECTION = false;
+    public IMAGEPROCESSING = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
 
     constructor() {
         super();
@@ -183,6 +186,167 @@ export class WaterMaterial extends PushMaterial {
     public get hasRenderTargetTextures(): boolean {
         return true;
     }
+    
+        /**
+     * Default configuration related to image processing available in the standard Material.
+     */
+    protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+
+    /**
+     * Gets the image processing configuration used either in this material.
+     */
+    public get imageProcessingConfiguration(): ImageProcessingConfiguration {
+        return this._imageProcessingConfiguration;
+    }
+
+    /**
+     * Sets the Default image processing configuration used either in the this material.
+     *
+     * If sets to null, the scene one is in use.
+     */
+    public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+        this._attachImageProcessingConfiguration(value);
+
+        // Ensure the effect will be rebuilt.
+        this._markAllSubMeshesAsTexturesDirty();
+    }
+
+    /**
+     * Keep track of the image processing observer to allow dispose and replace.
+     */
+    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
+
+    /**
+     * Attaches a new image processing configuration to the Standard Material.
+     * @param configuration
+     */
+    protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
+        if (configuration === this._imageProcessingConfiguration) {
+            return;
+        }
+
+        // Detaches observer
+        if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
+            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
+        }
+
+        // Pick the scene configuration if needed
+        if (!configuration) {
+            this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
+        }
+        else {
+            this._imageProcessingConfiguration = configuration;
+        }
+
+        // Attaches observer
+        if (this._imageProcessingConfiguration) {
+            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
+                this._markAllSubMeshesAsImageProcessingDirty();
+            });
+        }
+    }
+
+    /**
+     * Gets wether the color curves effect is enabled.
+     */
+    public get cameraColorCurvesEnabled(): boolean {
+        return this.imageProcessingConfiguration.colorCurvesEnabled;
+    }
+    /**
+     * Sets wether the color curves effect is enabled.
+     */
+    public set cameraColorCurvesEnabled(value: boolean) {
+        this.imageProcessingConfiguration.colorCurvesEnabled = value;
+    }
+
+    /**
+     * Gets wether the color grading effect is enabled.
+     */
+    public get cameraColorGradingEnabled(): boolean {
+        return this.imageProcessingConfiguration.colorGradingEnabled;
+    }
+    /**
+     * Gets wether the color grading effect is enabled.
+     */
+    public set cameraColorGradingEnabled(value: boolean) {
+        this.imageProcessingConfiguration.colorGradingEnabled = value;
+    }
+
+    /**
+     * Gets wether tonemapping is enabled or not.
+     */
+    public get cameraToneMappingEnabled(): boolean {
+        return this._imageProcessingConfiguration.toneMappingEnabled;
+    }
+    /**
+     * Sets wether tonemapping is enabled or not
+     */
+    public set cameraToneMappingEnabled(value: boolean) {
+        this._imageProcessingConfiguration.toneMappingEnabled = value;
+    }
+
+    /**
+     * The camera exposure used on this material.
+     * This property is here and not in the camera to allow controlling exposure without full screen post process.
+     * This corresponds to a photographic exposure.
+     */
+    public get cameraExposure(): number {
+        return this._imageProcessingConfiguration.exposure;
+    }
+    /**
+     * The camera exposure used on this material.
+     * This property is here and not in the camera to allow controlling exposure without full screen post process.
+     * This corresponds to a photographic exposure.
+     */
+    public set cameraExposure(value: number) {
+        this._imageProcessingConfiguration.exposure = value;
+    }
+
+    /**
+     * Gets The camera contrast used on this material.
+     */
+    public get cameraContrast(): number {
+        return this._imageProcessingConfiguration.contrast;
+    }
+
+    /**
+     * Sets The camera contrast used on this material.
+     */
+    public set cameraContrast(value: number) {
+        this._imageProcessingConfiguration.contrast = value;
+    }
+
+    /**
+     * Gets the Color Grading 2D Lookup Texture.
+     */
+    public get cameraColorGradingTexture(): Nullable<BaseTexture> {
+        return this._imageProcessingConfiguration.colorGradingTexture;
+    }
+    /**
+     * Sets the Color Grading 2D Lookup Texture.
+     */
+    public set cameraColorGradingTexture(value: Nullable<BaseTexture>) {
+        this._imageProcessingConfiguration.colorGradingTexture = value;
+    }
+
+    /**
+     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+     * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+     */
+    public get cameraColorCurves(): Nullable<ColorCurves> {
+        return this._imageProcessingConfiguration.colorCurves;
+    }
+    /**
+     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+     * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+     */
+    public set cameraColorCurves(value: Nullable<ColorCurves>) {
+        this._imageProcessingConfiguration.colorCurves = value;
+    }
 
     /**
     * Constructor
@@ -191,7 +355,9 @@ export class WaterMaterial extends PushMaterial {
         super(name, scene);
 
         this._createRenderTargets(scene, renderTargetSize);
-
+        
+        this._attachImageProcessingConfiguration(null);
+        
         // Create render targets
         this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
             this._renderTargets.reset();
@@ -322,6 +488,17 @@ export class WaterMaterial extends PushMaterial {
                 defines.BUMPAFFECTSREFLECTION = true;
             }
         }
+        
+        if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
+            if (!this._imageProcessingConfiguration.isReady()) {
+                return false;
+            }
+
+            this._imageProcessingConfiguration.prepareDefines(defines);
+
+            //defines.IS_REFLECTION_LINEAR = (this.reflectionTexture != null && !this.reflectionTexture.gammaSpace);
+            //defines.IS_REFRACTION_LINEAR = (this.refractionTexture != null && !this.refractionTexture.gammaSpace);
+        }
 
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
@@ -402,6 +579,11 @@ export class WaterMaterial extends PushMaterial {
                 "refractionSampler", "reflectionSampler"
             ];
             var uniformBuffers = new Array<string>();
+            
+            if (ImageProcessingConfiguration) {
+                ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
+                ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
+            }
 
             MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -469,6 +651,11 @@ export class WaterMaterial extends PushMaterial {
             // Point size
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
+            }
+            
+            // image processing
+            if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
+                this._imageProcessingConfiguration.bind(this._activeEffect);
             }
 
             MaterialHelper.BindEyePosition(effect, scene);
@@ -659,6 +846,10 @@ export class WaterMaterial extends PushMaterial {
         }
         if (this._refractionRTT) {
             this._refractionRTT.dispose();
+        }
+        
+        if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
+            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
         }
 
         super.dispose(forceDisposeEffect);
