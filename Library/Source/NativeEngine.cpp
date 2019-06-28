@@ -95,11 +95,6 @@ namespace babylon
                     throw std::exception("Not supported");
                 }
 
-                if (!memberType.array.empty())
-                {
-                    throw std::exception("Not implemented");
-                }
-
                 if (memberType.columns == 1 && 1 <= memberType.vecsize && memberType.vecsize <= 4)
                 {
                     bgfxType = bgfx::UniformType::Vec4;
@@ -113,6 +108,11 @@ namespace babylon
                 else
                 {
                     throw std::exception("Not supported");
+                }
+
+                for (const auto size : memberType.array)
+                {
+                    regCount *= size;
                 }
 
                 AppendBytes(bytes, static_cast<uint8_t>(name.size()));
@@ -454,7 +454,6 @@ namespace babylon
         const uint32_t type = info[6].As<Napi::Number>().Uint32Value();
         const bool normalized = info[7].As<Napi::Boolean>().Value();
 
-        // REVIEW: is _asInt useful for decl.add?
         bgfx::VertexDecl decl;
         decl.begin();
         const bgfx::Attrib::Enum attrib = static_cast<bgfx::Attrib::Enum>(location);
@@ -717,7 +716,7 @@ namespace babylon
         const auto matrix = info[1].As<Napi::Float32Array>();
         assert(matrix.ElementLength() == 16);
 
-        bgfx::setUniform(uniformData->Uniform, matrix.Data(), 1);
+        bgfx::setUniform(uniformData->Uniform, matrix.Data());
     }
 
     void NativeEngine::Impl::SetIntArray(const Napi::CallbackInfo& info)
@@ -750,13 +749,18 @@ namespace babylon
 
     void NativeEngine::Impl::SetFloatArray(const Napi::CallbackInfo& info)
     {
-        const auto slot = info[0].As<Napi::Number>().Uint32Value();
+        const auto uniformData = info[0].As<Napi::External<UniformData>>().Data();
         const auto array = info[1].As<Napi::Float32Array>();
 
-        bgfx::UniformHandle handle{};
-        // TODO: Check if the desired uniform already exists.  If so, use that.  If not, create one.
+        // TODO: don't allocate every call to this.
+        const size_t elementLength = array.ElementLength();
+        std::vector<float> alignedArray(elementLength * 4);
+        for (size_t index = 0; index < elementLength; ++index)
+        {
+            alignedArray[index * 4] = array[index];
+        }
 
-        bgfx::setUniform(handle, array.Data(), static_cast<uint16_t>(array.ElementLength())); // TODO: Padding?
+        bgfx::setUniform(uniformData->Uniform, alignedArray.data(), static_cast<uint16_t>(array.ElementLength()));
     }
 
     void NativeEngine::Impl::SetFloatArray2(const Napi::CallbackInfo& info)
@@ -782,11 +786,11 @@ namespace babylon
 
     void NativeEngine::Impl::SetMatrices(const Napi::CallbackInfo& info)
     {
-        const auto slot = info[0].As<Napi::Number>().Uint32Value();
+        const auto uniformData = info[0].As<Napi::External<UniformData>>().Data();
         const auto matricesArray = info[1].As<Napi::Float32Array>();
         assert(matricesArray.ElementLength() % 16 == 0);
 
-        // STUB: Stub.
+        bgfx::setUniform(uniformData->Uniform, matricesArray.Data(), static_cast<uint16_t>(matricesArray.ElementLength() / 16));
     }
 
     void NativeEngine::Impl::SetMatrix3x3(const Napi::CallbackInfo& info)
@@ -814,7 +818,7 @@ namespace babylon
             0.0f
         };
 
-        bgfx::setUniform(uniformData->Uniform, values, 1);
+        bgfx::setUniform(uniformData->Uniform, values);
     }
 
     void NativeEngine::Impl::SetFloat2(const Napi::CallbackInfo& info)
@@ -828,7 +832,7 @@ namespace babylon
             0.0f
         };
 
-        bgfx::setUniform(uniformData->Uniform, values, 1);
+        bgfx::setUniform(uniformData->Uniform, values);
     }
 
     void NativeEngine::Impl::SetFloat3(const Napi::CallbackInfo& info)
@@ -842,7 +846,7 @@ namespace babylon
             0.0f
         };
 
-        bgfx::setUniform(uniformData->Uniform, values, 1);
+        bgfx::setUniform(uniformData->Uniform, values);
     }
 
     void NativeEngine::Impl::SetFloat4(const Napi::CallbackInfo& info)
@@ -856,7 +860,7 @@ namespace babylon
             info[4].As<Napi::Number>().FloatValue()
         };
 
-        bgfx::setUniform(uniformData->Uniform, values, 1);
+        bgfx::setUniform(uniformData->Uniform, values);
     }
 
     void NativeEngine::Impl::SetBool(const Napi::CallbackInfo& info)
