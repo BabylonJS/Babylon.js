@@ -3526,7 +3526,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             // Bind the frame (this is needed to be done in case a subcamera has an outputRenderTarget)
             // TODO this undoes the change that addresses this https://github.com/BabylonJS/Babylon.js/issues/6124
             this._bindFrameBuffer();
-            
+
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);

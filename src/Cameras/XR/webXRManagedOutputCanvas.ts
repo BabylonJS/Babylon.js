@@ -10,10 +10,14 @@ export class WebXRManagedOutputCanvas implements IDisposable {
      * xrpresent context of the canvas which can be used to display/mirror xr content
      */
     public canvasContext: WebGLRenderingContext;
-    public xrLayer:any;
-    
-    public initializeXRLayerAsync(xrSession:any){
-        return (this.canvasContext as any).makeXRCompatible().then(()=>{
+    public xrLayer: any;
+
+    /**
+     * Initializes the xr layer for the session
+     * @param xrSession xr session
+     */
+    public initializeXRLayerAsync(xrSession: any) {
+        return (this.canvasContext as any).makeXRCompatible().then(() => {
             this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext);
         });
     }
@@ -54,7 +58,7 @@ export class WebXRManagedOutputCanvas implements IDisposable {
         } else {
             this._canvas = canvas;
             this.canvasContext = <any>this._canvas.getContext('webgl');
-            if(!this.canvasContext){
+            if (!this.canvasContext) {
                 this.canvasContext = <any>this._canvas.getContext('webgl2');
             }
         }

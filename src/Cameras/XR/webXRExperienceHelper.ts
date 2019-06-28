@@ -106,6 +106,7 @@ export class WebXRExperienceHelper implements IDisposable {
      * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
      * @param sessionCreationOptions options for the XR session
      * @param referenceSpaceType frame of reference of the XR session
+     * @param outputCanvas the output canvas that will be used to enter XR mode
      * @returns promise that resolves after xr mode has entered
      */
     public enterXRAsync(sessionCreationOptions: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, outputCanvas: WebXRManagedOutputCanvas) {
@@ -113,15 +114,15 @@ export class WebXRExperienceHelper implements IDisposable {
             throw "XR session not supported by this browser";
         }
         this._setState(WebXRState.ENTERING_XR);
-        return this.sessionManager.initializeSessionAsync(sessionCreationOptions).then(()=>{
-            return this.sessionManager.setReferenceSpaceAsync(referenceSpaceType)
-        }).then(()=>{
+        return this.sessionManager.initializeSessionAsync(sessionCreationOptions).then(() => {
+            return this.sessionManager.setReferenceSpaceAsync(referenceSpaceType);
+        }).then(() => {
             return outputCanvas.initializeXRLayerAsync(this.sessionManager.session);
-        }).then(()=>{
-            return this.sessionManager.updateRenderStateAsync({baseLayer: outputCanvas.xrLayer})
-        }).then(()=>{
+        }).then(() => {
+            return this.sessionManager.updateRenderStateAsync({baseLayer: outputCanvas.xrLayer});
+        }).then(() => {
             return this.sessionManager.startRenderingToXRAsync();
-        }).then(()=>{
+        }).then(() => {
             // Cache pre xr scene settings
             this._originalSceneAutoClear = this.scene.autoClear;
             this._nonVRCamera = this.scene.activeCamera;
@@ -148,9 +149,9 @@ export class WebXRExperienceHelper implements IDisposable {
                 this._setState(WebXRState.NOT_IN_XR);
             });
             this._setState(WebXRState.IN_XR);
-        }).catch((e:any)=>{
-            console.log(e)
-            console.log(e.message)
+        }).catch((e: any) => {
+            console.log(e);
+            console.log(e.message);
         });
     }
 

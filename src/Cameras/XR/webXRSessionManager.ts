@@ -18,25 +18,25 @@ export class WebXRSessionManager implements IDisposable {
      */
     public onXRSessionEnded: Observable<any> = new Observable<any>();
 
-    /** 
+    /**
      * Underlying xr session
      */
     public session: XRSession;
 
     /**
-     * Type of reference space used when creating the session 
+     * Type of reference space used when creating the session
      */
-    public referenceSpaceType: XRReferenceSpaceType;
-    
+    public referenceSpace: XRReferenceSpace;
+
     /** @hidden */
     public _sessionRenderTargetTexture: Nullable<RenderTargetTexture> = null;
-    
+
     /**
      * Current XR frame
      */
     public currentFrame: Nullable<XRFrame>;
     private _xrNavigator: any;
-    private baseLayer:Nullable<XRWebGLLayer> = null;
+    private baseLayer: Nullable<XRWebGLLayer> = null;
 
     /**
      * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
@@ -61,7 +61,12 @@ export class WebXRSessionManager implements IDisposable {
         return Promise.resolve();
     }
 
-    public initializeSessionAsync(xrSessionMode: XRSessionMode){
+    /**
+     * Initializes an xr session
+     * @param xrSessionMode mode to initialize
+     * @returns a promise which will resolve once the session has been initialized
+     */
+    public initializeSessionAsync(xrSessionMode: XRSessionMode) {
         return this._xrNavigator.xr.requestSession(xrSessionMode).then((session: XRSession) => {
             this.session = session;
 
@@ -81,20 +86,31 @@ export class WebXRSessionManager implements IDisposable {
         });
     }
 
-    public setReferenceSpaceAsync(referenceSpaceOptions: XRReferenceSpaceType){
-        return this.session.requestReferenceSpace(referenceSpaceOptions).then((referenceSpace: any)=>{
-            this.referenceSpaceType = referenceSpace;
-        })
+    /**
+     * Sets the reference space on the xr session
+     * @param referenceSpace space to set
+     */
+    public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType) {
+        return this.session.requestReferenceSpace(referenceSpace).then((referenceSpace: XRReferenceSpace) => {
+            this.referenceSpace = referenceSpace;
+        });
     }
 
-    public updateRenderStateAsync(state:any){
-        if(state.baseLayer){
+    /**
+     * Updates the render state of the session
+     * @param state state to set
+     */
+    public updateRenderStateAsync(state: any) {
+        if (state.baseLayer) {
             this.baseLayer = state.baseLayer;
         }
         return this.session.updateRenderState(state);
     }
 
-    public startRenderingToXRAsync(){
+    /**
+     * Starts rendering to the xr layer
+     */
+    public startRenderingToXRAsync() {
         // Tell the engine's render loop to be driven by the xr session's refresh rate and provide xr pose information
         this.scene.getEngine().customAnimationFrameRequester = {
             requestAnimationFrame: this.session.requestAnimationFrame.bind(this.session),
@@ -128,15 +144,15 @@ export class WebXRSessionManager implements IDisposable {
      * @returns true if supported
      */
     public supportsSessionAsync(sessionMode: XRSessionMode) {
-        if(!(navigator as any).xr || !(navigator as any).xr.supportsSession){
+        if (!(navigator as any).xr || !(navigator as any).xr.supportsSession) {
             return Promise.resolve(false);
-        }else{
-            return (navigator as any).xr.supportsSession(sessionMode).then(()=>{
-                return Promise.resolve(true)
-            }).catch((e:any)=>{
-                Logger.Warn(e)
+        }else {
+            return (navigator as any).xr.supportsSession(sessionMode).then(() => {
+                return Promise.resolve(true);
+            }).catch((e: any) => {
+                Logger.Warn(e);
                 return Promise.resolve(false);
-            })
+            });
         }
     }
 
@@ -147,8 +163,8 @@ export class WebXRSessionManager implements IDisposable {
      * @param scene scene the new render target should be created for
      */
     public static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer) {
-        if(!baseLayer){
-            throw "no layer"
+        if (!baseLayer) {
+            throw "no layer";
         }
         // Create internal texture
         var internalTexture = new InternalTexture(scene.getEngine(), InternalTexture.DATASOURCE_UNKNOWN, true);
