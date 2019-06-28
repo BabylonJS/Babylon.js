@@ -226,6 +226,14 @@ vec4 color = vec4(finalDiffuse + finalSpecular, alpha);
 
 #include<logDepthFragment>
 #include<fogFragment>
-	
+
+#ifdef IMAGEPROCESSINGPOSTPROCESS
+	color.rgb = toLinearSpace(color.rgb);
+#else
+	#ifdef IMAGEPROCESSING
+		color.rgb = toLinearSpace(color.rgb);
+		color = applyImageProcessing(color);
+	#endif
+#endif	
 	gl_FragColor = color;
 }
