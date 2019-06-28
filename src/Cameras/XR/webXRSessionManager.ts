@@ -89,6 +89,7 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Sets the reference space on the xr session
      * @param referenceSpace space to set
+     * @returns a promise that will resolve once the reference space has been set
      */
     public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType) {
         return this.session.requestReferenceSpace(referenceSpace).then((referenceSpace: XRReferenceSpace) => {
@@ -99,6 +100,7 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Updates the render state of the session
      * @param state state to set
+     * @returns a promise that resolves once the render state has been updated
      */
     public updateRenderStateAsync(state: any) {
         if (state.baseLayer) {
@@ -109,6 +111,7 @@ export class WebXRSessionManager implements IDisposable {
 
     /**
      * Starts rendering to the xr layer
+     * @returns a promise that will resolve once rendering has started
      */
     public startRenderingToXRAsync() {
         // Tell the engine's render loop to be driven by the xr session's refresh rate and provide xr pose information
