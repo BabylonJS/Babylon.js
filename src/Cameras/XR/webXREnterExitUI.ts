@@ -10,13 +10,15 @@ export class WebXREnterExitUIButton {
     /**
      * Creates a WebXREnterExitUIButton
      * @param element button element
-     * @param initializationOptions XR initialization options for the button
+     * @param sessionMode XR initialization session mode
+     * @param referenceSpaceType the type of reference space to be used
      */
     constructor(
         /** button element */
         public element: HTMLElement,
         /** XR initialization options for the button */
         public sessionMode: XRSessionMode,
+        /** Reference space type */
         public referenceSpaceType: XRReferenceSpaceType
     ) { }
     /**
@@ -84,7 +86,7 @@ export class WebXREnterExitUI implements IDisposable {
                             return;
                         } else if (helper.state == WebXRState.NOT_IN_XR) {
                             ui._updateButtons(ui._buttons[i]);
-                            if(options.webXRManagedOutputCanvas){
+                            if (options.webXRManagedOutputCanvas) {
                                 await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].referenceSpaceType, options.webXRManagedOutputCanvas);
                             }
                         }
@@ -110,15 +112,6 @@ export class WebXREnterExitUI implements IDisposable {
                 this.element.style.display = (activeButton === null || activeButton === this) ? "" : "none";
                 this.element.innerText = activeButton === this ? "EXIT" : "HMD";
             };
-
-            // var windowBtn = document.createElement("button");
-            // windowBtn.style.cssText = hmdBtn.style.cssText;
-            // windowBtn.innerText = "Window";
-            // this._buttons.push(new WebXREnterExitUIButton(windowBtn, { immersive: false, environmentIntegration: true, outputContext: options.outputCanvasContext }));
-            // this._buttons[this._buttons.length - 1].update = function(activeButton: WebXREnterExitUIButton) {
-            //     this.element.style.display = (activeButton === null || activeButton === this) ? "" : "none";
-            //     this.element.innerText = activeButton === this ? "EXIT" : "Window";
-            // };
             this._updateButtons(null);
         }
 

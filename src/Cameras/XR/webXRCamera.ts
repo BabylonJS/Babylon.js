@@ -67,7 +67,7 @@ export class WebXRCamera extends FreeCamera {
         if (!xrSessionManager.currentFrame || !xrSessionManager.currentFrame.getViewerPose) {
             return false;
         }
-        var pose = xrSessionManager.currentFrame.getViewerPose(xrSessionManager.referenceSpaceType);
+        var pose = xrSessionManager.currentFrame.getViewerPose(xrSessionManager.referenceSpace);
         if (!pose || !pose.transform || !pose.transform.matrix) {
             return false;
         }
@@ -84,7 +84,7 @@ export class WebXRCamera extends FreeCamera {
 
         // Update camera rigs
         this._updateNumberOfRigCameras(pose.views.length);
-        pose.views.forEach((view:any, i:number) => {
+        pose.views.forEach((view: any, i: number) => {
             // Update view/projection matrix
             Matrix.FromFloat32ArrayToRefScaled(view.transform.matrix, 0, 1, this.rigCameras[i]._computedViewMatrix);
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, this.rigCameras[i]._projectionMatrix);
@@ -94,13 +94,16 @@ export class WebXRCamera extends FreeCamera {
             }
 
             // Update viewport
-            var viewport = xrSessionManager.session.renderState.baseLayer.getViewport(view);
-            var width = xrSessionManager.session.renderState.baseLayer.framebufferWidth;
-            var height = xrSessionManager.session.renderState.baseLayer.framebufferHeight;
-            this.rigCameras[i].viewport.width = viewport.width / width;
-            this.rigCameras[i].viewport.height = viewport.height / height;
-            this.rigCameras[i].viewport.x = viewport.x / width;
-            this.rigCameras[i].viewport.y = viewport.y / height;
+            if (xrSessionManager.session.renderState.baseLayer) {
+                var viewport = xrSessionManager.session.renderState.baseLayer.getViewport(view);
+                var width = xrSessionManager.session.renderState.baseLayer.framebufferWidth;
+                var height = xrSessionManager.session.renderState.baseLayer.framebufferHeight;
+                this.rigCameras[i].viewport.width = viewport.width / width;
+                this.rigCameras[i].viewport.height = viewport.height / height;
+                this.rigCameras[i].viewport.x = viewport.x / width;
+                this.rigCameras[i].viewport.y = viewport.y / height;
+            }
+
             // Set cameras to render to the session's render target
             this.rigCameras[i].outputRenderTarget = xrSessionManager._sessionRenderTargetTexture;
         });
