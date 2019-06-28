@@ -21,10 +21,10 @@ export class EffectRenderer {
     private _ringBufferIndex = 0;
     private _ringScreenBuffer: Nullable<Array<Texture>> = null;
 
-    private _getNextFrameBuffer(incrementIndex = true){
+    private _getNextFrameBuffer(incrementIndex = true) {
         if (!this._ringScreenBuffer) {
-            this._ringScreenBuffer = []
-            for(var i = 0;i<2;i++){
+            this._ringScreenBuffer = [];
+            for (var i = 0; i < 2; i++) {
                 var internalTexture = this.engine.createRenderTargetTexture(
                     {
                         width: Math.floor(this.engine.getRenderWidth(true)),
@@ -39,14 +39,14 @@ export class EffectRenderer {
                 );
                 var texture = new Texture("", null);
                 texture._texture = internalTexture;
-                this._ringScreenBuffer.push(texture)
+                this._ringScreenBuffer.push(texture);
             }
         }
         var ret = this._ringScreenBuffer[this._ringBufferIndex];
-        if(incrementIndex){
-            this._ringBufferIndex = (this._ringBufferIndex+1) % 2;
+        if (incrementIndex) {
+            this._ringBufferIndex = (this._ringBufferIndex + 1) % 2;
         }
-        return ret
+        return ret;
     }
 
     /**
@@ -110,9 +110,9 @@ export class EffectRenderer {
      */
     dispose() {
         if (this._ringScreenBuffer) {
-            this._ringScreenBuffer.forEach((b)=>{
-                b.dispose()
-            })
+            this._ringScreenBuffer.forEach((b) => {
+                b.dispose();
+            });
             this._ringScreenBuffer = null;
         }
 
@@ -146,13 +146,13 @@ export class EffectWrapper {
      * @param creationOptions options to create the effect
      */
     constructor(creationOptions: {engine: Engine, fragmentShader: string, attributeNames: Array<string>, uniformNames: Array<string>, samplerNames: Array<string>}) {
-        this.effect = new Effect({fragmentSource: creationOptions.fragmentShader, vertex: "postprocess"},creationOptions.attributeNames,creationOptions.uniformNames, creationOptions.samplerNames, creationOptions.engine);
+        this.effect = new Effect({fragmentSource: creationOptions.fragmentShader, vertex: "postprocess"}, creationOptions.attributeNames, creationOptions.uniformNames, creationOptions.samplerNames, creationOptions.engine);
     }
 
      /**
      * Disposes of the effect wrapper
      */
-    public dispose(){
+    public dispose() {
         this.effect.dispose();
     }
 }
