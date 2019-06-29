@@ -137,6 +137,32 @@ export class EffectRenderer {
 }
 
 /**
+ * Options to create an EffectWrapper
+ */
+interface EffectWrapperCreationOptions {
+    /**
+     * Engine to use to create the effect
+     */
+    engine: Engine;
+    /**
+     * Fragment shader for the effect
+     */
+    fragmentShader: string;
+    /**
+     * Attributes to use in the shader
+     */
+    attributeNames: Array<string>;
+    /**
+     * Uniforms to use in the shader
+     */
+    uniformNames: Array<string>;
+    /**
+     * Texture sampler names to use in the shader
+     */
+    samplerNames: Array<string>;
+}
+
+/**
  * Wraps an effect to be used for rendering
  */
 export class EffectWrapper {
@@ -153,7 +179,7 @@ export class EffectWrapper {
      * Creates an effect to be renderer
      * @param creationOptions options to create the effect
      */
-    constructor(creationOptions: {engine: Engine, fragmentShader: string, attributeNames: Array<string>, uniformNames: Array<string>, samplerNames: Array<string>}) {
+    constructor(creationOptions: EffectWrapperCreationOptions) {
         this.effect = new Effect({fragmentSource: creationOptions.fragmentShader, vertex: "postprocess"}, creationOptions.attributeNames, creationOptions.uniformNames, creationOptions.samplerNames, creationOptions.engine);
     }
 
