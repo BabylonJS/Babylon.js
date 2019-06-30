@@ -86,6 +86,7 @@
 - Fix bug when adding and removing observers in quick succession ([sable](https://github.com/thscott))
 - Cannon and Ammo forceUpdate will no longer cause an unexpected exception ([TrevorDev](https://github.com/TrevorDev))
 - Loading the same multi-material twice and disposing one should not impact the other ([TrevorDev](https://github.com/TrevorDev))
+- GLTF loader should now preserve the texture naming ([Drigax](https://github.com/Drigax))
 
 ## Breaking changes
 - Setting mesh.scaling to a new vector will no longer automatically call forceUpdate (this should be done manually when needed) ([TrevorDev](https://github.com/TrevorDev))
