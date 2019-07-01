@@ -250,7 +250,7 @@ export class Ray {
      * @param axis to check 'x' | 'y' | 'z'
      * @returns a vector containing the coordinates where 'axis' is equal to zero, or false if there is no intercept.
      */
-    public intersectsAxis(axis) {
+    public intersectsAxis(axis: string) {
           var t = this.origin[axis] / this.direction[axis]
           if(t > 0) return false
           const stepOrigin = function(t, axis) {
