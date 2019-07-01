@@ -26,7 +26,7 @@ export class DepthRenderer {
     private _depthMap: RenderTargetTexture;
     private _effect: Effect;
     private readonly _storeNoneLinearDepth: boolean;
-    private readonly _supportsFloat: boolean;
+    public readonly isPacked: boolean;
 
     private _cachedDefines: string;
     private _camera: Nullable<Camera>;
@@ -53,7 +53,7 @@ export class DepthRenderer {
     constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, storeNoneLinearDepth = false) {
         this._scene = scene;
         this._storeNoneLinearDepth = storeNoneLinearDepth;
-        this._supportsFloat = type !== Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        this.isPacked = type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
         DepthRenderer._SceneComponentInitialization(this._scene);
 
@@ -61,7 +61,7 @@ export class DepthRenderer {
         var engine = scene.getEngine();
 
         // Render target
-        var format = this._supportsFloat ? Constants.TEXTUREFORMAT_R : Constants.TEXTUREFORMAT_RGBA;
+        var format = this.isPacked ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
         this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
             false, undefined, undefined, undefined, undefined,
             format);
@@ -229,8 +229,8 @@ export class DepthRenderer {
         }
 
         // Float Mode
-        if (this._supportsFloat) {
-            defines.push("#define FLOAT");
+        if (this.isPacked) {
+            defines.push("#define PACKED");
         }
 
         // Get correct effect
