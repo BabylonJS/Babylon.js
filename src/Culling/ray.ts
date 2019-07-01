@@ -255,11 +255,11 @@ export class Ray {
           if(t > 0) return false
           const stepOrigin = function(t, axis) {
               return this.origin[axis] + (this.direction[axis] * -t)
-          }.bind(this, t)
+          }
           switch(axis) {
-              case 'y': return new Vector3(stepOrigin('x'), 0, stepOrigin('z'))
-              case 'x': return new Vector3(0, stepOrigin('y'), stepOrigin('z'))
-              case 'z': return new Vector3(stepOrigin('x'), stepOrigin('y'), 0)
+              case 'y': return new Vector3(stepOrigin(t, 'x'), 0, stepOrigin(t, 'z'))
+              case 'x': return new Vector3(0, stepOrigin(t, 'y'), stepOrigin(t, 'z'))
+              case 'z': return new Vector3(stepOrigin(t, 'x'), stepOrigin(t, 'y'), 0)
               default: return false
           }
     }
