@@ -253,13 +253,10 @@ export class Ray {
     public intersectsAxis(axis: string) {
           var t = this.origin[axis] / this.direction[axis]
           if(t > 0) return false
-          const stepOrigin = function(t, axis) {
-              return this.origin[axis] + (this.direction[axis] * -t)
-          }
           switch(axis) {
-              case 'y': return new Vector3(stepOrigin(t, 'x'), 0, stepOrigin(t, 'z'))
-              case 'x': return new Vector3(0, stepOrigin(t, 'y'), stepOrigin(t, 'z'))
-              case 'z': return new Vector3(stepOrigin(t, 'x'), stepOrigin(t, 'y'), 0)
+              case 'y': return new Vector3(this.origin.x + (this.direction.x * -t), 0, this.origin.z + (this.direction.z * -t))
+              case 'x': return new Vector3(0, this.origin.y + (this.direction.y * -t), this.origin.z + (this.direction.z * -t))
+              case 'z': return new Vector3(this.origin.x + (this.direction.x * -t), this.origin.y + (this.direction.y * -t), 0)
               default: return false
           }
     }
