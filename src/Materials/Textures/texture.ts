@@ -269,7 +269,7 @@ export class Texture extends BaseTexture {
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      */
     constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | Engine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
-        super((sceneOrEngine && (sceneOrEngine as Scene).getClassName && (sceneOrEngine as Scene).getClassName() === "Scene") ? (sceneOrEngine as Scene) : null);
+        super((sceneOrEngine && sceneOrEngine.getClassName() === "Scene") ? (sceneOrEngine as Scene) : null);
 
         this.name = url || "";
         this.url = url;
