@@ -844,7 +844,7 @@ export class Engine {
     protected _currentEffect: Nullable<Effect>;
     /** @hidden */
     protected _currentProgram: Nullable<WebGLProgram>;
-    protected _compiledEffects: { [key: string]: Effect } = {};
+    private _compiledEffects: { [key: string]: Effect } = {};
     private _vertexAttribArraysEnabled: boolean[] = [];
     /** @hidden */
     protected _cachedViewport: Nullable<Viewport>;
