@@ -63,7 +63,7 @@ export class DepthRenderer {
         var engine = scene.getEngine();
 
         // Render target
-        var format = this.isPacked ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
+        var format = (this.isPacked || engine.webGLVersion === 1) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
         this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
             false, undefined, undefined, undefined, undefined,
             format);
