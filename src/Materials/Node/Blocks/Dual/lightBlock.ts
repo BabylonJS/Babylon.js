@@ -94,7 +94,7 @@ export class LightBlock extends NodeMaterialBlock {
         if (!defines._areLightsDirty) {
             return;
         }
-        
+
         const scene = mesh.getScene();
 
         if (!this.light) {

@@ -7,7 +7,7 @@ import { Effect, EffectFallbacks } from '../effect';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
 import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
-import { InputBlock } from './Blocks';
+import { InputBlock } from './Blocks/Input/inputBlock';
 
 /**
  * Defines a block that can be used inside a node based material

@@ -127,7 +127,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state._emitVaryingFromString(this._transformedUVName, "vec2", this._defineName);
         state._emitVaryingFromString(this._mainUVName, "vec2", this._mainUVDefineName);
 
-        state._emitUniformFromString(this._textureTransformName, "mat4", this._defineName)
+        state._emitUniformFromString(this._textureTransformName, "mat4", this._defineName);
 
         if (state.sharedData.emitComments) {
             state.compilationString += `\r\n//${this.name}\r\n`;
@@ -160,7 +160,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
         state.sharedData.bindableBlocks.push(this);
 
-        state._emitUniformFromString(this._textureInfoName, "float")
+        state._emitUniformFromString(this._textureInfoName, "float");
 
         let uvInput = this.uv;
         let output = this._outputs[0];
