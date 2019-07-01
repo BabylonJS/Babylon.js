@@ -245,6 +245,24 @@ export class Ray {
             return distance;
         }
     }
+    /**
+     * Calculate the intercept of a ray on a given axis
+     * @param axis to check 'x' | 'y' | 'z'
+     * @returns a vector containing the coordinates where 'axis' is equal to zero, or false if there is no intercept.
+     */
+    public intersectsAxis(axis) {
+          var t = this.origin[axis] / this.direction[axis]
+          if(t > 0) return false
+          const stepOrigin = function(t, axis) {
+              return this.origin[axis] + (this.direction[axis] * -t)
+          }.bind(this, t)
+          switch(axis) {
+              case 'y': return new Vector3(stepOrigin('x'), 0, stepOrigin('z'))
+              case 'x': return new Vector3(0, stepOrigin('y'), stepOrigin('z'))
+              case 'z': return new Vector3(stepOrigin('x'), stepOrigin('y'), 0)
+              default: return false
+          }
+    }
 
     /**
      * Checks if ray intersects a mesh
