@@ -26,6 +26,8 @@ export class DepthRenderer {
     private _depthMap: RenderTargetTexture;
     private _effect: Effect;
     private readonly _storeNonLinearDepth: boolean;
+
+    /** Get if the depth renderer is using packed depth or not */
     public readonly isPacked: boolean;
 
     private _cachedDefines: string;
