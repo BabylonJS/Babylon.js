@@ -1564,6 +1564,14 @@ export class Engine {
     }
 
     /**
+     * Gets a string idenfifying the name of the class
+     * @returns "Engine" string
+     */
+    public getClassName(): string {
+        return "Engine";
+    }
+
+    /**
      * Returns true if the stencil buffer has been enabled through the creation option of the context.
      */
     public get isStencilEnable(): boolean {
