@@ -11,10 +11,10 @@ const enginePath = path.join(config.core.computed.mainDirectory, "Engines/engine
  * Get the version from the engine class for Babylon
  */
 function getEngineVersion() {
-    colorConsole.log("Get version from engine.ts");
+    colorConsole.log("Get version from engine.ts", enginePath);
     const engineContent = fs.readFileSync(enginePath).toString();
 
-    const versionRegex = new RegExp(`public static get Version\\(\\): string {[\\s\\S]*return "([\\s\\S]*?)";[\\s\\S]*}`, "gm");
+    const versionRegex = new RegExp(`public static get Version\\(\\): string {\\s*return "(\\S*)";\\s*}`, "gm");
     const match = versionRegex.exec(engineContent);
     if (match && match.length) {
         const version = match[1];
