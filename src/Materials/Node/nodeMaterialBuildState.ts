@@ -289,7 +289,6 @@ export class NodeMaterialBuildState {
         }
     }
 
-
     /** @hidden */
     public _emitUniformFromString(name: string, type: string, define: string = "", notDefine = false) {
         if (this.uniforms.indexOf(name) !== -1) {
