@@ -27,8 +27,8 @@ export class EffectRenderer {
             for (var i = 0; i < 2; i++) {
                 var internalTexture = this.engine.createRenderTargetTexture(
                     {
-                        width: Math.floor(this.engine.getRenderWidth(true)),
-                        height: Math.floor(this.engine.getRenderHeight(true)),
+                        width: this.engine.getRenderWidth(true),
+                        height: this.engine.getRenderHeight(true),
                     },
                     {
                         generateDepthBuffer: false,
