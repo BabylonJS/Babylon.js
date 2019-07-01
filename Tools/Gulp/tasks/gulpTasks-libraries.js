@@ -118,13 +118,8 @@ var appendLoseDTSFiles = function(settings, moduleFile) {
             if (!moduleFile) {
                 fileName = fileName.replace(".module", "");
             }
+
             let fileLocation = path.join(outputDirectory, fileName);
-
-            console.log(settings.build.umd.processDeclaration.filename);
-            console.log(fileName);
-            console.log(fileLocation);
-            console.log(outputDirectory);
-
             return gulp.src([fileLocation, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles.glob)])
                 .pipe(concat(fileName))
                 .pipe(gulp.dest(outputDirectory));
