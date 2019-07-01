@@ -26,6 +26,7 @@ export class DepthRenderer {
     private _depthMap: RenderTargetTexture;
     private _effect: Effect;
     private readonly _storeNonLinearDepth: boolean;
+    private readonly _clearColor: Color4;
 
     /** Get if the depth renderer is using packed depth or not */
     public readonly isPacked: boolean;
@@ -56,6 +57,12 @@ export class DepthRenderer {
         this._scene = scene;
         this._storeNonLinearDepth = storeNonLinearDepth;
         this.isPacked = type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        if (this.isPacked) {
+            this._clearColor = new Color4(1.0, 1.0, 1.0, 1.0);
+        }
+        else {
+            this._clearColor = new Color4(1.0, 0.0, 0.0, 1.0);
+        }
 
         DepthRenderer._SceneComponentInitialization(this._scene);
 
@@ -80,7 +87,7 @@ export class DepthRenderer {
 
         // set default depth value to 1.0 (far away)
         this._depthMap.onClearObservable.add((engine) => {
-            engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
+            engine.clear(this._clearColor, true, true, true);
         });
 
         // Custom render function
