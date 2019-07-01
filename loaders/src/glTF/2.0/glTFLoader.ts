@@ -1555,14 +1555,12 @@ export class GLTFLoader implements IGLTFLoader {
 
             if (properties.baseColorTexture) {
                 promises.push(this.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (Base Color)`;
                     babylonMaterial.albedoTexture = texture;
                 }));
             }
 
             if (properties.metallicRoughnessTexture) {
                 promises.push(this.loadTextureInfoAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (Metallic Roughness)`;
                     babylonMaterial.metallicTexture = texture;
                 }));
 
@@ -1699,7 +1697,6 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (material.normalTexture) {
             promises.push(this.loadTextureInfoAsync(`${context}/normalTexture`, material.normalTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Normal)`;
                 babylonMaterial.bumpTexture = texture;
             }));
 
@@ -1714,7 +1711,6 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (material.occlusionTexture) {
             promises.push(this.loadTextureInfoAsync(`${context}/occlusionTexture`, material.occlusionTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Occlusion)`;
                 babylonMaterial.ambientTexture = texture;
             }));
 
@@ -1726,7 +1722,6 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (material.emissiveTexture) {
             promises.push(this.loadTextureInfoAsync(`${context}/emissiveTexture`, material.emissiveTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Emissive)`;
                 babylonMaterial.emissiveTexture = texture;
             }));
         }
@@ -1792,6 +1787,10 @@ export class GLTFLoader implements IGLTFLoader {
         const texture = ArrayItem.Get(`${context}/index`, this._gltf.textures, textureInfo.index);
         const promise = this._loadTextureAsync(`/textures/${textureInfo.index}`, texture, (babylonTexture) => {
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
+            if (texture.name)
+            {
+                babylonTexture.name = texture.name;
+            }
 
             GLTFLoader.AddPointerMetadata(babylonTexture, context);
             this._parent.onTextureLoadedObservable.notifyObservers(babylonTexture);
