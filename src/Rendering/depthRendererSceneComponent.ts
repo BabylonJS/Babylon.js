@@ -15,9 +15,10 @@ declare module "../scene" {
         /**
          * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
          * @param camera The camera to create the depth renderer on (default: scene's active camera)
+         * @param storeNoneLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
          * @returns the created depth renderer
          */
-        enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer;
+        enableDepthRenderer(camera?: Nullable<Camera>, storeNoneLinearDepth?: boolean): DepthRenderer;
 
         /**
          * Disables a depth renderer for a given camera
@@ -27,7 +28,7 @@ declare module "../scene" {
     }
 }
 
-Scene.prototype.enableDepthRenderer = function(camera?: Nullable<Camera>): DepthRenderer {
+Scene.prototype.enableDepthRenderer = function(camera?: Nullable<Camera>, storeNoneLinearDepth = false): DepthRenderer {
     camera = camera || this.activeCamera;
     if (!camera) {
         throw "No camera available to enable depth renderer";
@@ -43,9 +44,9 @@ Scene.prototype.enableDepthRenderer = function(camera?: Nullable<Camera>): Depth
         else if (this.getEngine().getCaps().textureFloatRender) {
             textureType = Constants.TEXTURETYPE_FLOAT;
         } else {
-            throw "Depth renderer does not support int texture type";
+            textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         }
-        this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera);
+        this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera, storeNoneLinearDepth);
     }
 
     return this._depthRenderer[camera.id];
