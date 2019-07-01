@@ -16,7 +16,7 @@ void main(void)
 		discard;
 #endif
 
-#ifdef NONELINEARDEPTH
+#ifdef NONLINEARDEPTH
 	#ifdef PACKED
 		gl_FragColor = pack(gl_FragCoord.z);
 	#else
