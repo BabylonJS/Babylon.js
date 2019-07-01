@@ -1,6 +1,11 @@
 #ifdef SHADOWS
     #ifndef SHADOWFLOAT
-        #include<packingFunctions>
+        // Dupplicate to prevent include in include issues
+        float unpack(vec4 color)
+        {
+            const vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
+            return dot(color, bit_shift);
+        }
     #endif
 
     float computeFallOff(float value, vec2 clipSpace, float frustumEdgeFalloff)
