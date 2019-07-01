@@ -114,14 +114,15 @@ var appendLoseDTSFiles = function(settings, moduleFile) {
             var outputDirectory = settings.computed.distDirectory;
 
             // Find declaration path.
-            let fileLocation = path.join(outputDirectory, settings.build.umd.processDeclaration.filename);
+            let fileName = settings.build.umd.processDeclaration.filename;
             if (!moduleFile) {
-                fileLocation = fileLocation.replace(".module", "");
+                fileName = fileName.replace(".module", "");
             }
 
+            let fileLocation = path.join(outputDirectory, fileName);
             return gulp.src([fileLocation, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles.glob)])
-                .pipe(concat(fileLocation))
-                .pipe(gulp.dest(fileLocation));
+                .pipe(concat(fileName))
+                .pipe(gulp.dest(outputDirectory));
         }
     }
     return Promise.resolve();
