@@ -1,9 +1,9 @@
 import { Nullable } from "../../types";
-import { Observer } from "../../Misc/observable";
-import { Matrix, Quaternion } from "../../Maths/math";
+import { Observer, Observable } from "../../Misc/observable";
 import { IDisposable, Scene } from "../../scene";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
+import { Matrix, Quaternion } from '../../Maths/math';
 /**
  * Represents an XR input
  */
@@ -17,14 +17,69 @@ export class WebXRController {
      */
     public pointer: AbstractMesh;
 
+    private _tmpMatrix = new Matrix();
+
     /**
      * Creates the controller
      * @see https://doc.babylonjs.com/how_to/webxr
      * @param scene the scene which the controller should be associated to
+     * @param inputSource the underlying input source for the controller
+     * @param parentContainer parent that the controller meshes should be children of
      */
-    constructor(scene: Scene) {
+    constructor(
+        private scene: Scene,
+        /** The underlying input source for the controller  */
+        public inputSource: XRInputSource,
+        private parentContainer: Nullable<AbstractMesh> = null)
+    {
         this.pointer = new AbstractMesh("controllerPointer", scene);
+        if (parentContainer) {
+            parentContainer.addChild(this.pointer);
+
+        }
     }
+
+    /**
+     * Updates the controller pose based on the given XRFrame
+     * @param xrFrame xr frame to update the pose with
+     * @param referenceSpace reference space to use
+     */
+    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace) {
+        var pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpace);
+        if (pose) {
+            Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMatrix);
+            if (!this.pointer.getScene().useRightHandedSystem) {
+                this._tmpMatrix.toggleModelMatrixHandInPlace();
+            }
+            if (!this.pointer.rotationQuaternion) {
+                this.pointer.rotationQuaternion = new Quaternion();
+            }
+            this._tmpMatrix.decompose(this.pointer.scaling, this.pointer.rotationQuaternion!, this.pointer.position);
+        }
+
+        if (this.inputSource.gripSpace) {
+            if (!this.grip) {
+                this.grip = new AbstractMesh("controllerGrip", this.scene);
+                if (this.parentContainer) {
+                    this.parentContainer.addChild(this.grip);
+                }
+            }
+
+            var pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpace);
+            if (pose) {
+                Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMatrix);
+                if (!this.grip.getScene().useRightHandedSystem) {
+                    this._tmpMatrix.toggleModelMatrixHandInPlace();
+                }
+                if (!this.grip.rotationQuaternion) {
+                    this.grip.rotationQuaternion = new Quaternion();
+                }
+                this._tmpMatrix.decompose(this.grip.scaling, this.grip.rotationQuaternion!, this.grip.position);
+            }
+        }
+
+    }
+
     /**
      * Disposes of the object
      */
@@ -44,58 +99,73 @@ export class WebXRInput implements IDisposable {
      * XR controllers being tracked
      */
     public controllers: Array<WebXRController> = [];
-    private _tmpMatrix = new Matrix();
     private _frameObserver: Nullable<Observer<any>>;
+    /**
+     * Event when a controller has been connected/added
+     */
+    public onControllerAddedObservable = new Observable<WebXRController>();
+    /**
+     * Event when a controller has been removed/disconnected
+     */
+    public onControllerRemovedObservable = new Observable<WebXRController>();
 
     /**
      * Initializes the WebXRInput
      * @param helper experience helper which the input should be created for
      */
     public constructor(private helper: WebXRExperienceHelper) {
-        this._frameObserver = helper._sessionManager.onXRFrameObservable.add(() => {
-            if (!helper._sessionManager._currentXRFrame || !helper._sessionManager._currentXRFrame.getDevicePose) {
+        this._frameObserver = helper.sessionManager.onXRFrameObservable.add(() => {
+            if (!helper.sessionManager.currentFrame) {
                 return;
             }
 
-            var xrFrame = helper._sessionManager._currentXRFrame;
-            var inputSources = helper._sessionManager._xrSession.getInputSources();
+            // Start listing to input add/remove event
+            if (this.controllers.length == 0 && helper.sessionManager.session.inputSources) {
+                this._addAndRemoveControllers(helper.sessionManager.session.inputSources, []);
+                helper.sessionManager.session.addEventListener("inputsourceschange", this._onInputSourcesChange);
+            }
 
-            inputSources.forEach((input, i) => {
-                let inputPose = xrFrame.getInputPose(input, helper._sessionManager._frameOfReference);
-                if (inputPose) {
-                    if (this.controllers.length <= i) {
-                        this.controllers.push(new WebXRController(helper.container.getScene()));
-                    }
-                    var controller = this.controllers[i];
-
-                    // Manage the grip if it exists
-                    if (inputPose.gripMatrix) {
-                        if (!controller.grip) {
-                            controller.grip = new AbstractMesh("controllerGrip", helper.container.getScene());
-                        }
-                        Matrix.FromFloat32ArrayToRefScaled(inputPose.gripMatrix, 0, 1, this._tmpMatrix);
-                        if (!controller.grip.getScene().useRightHandedSystem) {
-                            this._tmpMatrix.toggleModelMatrixHandInPlace();
-                        }
-                        if (!controller.grip.rotationQuaternion) {
-                            controller.grip.rotationQuaternion = new Quaternion();
-                        }
-                        this._tmpMatrix.decompose(controller.grip.scaling, controller.grip.rotationQuaternion, controller.grip.position);
-                    }
-
-                    // Manager pointer of controller
-                    Matrix.FromFloat32ArrayToRefScaled(inputPose.targetRay.transformMatrix, 0, 1, this._tmpMatrix);
-                    if (!controller.pointer.getScene().useRightHandedSystem) {
-                        this._tmpMatrix.toggleModelMatrixHandInPlace();
-                    }
-                    if (!controller.pointer.rotationQuaternion) {
-                        controller.pointer.rotationQuaternion = new Quaternion();
-                    }
-                    this._tmpMatrix.decompose(controller.pointer.scaling, controller.pointer.rotationQuaternion, controller.pointer.position);
-                }
+            // Update controller pose info
+            this.controllers.forEach((controller) => {
+                controller.updateFromXRFrame(helper.sessionManager.currentFrame!, helper.sessionManager.referenceSpace);
             });
+
         });
     }
+
+    private _onInputSourcesChange = (event: XRInputSourceChangeEvent) => {
+        this._addAndRemoveControllers(event.added, event.removed);
+    }
+
+    private _addAndRemoveControllers(addInputs: Array<XRInputSource>, removeInputs: Array<XRInputSource>) {
+        // Add controllers if they don't already exist
+        var sources = this.controllers.map((c) => {return c.inputSource; });
+        addInputs.forEach((input) => {
+            if (sources.indexOf(input) === -1) {
+                var controller = new WebXRController(this.helper.camera._scene, input, this.helper.container);
+                this.controllers.push(controller);
+                this.onControllerAddedObservable.notifyObservers(controller);
+            }
+        });
+
+        // Remove and dispose of controllers to be disposed
+        var keepControllers: Array<WebXRController> = [];
+        var removedControllers: Array<WebXRController> = [];
+        this.controllers.forEach((c) => {
+            if (removeInputs.indexOf(c.inputSource) === -1) {
+                keepControllers.push(c);
+            }else {
+                removedControllers.push(c);
+            }
+        });
+        this.controllers = keepControllers;
+        removedControllers.forEach((c) => {
+            this.onControllerRemovedObservable.notifyObservers(c);
+            c.dispose();
+        });
+
+    }
+
     /**
      * Disposes of the object
      */
@@ -103,6 +173,6 @@ export class WebXRInput implements IDisposable {
         this.controllers.forEach((c) => {
             c.dispose();
         });
-        this.helper._sessionManager.onXRFrameObservable.remove(this._frameObserver);
+        this.helper.sessionManager.onXRFrameObservable.remove(this._frameObserver);
     }
 }
