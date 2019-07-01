@@ -25,7 +25,7 @@ export class DepthRenderer {
     private _scene: Scene;
     private _depthMap: RenderTargetTexture;
     private _effect: Effect;
-    private readonly _storeNoneLinearDepth: boolean;
+    private readonly _storeNonLinearDepth: boolean;
     public readonly isPacked: boolean;
 
     private _cachedDefines: string;
@@ -48,11 +48,11 @@ export class DepthRenderer {
      * @param scene The scene the renderer belongs to
      * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
-     * @param storeNoneLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
+     * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
      */
-    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, storeNoneLinearDepth = false) {
+    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, storeNonLinearDepth = false) {
         this._scene = scene;
-        this._storeNoneLinearDepth = storeNoneLinearDepth;
+        this._storeNonLinearDepth = storeNonLinearDepth;
         this.isPacked = type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
         DepthRenderer._SceneComponentInitialization(this._scene);
@@ -224,8 +224,8 @@ export class DepthRenderer {
         }
 
         // None linear depth
-        if (this._storeNoneLinearDepth) {
-            defines.push("#define NONELINEARDEPTH");
+        if (this._storeNonLinearDepth) {
+            defines.push("#define NONLINEARDEPTH");
         }
 
         // Float Mode
