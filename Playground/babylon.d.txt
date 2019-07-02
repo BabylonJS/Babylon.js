@@ -5027,7 +5027,7 @@ declare module BABYLON {
         /**
          * Add callback functions in this array to update all the requests before they get sent to the network
          */
-        static CustomRequestModifiers: ((request: XMLHttpRequest) => void)[];
+        static CustomRequestModifiers: ((request: XMLHttpRequest, url: string) => void)[];
         private _injectCustomRequestHeaders;
         /**
          * Gets or sets a function to be called when loading progress changes
@@ -18315,7 +18315,7 @@ declare module BABYLON {
          * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
          * @see http://doc.babylonjs.com/babylon101/materials#texture
          * @param url define the url of the picture to load as a texture
-         * @param scene define the scene the texture will belong to
+         * @param scene define the scene or engine the texture will belong to
          * @param noMipmap define if the texture will require mip maps or not
          * @param invertY define if the texture needs to be inverted on the y axis during loading
          * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
@@ -18325,7 +18325,7 @@ declare module BABYLON {
          * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
          * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
          */
-        constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number);
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | Engine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
@@ -27564,6 +27564,11 @@ declare module BABYLON {
          * Gets version of the current webGL context
          */
         readonly webGLVersion: number;
+        /**
+         * Gets a string idenfifying the name of the class
+         * @returns "Engine" string
+         */
+        getClassName(): string;
         /**
          * Returns true if the stencil buffer has been enabled through the creation option of the context.
          */
@@ -51460,6 +51465,83 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Helper class to render one or more effects
+     */
+    export class EffectRenderer {
+        private engine;
+        private static _Vertices;
+        private static _Indices;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _ringBufferIndex;
+        private _ringScreenBuffer;
+        private _getNextFrameBuffer;
+        /**
+         * Creates an effect renderer
+         * @param engine the engine to use for rendering
+         */
+        constructor(engine: Engine);
+        /**
+         * renders one or more effects to a specified texture
+         * @param effectWrappers list of effects to renderer
+         * @param outputTexture texture to draw to, if null it will render to the screen
+         */
+        render(effectWrappers: Array<EffectWrapper> | EffectWrapper, outputTexture?: Nullable<Texture>): void;
+        /**
+         * Disposes of the effect renderer
+         */
+        dispose(): void;
+    }
+    /**
+     * Options to create an EffectWrapper
+     */
+    interface EffectWrapperCreationOptions {
+        /**
+         * Engine to use to create the effect
+         */
+        engine: Engine;
+        /**
+         * Fragment shader for the effect
+         */
+        fragmentShader: string;
+        /**
+         * Attributes to use in the shader
+         */
+        attributeNames: Array<string>;
+        /**
+         * Uniforms to use in the shader
+         */
+        uniformNames: Array<string>;
+        /**
+         * Texture sampler names to use in the shader
+         */
+        samplerNames: Array<string>;
+    }
+    /**
+     * Wraps an effect to be used for rendering
+     */
+    export class EffectWrapper {
+        /**
+         * Event that is fired right before the effect is drawn (should be used to update uniforms)
+         */
+        onApplyObservable: Observable<{}>;
+        /**
+         * The underlying effect
+         */
+        effect: Effect;
+        /**
+         * Creates an effect to be renderer
+         * @param creationOptions options to create the effect
+         */
+        constructor(creationOptions: EffectWrapperCreationOptions);
+        /**
+        * Disposes of the effect wrapper
+        */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Helper class to push actions to a pool of workers.
      */
     export class WorkerPool implements IDisposable {
@@ -57585,6 +57667,12 @@ declare module BABYLON {
          */
         useDefaultLoadingScreen: boolean;
         /**
+         * Gets or sets a boolean defining if the AssetsManager should automatically hide the loading screen
+         * when all assets have been downloaded.
+         * If set to false, you need to manually call in hideLoadingUI() once your scene is ready.
+         */
+        autoHideLoadingUI: boolean;
+        /**
          * Creates a new AssetsManager
          * @param scene defines the scene to work on
          */
@@ -58506,19 +58594,23 @@ interface Window {
     DracoDecoderModule: any;
     setImmediate(handler: (...args: any[]) => void): number;
 }
+
 interface HTMLCanvasElement {
     requestPointerLock(): void;
     msRequestPointerLock?(): void;
     mozRequestPointerLock?(): void;
     webkitRequestPointerLock?(): void;
+
     /** Track wether a record is in progress */
     isRecording: boolean;
     /** Capture Stream method defined by some browsers */
     captureStream(fps?: number): MediaStream;
 }
+
 interface CanvasRenderingContext2D {
     msImageSmoothingEnabled: boolean;
 }
+
 interface MouseEvent {
     mozMovementX: number;
     mozMovementY: number;
@@ -58527,34 +58619,43 @@ interface MouseEvent {
     msMovementX: number;
     msMovementY: number;
 }
+
 interface Navigator {
     mozGetVRDevices: (any: any) => any;
     webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
     mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
     msGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+
     webkitGetGamepads(): Gamepad[];
     msGetGamepads(): Gamepad[];
     webkitGamepads(): Gamepad[];
 }
+
 interface HTMLVideoElement {
     mozSrcObject: any;
 }
+
 interface Math {
     fround(x: number): number;
     imul(a: number, b: number): number;
 }
+
 interface WebGLRenderingContext {
     drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
     drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
     vertexAttribDivisor(index: number, divisor: number): void;
+
     createVertexArray(): any;
     bindVertexArray(vao?: WebGLVertexArrayObject | null): void;
     deleteVertexArray(vao: WebGLVertexArrayObject): void;
+
     blitFramebuffer(srcX0: number, srcY0: number, srcX1: number, srcY1: number, dstX0: number, dstY0: number, dstX1: number, dstY1: number, mask: number, filter: number): void;
     renderbufferStorageMultisample(target: number, samples: number, internalformat: number, width: number, height: number): void;
+
     bindBufferBase(target: number, index: number, buffer: WebGLBuffer | null): void;
     getUniformBlockIndex(program: WebGLProgram, uniformBlockName: string): number;
     uniformBlockBinding(program: WebGLProgram, uniformBlockIndex: number, uniformBlockBinding: number): void;
+
     // Queries
     createQuery(): WebGLQuery;
     deleteQuery(query: WebGLQuery): void;
@@ -58562,11 +58663,13 @@ interface WebGLRenderingContext {
     endQuery(target: number): void;
     getQueryParameter(query: WebGLQuery, pname: number): any;
     getQuery(target: number, pname: number): any;
+
     MAX_SAMPLES: number;
     RGBA8: number;
     READ_FRAMEBUFFER: number;
     DRAW_FRAMEBUFFER: number;
     UNIFORM_BUFFER: number;
+
     HALF_FLOAT_OES: number;
     RGBA16F: number;
     RGBA32F: number;
@@ -58580,23 +58683,29 @@ interface WebGLRenderingContext {
     RG: number;
     R8: number;
     RG8: number;
+
     UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
+
     /* Multiple Render Targets */
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
+
     readonly COLOR_ATTACHMENT0: number;                             // 0x8CE1
     readonly COLOR_ATTACHMENT1: number;                             // 0x8CE2
     readonly COLOR_ATTACHMENT2: number;                             // 0x8CE3
     readonly COLOR_ATTACHMENT3: number;                             // 0x8CE4
+
     // Occlusion Query
     ANY_SAMPLES_PASSED_CONSERVATIVE: number;
     ANY_SAMPLES_PASSED: number;
     QUERY_RESULT_AVAILABLE: number;
     QUERY_RESULT: number;
 }
+
 interface WebGLProgram {private __SPECTOR_rebuildProgram?: ((vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void) | null;
 }
+
 interface EXT_disjoint_timer_query {
     QUERY_COUNTER_BITS_EXT: number;
     TIME_ELAPSED_EXT: number;
@@ -58611,12 +58720,14 @@ interface EXT_disjoint_timer_query {
     getQueryObjectEXT(query: WebGLQuery, target: number): any;
     deleteQueryEXT(query: WebGLQuery): void;
 }
+
 interface WebGLUniformLocation {private _currentState: any;
 }
 // Type definitions for WebGL 2, Editor's Draft Fri Feb 24 16:10:18 2017 -0800
 // Project: https://www.khronos.org/registry/webgl/specs/latest/2.0/
 // Definitions by: Nico Kemnitz <https://github.com/nkemnitz/>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+
 interface WebGLRenderingContext {
     readonly RASTERIZER_DISCARD: number;
     readonly DEPTH_COMPONENT24: number;
@@ -58668,10 +58779,13 @@ interface WebGLRenderingContext {
     readonly UNSIGNED_INT_10F_11F_11F_REV: number;
     readonly UNSIGNED_INT_5_9_9_9_REV: number;
     readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
+
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView | null): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView, offset: number): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ImageBitmap | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): void;
+
     compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, data: ArrayBufferView, offset?: number, length?: number): void;
+
     readonly TRANSFORM_FEEDBACK: number;
     readonly INTERLEAVED_ATTRIBS: number;
     readonly TRANSFORM_FEEDBACK_BUFFER: number;
@@ -58681,100 +58795,123 @@ interface WebGLRenderingContext {
     beginTransformFeedback(primitiveMode: number): void;
     endTransformFeedback(): void;
     transformFeedbackVaryings(program: WebGLProgram, varyings: string[], bufferMode: number): void;
+
     clearBufferfv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
     clearBufferiv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
     clearBufferuiv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
     clearBufferfi(buffer: number, drawbuffer: number, depth: number, stencil: number): void;
 }
+
 interface ImageBitmap {
     readonly width: number;
     readonly height: number;
     close(): void;
 }
+
 interface WebGLQuery extends WebGLObject {
 }
+
 declare var WebGLQuery: {
     prototype: WebGLQuery;
     new(): WebGLQuery;
 };
+
 interface WebGLSampler extends WebGLObject {
 }
+
 declare var WebGLSampler: {
     prototype: WebGLSampler;
     new(): WebGLSampler;
 };
+
 interface WebGLSync extends WebGLObject {
 }
+
 declare var WebGLSync: {
     prototype: WebGLSync;
     new(): WebGLSync;
 };
+
 interface WebGLTransformFeedback extends WebGLObject {
 }
+
 declare var WebGLTransformFeedback: {
     prototype: WebGLTransformFeedback;
     new(): WebGLTransformFeedback;
 };
+
 interface WebGLVertexArrayObject extends WebGLObject {
 }
+
 declare var WebGLVertexArrayObject: {
     prototype: WebGLVertexArrayObject;
     new(): WebGLVertexArrayObject;
 };
+
 // Type definitions for WebVR API
 // Project: https://w3c.github.io/webvr/
 // Definitions by: six a <https://github.com/lostfictions>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+
 interface VRDisplay extends EventTarget {
     /**
      * Dictionary of capabilities describing the VRDisplay.
      */
     readonly capabilities: VRDisplayCapabilities;
+
     /**
      * z-depth defining the far plane of the eye view frustum
      * enables mapping of values in the render target depth
      * attachment to scene coordinates. Initially set to 10000.0.
      */
     depthFar: number;
+
     /**
      * z-depth defining the near plane of the eye view frustum
      * enables mapping of values in the render target depth
      * attachment to scene coordinates. Initially set to 0.01.
      */
     depthNear: number;
+
     /**
      * An identifier for this distinct VRDisplay. Used as an
      * association point in the Gamepad API.
      */
     readonly displayId: number;
+
     /**
      * A display name, a user-readable name identifying it.
      */
     readonly displayName: string;
     readonly isConnected: boolean;
     readonly isPresenting: boolean;
+
     /**
      * If this VRDisplay supports room-scale experiences, the optional
      * stage attribute contains details on the room-scale parameters.
      */
     readonly stageParameters: VRStageParameters | null;
+
     /**
      * Passing the value returned by `requestAnimationFrame` to
      * `cancelAnimationFrame` will unregister the callback.
      * @param handle Define the hanle of the request to cancel
      */
     cancelAnimationFrame(handle: number): void;
+
     /**
      * Stops presenting to the VRDisplay.
      * @returns a promise to know when it stopped
      */
     exitPresent(): Promise<void>;
+
     /**
      * Return the current VREyeParameters for the given eye.
      * @param whichEye Define the eye we want the parameter for
      * @returns the eye parameters
      */
     getEyeParameters(whichEye: string): VREyeParameters;
+
     /**
      * Populates the passed VRFrameData with the information required to render
      * the current frame.
@@ -58782,11 +58919,13 @@ interface VRDisplay extends EventTarget {
      * @returns true if ok otherwise false
      */
     getFrameData(frameData: VRFrameData): boolean;
+
     /**
      * Get the layers currently being presented.
      * @returns the list of VR layers
      */
     getLayers(): VRLayer[];
+
     /**
      * Return a VRPose containing the future predicted pose of the VRDisplay
      * when the current frame will be presented. The value returned will not
@@ -58797,12 +58936,14 @@ interface VRDisplay extends EventTarget {
      * @returns the pose object
      */
     getPose(): VRPose;
+
     /**
      * Return the current instantaneous pose of the VRDisplay, with no
      * prediction applied.
      * @returns the current instantaneous pose
      */
     getImmediatePose(): VRPose;
+
     /**
      * The callback passed to `requestAnimationFrame` will be called
      * any time a new frame should be rendered. When the VRDisplay is
@@ -58815,6 +58956,7 @@ interface VRDisplay extends EventTarget {
      * @returns the request handle it
      */
     requestAnimationFrame(callback: FrameRequestCallback): number;
+
     /**
      * Begin presenting to the VRDisplay. Must be called in response to a user gesture.
      * Repeat calls while already presenting will update the VRLayers being displayed.
@@ -58822,6 +58964,7 @@ interface VRDisplay extends EventTarget {
      * @returns a promise to know when the request has been fulfilled
      */
     requestPresent(layers: VRLayer[]): Promise<void>;
+
     /**
      * Reset the pose for this display, treating its current position and
      * orientation as the "origin/zero" values. VRPose.position,
@@ -58830,6 +58973,7 @@ interface VRDisplay extends EventTarget {
      * sitting-space experiences.
      */
     resetPose(): void;
+
     /**
      * The VRLayer provided to the VRDisplay will be captured and presented
      * in the HMD. Calling this function has the same effect on the source
@@ -58839,15 +58983,18 @@ interface VRDisplay extends EventTarget {
      */
     submitFrame(pose?: VRPose): void;
 }
+
 declare var VRDisplay: {
     prototype: VRDisplay;
     new(): VRDisplay;
 };
+
 interface VRLayer {
     leftBounds?: number[] | Float32Array | null;
     rightBounds?: number[] | Float32Array | null;
     source?: HTMLCanvasElement | null;
 }
+
 interface VRDisplayCapabilities {
     readonly canPresent: boolean;
     readonly hasExternalDisplay: boolean;
@@ -58855,6 +59002,7 @@ interface VRDisplayCapabilities {
     readonly hasPosition: boolean;
     readonly maxLayers: number;
 }
+
 interface VREyeParameters {
     /** @deprecated */
     readonly fieldOfView: VRFieldOfView;
@@ -58862,12 +59010,14 @@ interface VREyeParameters {
     readonly renderHeight: number;
     readonly renderWidth: number;
 }
+
 interface VRFieldOfView {
     readonly downDegrees: number;
     readonly leftDegrees: number;
     readonly rightDegrees: number;
     readonly upDegrees: number;
 }
+
 interface VRFrameData {
     readonly leftProjectionMatrix: Float32Array;
     readonly leftViewMatrix: Float32Array;
@@ -58876,6 +59026,7 @@ interface VRFrameData {
     readonly rightViewMatrix: Float32Array;
     readonly timestamp: number;
 }
+
 interface VRPose {
     readonly angularAcceleration: Float32Array | null;
     readonly angularVelocity: Float32Array | null;
@@ -58885,15 +59036,18 @@ interface VRPose {
     readonly position: Float32Array | null;
     readonly timestamp: number;
 }
+
 interface VRStageParameters {
     sittingToStandingTransform?: Float32Array;
     sizeX?: number;
     sizeY?: number;
 }
+
 interface Navigator {
     getVRDisplays(): Promise<VRDisplay[]>;
     readonly activeVRDisplays: ReadonlyArray<VRDisplay>;
 }
+
 interface Window {
     onvrdisplayconnected: ((this: Window, ev: Event) => any) | null;
     onvrdisplaydisconnected: ((this: Window, ev: Event) => any) | null;
@@ -58902,6 +59056,7 @@ interface Window {
     addEventListener(type: "vrdisplaydisconnected", listener: (ev: Event) => any, useCapture?: boolean): void;
     addEventListener(type: "vrdisplaypresentchange", listener: (ev: Event) => any, useCapture?: boolean): void;
 }
+
 interface Gamepad {
     readonly displayId: number;
 }
@@ -58946,7 +59101,6 @@ declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
     new(session: XRSession, context?: WebGLRenderingContext): XRWebGLLayer;
 };
-
 declare module BABYLON.GUI {
     /**
      * Class used to specific a value and its associated unit
