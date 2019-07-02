@@ -254,17 +254,17 @@ export class Ray {
     public intersectsAxis(axis: string, offset: number = 0): Nullable<Vector3> {
           switch (axis) {
               case 'y':
-		          var t = (this.origin.y - offset) / this.direction.y;
-		          if (t > 0) { return null; } // for example if the sky was clicked
-		          return new Vector3(this.origin.x + (this.direction.x * -t), offset, this.origin.z + (this.direction.z * -t));
+		var t = (this.origin.y - offset) / this.direction.y;
+		if (t > 0) { return null; } // for example if the sky was clicked
+		return new Vector3(this.origin.x + (this.direction.x * -t), offset, this.origin.z + (this.direction.z * -t));
               case 'x':
-		          var t = (this.origin.x - offset) / this.direction.x;
-                  if (t > 0) { return null; }
-                  return new Vector3(offset, this.origin.y + (this.direction.y * -t), this.origin.z + (this.direction.z * -t));
+		var t = (this.origin.x - offset) / this.direction.x;
+		if (t > 0) { return null; }
+		return new Vector3(offset, this.origin.y + (this.direction.y * -t), this.origin.z + (this.direction.z * -t));
               case 'z':
-                  var t = (this.origin.z - offset) / this.direction.z;
-                  if (t > 0) { return null; }
-                  return new Vector3(this.origin.x + (this.direction.x * -t), this.origin.y + (this.direction.y * -t), offset);
+		var t = (this.origin.z - offset) / this.direction.z;
+		if (t > 0) { return null; }
+		return new Vector3(this.origin.x + (this.direction.x * -t), this.origin.y + (this.direction.y * -t), offset);
               default: return null;
           }
     }
