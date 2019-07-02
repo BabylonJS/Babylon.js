@@ -907,31 +907,12 @@ namespace babylon
         textureData->Images.push_back(bimg::imageParse(&m_allocator, buffer.Data(), static_cast<uint32_t>(buffer.ByteLength())));
         auto& image = *textureData->Images.front();
 
-        bgfx::TextureFormat::Enum format{};
-        switch (image.m_format)
-        {
-            case bimg::TextureFormat::RGBA8:
-            {
-                format = bgfx::TextureFormat::RGBA8;
-                break;
-            }
-            case bimg::TextureFormat::RGB8:
-            {
-                format = bgfx::TextureFormat::RGB8;
-                break;
-            }
-            default:
-            {
-                throw std::exception("Unexpected texture format.");
-            }
-        }
-
         textureData->Texture = bgfx::createTexture2D(
             image.m_width,
             image.m_height,
             false, // TODO: generate mipmaps when requested
             1,
-            format,
+            static_cast<bgfx::TextureFormat::Enum>(image.m_format),
             0,
             bgfx::makeRef(image.m_data, image.m_size));
     }
