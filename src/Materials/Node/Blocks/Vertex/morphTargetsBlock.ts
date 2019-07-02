@@ -119,6 +119,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             tangentInput.setAsAttribute("tangent");
             tangentInput.output.connectTo(this.tangent);
         }
+        if (!this.uv.isConnected) {
+            let uvInput = new InputBlock("uv");
+            uvInput.setAsAttribute("uv");
+            uvInput.output.connectTo(this.uv);
+        }
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {

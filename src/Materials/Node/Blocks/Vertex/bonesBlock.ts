@@ -94,27 +94,27 @@ export class BonesBlock extends NodeMaterialBlock {
 
     public autoConfigure() {
         if (!this.matricesIndices.isConnected) {
-            let matricesIndicesInput = new InputBlock("matricesIndices");
+            let matricesIndicesInput = new InputBlock("matricesIndices", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
             matricesIndicesInput.setAsAttribute("matricesIndices");
             matricesIndicesInput.output.connectTo(this.matricesIndices);
         }
         if (!this.matricesWeights.isConnected) {
-            let matricesWeightsInput = new InputBlock("matricesWeights");
+            let matricesWeightsInput = new InputBlock("matricesWeights", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
             matricesWeightsInput.setAsAttribute("matricesWeights");
             matricesWeightsInput.output.connectTo(this.matricesWeights);
         }
         if (!this.matricesIndicesExtra.isConnected) {
-            let matricesIndicesExtraInput = new InputBlock("matricesIndicesExtra");
+            let matricesIndicesExtraInput = new InputBlock("matricesIndicesExtra", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
             matricesIndicesExtraInput.setAsAttribute("matricesIndicesExtra");
             matricesIndicesExtraInput.output.connectTo(this.matricesIndicesExtra);
         }
         if (!this.matricesWeightsExtra.isConnected) {
-            let matricesWeightsExtraInput = new InputBlock("matricesWeightsExtra");
+            let matricesWeightsExtraInput = new InputBlock("matricesWeightsExtra", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
             matricesWeightsExtraInput.setAsAttribute("matricesWeightsExtra");
             matricesWeightsExtraInput.output.connectTo(this.matricesWeightsExtra);
         }
         if (!this.world.isConnected) {
-            let worldInput = new InputBlock("world");
+            let worldInput = new InputBlock("world", undefined, NodeMaterialBlockConnectionPointTypes.Matrix);
             worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
             worldInput.output.connectTo(this.world);
         }
