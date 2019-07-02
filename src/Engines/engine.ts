@@ -500,14 +500,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.6";
+        return "babylonjs@4.1.0-alpha.7";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.6";
+        return "4.1.0-alpha.7";
     }
 
     /**
@@ -1561,6 +1561,14 @@ export class Engine {
      */
     public get webGLVersion(): number {
         return this._webGLVersion;
+    }
+
+    /**
+     * Gets a string idenfifying the name of the class
+     * @returns "Engine" string
+     */
+    public getClassName(): string {
+        return "Engine";
     }
 
     /**
