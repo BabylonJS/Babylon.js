@@ -16,6 +16,8 @@ import { InputBlock } from '../Input/inputBlock';
  */
 export class FogBlock extends NodeMaterialBlock {
     private _fogDistanceName: string;
+    private _fogParameters: string;
+
     /**
      * Create a new FogBlock
      * @param name defines the block name
@@ -30,7 +32,6 @@ export class FogBlock extends NodeMaterialBlock {
         // Fragment
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3OrColor4, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("fogColor", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("fogParameters", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
     }
@@ -72,13 +73,6 @@ export class FogBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the for parameter input component
-     */
-    public get fogParameters(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
-    }
-
-    /**
      * Gets the output component
      */
     public get output(): NodeMaterialConnectionPoint {
@@ -93,13 +87,8 @@ export class FogBlock extends NodeMaterialBlock {
         }
         if (!this.fogColor.isConnected) {
             let fogColorInput = new InputBlock("fogColor", undefined, NodeMaterialBlockConnectionPointTypes.Color3);
-            fogColorInput.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
+            fogColorInput.setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
             fogColorInput.output.connectTo(this.fogColor);
-        }
-        if (!this.fogParameters.isConnected) {
-            let fogParametersInput = new InputBlock("fogParameters", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
-            fogParametersInput.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
-            fogParametersInput.output.connectTo(this.fogParameters);
         }
     }
 
@@ -114,8 +103,7 @@ export class FogBlock extends NodeMaterialBlock {
         }
 
         const scene = mesh.getScene();
-        effect.setColor3("u_fogColor", scene.fogColor);
-        effect.setFloat4("u_fogParameters", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+        effect.setFloat4(this._fogParameters, scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -136,11 +124,14 @@ export class FogBlock extends NodeMaterialBlock {
             let tempFogVariablename = state._getFreeVariableName("fog");
             let color = this.color;
             let fogColor = this.fogColor;
-            let fogParameters = this.fogParameters;
+            this._fogParameters = state._getFreeVariableName("fogParameters");
             let output = this._outputs[0];
 
+
+            state._emitUniformFromString(this._fogParameters, "vec4");
+
             state.compilationString += `#ifdef FOG\r\n`;
-            state.compilationString += `float ${tempFogVariablename} = CalcFogFactor(${this._fogDistanceName}, ${fogParameters.associatedVariableName});\r\n`;
+            state.compilationString += `float ${tempFogVariablename} = CalcFogFactor(${this._fogDistanceName}, ${this._fogParameters});\r\n`;
             state.compilationString += this._declareOutput(output, state) + ` = ${tempFogVariablename} * ${color.associatedVariableName}.rgb + (1.0 - ${tempFogVariablename}) * ${fogColor.associatedVariableName};\r\n`;
             state.compilationString += `#else\r\n${this._declareOutput(output, state)} =  ${color.associatedVariableName}.rgb;\r\n`;
             state.compilationString += `#endif\r\n`;

@@ -347,6 +347,9 @@ export class InputBlock extends NodeMaterialBlock {
                 case NodeMaterialWellKnownValues.CameraPosition:
                     effect.setVector3(variableName, scene.activeCamera!.globalPosition);
                     break;
+                case NodeMaterialWellKnownValues.FogColor:
+                    effect.setColor3(variableName, scene.fogColor);
+                    break;
             }
             return;
         }
