@@ -30,10 +30,10 @@ namespace babylon
 {
     namespace
     {
-        struct UniformData final
+        struct UniformInfo final
         {
             uint8_t Stage{};
-            bgfx::UniformHandle Uniform{};
+            bgfx::UniformHandle Handle{};
         };
 
         template<typename AppendageT>
@@ -124,7 +124,7 @@ namespace babylon
             }
         }
 
-        void AppendSamplers(std::vector<uint8_t>& bytes, const spirv_cross::Compiler& compiler, const spirv_cross::SmallVector<spirv_cross::Resource>& samplers, bool isFragment, std::map<const std::string, UniformData>& cache)
+        void AppendSamplers(std::vector<uint8_t>& bytes, const spirv_cross::Compiler& compiler, const spirv_cross::SmallVector<spirv_cross::Resource>& samplers, bool isFragment, std::unordered_map<std::string, UniformInfo>& cache)
         {
             const uint8_t fragmentBit = (isFragment ? BGFX_UNIFORM_FRAGMENTBIT : 0);
 
@@ -143,7 +143,7 @@ namespace babylon
             }
         }
 
-        void CacheUniformHandles(bgfx::ShaderHandle shader, std::map<const std::string, UniformData>& cache)
+        void CacheUniformHandles(bgfx::ShaderHandle shader, std::unordered_map<std::string, UniformInfo>& cache)
         {
             const auto MAX_UNIFORMS = 256;
             bgfx::UniformHandle uniforms[MAX_UNIFORMS];
@@ -153,7 +153,7 @@ namespace babylon
             for (uint8_t idx = 0; idx < numUniforms; idx++)
             {
                 bgfx::getUniformInfo(uniforms[idx], info);
-                cache[info.name].Uniform = uniforms[idx];
+                cache[info.name].Handle = uniforms[idx];
             }
         }
 
@@ -231,7 +231,7 @@ namespace babylon
             }
 
             std::vector<bimg::ImageContainer*> Images{};
-            bgfx::TextureHandle Texture{};
+            bgfx::TextureHandle Texture{ bgfx::kInvalidHandle };
         };
 
         struct ProgramData final
@@ -241,11 +241,26 @@ namespace babylon
                 bgfx::destroy(Program);
             }
 
-            std::map<const std::string, uint32_t> AttributeLocations{};
-            std::map<const std::string, UniformData> VertexUniformNameToHandle{};
-            std::map<const std::string, UniformData> FragmentUniformNameToHandle{};
+            std::unordered_map<std::string, uint32_t> AttributeLocations{};
+            std::unordered_map<std::string, UniformInfo> VertexUniformNameToInfo{};
+            std::unordered_map<std::string, UniformInfo> FragmentUniformNameToInfo{};
 
             bgfx::ProgramHandle Program{};
+
+            struct UniformValue
+            {
+                std::vector<float> Data{};
+                uint16_t ElementLength{};
+            };
+
+            std::unordered_map<uint16_t, UniformValue> Uniforms{};
+
+            void SetUniform(bgfx::UniformHandle handle, gsl::span<const float> data, size_t elementLength = 1)
+            {
+                UniformValue& value = Uniforms[handle.idx];
+                value.Data.assign(data.begin(), data.end());
+                value.ElementLength = static_cast<uint16_t>(elementLength);
+            }
         };
 
         void RequestAnimationFrame(const Napi::CallbackInfo& info);
@@ -319,6 +334,9 @@ namespace babylon
 
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;
+
+        // Scratch vector used for data alignment.
+        std::vector<float> m_scratch;
     };
 
     NativeEngine::Impl::Impl(void* nativeWindowPtr, RuntimeImpl& runtimeImpl)
@@ -476,7 +494,7 @@ namespace babylon
 
         std::vector<uint8_t> vertexBytes{};
         std::vector<uint8_t> fragmentBytes{};
-        std::map<const std::string, uint32_t> attributeLocations;
+        std::unordered_map<std::string, uint32_t> attributeLocations;
 
         m_shaderCompiler.Compile(vertexSource, fragmentSource, [&](ShaderCompiler::ShaderInfo vertexShaderInfo, ShaderCompiler::ShaderInfo fragmentShaderInfo)
         {
@@ -502,7 +520,7 @@ namespace babylon
 
                 AppendBytes(vertexBytes, static_cast<uint16_t>(numUniforms));
                 AppendUniformBuffer(vertexBytes, compiler, uniformBuffer, false);
-                AppendSamplers(vertexBytes, compiler, samplers, false, programData->VertexUniformNameToHandle);
+                AppendSamplers(vertexBytes, compiler, samplers, false, programData->VertexUniformNameToInfo);
 
                 AppendBytes(vertexBytes, static_cast<uint32_t>(vertexShaderInfo.Bytes.size()));
                 AppendBytes(vertexBytes, vertexShaderInfo.Bytes);
@@ -533,7 +551,7 @@ namespace babylon
 
                 AppendBytes(fragmentBytes, static_cast<uint16_t>(numUniforms));
                 AppendUniformBuffer(fragmentBytes, compiler, uniformBuffer, true);
-                AppendSamplers(fragmentBytes, compiler, samplers, true, programData->FragmentUniformNameToHandle);
+                AppendSamplers(fragmentBytes, compiler, samplers, true, programData->FragmentUniformNameToInfo);
 
                 AppendBytes(fragmentBytes, static_cast<uint32_t>(fragmentShaderInfo.Bytes.size()));
                 AppendBytes(fragmentBytes, fragmentShaderInfo.Bytes);
@@ -547,13 +565,13 @@ namespace babylon
         });
 
         auto vertexShader = bgfx::createShader(bgfx::copy(vertexBytes.data(), static_cast<uint32_t>(vertexBytes.size())));
-        CacheUniformHandles(vertexShader, programData->VertexUniformNameToHandle);
+        CacheUniformHandles(vertexShader, programData->VertexUniformNameToInfo);
         programData->AttributeLocations = std::move(attributeLocations);
 
         auto fragmentShader = bgfx::createShader(bgfx::copy(fragmentBytes.data(), static_cast<uint32_t>(fragmentBytes.size())));
-        CacheUniformHandles(fragmentShader, programData->FragmentUniformNameToHandle);
+        CacheUniformHandles(fragmentShader, programData->FragmentUniformNameToInfo);
 
-        programData->Program = bgfx::createProgram(vertexShader, fragmentShader);
+        programData->Program = bgfx::createProgram(vertexShader, fragmentShader, true);
 
         auto finalizer = [](Napi::Env, ProgramData* data)
         {
@@ -574,16 +592,16 @@ namespace babylon
         {
             const auto name = names[index].As<Napi::String>().Utf8Value();
 
-            auto vertexFound = program->VertexUniformNameToHandle.find(name);
-            auto fragmentFound = program->FragmentUniformNameToHandle.find(name);
+            auto vertexFound = program->VertexUniformNameToInfo.find(name);
+            auto fragmentFound = program->FragmentUniformNameToInfo.find(name);
 
-            if (vertexFound != program->VertexUniformNameToHandle.end())
+            if (vertexFound != program->VertexUniformNameToInfo.end())
             {
-                uniforms[index] = Napi::External<UniformData>::New(info.Env(), &vertexFound->second);
+                uniforms[index] = Napi::External<UniformInfo>::New(info.Env(), &vertexFound->second);
             }
-            else if (fragmentFound != program->FragmentUniformNameToHandle.end())
+            else if (fragmentFound != program->FragmentUniformNameToInfo.end())
             {
-                uniforms[index] = Napi::External<UniformData>::New(info.Env(), &fragmentFound->second);
+                uniforms[index] = Napi::External<UniformInfo>::New(info.Env(), &fragmentFound->second);
             }
             else
             {
@@ -616,7 +634,7 @@ namespace babylon
 
     void NativeEngine::Impl::SetProgram(const Napi::CallbackInfo& info)
     {
-        const auto program = info[0].As<Napi::External<ProgramData>>().Data();
+        auto program = info[0].As<Napi::External<ProgramData>>().Data();
         m_currentProgram = program;
     }
 
@@ -712,11 +730,13 @@ namespace babylon
 
     void NativeEngine::Impl::SetMatrix(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformData>>().Data();
+        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto matrix = info[1].As<Napi::Float32Array>();
-        assert(matrix.ElementLength() == 16);
 
-        bgfx::setUniform(uniformData->Uniform, matrix.Data());
+        const size_t elementLength = matrix.ElementLength();
+        assert(elementLength == 16);
+
+        m_currentProgram->SetUniform(uniformData->Handle, gsl::make_span(matrix.Data(), elementLength));
     }
 
     void NativeEngine::Impl::SetIntArray(const Napi::CallbackInfo& info)
@@ -749,18 +769,19 @@ namespace babylon
 
     void NativeEngine::Impl::SetFloatArray(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformData>>().Data();
+        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto array = info[1].As<Napi::Float32Array>();
 
-        // TODO: don't allocate every call to this.
-        const size_t elementLength = array.ElementLength();
-        std::vector<float> alignedArray(elementLength * 4);
+        size_t elementLength = array.ElementLength();
+
+        m_scratch.clear();
         for (size_t index = 0; index < elementLength; ++index)
         {
-            alignedArray[index * 4] = array[index];
+            const float values[] = { array[index], 0.0f, 0.0f, 0.0f };
+            m_scratch.insert(m_scratch.end(), values, values + 4);
         }
 
-        bgfx::setUniform(uniformData->Uniform, alignedArray.data(), static_cast<uint16_t>(array.ElementLength()));
+        m_currentProgram->SetUniform(uniformData->Handle, m_scratch, elementLength);
     }
 
     void NativeEngine::Impl::SetFloatArray2(const Napi::CallbackInfo& info)
@@ -786,11 +807,13 @@ namespace babylon
 
     void NativeEngine::Impl::SetMatrices(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformData>>().Data();
+        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto matricesArray = info[1].As<Napi::Float32Array>();
-        assert(matricesArray.ElementLength() % 16 == 0);
 
-        bgfx::setUniform(uniformData->Uniform, matricesArray.Data(), static_cast<uint16_t>(matricesArray.ElementLength() / 16));
+        const size_t elementLength = matricesArray.ElementLength();
+        assert(elementLength % 16 == 0);
+
+        m_currentProgram->SetUniform(uniformData->Handle, gsl::span(matricesArray.Data(), elementLength), elementLength / 16);
     }
 
     void NativeEngine::Impl::SetMatrix3x3(const Napi::CallbackInfo& info)
@@ -809,7 +832,7 @@ namespace babylon
 
     void NativeEngine::Impl::SetFloat(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformData>>().Data();
+        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const float values[] =
         {
             info[1].As<Napi::Number>().FloatValue(),
@@ -818,12 +841,12 @@ namespace babylon
             0.0f
         };
 
-        bgfx::setUniform(uniformData->Uniform, values);
+        m_currentProgram->SetUniform(uniformData->Handle, values);
     }
 
     void NativeEngine::Impl::SetFloat2(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformData>>().Data();
+        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const float values[] =
         {
             info[1].As<Napi::Number>().FloatValue(),
@@ -832,12 +855,12 @@ namespace babylon
             0.0f
         };
 
-        bgfx::setUniform(uniformData->Uniform, values);
+        m_currentProgram->SetUniform(uniformData->Handle, values);
     }
 
     void NativeEngine::Impl::SetFloat3(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformData>>().Data();
+        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const float values[] =
         {
             info[1].As<Napi::Number>().FloatValue(),
@@ -846,12 +869,12 @@ namespace babylon
             0.0f
         };
 
-        bgfx::setUniform(uniformData->Uniform, values);
+        m_currentProgram->SetUniform(uniformData->Handle, values);
     }
 
     void NativeEngine::Impl::SetFloat4(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformData>>().Data();
+        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const float values[] =
         {
             info[1].As<Napi::Number>().FloatValue(),
@@ -860,7 +883,7 @@ namespace babylon
             info[4].As<Napi::Number>().FloatValue()
         };
 
-        bgfx::setUniform(uniformData->Uniform, values);
+        m_currentProgram->SetUniform(uniformData->Handle, values);
     }
 
     void NativeEngine::Impl::SetBool(const Napi::CallbackInfo& info)
@@ -872,14 +895,7 @@ namespace babylon
 
     Napi::Value NativeEngine::Impl::CreateTexture(const Napi::CallbackInfo& info)
     {
-        auto textureData = new TextureData();
-
-        auto finalizer = [](Napi::Env, TextureData* data)
-        {
-            delete data;
-        };
-
-        return Napi::External<TextureData>::New(info.Env(), textureData, finalizer);
+        return Napi::External<TextureData>::New(info.Env(), new TextureData());
     }
 
     void NativeEngine::Impl::LoadTexture(const Napi::CallbackInfo& info)
@@ -1038,10 +1054,10 @@ namespace babylon
 
     void NativeEngine::Impl::SetTexture(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformData>>().Data();
+        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto textureData = info[1].As<Napi::External<TextureData>>().Data();
 
-        bgfx::setTexture(uniformData->Stage, uniformData->Uniform, textureData->Texture);
+        bgfx::setTexture(uniformData->Stage, uniformData->Handle, textureData->Texture);
     }
 
     void NativeEngine::Impl::DeleteTexture(const Napi::CallbackInfo& info)
@@ -1057,7 +1073,14 @@ namespace babylon
         const auto elementCount = info[2].As<Napi::Number>().Int32Value();
 
         // TODO: handle viewport
-        bgfx::submit(0, m_currentProgram->Program);
+
+        for (const auto& it : m_currentProgram->Uniforms)
+        {
+            const ProgramData::UniformValue& value = it.second;
+            bgfx::setUniform({ it.first }, value.Data.data(), value.ElementLength);
+        }
+
+        bgfx::submit(0, m_currentProgram->Program, 0, true);
     }
 
     void NativeEngine::Impl::Draw(const Napi::CallbackInfo& info)
