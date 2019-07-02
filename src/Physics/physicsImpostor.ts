@@ -441,6 +441,9 @@ export class PhysicsImpostor {
             Logger.Error("No object was provided. A physics object is obligatory");
             return;
         }
+        if (this.object.parent && _options.mass !== 0) {
+            Logger.Warn("A physics impostor has been created for an object which has a parent. Babylon physics currently works in local space so unexpected issues may occur.");
+        }
 
         // Legacy support for old syntax.
         if (!this._scene && object.getScene) {
