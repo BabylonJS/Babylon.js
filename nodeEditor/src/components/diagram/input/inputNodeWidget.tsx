@@ -48,16 +48,16 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
             )
         }
 
-        let connection = this.props.node!.connection;
-        if (!connection || !connection.isUniform) {
+        let inputBlock = this.props.node!.inputBlock;
+        if (!inputBlock || !inputBlock.isUniform) {
             return null;
         }
 
-        switch (connection.type) {
+        switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
             case NodeMaterialBlockConnectionPointTypes.Color4: {
-                let color = connection.value as Color3;
+                let color = inputBlock.value as Color3;
                 return (
                     <div className="fullColor" style={{ background: color.toHexString() }}></div>
                 )
@@ -87,15 +87,15 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
             }
         }
 
-        let connection = this.props.node!.connection;
+        let inputBlock = this.props.node!.inputBlock;
         let value = "";
         let name = StringTools.GetBaseType(this.props.node!.outputType);
 
-        if (connection) {
-            if (connection.isAttribute) {
-                value = "mesh." + connection.name;
-            } else if (connection.isWellKnownValue) {
-                switch (connection.wellKnownValue) {
+        if (inputBlock) {
+            if (inputBlock.isAttribute) {
+                value = "mesh." + inputBlock.name;
+            } else if (inputBlock.isWellKnownValue) {
+                switch (inputBlock.wellKnownValue) {
                     case NodeMaterialWellKnownValues.World:
                         value = "World";
                         break;
@@ -117,7 +117,7 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                     case NodeMaterialWellKnownValues.CameraPosition:
                         value = "Camera position";
                         break;
-                    case NodeMaterialWellKnownValues.Automatic:
+                    case NodeMaterialWellKnownValues.FogColor:
                         value = "Automatic";
                         break;
                 }
@@ -127,7 +127,7 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
         }
 
         return (
-            <div className={"diagramBlock input" + (connection && connection.isAttribute ? " attribute" : "")}>
+            <div className={"diagramBlock input" + (inputBlock && inputBlock.isAttribute ? " attribute" : "")}>
                 <div className="header">
                     {name}
                 </div>

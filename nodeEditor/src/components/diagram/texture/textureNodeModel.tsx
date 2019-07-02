@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Nullable } from 'babylonjs/types';
-import { Texture } from 'babylonjs/Materials/Textures/texture';
+import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { GlobalState } from '../../../globalState';
 import { TexturePropertyTabComponent } from './texturePropertyTabComponent';
@@ -17,12 +17,12 @@ export class TextureNodeModel extends DefaultNodeModel {
 	/**
 	 * Texture for the node if it exists
 	 */
-    public get texture(): Nullable<Texture> {
-        return this._block.texture.value;
+    public get texture(): Nullable<BaseTexture> {
+        return this._block.texture;
     }
 
-    public set texture(value: Nullable<Texture>) {
-        this._block.texture.value = value;
+    public set texture(value: Nullable<BaseTexture>) {
+        this._block.texture = value;
     }
 
 	/**

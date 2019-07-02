@@ -11125,6 +11125,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var packingFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var shadowMapPixelShader: {
         name: string;
         shader: string;
@@ -40471,7 +40478,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Manages an XRSession
+     * Manages an XRSession to work with Babylon's engine
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRSessionManager implements IDisposable {
@@ -40484,17 +40491,22 @@ declare module BABYLON {
          * Fires when the xr session is ended either by the device or manually done
          */
         onXRSessionEnded: Observable<any>;
-        /** @hidden */
-        _xrSession: XRSession;
-        /** @hidden */
-        _frameOfReference: XRFrameOfReference;
+        /**
+         * Underlying xr session
+         */
+        session: XRSession;
+        /**
+         * Type of reference space used when creating the session
+         */
+        referenceSpace: XRReferenceSpace;
         /** @hidden */
         _sessionRenderTargetTexture: Nullable<RenderTargetTexture>;
-        /** @hidden */
-        _currentXRFrame: Nullable<XRFrame>;
+        /**
+         * Current XR frame
+         */
+        currentFrame: Nullable<XRFrame>;
         private _xrNavigator;
-        private _xrDevice;
-        private _tmpMatrix;
+        private baseLayer;
         /**
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
          * @param scene The scene which the session should be created for
@@ -40507,36 +40519,46 @@ declare module BABYLON {
          */
         initializeAsync(): Promise<void>;
         /**
-         * Enters XR with the desired XR session options, this must be done with a user action (eg. button click event)
-         * @param sessionCreationOptions xr options to create the session with
-         * @param frameOfReferenceType option to configure how the xr pose is expressed
-         * @returns Promise which resolves after it enters XR
+         * Initializes an xr session
+         * @param xrSessionMode mode to initialize
+         * @returns a promise which will resolve once the session has been initialized
          */
-        enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReferenceType: string): Promise<void>;
+        initializeSessionAsync(xrSessionMode: XRSessionMode): any;
+        /**
+         * Sets the reference space on the xr session
+         * @param referenceSpace space to set
+         * @returns a promise that will resolve once the reference space has been set
+         */
+        setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType): Promise<void>;
+        /**
+         * Updates the render state of the session
+         * @param state state to set
+         * @returns a promise that resolves once the render state has been updated
+         */
+        updateRenderStateAsync(state: any): Promise<void>;
+        /**
+         * Starts rendering to the xr layer
+         * @returns a promise that will resolve once rendering has started
+         */
+        startRenderingToXRAsync(): Promise<void>;
         /**
          * Stops the xrSession and restores the renderloop
          * @returns Promise which resolves after it exits XR
          */
         exitXRAsync(): Promise<void>;
         /**
-         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
-         * @param ray ray to cast into the environment
-         * @returns Promise which resolves with a collision point in the environment if it exists
-         */
-        environmentPointHitTestAsync(ray: Ray): Promise<Nullable<Vector3>>;
-        /**
          * Checks if a session would be supported for the creation options specified
-         * @param options creation options to check if they are supported
+         * @param sessionMode session mode to check if supported eg. immersive-vr
          * @returns true if supported
          */
-        supportsSessionAsync(options: XRSessionCreationOptions): Promise<boolean>;
+        supportsSessionAsync(sessionMode: XRSessionMode): any;
         /**
          * @hidden
          * Converts the render layer of xrSession to a render target
          * @param session session to create render target for
          * @param scene scene the new render target should be created for
          */
-        static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene): RenderTargetTexture;
+        static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
         /**
          * Disposes of the session manager
          */
@@ -40565,6 +40587,42 @@ declare module BABYLON {
          * @returns true if the camera has been updated, false if the session did not contain pose or frame data
          */
         updateFromXRSessionManager(xrSessionManager: WebXRSessionManager): boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Creates a canvas that is added/removed from the webpage when entering/exiting XR
+     */
+    export class WebXRManagedOutputCanvas implements IDisposable {
+        private helper;
+        private _canvas;
+        /**
+         * xrpresent context of the canvas which can be used to display/mirror xr content
+         */
+        canvasContext: WebGLRenderingContext;
+        /**
+         * xr layer for the canvas
+         */
+        xrLayer: Nullable<XRWebGLLayer>;
+        /**
+         * Initializes the xr layer for the session
+         * @param xrSession xr session
+         * @returns a promise that will resolve once the XR Layer has been created
+         */
+        initializeXRLayerAsync(xrSession: any): any;
+        /**
+         * Initializes the canvas to be added/removed upon entering/exiting xr
+         * @param helper the xr experience helper used to trigger adding/removing of the canvas
+         * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
+         */
+        constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement);
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
+        private _setManagedOutputCanvas;
+        private _addCanvas;
+        private _removeCanvas;
     }
 }
 declare module BABYLON {
@@ -40613,8 +40671,8 @@ declare module BABYLON {
          * Fires when the state of the experience helper has changed
          */
         onStateChangedObservable: Observable<WebXRState>;
-        /** @hidden */
-        _sessionManager: WebXRSessionManager;
+        /** Session manager used to keep track of xr session */
+        sessionManager: WebXRSessionManager;
         private _nonVRCamera;
         private _originalSceneAutoClear;
         private _supported;
@@ -40637,16 +40695,11 @@ declare module BABYLON {
         /**
          * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
          * @param sessionCreationOptions options for the XR session
-         * @param frameOfReference frame of reference of the XR session
+         * @param referenceSpaceType frame of reference of the XR session
+         * @param outputCanvas the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string): Promise<void>;
-        /**
-         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
-         * @param ray ray to cast into the environment
-         * @returns Promise which resolves with a collision point in the environment if it exists
-         */
-        environmentPointHitTestAsync(ray: Ray): Promise<Nullable<Vector3>>;
+        enterXRAsync(sessionCreationOptions: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, outputCanvas: WebXRManagedOutputCanvas): any;
         /**
          * Updates the global position of the camera by moving the camera's container
          * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
@@ -40659,12 +40712,6 @@ declare module BABYLON {
          * @param rotation the desired quaternion rotation to apply to the camera
          */
         rotateCameraByQuaternionUsingContainer(rotation: Quaternion): void;
-        /**
-         * Checks if the creation options are supported by the xr session
-         * @param options creation options
-         * @returns true if supported
-         */
-        supportsSessionAsync(options: XRSessionCreationOptions): Promise<boolean>;
         /**
          * Disposes of the experience helper
          */
@@ -40679,17 +40726,22 @@ declare module BABYLON {
         /** button element */
         element: HTMLElement;
         /** XR initialization options for the button */
-        initializationOptions: XRSessionCreationOptions;
+        sessionMode: XRSessionMode;
+        /** Reference space type */
+        referenceSpaceType: XRReferenceSpaceType;
         /**
          * Creates a WebXREnterExitUIButton
          * @param element button element
-         * @param initializationOptions XR initialization options for the button
+         * @param sessionMode XR initialization session mode
+         * @param referenceSpaceType the type of reference space to be used
          */
         constructor(
         /** button element */
         element: HTMLElement, 
         /** XR initialization options for the button */
-        initializationOptions: XRSessionCreationOptions);
+        sessionMode: XRSessionMode, 
+        /** Reference space type */
+        referenceSpaceType: XRReferenceSpaceType);
         /**
          * Overwritable function which can be used to update the button's visuals when the state changes
          * @param activeButton the current active button in the UI
@@ -40703,7 +40755,7 @@ declare module BABYLON {
         /**
          * Context to enter xr with
          */
-        outputCanvasContext?: Nullable<WebGLRenderingContext>;
+        webXRManagedOutputCanvas?: Nullable<WebXRManagedOutputCanvas>;
         /**
          * User provided buttons to enable/disable WebXR. The system will provide default if not set
          */
@@ -40746,6 +40798,10 @@ declare module BABYLON {
      * Represents an XR input
      */
     export class WebXRController {
+        private scene;
+        /** The underlying input source for the controller  */
+        inputSource: XRInputSource;
+        private parentContainer;
         /**
          * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
          */
@@ -40754,12 +40810,23 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
+        private _tmpMatrix;
         /**
          * Creates the controller
          * @see https://doc.babylonjs.com/how_to/webxr
          * @param scene the scene which the controller should be associated to
+         * @param inputSource the underlying input source for the controller
+         * @param parentContainer parent that the controller meshes should be children of
          */
-        constructor(scene: Scene);
+        constructor(scene: Scene, 
+        /** The underlying input source for the controller  */
+        inputSource: XRInputSource, parentContainer?: Nullable<AbstractMesh>);
+        /**
+         * Updates the controller pose based on the given XRFrame
+         * @param xrFrame xr frame to update the pose with
+         * @param referenceSpace reference space to use
+         */
+        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
         /**
          * Disposes of the object
          */
@@ -40774,42 +40841,26 @@ declare module BABYLON {
          * XR controllers being tracked
          */
         controllers: Array<WebXRController>;
-        private _tmpMatrix;
         private _frameObserver;
+        /**
+         * Event when a controller has been connected/added
+         */
+        onControllerAddedObservable: Observable<WebXRController>;
+        /**
+         * Event when a controller has been removed/disconnected
+         */
+        onControllerRemovedObservable: Observable<WebXRController>;
         /**
          * Initializes the WebXRInput
          * @param helper experience helper which the input should be created for
          */
         constructor(helper: WebXRExperienceHelper);
+        private _onInputSourcesChange;
+        private _addAndRemoveControllers;
         /**
          * Disposes of the object
          */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Creates a canvas that is added/removed from the webpage when entering/exiting XR
-     */
-    export class WebXRManagedOutputCanvas implements IDisposable {
-        private _canvas;
-        /**
-         * xrpresent context of the canvas which can be used to display/mirror xr content
-         */
-        canvasContext: Nullable<WebGLRenderingContext>;
-        /**
-         * Initializes the canvas to be added/removed upon entering/exiting xr
-         * @param helper the xr experience helper used to trigger adding/removing of the canvas
-         * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
-         */
-        constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement);
-        /**
-         * Disposes of the object
-         */
-        dispose(): void;
-        private _setManagedOutputCanvas;
-        private _addCanvas;
-        private _removeCanvas;
     }
 }
 declare module BABYLON {
@@ -50739,10 +50790,6 @@ declare module BABYLON {
         Color4 = 64,
         /** Matrix */
         Matrix = 128,
-        /** Texture */
-        Texture = 256,
-        /** Texture3D */
-        Texture3D = 512,
         /** Vector3 or Color3 */
         Vector3OrColor3 = 40,
         /** Vector3 or Vector4 */
@@ -50751,234 +50798,16 @@ declare module BABYLON {
         Vector4OrColor4 = 80,
         /** Color3 or Color4 */
         Color3OrColor4 = 96,
-        /** Vector3 or Color3 */
+        /** Vector2 or Color3 or Color4 */
+        Vector2OrColor3OrColor4 = 100,
+        /** Vector3 or Color3 or Color4 or Vector4 */
         Vector3OrColor3OrVector4OrColor4 = 120,
+        /** Vector2 or Vector3 or Color3 or Color4 or Vector4 */
+        Vector2OrVector3OrColor3OrVector4OrColor4 = 124,
         /** Detect type based on connection */
         AutoDetect = 1024,
         /** Output type that will be defined by input type */
-        BasedOnInput = 2048,
-        /** Light */
-        Light = 4096
-    }
-}
-declare module BABYLON {
-    /**
-     * Enum used to define well known values e.g. values automatically provided by the system
-     */
-    export enum NodeMaterialWellKnownValues {
-        /** World */
-        World = 1,
-        /** View */
-        View = 2,
-        /** Projection */
-        Projection = 3,
-        /** ViewProjection */
-        ViewProjection = 4,
-        /** WorldView */
-        WorldView = 5,
-        /** WorldViewProjection */
-        WorldViewProjection = 6,
-        /** CameraPosition */
-        CameraPosition = 7,
-        /** Will be filled by the block itself */
-        Automatic = 8
-    }
-}
-declare module BABYLON {
-    /**
-     * Enum defining the mode of a NodeMaterialBlockConnectionPoint
-     */
-    export enum NodeMaterialBlockConnectionPointMode {
-        /** Value is an uniform */
-        Uniform = 0,
-        /** Value is a mesh attribute */
-        Attribute = 1,
-        /** Value is a varying between vertex and fragment shaders */
-        Varying = 2,
-        /** Mode is undefined */
-        Undefined = 3
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store shared data between 2 NodeMaterialBuildState
-     */
-    export class NodeMaterialBuildStateSharedData {
-        /**
-         * Gets the list of emitted varyings
-         */
-        varyings: string[];
-        /**
-         * Gets the varying declaration string
-         */
-        varyingDeclaration: string;
-        /**
-         * Uniform connection points
-         */
-        uniformConnectionPoints: NodeMaterialConnectionPoint[];
-        /**
-         * Bindable blocks (Blocks that need to set data to the effect)
-         */
-        bindableBlocks: NodeMaterialBlock[];
-        /**
-         * List of blocks that can provide a compilation fallback
-         */
-        blocksWithFallbacks: NodeMaterialBlock[];
-        /**
-         * List of blocks that can provide a define update
-         */
-        blocksWithDefines: NodeMaterialBlock[];
-        /**
-        * List of blocks that can provide a repeatable content
-        */
-        repeatableContentBlocks: NodeMaterialBlock[];
-        /**
-        * List of blocks that can provide a dynamic list of uniforms
-        */
-        dynamicUniformBlocks: NodeMaterialBlock[];
-        /**
-         * List of blocks that can block the isReady function for the material
-         */
-        blockingBlocks: NodeMaterialBlock[];
-        /**
-         * Build Id used to avoid multiple recompilations
-         */
-        buildId: number;
-        /** List of emitted variables */
-        variableNames: {
-            [key: string]: number;
-        };
-        /** List of emitted defines */
-        defineNames: {
-            [key: string]: number;
-        };
-        /** Should emit comments? */
-        emitComments: boolean;
-        /** Emit build activity */
-        verbose: boolean;
-        /**
-         * Gets the compilation hints emitted at compilation time
-         */
-        hints: {
-            needWorldViewMatrix: boolean;
-            needWorldViewProjectionMatrix: boolean;
-            needAlphaBlending: boolean;
-            needAlphaTesting: boolean;
-        };
-        /**
-         * List of compilation checks
-         */
-        checks: {
-            emitVertex: boolean;
-            emitFragment: boolean;
-            notConnectedNonOptionalInputs: NodeMaterialConnectionPoint[];
-        };
-        /** Creates a new shared data */
-        constructor();
-        /**
-         * Emits console errors and exceptions if there is a failing check
-         */
-        emitErrors(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store node based material build state
-     */
-    export class NodeMaterialBuildState {
-        /** Gets or sets a boolean indicating if the current state can emit uniform buffers */
-        supportUniformBuffers: boolean;
-        /**
-         * Gets the list of emitted attributes
-         */
-        attributes: string[];
-        /**
-         * Gets the list of emitted uniforms
-         */
-        uniforms: string[];
-        /**
-         * Gets the list of emitted uniform buffers
-         */
-        uniformBuffers: string[];
-        /**
-         * Gets the list of emitted samplers
-         */
-        samplers: string[];
-        /**
-         * Gets the list of emitted functions
-         */
-        functions: {
-            [key: string]: string;
-        };
-        /**
-         * Gets the target of the compilation state
-         */
-        target: NodeMaterialBlockTargets;
-        /**
-         * Gets the list of emitted counters
-         */
-        counters: {
-            [key: string]: number;
-        };
-        /**
-         * Shared data between multiple NodeMaterialBuildState instances
-         */
-        sharedData: NodeMaterialBuildStateSharedData;
-        /** @hidden */
-        _vertexState: NodeMaterialBuildState;
-        private _attributeDeclaration;
-        private _uniformDeclaration;
-        private _samplerDeclaration;
-        private _varyingTransfer;
-        private _repeatableContentAnchorIndex;
-        /** @hidden */
-        _builtCompilationString: string;
-        /**
-         * Gets the emitted compilation strings
-         */
-        compilationString: string;
-        /**
-         * Finalize the compilation strings
-         * @param state defines the current compilation state
-         */
-        finalize(state: NodeMaterialBuildState): void;
-        /** @hidden */
-        readonly _repeatableContentAnchor: string;
-        /** @hidden */
-        _getFreeVariableName(prefix: string): string;
-        /** @hidden */
-        _getFreeDefineName(prefix: string): string;
-        /** @hidden */
-        _excludeVariableName(name: string): void;
-        /** @hidden */
-        _getGLType(type: NodeMaterialBlockConnectionPointTypes): string;
-        /** @hidden */
-        _emitFunction(name: string, code: string, comments: string): void;
-        /** @hidden */
-        _emitCodeFromInclude(includeName: string, comments: string, options?: {
-            replaceStrings?: {
-                search: RegExp;
-                replace: string;
-            }[];
-            repeatKey?: string;
-        }): string;
-        /** @hidden */
-        _emitFunctionFromInclude(includeName: string, comments: string, options?: {
-            repeatKey?: string;
-            removeAttributes?: boolean;
-            removeUniforms?: boolean;
-            removeVaryings?: boolean;
-            removeIfDef?: boolean;
-            replaceStrings?: {
-                search: RegExp;
-                replace: string;
-            }[];
-        }, storeKey?: string): void;
-        /** @hidden */
-        _emitVaryings(point: NodeMaterialConnectionPoint, define?: string, force?: boolean, fromFragment?: boolean, replacementName?: string, type?: Nullable<NodeMaterialBlockConnectionPointTypes>): void;
-        private _emitDefine;
-        /** @hidden */
-        _emitUniformOrAttributes(point: NodeMaterialConnectionPoint, define?: string): void;
+        BasedOnInput = 2048
     }
 }
 declare module BABYLON {
@@ -51135,7 +50964,6 @@ declare module BABYLON {
         private _buildWasSuccessful;
         private _cachedWorldViewMatrix;
         private _cachedWorldViewProjectionMatrix;
-        private _textureConnectionPoints;
         private _optimizers;
         /** Define the URl to load node editor script */
         static EditorURL: string;
@@ -51303,12 +51131,246 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to read a texture from a sampler
+     */
+    export class TextureBlock extends NodeMaterialBlock {
+        private _defineName;
+        private _samplerName;
+        private _transformedUVName;
+        private _textureTransformName;
+        private _textureInfoName;
+        private _mainUVName;
+        private _mainUVDefineName;
+        /**
+         * Gets or sets the texture associated with the node
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Create a new TextureBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the uv input component
+         */
+        readonly uv: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
+        initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        isReady(): boolean;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        private _injectVertexCode;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store shared data between 2 NodeMaterialBuildState
+     */
+    export class NodeMaterialBuildStateSharedData {
+        /**
+         * Gets the list of emitted varyings
+         */
+        varyings: string[];
+        /**
+         * Gets the varying declaration string
+         */
+        varyingDeclaration: string;
+        /**
+         * Input blocks
+         */
+        inputBlocks: InputBlock[];
+        /**
+         * Input blocks
+         */
+        textureBlocks: TextureBlock[];
+        /**
+         * Bindable blocks (Blocks that need to set data to the effect)
+         */
+        bindableBlocks: NodeMaterialBlock[];
+        /**
+         * List of blocks that can provide a compilation fallback
+         */
+        blocksWithFallbacks: NodeMaterialBlock[];
+        /**
+         * List of blocks that can provide a define update
+         */
+        blocksWithDefines: NodeMaterialBlock[];
+        /**
+        * List of blocks that can provide a repeatable content
+        */
+        repeatableContentBlocks: NodeMaterialBlock[];
+        /**
+        * List of blocks that can provide a dynamic list of uniforms
+        */
+        dynamicUniformBlocks: NodeMaterialBlock[];
+        /**
+         * List of blocks that can block the isReady function for the material
+         */
+        blockingBlocks: NodeMaterialBlock[];
+        /**
+         * Build Id used to avoid multiple recompilations
+         */
+        buildId: number;
+        /** List of emitted variables */
+        variableNames: {
+            [key: string]: number;
+        };
+        /** List of emitted defines */
+        defineNames: {
+            [key: string]: number;
+        };
+        /** Should emit comments? */
+        emitComments: boolean;
+        /** Emit build activity */
+        verbose: boolean;
+        /**
+         * Gets the compilation hints emitted at compilation time
+         */
+        hints: {
+            needWorldViewMatrix: boolean;
+            needWorldViewProjectionMatrix: boolean;
+            needAlphaBlending: boolean;
+            needAlphaTesting: boolean;
+        };
+        /**
+         * List of compilation checks
+         */
+        checks: {
+            emitVertex: boolean;
+            emitFragment: boolean;
+            notConnectedNonOptionalInputs: NodeMaterialConnectionPoint[];
+        };
+        /** Creates a new shared data */
+        constructor();
+        /**
+         * Emits console errors and exceptions if there is a failing check
+         */
+        emitErrors(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store node based material build state
+     */
+    export class NodeMaterialBuildState {
+        /** Gets or sets a boolean indicating if the current state can emit uniform buffers */
+        supportUniformBuffers: boolean;
+        /**
+         * Gets the list of emitted attributes
+         */
+        attributes: string[];
+        /**
+         * Gets the list of emitted uniforms
+         */
+        uniforms: string[];
+        /**
+         * Gets the list of emitted uniform buffers
+         */
+        uniformBuffers: string[];
+        /**
+         * Gets the list of emitted samplers
+         */
+        samplers: string[];
+        /**
+         * Gets the list of emitted functions
+         */
+        functions: {
+            [key: string]: string;
+        };
+        /**
+         * Gets the target of the compilation state
+         */
+        target: NodeMaterialBlockTargets;
+        /**
+         * Gets the list of emitted counters
+         */
+        counters: {
+            [key: string]: number;
+        };
+        /**
+         * Shared data between multiple NodeMaterialBuildState instances
+         */
+        sharedData: NodeMaterialBuildStateSharedData;
+        /** @hidden */
+        _vertexState: NodeMaterialBuildState;
+        /** @hidden */
+        _attributeDeclaration: string;
+        /** @hidden */
+        _uniformDeclaration: string;
+        /** @hidden */
+        _samplerDeclaration: string;
+        /** @hidden */
+        _varyingTransfer: string;
+        private _repeatableContentAnchorIndex;
+        /** @hidden */
+        _builtCompilationString: string;
+        /**
+         * Gets the emitted compilation strings
+         */
+        compilationString: string;
+        /**
+         * Finalize the compilation strings
+         * @param state defines the current compilation state
+         */
+        finalize(state: NodeMaterialBuildState): void;
+        /** @hidden */
+        readonly _repeatableContentAnchor: string;
+        /** @hidden */
+        _getFreeVariableName(prefix: string): string;
+        /** @hidden */
+        _getFreeDefineName(prefix: string): string;
+        /** @hidden */
+        _excludeVariableName(name: string): void;
+        /** @hidden */
+        _getGLType(type: NodeMaterialBlockConnectionPointTypes): string;
+        /** @hidden */
+        _emitFunction(name: string, code: string, comments: string): void;
+        /** @hidden */
+        _emitCodeFromInclude(includeName: string, comments: string, options?: {
+            replaceStrings?: {
+                search: RegExp;
+                replace: string;
+            }[];
+            repeatKey?: string;
+        }): string;
+        /** @hidden */
+        _emitFunctionFromInclude(includeName: string, comments: string, options?: {
+            repeatKey?: string;
+            removeAttributes?: boolean;
+            removeUniforms?: boolean;
+            removeVaryings?: boolean;
+            removeIfDef?: boolean;
+            replaceStrings?: {
+                search: RegExp;
+                replace: string;
+            }[];
+        }, storeKey?: string): void;
+        /** @hidden */
+        _emitVaryingFromString(name: string, type: string, define?: string, notDefine?: boolean): void;
+        /** @hidden */
+        _emitUniformFromString(name: string, type: string, define?: string, notDefine?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Defines a block that can be used inside a node based material
      */
     export class NodeMaterialBlock {
         private _buildId;
+        private _buildTarget;
         private _target;
         private _isFinalMerger;
+        private _isInput;
         /** @hidden */
         _inputs: NodeMaterialConnectionPoint[];
         /** @hidden */
@@ -51321,6 +51383,10 @@ declare module BABYLON {
          * Gets a boolean indicating that this block is an end block (e.g. it is generating a system value)
          */
         readonly isFinalMerger: boolean;
+        /**
+         * Gets a boolean indicating that this block is an input (e.g. it sends data to the shader)
+         */
+        readonly isInput: boolean;
         /**
          * Gets or sets the build Id
          */
@@ -51352,8 +51418,9 @@ declare module BABYLON {
          * @param name defines the block name
          * @param target defines the target of that block (Vertex by default)
          * @param isFinalMerger defines a boolean indicating that this block is an end block (e.g. it is generating a system value). Default is false
+         * @param isInput defines a boolean indicating that this block is an input (e.g. it sends data to the shader). Default is false
          */
-        constructor(name: string, target?: NodeMaterialBlockTargets, isFinalMerger?: boolean);
+        constructor(name: string, target?: NodeMaterialBlockTargets, isFinalMerger?: boolean, isInput?: boolean);
         /**
          * Initialize the block and prepare the context for build
          * @param state defines the state that will be used for the build
@@ -51437,6 +51504,14 @@ declare module BABYLON {
          */
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         /**
+         * Initialize defines for shader compilation
+         * @param mesh defines the mesh to be rendered
+         * @param nodeMaterial defines the node material requesting the update
+         * @param defines defines the material defines to be prepared
+         * @param useInstances specifies that instances should be used
+         */
+        initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        /**
          * Lets the block try to connect some inputs automatically
          */
         autoConfigure(): void;
@@ -51457,59 +51532,93 @@ declare module BABYLON {
          * @returns true if the block is ready
          */
         isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): boolean;
+        private _processBuild;
         /**
          * Compile the current node and generate the shader code
          * @param state defines the current compilation state (uniforms, samplers, current string)
-         * @returns the current block
+         * @param contextSwitched indicates that the previous block was built for a different context (vertex vs. fragment)
+         * @returns true if already built
          */
-        build(state: NodeMaterialBuildState): this | undefined;
+        build(state: NodeMaterialBuildState, contextSwitched?: boolean): boolean;
     }
 }
 declare module BABYLON {
     /**
-     * Defines a connection point for a block
+     * Enum defining the mode of a NodeMaterialBlockConnectionPoint
      */
-    export class NodeMaterialConnectionPoint {
-        /** @hidden */
-        _ownerBlock: NodeMaterialBlock;
-        /** @hidden */
-        _connectedPoint: Nullable<NodeMaterialConnectionPoint>;
+    export enum NodeMaterialBlockConnectionPointMode {
+        /** Value is an uniform */
+        Uniform = 0,
+        /** Value is a mesh attribute */
+        Attribute = 1,
+        /** Value is a varying between vertex and fragment shaders */
+        Varying = 2,
+        /** Mode is undefined */
+        Undefined = 3
+    }
+}
+declare module BABYLON {
+    /**
+     * Enum used to define well known values e.g. values automatically provided by the system
+     */
+    export enum NodeMaterialWellKnownValues {
+        /** World */
+        World = 1,
+        /** View */
+        View = 2,
+        /** Projection */
+        Projection = 3,
+        /** ViewProjection */
+        ViewProjection = 4,
+        /** WorldView */
+        WorldView = 5,
+        /** WorldViewProjection */
+        WorldViewProjection = 6,
+        /** CameraPosition */
+        CameraPosition = 7,
+        /** Fog Color */
+        FogColor = 8
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to expose an input value
+     */
+    export class InputBlock extends NodeMaterialBlock {
+        private _mode;
         private _associatedVariableName;
-        private _endpoints;
         private _storedValue;
         private _valueCallback;
-        private _mode;
+        private _type;
         /** @hidden */
         _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
-        /** @hidden */
-        _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
-        /** @hidden */
-        _needToEmitVarying: boolean;
-        /** @hidden */
-        _forceUniformInVertexShaderOnly: boolean;
-        private _type;
         /**
          * Gets or sets the connection point type (default is float)
          */
-        type: NodeMaterialBlockConnectionPointTypes;
+        readonly type: NodeMaterialBlockConnectionPointTypes;
         /**
-         * Gets or sets the connection point name
+         * Creates a new InputBlock
+         * @param name defines the block name
+         * @param target defines the target of that block (Vertex by default)
+         * @param type defines the type of the input (can be set to NodeMaterialBlockConnectionPointTypes.AutoDetect)
          */
-        name: string;
+        constructor(name: string, target?: NodeMaterialBlockTargets, type?: NodeMaterialBlockConnectionPointTypes);
         /**
-         * Gets or sets the swizzle to apply to this connection point when reading or writing
+         * Gets the output component
          */
-        swizzle: string;
+        readonly output: NodeMaterialConnectionPoint;
         /**
-         * Gets or sets a boolean indicating that this connection point can be omitted
+         * Set the source of this connection point to a vertex attribute
+         * @param attributeName defines the attribute name (position, uv, normal, etc...). If not specified it will take the connection point name
+         * @returns the current connection point
          */
-        isOptional: boolean;
+        setAsAttribute(attributeName?: string): InputBlock;
         /**
-         * Gets or sets a string indicating that this uniform must be defined under a #ifdef
+         * Set the source of this connection point to a well known value
+         * @param value define the well known value to use (world, view, etc...) or null to switch to manual value
+         * @returns the current connection point
          */
-        define: string;
-        /** Gets or sets the target of that connection point */
-        target: NodeMaterialBlockTargets;
+        setAsWellKnownValue(value: Nullable<NodeMaterialWellKnownValues>): InputBlock;
         /**
          * Gets or sets the value of that point.
          * Please note that this value will be ignored if valueCallback is defined
@@ -51545,6 +51654,86 @@ declare module BABYLON {
          * Can only be set on exit points
          */
         isVarying: boolean;
+        /**
+         * Gets a boolean indicating that the current connection point is a well known value
+         */
+        readonly isWellKnownValue: boolean;
+        /**
+         * Gets or sets the current well known value or null if not defined as well know value
+         */
+        wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        private _emitDefine;
+        /**
+         * Set the input block to its default value (based on its type)
+         */
+        setDefaultValue(): void;
+        private _emit;
+        /** @hidden */
+        _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix): void;
+        /** @hidden */
+        _transmit(effect: Effect, scene: Scene): void;
+        protected _buildBlock(state: NodeMaterialBuildState): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines a connection point for a block
+     */
+    export class NodeMaterialConnectionPoint {
+        /** @hidden */
+        _ownerBlock: NodeMaterialBlock;
+        /** @hidden */
+        _connectedPoint: Nullable<NodeMaterialConnectionPoint>;
+        private _endpoints;
+        private _associatedVariableName;
+        /** @hidden */
+        _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
+        private _type;
+        /** @hidden */
+        _enforceAssociatedVariableName: boolean;
+        /**
+         * Gets or sets the associated variable name in the shader
+         */
+        associatedVariableName: string;
+        /**
+         * Gets or sets the connection point type (default is float)
+         */
+        type: NodeMaterialBlockConnectionPointTypes;
+        /**
+         * Gets or sets the connection point name
+         */
+        name: string;
+        /**
+         * Gets or sets the swizzle to apply to this connection point when reading or writing
+         */
+        swizzle: string;
+        /**
+         * Gets or sets a boolean indicating that this connection point can be omitted
+         */
+        isOptional: boolean;
+        /**
+         * Gets or sets a string indicating that this uniform must be defined under a #ifdef
+         */
+        define: string;
+        /** Gets or sets the target of that connection point */
+        target: NodeMaterialBlockTargets;
+        /**
+         * Gets a boolean indicating that the current point is connected
+         */
+        readonly isConnected: boolean;
+        /**
+         * Gets a boolean indicating that the current point is connected to an input block
+         */
+        readonly isConnectedToInput: boolean;
+        /**
+         * Gets a the connected input block (if any)
+         */
+        readonly connectInputBlock: Nullable<InputBlock>;
         /** Get the other side of the connection (if any) */
         readonly connectedPoint: Nullable<NodeMaterialConnectionPoint>;
         /** Get the block that owns this connection point */
@@ -51553,6 +51742,8 @@ declare module BABYLON {
         readonly sourceBlock: Nullable<NodeMaterialBlock>;
         /** Get the block connected on the endpoints of this connection (if any) */
         readonly connectedBlocks: Array<NodeMaterialBlock>;
+        /** Gets the list of connected endpoints */
+        readonly endpoints: NodeMaterialConnectionPoint[];
         /**
          * Creates a new connection point
          * @param name defines the connection point name
@@ -51564,26 +51755,6 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
-        /**
-         * Set the source of this connection point to a vertex attribute
-         * @param attributeName defines the attribute name (position, uv, normal, etc...). If not specified it will take the connection point name
-         * @returns the current connection point
-         */
-        setAsAttribute(attributeName?: string): NodeMaterialConnectionPoint;
-        /**
-         * Set the source of this connection point to a well known value
-         * @param value define the well known value to use (world, view, etc...) or null to switch to manual value
-         * @returns the current connection point
-         */
-        setAsWellKnownValue(value: Nullable<NodeMaterialWellKnownValues>): NodeMaterialConnectionPoint;
-        /**
-         * Gets a boolean indicating that the current connection point is a well known value
-         */
-        readonly isWellKnownValue: boolean;
-        /**
-         * Gets or sets the current well known value or null if not defined as well know value
-         */
-        wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
         private _getTypeLength;
         /**
          * Gets an boolean indicating if the current point can be connected to another point
@@ -51603,20 +51774,6 @@ declare module BABYLON {
          * @returns the current connection point
          */
         disconnectFrom(endpoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint;
-        /**
-         * When connection point is an uniform, this function will send its value to the effect
-         * @param effect defines the effect to transmit value to
-         * @param world defines the world matrix
-         * @param worldView defines the worldxview matrix
-         * @param worldViewProjection defines the worldxviewxprojection matrix
-         */
-        transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix): void;
-        /**
-         * When connection point is an uniform, this function will send its value to the effect
-         * @param effect defines the effect to transmit value to
-         * @param scene defines the hosting scene
-         */
-        transmit(effect: Effect, scene: Scene): void;
     }
 }
 declare module BABYLON {
@@ -51920,62 +52077,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to read a texture from a sampler
-     */
-    export class TextureBlock extends NodeMaterialBlock {
-        private _defineName;
-        /**
-         * Gets or sets a boolean indicating that the block can automatically fetch the texture matrix
-         */
-        autoConnectTextureMatrix: boolean;
-        /**
-         * Gets or sets a boolean indicating that the block can automatically select the uv channel based on texture
-         */
-        autoSelectUV: boolean;
-        /**
-         * Create a new TextureBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the uv input component
-         */
-        readonly uv: NodeMaterialConnectionPoint;
-        /**
-         * Gets the texture information input component
-         */
-        readonly textureInfo: NodeMaterialConnectionPoint;
-        /**
-         * Gets the transformed uv input component
-         */
-        readonly transformedUV: NodeMaterialConnectionPoint;
-        /**
-         * Gets the texture input component
-         */
-        readonly texture: NodeMaterialConnectionPoint;
-        /**
-         * Gets the texture transform input component
-         */
-        readonly textureTransform: NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        readonly output: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
-        initialize(state: NodeMaterialBuildState): void;
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
-        isReady(): boolean;
-        private _injectVertexCode;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
      * Block used to add image processing support to fragment shader
      */
     export class ImageProcessingBlock extends NodeMaterialBlock {
@@ -52013,6 +52114,8 @@ declare module BABYLON {
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
+        private _fogDistanceName;
+        private _fogParameters;
         /**
          * Create a new FogBlock
          * @param name defines the block name
@@ -52040,10 +52143,6 @@ declare module BABYLON {
          */
         readonly fogColor: NodeMaterialConnectionPoint;
         /**
-         * Gets the for parameter input component
-         */
-        readonly fogParameters: NodeMaterialConnectionPoint;
-        /**
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
@@ -52059,6 +52158,10 @@ declare module BABYLON {
      */
     export class LightBlock extends NodeMaterialBlock {
         private _lightId;
+        /**
+         * Gets or sets the light associated with this block
+         */
+        light: Nullable<Light>;
         /**
          * Create a new LightBlock
          * @param name defines the block name
@@ -52077,11 +52180,6 @@ declare module BABYLON {
          * Gets the world normal input component
          */
         readonly worldNormal: NodeMaterialConnectionPoint;
-        /**
-        * Gets the light input component.
-        * If not defined, all lights will be considered
-        */
-        readonly light: NodeMaterialConnectionPoint;
         /**
         * Gets the camera (or eye) position component
         */
@@ -57616,6 +57714,10 @@ declare module BABYLON {
         private _scene;
         private _depthMap;
         private _effect;
+        private readonly _storeNonLinearDepth;
+        private readonly _clearColor;
+        /** Get if the depth renderer is using packed depth or not */
+        readonly isPacked: boolean;
         private _cachedDefines;
         private _camera;
         /**
@@ -57631,8 +57733,9 @@ declare module BABYLON {
          * @param scene The scene the renderer belongs to
          * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
          * @param camera The camera to be used to render the depth map (default: scene's active camera)
+         * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
          */
-        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>);
+        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>, storeNonLinearDepth?: boolean);
         /**
          * Creates the depth rendering effect and checks if the effect is ready.
          * @param subMesh The submesh to be used to render the depth map of
@@ -57660,9 +57763,10 @@ declare module BABYLON {
             /**
              * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
              * @param camera The camera to create the depth renderer on (default: scene's active camera)
+             * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
              * @returns the created depth renderer
              */
-            enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer;
+            enableDepthRenderer(camera?: Nullable<Camera>, storeNonLinearDepth?: boolean): DepthRenderer;
             /**
              * Disables a depth renderer for a given camera
              * @param camera The camera to disable the depth renderer on (default: scene's active camera)
@@ -59918,47 +60022,123 @@ interface Window {
 interface Gamepad {
     readonly displayId: number;
 }
-interface XRDevice {
-    requestSession(options: XRSessionCreationOptions): Promise<XRSession>;
-    supportsSession(options: XRSessionCreationOptions): Promise<void>;
+type XRSessionMode =
+    | "inline"
+    | "immersive-vr"
+    | "immersive-ar";
+
+type XRReferenceSpaceType =
+    | "viewer"
+    | "local"
+    | "local-floor"
+    | "bounded-floor"
+    | "unbounded";
+
+type XREnvironmentBlendMode =
+    | "opaque"
+    | "additive"
+    | "alpha-blend";
+
+type XRVisibilityState =
+    | "visible"
+    | "visible-blurred"
+    | "hidden";
+
+type XRHandedness =
+    | "none"
+    | "left"
+    | "right";
+
+type XRTargetRayMode =
+    | "gaze"
+    | "tracked-pointer"
+    | "screen";
+
+type XREye =
+    | "none"
+    | "left"
+    | "right";
+
+interface XRSpace extends EventTarget {
+
 }
+
+interface XRRenderState {
+    depthNear: number ;
+    depthFar: number ;
+    inlineVerticalFieldOfView: number | undefined;
+    baseLayer: XRWebGLLayer | undefined;
+}
+
+interface XRInputSource {
+    handedness: XRHandedness;
+    targetRayMode: XRTargetRayMode;
+    targetRaySpace: XRSpace;
+    gripSpace: XRSpace | undefined;
+    gamepad: Gamepad | undefined;
+    profiles: Array<string>;
+}
+
 interface XRSession {
-    getInputSources(): Array<any>;
-    baseLayer: XRWebGLLayer;
-    requestFrameOfReference(type: string): Promise<void>;
-    requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
-    end(): Promise<void>;
-    requestAnimationFrame: Function;
     addEventListener: Function;
+    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
+    updateRenderState(XRRenderStateInit: any): Promise<void>;
+    requestAnimationFrame: Function;
+    end(): Promise<void>;
+    renderState: XRRenderState;
+    inputSources: Array<XRInputSource>;
+
 }
-interface XRSessionCreationOptions {
-    outputContext?: WebGLRenderingContext | null;
-    immersive?: boolean;
-    environmentIntegration?: boolean;
+
+interface XRReferenceSpace extends XRSpace {
+    getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
+    onreset: any;
 }
-interface XRLayer {
-    getViewport: Function;
-    framebufferWidth: number;
-    framebufferHeight: number;
-}
-interface XRView {
-    projectionMatrix: Float32Array;
-}
+
 interface XRFrame {
-    getDevicePose: Function;
-    getInputPose: Function;
+    session: XRSession;
+    getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
+    getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
+}
+
+interface XRViewerPose extends XRPose {
     views: Array<XRView>;
-    baseLayer: XRLayer;
 }
-interface XRFrameOfReference {
+
+interface XRPose {
+    transform: XRRigidTransform;
+    emulatedPosition: boolean;
 }
-interface XRWebGLLayer extends XRLayer {
-    framebuffer: WebGLFramebuffer;
-}
+
 declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
-    new(session: XRSession, context?: WebGLRenderingContext): XRWebGLLayer;
+    new(session: XRSession, context: WebGLRenderingContext | undefined): XRWebGLLayer;
 };
+interface XRWebGLLayer {
+    framebuffer: WebGLFramebuffer;
+    framebufferWidth: number;
+    framebufferHeight: number;
+    getViewport: Function;
+}
+
+interface XRRigidTransform {
+    position: DOMPointReadOnly;
+    orientation: DOMPointReadOnly;
+    matrix: Float32Array;
+    inverse: XRRigidTransform;
+}
+
+interface XRView {
+    eye: XREye;
+    projectionMatrix: Float32Array;
+    transform: XRRigidTransform;
+}
+
+interface XRInputSourceChangeEvent {
+    session: XRSession;
+    removed: Array<XRInputSource>;
+    added: Array<XRInputSource>;
+}
 declare module BABYLON.GUI {
     /**
      * Class used to specific a value and its associated unit
