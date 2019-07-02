@@ -245,6 +245,29 @@ export class Ray {
             return distance;
         }
     }
+    /**
+     * Calculate the intercept of a ray on a given axis
+     * @param axis to check 'x' | 'y' | 'z'
+     * @param offset from axis interception (i.e. an offset of 1y is intercepted above ground)
+     * @returns a vector containing the coordinates where 'axis' is equal to zero (else offset), or null if there is no intercept.
+     */
+    public intersectsAxis(axis: string, offset: number = 0): Nullable<Vector3> {
+          switch (axis) {
+              case 'y':
+        var t = (this.origin.y - offset) / this.direction.y;
+        if (t > 0) { return null; } // for example if the sky was clicked
+        return new Vector3(this.origin.x + (this.direction.x * -t), offset, this.origin.z + (this.direction.z * -t));
+              case 'x':
+        var t = (this.origin.x - offset) / this.direction.x;
+        if (t > 0) { return null; }
+        return new Vector3(offset, this.origin.y + (this.direction.y * -t), this.origin.z + (this.direction.z * -t));
+              case 'z':
+        var t = (this.origin.z - offset) / this.direction.z;
+        if (t > 0) { return null; }
+        return new Vector3(this.origin.x + (this.direction.x * -t), this.origin.y + (this.direction.y * -t), offset);
+              default: return null;
+          }
+    }
 
     /**
      * Checks if ray intersects a mesh
