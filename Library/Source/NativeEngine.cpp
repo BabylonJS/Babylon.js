@@ -30,15 +30,6 @@ namespace babylon
 {
     namespace
     {
-        template<typename T>
-        inline void GrowTo(std::vector<T>& vector, size_t size)
-        {
-            if (vector.size() < size)
-            {
-                vector.resize(size);
-            }
-        }
-
         struct UniformInfo final
         {
             uint8_t Stage{};
@@ -258,19 +249,17 @@ namespace babylon
 
             struct UniformValue
             {
-                std::vector<uint8_t> Bytes;
-                size_t Count;
+                std::vector<float> Data{};
+                uint16_t ElementLength{};
             };
 
             std::unordered_map<uint16_t, UniformValue> Uniforms{};
 
-            template<typename T>
-            void SetUniform(bgfx::UniformHandle handle, const T* data, size_t elementLength, size_t count = 1)
+            void SetUniform(bgfx::UniformHandle handle, gsl::span<const float> data, size_t elementLength = 1)
             {
                 UniformValue& value = Uniforms[handle.idx];
-                GrowTo(value.Bytes, sizeof(T) * elementLength);
-                std::memcpy(value.Bytes.data(), data, value.Bytes.size());
-                value.Count = count;
+                value.Data.assign(data.begin(), data.end());
+                value.ElementLength = static_cast<uint16_t>(elementLength);
             }
         };
 
@@ -346,8 +335,8 @@ namespace babylon
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;
 
-        // Scratch array for data alignment.
-        std::vector<float> m_alignedArray;
+        // Scratch vector used for data alignment.
+        std::vector<float> m_scratch;
     };
 
     NativeEngine::Impl::Impl(void* nativeWindowPtr, RuntimeImpl& runtimeImpl)
@@ -743,9 +732,11 @@ namespace babylon
     {
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto matrix = info[1].As<Napi::Float32Array>();
-        assert(matrix.ElementLength() == 16);
 
-        m_currentProgram->SetUniform(uniformData->Handle, matrix.Data(), matrix.ElementLength());
+        const size_t elementLength = matrix.ElementLength();
+        assert(elementLength == 16);
+
+        m_currentProgram->SetUniform(uniformData->Handle, gsl::make_span(matrix.Data(), elementLength));
     }
 
     void NativeEngine::Impl::SetIntArray(const Napi::CallbackInfo& info)
@@ -781,15 +772,17 @@ namespace babylon
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto array = info[1].As<Napi::Float32Array>();
 
-        const size_t elementLength = array.ElementLength();
-        GrowTo(m_alignedArray, elementLength * 4);
+        size_t elementLength = array.ElementLength();
 
-        for (size_t index = 0, alignedIndex = 0; index < elementLength; ++index, alignedIndex += 4)
+        m_scratch.clear();
+        m_scratch.reserve(elementLength * 4);
+        for (size_t index = 0; index < elementLength; ++index)
         {
-            m_alignedArray[alignedIndex] = array[index];
+            const float values[] = { array[index], 0.0f, 0.0f, 0.0f };
+            m_scratch.insert(m_scratch.end(), values, values + 4);
         }
 
-        m_currentProgram->SetUniform(uniformData->Handle, m_alignedArray.data(), m_alignedArray.size(), elementLength);
+        m_currentProgram->SetUniform(uniformData->Handle, m_scratch, elementLength);
     }
 
     void NativeEngine::Impl::SetFloatArray2(const Napi::CallbackInfo& info)
@@ -817,10 +810,11 @@ namespace babylon
     {
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto matricesArray = info[1].As<Napi::Float32Array>();
+
         const size_t elementLength = matricesArray.ElementLength();
         assert(elementLength % 16 == 0);
 
-        m_currentProgram->SetUniform(uniformData->Handle, matricesArray.Data(), elementLength, elementLength / 16);
+        m_currentProgram->SetUniform(uniformData->Handle, gsl::span(matricesArray.Data(), elementLength), elementLength / 16);
     }
 
     void NativeEngine::Impl::SetMatrix3x3(const Napi::CallbackInfo& info)
@@ -848,7 +842,7 @@ namespace babylon
             0.0f
         };
 
-        m_currentProgram->SetUniform(uniformData->Handle, values, std::size(values));
+        m_currentProgram->SetUniform(uniformData->Handle, values);
     }
 
     void NativeEngine::Impl::SetFloat2(const Napi::CallbackInfo& info)
@@ -862,7 +856,7 @@ namespace babylon
             0.0f
         };
 
-        m_currentProgram->SetUniform(uniformData->Handle, values, std::size(values));
+        m_currentProgram->SetUniform(uniformData->Handle, values);
     }
 
     void NativeEngine::Impl::SetFloat3(const Napi::CallbackInfo& info)
@@ -876,7 +870,7 @@ namespace babylon
             0.0f
         };
 
-        m_currentProgram->SetUniform(uniformData->Handle, values, std::size(values));
+        m_currentProgram->SetUniform(uniformData->Handle, values);
     }
 
     void NativeEngine::Impl::SetFloat4(const Napi::CallbackInfo& info)
@@ -890,7 +884,7 @@ namespace babylon
             info[4].As<Napi::Number>().FloatValue()
         };
 
-        m_currentProgram->SetUniform(uniformData->Handle, values, std::size(values));
+        m_currentProgram->SetUniform(uniformData->Handle, values);
     }
 
     void NativeEngine::Impl::SetBool(const Napi::CallbackInfo& info)
@@ -1084,7 +1078,7 @@ namespace babylon
         for (const auto& it : m_currentProgram->Uniforms)
         {
             const ProgramData::UniformValue& value = it.second;
-            bgfx::setUniform({ it.first }, value.Bytes.data(), static_cast<uint16_t>(value.Count));
+            bgfx::setUniform({ it.first }, value.Data.data(), value.ElementLength);
         }
 
         bgfx::submit(0, m_currentProgram->Program, 0, true);
