@@ -248,7 +248,7 @@ export class Ray {
     /**
      * Calculate the intercept of a ray on a given axis
      * @param axis to check 'x' | 'y' | 'z'
-     * @param intercept offset (i.e. an offset of 1y is intercepted above ground)
+     * @param offset from axis interception (i.e. an offset of 1y is intercepted above ground)
      * @returns a vector containing the coordinates where 'axis' is equal to zero, or false if there is no intercept.
      */
     public intersectsAxis(axis: string, offset: number = 0) {
