@@ -71,6 +71,9 @@
 ### Sounds
 - Added `ISoundOptions.skipCodecCheck` to make `Sound` more flexible with URLs ([nbduke](https://github.com/nbduke))
 
+### Ray
+- Added `Ray.intersectsAxis` to translate screen to axis coordinates without checking collisions ([horusscope](https://github.com/horusscope))
+
 ### Documentation
 - Added a note on shallow bounding of getBoundingInfo ([tibotiber](https://github.com/tibotiber))
 
