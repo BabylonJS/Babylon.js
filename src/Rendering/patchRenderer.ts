@@ -18,7 +18,7 @@ import { RadiosityUtils } from "./radiosityUtils";
 import { RadiosityEffectsManager } from "./radiosityEffectsManager";
 
 import { Nullable } from "../types";
-import { Tools } from "../misc/tools"
+// import { Tools } from "../misc/tools"
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _DevTools } from '../Misc/devTools';
