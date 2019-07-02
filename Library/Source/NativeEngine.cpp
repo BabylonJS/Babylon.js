@@ -775,7 +775,6 @@ namespace babylon
         size_t elementLength = array.ElementLength();
 
         m_scratch.clear();
-        m_scratch.reserve(elementLength * 4);
         for (size_t index = 0; index < elementLength; ++index)
         {
             const float values[] = { array[index], 0.0f, 0.0f, 0.0f };
