@@ -3523,10 +3523,16 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             this._intermediateRendering = false;
 
+            // Need to bind if sub-camera has an outputRenderTarget eg. for webXR
+            if (this.activeCamera && this.activeCamera.outputRenderTarget) {
+                needRebind = true;
+            }
+
             // Restore framebuffer after rendering to targets
             if (needRebind) {
                 this._bindFrameBuffer();
             }
+
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
