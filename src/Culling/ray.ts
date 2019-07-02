@@ -248,15 +248,16 @@ export class Ray {
     /**
      * Calculate the intercept of a ray on a given axis
      * @param axis to check 'x' | 'y' | 'z'
+     * @param intercept offset (i.e. an offset of 1y is intercepted above ground)
      * @returns a vector containing the coordinates where 'axis' is equal to zero, or false if there is no intercept.
      */
-    public intersectsAxis(axis: string) {
-          var t = this.origin[axis] / this.direction[axis]
+    public intersectsAxis(axis: string, offset: number = 0) {
+          var t = (this.origin[axis] - offset) / this.direction[axis]
           if(t > 0) return false
           switch(axis) {
-              case 'y': return new Vector3(this.origin.x + (this.direction.x * -t), 0, this.origin.z + (this.direction.z * -t))
-              case 'x': return new Vector3(0, this.origin.y + (this.direction.y * -t), this.origin.z + (this.direction.z * -t))
-              case 'z': return new Vector3(this.origin.x + (this.direction.x * -t), this.origin.y + (this.direction.y * -t), 0)
+              case 'y': return new Vector3(this.origin.x + (this.direction.x * -t), offset, this.origin.z + (this.direction.z * -t))
+              case 'x': return new Vector3(offset, this.origin.y + (this.direction.y * -t), this.origin.z + (this.direction.z * -t))
+              case 'z': return new Vector3(this.origin.x + (this.direction.x * -t), this.origin.y + (this.direction.y * -t), offset)
               default: return false
           }
     }
