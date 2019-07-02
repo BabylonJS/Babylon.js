@@ -11125,6 +11125,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var packingFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var shadowMapPixelShader: {
         name: string;
         shader: string;
@@ -15993,6 +16000,13 @@ declare module BABYLON {
          * @returns the distance away it was hit
          */
         intersectsPlane(plane: DeepImmutable<Plane>): Nullable<number>;
+        /**
+         * Calculate the intercept of a ray on a given axis
+         * @param axis to check 'x' | 'y' | 'z'
+         * @param offset from axis interception (i.e. an offset of 1y is intercepted above ground)
+         * @returns a vector containing the coordinates where 'axis' is equal to zero (else offset), or null if there is no intercept.
+         */
+        intersectsAxis(axis: string, offset?: number): Nullable<Vector3>;
         /**
          * Checks if ray intersects a mesh
          * @param mesh the mesh to check
@@ -40471,7 +40485,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Manages an XRSession
+     * Manages an XRSession to work with Babylon's engine
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRSessionManager implements IDisposable {
@@ -40484,17 +40498,22 @@ declare module BABYLON {
          * Fires when the xr session is ended either by the device or manually done
          */
         onXRSessionEnded: Observable<any>;
-        /** @hidden */
-        _xrSession: XRSession;
-        /** @hidden */
-        _frameOfReference: XRFrameOfReference;
+        /**
+         * Underlying xr session
+         */
+        session: XRSession;
+        /**
+         * Type of reference space used when creating the session
+         */
+        referenceSpace: XRReferenceSpace;
         /** @hidden */
         _sessionRenderTargetTexture: Nullable<RenderTargetTexture>;
-        /** @hidden */
-        _currentXRFrame: Nullable<XRFrame>;
+        /**
+         * Current XR frame
+         */
+        currentFrame: Nullable<XRFrame>;
         private _xrNavigator;
-        private _xrDevice;
-        private _tmpMatrix;
+        private baseLayer;
         /**
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
          * @param scene The scene which the session should be created for
@@ -40507,36 +40526,46 @@ declare module BABYLON {
          */
         initializeAsync(): Promise<void>;
         /**
-         * Enters XR with the desired XR session options, this must be done with a user action (eg. button click event)
-         * @param sessionCreationOptions xr options to create the session with
-         * @param frameOfReferenceType option to configure how the xr pose is expressed
-         * @returns Promise which resolves after it enters XR
+         * Initializes an xr session
+         * @param xrSessionMode mode to initialize
+         * @returns a promise which will resolve once the session has been initialized
          */
-        enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReferenceType: string): Promise<void>;
+        initializeSessionAsync(xrSessionMode: XRSessionMode): any;
+        /**
+         * Sets the reference space on the xr session
+         * @param referenceSpace space to set
+         * @returns a promise that will resolve once the reference space has been set
+         */
+        setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType): Promise<void>;
+        /**
+         * Updates the render state of the session
+         * @param state state to set
+         * @returns a promise that resolves once the render state has been updated
+         */
+        updateRenderStateAsync(state: any): Promise<void>;
+        /**
+         * Starts rendering to the xr layer
+         * @returns a promise that will resolve once rendering has started
+         */
+        startRenderingToXRAsync(): Promise<void>;
         /**
          * Stops the xrSession and restores the renderloop
          * @returns Promise which resolves after it exits XR
          */
         exitXRAsync(): Promise<void>;
         /**
-         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
-         * @param ray ray to cast into the environment
-         * @returns Promise which resolves with a collision point in the environment if it exists
-         */
-        environmentPointHitTestAsync(ray: Ray): Promise<Nullable<Vector3>>;
-        /**
          * Checks if a session would be supported for the creation options specified
-         * @param options creation options to check if they are supported
+         * @param sessionMode session mode to check if supported eg. immersive-vr
          * @returns true if supported
          */
-        supportsSessionAsync(options: XRSessionCreationOptions): Promise<boolean>;
+        supportsSessionAsync(sessionMode: XRSessionMode): any;
         /**
          * @hidden
          * Converts the render layer of xrSession to a render target
          * @param session session to create render target for
          * @param scene scene the new render target should be created for
          */
-        static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene): RenderTargetTexture;
+        static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
         /**
          * Disposes of the session manager
          */
@@ -40565,6 +40594,42 @@ declare module BABYLON {
          * @returns true if the camera has been updated, false if the session did not contain pose or frame data
          */
         updateFromXRSessionManager(xrSessionManager: WebXRSessionManager): boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Creates a canvas that is added/removed from the webpage when entering/exiting XR
+     */
+    export class WebXRManagedOutputCanvas implements IDisposable {
+        private helper;
+        private _canvas;
+        /**
+         * xrpresent context of the canvas which can be used to display/mirror xr content
+         */
+        canvasContext: WebGLRenderingContext;
+        /**
+         * xr layer for the canvas
+         */
+        xrLayer: Nullable<XRWebGLLayer>;
+        /**
+         * Initializes the xr layer for the session
+         * @param xrSession xr session
+         * @returns a promise that will resolve once the XR Layer has been created
+         */
+        initializeXRLayerAsync(xrSession: any): any;
+        /**
+         * Initializes the canvas to be added/removed upon entering/exiting xr
+         * @param helper the xr experience helper used to trigger adding/removing of the canvas
+         * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
+         */
+        constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement);
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
+        private _setManagedOutputCanvas;
+        private _addCanvas;
+        private _removeCanvas;
     }
 }
 declare module BABYLON {
@@ -40613,8 +40678,8 @@ declare module BABYLON {
          * Fires when the state of the experience helper has changed
          */
         onStateChangedObservable: Observable<WebXRState>;
-        /** @hidden */
-        _sessionManager: WebXRSessionManager;
+        /** Session manager used to keep track of xr session */
+        sessionManager: WebXRSessionManager;
         private _nonVRCamera;
         private _originalSceneAutoClear;
         private _supported;
@@ -40637,16 +40702,11 @@ declare module BABYLON {
         /**
          * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
          * @param sessionCreationOptions options for the XR session
-         * @param frameOfReference frame of reference of the XR session
+         * @param referenceSpaceType frame of reference of the XR session
+         * @param outputCanvas the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string): Promise<void>;
-        /**
-         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
-         * @param ray ray to cast into the environment
-         * @returns Promise which resolves with a collision point in the environment if it exists
-         */
-        environmentPointHitTestAsync(ray: Ray): Promise<Nullable<Vector3>>;
+        enterXRAsync(sessionCreationOptions: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, outputCanvas: WebXRManagedOutputCanvas): any;
         /**
          * Updates the global position of the camera by moving the camera's container
          * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
@@ -40659,12 +40719,6 @@ declare module BABYLON {
          * @param rotation the desired quaternion rotation to apply to the camera
          */
         rotateCameraByQuaternionUsingContainer(rotation: Quaternion): void;
-        /**
-         * Checks if the creation options are supported by the xr session
-         * @param options creation options
-         * @returns true if supported
-         */
-        supportsSessionAsync(options: XRSessionCreationOptions): Promise<boolean>;
         /**
          * Disposes of the experience helper
          */
@@ -40679,17 +40733,22 @@ declare module BABYLON {
         /** button element */
         element: HTMLElement;
         /** XR initialization options for the button */
-        initializationOptions: XRSessionCreationOptions;
+        sessionMode: XRSessionMode;
+        /** Reference space type */
+        referenceSpaceType: XRReferenceSpaceType;
         /**
          * Creates a WebXREnterExitUIButton
          * @param element button element
-         * @param initializationOptions XR initialization options for the button
+         * @param sessionMode XR initialization session mode
+         * @param referenceSpaceType the type of reference space to be used
          */
         constructor(
         /** button element */
         element: HTMLElement, 
         /** XR initialization options for the button */
-        initializationOptions: XRSessionCreationOptions);
+        sessionMode: XRSessionMode, 
+        /** Reference space type */
+        referenceSpaceType: XRReferenceSpaceType);
         /**
          * Overwritable function which can be used to update the button's visuals when the state changes
          * @param activeButton the current active button in the UI
@@ -40703,7 +40762,7 @@ declare module BABYLON {
         /**
          * Context to enter xr with
          */
-        outputCanvasContext?: Nullable<WebGLRenderingContext>;
+        webXRManagedOutputCanvas?: Nullable<WebXRManagedOutputCanvas>;
         /**
          * User provided buttons to enable/disable WebXR. The system will provide default if not set
          */
@@ -40746,6 +40805,10 @@ declare module BABYLON {
      * Represents an XR input
      */
     export class WebXRController {
+        private scene;
+        /** The underlying input source for the controller  */
+        inputSource: XRInputSource;
+        private parentContainer;
         /**
          * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
          */
@@ -40754,12 +40817,23 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
+        private _tmpMatrix;
         /**
          * Creates the controller
          * @see https://doc.babylonjs.com/how_to/webxr
          * @param scene the scene which the controller should be associated to
+         * @param inputSource the underlying input source for the controller
+         * @param parentContainer parent that the controller meshes should be children of
          */
-        constructor(scene: Scene);
+        constructor(scene: Scene, 
+        /** The underlying input source for the controller  */
+        inputSource: XRInputSource, parentContainer?: Nullable<AbstractMesh>);
+        /**
+         * Updates the controller pose based on the given XRFrame
+         * @param xrFrame xr frame to update the pose with
+         * @param referenceSpace reference space to use
+         */
+        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
         /**
          * Disposes of the object
          */
@@ -40774,42 +40848,26 @@ declare module BABYLON {
          * XR controllers being tracked
          */
         controllers: Array<WebXRController>;
-        private _tmpMatrix;
         private _frameObserver;
+        /**
+         * Event when a controller has been connected/added
+         */
+        onControllerAddedObservable: Observable<WebXRController>;
+        /**
+         * Event when a controller has been removed/disconnected
+         */
+        onControllerRemovedObservable: Observable<WebXRController>;
         /**
          * Initializes the WebXRInput
          * @param helper experience helper which the input should be created for
          */
         constructor(helper: WebXRExperienceHelper);
+        private _onInputSourcesChange;
+        private _addAndRemoveControllers;
         /**
          * Disposes of the object
          */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Creates a canvas that is added/removed from the webpage when entering/exiting XR
-     */
-    export class WebXRManagedOutputCanvas implements IDisposable {
-        private _canvas;
-        /**
-         * xrpresent context of the canvas which can be used to display/mirror xr content
-         */
-        canvasContext: Nullable<WebGLRenderingContext>;
-        /**
-         * Initializes the canvas to be added/removed upon entering/exiting xr
-         * @param helper the xr experience helper used to trigger adding/removing of the canvas
-         * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
-         */
-        constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement);
-        /**
-         * Disposes of the object
-         */
-        dispose(): void;
-        private _setManagedOutputCanvas;
-        private _addCanvas;
-        private _removeCanvas;
     }
 }
 declare module BABYLON {
@@ -57616,6 +57674,10 @@ declare module BABYLON {
         private _scene;
         private _depthMap;
         private _effect;
+        private readonly _storeNonLinearDepth;
+        private readonly _clearColor;
+        /** Get if the depth renderer is using packed depth or not */
+        readonly isPacked: boolean;
         private _cachedDefines;
         private _camera;
         /**
@@ -57631,8 +57693,9 @@ declare module BABYLON {
          * @param scene The scene the renderer belongs to
          * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
          * @param camera The camera to be used to render the depth map (default: scene's active camera)
+         * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
          */
-        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>);
+        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>, storeNonLinearDepth?: boolean);
         /**
          * Creates the depth rendering effect and checks if the effect is ready.
          * @param subMesh The submesh to be used to render the depth map of
@@ -57660,9 +57723,10 @@ declare module BABYLON {
             /**
              * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
              * @param camera The camera to create the depth renderer on (default: scene's active camera)
+             * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
              * @returns the created depth renderer
              */
-            enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer;
+            enableDepthRenderer(camera?: Nullable<Camera>, storeNonLinearDepth?: boolean): DepthRenderer;
             /**
              * Disables a depth renderer for a given camera
              * @param camera The camera to disable the depth renderer on (default: scene's active camera)
@@ -59918,47 +59982,123 @@ interface Window {
 interface Gamepad {
     readonly displayId: number;
 }
-interface XRDevice {
-    requestSession(options: XRSessionCreationOptions): Promise<XRSession>;
-    supportsSession(options: XRSessionCreationOptions): Promise<void>;
+type XRSessionMode =
+    | "inline"
+    | "immersive-vr"
+    | "immersive-ar";
+
+type XRReferenceSpaceType =
+    | "viewer"
+    | "local"
+    | "local-floor"
+    | "bounded-floor"
+    | "unbounded";
+
+type XREnvironmentBlendMode =
+    | "opaque"
+    | "additive"
+    | "alpha-blend";
+
+type XRVisibilityState =
+    | "visible"
+    | "visible-blurred"
+    | "hidden";
+
+type XRHandedness =
+    | "none"
+    | "left"
+    | "right";
+
+type XRTargetRayMode =
+    | "gaze"
+    | "tracked-pointer"
+    | "screen";
+
+type XREye =
+    | "none"
+    | "left"
+    | "right";
+
+interface XRSpace extends EventTarget {
+
 }
+
+interface XRRenderState {
+    depthNear: number ;
+    depthFar: number ;
+    inlineVerticalFieldOfView: number | undefined;
+    baseLayer: XRWebGLLayer | undefined;
+}
+
+interface XRInputSource {
+    handedness: XRHandedness;
+    targetRayMode: XRTargetRayMode;
+    targetRaySpace: XRSpace;
+    gripSpace: XRSpace | undefined;
+    gamepad: Gamepad | undefined;
+    profiles: Array<string>;
+}
+
 interface XRSession {
-    getInputSources(): Array<any>;
-    baseLayer: XRWebGLLayer;
-    requestFrameOfReference(type: string): Promise<void>;
-    requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
-    end(): Promise<void>;
-    requestAnimationFrame: Function;
     addEventListener: Function;
+    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
+    updateRenderState(XRRenderStateInit: any): Promise<void>;
+    requestAnimationFrame: Function;
+    end(): Promise<void>;
+    renderState: XRRenderState;
+    inputSources: Array<XRInputSource>;
+
 }
-interface XRSessionCreationOptions {
-    outputContext?: WebGLRenderingContext | null;
-    immersive?: boolean;
-    environmentIntegration?: boolean;
+
+interface XRReferenceSpace extends XRSpace {
+    getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
+    onreset: any;
 }
-interface XRLayer {
-    getViewport: Function;
-    framebufferWidth: number;
-    framebufferHeight: number;
-}
-interface XRView {
-    projectionMatrix: Float32Array;
-}
+
 interface XRFrame {
-    getDevicePose: Function;
-    getInputPose: Function;
+    session: XRSession;
+    getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
+    getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
+}
+
+interface XRViewerPose extends XRPose {
     views: Array<XRView>;
-    baseLayer: XRLayer;
 }
-interface XRFrameOfReference {
+
+interface XRPose {
+    transform: XRRigidTransform;
+    emulatedPosition: boolean;
 }
-interface XRWebGLLayer extends XRLayer {
-    framebuffer: WebGLFramebuffer;
-}
+
 declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
-    new(session: XRSession, context?: WebGLRenderingContext): XRWebGLLayer;
+    new(session: XRSession, context: WebGLRenderingContext | undefined): XRWebGLLayer;
 };
+interface XRWebGLLayer {
+    framebuffer: WebGLFramebuffer;
+    framebufferWidth: number;
+    framebufferHeight: number;
+    getViewport: Function;
+}
+
+interface XRRigidTransform {
+    position: DOMPointReadOnly;
+    orientation: DOMPointReadOnly;
+    matrix: Float32Array;
+    inverse: XRRigidTransform;
+}
+
+interface XRView {
+    eye: XREye;
+    projectionMatrix: Float32Array;
+    transform: XRRigidTransform;
+}
+
+interface XRInputSourceChangeEvent {
+    session: XRSession;
+    removed: Array<XRInputSource>;
+    added: Array<XRInputSource>;
+}
 declare module BABYLON.GUI {
     /**
      * Class used to specific a value and its associated unit

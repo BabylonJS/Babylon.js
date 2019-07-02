@@ -11125,6 +11125,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var packingFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var shadowMapPixelShader: {
         name: string;
         shader: string;
@@ -15993,6 +16000,13 @@ declare module BABYLON {
          * @returns the distance away it was hit
          */
         intersectsPlane(plane: DeepImmutable<Plane>): Nullable<number>;
+        /**
+         * Calculate the intercept of a ray on a given axis
+         * @param axis to check 'x' | 'y' | 'z'
+         * @param offset from axis interception (i.e. an offset of 1y is intercepted above ground)
+         * @returns a vector containing the coordinates where 'axis' is equal to zero (else offset), or null if there is no intercept.
+         */
+        intersectsAxis(axis: string, offset?: number): Nullable<Vector3>;
         /**
          * Checks if ray intersects a mesh
          * @param mesh the mesh to check
@@ -57660,6 +57674,10 @@ declare module BABYLON {
         private _scene;
         private _depthMap;
         private _effect;
+        private readonly _storeNonLinearDepth;
+        private readonly _clearColor;
+        /** Get if the depth renderer is using packed depth or not */
+        readonly isPacked: boolean;
         private _cachedDefines;
         private _camera;
         /**
@@ -57675,8 +57693,9 @@ declare module BABYLON {
          * @param scene The scene the renderer belongs to
          * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
          * @param camera The camera to be used to render the depth map (default: scene's active camera)
+         * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
          */
-        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>);
+        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>, storeNonLinearDepth?: boolean);
         /**
          * Creates the depth rendering effect and checks if the effect is ready.
          * @param subMesh The submesh to be used to render the depth map of
@@ -57704,9 +57723,10 @@ declare module BABYLON {
             /**
              * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
              * @param camera The camera to create the depth renderer on (default: scene's active camera)
+             * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
              * @returns the created depth renderer
              */
-            enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer;
+            enableDepthRenderer(camera?: Nullable<Camera>, storeNonLinearDepth?: boolean): DepthRenderer;
             /**
              * Disables a depth renderer for a given camera
              * @param camera The camera to disable the depth renderer on (default: scene's active camera)
