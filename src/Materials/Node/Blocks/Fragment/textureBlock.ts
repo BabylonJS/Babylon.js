@@ -9,6 +9,7 @@ import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { InputBlock } from '../Input/inputBlock';
 import { Effect } from '../../../../Materials/effect';
 import { Mesh } from '../../../../Meshes/mesh';
+import { Nullable } from '../../../../types';
 
 /**
  * Block used to read a texture from a sampler
@@ -25,7 +26,7 @@ export class TextureBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the texture associated with the node
      */
-    public texture: BaseTexture;
+    public texture: Nullable<BaseTexture>;
 
     /**
      * Create a new TextureBlock
@@ -103,7 +104,7 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
-        if (!mesh) {
+        if (!mesh || !this.texture) {
             return;
         }
 

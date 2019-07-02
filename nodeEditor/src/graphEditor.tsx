@@ -23,13 +23,13 @@ import { DefaultPortModel } from './components/diagram/defaultPortModel';
 import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
 import { InputNodeModel } from './components/diagram/input/inputNodeModel';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
-import { Vector2, Vector3, Vector4, Matrix, Color3, Color4 } from 'babylonjs/Maths/math';
 import { LogComponent, LogEntry } from './components/log/logComponent';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { LightNodeModel } from './components/diagram/light/lightNodeModel';
 import { LightNodeFactory } from './components/diagram/light/lightNodeFactory';
 import { DataStorage } from './dataStorage';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -55,7 +55,7 @@ interface IGraphEditorProps {
 
 export class NodeCreationOptions {
     column: number;
-    nodeMaterialBlock?: NodeMaterialBlock;
+    nodeMaterialBlock: NodeMaterialBlock;
     type?: string;
     connection?: NodeMaterialConnectionPoint;
 }
@@ -90,52 +90,24 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         var newNode: DefaultNodeModel;
         var filterInputs = [];
 
-        if (options.nodeMaterialBlock) {
-            if (options.nodeMaterialBlock instanceof TextureBlock) {
-                newNode = new TextureNodeModel();
-                filterInputs.push("uv");
-            } else if (options.nodeMaterialBlock instanceof LightBlock) {
-                newNode = new LightNodeModel();
-                filterInputs.push("worldPosition");
-                filterInputs.push("worldNormal");
-                filterInputs.push("cameraPosition");
-            } else {
-                newNode = new GenericNodeModel();
-            }
-
-            if (options.nodeMaterialBlock.isFinalMerger) {
-                this.props.globalState.nodeMaterial!.addOutputNode(options.nodeMaterialBlock);
-            }
-
-        } else {
+        if (options.nodeMaterialBlock instanceof TextureBlock) {
+            newNode = new TextureNodeModel();
+            filterInputs.push("uv");
+        } else if (options.nodeMaterialBlock instanceof LightBlock) {
+            newNode = new LightNodeModel();
+            filterInputs.push("worldPosition");
+            filterInputs.push("worldNormal");
+            filterInputs.push("cameraPosition");
+        } else if (options.nodeMaterialBlock instanceof InputBlock) {
             newNode = new InputNodeModel();
-            let inputNodeModel = newNode as InputNodeModel;
-            inputNodeModel.connection = options.connection;
-
-            switch (options.type) {
-                case "Float":
-                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Float;
-                    break;
-                case "Vector2":
-                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Vector2;
-                    break;
-                case "Vector3":
-                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Vector3;
-                    break;
-                case "Vector4":
-                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Vector4;
-                    break;
-                case "Matrix":
-                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Matrix;
-                    break;
-                case "Color3":
-                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Color3;
-                    break;
-                case "Color4":
-                    inputNodeModel.outputType = NodeMaterialBlockConnectionPointTypes.Color4;
-                    break;
-            }
+        } else {
+            newNode = new GenericNodeModel();
         }
+
+        if (options.nodeMaterialBlock.isFinalMerger) {
+            this.props.globalState.nodeMaterial!.addOutputNode(options.nodeMaterialBlock);
+        }
+
         this._nodes.push(newNode)
         newNode.setPosition(1600 - (300 * options.column), 210 * this._rowPos[options.column])
         this._model.addAll(newNode);
@@ -241,14 +213,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                 link.output.connection.disconnectFrom(link.input.connection)
                                 link.input.syncWithNodeMaterialConnectionPoint(link.input.connection)
                                 link.output.syncWithNodeMaterialConnectionPoint(link.output.connection)
-                            } else {
-                                let inputNode = link.output.parent as InputNodeModel
-                                inputNode.connection = undefined;
-
-                                if (link.input.connection.value) {
-                                    inputNode.ports[link.output.name].defaultValue = link.input.connection.value;
-                                    link.input.connection.value = null;
-                                }
                             }
                         }
                     }
@@ -265,14 +229,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                         if (link) {
                             if (link.output.connection && link.input.connection) {
                                 link.output.connection.connectTo(link.input.connection)
-                            } else if (link.input.connection) {
-                                if (!link.output.connection) { // Input Node
-                                    let name = link.output.name;
-                                    link.output.syncWithNodeMaterialConnectionPoint(link.input.connection);
-                                    link.output.name = name;
-                                    (link.output.getNode() as InputNodeModel).connection = link.output.connection!;
-                                    link.input.connection.value = link.output.defaultValue;
-                                }
                             }
                             if (this.props.globalState.nodeMaterial) {
                                 this.buildMaterial();
@@ -322,36 +278,33 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     }
 
     addValueNode(type: string, column = 0, connection?: NodeMaterialConnectionPoint) {
-        var localNode = this.createNodeFromObject({ column: column, type: type, connection: connection })
-        var outPort = new DefaultPortModel(type, "output");
-
-        localNode.addPort(outPort);
-
-        if (!connection) {
-            switch (type) {
-                case "Float":
-                    outPort.defaultValue = 0;
-                    break;
-                case "Vector2":
-                    outPort.defaultValue = Vector2.Zero();
-                    break;
-                case "Vector3":
-                    outPort.defaultValue = Vector3.Zero();
-                    break;
-                case "Vector4":
-                    outPort.defaultValue = Vector4.Zero();
-                    break;
-                case "Matrix":
-                    outPort.defaultValue = Matrix.Identity();
-                    break;
-                case "Color3":
-                    outPort.defaultValue = Color3.White();
-                    break;
-                case "Color4":
-                    outPort.defaultValue = new Color4(1, 1, 1, 1);
-                    break;
-            }
+        let nodeType: NodeMaterialBlockConnectionPointTypes = NodeMaterialBlockConnectionPointTypes.Vector3;
+        switch (type) {
+            case "Float":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Float;
+                break;
+            case "Vector2":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Vector2;
+                break;
+            case "Vector3":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Vector3;
+                break;
+            case "Vector4":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Vector4;
+                break;
+            case "Matrix":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Matrix;
+                break;
+            case "Color3":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Color3;
+                break;
+            case "Color4":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Color4;
+                break;
         }
+
+        let newInputBlock = new InputBlock(type, undefined, nodeType)
+        var localNode = this.createNodeFromObject({ column: column, type: type, connection: connection, nodeMaterialBlock: newInputBlock })
 
         return localNode;
     }

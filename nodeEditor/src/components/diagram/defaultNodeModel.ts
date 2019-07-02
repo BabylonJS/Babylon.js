@@ -63,12 +63,10 @@ export class DefaultNodeModel extends NodeModel {
                 } else {
                     model.addAll(link);
                 }
-            } else if (!connection.isUndefined) {
+            } else {
                 // Create value node for the connection
                 var type = ""
-                if (connection.type == NodeMaterialBlockConnectionPointTypes.Texture) {
-                    type = "Texture"
-                } else if (connection.type == NodeMaterialBlockConnectionPointTypes.Matrix) {
+                if (connection.type == NodeMaterialBlockConnectionPointTypes.Matrix) {
                     type = "Matrix"
                 } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector3OrColor3) {
                     type = "Vector3"
@@ -76,8 +74,7 @@ export class DefaultNodeModel extends NodeModel {
                     type = "Vector2"
                 } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4) {
                     type = "Vector4"
-                }
-                else if (connection.type & NodeMaterialBlockConnectionPointTypes.Float) {
+                } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Float) {
                     type = "Float"
                 }
 

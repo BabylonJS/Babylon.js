@@ -4,7 +4,7 @@ import { NodeMaterialBlockConnectionPointMode } from '../../NodeMaterialBlockCon
 import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
 import { Nullable } from '../../../../types';
 import { Effect } from '../../../../Materials/effect';
-import { Matrix } from '../../../../Maths/math';
+import { Matrix, Vector2, Vector3 } from '../../../../Maths/math';
 import { Scene } from '../../../../scene';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
@@ -240,6 +240,28 @@ export class InputBlock extends NodeMaterialBlock {
         }
 
         return `#ifdef ${define}\r\n`;
+    }
+
+    /**
+     * Set the input block to its default value (based on its type)
+     */
+    public setDefaultValue() {
+        switch (this.type) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                this.value = 0;
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                this.value = Vector2.Zero();
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+            case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
+                this.value = Vector3.Zero();
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Matrix:
+                this.value = Matrix.Identity();
+                break;
+        }
     }
 
     private _emit(state: NodeMaterialBuildState, define?: string) {

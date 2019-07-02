@@ -127,7 +127,6 @@ export class FogBlock extends NodeMaterialBlock {
             this._fogParameters = state._getFreeVariableName("fogParameters");
             let output = this._outputs[0];
 
-
             state._emitUniformFromString(this._fogParameters, "vec4");
 
             state.compilationString += `#ifdef FOG\r\n`;
