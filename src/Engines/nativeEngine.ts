@@ -134,40 +134,6 @@ class NativeAddressMode {
     public static readonly MIRROR_ONCE = 4;
 }
 
-// TODO: change this to match bgfx.
-// Must match BlendMode in SpectreEngine.h.
-class NativeBlendMode {
-    public static readonly REPLACE = 0;
-    public static readonly OVER = 1;
-    public static readonly UNDER = 2;
-    public static readonly INSIDE = 3;
-    public static readonly ERASE = 4;
-    public static readonly NULL = 5;
-    public static readonly CLEAR = 6;
-    public static readonly STRAIGHT_REPLACE = 7;
-    public static readonly STRAIGHT_OVER = 8;
-    public static readonly STRAIGHT_ADD = 9;
-    public static readonly ADD = 10;
-    public static readonly SCREEN = 11;
-    public static readonly MULTIPLY = 12;
-    public static readonly MULTIPLY2X = 13;
-    public static readonly INTERPOLATE = 14;
-    public static readonly MINIMUM = 15;
-    public static readonly MAXIMUM = 16;
-    public static readonly MAXIMUM_ALPHA = 17;
-    public static readonly ADD_ALPHA = 18;
-    public static readonly BLACK_REPLACE = 19;
-    public static readonly BLACK_OVER = 20;
-    public static readonly BLACK_UNDER = 21;
-    public static readonly BLACK_INSIDE = 22;
-    public static readonly ALPHA_COVERAGE_MASK = 23;
-    public static readonly DUAL_COLOR_MULTIPLY_ADD = 24;
-    public static readonly COMBINE = 25;
-    public static readonly BLEND_OPAQUE = NativeBlendMode.REPLACE;
-    public static readonly BLEND_ALPHA_PREMULTIPLIED = NativeBlendMode.OVER;
-    public static readonly BLEND_ALPHA_STRAIGHT = NativeBlendMode.STRAIGHT_OVER;
-}
-
 /** @hidden */
 declare var nativeEngine: INativeEngine;
 
@@ -552,30 +518,13 @@ export class NativeEngine extends Engine {
             return;
         }
 
-        this._native.setBlendMode(this._getBlendMode(mode));
+        this._native.setBlendMode(mode);
 
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
         }
 
         this._alphaMode = mode;
-    }
-
-    // Returns a NativeBlendMode.XXXX value.
-    // Note: Many blend modes intentionally not implemented. If more are needed, they should be added.
-    private _getBlendMode(mode: number): number {
-        switch (mode) {
-            case Engine.ALPHA_DISABLE:
-                return NativeBlendMode.REPLACE;
-            case Engine.ALPHA_PREMULTIPLIED_PORTERDUFF:
-                return NativeBlendMode.OVER;
-            case Engine.ALPHA_COMBINE:
-                return NativeBlendMode.COMBINE;
-            case Engine.ALPHA_SCREENMODE:
-                return NativeBlendMode.SCREEN;
-            default:
-                throw new Error("Unexpected alpha mode: " + mode + ".");
-        }
     }
 
     /**
