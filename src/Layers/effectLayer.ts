@@ -479,8 +479,16 @@ export abstract class EffectLayer {
                 attribs.push(VertexBuffer.MatricesIndicesExtraKind);
                 attribs.push(VertexBuffer.MatricesWeightsExtraKind);
             }
+
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            defines.push("#define BonesPerMesh " + (mesh.skeleton ? (mesh.skeleton.bones.length + 1) : 0));
+
+            let skeleton = mesh.skeleton;
+            if (skeleton && skeleton.isUsingTextureForMatrices) {
+                defines.push("#define BONETEXTURE");
+            } else {
+                defines.push("#define BonesPerMesh " + (skeleton ? (skeleton.bones.length + 1) : 0));
+            }
+
             if (mesh.numBoneInfluencers > 0) {
                 fallbacks.addCPUSkinningFallback(0, mesh);
             }
@@ -515,9 +523,9 @@ export abstract class EffectLayer {
             this._effectLayerMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration",
                 attribs,
                 ["world", "mBones", "viewProjection",
-                    "glowColor", "morphTargetInfluences",
+                    "glowColor", "morphTargetInfluences", "boneTextureWidth",
                     "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity"],
-                ["diffuseSampler", "emissiveSampler", "opacitySampler"], join,
+                ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler"], join,
                 fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
         }
 
@@ -713,7 +721,19 @@ export abstract class EffectLayer {
 
             // Bones
             if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                this._effectLayerMapGenerationEffect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                const skeleton = mesh.skeleton;
+
+                if (skeleton.isUsingTextureForMatrices) {
+                    const boneTexture = skeleton.getTransformMatrixTexture(mesh);
+                    if (!boneTexture) {
+                        return;
+                    }
+
+                    this._effectLayerMapGenerationEffect.setTexture("boneSampler", boneTexture);
+                    this._effectLayerMapGenerationEffect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                } else {
+                    this._effectLayerMapGenerationEffect.setMatrices("mBones", skeleton.getTransformMatrices((mesh)));
+                }
             }
 
             // Morph targets
