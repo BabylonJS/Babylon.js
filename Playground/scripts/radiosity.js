@@ -103,7 +103,7 @@ var createScene = function() {
             pr._meshes = scene.meshes;
             for (let i = 0; i < scene.meshes.length; i++) {
                 if (!scene.meshes[i].__lightmapSize) {
-                    prepareForBaking(scene.meshes[i]);
+                    // prepareForBaking(scene.meshes[i]);
                 }
             }
         });

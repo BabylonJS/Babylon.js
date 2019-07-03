@@ -1,7 +1,7 @@
 import { Vector2, Vector3, Matrix } from "../Maths/math"
 import { Nullable } from "../types";
 import { Mesh } from "../meshes";
-import { IndicesArray, FloatArray, VertexBuffer, MeshBuilder, Scene } from "../index";
+import { IndicesArray, FloatArray, VertexBuffer, MeshBuilder, Scene, StandardMaterial, Texture, Color3 } from "../index";
 
 class Face {
 	area: number;
@@ -10,6 +10,7 @@ class Face {
 		v: Vector3,
 		index: number
 	}[];
+	vNo: Vector3[];
 	edge_keys: string[];
 	no: Vector3;
 	index: number;
@@ -18,19 +19,30 @@ class Face {
 	constructor(indexBegin: number, 
 		indices: IndicesArray, 
 		vertices: FloatArray,
+		normals: Nullable<FloatArray>,
 		offset: number = 0,
 		matrix?: Matrix) {
 		this.v = [];
 		this.uv = [];
+		this.vNo = [];
 		this.edge_keys = [];
 		this.index = indexBegin;
 		this.meshIndex = offset;
 		for (let i = 0; i < 3; i++) {
 			let idx = indices[i + indexBegin];
 			let vertex = new Vector3(vertices[idx * 3], vertices[idx * 3 + 1], vertices[idx * 3 + 2]);
+			if (normals) {
+				let normal = new Vector3(normals[idx * 3], normals[idx * 3 + 1], normals[idx * 3 + 2]);
+				if (matrix) {
+					normal = Vector3.TransformNormal(normal, matrix);
+				}
+
+				this.vNo.push(normal);
+			}
 			if (matrix) {
 				vertex = Vector3.TransformCoordinates(vertex, matrix);
 			}
+			
 			this.v.push({
 				v: vertex,
 				index: idx
@@ -560,7 +572,7 @@ export class UvMapper {
 		ctx.stroke();
 	}
 
-	debugUvs(uvs: FloatArray, indices: IndicesArray) {
+	debugUvs(uvsArray: FloatArray[], indicesArray: IndicesArray[]) {
 		let canvas = document.createElement("canvas");
 		let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
@@ -577,56 +589,40 @@ export class UvMapper {
 		ctx.fillRect(0, 0, 300, 300);
 		ctx.fillStyle = "red";
 		ctx.scale(300, 300);
-
-		let points0 = [
-			// new Vector2(0, 0),
-			// new Vector2(25, 25),
-			// new Vector2(-50, -35),
-			// new Vector2(125, 32),
-			// new Vector2(-85, 82),
-			// new Vector2(0, 100),
-		];
-
-		for (let i = 0; i < 16; i++) {
-			points0.push(new Vector2(Math.random(), Math.random()));
-		}
-
-		// Draw points
-		ctx.lineWidth = 0.001
-		// for (let i = 0; i < points0.length; i++) {
-		// 	ctx.moveTo(points0[i].x, points0[i].y);
-		// 	ctx.arc(points0[i].x, points0[i].y, 0.01, 0, 2 * Math.PI);
-		// 	ctx.fill();
-		// }
+		ctx.lineWidth = 0.001;
 
 		ctx.strokeStyle = "green";
-		for (let i = 0; i < indices.length; i += 3) {
-			let lessThanZeroCount = 0;
-			if (uvs[indices[i] * 2] < 0) {
-				lessThanZeroCount++;
-			}
-			if (uvs[indices[i + 1] * 2] < 0) {
-				lessThanZeroCount++;
-			}
-			if (uvs[indices[i + 2] * 2] < 0) {
-				lessThanZeroCount++
-			}
+		for (let j = 0; j < uvsArray.length; j++) {
+			let uvs = uvsArray[j];
+			let indices = indicesArray[j];
+			for (let i = 0; i < indices.length; i += 3) {
+				let lessThanZeroCount = 0;
+				if (uvs[indices[i] * 2] < 0) {
+					lessThanZeroCount++;
+				}
+				if (uvs[indices[i + 1] * 2] < 0) {
+					lessThanZeroCount++;
+				}
+				if (uvs[indices[i + 2] * 2] < 0) {
+					lessThanZeroCount++
+				}
 
-			if (lessThanZeroCount > 1) {
-				debugger;
-				continue;
-			} else if (lessThanZeroCount === 1) {
-				debugger;
-			}
+				if (lessThanZeroCount > 1) {
+					debugger;
+				} else if (lessThanZeroCount === 1) {
+					debugger;
+				}
 
-			ctx.beginPath();
-			ctx.moveTo(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
-			ctx.lineTo(uvs[indices[i + 1] * 2], uvs[indices[i + 1] * 2 + 1]);
-			ctx.lineTo(uvs[indices[i + 2] * 2], uvs[indices[i + 2] * 2 + 1]);
-			ctx.lineTo(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
-			ctx.stroke();
-			// ctx.fill();
+				ctx.beginPath();
+				ctx.moveTo(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
+				ctx.lineTo(uvs[indices[i + 1] * 2], uvs[indices[i + 1] * 2 + 1]);
+				ctx.lineTo(uvs[indices[i + 2] * 2], uvs[indices[i + 2] * 2 + 1]);
+				ctx.lineTo(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
+				ctx.stroke();
+				// ctx.fill();
+			}			
 		}
+
 	}
 
 	optiRotateUvIsland(faces: Face[]) {
@@ -672,6 +668,11 @@ export class UvMapper {
 				}
 
 				totFaceArea += islandList[islandIdx][i].area;
+			}
+
+			if (totFaceArea < SMALL_NUM) {
+				islandList.splice(islandIdx, 1);
+				continue;
 			}
 
 			let islandBoundsArea = w * h;
@@ -916,7 +917,7 @@ export class UvMapper {
 
 	main(obList: Mesh[],
 		island_margin: number = 0, 
-		projection_limit: number = 90,
+		projection_limit: number = 75,
 		user_area_weight: number = 0,
 		use_aspect: boolean = false,
 		strech_to_bounds: boolean = false) {
@@ -936,9 +937,10 @@ export class UvMapper {
 			let m = obList[i];
 			let indices = m.getIndices() as IndicesArray;
 			let vertices = m.getVerticesData(VertexBuffer.PositionKind) as FloatArray;
+			let normals = m.isVerticesDataPresent(VertexBuffer.NormalKind) ? m.getVerticesData(VertexBuffer.NormalKind) as FloatArray : null;
 			let matrix = m.getWorldMatrix();
 			for (let j = 0; j < indices.length; j+= 3) {
-				meshFaces.push(new Face(j, indices, vertices, i, matrix));
+				meshFaces.push(new Face(j, indices, vertices, normals, i, matrix));
 			}
 
 			meshFaces.sort((a, b) => b.area - a.area);
@@ -1091,8 +1093,10 @@ export class UvMapper {
 		let newUvs: FloatArray[] = [];
 		let indices: IndicesArray[] = [];
 		let vertices: FloatArray[] = [];
+		let normals: FloatArray[] = [];
 		let additionnalUvs : Vector2[][] = [];
 		let additionnalVertices : Vector3[][] = [];
+		let additionnalNormals : Vector3[][] = [];
 
 		for (let i = 0; i < obList.length; i++) {
 			newUvs.push(new Float32Array(obList[i].getTotalVertices() * 2));
@@ -1102,12 +1106,11 @@ export class UvMapper {
 			}
 			indices.push(<IndicesArray>obList[i].getIndices());
 			vertices.push(<FloatArray>obList[i].getVerticesData(VertexBuffer.PositionKind));
+			normals.push(<FloatArray>obList[i].getVerticesData(VertexBuffer.NormalKind) || []);
 			additionnalUvs.push([]);
 			additionnalVertices.push([]);
+			additionnalNormals.push([]);
 		}
-
-		// TODO : normals
-		// let additionnalNormals = [];
 
 		for (let i = 0; i < collected_islandList.length; i++) {
 			for (let j = 0; j < collected_islandList[i].length; j++) {
@@ -1136,6 +1139,9 @@ export class UvMapper {
 							// could not find one, we add to the list
 							additionnalUvs[f.meshIndex].push(newUv);
 							additionnalVertices[f.meshIndex].push(newPosition);
+							if (normals[f.meshIndex].length) {
+								additionnalNormals[f.meshIndex].push(f.vNo[k].clone());
+							}
 							index = additionnalUvs[f.meshIndex].length - 1;
 						}
 
@@ -1149,8 +1155,10 @@ export class UvMapper {
 		for (let meshIndex = 0; meshIndex < additionnalUvs.length; meshIndex++) {
 			if (additionnalUvs[meshIndex].length) {
 				let oldVertices = vertices[meshIndex] as Float32Array;
+				let oldNormals = normals[meshIndex] as Float32Array;
 				let tempUvs = new Float32Array(newUvs[meshIndex].length + additionnalUvs[meshIndex].length * 2);
 				let tempVertices = new Float32Array(oldVertices.length + additionnalUvs[meshIndex].length * 3);
+				let tempNormals = new Float32Array(oldVertices.length + additionnalUvs[meshIndex].length * 3);
 
 				let l = newUvs[meshIndex].length;
 				for (let i = 0; i < l; i++) {
@@ -1173,11 +1181,31 @@ export class UvMapper {
 					tempVertices[i * 3 + 2 + l] = additionnalVertices[meshIndex][i].z;
 				}
 
+				l = oldNormals.length;
+				for (let i = 0; i < l; i++) {
+					tempNormals[i] = oldNormals[i];
+				}
+
+				for (let i = 0; i < additionnalNormals[meshIndex].length; i++) {
+					tempNormals[i * 3 + l] = additionnalNormals[meshIndex][i].x;
+					tempNormals[i * 3 + 1 + l] = additionnalNormals[meshIndex][i].y;
+					tempNormals[i * 3 + 2 + l] = additionnalNormals[meshIndex][i].z;
+				}
+
 				newUvs[meshIndex] = tempUvs;
+				vertices[meshIndex] = tempVertices;
+				normals[meshIndex] = tempNormals;
 			}
+
+			obList[meshIndex].setVerticesData(VertexBuffer.PositionKind, vertices[meshIndex]);
+			if (normals[meshIndex].length) {
+				obList[meshIndex].setVerticesData(VertexBuffer.NormalKind, normals[meshIndex]);
+			}
+			obList[meshIndex].setIndices(indices[meshIndex]);
+			obList[meshIndex].setVerticesData(VertexBuffer.UVKind, newUvs[meshIndex]);
 		}
 
-		this.debugUvs(newUvs[0], indices[0]);
+		this.debugUvs(newUvs, indices);
 	}
 
 	packIslands(islandList: Island[]) {
@@ -1257,7 +1285,14 @@ export class UvMapper {
 		// this.debPointInTri2D();
 		// this.debugFitAABB();
 		let sphere = MeshBuilder.CreateSphere("aa", { diameter: 1, segments: 10 }, scene);
-		this.main([sphere]);
+		let cylinder = MeshBuilder.CreateCylinder("aa", { diameter: 1 }, scene);
+		cylinder.position.addInPlace(new Vector3(0, 5, 1));
+		cylinder.scaling.scaleInPlace(5);
+		this.main([sphere, cylinder]);
+		let mat = new StandardMaterial("test", scene);
+		sphere.material = mat;
+		mat.emissiveTexture = new Texture("./LogoPBT.png", scene);
+		// mat.emissiveColor = new Color3(1, 0, 0);
 	}
 }
 
