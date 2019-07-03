@@ -596,6 +596,7 @@
             "uncheckedLintImports": [
                 "react",
                 "react-dom",
+                "dagre",
                 "re-resizable",
                 "glTF"
             ],
