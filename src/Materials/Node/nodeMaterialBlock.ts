@@ -238,7 +238,7 @@ export class NodeMaterialBlock {
      */
     public getFirstAvailableOutput(forBlock: Nullable<NodeMaterialBlock> = null) {
         for (var output of this._outputs) {
-            if (!forBlock || !forBlock.target || (forBlock.target & output.target) !== 0) {
+            if (!forBlock || !forBlock.target || forBlock.target === NodeMaterialBlockTargets.Neutral || (forBlock.target & output.target) !== 0) {
                 return output;
             }
         }
@@ -385,12 +385,14 @@ export class NodeMaterialBlock {
                 continue;
             }
 
-            if ((input.target & this.target!) === 0) {
-                continue;
-            }
+            if (this.target !== NodeMaterialBlockTargets.Neutral) {
+                if ((input.target & this.target!) === 0) {
+                    continue;
+                }
 
-            if ((input.target & state.target!) === 0) {
-                continue;
+                if ((input.target & state.target!) === 0) {
+                    continue;
+                }
             }
 
             let block = input.connectedPoint.ownerBlock;
@@ -411,11 +413,13 @@ export class NodeMaterialBlock {
         if (!this.isInput) {
             /** Prepare outputs */
             for (var output of this._outputs) {
-                if ((output.target & this.target!) === 0) {
-                    continue;
-                }
-                if ((output.target & state.target!) === 0) {
-                    continue;
+                if (this.target !== NodeMaterialBlockTargets.Neutral) {
+                    if ((output.target & this.target!) === 0) {
+                        continue;
+                    }
+                    if ((output.target & state.target!) === 0) {
+                        continue;
+                    }
                 }
 
                 if (!output.associatedVariableName) {

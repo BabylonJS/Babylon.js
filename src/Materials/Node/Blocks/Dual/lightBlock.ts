@@ -158,11 +158,11 @@ export class LightBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
+            // Vertex
+            this._injectVertexCode(state);
+
             return;
         }
-
-        // Vertex
-        this._injectVertexCode(state._vertexState);
 
         // Fragment
         state.sharedData.bindableBlocks.push(this);

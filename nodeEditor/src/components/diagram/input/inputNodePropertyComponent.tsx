@@ -83,7 +83,7 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextLineComponent label="Type" value={StringTools.GetBaseType(this.props.inputNode.outputType)} />
+                    <TextLineComponent label="Type" value={StringTools.GetBaseType(inputBlock.type)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {

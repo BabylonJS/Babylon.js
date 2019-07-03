@@ -7,7 +7,7 @@ import { BaseTexture } from '../../../Textures/baseTexture';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { InputBlock } from '../Input/inputBlock';
-import { Effect } from '../../../../Materials/effect';
+import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Nullable } from '../../../../types';
 
@@ -35,9 +35,9 @@ export class TextureBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.VertexAndFragment);
 
-        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false);
+        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.Vertex);
 
-        this.registerOutput("color", NodeMaterialBlockConnectionPointTypes.Color4);
+        this.registerOutput("color", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
     }
 
     /**
@@ -120,6 +120,14 @@ export class TextureBlock extends NodeMaterialBlock {
         this._defineName = state._getFreeDefineName("UVTRANSFORM");
         this._mainUVDefineName = state._getFreeDefineName("vMain" + uvInput.associatedVariableName);
 
+        if (uvInput.connectedPoint!.ownerBlock.isInput) {
+            let uvInputOwnerBlock = uvInput.connectedPoint!.ownerBlock as InputBlock;
+
+            if (!uvInputOwnerBlock.isAttribute) {
+                state._emitUniformFromString(uvInput.associatedVariableName, "vec2");
+            }
+        }
+
         this._mainUVName = "vMain" + uvInput.associatedVariableName;
         this._transformedUVName = state._getFreeVariableName("transformedUV");
         this._textureTransformName = state._getFreeVariableName("textureTransform");
@@ -144,6 +152,8 @@ export class TextureBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
+            // Vertex
+            this._injectVertexCode(state);
             return;
         }
 
@@ -154,8 +164,6 @@ export class TextureBlock extends NodeMaterialBlock {
         state.samplers.push(this._samplerName);
         state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
 
-        // Vertex
-        this._injectVertexCode(state._vertexState);
 
         // Fragment
         state.sharedData.blocksWithDefines.push(this);
