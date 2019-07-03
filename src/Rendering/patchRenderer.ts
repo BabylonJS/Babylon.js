@@ -156,7 +156,7 @@ export class PatchRenderer {
     constructor(scene: Scene, meshes: Mesh[], texelSize: number) {
 
         // DEBUG UVMapper
-        let uvm = new UvMapper();
+        let uvm = new UvMapper(scene);
         
         this._scene = scene;
         this._near = 0.1;

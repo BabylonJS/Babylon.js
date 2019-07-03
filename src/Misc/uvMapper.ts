@@ -1,7 +1,7 @@
 import { Vector2, Vector3, Matrix } from "../Maths/math"
 import { Nullable } from "../types";
 import { Mesh } from "../meshes";
-import { IndicesArray, FloatArray, VertexBuffer } from "..";
+import { IndicesArray, FloatArray, VertexBuffer, MeshBuilder, Scene } from "../index";
 
 class Face {
 	area: number;
@@ -12,21 +12,40 @@ class Face {
 	}[];
 	edge_keys: string[];
 	no: Vector3;
+	index: number;
+	meshIndex: number;
 
 	constructor(indexBegin: number, 
 		indices: IndicesArray, 
-		vertices: FloatArray) {
-		this.v = []
-		this.uv = []
+		vertices: FloatArray,
+		offset: number = 0,
+		matrix?: Matrix) {
+		this.v = [];
+		this.uv = [];
+		this.edge_keys = [];
+		this.index = indexBegin;
+		this.meshIndex = offset;
 		for (let i = 0; i < 3; i++) {
 			let idx = indices[i + indexBegin];
 			let vertex = new Vector3(vertices[idx * 3], vertices[idx * 3 + 1], vertices[idx * 3 + 2]);
+			if (matrix) {
+				vertex = Vector3.TransformCoordinates(vertex, matrix);
+			}
 			this.v.push({
 				v: vertex,
 				index: idx
 			});	
 			this.uv.push(new Vector2());
-			this.edge_keys.push(indices[i + indexBegin] + "_" + indices[(i+1) % 3 + indexBegin])
+			let firstIndex, secondIndex;
+
+			if (indices[i + indexBegin] > indices[(i+1) % 3 + indexBegin]) {
+				firstIndex = indices[(i+1) % 3 + indexBegin];
+				secondIndex = indices[i + indexBegin];
+			} else {
+				firstIndex = indices[i + indexBegin];
+				secondIndex = indices[(i+1) % 3 + indexBegin];
+			}
+			this.edge_keys.push(offset + "_" + firstIndex + "_" + secondIndex)
 		}
 
 		let faceNormal = Vector3.Cross(this.v[0].v.subtract(this.v[1].v), this.v[2].v.subtract(this.v[1].v));
@@ -117,12 +136,14 @@ function projectMat(vector: Vector3) {
 	}
 
 	firstAxis = Vector3.Cross(lastAxis, firstAxis);
+	firstAxis.normalize();
 	let secondAxis = Vector3.Cross(lastAxis, firstAxis);
+	secondAxis.normalize();
 	let mat = new Matrix();
 
 	Matrix.FromXYZAxesToRef(firstAxis, secondAxis, lastAxis, mat);
 
-	return mat;
+	return mat.transpose();
 }
 
 // TODO
@@ -220,18 +241,19 @@ export class UvMapper {
 			let f = island[i];
 			let f_uvkey = f.uv;
 
-			for (let vIdx = 0; vIdx < f_uvkey.length; vIdx++) {
+			let l = f_uvkey.length;
+			for (let vIdx = 0; vIdx < l; vIdx++) {
 				unique_points_map.set(f_uvkey[vIdx].x + "_" + f_uvkey[vIdx].y, f.uv[vIdx]);
 
-				if (f.v[vIdx].index > f.v[vIdx - 1].index) {
-					i1 = vIdx - 1;
+				if (f.v[vIdx].index > f.v[(vIdx - 1 + l) % l].index) {
+					i1 = (vIdx - 1 + l) % l;
 					i2 = vIdx;
 				} else {
 					i1 = vIdx;
-					i2 = vIdx - 1;
+					i2 = (vIdx - 1 + l) % l;
 				}
 
-				let key = f_uvkey[i1].x + "_" + f_uvkey[i1].y + "_" + f_uvkey[i2].x + f_uvkey[i2].y;
+				let key = f_uvkey[i1].x + "_" + f_uvkey[i1].y + "_" + f_uvkey[i2].x + "_" + f_uvkey[i2].y;
 
 				if (typeof(edges.get(key)) === "undefined") {
 					edges.set(key, {
@@ -252,14 +274,17 @@ export class UvMapper {
 
 		let length_sorted_edges: MeasuredEdge[] = [];
 
-		for (let k in edges.keys()) {
-			let o = edges.get(k) as MeasuredEdge;
+		let keys = edges.keys();
+		let k = keys.next();
+		while (!k.done) {
+			let o = edges.get(k.value) as MeasuredEdge;
 
 			let i = 0;
 			while (i < length_sorted_edges.length && length_sorted_edges[i].l > o.l) {
 				i++;
 			}
 			length_sorted_edges.splice(i, 0, o);
+			k = keys.next();
 		}
 
 		let unique_points = [];
@@ -299,21 +324,27 @@ export class UvMapper {
 
 	// box is (left,bottom, right, top)
 	islandIntersectUvIsland(source: IslandInfo, target: IslandInfo, SourceOffset: Vector2) : number {
-		let edgeLoopsSource = source[6] as Edge[];
-		let edgeLoopsTarget = target[6] as Edge[];
+		let edgeLoopsSource = source[6] as MeasuredEdge[];
+		let edgeLoopsTarget = target[6] as MeasuredEdge[];
 
 		for (let i = 0; i < edgeLoopsSource.length; i++) {
 			let ed = edgeLoopsSource[i];
+			if (!ed.e) {
+				continue;
+			}
 			for (let j = 0; j < edgeLoopsTarget.length; j++) {
 				let seg = edgeLoopsTarget[j];
-					let inter = intersect_line_line_2d(seg.v0,
-						seg.v1,
-						SourceOffset.add(ed.v0),
-						SourceOffset.add(ed.v1));
+				if (!seg.e) {
+					continue;
+				}
+				let inter = intersect_line_line_2d((<Edge>seg.e).v0,
+					(<Edge>seg.e).v1,
+					SourceOffset.add((<Edge>ed.e).v0),
+					SourceOffset.add((<Edge>ed.e).v1));
 
-					if (inter) {
-						return 1; // LINE INTERSECTION
-					}
+				if (inter) {
+					return 1; // LINE INTERSECTION
+				}
 			}
 		}
 
@@ -529,6 +560,57 @@ export class UvMapper {
 		ctx.stroke();
 	}
 
+	debugUvs(uvs: FloatArray, indices: IndicesArray) {
+		let canvas = document.createElement("canvas");
+		let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+		document.body.appendChild(canvas);
+		canvas.width = 300;
+		canvas.height = 300;
+		canvas.style.position = "absolute";
+		canvas.style.zIndex = "10";
+		canvas.style.top = "0px";
+		canvas.style.left = "0px";
+
+		ctx.clearRect(0, 0, 300, 300);
+		ctx.fillStyle = "white";
+		ctx.fillRect(0, 0, 300, 300);
+		ctx.fillStyle = "red";
+		ctx.scale(300, 300);
+
+		let points0 = [
+			// new Vector2(0, 0),
+			// new Vector2(25, 25),
+			// new Vector2(-50, -35),
+			// new Vector2(125, 32),
+			// new Vector2(-85, 82),
+			// new Vector2(0, 100),
+		];
+
+		for (let i = 0; i < 16; i++) {
+			points0.push(new Vector2(Math.random(), Math.random()));
+		}
+
+		// Draw points
+		ctx.lineWidth = 0.001
+		// for (let i = 0; i < points0.length; i++) {
+		// 	ctx.moveTo(points0[i].x, points0[i].y);
+		// 	ctx.arc(points0[i].x, points0[i].y, 0.01, 0, 2 * Math.PI);
+		// 	ctx.fill();
+		// }
+
+		ctx.strokeStyle = "green";
+		for (let i = 0; i < indices.length; i += 3) {
+			ctx.beginPath();
+			ctx.moveTo(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
+			ctx.lineTo(uvs[indices[i + 1] * 2], uvs[indices[i + 1] * 2 + 1]);
+			ctx.lineTo(uvs[indices[i + 2] * 2], uvs[indices[i + 2] * 2 + 1]);
+			ctx.lineTo(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
+			ctx.stroke();
+			// ctx.fill();
+		}
+	}
+
 	optiRotateUvIsland(faces: Face[]) {
 		let uv_points: Vector2[] = [];
 		for (let i = 0; i < faces.length; i++) {
@@ -667,6 +749,9 @@ export class UvMapper {
 
 	                    			for (let k = 0; k < sourceIsland[6].length; k++) {
 	                    				let e = sourceIsland[6][k] as MeasuredEdge;
+	                    				if (!e.e) {
+	                    					continue;
+	                    				}
 	                    				targetIsland[6].push(<MeasuredEdge>{
 	                    					e: {
 	                    						v0: (<Edge>e.e).v0.add(offset), 
@@ -808,11 +893,11 @@ export class UvMapper {
 	}
 
 	main(obList: Mesh[],
-		island_margin: number, 
-		projection_limit: number,
-		user_area_weight: number,
-		use_aspect: boolean,
-		strech_to_bounds: boolean) {
+		island_margin: number = 0, 
+		projection_limit: number = 25,
+		user_area_weight: number = 0,
+		use_aspect: boolean = false,
+		strech_to_bounds: boolean = false) {
 		const USER_PROJECTION_LIMIT_CONVERTED = Math.cos(projection_limit * Math.PI / 180);
 		const USER_PROJECTION_LIMIT_HALF_CONVERTED = Math.cos(projection_limit / 2 * Math.PI / 180);
 		const USER_SHARE_SPACE = true;
@@ -828,8 +913,9 @@ export class UvMapper {
 			let m = obList[i];
 			let indices = m.getIndices() as IndicesArray;
 			let vertices = m.getVerticesData(VertexBuffer.PositionKind) as FloatArray;
+			let matrix = m.getWorldMatrix();
 			for (let j = 0; j < indices.length; j+= 3) {
-				meshFaces.push(new Face(j, indices, vertices));
+				meshFaces.push(new Face(j, indices, vertices, i, matrix));
 			}
 
 			meshFaces.sort((a, b) => b.area - a.area);
@@ -968,8 +1054,8 @@ export class UvMapper {
 				let islandList = this.getUvIslands(faceProjectionGroupList);
 				collected_islandList = collected_islandList.concat(islandList);
 			} else {
-				let islandList = this.getUvIslands(faceProjectionGroupList);
-				this.packIslands(islandList);
+				collected_islandList = this.getUvIslands(faceProjectionGroupList);
+				this.packIslands(collected_islandList);
 			}
 		}
 
@@ -978,6 +1064,97 @@ export class UvMapper {
 		}
 
 		// Aspect TODO... not necessary
+
+		let newUvs: FloatArray[] = [];
+		let indices: IndicesArray[] = [];
+		let vertices: FloatArray[] = [];
+		let additionnalUvs : Vector2[][] = [];
+		let additionnalVertices : Vector3[][] = [];
+
+		for (let i = 0; i < obList.length; i++) {
+			newUvs.push(new Float32Array(obList[i].getTotalVertices() * 2));
+			// Init to -1
+			for (let j = 0; j < newUvs[newUvs.length - 1].length; j++) {
+				newUvs[newUvs.length-1][j] = -1;
+			}
+			indices.push(<IndicesArray>obList[i].getIndices());
+			vertices.push(<FloatArray>obList[i].getVerticesData(VertexBuffer.PositionKind));
+			additionnalUvs.push([]);
+			additionnalVertices.push([]);
+		}
+
+		// TODO : normals
+		// let additionnalNormals = [];
+
+		for (let i = 0; i < collected_islandList.length; i++) {
+			for (let j = 0; j < collected_islandList[i].length; j++) {
+				let f = collected_islandList[i][j];
+				for (let k = 0; k < 3; k++) {
+					if (newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2] === -1) {
+						// this vertex doesn't have uv yet, we assign them
+						newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2] = f.uv[k].x
+						newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2 + 1] = f.uv[k].y						
+					} else {
+						// This vertex already has uvs, we create a seam
+
+						// Search existing created vertices 
+						let newUv = new Vector2(f.uv[k].x, f.uv[k].y);
+						let newPosition = new Vector3(f.v[k].v.x, f.v[k].v.y, f.v[k].v.z);
+						let index = -1;
+						for (let h = 0; h < additionnalUvs[f.meshIndex].length; h++) {
+							if (additionnalUvs[f.meshIndex][h].equals(newUv) && 
+								additionnalVertices[f.meshIndex][h].equals(newPosition)) {
+								index = h;
+								break;
+							}
+						}
+
+						if (index === -1) {
+							// could not find one, we add to the list
+							additionnalUvs[f.meshIndex].push(newUv);
+							additionnalVertices[f.meshIndex].push(newPosition);
+							index = additionnalUvs[f.meshIndex].length - 1;
+						}
+
+						indices[f.meshIndex][f.index + k] = index + vertices[f.meshIndex].length / 3;
+					}
+				}
+			}
+		}
+
+		// Adding created vertices to the list
+		for (let meshIndex = 0; meshIndex < additionnalUvs.length; meshIndex++) {
+			if (additionnalUvs[meshIndex].length) {
+				let oldVertices = vertices[meshIndex] as Float32Array;
+				let tempUvs = new Float32Array(newUvs[meshIndex].length + additionnalUvs[meshIndex].length * 2);
+				let tempVertices = new Float32Array(vertices.length + additionnalUvs[meshIndex].length * 3);
+
+				let l = newUvs[meshIndex].length;
+				for (let i = 0; i < l; i++) {
+					tempUvs[i] = newUvs[meshIndex][i];
+				}
+
+				for (let i = 0; i < additionnalUvs[meshIndex].length; i++) {
+					tempUvs[i * 2 + l] = additionnalUvs[meshIndex][i].x;
+					tempUvs[i * 2 + 1 + l] = additionnalUvs[meshIndex][i].y;
+				}
+
+				l = vertices.length;
+				for (let i = 0; i < l; i++) {
+					tempVertices[i] = oldVertices[i];
+				}
+
+				for (let i = 0; i < additionnalVertices[meshIndex].length; i++) {
+					tempVertices[i * 3 + l] = additionnalVertices[meshIndex][i].x;
+					tempVertices[i * 3 + 1 + l] = additionnalVertices[meshIndex][i].y;
+					tempVertices[i * 3 + 2 + l] = additionnalVertices[meshIndex][i].z;
+				}
+
+				newUvs[meshIndex] = tempUvs;
+			}
+		}
+
+		this.debugUvs(newUvs[0], indices[0]);
 	}
 
 	packIslands(islandList: Island[]) {
@@ -1018,7 +1195,9 @@ export class UvMapper {
 				x: 0, 
 				y: 0, 
 				w, 
-				h});
+				h,
+				islandIdx: islandIdx
+			});
 			islandIdx++;
 		}
 
@@ -1032,11 +1211,12 @@ export class UvMapper {
 			yFactor = xFactor;
 		}
 
-		while (islandIdx) {
-			islandIdx--;
+		for (let boxIdx = 0; boxIdx < packBoxes.length; boxIdx++) {
+			let box = packBoxes[boxIdx];
+			let islandIdx = box.islandIdx;
 
-			let xOffset = packBoxes[islandIdx].x - islandOffsetList[islandIdx].x;
-			let yOffset = packBoxes[islandIdx].y - islandOffsetList[islandIdx].y;
+			let xOffset = box.x - islandOffsetList[islandIdx].x;
+			let yOffset = box.y - islandOffsetList[islandIdx].y;
 
 			for (let i = 0; i < islandList[islandIdx].length; i++) {
 				let f = islandList[islandIdx][i];
@@ -1046,12 +1226,17 @@ export class UvMapper {
 					uv.y = (uv.y + yOffset) * yFactor;
 				}
 			}
+
+			console.log(packBoxes[islandIdx]);
+			console.log(this.boundsIslands(islandList[islandIdx]));
 		}
 	}
 
-	constructor() {
-		this.debPointInTri2D();
-		this.debugFitAABB();
+	constructor(scene: Scene) {
+		// this.debPointInTri2D();
+		// this.debugFitAABB();
+		let sphere = MeshBuilder.CreateSphere("aa", { diameter: 1, segments: 10 }, scene);
+		this.main([sphere]);
 	}
 }
 
@@ -1059,7 +1244,8 @@ declare interface Box {
 	x: number,
 	y: number,
 	w: number,
-	h: number
+	h: number,
+	islandIdx?: number
 }
 
 class BoxPacker {
