@@ -373,18 +373,31 @@ export class NodeMaterial extends PushMaterial {
         return this._sharedData.hints.needAlphaTesting;
     }
 
-    private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState) {
+    private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[]) {
         node.initialize(state);
         node.autoConfigure();
 
-        for (var inputs of node.inputs) {
-            let connectedPoint = inputs.connectedPoint;
+        if (node.isInput) {
+            (node as InputBlock).associatedVariableName = "";
+        }
+
+        for (var input of node.inputs) {
+            input.associatedVariableName = "";
+
+            let connectedPoint = input.connectedPoint;
             if (connectedPoint) {
                 let block = connectedPoint.ownerBlock;
                 if (block !== node) {
-                    this._initializeBlock(block, state);
+                    if (block.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                        nodesToProcessForOtherBuildState.push(block);
+                    }
+                    this._initializeBlock(block, state, nodesToProcessForOtherBuildState);
                 }
             }
+        }
+
+        for (var output of node.outputs) {
+            output.associatedVariableName = "";
         }
     }
 
@@ -437,30 +450,35 @@ export class NodeMaterial extends PushMaterial {
         this._sharedData.verbose = verbose;
 
         // Initialize blocks
+        let vertexNodes: NodeMaterialBlock[] = [];
+        let fragmentNodes: NodeMaterialBlock[] = [];
+
         for (var vertexOutputNode of this._vertexOutputNodes) {
-            this._initializeBlock(vertexOutputNode, this._vertexCompilationState);
+            vertexNodes.push(vertexOutputNode);
+            this._initializeBlock(vertexOutputNode, this._vertexCompilationState, fragmentNodes);
         }
 
         for (var fragmentOutputNode of this._fragmentOutputNodes) {
-            this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState);
+            fragmentNodes.push(fragmentOutputNode);
+            this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState, vertexNodes);
         }
 
         // Optimize
         this.optimize();
 
         // Vertex
-        for (var vertexOutputNode of this._vertexOutputNodes) {
+        for (var vertexOutputNode of vertexNodes) {
             vertexOutputNode.build(this._vertexCompilationState);
         }
 
         // Fragment
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
 
-        for (var fragmentOutputNode of this._fragmentOutputNodes) {
+        for (var fragmentOutputNode of fragmentNodes) {
             this._resetDualBlocks(fragmentOutputNode, this._buildId - 1);
         }
 
-        for (var fragmentOutputNode of this._fragmentOutputNodes) {
+        for (var fragmentOutputNode of fragmentNodes) {
             fragmentOutputNode.build(this._fragmentCompilationState);
         }
 

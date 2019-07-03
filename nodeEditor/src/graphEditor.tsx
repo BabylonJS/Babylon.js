@@ -303,7 +303,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 break;
         }
 
-        let newInputBlock = new InputBlock(type, undefined, nodeType)
+        let newInputBlock = new InputBlock(type, undefined, nodeType);
+        newInputBlock.setDefaultValue();
         var localNode = this.createNodeFromObject({ column: column, type: type, connection: connection, nodeMaterialBlock: newInputBlock })
 
         return localNode;

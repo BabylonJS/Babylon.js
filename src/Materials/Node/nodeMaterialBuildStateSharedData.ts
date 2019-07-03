@@ -1,7 +1,7 @@
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlock } from './nodeMaterialBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
-import { TextureBlock } from './Blocks/Fragment/textureBlock';
+import { TextureBlock } from './Blocks/Dual/textureBlock';
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState

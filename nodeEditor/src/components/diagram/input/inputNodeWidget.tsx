@@ -89,7 +89,7 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
 
         let inputBlock = this.props.node!.inputBlock;
         let value = "";
-        let name = StringTools.GetBaseType(this.props.node!.outputType);
+        let name = StringTools.GetBaseType(inputBlock.output.type);
 
         if (inputBlock) {
             if (inputBlock.isAttribute) {
@@ -118,7 +118,7 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                         value = "Camera position";
                         break;
                     case NodeMaterialWellKnownValues.FogColor:
-                        value = "Automatic";
+                        value = "Fog color";
                         break;
                 }
             }
