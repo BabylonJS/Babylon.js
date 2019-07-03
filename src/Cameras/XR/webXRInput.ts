@@ -62,6 +62,8 @@ export class WebXRController {
      */
     public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace) {
         var pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpace);
+
+        // Update the pointer mesh
         if (pose) {
             Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMatrix);
             if (!this.pointer.getScene().useRightHandedSystem) {
@@ -73,6 +75,7 @@ export class WebXRController {
             this._tmpMatrix.decompose(this.pointer.scaling, this.pointer.rotationQuaternion!, this.pointer.position);
         }
 
+        // Update the grip mesh if it exists
         if (this.inputSource.gripSpace && this.grip) {
             var pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpace);
             if (pose) {
@@ -88,6 +91,10 @@ export class WebXRController {
         }
     }
 
+    /**
+     * Gets a world space ray coming from the controller
+     * @param result the resulting ray
+     */
     public getWorldPointerRayToRef(result:Ray){
         // Force update to ensure picked point is synced with ray
         var worldMatrix = this.pointer.computeWorldMatrix(true)
@@ -197,7 +204,14 @@ export class WebXRInput implements IDisposable {
     }
 }
 
+/**
+ * Loads a controller model and adds it as a child of the WebXRControllers grip when the controller is created
+ */
 export class WebXRControllerModelLoader {
+    /**
+     * Creates the WebXRControllerModelLoader
+     * @param input xr input that creates the controllers
+     */
     constructor(input: WebXRInput){
         input.onControllerAddedObservable.add((c)=>{
             if(c.inputSource.gamepad && c.inputSource.gamepad.id === "oculus-touch"){
@@ -225,93 +239,94 @@ export class WebXRControllerModelLoader {
                     controllerModel.mesh!.parent = c.grip!
                     controllerModel.mesh!.rotationQuaternion = Quaternion.FromEulerAngles(0,Math.PI,0);
                 })
-            }
-            
+            } 
         })
     }
 }
 
+/**
+ * Handles pointer input automatically for the pointer of XR controllers
+ */
 export class WebXRControllerPointerSelection {
-    private _laserPointer: Mesh;
-    private _gazeTracker: Mesh;
-    private triggerDown = false;
+    
     public static _idCounter = 0;
-    private _id:number;
+    
     private _tmpRay = new Ray(new Vector3(), new Vector3());
     constructor(input: WebXRInput){
-        this._id = WebXRControllerPointerSelection._idCounter++;
+        
         input.onControllerAddedObservable.add((c)=>{
             var scene = c.pointer.getScene();
-            this._laserPointer = Mesh.CreateCylinder("laserPointer", 1, 0.0002, 0.004, 20, 1, scene, false);
-            this._laserPointer.parent = c.pointer
 
+            let _laserPointer: Mesh;
+            let _cursorMesh: Mesh;
+            let triggerDown = false;
+            let _id:number;
+            _id = WebXRControllerPointerSelection._idCounter++;
+
+            // Create a laser pointer for the XR controller
+            _laserPointer = Mesh.CreateCylinder("laserPointer", 1, 0.0002, 0.004, 20, 1, scene, false);
+            _laserPointer.parent = c.pointer
             var laserPointerMaterial = new StandardMaterial("laserPointerMat", scene);
             laserPointerMaterial.emissiveColor = new Color3(0.7, 0.7, 0.7);
             laserPointerMaterial.alpha = 0.6;
-            this._laserPointer.material = laserPointerMaterial;
-            
-            this._laserPointer.rotation.x = Math.PI / 2;
-            this._updatePointerDistance(1)
-            this._laserPointer.isPickable = false;
+            _laserPointer.material = laserPointerMaterial;
+            _laserPointer.rotation.x = Math.PI / 2;
+            this._updatePointerDistance(_laserPointer,1)
+            _laserPointer.isPickable = false;
 
-
-            this._gazeTracker = Mesh.CreateTorus("gazeTracker", 0.0035*3, 0.0025*3, 20, scene, false);
-            this._gazeTracker.bakeCurrentTransformIntoVertices();
-            this._gazeTracker.isPickable = false;
-            this._gazeTracker.isVisible = false;
+            // Create a gaze tracker for the  XR controlelr
+            _cursorMesh = Mesh.CreateTorus("gazeTracker", 0.0035*3, 0.0025*3, 20, scene, false);
+            _cursorMesh.bakeCurrentTransformIntoVertices();
+            _cursorMesh.isPickable = false;
+            _cursorMesh.isVisible = false;
             var targetMat = new StandardMaterial("targetMat", scene);
             targetMat.specularColor = Color3.Black();
             targetMat.emissiveColor = new Color3(0.7, 0.7, 0.7);
             targetMat.backFaceCulling = false;
-            this._gazeTracker.material = targetMat;
+            _cursorMesh.material = targetMat;
 
-
-            
-
-            scene.onBeforeRenderObservable.add(()=>{                
+            scene.onBeforeRenderObservable.add(()=>{     
+                // Every frame check collisions/input        
                 c.getWorldPointerRayToRef(this._tmpRay)
                 var pick = scene.pickWithRay(this._tmpRay)
-
                 if(pick){
                     if(c.inputSource.gamepad && c.inputSource.gamepad.buttons[0] && c.inputSource.gamepad.buttons[0].value > 0.7){
-                        if(!this.triggerDown){
-                            scene.simulatePointerDown(pick, { pointerId: this._id });
+                        if(!triggerDown){
+                            scene.simulatePointerDown(pick, { pointerId: _id });
                         }
-                        this.triggerDown = true;
+                        triggerDown = true;
                     }else{
-                        if(this.triggerDown){
-                            scene.simulatePointerUp(pick, { pointerId: this._id });
+                        if(triggerDown){
+                            scene.simulatePointerUp(pick, { pointerId: _id });
                         }
-                        this.triggerDown = false;
+                        triggerDown = false;
                     }
-                    scene.simulatePointerMove(pick, { pointerId: this._id });
+                    scene.simulatePointerMove(pick, { pointerId: _id });
                 }
                 
-
-                
                 if(pick && pick.pickedPoint && pick.hit){
-                    this._updatePointerDistance(pick.distance)
+                    // Update laser state
+                    this._updatePointerDistance(_laserPointer, pick.distance)
 
-                    // Scale based on distance
-                    this._gazeTracker.position.copyFrom(pick.pickedPoint)
-                    this._gazeTracker.scaling.x = Math.sqrt(pick.distance);
-                    this._gazeTracker.scaling.y = Math.sqrt(pick.distance);
-                    this._gazeTracker.scaling.z = Math.sqrt(pick.distance);
+                    // Update cursor state
+                    _cursorMesh.position.copyFrom(pick.pickedPoint)
+                    _cursorMesh.scaling.x = Math.sqrt(pick.distance);
+                    _cursorMesh.scaling.y = Math.sqrt(pick.distance);
+                    _cursorMesh.scaling.z = Math.sqrt(pick.distance);
 
                     // To avoid z-fighting
                     var pickNormal = this._convertNormalToDirectionOfRay(pick.getNormal(), this._tmpRay);
                     let deltaFighting = 0.002;
-                    this._gazeTracker.position.copyFrom(pick.pickedPoint);
+                    _cursorMesh.position.copyFrom(pick.pickedPoint);
                     if (pickNormal) {
                         var axis1 = Vector3.Cross(Axis.Y, pickNormal);
                         var axis2 = Vector3.Cross(pickNormal, axis1);
-                        Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._gazeTracker.rotation);
-                        this._gazeTracker.position.addInPlace(pickNormal.scale(deltaFighting));
+                        Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, _cursorMesh.rotation);
+                        _cursorMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                     }
-
-                    this._gazeTracker.isVisible = true;
+                    _cursorMesh.isVisible = true;
                 }else{
-                    this._gazeTracker.isVisible = false;
+                    _cursorMesh.isVisible = false;
                 }
             })
         })
@@ -327,24 +342,37 @@ export class WebXRControllerPointerSelection {
         return normal;
     }
 
-    public _updatePointerDistance(distance: number = 100) {
-        this._laserPointer.scaling.y = distance;
-        this._laserPointer.position.z = distance / 2;
+    private _updatePointerDistance(_laserPointer:Mesh, distance: number = 100) {
+        _laserPointer.scaling.y = distance;
+        _laserPointer.position.z = distance / 2;
     }
 }
 
+/**
+ * Enables teleportation
+ */
 export class WebXRControllerTeleportation {
     private _teleportationFillColor: string = "#444444";
     private _teleportationBorderColor: string = "#FFFFFF";
-    private _forwardReadyToTeleport = false;
-    private _backwardReadyToTeleport = false;
+
     private _tmpRay = new Ray(new Vector3(), new Vector3());
     private _tmpVector = new Vector3();
-    constructor(input: WebXRInput, public floorMeshes = []){
+
+    /**
+     * 
+     * @param input 
+     * @param floorMeshes 
+     */
+    constructor(input: WebXRInput, public floorMeshes:Array<AbstractMesh> = []){
         input.onControllerAddedObservable.add((c)=>{
             var scene = c.pointer.getScene();
 
-            // Teleport animation
+            var _forwardReadyToTeleport = false;
+            var _backwardReadyToTeleport = false;
+            var _leftReadyToTeleport = false;
+            var _rightReadyToTeleport = false;
+
+            // Teleport target abd it's animation
             var teleportationTarget = Mesh.CreateGround("teleportationTarget", 2, 2, 2, scene);
             teleportationTarget.isPickable = false;
             var length = 512;
@@ -391,14 +419,15 @@ export class WebXRControllerTeleportation {
             torus.animations.push(animationInnerCircle);
             scene.beginAnimation(torus, 0, 60, true);
 
-
-
+            // Handle user input on every frame
             scene.onBeforeRenderObservable.add(()=>{
-                if(this._forwardReadyToTeleport){
+                // Move the teleportationTarget to where the user is targetting to teleport to
+                if(_forwardReadyToTeleport){
                     c.getWorldPointerRayToRef(this._tmpRay)
-                    var pick = scene.pickWithRay(this._tmpRay)
+                    var pick = scene.pickWithRay(this._tmpRay, (o)=>{
+                        return floorMeshes.indexOf(o) !== -1;
+                    })
                     if(pick && pick.pickedPoint){
-
                         // To avoid z-fighting
                         teleportationTarget.position.copyFrom(pick.pickedPoint);
                         teleportationTarget.position.y += 0.002;
@@ -412,21 +441,25 @@ export class WebXRControllerTeleportation {
 
                 if(c.inputSource.gamepad){
                     if(c.inputSource.gamepad.axes[1]){
+                        // Forward teleportation
                         if(c.inputSource.gamepad.axes[1] < -0.7){
-                            this._forwardReadyToTeleport = true
+                            _forwardReadyToTeleport = true
                         }else{
-                            if(this._forwardReadyToTeleport){
+                            if(_forwardReadyToTeleport){
+                                // Teleport the users feet to where they targetted
                                 this._tmpVector.copyFrom(teleportationTarget.position)
                                 this._tmpVector.y += input.xrExperienceHelper.camera.position.y;
                                 input.xrExperienceHelper.setPositionOfCameraUsingContainer(this._tmpVector)
                             }
-                            this._forwardReadyToTeleport = false
+                            _forwardReadyToTeleport = false
                         }
 
+                        // Backward teleportation
                         if(c.inputSource.gamepad.axes[1] > 0.7){
-                            this._backwardReadyToTeleport = true
+                            _backwardReadyToTeleport = true
                         }else{
-                            if(this._backwardReadyToTeleport){
+                            if(_backwardReadyToTeleport){
+                                // Cast a ray down from behind the user
                                 var camMat = input.xrExperienceHelper.camera.computeWorldMatrix();
                                 var q = new Quaternion()
                                 camMat.decompose(undefined, q, this._tmpRay.origin)
@@ -437,15 +470,37 @@ export class WebXRControllerTeleportation {
                                 this._tmpVector.y = -1.5;
                                 this._tmpVector.normalize()
                                 this._tmpRay.direction.copyFrom(this._tmpVector)
-                                var pick = scene.pickWithRay(this._tmpRay)
+                                var pick = scene.pickWithRay(this._tmpRay, (o)=>{
+                                    return floorMeshes.indexOf(o) !== -1;
+                                })
 
                                 if(pick && pick.pickedPoint){
+                                    // Teleport the users feet to where they targetted
                                     this._tmpVector.copyFrom(pick.pickedPoint)
                                     this._tmpVector.y += input.xrExperienceHelper.camera.position.y;
                                     input.xrExperienceHelper.setPositionOfCameraUsingContainer(this._tmpVector)
                                 }
                             }
-                            this._backwardReadyToTeleport = false
+                            _backwardReadyToTeleport = false
+                        }
+                    }
+
+                    if(c.inputSource.gamepad.axes[0]){
+                        if(c.inputSource.gamepad.axes[0] < -0.7){
+                            _leftReadyToTeleport = true
+                        }else{
+                            if(_leftReadyToTeleport){
+                                input.xrExperienceHelper.rotateCameraByQuaternionUsingContainer(Quaternion.FromEulerAngles(0, -Math.PI/4, 0))
+                            }
+                            _leftReadyToTeleport = false
+                        }
+                        if(c.inputSource.gamepad.axes[0] > 0.7){
+                            _rightReadyToTeleport = true
+                        }else{
+                            if(_rightReadyToTeleport){
+                                input.xrExperienceHelper.rotateCameraByQuaternionUsingContainer(Quaternion.FromEulerAngles(0, Math.PI/4, 0))
+                            }
+                            _rightReadyToTeleport = false
                         }
                     }
                     
