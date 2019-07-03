@@ -22,7 +22,7 @@ import { TextureNodeModel } from './components/diagram/texture/textureNodeModel'
 import { DefaultPortModel } from './components/diagram/defaultPortModel';
 import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
 import { InputNodeModel } from './components/diagram/input/inputNodeModel';
-import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
+import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
 import { LogComponent, LogEntry } from './components/log/logComponent';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { LightNodeModel } from './components/diagram/light/lightNodeModel';

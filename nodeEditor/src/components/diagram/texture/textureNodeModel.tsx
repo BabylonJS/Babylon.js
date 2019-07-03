@@ -6,7 +6,7 @@ import { GlobalState } from '../../../globalState';
 import { TexturePropertyTabComponent } from './texturePropertyTabComponent';
 import { NodeCreationOptions, GraphEditor } from '../../../graphEditor';
 import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
-import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
+import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
 
 /**
  * Texture node model which stores information about a node editor block

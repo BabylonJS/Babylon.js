@@ -164,7 +164,6 @@ export class TextureBlock extends NodeMaterialBlock {
         state.samplers.push(this._samplerName);
         state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
 
-
         // Fragment
         state.sharedData.blocksWithDefines.push(this);
         state.sharedData.bindableBlocks.push(this);
