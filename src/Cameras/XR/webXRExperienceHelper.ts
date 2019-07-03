@@ -91,6 +91,10 @@ export class WebXRExperienceHelper implements IDisposable {
         this.sessionManager = new WebXRSessionManager(scene);
         this.container = new AbstractMesh("WebXR Container", scene);
         this.camera.parent = this.container;
+
+        scene.onDisposeObservable.add(() => {
+            this.exitXRAsync();
+        });
     }
 
     /**
@@ -144,11 +148,14 @@ export class WebXRExperienceHelper implements IDisposable {
                 // Restore scene settings
                 this.scene.autoClear = this._originalSceneAutoClear;
                 this.scene.activeCamera = this._nonVRCamera;
-                this.sessionManager.onXRFrameObservable.clear();
 
                 this._setState(WebXRState.NOT_IN_XR);
             });
-            this._setState(WebXRState.IN_XR);
+
+            // Wait until the first frame arrives before setting state to in xr
+            this.sessionManager.onXRFrameObservable.addOnce(()=>{
+                this._setState(WebXRState.IN_XR);
+            })
         }).catch((e: any) => {
             console.log(e);
             console.log(e.message);
