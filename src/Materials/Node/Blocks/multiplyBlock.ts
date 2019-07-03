@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConne
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 /**
- * Block used to multiply 2 vector4
+ * Block used to multiply 2 values
  */
 export class MultiplyBlock extends NodeMaterialBlock {
     /**
