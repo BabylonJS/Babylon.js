@@ -131,6 +131,10 @@ export class PoseEnabledControllerHelper {
  * Defines the PoseEnabledController object that contains state of a vr capable controller
  */
 export class PoseEnabledController extends Gamepad implements PoseControlled {
+    /**
+     * If the controller is used in a webXR session
+     */
+    public isXR = false;
     // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
     private _deviceRoomPosition = Vector3.Zero();
     private _deviceRoomRotationQuaternion = new Quaternion();
@@ -228,6 +232,9 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
      * Updates the state of the pose enbaled controller and mesh based on the current position and rotation of the controller
      */
     public update() {
+        if(this.isXR){
+            return
+        }
         super.update();
         this._updatePoseAndMesh();
     }
@@ -236,6 +243,9 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
      * Updates only the pose device and mesh without doing any button event checking
      */
     protected _updatePoseAndMesh() {
+        if(this.isXR){
+            return
+        }
         var pose: GamepadPose = this.browserGamepad.pose;
         this.updateFromDevice(pose);
 
@@ -283,6 +293,9 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
      * @param poseData raw pose fromthe device
      */
     updateFromDevice(poseData: DevicePose) {
+        if(this.isXR){
+            return
+        }
         if (poseData) {
             this.rawPose = poseData;
             if (poseData.position) {
@@ -335,15 +348,17 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
         }
 
         // Sync controller mesh and pointing pose node's state with controller, this is done to avoid a frame where position is 0,0,0 when attaching mesh
-        this._updatePoseAndMesh();
-        if (this._pointingPoseNode) {
-            var parents = [];
-            var obj: Node = this._pointingPoseNode;
-            while (obj.parent) {
-                parents.push(obj.parent);
-                obj = obj.parent;
+        if(!this.isXR){
+            this._updatePoseAndMesh();
+            if (this._pointingPoseNode) {
+                var parents = [];
+                var obj: Node = this._pointingPoseNode;
+                while (obj.parent) {
+                    parents.push(obj.parent);
+                    obj = obj.parent;
+                }
+                parents.reverse().forEach((p) => { p.computeWorldMatrix(true); });
             }
-            parents.reverse().forEach((p) => { p.computeWorldMatrix(true); });
         }
 
         this._meshAttachedObservable.notifyObservers(mesh);
