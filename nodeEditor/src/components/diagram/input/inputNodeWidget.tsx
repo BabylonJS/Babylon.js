@@ -1,13 +1,12 @@
 import * as React from "react";
-import { PortWidget } from "storm-react-diagrams";
 import { InputNodeModel } from './inputNodeModel';
 import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
-import { DefaultPortModel } from '../defaultPortModel';
 import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { Color3 } from 'babylonjs/Maths/math';
 import { StringTools } from '../../../stringTools';
+import { PortHelper } from '../portHelper';
 
 /**
  * GenericNodeWidgetProps
@@ -42,54 +41,22 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
     renderValue(value: string) {
         if (value) {
             return (
-                <div>
+                <div className="value-text">
                     {value}
                 </div>
             )
-        }
-
-        let inputBlock = this.props.node!.inputBlock;
-        if (!inputBlock || !inputBlock.isUniform) {
-            return null;
-        }
-
-        switch (inputBlock.type) {
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
-            case NodeMaterialBlockConnectionPointTypes.Color4: {
-                let color = inputBlock.value as Color3;
-                return (
-                    <div className="fullColor" style={{ background: color.toHexString() }}></div>
-                )
-            }
         }
 
         return null;
     }
 
     render() {
-        var outputPorts = new Array<JSX.Element>()
-        let port: DefaultPortModel;
-        if (this.props.node) {
-            for (var key in this.props.node.ports) {
-                port = this.props.node.ports[key] as DefaultPortModel;
-
-                outputPorts.push(
-                    <div key={key} className="output-port">
-                        <div className="output-port-label">
-                        </div>
-                        <div className="output-port-plug">
-                            <PortWidget key={key} name={port.name} node={this.props.node} />
-                        </div>
-                    </div>
-                );
-                break;
-            }
-        }
+        var outputPorts = PortHelper.GenerateOutputPorts(this.props.node, true);
 
         let inputBlock = this.props.node!.inputBlock;
         let value = "";
         let name = StringTools.GetBaseType(inputBlock.output.type);
+        let color = "";
 
         if (inputBlock) {
             if (inputBlock.isAttribute) {
@@ -121,13 +88,27 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                         value = "Fog color";
                         break;
                 }
+            } else {
+                if (!inputBlock || !inputBlock.isUniform) {
+                    return null;
+                }
+
+                switch (inputBlock.type) {
+                    case NodeMaterialBlockConnectionPointTypes.Color3:
+                    case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
+                    case NodeMaterialBlockConnectionPointTypes.Color4: {
+                        color = (inputBlock.value as Color3).toHexString();
+                    }
+                }
             }
         } else {
             name = "Not connected input";
         }
 
         return (
-            <div className={"diagramBlock input" + (inputBlock && inputBlock.isAttribute ? " attribute" : "")}>
+            <div className={"diagramBlock input" + (inputBlock && inputBlock.isAttribute ? " attribute" : "")} style={{
+                background: color
+            }}>
                 <div className="header">
                     {name}
                 </div>

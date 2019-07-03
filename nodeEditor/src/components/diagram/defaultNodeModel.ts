@@ -51,7 +51,7 @@ export class DefaultNodeModel extends NodeModel {
                 var connectedNode;
                 var existingNodes = nodes.filter((n) => { return n.block === (connection as any)._connectedPoint._ownerBlock });
                 if (existingNodes.length == 0) {
-                    connectedNode = graphEditor.createNodeFromObject({ column: options.column + 1, nodeMaterialBlock: connection.connectedPoint._ownerBlock });
+                    connectedNode = graphEditor.createNodeFromObject({ nodeMaterialBlock: connection.connectedPoint._ownerBlock });
                 } else {
                     connectedNode = existingNodes[0];
                 }
