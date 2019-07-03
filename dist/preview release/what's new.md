@@ -95,6 +95,5 @@
 - GLTF exporter should no longer duplicate exported texture data ([Drigax](https://github.com/Drigax))
 - Avoid exception when disposing of Ammo cloth physics ([TrevorDev](https://github.com/TrevorDev))
 
-
 ## Breaking changes
 - Setting mesh.scaling to a new vector will no longer automatically call forceUpdate (this should be done manually when needed) ([TrevorDev](https://github.com/TrevorDev))
