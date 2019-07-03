@@ -601,6 +601,24 @@ export class UvMapper {
 
 		ctx.strokeStyle = "green";
 		for (let i = 0; i < indices.length; i += 3) {
+			let lessThanZeroCount = 0;
+			if (uvs[indices[i] * 2] < 0) {
+				lessThanZeroCount++;
+			}
+			if (uvs[indices[i + 1] * 2] < 0) {
+				lessThanZeroCount++;
+			}
+			if (uvs[indices[i + 2] * 2] < 0) {
+				lessThanZeroCount++
+			}
+
+			if (lessThanZeroCount > 1) {
+				debugger;
+				continue;
+			} else if (lessThanZeroCount === 1) {
+				debugger;
+			}
+
 			ctx.beginPath();
 			ctx.moveTo(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
 			ctx.lineTo(uvs[indices[i + 1] * 2], uvs[indices[i + 1] * 2 + 1]);
@@ -735,12 +753,14 @@ export class UvMapper {
 	                    		else if (Intersect === 0) {
 	                    			// removedCount++;
 
-	                    			targetIsland[0] = targetIsland[0].concat(sourceIsland[0]);
+	                    			for (let h = 0; h < sourceIsland[0].length; h++) {
+	                    				targetIsland[0].push(sourceIsland[0][h]);
+	                    			}
 	                    			let offset = new Vector2(boxLeft, boxBottom);
 
 	                    			for (let faceIdx = 0; faceIdx < sourceIsland[0].length; faceIdx++) {
 	                    				for (let uvIdx = 0; uvIdx < sourceIsland[0][faceIdx].uv.length; uvIdx++) {
-	                    					sourceIsland[0][faceIdx].uv[uvIdx] += offset;
+	                    					sourceIsland[0][faceIdx].uv[uvIdx].addInPlace(offset);
 	                    				}
 	                    			}
 
@@ -767,7 +787,9 @@ export class UvMapper {
 	                    			// Sort by edge length, reverse so biggest are first.
 	                    			targetIsland[6].sort((a: MeasuredEdge, b: MeasuredEdge) => b.l - a.l);
 
-	                    			targetIsland[7] = targetIsland[7].concat(sourceIsland[7]);
+	                    			for (let h = 0; h < sourceIsland[7].length; h++) {
+	                    				targetIsland[7].push(sourceIsland[7][h]);
+	                    			}
 	                    			let offsetV3 = new Vector3(boxLeft, boxBottom, 0);
 
 	                    			for (let k = 0; k < sourceIsland[7].length; k++) {
@@ -811,14 +833,14 @@ export class UvMapper {
 		}
 	}
 
-	getUvIslands(faceGroups: Face[][]) {
+	getUvIslands(faceGroups: Face[][], deletedFaces: Face[]) {
 		let islandList: Island[] = [];
 
 		let faceGroupIdx = faceGroups.length;
 
 		while (faceGroupIdx) {
 			faceGroupIdx--;
-			let faces = faceGroups[faceGroupIdx];
+			let faces = faceGroups[faceGroupIdx].concat(deletedFaces);
 
 			if (!faces) {
 				continue;
@@ -894,7 +916,7 @@ export class UvMapper {
 
 	main(obList: Mesh[],
 		island_margin: number = 0, 
-		projection_limit: number = 25,
+		projection_limit: number = 90,
 		user_area_weight: number = 0,
 		use_aspect: boolean = false,
 		strech_to_bounds: boolean = false) {
@@ -903,6 +925,7 @@ export class UvMapper {
 		const USER_SHARE_SPACE = true;
 
 		let collected_islandList: Island[] = [];
+		let deletedFaces: Face[] = [];
 		if (USER_SHARE_SPACE) {
 			// Sort by name so we get consistent results
 			obList.sort((a: Mesh, b: Mesh) => a.name.localeCompare(b.name));
@@ -925,7 +948,7 @@ export class UvMapper {
 					let uv = meshFaces[meshFaces.length-1].uv[j];
 					uv.copyFromFloats(0, 0);
 				}
-				meshFaces.pop();
+				deletedFaces.push(meshFaces.pop() as Face);
 			}
 
 			if (!meshFaces.length) {
@@ -1051,10 +1074,10 @@ export class UvMapper {
 			}
 
 			if (USER_SHARE_SPACE) {
-				let islandList = this.getUvIslands(faceProjectionGroupList);
+				let islandList = this.getUvIslands(faceProjectionGroupList, deletedFaces);
 				collected_islandList = collected_islandList.concat(islandList);
 			} else {
-				collected_islandList = this.getUvIslands(faceProjectionGroupList);
+				collected_islandList = this.getUvIslands(faceProjectionGroupList, deletedFaces);
 				this.packIslands(collected_islandList);
 			}
 		}
@@ -1090,7 +1113,7 @@ export class UvMapper {
 			for (let j = 0; j < collected_islandList[i].length; j++) {
 				let f = collected_islandList[i][j];
 				for (let k = 0; k < 3; k++) {
-					if (newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2] === -1) {
+					if (newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2] < 0) {
 						// this vertex doesn't have uv yet, we assign them
 						newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2] = f.uv[k].x
 						newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2 + 1] = f.uv[k].y						
@@ -1127,7 +1150,7 @@ export class UvMapper {
 			if (additionnalUvs[meshIndex].length) {
 				let oldVertices = vertices[meshIndex] as Float32Array;
 				let tempUvs = new Float32Array(newUvs[meshIndex].length + additionnalUvs[meshIndex].length * 2);
-				let tempVertices = new Float32Array(vertices.length + additionnalUvs[meshIndex].length * 3);
+				let tempVertices = new Float32Array(oldVertices.length + additionnalUvs[meshIndex].length * 3);
 
 				let l = newUvs[meshIndex].length;
 				for (let i = 0; i < l; i++) {
@@ -1139,7 +1162,7 @@ export class UvMapper {
 					tempUvs[i * 2 + 1 + l] = additionnalUvs[meshIndex][i].y;
 				}
 
-				l = vertices.length;
+				l = oldVertices.length;
 				for (let i = 0; i < l; i++) {
 					tempVertices[i] = oldVertices[i];
 				}
@@ -1227,8 +1250,6 @@ export class UvMapper {
 				}
 			}
 
-			console.log(packBoxes[islandIdx]);
-			console.log(this.boundsIslands(islandList[islandIdx]));
 		}
 	}
 
