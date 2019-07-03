@@ -213,7 +213,7 @@ Scene.prototype.createDefaultVRExperience = function(webVROptions: VRExperienceH
 Scene.prototype.createDefaultXRExperienceAsync = function(): Promise<WebXRExperienceHelper> {
     return WebXRExperienceHelper.CreateAsync(this).then((helper) => {
         var outputCanvas = new WebXRManagedOutputCanvas(helper);
-        return WebXREnterExitUI.CreateAsync(this, helper, { outputCanvasContext: outputCanvas.canvasContext })
+        return WebXREnterExitUI.CreateAsync(this, helper, { webXRManagedOutputCanvas: outputCanvas })
             .then((ui) => {
                 new WebXRInput(helper);
                 return helper;

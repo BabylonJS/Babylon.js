@@ -11125,6 +11125,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var packingFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var shadowMapPixelShader: {
         name: string;
         shader: string;
@@ -15994,6 +16001,13 @@ declare module BABYLON {
          */
         intersectsPlane(plane: DeepImmutable<Plane>): Nullable<number>;
         /**
+         * Calculate the intercept of a ray on a given axis
+         * @param axis to check 'x' | 'y' | 'z'
+         * @param offset from axis interception (i.e. an offset of 1y is intercepted above ground)
+         * @returns a vector containing the coordinates where 'axis' is equal to zero (else offset), or null if there is no intercept.
+         */
+        intersectsAxis(axis: string, offset?: number): Nullable<Vector3>;
+        /**
          * Checks if ray intersects a mesh
          * @param mesh the mesh to check
          * @param fastCheck if only the bounding box should checked
@@ -18614,7 +18628,7 @@ declare module BABYLON {
          * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
          * @see http://doc.babylonjs.com/babylon101/materials#texture
          * @param url define the url of the picture to load as a texture
-         * @param scene define the scene the texture will belong to
+         * @param scene define the scene or engine the texture will belong to
          * @param noMipmap define if the texture will require mip maps or not
          * @param invertY define if the texture needs to be inverted on the y axis during loading
          * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
@@ -18624,7 +18638,7 @@ declare module BABYLON {
          * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
          * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
          */
-        constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number);
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | Engine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
@@ -28092,6 +28106,11 @@ declare module BABYLON {
          * Gets version of the current webGL context
          */
         readonly webGLVersion: number;
+        /**
+         * Gets a string idenfifying the name of the class
+         * @returns "Engine" string
+         */
+        getClassName(): string;
         /**
          * Returns true if the stencil buffer has been enabled through the creation option of the context.
          */
@@ -37597,7 +37616,7 @@ declare module BABYLON {
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */
-        static WaitForOrientationChangeAsync(timeout?: number): Promise<{}>;
+        static WaitForOrientationChangeAsync(timeout?: number): Promise<unknown>;
         /**
          * @hidden
          */
@@ -40466,7 +40485,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Manages an XRSession
+     * Manages an XRSession to work with Babylon's engine
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRSessionManager implements IDisposable {
@@ -40479,17 +40498,22 @@ declare module BABYLON {
          * Fires when the xr session is ended either by the device or manually done
          */
         onXRSessionEnded: Observable<any>;
-        /** @hidden */
-        _xrSession: XRSession;
-        /** @hidden */
-        _frameOfReference: XRFrameOfReference;
+        /**
+         * Underlying xr session
+         */
+        session: XRSession;
+        /**
+         * Type of reference space used when creating the session
+         */
+        referenceSpace: XRReferenceSpace;
         /** @hidden */
         _sessionRenderTargetTexture: Nullable<RenderTargetTexture>;
-        /** @hidden */
-        _currentXRFrame: Nullable<XRFrame>;
+        /**
+         * Current XR frame
+         */
+        currentFrame: Nullable<XRFrame>;
         private _xrNavigator;
-        private _xrDevice;
-        private _tmpMatrix;
+        private baseLayer;
         /**
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
          * @param scene The scene which the session should be created for
@@ -40502,36 +40526,46 @@ declare module BABYLON {
          */
         initializeAsync(): Promise<void>;
         /**
-         * Enters XR with the desired XR session options, this must be done with a user action (eg. button click event)
-         * @param sessionCreationOptions xr options to create the session with
-         * @param frameOfReferenceType option to configure how the xr pose is expressed
-         * @returns Promise which resolves after it enters XR
+         * Initializes an xr session
+         * @param xrSessionMode mode to initialize
+         * @returns a promise which will resolve once the session has been initialized
          */
-        enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReferenceType: string): Promise<void>;
+        initializeSessionAsync(xrSessionMode: XRSessionMode): any;
+        /**
+         * Sets the reference space on the xr session
+         * @param referenceSpace space to set
+         * @returns a promise that will resolve once the reference space has been set
+         */
+        setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType): Promise<void>;
+        /**
+         * Updates the render state of the session
+         * @param state state to set
+         * @returns a promise that resolves once the render state has been updated
+         */
+        updateRenderStateAsync(state: any): Promise<void>;
+        /**
+         * Starts rendering to the xr layer
+         * @returns a promise that will resolve once rendering has started
+         */
+        startRenderingToXRAsync(): Promise<void>;
         /**
          * Stops the xrSession and restores the renderloop
          * @returns Promise which resolves after it exits XR
          */
         exitXRAsync(): Promise<void>;
         /**
-         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
-         * @param ray ray to cast into the environment
-         * @returns Promise which resolves with a collision point in the environment if it exists
-         */
-        environmentPointHitTestAsync(ray: Ray): Promise<Nullable<Vector3>>;
-        /**
          * Checks if a session would be supported for the creation options specified
-         * @param options creation options to check if they are supported
+         * @param sessionMode session mode to check if supported eg. immersive-vr
          * @returns true if supported
          */
-        supportsSessionAsync(options: XRSessionCreationOptions): Promise<boolean>;
+        supportsSessionAsync(sessionMode: XRSessionMode): any;
         /**
          * @hidden
          * Converts the render layer of xrSession to a render target
          * @param session session to create render target for
          * @param scene scene the new render target should be created for
          */
-        static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene): RenderTargetTexture;
+        static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
         /**
          * Disposes of the session manager
          */
@@ -40560,6 +40594,42 @@ declare module BABYLON {
          * @returns true if the camera has been updated, false if the session did not contain pose or frame data
          */
         updateFromXRSessionManager(xrSessionManager: WebXRSessionManager): boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Creates a canvas that is added/removed from the webpage when entering/exiting XR
+     */
+    export class WebXRManagedOutputCanvas implements IDisposable {
+        private helper;
+        private _canvas;
+        /**
+         * xrpresent context of the canvas which can be used to display/mirror xr content
+         */
+        canvasContext: WebGLRenderingContext;
+        /**
+         * xr layer for the canvas
+         */
+        xrLayer: Nullable<XRWebGLLayer>;
+        /**
+         * Initializes the xr layer for the session
+         * @param xrSession xr session
+         * @returns a promise that will resolve once the XR Layer has been created
+         */
+        initializeXRLayerAsync(xrSession: any): any;
+        /**
+         * Initializes the canvas to be added/removed upon entering/exiting xr
+         * @param helper the xr experience helper used to trigger adding/removing of the canvas
+         * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
+         */
+        constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement);
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
+        private _setManagedOutputCanvas;
+        private _addCanvas;
+        private _removeCanvas;
     }
 }
 declare module BABYLON {
@@ -40608,8 +40678,8 @@ declare module BABYLON {
          * Fires when the state of the experience helper has changed
          */
         onStateChangedObservable: Observable<WebXRState>;
-        /** @hidden */
-        _sessionManager: WebXRSessionManager;
+        /** Session manager used to keep track of xr session */
+        sessionManager: WebXRSessionManager;
         private _nonVRCamera;
         private _originalSceneAutoClear;
         private _supported;
@@ -40632,16 +40702,11 @@ declare module BABYLON {
         /**
          * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
          * @param sessionCreationOptions options for the XR session
-         * @param frameOfReference frame of reference of the XR session
+         * @param referenceSpaceType frame of reference of the XR session
+         * @param outputCanvas the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionCreationOptions: XRSessionCreationOptions, frameOfReference: string): Promise<void>;
-        /**
-         * Fires a ray and returns the closest hit in the xr sessions enviornment, useful to place objects in AR
-         * @param ray ray to cast into the environment
-         * @returns Promise which resolves with a collision point in the environment if it exists
-         */
-        environmentPointHitTestAsync(ray: Ray): Promise<Nullable<Vector3>>;
+        enterXRAsync(sessionCreationOptions: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, outputCanvas: WebXRManagedOutputCanvas): any;
         /**
          * Updates the global position of the camera by moving the camera's container
          * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
@@ -40654,12 +40719,6 @@ declare module BABYLON {
          * @param rotation the desired quaternion rotation to apply to the camera
          */
         rotateCameraByQuaternionUsingContainer(rotation: Quaternion): void;
-        /**
-         * Checks if the creation options are supported by the xr session
-         * @param options creation options
-         * @returns true if supported
-         */
-        supportsSessionAsync(options: XRSessionCreationOptions): Promise<boolean>;
         /**
          * Disposes of the experience helper
          */
@@ -40674,17 +40733,22 @@ declare module BABYLON {
         /** button element */
         element: HTMLElement;
         /** XR initialization options for the button */
-        initializationOptions: XRSessionCreationOptions;
+        sessionMode: XRSessionMode;
+        /** Reference space type */
+        referenceSpaceType: XRReferenceSpaceType;
         /**
          * Creates a WebXREnterExitUIButton
          * @param element button element
-         * @param initializationOptions XR initialization options for the button
+         * @param sessionMode XR initialization session mode
+         * @param referenceSpaceType the type of reference space to be used
          */
         constructor(
         /** button element */
         element: HTMLElement, 
         /** XR initialization options for the button */
-        initializationOptions: XRSessionCreationOptions);
+        sessionMode: XRSessionMode, 
+        /** Reference space type */
+        referenceSpaceType: XRReferenceSpaceType);
         /**
          * Overwritable function which can be used to update the button's visuals when the state changes
          * @param activeButton the current active button in the UI
@@ -40698,7 +40762,7 @@ declare module BABYLON {
         /**
          * Context to enter xr with
          */
-        outputCanvasContext?: Nullable<WebGLRenderingContext>;
+        webXRManagedOutputCanvas?: Nullable<WebXRManagedOutputCanvas>;
         /**
          * User provided buttons to enable/disable WebXR. The system will provide default if not set
          */
@@ -40741,6 +40805,10 @@ declare module BABYLON {
      * Represents an XR input
      */
     export class WebXRController {
+        private scene;
+        /** The underlying input source for the controller  */
+        inputSource: XRInputSource;
+        private parentContainer;
         /**
          * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
          */
@@ -40749,12 +40817,23 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
+        private _tmpMatrix;
         /**
          * Creates the controller
          * @see https://doc.babylonjs.com/how_to/webxr
          * @param scene the scene which the controller should be associated to
+         * @param inputSource the underlying input source for the controller
+         * @param parentContainer parent that the controller meshes should be children of
          */
-        constructor(scene: Scene);
+        constructor(scene: Scene, 
+        /** The underlying input source for the controller  */
+        inputSource: XRInputSource, parentContainer?: Nullable<AbstractMesh>);
+        /**
+         * Updates the controller pose based on the given XRFrame
+         * @param xrFrame xr frame to update the pose with
+         * @param referenceSpace reference space to use
+         */
+        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
         /**
          * Disposes of the object
          */
@@ -40769,42 +40848,26 @@ declare module BABYLON {
          * XR controllers being tracked
          */
         controllers: Array<WebXRController>;
-        private _tmpMatrix;
         private _frameObserver;
+        /**
+         * Event when a controller has been connected/added
+         */
+        onControllerAddedObservable: Observable<WebXRController>;
+        /**
+         * Event when a controller has been removed/disconnected
+         */
+        onControllerRemovedObservable: Observable<WebXRController>;
         /**
          * Initializes the WebXRInput
          * @param helper experience helper which the input should be created for
          */
         constructor(helper: WebXRExperienceHelper);
+        private _onInputSourcesChange;
+        private _addAndRemoveControllers;
         /**
          * Disposes of the object
          */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Creates a canvas that is added/removed from the webpage when entering/exiting XR
-     */
-    export class WebXRManagedOutputCanvas implements IDisposable {
-        private _canvas;
-        /**
-         * xrpresent context of the canvas which can be used to display/mirror xr content
-         */
-        canvasContext: Nullable<WebGLRenderingContext>;
-        /**
-         * Initializes the canvas to be added/removed upon entering/exiting xr
-         * @param helper the xr experience helper used to trigger adding/removing of the canvas
-         * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
-         */
-        constructor(helper: WebXRExperienceHelper, canvas?: HTMLCanvasElement);
-        /**
-         * Disposes of the object
-         */
-        dispose(): void;
-        private _setManagedOutputCanvas;
-        private _addCanvas;
-        private _removeCanvas;
     }
 }
 declare module BABYLON {
@@ -41316,9 +41379,9 @@ declare module BABYLON {
         private _snapDistance;
         private _scaleRatio;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         /**
          * If set to true, planar drag is enabled
          */
@@ -43206,9 +43269,9 @@ declare module BABYLON {
         private _uniformScalingMesh;
         private _octahedron;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         attachedMesh: Nullable<AbstractMesh>;
         /**
          * Creates a ScaleGizmo
@@ -43467,9 +43530,9 @@ declare module BABYLON {
          */
         zGizmo: PlaneRotationGizmo;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         private _meshAttached;
         attachedMesh: Nullable<AbstractMesh>;
         /**
@@ -52099,7 +52162,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to multiply 2 vector4
+     * Block used to multiply 2 values
      */
     export class MultiplyBlock extends NodeMaterialBlock {
         /**
@@ -52189,36 +52252,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to scale a value
-     */
-    export class ScaleBlock extends NodeMaterialBlock {
-        /**
-         * Creates a new ScaleBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the value operand input component
-         */
-        readonly value: NodeMaterialConnectionPoint;
-        /**
-         * Gets the scale operand input component
-         */
-        readonly scale: NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        readonly output: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
      * Block used to transform a vector2 with a matrix
      */
     export class Vector2TransformBlock extends NodeMaterialBlock {
@@ -52291,32 +52324,79 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to multiply two matrices
+     * Helper class to render one or more effects
      */
-    export class MatrixMultiplicationBlock extends NodeMaterialBlock {
+    export class EffectRenderer {
+        private engine;
+        private static _Vertices;
+        private static _Indices;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _ringBufferIndex;
+        private _ringScreenBuffer;
+        private _getNextFrameBuffer;
         /**
-         * Creates a new MatrixMultiplicationBlock
-         * @param name defines the block name
+         * Creates an effect renderer
+         * @param engine the engine to use for rendering
          */
-        constructor(name: string);
+        constructor(engine: Engine);
         /**
-         * Gets the left operand
+         * renders one or more effects to a specified texture
+         * @param effectWrappers list of effects to renderer
+         * @param outputTexture texture to draw to, if null it will render to the screen
          */
-        readonly left: NodeMaterialConnectionPoint;
+        render(effectWrappers: Array<EffectWrapper> | EffectWrapper, outputTexture?: Nullable<Texture>): void;
         /**
-         * Gets the right operand
+         * Disposes of the effect renderer
          */
-        readonly right: NodeMaterialConnectionPoint;
+        dispose(): void;
+    }
+    /**
+     * Options to create an EffectWrapper
+     */
+    interface EffectWrapperCreationOptions {
         /**
-         * Gets the output component
+         * Engine to use to create the effect
          */
-        readonly output: NodeMaterialConnectionPoint;
+        engine: Engine;
         /**
-         * Gets the current class name
-         * @returns the class name
+         * Fragment shader for the effect
          */
-        getClassName(): string;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
+        fragmentShader: string;
+        /**
+         * Attributes to use in the shader
+         */
+        attributeNames: Array<string>;
+        /**
+         * Uniforms to use in the shader
+         */
+        uniformNames: Array<string>;
+        /**
+         * Texture sampler names to use in the shader
+         */
+        samplerNames: Array<string>;
+    }
+    /**
+     * Wraps an effect to be used for rendering
+     */
+    export class EffectWrapper {
+        /**
+         * Event that is fired right before the effect is drawn (should be used to update uniforms)
+         */
+        onApplyObservable: Observable<{}>;
+        /**
+         * The underlying effect
+         */
+        effect: Effect;
+        /**
+         * Creates an effect to be renderer
+         * @param creationOptions options to create the effect
+         */
+        constructor(creationOptions: EffectWrapperCreationOptions);
+        /**
+        * Disposes of the effect wrapper
+        */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -57594,6 +57674,10 @@ declare module BABYLON {
         private _scene;
         private _depthMap;
         private _effect;
+        private readonly _storeNonLinearDepth;
+        private readonly _clearColor;
+        /** Get if the depth renderer is using packed depth or not */
+        readonly isPacked: boolean;
         private _cachedDefines;
         private _camera;
         /**
@@ -57609,8 +57693,9 @@ declare module BABYLON {
          * @param scene The scene the renderer belongs to
          * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
          * @param camera The camera to be used to render the depth map (default: scene's active camera)
+         * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
          */
-        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>);
+        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>, storeNonLinearDepth?: boolean);
         /**
          * Creates the depth rendering effect and checks if the effect is ready.
          * @param subMesh The submesh to be used to render the depth map of
@@ -57638,9 +57723,10 @@ declare module BABYLON {
             /**
              * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
              * @param camera The camera to create the depth renderer on (default: scene's active camera)
+             * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
              * @returns the created depth renderer
              */
-            enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer;
+            enableDepthRenderer(camera?: Nullable<Camera>, storeNonLinearDepth?: boolean): DepthRenderer;
             /**
              * Disables a depth renderer for a given camera
              * @param camera The camera to disable the depth renderer on (default: scene's active camera)
@@ -59428,19 +59514,23 @@ interface Window {
     DracoDecoderModule: any;
     setImmediate(handler: (...args: any[]) => void): number;
 }
+
 interface HTMLCanvasElement {
     requestPointerLock(): void;
     msRequestPointerLock?(): void;
     mozRequestPointerLock?(): void;
     webkitRequestPointerLock?(): void;
+
     /** Track wether a record is in progress */
     isRecording: boolean;
     /** Capture Stream method defined by some browsers */
     captureStream(fps?: number): MediaStream;
 }
+
 interface CanvasRenderingContext2D {
     msImageSmoothingEnabled: boolean;
 }
+
 interface MouseEvent {
     mozMovementX: number;
     mozMovementY: number;
@@ -59449,34 +59539,43 @@ interface MouseEvent {
     msMovementX: number;
     msMovementY: number;
 }
+
 interface Navigator {
     mozGetVRDevices: (any: any) => any;
     webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
     mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
     msGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+
     webkitGetGamepads(): Gamepad[];
     msGetGamepads(): Gamepad[];
     webkitGamepads(): Gamepad[];
 }
+
 interface HTMLVideoElement {
     mozSrcObject: any;
 }
+
 interface Math {
     fround(x: number): number;
     imul(a: number, b: number): number;
 }
+
 interface WebGLRenderingContext {
     drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
     drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
     vertexAttribDivisor(index: number, divisor: number): void;
+
     createVertexArray(): any;
     bindVertexArray(vao?: WebGLVertexArrayObject | null): void;
     deleteVertexArray(vao: WebGLVertexArrayObject): void;
+
     blitFramebuffer(srcX0: number, srcY0: number, srcX1: number, srcY1: number, dstX0: number, dstY0: number, dstX1: number, dstY1: number, mask: number, filter: number): void;
     renderbufferStorageMultisample(target: number, samples: number, internalformat: number, width: number, height: number): void;
+
     bindBufferBase(target: number, index: number, buffer: WebGLBuffer | null): void;
     getUniformBlockIndex(program: WebGLProgram, uniformBlockName: string): number;
     uniformBlockBinding(program: WebGLProgram, uniformBlockIndex: number, uniformBlockBinding: number): void;
+
     // Queries
     createQuery(): WebGLQuery;
     deleteQuery(query: WebGLQuery): void;
@@ -59484,11 +59583,13 @@ interface WebGLRenderingContext {
     endQuery(target: number): void;
     getQueryParameter(query: WebGLQuery, pname: number): any;
     getQuery(target: number, pname: number): any;
+
     MAX_SAMPLES: number;
     RGBA8: number;
     READ_FRAMEBUFFER: number;
     DRAW_FRAMEBUFFER: number;
     UNIFORM_BUFFER: number;
+
     HALF_FLOAT_OES: number;
     RGBA16F: number;
     RGBA32F: number;
@@ -59502,24 +59603,30 @@ interface WebGLRenderingContext {
     RG: number;
     R8: number;
     RG8: number;
+
     UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
+
     /* Multiple Render Targets */
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
+
     readonly COLOR_ATTACHMENT0: number;                             // 0x8CE1
     readonly COLOR_ATTACHMENT1: number;                             // 0x8CE2
     readonly COLOR_ATTACHMENT2: number;                             // 0x8CE3
     readonly COLOR_ATTACHMENT3: number;                             // 0x8CE4
+
     // Occlusion Query
     ANY_SAMPLES_PASSED_CONSERVATIVE: number;
     ANY_SAMPLES_PASSED: number;
     QUERY_RESULT_AVAILABLE: number;
     QUERY_RESULT: number;
 }
+
 interface WebGLProgram {
     __SPECTOR_rebuildProgram?: ((vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void) | null;
 }
+
 interface EXT_disjoint_timer_query {
     QUERY_COUNTER_BITS_EXT: number;
     TIME_ELAPSED_EXT: number;
@@ -59534,6 +59641,7 @@ interface EXT_disjoint_timer_query {
     getQueryObjectEXT(query: WebGLQuery, target: number): any;
     deleteQueryEXT(query: WebGLQuery): void;
 }
+
 interface WebGLUniformLocation {
     _currentState: any;
 }
@@ -59541,6 +59649,7 @@ interface WebGLUniformLocation {
 // Project: https://www.khronos.org/registry/webgl/specs/latest/2.0/
 // Definitions by: Nico Kemnitz <https://github.com/nkemnitz/>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+
 interface WebGLRenderingContext {
     readonly RASTERIZER_DISCARD: number;
     readonly DEPTH_COMPONENT24: number;
@@ -59592,10 +59701,13 @@ interface WebGLRenderingContext {
     readonly UNSIGNED_INT_10F_11F_11F_REV: number;
     readonly UNSIGNED_INT_5_9_9_9_REV: number;
     readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
+
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView | null): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView, offset: number): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ImageBitmap | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): void;
+
     compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, data: ArrayBufferView, offset?: number, length?: number): void;
+
     readonly TRANSFORM_FEEDBACK: number;
     readonly INTERLEAVED_ATTRIBS: number;
     readonly TRANSFORM_FEEDBACK_BUFFER: number;
@@ -59605,100 +59717,123 @@ interface WebGLRenderingContext {
     beginTransformFeedback(primitiveMode: number): void;
     endTransformFeedback(): void;
     transformFeedbackVaryings(program: WebGLProgram, varyings: string[], bufferMode: number): void;
+
     clearBufferfv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
     clearBufferiv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
     clearBufferuiv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
     clearBufferfi(buffer: number, drawbuffer: number, depth: number, stencil: number): void;
 }
+
 interface ImageBitmap {
     readonly width: number;
     readonly height: number;
     close(): void;
 }
+
 interface WebGLQuery extends WebGLObject {
 }
+
 declare var WebGLQuery: {
     prototype: WebGLQuery;
     new(): WebGLQuery;
 };
+
 interface WebGLSampler extends WebGLObject {
 }
+
 declare var WebGLSampler: {
     prototype: WebGLSampler;
     new(): WebGLSampler;
 };
+
 interface WebGLSync extends WebGLObject {
 }
+
 declare var WebGLSync: {
     prototype: WebGLSync;
     new(): WebGLSync;
 };
+
 interface WebGLTransformFeedback extends WebGLObject {
 }
+
 declare var WebGLTransformFeedback: {
     prototype: WebGLTransformFeedback;
     new(): WebGLTransformFeedback;
 };
+
 interface WebGLVertexArrayObject extends WebGLObject {
 }
+
 declare var WebGLVertexArrayObject: {
     prototype: WebGLVertexArrayObject;
     new(): WebGLVertexArrayObject;
 };
+
 // Type definitions for WebVR API
 // Project: https://w3c.github.io/webvr/
 // Definitions by: six a <https://github.com/lostfictions>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+
 interface VRDisplay extends EventTarget {
     /**
      * Dictionary of capabilities describing the VRDisplay.
      */
     readonly capabilities: VRDisplayCapabilities;
+
     /**
      * z-depth defining the far plane of the eye view frustum
      * enables mapping of values in the render target depth
      * attachment to scene coordinates. Initially set to 10000.0.
      */
     depthFar: number;
+
     /**
      * z-depth defining the near plane of the eye view frustum
      * enables mapping of values in the render target depth
      * attachment to scene coordinates. Initially set to 0.01.
      */
     depthNear: number;
+
     /**
      * An identifier for this distinct VRDisplay. Used as an
      * association point in the Gamepad API.
      */
     readonly displayId: number;
+
     /**
      * A display name, a user-readable name identifying it.
      */
     readonly displayName: string;
     readonly isConnected: boolean;
     readonly isPresenting: boolean;
+
     /**
      * If this VRDisplay supports room-scale experiences, the optional
      * stage attribute contains details on the room-scale parameters.
      */
     readonly stageParameters: VRStageParameters | null;
+
     /**
      * Passing the value returned by `requestAnimationFrame` to
      * `cancelAnimationFrame` will unregister the callback.
      * @param handle Define the hanle of the request to cancel
      */
     cancelAnimationFrame(handle: number): void;
+
     /**
      * Stops presenting to the VRDisplay.
      * @returns a promise to know when it stopped
      */
     exitPresent(): Promise<void>;
+
     /**
      * Return the current VREyeParameters for the given eye.
      * @param whichEye Define the eye we want the parameter for
      * @returns the eye parameters
      */
     getEyeParameters(whichEye: string): VREyeParameters;
+
     /**
      * Populates the passed VRFrameData with the information required to render
      * the current frame.
@@ -59706,11 +59841,13 @@ interface VRDisplay extends EventTarget {
      * @returns true if ok otherwise false
      */
     getFrameData(frameData: VRFrameData): boolean;
+
     /**
      * Get the layers currently being presented.
      * @returns the list of VR layers
      */
     getLayers(): VRLayer[];
+
     /**
      * Return a VRPose containing the future predicted pose of the VRDisplay
      * when the current frame will be presented. The value returned will not
@@ -59721,12 +59858,14 @@ interface VRDisplay extends EventTarget {
      * @returns the pose object
      */
     getPose(): VRPose;
+
     /**
      * Return the current instantaneous pose of the VRDisplay, with no
      * prediction applied.
      * @returns the current instantaneous pose
      */
     getImmediatePose(): VRPose;
+
     /**
      * The callback passed to `requestAnimationFrame` will be called
      * any time a new frame should be rendered. When the VRDisplay is
@@ -59739,6 +59878,7 @@ interface VRDisplay extends EventTarget {
      * @returns the request handle it
      */
     requestAnimationFrame(callback: FrameRequestCallback): number;
+
     /**
      * Begin presenting to the VRDisplay. Must be called in response to a user gesture.
      * Repeat calls while already presenting will update the VRLayers being displayed.
@@ -59746,6 +59886,7 @@ interface VRDisplay extends EventTarget {
      * @returns a promise to know when the request has been fulfilled
      */
     requestPresent(layers: VRLayer[]): Promise<void>;
+
     /**
      * Reset the pose for this display, treating its current position and
      * orientation as the "origin/zero" values. VRPose.position,
@@ -59754,6 +59895,7 @@ interface VRDisplay extends EventTarget {
      * sitting-space experiences.
      */
     resetPose(): void;
+
     /**
      * The VRLayer provided to the VRDisplay will be captured and presented
      * in the HMD. Calling this function has the same effect on the source
@@ -59763,15 +59905,18 @@ interface VRDisplay extends EventTarget {
      */
     submitFrame(pose?: VRPose): void;
 }
+
 declare var VRDisplay: {
     prototype: VRDisplay;
     new(): VRDisplay;
 };
+
 interface VRLayer {
     leftBounds?: number[] | Float32Array | null;
     rightBounds?: number[] | Float32Array | null;
     source?: HTMLCanvasElement | null;
 }
+
 interface VRDisplayCapabilities {
     readonly canPresent: boolean;
     readonly hasExternalDisplay: boolean;
@@ -59779,6 +59924,7 @@ interface VRDisplayCapabilities {
     readonly hasPosition: boolean;
     readonly maxLayers: number;
 }
+
 interface VREyeParameters {
     /** @deprecated */
     readonly fieldOfView: VRFieldOfView;
@@ -59786,12 +59932,14 @@ interface VREyeParameters {
     readonly renderHeight: number;
     readonly renderWidth: number;
 }
+
 interface VRFieldOfView {
     readonly downDegrees: number;
     readonly leftDegrees: number;
     readonly rightDegrees: number;
     readonly upDegrees: number;
 }
+
 interface VRFrameData {
     readonly leftProjectionMatrix: Float32Array;
     readonly leftViewMatrix: Float32Array;
@@ -59800,6 +59948,7 @@ interface VRFrameData {
     readonly rightViewMatrix: Float32Array;
     readonly timestamp: number;
 }
+
 interface VRPose {
     readonly angularAcceleration: Float32Array | null;
     readonly angularVelocity: Float32Array | null;
@@ -59809,15 +59958,18 @@ interface VRPose {
     readonly position: Float32Array | null;
     readonly timestamp: number;
 }
+
 interface VRStageParameters {
     sittingToStandingTransform?: Float32Array;
     sizeX?: number;
     sizeY?: number;
 }
+
 interface Navigator {
     getVRDisplays(): Promise<VRDisplay[]>;
     readonly activeVRDisplays: ReadonlyArray<VRDisplay>;
 }
+
 interface Window {
     onvrdisplayconnected: ((this: Window, ev: Event) => any) | null;
     onvrdisplaydisconnected: ((this: Window, ev: Event) => any) | null;
@@ -59826,51 +59978,127 @@ interface Window {
     addEventListener(type: "vrdisplaydisconnected", listener: (ev: Event) => any, useCapture?: boolean): void;
     addEventListener(type: "vrdisplaypresentchange", listener: (ev: Event) => any, useCapture?: boolean): void;
 }
+
 interface Gamepad {
     readonly displayId: number;
 }
-interface XRDevice {
-    requestSession(options: XRSessionCreationOptions): Promise<XRSession>;
-    supportsSession(options: XRSessionCreationOptions): Promise<void>;
+type XRSessionMode =
+    | "inline"
+    | "immersive-vr"
+    | "immersive-ar";
+
+type XRReferenceSpaceType =
+    | "viewer"
+    | "local"
+    | "local-floor"
+    | "bounded-floor"
+    | "unbounded";
+
+type XREnvironmentBlendMode =
+    | "opaque"
+    | "additive"
+    | "alpha-blend";
+
+type XRVisibilityState =
+    | "visible"
+    | "visible-blurred"
+    | "hidden";
+
+type XRHandedness =
+    | "none"
+    | "left"
+    | "right";
+
+type XRTargetRayMode =
+    | "gaze"
+    | "tracked-pointer"
+    | "screen";
+
+type XREye =
+    | "none"
+    | "left"
+    | "right";
+
+interface XRSpace extends EventTarget {
+
 }
+
+interface XRRenderState {
+    depthNear: number ;
+    depthFar: number ;
+    inlineVerticalFieldOfView: number | undefined;
+    baseLayer: XRWebGLLayer | undefined;
+}
+
+interface XRInputSource {
+    handedness: XRHandedness;
+    targetRayMode: XRTargetRayMode;
+    targetRaySpace: XRSpace;
+    gripSpace: XRSpace | undefined;
+    gamepad: Gamepad | undefined;
+    profiles: Array<string>;
+}
+
 interface XRSession {
-    getInputSources(): Array<any>;
-    baseLayer: XRWebGLLayer;
-    requestFrameOfReference(type: string): Promise<void>;
-    requestHitTest(origin: Float32Array, direction: Float32Array, frameOfReference: any): any;
-    end(): Promise<void>;
-    requestAnimationFrame: Function;
     addEventListener: Function;
+    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
+    updateRenderState(XRRenderStateInit: any): Promise<void>;
+    requestAnimationFrame: Function;
+    end(): Promise<void>;
+    renderState: XRRenderState;
+    inputSources: Array<XRInputSource>;
+
 }
-interface XRSessionCreationOptions {
-    outputContext?: WebGLRenderingContext | null;
-    immersive?: boolean;
-    environmentIntegration?: boolean;
+
+interface XRReferenceSpace extends XRSpace {
+    getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
+    onreset: any;
 }
-interface XRLayer {
-    getViewport: Function;
-    framebufferWidth: number;
-    framebufferHeight: number;
-}
-interface XRView {
-    projectionMatrix: Float32Array;
-}
+
 interface XRFrame {
-    getDevicePose: Function;
-    getInputPose: Function;
+    session: XRSession;
+    getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
+    getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
+}
+
+interface XRViewerPose extends XRPose {
     views: Array<XRView>;
-    baseLayer: XRLayer;
 }
-interface XRFrameOfReference {
+
+interface XRPose {
+    transform: XRRigidTransform;
+    emulatedPosition: boolean;
 }
-interface XRWebGLLayer extends XRLayer {
-    framebuffer: WebGLFramebuffer;
-}
+
 declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
-    new(session: XRSession, context?: WebGLRenderingContext): XRWebGLLayer;
+    new(session: XRSession, context: WebGLRenderingContext | undefined): XRWebGLLayer;
 };
+interface XRWebGLLayer {
+    framebuffer: WebGLFramebuffer;
+    framebufferWidth: number;
+    framebufferHeight: number;
+    getViewport: Function;
+}
 
+interface XRRigidTransform {
+    position: DOMPointReadOnly;
+    orientation: DOMPointReadOnly;
+    matrix: Float32Array;
+    inverse: XRRigidTransform;
+}
+
+interface XRView {
+    eye: XREye;
+    projectionMatrix: Float32Array;
+    transform: XRRigidTransform;
+}
+
+interface XRInputSourceChangeEvent {
+    session: XRSession;
+    removed: Array<XRInputSource>;
+    added: Array<XRInputSource>;
+}
 declare module BABYLON.GUI {
     /**
      * Class used to specific a value and its associated unit

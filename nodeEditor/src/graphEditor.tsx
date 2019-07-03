@@ -215,8 +215,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                 link.output.connection.disconnectFrom(link.input.connection)
                                 link.input.syncWithNodeMaterialConnectionPoint(link.input.connection)
                                 link.output.syncWithNodeMaterialConnectionPoint(link.output.connection)
-                            } else if (link.input.connection.value) {
-                                link.input.connection.value = null;
+                            } else {
+                                let inputNode = link.output.parent as InputNodeModel
+                                inputNode.connection = undefined;
+
+                                if (link.input.connection.value) {
+                                    inputNode.ports[link.output.name].defaultValue = link.input.connection.value;
+                                    link.input.connection.value = null;
+                                }
                             }
                         }
                     }
@@ -297,6 +303,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         if (!connection) {
             switch (type) {
+                case "Float":
+                    outPort.defaultValue = 0;
+                    break;
                 case "Vector2":
                     outPort.defaultValue = Vector2.Zero();
                     break;
