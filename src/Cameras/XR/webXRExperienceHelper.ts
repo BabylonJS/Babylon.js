@@ -89,7 +89,7 @@ export class WebXRExperienceHelper implements IDisposable {
     private constructor(private scene: Scene) {
         this.camera = new WebXRCamera("", scene);
         this.sessionManager = new WebXRSessionManager(scene);
-        this.container = new AbstractMesh("", scene);
+        this.container = new AbstractMesh("WebXR Container", scene);
         this.camera.parent = this.container;
     }
 
