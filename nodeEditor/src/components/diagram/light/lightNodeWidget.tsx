@@ -1,9 +1,7 @@
 import * as React from "react";
-import { PortWidget } from "storm-react-diagrams";
 import { LightNodeModel } from './lightNodeModel';
 import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
-import { DefaultPortModel } from '../defaultPortModel';
 import { PortHelper } from '../portHelper';
 
 /**
