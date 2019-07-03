@@ -25,6 +25,8 @@ export class WebXRController {
      */
     public pointer: AbstractMesh;
 
+    public onDisposeObservable = new Observable<{}>();
+
     private _tmpMatrix = new Matrix();
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();
@@ -61,7 +63,7 @@ export class WebXRController {
      * @param referenceSpace reference space to use
      */
     public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace) {
-        var pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpace);
+        let pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpace);
 
         // Update the pointer mesh
         if (pose) {
@@ -77,7 +79,7 @@ export class WebXRController {
 
         // Update the grip mesh if it exists
         if (this.inputSource.gripSpace && this.grip) {
-            var pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpace);
+            let pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpace);
             if (pose) {
                 Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMatrix);
                 if (!this.grip.getScene().useRightHandedSystem) {
@@ -97,7 +99,7 @@ export class WebXRController {
      */
     public getWorldPointerRayToRef(result:Ray){
         // Force update to ensure picked point is synced with ray
-        var worldMatrix = this.pointer.computeWorldMatrix(true)
+        let worldMatrix = this.pointer.computeWorldMatrix(true)
         worldMatrix.decompose(undefined, this._tmpQuaternion, undefined)
         this._tmpVector.set(0,0,1)
         this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector)
@@ -115,6 +117,7 @@ export class WebXRController {
             this.grip.dispose();
         }
         this.pointer.dispose();
+        this.onDisposeObservable.notifyObservers({});
     }
 }
 
@@ -166,18 +169,18 @@ export class WebXRInput implements IDisposable {
 
     private _addAndRemoveControllers(addInputs: Array<XRInputSource>, removeInputs: Array<XRInputSource>) {
         // Add controllers if they don't already exist
-        var sources = this.controllers.map((c) => {return c.inputSource; });
-        for(var input of addInputs){
+        let sources = this.controllers.map((c) => {return c.inputSource; });
+        for(let input of addInputs){
             if (sources.indexOf(input) === -1) {
-                var controller = new WebXRController(this.xrExperienceHelper.camera._scene, input, this.xrExperienceHelper.container);
+                let controller = new WebXRController(this.xrExperienceHelper.camera._scene, input, this.xrExperienceHelper.container);
                 this.controllers.push(controller);
                 this.onControllerAddedObservable.notifyObservers(controller);
             }
         }
 
         // Remove and dispose of controllers to be disposed
-        var keepControllers: Array<WebXRController> = [];
-        var removedControllers: Array<WebXRController> = [];
+        let keepControllers: Array<WebXRController> = [];
+        let removedControllers: Array<WebXRController> = [];
         this.controllers.forEach((c) => {
             if (removeInputs.indexOf(c.inputSource) === -1) {
                 keepControllers.push(c);
@@ -255,86 +258,93 @@ export class WebXRControllerPointerSelection {
     constructor(input: WebXRInput){
         
         input.onControllerAddedObservable.add((c)=>{
-            var scene = c.pointer.getScene();
+            let scene = c.pointer.getScene();
 
-            let _laserPointer: Mesh;
-            let _cursorMesh: Mesh;
+            let laserPointer: Mesh;
+            let cursorMesh: Mesh;
             let triggerDown = false;
-            let _id:number;
-            _id = WebXRControllerPointerSelection._idCounter++;
+            let id:number;
+            id = WebXRControllerPointerSelection._idCounter++;
 
             // Create a laser pointer for the XR controller
-            _laserPointer = Mesh.CreateCylinder("laserPointer", 1, 0.0002, 0.004, 20, 1, scene, false);
-            _laserPointer.parent = c.pointer
-            var laserPointerMaterial = new StandardMaterial("laserPointerMat", scene);
+            laserPointer = Mesh.CreateCylinder("laserPointer", 1, 0.0002, 0.004, 20, 1, scene, false);
+            laserPointer.parent = c.pointer
+            let laserPointerMaterial = new StandardMaterial("laserPointerMat", scene);
             laserPointerMaterial.emissiveColor = new Color3(0.7, 0.7, 0.7);
             laserPointerMaterial.alpha = 0.6;
-            _laserPointer.material = laserPointerMaterial;
-            _laserPointer.rotation.x = Math.PI / 2;
-            this._updatePointerDistance(_laserPointer,1)
-            _laserPointer.isPickable = false;
+            laserPointer.material = laserPointerMaterial;
+            laserPointer.rotation.x = Math.PI / 2;
+            this._updatePointerDistance(laserPointer,1)
+            laserPointer.isPickable = false;
 
             // Create a gaze tracker for the  XR controlelr
-            _cursorMesh = Mesh.CreateTorus("gazeTracker", 0.0035*3, 0.0025*3, 20, scene, false);
-            _cursorMesh.bakeCurrentTransformIntoVertices();
-            _cursorMesh.isPickable = false;
-            _cursorMesh.isVisible = false;
-            var targetMat = new StandardMaterial("targetMat", scene);
+            cursorMesh = Mesh.CreateTorus("gazeTracker", 0.0035*3, 0.0025*3, 20, scene, false);
+            cursorMesh.bakeCurrentTransformIntoVertices();
+            cursorMesh.isPickable = false;
+            cursorMesh.isVisible = false;
+            let targetMat = new StandardMaterial("targetMat", scene);
             targetMat.specularColor = Color3.Black();
             targetMat.emissiveColor = new Color3(0.7, 0.7, 0.7);
             targetMat.backFaceCulling = false;
-            _cursorMesh.material = targetMat;
+            cursorMesh.material = targetMat;
 
-            scene.onBeforeRenderObservable.add(()=>{     
+            let renderObserver = scene.onBeforeRenderObservable.add(()=>{     
                 // Every frame check collisions/input        
                 c.getWorldPointerRayToRef(this._tmpRay)
-                var pick = scene.pickWithRay(this._tmpRay)
+                let pick = scene.pickWithRay(this._tmpRay)
                 if(pick){
                     if(c.inputSource.gamepad && c.inputSource.gamepad.buttons[0] && c.inputSource.gamepad.buttons[0].value > 0.7){
                         if(!triggerDown){
-                            scene.simulatePointerDown(pick, { pointerId: _id });
+                            scene.simulatePointerDown(pick, { pointerId: id });
                         }
                         triggerDown = true;
                     }else{
                         if(triggerDown){
-                            scene.simulatePointerUp(pick, { pointerId: _id });
+                            scene.simulatePointerUp(pick, { pointerId: id });
                         }
                         triggerDown = false;
                     }
-                    scene.simulatePointerMove(pick, { pointerId: _id });
+                    scene.simulatePointerMove(pick, { pointerId: id });
                 }
                 
                 if(pick && pick.pickedPoint && pick.hit){
                     // Update laser state
-                    this._updatePointerDistance(_laserPointer, pick.distance)
+                    this._updatePointerDistance(laserPointer, pick.distance)
 
                     // Update cursor state
-                    _cursorMesh.position.copyFrom(pick.pickedPoint)
-                    _cursorMesh.scaling.x = Math.sqrt(pick.distance);
-                    _cursorMesh.scaling.y = Math.sqrt(pick.distance);
-                    _cursorMesh.scaling.z = Math.sqrt(pick.distance);
+                    cursorMesh.position.copyFrom(pick.pickedPoint)
+                    cursorMesh.scaling.x = Math.sqrt(pick.distance);
+                    cursorMesh.scaling.y = Math.sqrt(pick.distance);
+                    cursorMesh.scaling.z = Math.sqrt(pick.distance);
 
                     // To avoid z-fighting
-                    var pickNormal = this._convertNormalToDirectionOfRay(pick.getNormal(), this._tmpRay);
+                    let pickNormal = this._convertNormalToDirectionOfRay(pick.getNormal(), this._tmpRay);
                     let deltaFighting = 0.002;
-                    _cursorMesh.position.copyFrom(pick.pickedPoint);
+                    cursorMesh.position.copyFrom(pick.pickedPoint);
                     if (pickNormal) {
-                        var axis1 = Vector3.Cross(Axis.Y, pickNormal);
-                        var axis2 = Vector3.Cross(pickNormal, axis1);
-                        Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, _cursorMesh.rotation);
-                        _cursorMesh.position.addInPlace(pickNormal.scale(deltaFighting));
+                        let axis1 = Vector3.Cross(Axis.Y, pickNormal);
+                        let axis2 = Vector3.Cross(pickNormal, axis1);
+                        Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, cursorMesh.rotation);
+                        cursorMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                     }
-                    _cursorMesh.isVisible = true;
+                    cursorMesh.isVisible = true;
                 }else{
-                    _cursorMesh.isVisible = false;
+                    cursorMesh.isVisible = false;
                 }
+            })
+
+            c.onDisposeObservable.addOnce(()=>{
+                laserPointer.dispose();
+                cursorMesh.dispose();
+
+                scene.onBeforeRenderObservable.remove(renderObserver)
             })
         })
     }
 
     private _convertNormalToDirectionOfRay(normal: Nullable<Vector3>, ray: Ray) {
         if (normal) {
-            var angle = Math.acos(Vector3.Dot(normal, ray.direction));
+            let angle = Math.acos(Vector3.Dot(normal, ray.direction));
             if (angle < Math.PI / 2) {
                 normal.scaleInPlace(-1);
             }
@@ -365,23 +375,23 @@ export class WebXRControllerTeleportation {
      */
     constructor(input: WebXRInput, public floorMeshes:Array<AbstractMesh> = []){
         input.onControllerAddedObservable.add((c)=>{
-            var scene = c.pointer.getScene();
+            let scene = c.pointer.getScene();
 
-            var _forwardReadyToTeleport = false;
-            var _backwardReadyToTeleport = false;
-            var _leftReadyToTeleport = false;
-            var _rightReadyToTeleport = false;
+            let forwardReadyToTeleport = false;
+            let backwardReadyToTeleport = false;
+            let leftReadyToTeleport = false;
+            let rightReadyToTeleport = false;
 
             // Teleport target abd it's animation
-            var teleportationTarget = Mesh.CreateGround("teleportationTarget", 2, 2, 2, scene);
+            let teleportationTarget = Mesh.CreateGround("teleportationTarget", 2, 2, 2, scene);
             teleportationTarget.isPickable = false;
-            var length = 512;
-            var dynamicTexture = new DynamicTexture("DynamicTexture", length, scene, true);
+            let length = 512;
+            let dynamicTexture = new DynamicTexture("DynamicTexture", length, scene, true);
             dynamicTexture.hasAlpha = true;
-            var context = dynamicTexture.getContext();
-            var centerX = length / 2;
-            var centerY = length / 2;
-            var radius = 200;
+            let context = dynamicTexture.getContext();
+            let centerX = length / 2;
+            let centerY = length / 2;
+            let radius = 200;
             context.beginPath();
             context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
             context.fillStyle = this._teleportationFillColor;
@@ -391,14 +401,14 @@ export class WebXRControllerTeleportation {
             context.stroke();
             context.closePath();
             dynamicTexture.update();
-            var teleportationCircleMaterial = new StandardMaterial("TextPlaneMaterial", scene);
+            let teleportationCircleMaterial = new StandardMaterial("TextPlaneMaterial", scene);
             teleportationCircleMaterial.diffuseTexture = dynamicTexture;
             teleportationTarget.material = teleportationCircleMaterial;
-            var torus = Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, scene, false);
+            let torus = Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, scene, false);
             torus.isPickable = false;
             torus.parent = teleportationTarget;
-            var animationInnerCircle = new Animation("animationInnerCircle", "position.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
-            var keys = [];
+            let animationInnerCircle = new Animation("animationInnerCircle", "position.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
+            let keys = [];
             keys.push({
                 frame: 0,
                 value: 0
@@ -412,7 +422,7 @@ export class WebXRControllerTeleportation {
                 value: 0
             });
             animationInnerCircle.setKeys(keys);
-            var easingFunction = new SineEase();
+            let easingFunction = new SineEase();
             easingFunction.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
             animationInnerCircle.setEasingFunction(easingFunction);
             torus.animations = [];
@@ -420,11 +430,11 @@ export class WebXRControllerTeleportation {
             scene.beginAnimation(torus, 0, 60, true);
 
             // Handle user input on every frame
-            scene.onBeforeRenderObservable.add(()=>{
+            let renderObserver = scene.onBeforeRenderObservable.add(()=>{
                 // Move the teleportationTarget to where the user is targetting to teleport to
-                if(_forwardReadyToTeleport){
+                if(forwardReadyToTeleport){
                     c.getWorldPointerRayToRef(this._tmpRay)
-                    var pick = scene.pickWithRay(this._tmpRay, (o)=>{
+                    let pick = scene.pickWithRay(this._tmpRay, (o)=>{
                         return floorMeshes.indexOf(o) !== -1;
                     })
                     if(pick && pick.pickedPoint){
@@ -443,25 +453,25 @@ export class WebXRControllerTeleportation {
                     if(c.inputSource.gamepad.axes[1]){
                         // Forward teleportation
                         if(c.inputSource.gamepad.axes[1] < -0.7){
-                            _forwardReadyToTeleport = true
+                            forwardReadyToTeleport = true
                         }else{
-                            if(_forwardReadyToTeleport){
+                            if(forwardReadyToTeleport){
                                 // Teleport the users feet to where they targetted
                                 this._tmpVector.copyFrom(teleportationTarget.position)
                                 this._tmpVector.y += input.xrExperienceHelper.camera.position.y;
                                 input.xrExperienceHelper.setPositionOfCameraUsingContainer(this._tmpVector)
                             }
-                            _forwardReadyToTeleport = false
+                            forwardReadyToTeleport = false
                         }
 
                         // Backward teleportation
                         if(c.inputSource.gamepad.axes[1] > 0.7){
-                            _backwardReadyToTeleport = true
+                            backwardReadyToTeleport = true
                         }else{
-                            if(_backwardReadyToTeleport){
+                            if(backwardReadyToTeleport){
                                 // Cast a ray down from behind the user
-                                var camMat = input.xrExperienceHelper.camera.computeWorldMatrix();
-                                var q = new Quaternion()
+                                let camMat = input.xrExperienceHelper.camera.computeWorldMatrix();
+                                let q = new Quaternion()
                                 camMat.decompose(undefined, q, this._tmpRay.origin)
                                 this._tmpVector.set(0,0,-1);
                                 this._tmpVector.rotateByQuaternionToRef(q, this._tmpVector)
@@ -470,7 +480,7 @@ export class WebXRControllerTeleportation {
                                 this._tmpVector.y = -1.5;
                                 this._tmpVector.normalize()
                                 this._tmpRay.direction.copyFrom(this._tmpVector)
-                                var pick = scene.pickWithRay(this._tmpRay, (o)=>{
+                                let pick = scene.pickWithRay(this._tmpRay, (o)=>{
                                     return floorMeshes.indexOf(o) !== -1;
                                 })
 
@@ -481,30 +491,39 @@ export class WebXRControllerTeleportation {
                                     input.xrExperienceHelper.setPositionOfCameraUsingContainer(this._tmpVector)
                                 }
                             }
-                            _backwardReadyToTeleport = false
+                            backwardReadyToTeleport = false
                         }
                     }
 
                     if(c.inputSource.gamepad.axes[0]){
                         if(c.inputSource.gamepad.axes[0] < -0.7){
-                            _leftReadyToTeleport = true
+                            leftReadyToTeleport = true
                         }else{
-                            if(_leftReadyToTeleport){
+                            if(leftReadyToTeleport){
                                 input.xrExperienceHelper.rotateCameraByQuaternionUsingContainer(Quaternion.FromEulerAngles(0, -Math.PI/4, 0))
                             }
-                            _leftReadyToTeleport = false
+                            leftReadyToTeleport = false
                         }
                         if(c.inputSource.gamepad.axes[0] > 0.7){
-                            _rightReadyToTeleport = true
+                            rightReadyToTeleport = true
                         }else{
-                            if(_rightReadyToTeleport){
+                            if(rightReadyToTeleport){
                                 input.xrExperienceHelper.rotateCameraByQuaternionUsingContainer(Quaternion.FromEulerAngles(0, Math.PI/4, 0))
                             }
-                            _rightReadyToTeleport = false
+                            rightReadyToTeleport = false
                         }
                     }
                     
                 }
+            })
+
+            c.onDisposeObservable.addOnce(()=>{
+                teleportationTarget.dispose()
+                dynamicTexture.dispose()
+                teleportationCircleMaterial.dispose()
+                torus.dispose()
+
+                scene.onBeforeRenderObservable.remove(renderObserver);
             })
         })
     }
