@@ -23,7 +23,7 @@ export class Vector2TransformBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Vertex);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerInput("transform", NodeMaterialBlockConnectionPointTypes.Matrix);

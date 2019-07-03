@@ -265,14 +265,14 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     /**
-     * BABYLON.Texture node model which stores information about a node editor block
+     * Texture node model which stores information about a node editor block
      */
     export class TextureNodeModel extends DefaultNodeModel {
         private _block;
         /**
-         * BABYLON.Texture for the node if it exists
+         * Texture for the node if it exists
          */
-        texture: BABYLON.Nullable<BABYLON.Texture>;
+        texture: BABYLON.Nullable<BABYLON.BaseTexture>;
         /**
          * Constructs the node model
          */
@@ -408,7 +408,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     interface IVector2PropertyTabComponentProps {
         globalState: GlobalState;
-        connection: BABYLON.NodeMaterialConnectionPoint;
+        inputBlock: BABYLON.InputBlock;
     }
     export class Vector2PropertyTabComponent extends React.Component<IVector2PropertyTabComponentProps> {
         render(): JSX.Element;
@@ -448,7 +448,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     interface IVector3PropertyTabComponentProps {
         globalState: GlobalState;
-        connection: BABYLON.NodeMaterialConnectionPoint;
+        inputBlock: BABYLON.InputBlock;
     }
     export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
         render(): JSX.Element;
@@ -514,7 +514,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     interface IColor3PropertyTabComponentProps {
         globalState: GlobalState;
-        connection: BABYLON.NodeMaterialConnectionPoint;
+        inputBlock: BABYLON.InputBlock;
     }
     export class Color3PropertyTabComponent extends React.Component<IColor3PropertyTabComponentProps> {
         render(): JSX.Element;
@@ -549,7 +549,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     interface IFloatPropertyTabComponentProps {
         globalState: GlobalState;
-        connection: BABYLON.NodeMaterialConnectionPoint;
+        inputBlock: BABYLON.InputBlock;
     }
     export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTabComponentProps> {
         render(): JSX.Element;
@@ -581,12 +581,13 @@ declare module NODEEDITOR {
      * Generic node model which stores information about a node editor block
      */
     export class InputNodeModel extends DefaultNodeModel {
-        connection?: BABYLON.NodeMaterialConnectionPoint;
+        outputType: BABYLON.NodeMaterialBlockConnectionPointTypes;
+        readonly inputBlock: BABYLON.InputBlock;
         /**
          * Constructs the node model
          */
         constructor();
-        renderProperties(globalState: GlobalState): JSX.Element | null;
+        renderProperties(globalState: GlobalState): JSX.Element;
     }
 }
 declare module NODEEDITOR {
@@ -729,7 +730,7 @@ declare module NODEEDITOR {
     }
     export class NodeCreationOptions {
         column: number;
-        nodeMaterialBlock?: BABYLON.NodeMaterialBlock;
+        nodeMaterialBlock: BABYLON.NodeMaterialBlock;
         type?: string;
         connection?: BABYLON.NodeMaterialConnectionPoint;
     }
