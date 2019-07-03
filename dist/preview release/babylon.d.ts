@@ -16001,6 +16001,13 @@ declare module BABYLON {
          */
         intersectsPlane(plane: DeepImmutable<Plane>): Nullable<number>;
         /**
+         * Calculate the intercept of a ray on a given axis
+         * @param axis to check 'x' | 'y' | 'z'
+         * @param offset from axis interception (i.e. an offset of 1y is intercepted above ground)
+         * @returns a vector containing the coordinates where 'axis' is equal to zero (else offset), or null if there is no intercept.
+         */
+        intersectsAxis(axis: string, offset?: number): Nullable<Vector3>;
+        /**
          * Checks if ray intersects a mesh
          * @param mesh the mesh to check
          * @param fastCheck if only the bounding box should checked

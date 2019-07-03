@@ -87,7 +87,7 @@
         "react-contextmenu": "~2.10.0",
         "react-dom": "~16.6.3",
         "sass-loader": "^7.1.0",
-        "shelljs": "^0.7.8",
+        "shelljs": "^0.8.3",
         "sinon": "^6.1.4",
         "split.js": "^1.5.9",
         "storm-react-diagrams": "^5.2.1",
