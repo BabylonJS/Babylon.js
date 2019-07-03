@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { Observer, Observable } from "../../Misc/observable";
 import { IDisposable } from "../../scene";
-import { WebXRExperienceHelper } from "./webXRExperienceHelper";
+import { WebXRExperienceHelper, WebXRState } from "./webXRExperienceHelper";
 import { WebXRController } from './webXRController';
 
 /**
@@ -13,6 +13,7 @@ export class WebXRInput implements IDisposable {
      */
     public controllers: Array<WebXRController> = [];
     private _frameObserver: Nullable<Observer<any>>;
+    private _stateObserver: Nullable<Observer<any>>;
     /**
      * Event when a controller has been connected/added
      */
@@ -27,6 +28,13 @@ export class WebXRInput implements IDisposable {
      * @param xrExperienceHelper experience helper which the input should be created for
      */
     public constructor(public xrExperienceHelper: WebXRExperienceHelper) {
+        // Remove controllers when exiting XR
+        this._stateObserver = xrExperienceHelper.onStateChangedObservable.add((s)=>{
+            if(s === WebXRState.NOT_IN_XR){
+                this._addAndRemoveControllers([], this.controllers.map((c)=>{return c.inputSource}));
+            }
+        })
+        
         this._frameObserver = xrExperienceHelper.sessionManager.onXRFrameObservable.add(() => {
             if (!xrExperienceHelper.sessionManager.currentFrame) {
                 return;
@@ -87,5 +95,6 @@ export class WebXRInput implements IDisposable {
             c.dispose();
         });
         this.xrExperienceHelper.sessionManager.onXRFrameObservable.remove(this._frameObserver);
+        this.xrExperienceHelper.onStateChangedObservable.remove(this._stateObserver);
     }
 }
