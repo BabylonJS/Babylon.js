@@ -2,7 +2,6 @@ import {
     DiagramEngine,
     DiagramModel,
     DiagramWidget,
-    MoveCanvasAction,
     LinkModel
 } from "storm-react-diagrams";
 
@@ -31,6 +30,23 @@ import { LightNodeFactory } from './components/diagram/light/lightNodeFactory';
 import { DataStorage } from './dataStorage';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+import { Nullable } from 'babylonjs/types';
+import { BonesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/bonesBlock';
+import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
+import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
+import { AlphaTestBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock';
+import { ImageProcessingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/imageProcessingBlock';
+import { RGBAMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaMergerBlock';
+import { RGBASplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaSplitterBlock';
+import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
+import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertexOutputBlock';
+import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
+import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
+import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
+import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
+import { Vector2TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector2TransformBlock';
+import { Vector3TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector3TransformBlock';
+import { Vector4TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector4TransformBlock';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -55,7 +71,6 @@ interface IGraphEditorProps {
 }
 
 export class NodeCreationOptions {
-    column: number;
     nodeMaterialBlock: NodeMaterialBlock;
     type?: string;
     connection?: NodeMaterialConnectionPoint;
@@ -71,22 +86,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     public _toAdd: LinkModel[] | null = [];
 
     /**
-     * Current row/column position used when adding new nodes
-     */
-    private _rowPos = new Array<number>();
-
-    /**
      * Creates a node and recursivly creates its parent nodes from it's input
      * @param nodeMaterialBlock 
      */
     public createNodeFromObject(options: NodeCreationOptions) {
-        // Update rows/columns
-        if (this._rowPos[options.column] == undefined) {
-            this._rowPos[options.column] = 0;
-        } else {
-            this._rowPos[options.column]++;
-        }
-
         // Create new node in the graph
         var newNode: DefaultNodeModel;
         var filterInputs = [];
@@ -110,7 +113,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         this._nodes.push(newNode)
-        newNode.setPosition(1600 - (300 * options.column), 210 * this._rowPos[options.column])
         this._model.addAll(newNode);
 
         if (options.nodeMaterialBlock) {
@@ -154,7 +156,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         });
 
         this.props.globalState.onResetRequiredObservable.add(() => {
-            this._rowPos = [];
             this.build();
             if (this.props.globalState.nodeMaterial) {
                 this.buildMaterial();
@@ -258,6 +259,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     if (targetBlock && targetBlock.isFinalMerger) {
                         this.props.globalState.nodeMaterial!.removeOutputNode(targetBlock);
                     }
+
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 }
             },
             linksUpdated: (e) => {
@@ -275,11 +278,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                             }
                         }
                     }
+                    this.forceUpdate();
+                    return;
                 }
 
                 e.link.addListener({
                     sourcePortChanged: () => {
-                        console.log("port change")
                     },
                     targetPortChanged: () => {
                         // Link is created with a target port
@@ -287,7 +291,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
                         if (link) {
                             if (link.output.connection && link.input.connection) {
-                                link.output.connection.connectTo(link.input.connection)
+                                // Disconnect previous connection
+                                for (var key in link.input.links) {
+                                    let other = link.input.links[key];
+
+                                    if (other.getSourcePort() !== link.output) {
+                                        other.remove();
+                                    }
+                                }
+
+                                link.output.connection.connectTo(link.input.connection);
+
+                                this.forceUpdate();
                             }
                             if (this.props.globalState.nodeMaterial) {
                                 this.buildMaterial();
@@ -302,10 +317,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (this.props.globalState.nodeMaterial) {
             var material: any = this.props.globalState.nodeMaterial;
             material._vertexOutputNodes.forEach((n: any) => {
-                this.createNodeFromObject({ column: 0, nodeMaterialBlock: n });
+                this.createNodeFromObject({ nodeMaterialBlock: n });
             })
             material._fragmentOutputNodes.forEach((n: any) => {
-                this.createNodeFromObject({ column: 0, nodeMaterialBlock: n });
+                this.createNodeFromObject({ nodeMaterialBlock: n });
             })
         }
 
@@ -320,7 +335,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this.forceUpdate();
 
             this.reOrganize();
-        }, 550);
+        }, 500);
     }
 
     reOrganize() {
@@ -338,23 +353,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this.forceUpdate();
     }
 
-    addNodeFromClass(ObjectClass: typeof NodeMaterialBlock) {
-        var block = new ObjectClass(ObjectClass.prototype.getClassName())
-        var localNode = this.createNodeFromObject({ column: 0, nodeMaterialBlock: block })
-        var widget = (this.refs["test"] as DiagramWidget);
-
-        this.forceUpdate();
-
-        // This is needed to fix link offsets when created, (eg. create a fog block)
-        // Todo figure out how to correct this without this
-        setTimeout(() => {
-            widget.startFiringAction(new MoveCanvasAction(1, 0, this._model));
-        }, 500);
-
-        return localNode;
-    }
-
-    addValueNode(type: string, column = 0, connection?: NodeMaterialConnectionPoint) {
+    addValueNode(type: string) {
         let nodeType: NodeMaterialBlockConnectionPointTypes = NodeMaterialBlockConnectionPointTypes.Vector3;
         switch (type) {
             case "Float":
@@ -382,7 +381,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         let newInputBlock = new InputBlock(type, undefined, nodeType);
         newInputBlock.setDefaultValue();
-        var localNode = this.createNodeFromObject({ column: column, type: type, connection: connection, nodeMaterialBlock: newInputBlock })
+        var localNode = this.createNodeFromObject({ type: type, nodeMaterialBlock: newInputBlock })
 
         return localNode;
     }
@@ -432,6 +431,84 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         return `${this._leftWidth}px 4px calc(100% - ${this._leftWidth + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
     }
 
+    emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
+        var data = event.dataTransfer.getData("babylonjs-material-node") as string;
+
+        if (data.indexOf("Block") === -1) {
+            this.addValueNode(data);
+        } else {
+            let block: Nullable<NodeMaterialBlock> = null;
+
+            switch (data) {
+                case "BonesBlock":
+                    block = new BonesBlock("Bones");
+                    break;
+                case "InstancesBlock":
+                    block = new InstancesBlock("Instances");
+                    break;
+                case "MorphTargetsBlock":
+                    block = new MorphTargetsBlock("MorphTargets");
+                    break;
+                case "AlphaTestBlock":
+                    block = new AlphaTestBlock("AlphaTest");
+                    break;
+                case "ImageProcessingBlock":
+                    block = new ImageProcessingBlock("ImageProcessing");
+                    break;
+                case "RGBAMergerBlock":
+                    block = new RGBAMergerBlock("RGBAMerger");
+                    break;
+                case "RGBASplitterBlock":
+                    block = new RGBASplitterBlock("RGBASplitter");
+                    break;
+                case "TextureBlock":
+                    block = new TextureBlock("Texture");
+                    break;
+                case "LightBlock":
+                    block = new LightBlock("Light");
+                    break;
+                case "FogBlock":
+                    block = new FogBlock("Fog");
+                    break;
+                case "VertexOutputBlock":
+                    block = new VertexOutputBlock("VertexOutput");
+                    break;
+                case "FragmentOutputBlock":
+                    block = new FragmentOutputBlock("FragmentOutput");
+                    break;
+                case "AddBlock":
+                    block = new AddBlock("Add");
+                    break;
+                case "ClampBlock":
+                    block = new ClampBlock("Clamp");
+                    break;
+                case "MultiplyBlock":
+                    block = new MultiplyBlock("Multiply");
+                    break;
+                case "Vector2TransformBlock":
+                    block = new Vector2TransformBlock("Vector2Transform");
+                    break;
+                case "Vector3TransformBlock":
+                    block = new Vector3TransformBlock("Vector3Transform");
+                    break;
+                case "Vector4TransformBlock":
+                    block = new Vector4TransformBlock("Vector4Transform");
+                    break;
+            }
+
+            if (block) {
+                let nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
+                const zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
+
+                let x = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX()) / zoomLevel;
+                let y = (event.clientY - event.currentTarget.offsetTop - this._engine.diagramModel.getOffsetY()) / zoomLevel;
+                nodeModel.setPosition(x, y);
+            }
+        };
+
+        this.forceUpdate();
+    }
+
     render() {
         return (
             <Portal globalState={this.props.globalState}>
@@ -441,7 +518,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     }
                 }>
                     {/* Node creation menu */}
-                    <NodeListComponent globalState={this.props.globalState} onAddValueNode={b => this.addValueNode(b)} onAddNodeFromClass={b => this.addNodeFromClass(b)} />
+                    <NodeListComponent globalState={this.props.globalState} />
 
                     <div id="leftGrab"
                         onPointerDown={evt => this.onPointerDown(evt)}
@@ -450,7 +527,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     ></div>
 
                     {/* The node graph diagram */}
-                    <DiagramWidget deleteKeys={[46]} ref={"test"} inverseZoom={true} className="diagram-container" diagramEngine={this._engine} maxNumberPointsPerLink={0} />
+                    <div className="diagram-container"
+                        onDrop={event => {
+                            this.emitNewBlock(event);
+                        }}
+                        onDragOver={event => {
+                            event.preventDefault();
+                        }}
+                    >
+                        <DiagramWidget className="diagram" deleteKeys={[46]} ref={"test"} inverseZoom={true} diagramEngine={this._engine} maxNumberPointsPerLink={0} />
+                    </div>
 
                     <div id="rightGrab"
                         onPointerDown={evt => this.onPointerDown(evt)}

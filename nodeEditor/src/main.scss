@@ -28,6 +28,13 @@
     grid-row: 1;
     grid-column: 3;
     background: #222222;
+    width: 100%;
+    height: 100%;
+
+    .diagram {
+        width: 100%;
+        height: 100%;
+    }
 }
 
 #propertyTab {
