@@ -7,6 +7,7 @@ import {
 } from "storm-react-diagrams";
 
 import * as React from "react";
+import * as dagre from "dagre";
 import { GlobalState } from './globalState';
 
 import { GenericNodeFactory } from './components/diagram/generic/genericNodeFactory';
@@ -168,7 +169,65 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this._engine.zoomToFit();
         });
 
+        this.props.globalState.onReOrganizedRequiredObservable.add(() => {
+            this.reOrganize();
+        })
+
         this.build();
+    }
+
+    distributeGraph() {
+        let nodes = this.mapElements();
+        let edges = this.mapEdges();
+        let graph = new dagre.graphlib.Graph();
+        graph.setGraph({});
+        graph.setDefaultEdgeLabel(() => ({}));
+        graph.graph().rankdir = "LR";
+        //add elements to dagre graph
+        nodes.forEach(node => {
+            graph.setNode(node.id, node.metadata);
+        });
+        edges.forEach(edge => {
+            if (edge.from && edge.to) {
+                graph.setEdge(edge.from.id, edge.to.id);
+            }
+        });
+        //auto-distribute
+        dagre.layout(graph);
+        return graph.nodes().map(node => graph.node(node));
+    }
+
+    mapElements() {
+        let output = [];
+
+        // dagre compatible format
+        for (var nodeName in this._model.nodes) {
+            let node = this._model.nodes[nodeName];
+            let size = {
+                width: node.width,
+                height: node.height
+            };
+            output.push({ id: node.id, metadata: { ...size, id: node.id } });
+        }
+
+        return output;
+    }
+
+    mapEdges() {
+        // returns links which connects nodes
+        // we check are there both from and to nodes in the model. Sometimes links can be detached
+        let output = [];
+
+        for (var linkName in this._model.links) {
+            let link = this._model.links[linkName];
+
+            output.push({
+                from: link.sourcePort!.parent,
+                to: link.targetPort!.parent
+            });
+        }
+
+        return output;
     }
 
     buildMaterial() {
@@ -257,8 +316,26 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
             this._toAdd = null;
             this._engine.setDiagramModel(this._model);
+
             this.forceUpdate();
+
+            this.reOrganize();
         }, 550);
+    }
+
+    reOrganize() {
+        let nodes = this.distributeGraph();
+        nodes.forEach(node => {
+            for (var nodeName in this._model.nodes) {
+                let modelNode = this._model.nodes[nodeName];
+
+                if (modelNode.id === node.id) {
+                    modelNode.setPosition(node.x - node.width / 2, node.y - node.height / 2);
+                    return;
+                }
+            }
+        });
+        this.forceUpdate();
     }
 
     addNodeFromClass(ObjectClass: typeof NodeMaterialBlock) {

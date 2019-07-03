@@ -13,5 +13,6 @@ export class GlobalState {
     onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
     onZoomToFitRequiredObservable = new Observable<void>();
+    onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
 }
