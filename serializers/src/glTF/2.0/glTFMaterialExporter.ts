@@ -1221,7 +1221,6 @@ export class _GLTFMaterialExporter {
                 uri: textureName
             };
             let foundIndex: Nullable<number> = null;
-
             for (let i = 0; i < images.length; ++i) {
                 if (images[i].uri === originalTextureName) {
                     foundIndex = i;
