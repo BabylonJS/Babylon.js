@@ -12,7 +12,7 @@ var prepareForBaking = function(mesh) {
     }
     var indices = mesh.getIndices();
 
-    var { uvs, textureSize } = BABYLON.Tools.WorldUniformUvScaling(positions, uvs, indices, scaling, texelSize);
+    var { uvs, textureSize } = { uvs: mesh.getVerticesData(BABYLON.VertexBuffer.UVKind), textureSize: 512 }//BABYLON.Tools.WorldUniformUvScaling(positions, uvs, indices, scaling, texelSize);
     mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, uvs);
     meshes.push(mesh);
     mesh.__lightmapSize = textureSize;
@@ -79,7 +79,7 @@ var createScene = function() {
 
     lamp.rotation.x = -3 * Math.PI / 4;
     lamp.position.copyFromFloats(-5, 10, 5);
-    lamp.color = new BABYLON.Vector3(100, 100, 100);
+    lamp.color = new BABYLON.Vector3(0.8, 0.8, 0.8);
 
     // ceiling.position.y += 5;
     // ceiling.rotation.x = -Math.PI;
@@ -103,7 +103,7 @@ var createScene = function() {
             pr._meshes = scene.meshes;
             for (let i = 0; i < scene.meshes.length; i++) {
                 if (!scene.meshes[i].__lightmapSize) {
-                    // prepareForBaking(scene.meshes[i]);
+                    prepareForBaking(scene.meshes[i]);
                 }
             }
         });
@@ -144,7 +144,7 @@ var createScene = function() {
         var observer;
         observer = scene.onAfterRenderTargetsRenderObservable.add(() => {
             frameCount++;
-            if (false && (frameCount % 60) === 0) {
+            if (true && (frameCount % 60) === 0) {
                 engine.stopRenderLoop();
                 var energyLeft = pr.gatherRadiosity(true);
                 engine.runRenderLoop(renderLoop);

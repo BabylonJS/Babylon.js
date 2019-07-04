@@ -159,9 +159,9 @@ function projectMat(vector: Vector3) {
 }
 
 // TODO
-const USER_FILL_HOLES = 1;
+const USER_FILL_HOLES = 0;
 const USER_FILL_HOLES_QUALITY = 1;
-const USER_ISLAND_MARGIN = 0;
+const USER_ISLAND_MARGIN = 0.1;
 const SMALL_NUM = 1e-12;
 
 // Porting smart uv project code from blender
@@ -917,7 +917,7 @@ export class UvMapper {
 
 	main(obList: Mesh[],
 		island_margin: number = 0, 
-		projection_limit: number = 75,
+		projection_limit: number = 25,
 		user_area_weight: number = 0,
 		use_aspect: boolean = false,
 		strech_to_bounds: boolean = false) {
@@ -1160,6 +1160,9 @@ export class UvMapper {
 				let tempVertices = new Float32Array(oldVertices.length + additionnalUvs[meshIndex].length * 3);
 				let tempNormals = new Float32Array(oldVertices.length + additionnalUvs[meshIndex].length * 3);
 
+				let mat = obList[meshIndex].getWorldMatrix();
+				mat = mat.clone().invert();
+
 				let l = newUvs[meshIndex].length;
 				for (let i = 0; i < l; i++) {
 					tempUvs[i] = newUvs[meshIndex][i];
@@ -1176,9 +1179,12 @@ export class UvMapper {
 				}
 
 				for (let i = 0; i < additionnalVertices[meshIndex].length; i++) {
+					additionnalVertices[meshIndex][i] = Vector3.TransformCoordinates(additionnalVertices[meshIndex][i], mat);
 					tempVertices[i * 3 + l] = additionnalVertices[meshIndex][i].x;
 					tempVertices[i * 3 + 1 + l] = additionnalVertices[meshIndex][i].y;
 					tempVertices[i * 3 + 2 + l] = additionnalVertices[meshIndex][i].z;
+
+					console.log(additionnalVertices[meshIndex][i].x, additionnalVertices[meshIndex][i].y, additionnalVertices[meshIndex][i].z);
 				}
 
 				l = oldNormals.length;
@@ -1187,6 +1193,7 @@ export class UvMapper {
 				}
 
 				for (let i = 0; i < additionnalNormals[meshIndex].length; i++) {
+					additionnalNormals[meshIndex][i] = Vector3.TransformNormal(additionnalNormals[meshIndex][i], mat);
 					tempNormals[i * 3 + l] = additionnalNormals[meshIndex][i].x;
 					tempNormals[i * 3 + 1 + l] = additionnalNormals[meshIndex][i].y;
 					tempNormals[i * 3 + 2 + l] = additionnalNormals[meshIndex][i].z;
@@ -1284,15 +1291,15 @@ export class UvMapper {
 	constructor(scene: Scene) {
 		// this.debPointInTri2D();
 		// this.debugFitAABB();
-		let sphere = MeshBuilder.CreateSphere("aa", { diameter: 1, segments: 10 }, scene);
+		let sphere = MeshBuilder.CreateSphere("aa", { diameter: 1, segments: 30 }, scene);
 		let cylinder = MeshBuilder.CreateCylinder("aa", { diameter: 1 }, scene);
 		cylinder.position.addInPlace(new Vector3(0, 5, 1));
 		cylinder.scaling.scaleInPlace(5);
-		this.main([sphere, cylinder]);
+		this.main(scene.meshes as Mesh[]);
 		let mat = new StandardMaterial("test", scene);
 		sphere.material = mat;
 		mat.emissiveTexture = new Texture("./LogoPBT.png", scene);
-		// mat.emissiveColor = new Color3(1, 0, 0);
+		mat.emissiveColor = new Color3(1, 0, 0);
 	}
 }
 
