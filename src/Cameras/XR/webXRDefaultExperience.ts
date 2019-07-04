@@ -1,5 +1,5 @@
-import {WebXRExperienceHelper} from "./webXRExperienceHelper"
-import { Scene } from 'scene';
+import { WebXRExperienceHelper } from "./webXRExperienceHelper";
+import { Scene } from '../../scene';
 import { WebXRInput } from './webXRInput';
 import { WebXRControllerModelLoader } from './webXRControllerModelLoader';
 import { WebXRControllerPointerSelection } from './webXRControllerPointerSelection';
@@ -7,24 +7,60 @@ import { WebXRControllerTeleportation } from './webXRControllerTeleportation';
 import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
 import { WebXREnterExitUI } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
+/**
+ * Options for the default xr helper
+ */
 export class WebXRDefaultExperienceOptions {
-    floorMeshes: Array<AbstractMesh>
+    /**
+     * Floor meshes that should be used for teleporting
+     */
+    public floorMeshes: Array<AbstractMesh>;
 }
 
+/**
+ * Default experience which provides a similar setup to the previous webVRExperience
+ */
 export class WebXRDefaultExperience {
-    public baseExperience:WebXRExperienceHelper;
-    public input:WebXRInput;
-    public controllerModelLoader:WebXRControllerModelLoader;
-    public pointerSelection:WebXRControllerPointerSelection;
-    public teleportation:WebXRControllerTeleportation;
-    public enterExitUI:WebXREnterExitUI
-    public outputCanvas:WebXRManagedOutputCanvas
+    /**
+     * Base experience
+     */
+    public baseExperience: WebXRExperienceHelper;
+    /**
+     * Input experience extension
+     */
+    public input: WebXRInput;
+    /**
+     * Loads the controller models
+     */
+    public controllerModelLoader: WebXRControllerModelLoader;
+    /**
+     * Enables laser pointer and selection
+     */
+    public pointerSelection: WebXRControllerPointerSelection;
+    /**
+     * Enables teleportation
+     */
+    public teleportation: WebXRControllerTeleportation;
+    /**
+     * Enables ui for enetering/exiting xr
+     */
+    public enterExitUI: WebXREnterExitUI;
+    /**
+     * Default output canvas xr should render to
+     */
+    public outputCanvas: WebXRManagedOutputCanvas;
 
-    public static CreateAsync(scene:Scene, options:WebXRDefaultExperienceOptions){
+    /**
+     * Creates the default xr experience
+     * @param scene scene
+     * @param options options for basic configuration
+     * @returns resulting WebXRDefaultExperience
+     */
+    public static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions) {
         var result = new WebXRDefaultExperience();
 
         // Create base experience
-        return WebXRExperienceHelper.CreateAsync(scene).then((xrHelper)=>{
+        return WebXRExperienceHelper.CreateAsync(scene).then((xrHelper) => {
             result.baseExperience = xrHelper;
 
             // Add controller support
@@ -37,16 +73,32 @@ export class WebXRDefaultExperience {
             result.outputCanvas = new WebXRManagedOutputCanvas(xrHelper, scene.getEngine().getRenderingCanvas() as HTMLCanvasElement);
 
             // Create ui for entering/exiting xr
-            return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, {webXRManagedOutputCanvas: result.outputCanvas})
-        }).then((ui)=>{
+            return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, {webXRManagedOutputCanvas: result.outputCanvas});
+        }).then((ui) => {
             result.enterExitUI = ui;
-            return result
-        })
+            return result;
+        });
     }
-    constructor(){
+
+    private constructor() {
 
     }
-    public dispose(){
-
+    
+    /**
+     * DIsposes of the experience helper
+     */
+    public dispose() {
+        if(this.baseExperience){
+            this.baseExperience.dispose()
+        }
+        if(this.input){
+            this.input.dispose()
+        }
+        if(this.enterExitUI){
+            this.enterExitUI.dispose()
+        }
+        if(this.outputCanvas){
+            this.outputCanvas.dispose()
+        }
     }
 }

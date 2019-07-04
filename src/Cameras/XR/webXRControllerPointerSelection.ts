@@ -9,34 +9,36 @@ import { WebXRInput } from './webXRInput';
  * Handles pointer input automatically for the pointer of XR controllers
  */
 export class WebXRControllerPointerSelection {
-    
-    public static _idCounter = 0;
-    
+    private static _idCounter = 0;
     private _tmpRay = new Ray(new Vector3(), new Vector3());
-    constructor(input: WebXRInput){
-        
-        input.onControllerAddedObservable.add((c)=>{
-            let scene = c.pointer.getScene();
+
+    /**
+     * Creates a WebXRControllerPointerSelection
+     * @param input input manager to setup pointer selection
+     */
+    constructor(input: WebXRInput) {
+        input.onControllerAddedObservable.add((controller) => {
+            let scene = controller.pointer.getScene();
 
             let laserPointer: Mesh;
             let cursorMesh: Mesh;
             let triggerDown = false;
-            let id:number;
+            let id: number;
             id = WebXRControllerPointerSelection._idCounter++;
 
             // Create a laser pointer for the XR controller
             laserPointer = Mesh.CreateCylinder("laserPointer", 1, 0.0002, 0.004, 20, 1, scene, false);
-            laserPointer.parent = c.pointer
+            laserPointer.parent = controller.pointer;
             let laserPointerMaterial = new StandardMaterial("laserPointerMat", scene);
             laserPointerMaterial.emissiveColor = new Color3(0.7, 0.7, 0.7);
             laserPointerMaterial.alpha = 0.6;
             laserPointer.material = laserPointerMaterial;
             laserPointer.rotation.x = Math.PI / 2;
-            this._updatePointerDistance(laserPointer,1)
+            this._updatePointerDistance(laserPointer, 1);
             laserPointer.isPickable = false;
 
             // Create a gaze tracker for the  XR controlelr
-            cursorMesh = Mesh.CreateTorus("gazeTracker", 0.0035*3, 0.0025*3, 20, scene, false);
+            cursorMesh = Mesh.CreateTorus("gazeTracker", 0.0035 * 3, 0.0025 * 3, 20, scene, false);
             cursorMesh.bakeCurrentTransformIntoVertices();
             cursorMesh.isPickable = false;
             cursorMesh.isVisible = false;
@@ -46,31 +48,31 @@ export class WebXRControllerPointerSelection {
             targetMat.backFaceCulling = false;
             cursorMesh.material = targetMat;
 
-            let renderObserver = scene.onBeforeRenderObservable.add(()=>{     
-                // Every frame check collisions/input        
-                c.getWorldPointerRayToRef(this._tmpRay)
-                let pick = scene.pickWithRay(this._tmpRay)
-                if(pick){
-                    if(c.inputSource.gamepad && c.inputSource.gamepad.buttons[0] && c.inputSource.gamepad.buttons[0].value > 0.7){
-                        if(!triggerDown){
+            let renderObserver = scene.onBeforeRenderObservable.add(() => {
+                // Every frame check collisions/input
+                controller.getWorldPointerRayToRef(this._tmpRay);
+                let pick = scene.pickWithRay(this._tmpRay);
+                if (pick) {
+                    if (controller.inputSource.gamepad && controller.inputSource.gamepad.buttons[0] && controller.inputSource.gamepad.buttons[0].value > 0.7) {
+                        if (!triggerDown) {
                             scene.simulatePointerDown(pick, { pointerId: id });
                         }
                         triggerDown = true;
-                    }else{
-                        if(triggerDown){
+                    }else {
+                        if (triggerDown) {
                             scene.simulatePointerUp(pick, { pointerId: id });
                         }
                         triggerDown = false;
                     }
                     scene.simulatePointerMove(pick, { pointerId: id });
                 }
-                
-                if(pick && pick.pickedPoint && pick.hit){
+
+                if (pick && pick.pickedPoint && pick.hit) {
                     // Update laser state
-                    this._updatePointerDistance(laserPointer, pick.distance)
+                    this._updatePointerDistance(laserPointer, pick.distance);
 
                     // Update cursor state
-                    cursorMesh.position.copyFrom(pick.pickedPoint)
+                    cursorMesh.position.copyFrom(pick.pickedPoint);
                     cursorMesh.scaling.x = Math.sqrt(pick.distance);
                     cursorMesh.scaling.y = Math.sqrt(pick.distance);
                     cursorMesh.scaling.z = Math.sqrt(pick.distance);
@@ -86,18 +88,18 @@ export class WebXRControllerPointerSelection {
                         cursorMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                     }
                     cursorMesh.isVisible = true;
-                }else{
+                }else {
                     cursorMesh.isVisible = false;
                 }
-            })
+            });
 
-            c.onDisposeObservable.addOnce(()=>{
+            controller.onDisposeObservable.addOnce(() => {
                 laserPointer.dispose();
                 cursorMesh.dispose();
 
-                scene.onBeforeRenderObservable.remove(renderObserver)
-            })
-        })
+                scene.onBeforeRenderObservable.remove(renderObserver);
+            });
+        });
     }
 
     private _convertNormalToDirectionOfRay(normal: Nullable<Vector3>, ray: Ray) {
@@ -110,7 +112,7 @@ export class WebXRControllerPointerSelection {
         return normal;
     }
 
-    private _updatePointerDistance(_laserPointer:Mesh, distance: number = 100) {
+    private _updatePointerDistance(_laserPointer: Mesh, distance: number = 100) {
         _laserPointer.scaling.y = distance;
         _laserPointer.position.z = distance / 2;
     }

@@ -153,9 +153,9 @@ export class WebXRExperienceHelper implements IDisposable {
             });
 
             // Wait until the first frame arrives before setting state to in xr
-            this.sessionManager.onXRFrameObservable.addOnce(()=>{
+            this.sessionManager.onXRFrameObservable.addOnce(() => {
                 this._setState(WebXRState.IN_XR);
-            })
+            });
         }).catch((e: any) => {
             console.log(e);
             console.log(e.message);

@@ -81,9 +81,10 @@ declare module "../scene" {
         /**
          * Creates a new WebXRDefaultExperience
          * @see http://doc.babylonjs.com/how_to/webxr
+         * @param options experience options
          * @returns a promise for a new WebXRDefaultExperience
          */
-        createDefaultXRExperienceAsync(options:WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
+        createDefaultXRExperienceAsync(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
     }
 }
 
@@ -207,8 +208,8 @@ Scene.prototype.createDefaultVRExperience = function(webVROptions: VRExperienceH
     return new VRExperienceHelper(this, webVROptions);
 };
 
-Scene.prototype.createDefaultXRExperienceAsync = function(options:WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience> {
+Scene.prototype.createDefaultXRExperienceAsync = function(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience> {
     return WebXRDefaultExperience.CreateAsync(this, options).then((helper) => {
-        return helper
+        return helper;
     });
 };
