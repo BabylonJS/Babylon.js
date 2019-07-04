@@ -17,6 +17,9 @@ export class WebXRController {
      */
     public pointer: AbstractMesh;
 
+    /**
+     * Event that fires when the controller is removed/disposed
+     */
     public onDisposeObservable = new Observable<{}>();
 
     private _tmpMatrix = new Matrix();
@@ -89,16 +92,15 @@ export class WebXRController {
      * Gets a world space ray coming from the controller
      * @param result the resulting ray
      */
-    public getWorldPointerRayToRef(result:Ray){
+    public getWorldPointerRayToRef(result: Ray) {
         // Force update to ensure picked point is synced with ray
-        let worldMatrix = this.pointer.computeWorldMatrix(true)
-        worldMatrix.decompose(undefined, this._tmpQuaternion, undefined)
-        this._tmpVector.set(0,0,1)
-        this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector)
-        result.origin = this.pointer.absolutePosition
-        result.direction.copyFrom(this._tmpVector)
+        let worldMatrix = this.pointer.computeWorldMatrix(true);
+        worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
+        this._tmpVector.set(0, 0, 1);
+        this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
+        result.origin = this.pointer.absolutePosition;
+        result.direction.copyFrom(this._tmpVector);
         result.length = 1000;
-        return result;
     }
 
     /**
