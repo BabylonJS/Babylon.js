@@ -29,7 +29,7 @@ export enum WebXRState {
     NOT_IN_XR
 }
 /**
- * Helper class used to enable XR
+ * Base set of functionality needed to create an XR experince (WebXRSessionManager, Camera, StateManagement, etc.)
  * @see https://doc.babylonjs.com/how_to/webxr
  */
 export class WebXRExperienceHelper implements IDisposable {
