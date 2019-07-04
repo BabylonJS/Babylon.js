@@ -83,22 +83,22 @@ export class WebXRDefaultExperience {
     private constructor() {
 
     }
-    
+
     /**
      * DIsposes of the experience helper
      */
     public dispose() {
-        if(this.baseExperience){
-            this.baseExperience.dispose()
+        if (this.baseExperience) {
+            this.baseExperience.dispose();
         }
-        if(this.input){
-            this.input.dispose()
+        if (this.input) {
+            this.input.dispose();
         }
-        if(this.enterExitUI){
-            this.enterExitUI.dispose()
+        if (this.enterExitUI) {
+            this.enterExitUI.dispose();
         }
-        if(this.outputCanvas){
-            this.outputCanvas.dispose()
+        if (this.outputCanvas) {
+            this.outputCanvas.dispose();
         }
     }
 }
