@@ -902,7 +902,7 @@ export class Camera extends Node {
     }
 
     /** @hidden */
-    public _isRightCamera = true;
+    public _isRightCamera = false;
     /**
      * Gets the right camera of a rig setup in case of Rigged Camera
      */

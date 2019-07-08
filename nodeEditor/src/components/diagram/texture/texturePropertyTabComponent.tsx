@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { GlobalState } from '../../../globalState';
-import { Texture } from 'babylonjs/Materials/Textures/texture';
+import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { FileButtonLineComponent } from '../../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
 import { Engine } from 'babylonjs/Engines/engine';
@@ -10,6 +10,7 @@ import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
 import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
 import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
+import { Texture } from 'babylonjs/Materials/Textures/texture';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
@@ -27,7 +28,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
             return;
         }
 
-        let texture = this.props.node.texture as Texture;
+        let texture = this.props.node.texture as BaseTexture;
         if (!texture) {
             this.props.node.texture = new Texture(null, Engine.LastCreatedScene)
             texture = this.props.node.texture;
