@@ -4,76 +4,160 @@
     .navBar710 { display: none; }
     .navBar550 { display: block; }
 
-    #fpsLabel {
-        position: fixed;
-        top: calc(100% - 35px);
+    #exampleList {
+        height: calc(100% - 40px);
+        top: 40px;
         bottom: 0;
-        right: 0;
-        box-shadow: none;
     }
     .navbarBottom {
         display: none;
     }
     .wrapper {
-        height: calc(100% - 55px - 35px);
+        height: calc(100% - 40px);
+    }
+    .wrapper #canvasZone {
+        width: 0;
+    }
+    #fpsLabel {
+        position: fixed;
+        top: 40px;
+        right: 0;
+        line-height: 32px;
+        height: 35px;
+        padding: 0;
+        padding-right: 5px;
+        box-shadow: none;
+    }
+    .wrapper #jsEditor {
+        width: 100%;
     }
 
-    #JStoTSbar {
-        padding-left: 8px;
+    #switchWrapper {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        width: 40px;
+        height: 40px;
     }
+    #switchWrapper img {
+        width: 40px;
+        height: 40px;
+        filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
+    }
+
+
     #JStoTSbar .buttonJStoTS {
         border-top-left-radius: 12px;
     }
 
-    .navbar .categoryTitle {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        height: 35px;
-        line-height: 35px;
+    .navbar, .navbar .category, #JStoTSbar {
+        height: 40px;
+        line-height: 40px;
+        padding: 0;
         width: 100%;
+    }
+    .navbar .category.right {
+        display: none;
+    }
+    .navbar .categoryTitle {
+        height: 40px;
+        line-height: 40px;
+        padding: 0;
+        width: calc(100% - 40px);
+        margin-left: -5px;
     }
     .navbar .categoryTitle .logo, .navbar .categoryTitle .version {
         vertical-align: top;
         height: 100%;
-        margin: 0;
+        margin-right: 10px;
+    }
+    .navbar .categoryTitle .logo, .navbar .categoryTitle .logo {
+        float: left;
+    }
+    .navbar .categoryTitle .version {
+        float: right;
     }
     .navbar .categoryTitle .logo, .navbar .categoryTitle .version .versionSub {
         vertical-align: top;
     }
 
+    .navbar.languageJS .select {
+        background-color: #3f3461;
+    }
+    .navbar.languageTS .select {
+        background-color: #bb464b;
+    }
+    .navbar .select, .navbar .select img {
+        width: 40px;
+        height: 40px;
+    }
+    .navbar .select img {
+        filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
+    }
+    .navbar .select img:hover {
+        filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
+    }
+    .navbar .select img:hover {
+        filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
+    }
     .navbar .select .toDisplay {
         position: fixed;
         left: 0;
-        width: 100%;
-        height: calc(100% - 55px);
-        text-align: center;
+        top: 40px;
+        width: 180px;
+        height: auto;
+        min-height: 100px;
+        max-height: calc(100% - 40px);
+        text-align: left;
         overflow-y: auto;
     }
+    .navbar .select .toDisplay.languageJS .option {
+        background-color: #3f3461;
+    }
+    .navbar .select .toDisplay.languageTS .option {
+        background-color: #bb464b;
+    }
     .navbar .select .toDisplay .option {
-        text-align: center;
         padding: 1px;
-        border-top: 1px solid white;
         font-size: 15px;
         height: 33px;
         line-height: 33px;
     }
-    .navbar .select .toDisplay .option:last-of-type {
-        border-bottom: 1px solid white;
+    .navbar .select .toDisplay .option  img {
+        float: left;
+        width: auto;
+        height: 100%;
+        filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
+    }
+    .navbar .select .toDisplay .option:nth-of-type(1) img, .navbar .select .toDisplay .option:nth-of-type(2) img {
+        width: 20px;
+        margin: 0 7px;
+        filter: none;
     }
 
     .navbar .select .subSelect .toDisplaySub {
         position: fixed;
-        top: 55px;
-        left: 0;
-        top: 55px;
-        width: 100%;
-        height: calc(100% - 55px);
-        text-align: center;
+        top: 75px;
+        left: 180px;
+        min-width: 180px;
+        width: 180px;
+        height: auto;
+        max-height: calc(100% - 55px);
+        text-align: left;
         overflow-y: auto;
+        color: white;
     }
-    .navbar .select .subSelect .toDisplaySub .option {
-        margin-top: 1px;
+    .navbar .select .subSelect .toDisplaySub.languageJS {
+        background-color: #9379e6;
+    }
+    .navbar .select .subSelect .toDisplaySub.languageTS {
+        background-color: #e0684b;
+    }
+    .navbar .select .subSelect .toDisplaySub.languageJS .option {
+        color: white;
+    }
+    .navbar .select .subSelect .toDisplaySub.languageTS .option {
+        color: white;
     }
 
     .save-layer .save-form {

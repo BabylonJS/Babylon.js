@@ -1,4 +1,6 @@
-﻿(function() {
+﻿import { utils } from "mocha";
+
+(function() {
     var snippetUrl = "https://snippet.babylonjs.com";
     var currentSnippetToken;
     var engine;
@@ -26,11 +28,11 @@
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
-                    blockEditorChange = true;
+                    monacoCreator.BlockEditorChange.lockEditorChange = true;
                     console.log(xhr.responseText);
                     jsEditor.setValue(xhr.responseText);
                     jsEditor.setPosition({ lineNumber: 0, column: 0 });
-                    blockEditorChange = false;
+                    monacoCreator.BlockEditorChange = false;
                     compileAndRun();
 
                     document.getElementById("currentScript").innerHTML = title;
@@ -44,7 +46,7 @@
     };
 
     var showError = function(error) {
-        console.warn(error);
+        utils.showError(error, null);
     };
 
     compileAndRun = function(code) {
