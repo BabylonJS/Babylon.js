@@ -188,13 +188,11 @@ export class BasisTools {
                 texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
                 texture.format = Engine.TEXTUREFORMAT_RGB;
 
-                // Fallback is already inverted
-                texture._invertVScale = !texture.invertY;
-
-                if (texture.getEngine().webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
+                if (texture.getEngine().webGLVersion < 2 && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
                     // Create non power of two texture
                     let source = new InternalTexture(texture.getEngine(), InternalTexture.DATASOURCE_TEMP);
 
+                    texture._invertVScale = texture.invertY;
                     source.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
                     source.format = Engine.TEXTUREFORMAT_RGB;
                     // Fallback requires aligned width/height
@@ -209,6 +207,9 @@ export class BasisTools {
                         source.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, texture, true);
                     });
                 }else {
+                    // Fallback is already inverted
+                    texture._invertVScale = !texture.invertY;
+
                     // Upload directly
                     texture.width = (rootImage.width + 3) & ~3;
                     texture.height = (rootImage.height + 3) & ~3;
