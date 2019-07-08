@@ -7508,7 +7508,11 @@ declare module BABYLON {
         /**
          * Color3
          */
-        Color3 = 4
+        Color3 = 4,
+        /**
+         * String
+         */
+        String = 5
     }
     /**
      * Interface used to define custom inspectable properties.
