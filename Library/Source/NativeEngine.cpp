@@ -179,6 +179,43 @@ namespace babylon
 
             throw std::exception("Unsupported attribute type");
         }
+
+        // Must match constants.ts in Babylon.js.
+        constexpr std::array<uint64_t, 11> ALPHA_MODE
+        {
+            // ALPHA_DISABLE
+            0x0,
+
+            // ALPHA_ADD: SRC ALPHA * SRC + DEST
+            BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_ZERO, BGFX_STATE_BLEND_ONE),
+
+            // ALPHA_COMBINE: SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST
+            BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_ONE),
+
+            // ALPHA_SUBTRACT: DEST - SRC * DEST
+            BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_ZERO, BGFX_STATE_BLEND_INV_SRC_COLOR, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_ONE),
+
+            // ALPHA_MULTIPLY: SRC * DEST
+            BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_DST_COLOR, BGFX_STATE_BLEND_ZERO, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_ONE),
+
+            // ALPHA_MAXIMIZED: SRC ALPHA * SRC + (1 - SRC) * DEST
+            BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_COLOR, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_ONE),
+
+            // ALPHA_ONEONE: SRC + DEST
+            BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_ZERO, BGFX_STATE_BLEND_ONE),
+
+            // ALPHA_PREMULTIPLIED: SRC + (1 - SRC ALPHA) * DEST
+            BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_INV_SRC_ALPHA, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_ONE),
+
+            // ALPHA_PREMULTIPLIED_PORTERDUFF: SRC + (1 - SRC ALPHA) * DEST, (1 - SRC ALPHA) * DEST ALPHA
+            BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_INV_SRC_ALPHA, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_INV_SRC_ALPHA),
+
+            // ALPHA_INTERPOLATE: CST * SRC + (1 - CST) * DEST
+            BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_FACTOR, BGFX_STATE_BLEND_INV_FACTOR, BGFX_STATE_BLEND_FACTOR, BGFX_STATE_BLEND_INV_FACTOR),
+
+            // ALPHA_SCREENMODE: SRC + (1 - SRC) * DEST, SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
+            BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_INV_SRC_COLOR, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_INV_SRC_ALPHA),
+        };
     }
 
     class NativeEngine::Impl final
@@ -714,16 +751,7 @@ namespace babylon
         const auto blendMode = static_cast<BlendMode>(info[0].As<Napi::Number>().Int32Value());
 
         m_engineState &= ~BGFX_STATE_BLEND_MASK;
-        switch (blendMode)
-        {
-        case 0:
-            break;
-        case 25:
-            m_engineState |= BGFX_STATE_BLEND_NORMAL;
-            break;
-        default:
-            throw std::exception("Unsupported blend mode");
-        }
+        m_engineState |= ALPHA_MODE[blendMode];
 
         bgfx::setState(m_engineState);
     }
