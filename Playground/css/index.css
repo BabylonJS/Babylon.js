@@ -161,6 +161,14 @@ body {
     font-weight: 700;
     color: white;
     font-size: 25px;
+    line-height: 36px;
+}
+#exampleList #exampleBanner h1 img {
+    float: right;
+    width: 36px;
+    margin-right: 10px;
+    margin-left: -45px;
+    filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
 }
 #exampleList .horizontalSeparator {
     width: 80%;
