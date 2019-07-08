@@ -1209,6 +1209,7 @@ export class _GLTFMaterialExporter {
 
         let extension = mimeType === ImageMimeType.JPEG ? '.jpeg' : '.png';
         let textureName = baseTextureName + extension;
+        let originalTextureName = textureName;
         if (textureName in imageData) {
             textureName = `${baseTextureName}_${Tools.RandomId()}${extension}`;
         }
@@ -1221,7 +1222,7 @@ export class _GLTFMaterialExporter {
             };
             let foundIndex: Nullable<number> = null;
             for (let i = 0; i < images.length; ++i) {
-                if (images[i].uri === textureName) {
+                if (images[i].uri === originalTextureName) {
                     foundIndex = i;
                     break;
                 }

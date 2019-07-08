@@ -2,6 +2,7 @@ import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 /**
  * Block used to clamp a float
  */
@@ -17,7 +18,7 @@ export class ClampBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("value", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);

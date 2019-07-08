@@ -18,11 +18,11 @@ export class LightNodeModel extends DefaultNodeModel {
 	 * Light for the node if it exists
 	 */
     public get light(): Nullable<Light> {
-        return this._block.light.value;
+        return this._block.light;
     }
 
     public set light(value: Nullable<Light>) {
-        this._block.light.value = value;
+        this._block.light = value;
     }
 
 	/**

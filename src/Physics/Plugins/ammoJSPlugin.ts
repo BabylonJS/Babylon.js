@@ -462,7 +462,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      */
     public removePhysicsBody(impostor: PhysicsImpostor) {
         if (this.world) {
-            this.world.removeRigidBody(impostor.physicsBody);
+            if (impostor.soft) {
+                this.world.removeSoftBody(impostor.physicsBody);
+            }else {
+                this.world.removeRigidBody(impostor.physicsBody);
+            }
 
             if (impostor._pluginData) {
                 impostor._pluginData.toDispose.forEach((d: any) => {

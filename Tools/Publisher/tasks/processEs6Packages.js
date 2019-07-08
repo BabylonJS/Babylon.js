@@ -98,6 +98,7 @@ function processEs6Packages(version) {
         var mainPackageJSON = fs.readJSONSync(mainPackageJSONPath);
         var tslibSemver = mainPackageJSON["devDependencies"]["tslib"];
         colorConsole.log("    Adding tslib version: ", tslibSemver.yellow);
+        umdPackageJson["dependencies"] = umdPackageJson["dependencies"] || {};
         umdPackageJson["dependencies"]["tslib"] = tslibSemver;
 
         let packageJSONPath = path.join(packagePath, "package.json");
