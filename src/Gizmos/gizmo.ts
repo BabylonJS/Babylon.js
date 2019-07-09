@@ -123,8 +123,8 @@ export class Gizmo implements IDisposable {
                 if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
                     this._rootMesh.scaling.y *= -1;
                 }
-            }else{
-                this._rootMesh.scaling.setAll(this.scaleRatio)
+            }else {
+                this._rootMesh.scaling.setAll(this.scaleRatio);
             }
         }
     }
