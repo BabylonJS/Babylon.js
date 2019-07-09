@@ -62,9 +62,9 @@ export class Gizmo implements IDisposable {
      */
     public updateGizmoPositionToMatchAttachedMesh = true;
     /**
-     * When set, the gizmo will always appear the same size no matter where the camera is (default: false)
+     * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
      */
-    protected _updateScale = true;
+    public updateScale = true;
     protected _interactionsEnabled = true;
     protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
     }
@@ -109,7 +109,7 @@ export class Gizmo implements IDisposable {
             }
 
             // Scale
-            if (this._updateScale) {
+            if (this.updateScale) {
                 const activeCamera = this.gizmoLayer.utilityLayerScene.activeCamera!;
                 var cameraPosition = activeCamera.globalPosition;
                 if ((<WebVRFreeCamera>activeCamera).devicePosition) {
@@ -123,6 +123,8 @@ export class Gizmo implements IDisposable {
                 if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
                     this._rootMesh.scaling.y *= -1;
                 }
+            }else{
+                this._rootMesh.scaling.setAll(this.scaleRatio)
             }
         }
     }
