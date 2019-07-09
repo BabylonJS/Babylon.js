@@ -686,9 +686,6 @@ export class TransformNode extends Node {
         var scale = Tmp.Vector3[1];
 
         if (!node) {
-            if (this.parent && this.parent.computeWorldMatrix) {
-                this.parent.computeWorldMatrix(true);
-            }
             this.computeWorldMatrix(true);
             this.getWorldMatrix().decompose(scale, quatRotation, position);
         } else {
@@ -998,6 +995,9 @@ export class TransformNode extends Node {
 
         // Parent
         if (parent && parent.getWorldMatrix) {
+            if (force) {
+                parent.computeWorldMatrix();
+            }
             if (useBillboardPath) {
                 if (this._transformToBoneReferal) {
                     parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), Tmp.Matrix[7]);
