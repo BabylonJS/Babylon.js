@@ -21,7 +21,8 @@ class Face {
 		vertices: FloatArray,
 		normals: Nullable<FloatArray>,
 		offset: number = 0,
-		matrix?: Matrix) {
+		matrix?: Matrix,
+		equivalencies?: number[][]) {
 		this.v = [];
 		this.uv = [];
 		this.vNo = [];
@@ -49,14 +50,20 @@ class Face {
 			});	
 			this.uv.push(new Vector2());
 			let firstIndex, secondIndex;
-
-			if (indices[i + indexBegin] > indices[(i+1) % 3 + indexBegin]) {
-				firstIndex = indices[(i+1) % 3 + indexBegin];
-				secondIndex = indices[i + indexBegin];
+			if (equivalencies) {
+				firstIndex = sortAndGetFirst(equivalencies, indices[i + indexBegin]);
+				secondIndex = sortAndGetFirst(equivalencies, indices[(i+1) % 3 + indexBegin]);
 			} else {
 				firstIndex = indices[i + indexBegin];
 				secondIndex = indices[(i+1) % 3 + indexBegin];
 			}
+
+			if (firstIndex > secondIndex) {
+				let t = firstIndex;
+				firstIndex = secondIndex;
+				secondIndex = t;
+			}
+
 			this.edge_keys.push(offset + "_" + firstIndex + "_" + secondIndex)
 		}
 
@@ -73,6 +80,11 @@ declare interface Edge {
 	v1: Vector2,
 }
 
+declare interface VertexInfo {
+	vertex: Vector3,
+	normal: Nullable<Vector3>,
+	index: number
+}
 declare interface MeasuredEdge { l: number, e: Nullable<Edge> };
 
 declare type Island = Face[];
@@ -86,6 +98,16 @@ declare type Island = Face[];
 // 6: edges
 // 7: uniqueEdgesPoints
 declare type IslandInfo = any[];
+
+let sortAndGetFirst = function(arr: number[][], idx: number) {
+	if (arr[idx] && arr[idx].length) {
+		arr[idx].sort((a, b) => a - b);
+
+		return arr[idx][0];
+	}
+
+	return idx;
+}
 
 let intersect_line_line_2d = function () {
 
@@ -118,6 +140,13 @@ let intersect_line_line_2d = function () {
 
 function cross(a: Vector2, b: Vector2, o: Vector2) {
    return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x)
+}
+
+function roundTo(a: number, precision: number) {
+	if (!precision) {
+		return a;
+	}
+	return Math.round(a / precision) * precision;
 }
 
 /**
@@ -161,7 +190,7 @@ function projectMat(vector: Vector3) {
 // TODO
 const USER_FILL_HOLES = 0;
 const USER_FILL_HOLES_QUALITY = 1;
-const USER_ISLAND_MARGIN = 0.1;
+const USER_ISLAND_MARGIN = 1;
 const SMALL_NUM = 1e-12;
 
 // Porting smart uv project code from blender
@@ -383,7 +412,7 @@ export class UvMapper {
 	rotate_uvs(uv_points: Vector2[], angle: number) {
 		// Unefficient v2 -> v3
 		if (angle !== 0) {
-			let mat = Matrix.RotationZ(angle);
+			let mat = Matrix.RotationZ(-angle);
 			for (let i = 0; i < uv_points.length; i++) {
 				let vec = this.toV3(uv_points[i]);
 				let res = Vector3.TransformCoordinates(vec, mat);
@@ -915,18 +944,94 @@ export class UvMapper {
 		return islandList;
 	}
 
+	removeDoubles(mesh: Mesh) {
+		// memory footprint seems huge, but it's better to have speed here
+		const PRECISION = 1e-12;
+		let indices = mesh.getIndices() as IndicesArray;
+		let vertices = Array.from(mesh.getVerticesData(VertexBuffer.PositionKind) as FloatArray);
+		let normals = mesh.isVerticesDataPresent(VertexBuffer.NormalKind) ? Array.from(mesh.getVerticesData(VertexBuffer.NormalKind) as FloatArray) : null;
+		// let uvs = mesh.isVerticesDataPresent(VertexBuffer.UVKind) ? Array.from(mesh.getVerticesData(VertexBuffer.UVKind) as FloatArray) : null;
+
+		let vertexMap: { [key: string] : { [key: string] : { [key: string] : VertexInfo[] }}} = {};
+
+		for (let i = 0; i < vertices.length; i+= 3) {
+			let vertex = new Vector3(roundTo(vertices[i], PRECISION), roundTo(vertices[i + 1], PRECISION), roundTo(vertices[i + 2], PRECISION));
+			let normal = normals ? new Vector3(roundTo(normals[i], PRECISION), roundTo(normals[i + 1], PRECISION), roundTo(normals[i + 2], PRECISION)) : null;
+
+			let xMap = vertexMap[vertex.x];
+
+			if (!xMap) {
+				vertexMap[vertex.x] = {};
+			}
+
+			let yMap = vertexMap[vertex.x][vertex.y];
+
+			if (!yMap) {
+				vertexMap[vertex.x][vertex.y] = {};
+			}
+
+			let zMap = vertexMap[vertex.x][vertex.y][vertex.z];
+
+			if (!zMap) {
+				zMap = [];
+				vertexMap[vertex.x][vertex.y][vertex.z] = zMap;
+			}
+
+			zMap.push({
+				vertex,
+				normal,
+				index: i / 3,
+			})
+		}
+
+		let verticesToRemove = [];
+		let equivalencies: number[][] = [];
+		let xValues = Object.keys(vertexMap);
+
+		for (let i = 0; i < xValues.length; i++) {
+			let yValues = Object.keys(vertexMap[xValues[i]]);
+			for (let j = 0; j < yValues.length; j++) {
+				let zValues = Object.keys(vertexMap[xValues[i]][yValues[j]]);
+
+				for (let k = 0; k < zValues.length; k++) {
+					let arr = vertexMap[xValues[i]][yValues[j]][zValues[k]];
+
+					if (arr.length > 1) {
+						let mainVI = arr[0];
+						equivalencies[mainVI.index] = equivalencies[mainVI.index] || [mainVI.index];
+
+						for (let h = 1; h < arr.length; h++) {
+							let otherVI = arr[h];
+							verticesToRemove.push(otherVI.index);
+							equivalencies[otherVI.index] = equivalencies[otherVI.index] || [otherVI.index];
+							equivalencies[mainVI.index].push(otherVI.index);
+							equivalencies[otherVI.index].push(mainVI.index);
+						}
+					}
+				}					
+			}
+		}
+
+		return {
+			indices,
+			equivalencies
+		}
+	}
+
 	main(obList: Mesh[],
 		island_margin: number = 0, 
-		projection_limit: number = 25,
+		projection_limit: number = 89,
 		user_area_weight: number = 0,
 		use_aspect: boolean = false,
-		strech_to_bounds: boolean = false) {
+		strech_to_bounds: boolean = false,
+		remove_doubles: boolean = true) {
 		const USER_PROJECTION_LIMIT_CONVERTED = Math.cos(projection_limit * Math.PI / 180);
 		const USER_PROJECTION_LIMIT_HALF_CONVERTED = Math.cos(projection_limit / 2 * Math.PI / 180);
 		const USER_SHARE_SPACE = true;
 
 		let collected_islandList: Island[] = [];
 		let deletedFaces: Face[] = [];
+		let equivalencies = [];
 		if (USER_SHARE_SPACE) {
 			// Sort by name so we get consistent results
 			obList.sort((a: Mesh, b: Mesh) => a.name.localeCompare(b.name));
@@ -935,12 +1040,25 @@ export class UvMapper {
 		for (let i = 0; i < obList.length; i++) {
 			let meshFaces: Face[] = [];
 			let m = obList[i];
+
+			if (!m.isVerticesDataPresent(VertexBuffer.PositionKind)) {
+				continue;
+			}
+
 			let indices = m.getIndices() as IndicesArray;
 			let vertices = m.getVerticesData(VertexBuffer.PositionKind) as FloatArray;
 			let normals = m.isVerticesDataPresent(VertexBuffer.NormalKind) ? m.getVerticesData(VertexBuffer.NormalKind) as FloatArray : null;
+
+			if (remove_doubles) {
+				let o = this.removeDoubles(m);
+				equivalencies[i] = o.equivalencies;
+			} else {
+				equivalencies[i] = [];
+			}
+
 			let matrix = m.getWorldMatrix();
 			for (let j = 0; j < indices.length; j+= 3) {
-				meshFaces.push(new Face(j, indices, vertices, normals, i, matrix));
+				meshFaces.push(new Face(j, indices, vertices, normals, i, matrix, equivalencies[i]));
 			}
 
 			meshFaces.sort((a, b) => b.area - a.area);
@@ -1118,8 +1236,8 @@ export class UvMapper {
 				for (let k = 0; k < 3; k++) {
 					if (newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2] < 0) {
 						// this vertex doesn't have uv yet, we assign them
-						newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2] = f.uv[k].x
-						newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2 + 1] = f.uv[k].y						
+						newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2] = f.uv[k].x;
+						newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2 + 1] = f.uv[k].y;			
 					} else {
 						// This vertex already has uvs, we create a seam
 
@@ -1183,8 +1301,6 @@ export class UvMapper {
 					tempVertices[i * 3 + l] = additionnalVertices[meshIndex][i].x;
 					tempVertices[i * 3 + 1 + l] = additionnalVertices[meshIndex][i].y;
 					tempVertices[i * 3 + 2 + l] = additionnalVertices[meshIndex][i].z;
-
-					console.log(additionnalVertices[meshIndex][i].x, additionnalVertices[meshIndex][i].y, additionnalVertices[meshIndex][i].z);
 				}
 
 				l = oldNormals.length;
@@ -1291,15 +1407,15 @@ export class UvMapper {
 	constructor(scene: Scene) {
 		// this.debPointInTri2D();
 		// this.debugFitAABB();
-		let sphere = MeshBuilder.CreateSphere("aa", { diameter: 1, segments: 30 }, scene);
-		let cylinder = MeshBuilder.CreateCylinder("aa", { diameter: 1 }, scene);
-		cylinder.position.addInPlace(new Vector3(0, 5, 1));
-		cylinder.scaling.scaleInPlace(5);
+		// let sphere = MeshBuilder.CreateSphere("aa", { diameter: 1, segments: 30 }, scene);
+		// let cylinder = MeshBuilder.CreateCylinder("aa", { diameter: 1 }, scene);
+		// cylinder.position.addInPlace(new Vector3(0, 5, 1));
+		// cylinder.scaling.scaleInPlace(5);
 		this.main(scene.meshes as Mesh[]);
-		let mat = new StandardMaterial("test", scene);
-		sphere.material = mat;
-		mat.emissiveTexture = new Texture("./LogoPBT.png", scene);
-		mat.emissiveColor = new Color3(1, 0, 0);
+		// let mat = new StandardMaterial("test", scene);
+		// sphere.material = mat;
+		// mat.emissiveTexture = new Texture("./LogoPBT.png", scene);
+		// mat.emissiveColor = new Color3(1, 0, 0);
 	}
 }
 

@@ -4,6 +4,7 @@ var texelSize = 4;
 var prepareForBaking = function(mesh) {
     var scaling = mesh.scaling || new BABYLON.Vector3(1, 1, 1);
     mesh.material = new BABYLON.StandardMaterial("gg", scene);
+    // mesh.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
     // mesh.material.backFaceCulling = false;
     var positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
     var uvs = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
@@ -60,7 +61,7 @@ var createScene = function() {
     // var wall2 = addGround("wall2");
     // var wall3 = addGround("wall3");
     // var wall4 = addGround("wall4");
-    var lamp = addGround("lamp", new BABYLON.Vector3(0.25, 0.25, 0.25));
+    var lamp = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);//addGround("lamp", new BABYLON.Vector3(0.25, 0.25, 0.25));
     // var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
     // sphere.scaling.scaleInPlace(0.5);
     // sphere.position.copyFromFloats(1, 2, 0);
@@ -78,8 +79,8 @@ var createScene = function() {
     // wall3.rotation.addInPlace(new BABYLON.Vector3(0, Math.PI / 2, Math.PI / 2));
 
     lamp.rotation.x = -3 * Math.PI / 4;
-    lamp.position.copyFromFloats(-5, 10, 5);
-    lamp.color = new BABYLON.Vector3(0.8, 0.8, 0.8);
+    lamp.position.copyFromFloats(-5, 10, 10);
+    lamp.color = new BABYLON.Vector3(100, 100, 100);
 
     // ceiling.position.y += 5;
     // ceiling.rotation.x = -Math.PI;
@@ -100,12 +101,12 @@ var createScene = function() {
             }
             pr = new BABYLON.PatchRenderer(scene, ms, texelSize);
             // pr.createHTScene(1);
-            pr._meshes = scene.meshes;
             for (let i = 0; i < scene.meshes.length; i++) {
                 if (!scene.meshes[i].__lightmapSize) {
                     prepareForBaking(scene.meshes[i]);
                 }
             }
+            pr._meshes = meshes;
         });
 
     for (let i = 0; i < meshes.length; i++) {
