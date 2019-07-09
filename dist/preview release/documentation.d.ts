@@ -7342,9 +7342,9 @@ declare module BABYLON {
         /** @hidden */
         _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
         /** @hidden */
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean, hostMesh: AbstractMesh): void;
         /** @hidden */
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh): void;
         /** @hidden */
         _getResponse(pos: Vector3, vel: Vector3): void;
     }
@@ -7594,7 +7594,11 @@ declare module BABYLON {
         /**
          * Color3
          */
-        Color3 = 4
+        Color3 = 4,
+        /**
+         * String
+         */
+        String = 5
     }
     /**
      * Interface used to define custom inspectable properties.
@@ -17214,6 +17218,10 @@ declare module BABYLON {
      * Defines the PoseEnabledController object that contains state of a vr capable controller
      */
     export class PoseEnabledController extends Gamepad implements PoseControlled {
+        /**
+         * If the controller is used in a webXR session
+         */
+        isXR: boolean;
         private _deviceRoomPosition;
         private _deviceRoomRotationQuaternion;
         /**
@@ -40552,7 +40560,7 @@ declare module BABYLON {
          * Stops the xrSession and restores the renderloop
          * @returns Promise which resolves after it exits XR
          */
-        exitXRAsync(): Promise<void>;
+        exitXRAsync(): Promise<unknown>;
         /**
          * Checks if a session would be supported for the creation options specified
          * @param sessionMode session mode to check if supported eg. immersive-vr
@@ -40655,7 +40663,7 @@ declare module BABYLON {
         NOT_IN_XR = 3
     }
     /**
-     * Helper class used to enable XR
+     * Base set of functionality needed to create an XR experince (WebXRSessionManager, Camera, StateManagement, etc.)
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRExperienceHelper implements IDisposable {
@@ -40698,7 +40706,7 @@ declare module BABYLON {
          * Exits XR mode and returns the scene to its original state
          * @returns promise that resolves after xr mode has exited
          */
-        exitXRAsync(): Promise<void>;
+        exitXRAsync(): Promise<unknown>;
         /**
          * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
          * @param sessionCreationOptions options for the XR session
@@ -40817,7 +40825,13 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
+        /**
+         * Event that fires when the controller is removed/disposed
+         */
+        onDisposeObservable: Observable<{}>;
         private _tmpMatrix;
+        private _tmpQuaternion;
+        private _tmpVector;
         /**
          * Creates the controller
          * @see https://doc.babylonjs.com/how_to/webxr
@@ -40835,20 +40849,31 @@ declare module BABYLON {
          */
         updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
         /**
+         * Gets a world space ray coming from the controller
+         * @param result the resulting ray
+         */
+        getWorldPointerRayToRef(result: Ray): void;
+        /**
          * Disposes of the object
          */
         dispose(): void;
     }
+}
+declare module BABYLON {
     /**
      * XR input used to track XR inputs such as controllers/rays
      */
     export class WebXRInput implements IDisposable {
-        private helper;
+        /**
+         * Base experience the input listens to
+         */
+        baseExperience: WebXRExperienceHelper;
         /**
          * XR controllers being tracked
          */
         controllers: Array<WebXRController>;
         private _frameObserver;
+        private _stateObserver;
         /**
          * Event when a controller has been connected/added
          */
@@ -40859,15 +40884,627 @@ declare module BABYLON {
         onControllerRemovedObservable: Observable<WebXRController>;
         /**
          * Initializes the WebXRInput
-         * @param helper experience helper which the input should be created for
+         * @param baseExperience experience helper which the input should be created for
          */
-        constructor(helper: WebXRExperienceHelper);
+        constructor(
+        /**
+         * Base experience the input listens to
+         */
+        baseExperience: WebXRExperienceHelper);
         private _onInputSourcesChange;
         private _addAndRemoveControllers;
         /**
          * Disposes of the object
          */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Enables teleportation
+     */
+    export class WebXRControllerTeleportation {
+        private _teleportationFillColor;
+        private _teleportationBorderColor;
+        private _tmpRay;
+        private _tmpVector;
+        /**
+         * Creates a WebXRControllerTeleportation
+         * @param input input manager to add teleportation to
+         * @param floorMeshes floormeshes which can be teleported to
+         */
+        constructor(input: WebXRInput, floorMeshes?: Array<AbstractMesh>);
+    }
+}
+declare module BABYLON {
+    /**
+     * Handles pointer input automatically for the pointer of XR controllers
+     */
+    export class WebXRControllerPointerSelection {
+        private static _idCounter;
+        private _tmpRay;
+        /**
+         * Creates a WebXRControllerPointerSelection
+         * @param input input manager to setup pointer selection
+         */
+        constructor(input: WebXRInput);
+        private _convertNormalToDirectionOfRay;
+        private _updatePointerDistance;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to represent data loading progression
+     */
+    export class SceneLoaderProgressEvent {
+        /** defines if data length to load can be evaluated */
+        readonly lengthComputable: boolean;
+        /** defines the loaded data length */
+        readonly loaded: number;
+        /** defines the data length to load */
+        readonly total: number;
+        /**
+         * Create a new progress event
+         * @param lengthComputable defines if data length to load can be evaluated
+         * @param loaded defines the loaded data length
+         * @param total defines the data length to load
+         */
+        constructor(
+        /** defines if data length to load can be evaluated */
+        lengthComputable: boolean, 
+        /** defines the loaded data length */
+        loaded: number, 
+        /** defines the data length to load */
+        total: number);
+        /**
+         * Creates a new SceneLoaderProgressEvent from a ProgressEvent
+         * @param event defines the source event
+         * @returns a new SceneLoaderProgressEvent
+         */
+        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
+    }
+    /**
+     * Interface used by SceneLoader plugins to define supported file extensions
+     */
+    export interface ISceneLoaderPluginExtensions {
+        /**
+         * Defines the list of supported extensions
+         */
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    /**
+     * Interface used by SceneLoader plugin factory
+     */
+    export interface ISceneLoaderPluginFactory {
+        /**
+         * Defines the name of the factory
+         */
+        name: string;
+        /**
+         * Function called to create a new plugin
+         * @return the new plugin
+         */
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        /**
+         * Boolean indicating if the plugin can direct load specific data
+         */
+        canDirectLoad?: (data: string) => boolean;
+    }
+    /**
+     * Interface used to define a SceneLoader plugin
+     */
+    export interface ISceneLoaderPlugin {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param meshes The meshes array to import into
+         * @param particleSystems The particle systems array to import into
+         * @param skeletons The skeletons array to import into
+         * @param onError The callback when import fails
+         * @returns True if successful or false otherwise
+         */
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns true if successful or false otherwise
+         */
+        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns The loaded asset container
+         */
+        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+    }
+    /**
+     * Interface used to define an async SceneLoader plugin
+     */
+    export interface ISceneLoaderPluginAsync {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns The loaded meshes, particle systems, skeletons, and animation groups
+         */
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: IParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns Nothing
+         */
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @param fileName Defines the name of the file to load
+         * @returns The loaded asset container
+         */
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+    }
+    /**
+     * Class used to load scene from various file formats using registered plugins
+     * @see http://doc.babylonjs.com/how_to/load_from_any_file_type
+     */
+    export class SceneLoader {
+        /**
+         * No logging while loading
+         */
+        static readonly NO_LOGGING: number;
+        /**
+         * Minimal logging while loading
+         */
+        static readonly MINIMAL_LOGGING: number;
+        /**
+         * Summary logging while loading
+         */
+        static readonly SUMMARY_LOGGING: number;
+        /**
+         * Detailled logging while loading
+         */
+        static readonly DETAILED_LOGGING: number;
+        /**
+         * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
+         */
+        static ForceFullSceneLoadingForIncremental: boolean;
+        /**
+         * Gets or sets a boolean indicating if loading screen must be displayed while loading a scene
+         */
+        static ShowLoadingScreen: boolean;
+        /**
+         * Defines the current logging level (while loading the scene)
+         * @ignorenaming
+         */
+        static loggingLevel: number;
+        /**
+         * Gets or set a boolean indicating if matrix weights must be cleaned upon loading
+         */
+        static CleanBoneMatrixWeights: boolean;
+        /**
+         * Event raised when a plugin is used to load a scene
+         */
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin;
+        private static _getPluginForExtension;
+        private static _getPluginForDirectLoad;
+        private static _getPluginForFilename;
+        private static _getDirectLoad;
+        private static _loadData;
+        private static _getFileInfo;
+        /**
+         * Gets a plugin that can load the given extension
+         * @param extension defines the extension to load
+         * @returns a plugin or null if none works
+         */
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        /**
+         * Gets a boolean indicating that the given extension can be loaded
+         * @param extension defines the extension to load
+         * @returns true if the extension is supported
+         */
+        static IsPluginForExtensionAvailable(extension: string): boolean;
+        /**
+         * Adds a new plugin to the list of registered plugins
+         * @param plugin defines the plugin to add
+         */
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+         */
+        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: IParticleSystem[];
+            skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
+        }>;
+        /**
+         * Load a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param engine is the instance of BABYLON.Engine to use to create the scene
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static Load(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Load a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param engine is the instance of BABYLON.Engine to use to create the scene
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded scene
+         */
+        static LoadAsync(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+         * Append a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static Append(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Append a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The given scene
+         */
+        static AppendAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+         * Load a scene into an asset container
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static LoadAssetContainer(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+         * Load a scene into an asset container
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+         * @param scene is the instance of Scene to append to
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded asset container
+         */
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
+    }
+}
+declare module BABYLON {
+    /**
+     * Generic Controller
+     */
+    export class GenericController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static readonly MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static readonly MODEL_FILENAME: string;
+        /**
+         * Creates a new GenericController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the WindowsMotionController object that the state of the windows motion controller
+     */
+    export class WindowsMotionController extends WebVRController {
+        /**
+         * The base url used to load the left and right controller models
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * The name of the left controller model file
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * The name of the right controller model file
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        /**
+         * The controller name prefix for this controller type
+         */
+        static readonly GAMEPAD_ID_PREFIX: string;
+        /**
+         * The controller id pattern for this controller type
+         */
+        private static readonly GAMEPAD_ID_PATTERN;
+        private _loadedMeshInfo;
+        private readonly _mapping;
+        /**
+         * Fired when the trackpad on this controller is clicked
+         */
+        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the trackpad on this controller is modified
+         */
+        onTrackpadValuesChangedObservable: Observable<StickValues>;
+        /**
+         * The current x and y values of this controller's trackpad
+         */
+        trackpad: StickValues;
+        /**
+         * Creates a new WindowsMotionController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Fired when the trigger on this controller is modified
+         */
+        readonly onTriggerButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the menu button on this controller is modified
+         */
+        readonly onMenuButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the grip button on this controller is modified
+         */
+        readonly onGripButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the thumbstick button on this controller is modified
+         */
+        readonly onThumbstickButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the touchpad button on this controller is modified
+         */
+        readonly onTouchpadButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the touchpad values on this controller are modified
+         */
+        readonly onTouchpadValuesChangedObservable: Observable<StickValues>;
+        private _updateTrackpad;
+        /**
+         * Called once per frame by the engine.
+         */
+        update(): void;
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        /**
+         * Moves the buttons on the controller mesh based on their current state
+         * @param buttonName the name of the button to move
+         * @param buttonValue the value of the button which determines the buttons new position
+         */
+        protected _lerpButtonTransform(buttonName: string, buttonValue: number): void;
+        /**
+         * Moves the axis on the controller mesh based on its current state
+         * @param axis the index of the axis
+         * @param axisValue the value of the axis which determines the meshes new position
+         * @hidden
+         */
+        protected _lerpAxisTransform(axis: number, axisValue: number): void;
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void, forceDefault?: boolean): void;
+        /**
+         * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
+         * can be transformed by button presses and axes values, based on this._mapping.
+         *
+         * @param scene scene in which the meshes exist
+         * @param meshes list of meshes that make up the controller model to process
+         * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
+         */
+        private processModel;
+        private createMeshInfo;
+        /**
+         * Gets the ray of the controller in the direction the controller is pointing
+         * @param length the length the resulting ray should be
+         * @returns a ray in the direction the controller is pointing
+         */
+        getForwardRay(length?: number): Ray;
+        /**
+        * Disposes of the controller
+        */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Oculus Touch Controller
+     */
+    export class OculusTouchController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the left controller model.
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * File name for the right controller model.
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        /**
+         * Base Url for the Quest controller model.
+         */
+        static QUEST_MODEL_BASE_URL: string;
+        /**
+         * @hidden
+         * If the controllers are running on a device that needs the updated Quest controller models
+         */
+        static _IsQuest: boolean;
+        /**
+         * Fired when the secondary trigger on this controller is modified
+         */
+        onSecondaryTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the thumb rest on this controller is modified
+         */
+        onThumbRestChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Creates a new OculusTouchController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Fired when the A button on this controller is modified
+         */
+        readonly onAButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the B button on this controller is modified
+         */
+        readonly onBButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the X button on this controller is modified
+         */
+        readonly onXButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the Y button on this controller is modified
+         */
+        readonly onYButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+          * Called once for each button that changed state since the last frame
+          * 0) thumb stick (touch, press, value = pressed (0,1)). value is in this.leftStick
+          * 1) index trigger (touch (?), press (only when value > 0.1), value 0 to 1)
+          * 2) secondary trigger (same)
+          * 3) A (right) X (left), touch, pressed = value
+          * 4) B / Y
+          * 5) thumb rest
+          * @param buttonIdx Which button index changed
+          * @param state New state of the button
+          * @param changes Which properties on the state changed since last frame
+          */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Loads a controller model and adds it as a child of the WebXRControllers grip when the controller is created
+     */
+    export class WebXRControllerModelLoader {
+        /**
+         * Creates the WebXRControllerModelLoader
+         * @param input xr input that creates the controllers
+         */
+        constructor(input: WebXRInput);
     }
 }
 declare module BABYLON {
@@ -42514,339 +43151,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to represent data loading progression
-     */
-    export class SceneLoaderProgressEvent {
-        /** defines if data length to load can be evaluated */
-        readonly lengthComputable: boolean;
-        /** defines the loaded data length */
-        readonly loaded: number;
-        /** defines the data length to load */
-        readonly total: number;
-        /**
-         * Create a new progress event
-         * @param lengthComputable defines if data length to load can be evaluated
-         * @param loaded defines the loaded data length
-         * @param total defines the data length to load
-         */
-        constructor(
-        /** defines if data length to load can be evaluated */
-        lengthComputable: boolean, 
-        /** defines the loaded data length */
-        loaded: number, 
-        /** defines the data length to load */
-        total: number);
-        /**
-         * Creates a new SceneLoaderProgressEvent from a ProgressEvent
-         * @param event defines the source event
-         * @returns a new SceneLoaderProgressEvent
-         */
-        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
-    }
-    /**
-     * Interface used by SceneLoader plugins to define supported file extensions
-     */
-    export interface ISceneLoaderPluginExtensions {
-        /**
-         * Defines the list of supported extensions
-         */
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    /**
-     * Interface used by SceneLoader plugin factory
-     */
-    export interface ISceneLoaderPluginFactory {
-        /**
-         * Defines the name of the factory
-         */
-        name: string;
-        /**
-         * Function called to create a new plugin
-         * @return the new plugin
-         */
-        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        /**
-         * Boolean indicating if the plugin can direct load specific data
-         */
-        canDirectLoad?: (data: string) => boolean;
-    }
-    /**
-     * Interface used to define a SceneLoader plugin
-     */
-    export interface ISceneLoaderPlugin {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param meshes The meshes array to import into
-         * @param particleSystems The particle systems array to import into
-         * @param skeletons The skeletons array to import into
-         * @param onError The callback when import fails
-         * @returns True if successful or false otherwise
-         */
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns true if successful or false otherwise
-         */
-        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns The loaded asset container
-         */
-        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
-    }
-    /**
-     * Interface used to define an async SceneLoader plugin
-     */
-    export interface ISceneLoaderPluginAsync {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns The loaded meshes, particle systems, skeletons, and animation groups
-         */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns Nothing
-         */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @param fileName Defines the name of the file to load
-         * @returns The loaded asset container
-         */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
-    }
-    /**
-     * Class used to load scene from various file formats using registered plugins
-     * @see http://doc.babylonjs.com/how_to/load_from_any_file_type
-     */
-    export class SceneLoader {
-        /**
-         * No logging while loading
-         */
-        static readonly NO_LOGGING: number;
-        /**
-         * Minimal logging while loading
-         */
-        static readonly MINIMAL_LOGGING: number;
-        /**
-         * Summary logging while loading
-         */
-        static readonly SUMMARY_LOGGING: number;
-        /**
-         * Detailled logging while loading
-         */
-        static readonly DETAILED_LOGGING: number;
-        /**
-         * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
-         */
-        static ForceFullSceneLoadingForIncremental: boolean;
-        /**
-         * Gets or sets a boolean indicating if loading screen must be displayed while loading a scene
-         */
-        static ShowLoadingScreen: boolean;
-        /**
-         * Defines the current logging level (while loading the scene)
-         * @ignorenaming
-         */
-        static loggingLevel: number;
-        /**
-         * Gets or set a boolean indicating if matrix weights must be cleaned upon loading
-         */
-        static CleanBoneMatrixWeights: boolean;
-        /**
-         * Event raised when a plugin is used to load a scene
-         */
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin;
-        private static _getPluginForExtension;
-        private static _getPluginForDirectLoad;
-        private static _getPluginForFilename;
-        private static _getDirectLoad;
-        private static _loadData;
-        private static _getFileInfo;
-        /**
-         * Gets a plugin that can load the given extension
-         * @param extension defines the extension to load
-         * @returns a plugin or null if none works
-         */
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
-        /**
-         * Gets a boolean indicating that the given extension can be loaded
-         * @param extension defines the extension to load
-         * @returns true if the extension is supported
-         */
-        static IsPluginForExtensionAvailable(extension: string): boolean;
-        /**
-         * Adds a new plugin to the list of registered plugins
-         * @param plugin defines the plugin to add
-         */
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
-         */
-        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
-        /**
-         * Load a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param engine is the instance of BABYLON.Engine to use to create the scene
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static Load(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Load a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param engine is the instance of BABYLON.Engine to use to create the scene
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded scene
-         */
-        static LoadAsync(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-         * Append a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static Append(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Append a scene
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The given scene
-         */
-        static AppendAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-         * Load a scene into an asset container
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
-         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
-         * @param onSuccess a callback with the scene when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static LoadAssetContainer(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-         * Load a scene into an asset container
-         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
-         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
-         * @param scene is the instance of Scene to append to
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded asset container
-         */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
-    }
-}
-declare module BABYLON {
-    /**
      * Google Daydream controller
      */
     export class DaydreamController extends WebVRController {
@@ -42922,115 +43226,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Generic Controller
-     */
-    export class GenericController extends WebVRController {
-        /**
-         * Base Url for the controller model.
-         */
-        static readonly MODEL_BASE_URL: string;
-        /**
-         * File name for the controller model.
-         */
-        static readonly MODEL_FILENAME: string;
-        /**
-         * Creates a new GenericController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Called once for each button that changed state since the last frame
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Oculus Touch Controller
-     */
-    export class OculusTouchController extends WebVRController {
-        /**
-         * Base Url for the controller model.
-         */
-        static MODEL_BASE_URL: string;
-        /**
-         * File name for the left controller model.
-         */
-        static MODEL_LEFT_FILENAME: string;
-        /**
-         * File name for the right controller model.
-         */
-        static MODEL_RIGHT_FILENAME: string;
-        /**
-         * Base Url for the Quest controller model.
-         */
-        static QUEST_MODEL_BASE_URL: string;
-        /**
-         * @hidden
-         * If the controllers are running on a device that needs the updated Quest controller models
-         */
-        static _IsQuest: boolean;
-        /**
-         * Fired when the secondary trigger on this controller is modified
-         */
-        onSecondaryTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the thumb rest on this controller is modified
-         */
-        onThumbRestChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Creates a new OculusTouchController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Fired when the A button on this controller is modified
-         */
-        readonly onAButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the B button on this controller is modified
-         */
-        readonly onBButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the X button on this controller is modified
-         */
-        readonly onXButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the Y button on this controller is modified
-         */
-        readonly onYButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-          * Called once for each button that changed state since the last frame
-          * 0) thumb stick (touch, press, value = pressed (0,1)). value is in this.leftStick
-          * 1) index trigger (touch (?), press (only when value > 0.1), value 0 to 1)
-          * 2) secondary trigger (same)
-          * 3) A (right) X (left), touch, pressed = value
-          * 4) B / Y
-          * 5) thumb rest
-          * @param buttonIdx Which button index changed
-          * @param state New state of the button
-          * @param changes Which properties on the state changed since last frame
-          */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-    }
-}
-declare module BABYLON {
-    /**
      * Vive Controller
      */
     export class ViveController extends WebVRController {
@@ -43077,127 +43272,6 @@ declare module BABYLON {
          * @param changes Which properties on the state changed since last frame
          */
         protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Defines the WindowsMotionController object that the state of the windows motion controller
-     */
-    export class WindowsMotionController extends WebVRController {
-        /**
-         * The base url used to load the left and right controller models
-         */
-        static MODEL_BASE_URL: string;
-        /**
-         * The name of the left controller model file
-         */
-        static MODEL_LEFT_FILENAME: string;
-        /**
-         * The name of the right controller model file
-         */
-        static MODEL_RIGHT_FILENAME: string;
-        /**
-         * The controller name prefix for this controller type
-         */
-        static readonly GAMEPAD_ID_PREFIX: string;
-        /**
-         * The controller id pattern for this controller type
-         */
-        private static readonly GAMEPAD_ID_PATTERN;
-        private _loadedMeshInfo;
-        private readonly _mapping;
-        /**
-         * Fired when the trackpad on this controller is clicked
-         */
-        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the trackpad on this controller is modified
-         */
-        onTrackpadValuesChangedObservable: Observable<StickValues>;
-        /**
-         * The current x and y values of this controller's trackpad
-         */
-        trackpad: StickValues;
-        /**
-         * Creates a new WindowsMotionController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Fired when the trigger on this controller is modified
-         */
-        readonly onTriggerButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the menu button on this controller is modified
-         */
-        readonly onMenuButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the grip button on this controller is modified
-         */
-        readonly onGripButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the thumbstick button on this controller is modified
-         */
-        readonly onThumbstickButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the touchpad button on this controller is modified
-         */
-        readonly onTouchpadButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the touchpad values on this controller are modified
-         */
-        readonly onTouchpadValuesChangedObservable: Observable<StickValues>;
-        private _updateTrackpad;
-        /**
-         * Called once per frame by the engine.
-         */
-        update(): void;
-        /**
-         * Called once for each button that changed state since the last frame
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-        /**
-         * Moves the buttons on the controller mesh based on their current state
-         * @param buttonName the name of the button to move
-         * @param buttonValue the value of the button which determines the buttons new position
-         */
-        protected _lerpButtonTransform(buttonName: string, buttonValue: number): void;
-        /**
-         * Moves the axis on the controller mesh based on its current state
-         * @param axis the index of the axis
-         * @param axisValue the value of the axis which determines the meshes new position
-         * @hidden
-         */
-        protected _lerpAxisTransform(axis: number, axisValue: number): void;
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void, forceDefault?: boolean): void;
-        /**
-         * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
-         * can be transformed by button presses and axes values, based on this._mapping.
-         *
-         * @param scene scene in which the meshes exist
-         * @param meshes list of meshes that make up the controller model to process
-         * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
-         */
-        private processModel;
-        private createMeshInfo;
-        /**
-         * Gets the ray of the controller in the direction the controller is pointing
-         * @param length the length the resulting ray should be
-         * @returns a ray in the direction the controller is pointing
-         */
-        getForwardRay(length?: number): Ray;
-        /**
-        * Disposes of the controller
-        */
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -47131,6 +47205,62 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Options for the default xr helper
+     */
+    export class WebXRDefaultExperienceOptions {
+        /**
+         * Floor meshes that should be used for teleporting
+         */
+        floorMeshes: Array<AbstractMesh>;
+    }
+    /**
+     * Default experience which provides a similar setup to the previous webVRExperience
+     */
+    export class WebXRDefaultExperience {
+        /**
+         * Base experience
+         */
+        baseExperience: WebXRExperienceHelper;
+        /**
+         * Input experience extension
+         */
+        input: WebXRInput;
+        /**
+         * Loads the controller models
+         */
+        controllerModelLoader: WebXRControllerModelLoader;
+        /**
+         * Enables laser pointer and selection
+         */
+        pointerSelection: WebXRControllerPointerSelection;
+        /**
+         * Enables teleportation
+         */
+        teleportation: WebXRControllerTeleportation;
+        /**
+         * Enables ui for enetering/exiting xr
+         */
+        enterExitUI: WebXREnterExitUI;
+        /**
+         * Default output canvas xr should render to
+         */
+        outputCanvas: WebXRManagedOutputCanvas;
+        /**
+         * Creates the default xr experience
+         * @param scene scene
+         * @param options options for basic configuration
+         * @returns resulting WebXRDefaultExperience
+         */
+        static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
+        private constructor();
+        /**
+         * DIsposes of the experience helper
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var _forceSceneHelpersToBundle: boolean;
         interface Scene {
@@ -47182,11 +47312,12 @@ declare module BABYLON {
              */
             createDefaultVRExperience(webVROptions?: VRExperienceHelperOptions): VRExperienceHelper;
             /**
-             * Creates a new XREXperienceHelper
+             * Creates a new WebXRDefaultExperience
              * @see http://doc.babylonjs.com/how_to/webxr
-             * @returns a promise for a new XREXperienceHelper
+             * @param options experience options
+             * @returns a promise for a new WebXRDefaultExperience
              */
-            createDefaultXRExperienceAsync(): Promise<WebXRExperienceHelper>;
+            createDefaultXRExperienceAsync(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
         }
 }
 declare module BABYLON {
@@ -50772,6 +50903,8 @@ declare module BABYLON {
         Vertex = 1,
         /** Fragment shader */
         Fragment = 2,
+        /** Neutral */
+        Neutral = 4,
         /** Vertex and Fragment */
         VertexAndFragment = 3
     }

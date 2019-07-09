@@ -1782,7 +1782,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor3("vReflectionColor", this._reflectionColor);
-                ubo.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
+                if (!defines.SS_REFRACTION && this.subSurface.linkRefractionWithTransparency) {
+                    ubo.updateColor4("vAlbedoColor", this._albedoColor, 1);
+                }
+                else {
+                    ubo.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
+                }
 
                 // Visibility
                 ubo.updateFloat("visibility", mesh.visibility);

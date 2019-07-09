@@ -44,6 +44,7 @@
 - Added support for occlusion properties ([Deltakosh](https://github.com/deltakosh/))
 - Texture channels are now displayed in grayscale ([Deltakosh](https://github.com/deltakosh/))
 - Ambiant and metallic maps are displayed correctly on PBR material even when using ORM packed texture ([Deltakosh](https://github.com/deltakosh/))
+- Added support for inspectable strings ([Deltakosh](https://github.com/deltakosh/))
 
 ### Tools
 - Added `Color3.toHSV()`, `Color3.toHSVToRef()` and `Color3.HSVtoRGBToRef()` ([Deltakosh](https://github.com/deltakosh/))

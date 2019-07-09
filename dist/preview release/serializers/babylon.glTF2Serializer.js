@@ -3599,6 +3599,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var imageValues = { data: arr, mimeType: mimeType };
         var extension = mimeType === "image/jpeg" /* JPEG */ ? '.jpeg' : '.png';
         var textureName = baseTextureName + extension;
+        var originalTextureName = textureName;
         if (textureName in imageData) {
             textureName = baseTextureName + "_" + babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].RandomId() + extension;
         }
@@ -3610,7 +3611,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             };
             var foundIndex = null;
             for (var i = 0; i < images.length; ++i) {
-                if (images[i].uri === textureName) {
+                if (images[i].uri === originalTextureName) {
                     foundIndex = i;
                     break;
                 }
