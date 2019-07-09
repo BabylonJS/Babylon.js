@@ -38,7 +38,7 @@ class MonacoCreator {
     /**
      * Load the Monaco Node module.
      */
-    loadMonaco = function () {
+    loadMonaco() {
         var xhr = new XMLHttpRequest();
 
         xhr.open('GET', "babylon.d.txt", true);
@@ -65,7 +65,7 @@ class MonacoCreator {
     /**
      * Function to (re)create the editor
      */
-    createMonacoEditor = function() {
+    createMonacoEditor() {
         var oldCode = "";
         if(this.jsEditor) {
             oldCode = this.jsEditor.getValue();

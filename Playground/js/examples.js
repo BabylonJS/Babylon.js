@@ -70,7 +70,7 @@ class Examples {
     /**
      * Function to display the examples menu
      */
-    displayExamples = function() {
+    displayExamples() {
         this.isExamplesDisplayed = true;
         document.getElementById("fpsLabel").style.display = "none";
         document.getElementById("exampleList").style.display = "block";
@@ -84,7 +84,7 @@ class Examples {
     /**
      * Function to hide the examples menu
      */
-    hideExamples = function() {
+    hideExamples() {
         this.isExamplesDisplayed = false;
         document.getElementById("fpsLabel").style.display = "block";
         document.getElementById("exampleList").style.display = "none";

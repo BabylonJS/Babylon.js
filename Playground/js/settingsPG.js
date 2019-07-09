@@ -47,20 +47,20 @@ class SettingsPG {
 
     get ScriptLanguage() {
         return this.scriptLanguage;
-    }
+    };
     set ScriptLanguage(value) {
-        localStorage.setItem("bjs-playground-scriptLanguage", "TS");
+        localStorage.setItem("bjs-playground-scriptLanguage", value);
         this.scriptLanguage = value;
-    }
+    };
     get DefaultScene() {
         return this.defaultScene;
-    }
+    };
 
 
     /**
      * Change font size
      */
-    setFontSize = function (size) {
+    setFontSize(size) {
         this.fontSize = size;
         this.monacoCreator.jsEditor.updateOptions({ fontSize: size });
         var array = document.getElementsByClassName("displayFontSize");
@@ -76,7 +76,7 @@ class SettingsPG {
     /**
      * Toggle Typescript / Javascript language
      */
-    setScriptLanguage = function () {
+    setScriptLanguage() {
         for (var index = 0; index < this.elementForscriptLanguage.length; index++) {
             var obj = this.elementForscriptLanguage[index];
             var domObjArr = document.querySelectorAll(obj);
@@ -97,7 +97,7 @@ class SettingsPG {
     /**
      * Set the theme (dark / light)
      */
-    setTheme = function (theme) {
+    setTheme(theme) {
         localStorage.setItem("bjs-playground-theme", theme);
         // Get the Monaco theme name.
         // Change the selected button style
@@ -127,7 +127,7 @@ class SettingsPG {
             }
         }
     };
-    restoreTheme = function(monacoCreator) {
+    restoreTheme(monacoCreator) {
         this.setTheme(this.vsTheme, monacoCreator);
     };
 };

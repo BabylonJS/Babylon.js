@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css" />
     <link rel="stylesheet" href="css/index.css" />
     <link rel="stylesheet" href="css/index710.css" />
-    <link rel="stylesheet" href="css/index550.css" />
+    <link rel="stylesheet" href="css/indexMobile.css" />
 
     <link rel="manifest" href="https://www.babylonjs.com/img/favicon/manifest.json">
     <meta name="msapplication-TileColor" content="#ffffff">
@@ -130,29 +130,29 @@
     </div>
 
     <!-- Mid-size screens -->
-    <div class="navbar navBar920 languageJS">
+    <div class="navbar navBar1024 languageJS">
         <div class="categoryTitle">
             <img class="logo" src="css/img/logo_v4.svg">
-            <div class="version"><span class="versionSub" id="mainTitle920"></span></div>
+            <div class="version"><span class="versionSub" id="mainTitle1024"></span></div>
         </div>
 
         <div class="category languageJS" id="JStoTSbar">
-            <div class="buttonJStoTS languageTS" id="toTSbutton920">TS</div>
-            <div class="buttonJStoTS languageJS" id="toJSbutton920">JS</div>
+            <div class="buttonJStoTS languageTS" id="toTSbutton1024">TS</div>
+            <div class="buttonJStoTS languageJS" id="toJSbutton1024">JS</div>
             <div class="buttonSpaceKiller"></div>
-            <div class="button run" id="runButton920"><img src="css/img/playButton.svg"></div>
-            <div class="button" id="saveButton920"><img src="css/img/saveButton.svg"></div>
-            <div class="button removeOnPhone" id="zipButton920"><img src="css/img/downloadButton.svg"></div>
-            <div class="button" id="newButton920"><img src="css/img/newButton.svg"></div>
-            <div class="button removeOnPhone" id="clearButton920"><img src="css/img/clearButton.svg"></div>
+            <div class="button run" id="runButton1024"><img src="css/img/playButton.svg"></div>
+            <div class="button" id="saveButton1024"><img src="css/img/saveButton.svg"></div>
+            <div class="button removeOnPhone" id="zipButton1024"><img src="css/img/downloadButton.svg"></div>
+            <div class="button" id="newButton1024"><img src="css/img/newButton.svg"></div>
+            <div class="button removeOnPhone" id="clearButton1024"><img src="css/img/clearButton.svg"></div>
 
             <div class="button select"><img src="css/img/optionsButton.svg">
                 <div class="toDisplay">
                     <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
 
                         <div class="toDisplaySub">
-                            <div class="option selected" id="darkTheme920">Dark</div>
-                            <div class="option" id="lightTheme920">Light</div>
+                            <div class="option selected" id="darkTheme1024">Dark</div>
+                            <div class="option" id="lightTheme1024">Light</div>
                         </div>
                     </div>
                     <div class="option subSelect">Font size <i class="fa fa-chevron-right" aria-hidden="true"></i>
@@ -165,16 +165,16 @@
                             <div class="option" onclick="setFontSize(22);">22</div>
                         </div>
                     </div>
-                    <div class="option noSubSelect" id="safemodeToggle920">Safe mode
+                    <div class="option noSubSelect" id="safemodeToggle1024">Safe mode
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option checked noSubSelect" id="editorButton920">Editor
+                    <div class="option checked noSubSelect" id="editorButton1024">Editor
                         <i class="fa fa-check-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option noSubSelect" id="fullscreenButton920">Fullscreen</div>
-                    <div class="option noSubSelect" id="editorFullscreenButton920">Editor Fullscreen</div>
-                    <div class="option noSubSelect" id="formatButton920">Format code</div>
-                    <div class="option noSubSelect" id="minimapToggle920">Minimap
+                    <div class="option noSubSelect" id="fullscreenButton1024">Fullscreen</div>
+                    <div class="option noSubSelect" id="editorFullscreenButton1024">Editor Fullscreen</div>
+                    <div class="option noSubSelect" id="formatButton1024">Format code</div>
+                    <div class="option noSubSelect" id="minimapToggle1024">Minimap
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
                     <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link <i class="fa fa-chevron-right" aria-hidden="true"></i>
@@ -182,17 +182,17 @@
                             <div class="option" id="qrCodeImage">QR Code Image</div>
                         </div>
                     </div>
-                    <div class="option uncheck noSubSelect" id="debugButton920">Inspector
+                    <div class="option uncheck noSubSelect" id="debugButton1024">Inspector
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option noSubSelect" id="metadataButton920">Metadata</div>
+                    <div class="option noSubSelect" id="metadataButton1024">Metadata</div>
                 </div>
             </div>
         </div>
 
         <div class="category right">
             <div class="button select" style="display: none;">
-                <span id="currentVersion920">v.</span>
+                <span id="currentVersion1024">v.</span>
                 <div class="toDisplay currentVersionDisplay">
                     <div class="option" onclick="setVersion('4.0');">4.0</div>
                     <div class="option" onclick="setVersion('3.0');">3.0</div>
@@ -276,28 +276,28 @@
     </div>
 
     <!-- Mobile -->
-    <div class="navbar navBar550 languageJS">
+    <div class="navbar navBarMobile languageJS">
         <div class="categoryTitle">
             <img class="logo" src="css/img/logo_v4.svg">
-            <div class="version"><span class="versionSub" id="mainTitle550"></span></div>
+            <div class="version"><span class="versionSub" id="mainTitleMobile"></span></div>
         </div>
 
         <div class="category languageJS" id="JStoTSbar">
-            <div class="buttonJStoTS languageTS" id="toTSbutton550">TS</div>
-            <div class="buttonJStoTS languageJS" id="toJSbutton550">JS</div>
+            <div class="buttonJStoTS languageTS" id="toTSbuttonMobile">TS</div>
+            <div class="buttonJStoTS languageJS" id="toJSbuttonMobile">JS</div>
             <div class="buttonSpaceKiller"></div>
-            <div class="button run" id="runButton550"><img src="css/img/playButton.svg"></div>
-            <div class="button" id="saveButton550"><img src="css/img/saveButton.svg"></div>
-            <div class="button removeOnPhone" id="zipButton550"><img src="css/img/downloadButton.svg"></div>
-            <div class="button" id="newButton550"><img src="css/img/newButton.svg"></div>
-            <div class="button removeOnPhone" id="clearButton550"><img src="css/img/clearButton.svg"></div>
+            <div class="button run" id="runButtonMobile"><img src="css/img/playButton.svg"></div>
+            <div class="button" id="saveButtonMobile"><img src="css/img/saveButton.svg"></div>
+            <div class="button removeOnPhone" id="zipButtonMobile"><img src="css/img/downloadButton.svg"></div>
+            <div class="button" id="newButtonMobile"><img src="css/img/newButton.svg"></div>
+            <div class="button removeOnPhone" id="clearButtonMobile"><img src="css/img/clearButton.svg"></div>
 
             <div class="button select"><img src="css/img/optionsButton.svg">
                 <div class="toDisplay">
                     <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
-                            <div class="option selected" id="darkTheme550">Dark</div>
-                            <div class="option" id="lightTheme550">Light</div>
+                            <div class="option selected" id="darkThemeMobile">Dark</div>
+                            <div class="option" id="lightThemeMobile">Light</div>
                         </div>
                     </div>
                     <div class="option subSelect">Font size <i class="fa fa-chevron-right" aria-hidden="true"></i>
@@ -310,16 +310,16 @@
                             <div class="option" onclick="setFontSize(22);">22</div>
                         </div>
                     </div>
-                    <div class="option noSubSelect" id="safemodeToggle550">Safe mode
+                    <div class="option noSubSelect" id="safemodeToggleMobile">Safe mode
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option checked noSubSelect" id="editorButton550">Editor
+                    <div class="option checked noSubSelect" id="editorButtonMobile">Editor
                         <i class="fa fa-check-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option nosubselect" id="fullscreenButton550" style="display: none">Fullscreen</div>
-                    <div class="option nosubselect" id="editorFullscreenButton550" style="display: none">Editor Fullscreen</div>
-                    <div class="option nosubselect" id="formatButton550">Format code</div>
-                    <div class="option nosubselect" id="minimapToggle550">Minimap
+                    <div class="option nosubselect" id="fullscreenButtonMobile" style="display: none">Fullscreen</div>
+                    <div class="option nosubselect" id="editorFullscreenButtonMobile" style="display: none">Editor Fullscreen</div>
+                    <div class="option nosubselect" id="formatButtonMobile">Format code</div>
+                    <div class="option nosubselect" id="minimapToggleMobile">Minimap
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
                     <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link <i class="fa fa-chevron-right" aria-hidden="true"></i>
@@ -327,10 +327,10 @@
                             <div class="option" id="qrCodeImage">QR Code Image</div>
                         </div>
                     </div>
-                    <div class="option uncheck noSubSelect" id="debugButton550">Inspector
+                    <div class="option uncheck noSubSelect" id="debugButtonMobile">Inspector
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option nosubselect" id="metadataButton550">Metadata</div>
+                    <div class="option nosubselect" id="metadataButtonMobile">Metadata</div>
                     <div class="option subSelect">Links / Tools <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub displayFooterLinks">
                             <div class="option link">
@@ -356,7 +356,7 @@
 
         <div class="category right">
             <div class="button select" style="display: none;">
-                <span id="currentVersion550">v.</span>
+                <span id="currentVersionMobile">v.</span>
                 <div class="toDisplay currentVersionDisplay">
                     <div class="option" onclick="setVersion('4.0');">4.0</div>
                     <div class="option" onclick="setVersion('3.0');">3.0</div>
