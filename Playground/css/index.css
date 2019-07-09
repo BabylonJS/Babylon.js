@@ -286,7 +286,6 @@ body {
     cursor: default;
     pointer-events: none;
     user-select: none;
-    box-shadow: 0 2px 5px #000;
 }
 .fpsLabel.languageJS {
     background-color: #3f3461;
@@ -306,7 +305,6 @@ body {
     user-select: none;
     position: relative;
     z-index:5;
-    box-shadow: 0 3px 10px #000;
 }
 .navbar a {
     text-decoration: none;
@@ -446,7 +444,7 @@ body {
 .navbar .select .subSelect .toDisplaySub {
     position: absolute;
     z-index: 10;
-    right: 100%;
+    left: 100%;
     top: 0;
     min-width: 100%;
     display: none;
@@ -656,7 +654,6 @@ body {
     border-radius: 4px;
     color: white;
     font-size: 14px;
-    box-shadow: 0 3px 10px #000;
 }
 .save-layer .save-form .separator {
     width: 350px;
@@ -683,11 +680,10 @@ body {
 
 /* Media queries */
 
-@media (min-width: 1180px) {
+@media (min-width: 1270px) {
     .navBar1280 { display: block; }
-    .navBar920 { display: none; }
-    .navBar710 { display: none; }
-    .navBar550 { display: none; }
+    .navBar1024 { display: none; }
+    .navBarMobile { display: none; }
 
     #qrCodeImage {
         height:auto;
@@ -699,11 +695,10 @@ body {
         column-count: 3;
     }
 }
-@media (max-width: 1180px) and (min-width: 920px) {
+@media (max-width: 1270px) and (min-width: 1025px) {
     .navBar1280 { display: none; }
-    .navBar920 { display: block; }
-    .navBar710 { display: none; }
-    .navBar550 { display: none; }
+    .navBar1024 { display: block; }
+    .navBarMobile { display: none; }
 
     #qrCodeImage {
         height:auto;
@@ -717,35 +712,5 @@ body {
 
     .navbar .category .buttonJStoTS {
         width: 70px;
-    }
-}
-@media (max-width: 920px) {
-    .navBar1280 { display: none; }
-    .navBar920 { display: block; }
-    .navBar710 { display: none; }
-    .navBar550 { display: none; }
-    
-    .navbar .select .toDisplayBig ul {
-        column-count: 2;
-    }
-    .navbar .categoryTitle {
-        padding-right: 15px;
-    }
-    .navbar .version {
-        margin-right: 10px;
-        margin-left: -10px;
-    }
-    .navbar .versionSub {
-        font-size: 14px;
-    }
-    .navbar .category .buttonJStoTS {
-        width: 65px;
-    }
-
-    .button {
-        width: 45px;
-    }
-    .buttonSpaceKiller {
-        display: inline-block;
     }
 }

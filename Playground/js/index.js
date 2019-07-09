@@ -7,7 +7,7 @@ menuPG = new MenuPG();
 /**
  * Apply things to the differents menu sizes
  */
-var multipleSize = [1280, 920, 710, 550];
+var multipleSize = [1280, 1024, 'Mobile'];
 var setToMultipleID = function (id, thingToDo, param) {
     multipleSize.forEach(function (size) {
         if (thingToDo == "innerHTML") {

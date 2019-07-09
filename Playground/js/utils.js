@@ -6,7 +6,7 @@ class Utils {
     }
 
     // TO DO - Comment this
-    markDirty = function () {
+    markDirty() {
         if (monacoCreator.BlockEditorChange) return;
 
         // setToMultipleID("currentScript", "innerHTML", "Custom");
@@ -20,7 +20,7 @@ class Utils {
      * @param {String} errorMessage 
      * @param {String} errorEvent 
      */
-    showError = function(errorMessage, errorEvent) {
+    showError(errorMessage, errorEvent) {
         var errorContent =
             '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>';
         if (errorEvent) {

@@ -1,11 +1,11 @@
-@media (max-width: 550px) {
+@media (max-width: 1025px) {
     .navBar1280 { display: none; }
-    .navBar920 { display: none; }
-    .navBar710 { display: none; }
-    .navBar550 { display: block; }
+    .navBar1024 { display: none; }
+    .navBarMobile { display: block; }
 
     #exampleList {
         height: calc(100% - 40px);
+        width: 100%;
         top: 40px;
         bottom: 0;
     }
@@ -20,13 +20,12 @@
     }
     #fpsLabel {
         position: fixed;
-        top: 40px;
+        top: 60px;
         right: 0;
         line-height: 32px;
         height: 35px;
         padding: 0;
         padding-right: 5px;
-        box-shadow: none;
     }
     .wrapper #jsEditor {
         width: 100%;
@@ -97,7 +96,7 @@
     .navbar .select img:hover {
         filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
     }
-    .navbar .select img:hover {
+    .navbar .select:hover img {
         filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
     }
     .navbar .select .toDisplay {
@@ -114,14 +113,22 @@
     .navbar .select .toDisplay.languageJS .option {
         background-color: #3f3461;
     }
+    .navbar .select .toDisplay.languageJS .option:active {
+        background-color: #9379e6;
+    }
     .navbar .select .toDisplay.languageTS .option {
         background-color: #bb464b;
+    }
+    .navbar .select .toDisplay.languageTS .option:active {
+        background-color: #e0684b;
     }
     .navbar .select .toDisplay .option {
         padding: 1px;
         font-size: 15px;
         height: 33px;
         line-height: 33px;
+        width: 180px;
+        box-sizing: border-box;
     }
     .navbar .select .toDisplay .option  img {
         float: left;
@@ -137,12 +144,11 @@
 
     .navbar .select .subSelect .toDisplaySub {
         position: fixed;
-        top: 75px;
+        top: 40px;
         left: 180px;
         min-width: 180px;
         width: 180px;
         height: auto;
-        max-height: calc(100% - 55px);
         text-align: left;
         overflow-y: auto;
         color: white;
