@@ -24,7 +24,7 @@
 - Added startAndReleaseDragOnPointerEvents property to pointerDragBehavior which can be set to false for custom drag triggering ([TrevorDev](https://github.com/TrevorDev))
 - Effect renderer to render one or multiple shader effects to a texture ([TrevorDev](https://github.com/TrevorDev))
 - Added url parameters to web request modifiers ([PierreLeBlond](https://github.com/PierreLeBlond))
-- WebXR updated to spec as of June 27th ([TrevorDev](https://github.com/TrevorDev))
+- WebXR updated to spec as of July 9th ([TrevorDev](https://github.com/TrevorDev))
 - WebXR webVR parity helpers ([TrevorDev](https://github.com/TrevorDev))
 
 ### Engine
