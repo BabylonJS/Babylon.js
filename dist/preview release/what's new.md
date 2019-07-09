@@ -25,7 +25,7 @@
 - Effect renderer to render one or multiple shader effects to a texture ([TrevorDev](https://github.com/TrevorDev))
 - Added url parameters to web request modifiers ([PierreLeBlond](https://github.com/PierreLeBlond))
 - WebXR updated to spec as of June 27th ([TrevorDev](https://github.com/TrevorDev))
-- WebXR webVR parity helpers ([TrevorDev](https://github.com/TrevorDev))
+- WebXR webVR parity helpers (Vive, WMR, Oculus Rift) ([TrevorDev](https://github.com/TrevorDev))
 
 ### Engine
 - Morph targets now can morph UV channel as well ([Deltakosh](https://github.com/deltakosh/))
