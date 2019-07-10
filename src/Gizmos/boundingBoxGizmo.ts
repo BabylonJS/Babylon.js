@@ -122,7 +122,7 @@ export class BoundingBoxGizmo extends Gizmo {
         super(gizmoLayer);
 
         // Do not update the gizmo's scale so it has a fixed size to the object its attached to
-        this._updateScale = false;
+        this.updateScale = false;
 
         this._anchorMesh = new AbstractMesh("anchor", gizmoLayer.utilityLayerScene);
         // Create Materials
