@@ -4,7 +4,7 @@ import { Scalar } from "../Maths/math.scalar";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ParticleSystem } from "./particleSystem";
 import { SubEmitter } from "./subEmitter";
-import { ColorGradient, FactorGradient } from "../Misc/tools";
+import { ColorGradient, FactorGradient } from "../Misc/gradients";
 /**
  * A particle represents one of the element emitted by a particle system.
  * This is mainly define by its coordinates, direction, velocity and age.

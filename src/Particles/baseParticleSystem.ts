@@ -5,7 +5,7 @@ import { ImageProcessingConfiguration, ImageProcessingConfigurationDefines } fro
 import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Scene } from "../scene";
-import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/tools";
+import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
 import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
 import { Constants } from "../Engines/constants";
 import { Texture } from '../Materials/Textures/texture';

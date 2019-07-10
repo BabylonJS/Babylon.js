@@ -1,5 +1,5 @@
 import { Nullable } from "./types";
-import { IAnimatable, IFileRequest, Tools, PerfCounter } from "./Misc/tools";
+import { IAnimatable, IFileRequest, Tools } from "./Misc/tools";
 import { PrecisionDate } from "./Misc/precisionDate";
 import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
@@ -47,6 +47,7 @@ import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
 import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
+import { PerfCounter } from './Misc/perfCounter';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -4156,8 +4157,8 @@ export class Scene extends AbstractScene implements IAnimatable {
             var minBox = boundingInfo.boundingBox.minimumWorld;
             var maxBox = boundingInfo.boundingBox.maximumWorld;
 
-            Tools.CheckExtends(minBox, min, max);
-            Tools.CheckExtends(maxBox, min, max);
+            Vector3.CheckExtends(minBox, min, max);
+            Vector3.CheckExtends(maxBox, min, max);
         });
 
         return {
