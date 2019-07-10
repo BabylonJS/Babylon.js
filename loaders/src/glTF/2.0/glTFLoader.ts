@@ -1,7 +1,9 @@
 import { IndicesArray, Nullable } from "babylonjs/types";
 import { Deferred } from "babylonjs/Misc/deferred";
 import { Quaternion, Color3, Vector3, Matrix } from "babylonjs/Maths/math";
-import { LoadFileError, IFileRequest, IAnimatable, Tools } from "babylonjs/Misc/tools";
+import { IAnimatable, Tools } from "babylonjs/Misc/tools";
+import { IFileRequest } from "babylonjs/Misc/fileRequest";
+import { LoadFileError } from "babylonjs/Misc/loadFileError";
 import { Camera } from "babylonjs/Cameras/camera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
@@ -1787,8 +1789,7 @@ export class GLTFLoader implements IGLTFLoader {
         const texture = ArrayItem.Get(`${context}/index`, this._gltf.textures, textureInfo.index);
         const promise = this._loadTextureAsync(`/textures/${textureInfo.index}`, texture, (babylonTexture) => {
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
-            if (texture.name)
-            {
+            if (texture.name) {
                 babylonTexture.name = texture.name;
             }
 

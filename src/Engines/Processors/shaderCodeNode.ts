@@ -1,5 +1,5 @@
 import { ProcessingOptions } from './shaderProcessingOptions';
-import { Tools } from '../../Misc/tools';
+import { StringTools } from '../../Misc/stringTools';
 
 /** @hidden */
 export class ShaderCodeNode {
@@ -18,11 +18,11 @@ export class ShaderCodeNode {
             let value: string = this.line;
             let processor = options.processor;
             if (processor) {
-                if (processor.attributeProcessor && Tools.StartsWith(this.line, "attribute")) {
+                if (processor.attributeProcessor && StringTools.StartsWith(this.line, "attribute")) {
                     value = processor.attributeProcessor(this.line);
-                } else if (processor.varyingProcessor && Tools.StartsWith(this.line, "varying")) {
+                } else if (processor.varyingProcessor && StringTools.StartsWith(this.line, "varying")) {
                     value = processor.varyingProcessor(this.line, options.isFragment);
-                } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && Tools.StartsWith(this.line, "uniform")) {
+                } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StringTools.StartsWith(this.line, "uniform")) {
                     let regex = /uniform (.+) (.+)/;
 
                     if (regex.test(this.line)) { // uniform
