@@ -55,6 +55,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         return (
             <div>
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={material}
+                    lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={material.id} />
