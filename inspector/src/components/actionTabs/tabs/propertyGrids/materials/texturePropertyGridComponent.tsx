@@ -123,6 +123,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 </LineContainerComponent>
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
+                    lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Width" value={texture.getSize().width.toString()} />

@@ -12,16 +12,13 @@ import { IEnvironmentHelperOptions, EnvironmentHelper } from "./environmentHelpe
 import { FreeCamera } from "../Cameras/freeCamera";
 import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
 import { TargetCamera } from "../Cameras/targetCamera";
-import { WebXRManagedOutputCanvas } from "../Cameras/XR/webXRManagedOutputCanvas";
-import { WebXRInput } from "../Cameras/XR/webXRInput";
-import { WebXREnterExitUI } from "../Cameras/XR/webXREnterExitUI";
-import { WebXRExperienceHelper } from "../Cameras/XR/webXRExperienceHelper";
 import { VRExperienceHelperOptions, VRExperienceHelper } from "../Cameras/VR/vrExperienceHelper";
 
 import "../Materials/Textures/Loaders/ddsTextureLoader";
 import "../Materials/Textures/Loaders/envTextureLoader";
 import "../Materials/Textures/Loaders/ktxTextureLoader";
 import "../Meshes/Builders/boxBuilder";
+import { WebXRDefaultExperience, WebXRDefaultExperienceOptions } from '../Cameras/XR/webXRDefaultExperience';
 
 /** @hidden */
 export var _forceSceneHelpersToBundle = true;
@@ -82,11 +79,12 @@ declare module "../scene" {
         createDefaultVRExperience(webVROptions?: VRExperienceHelperOptions): VRExperienceHelper;
 
         /**
-         * Creates a new XREXperienceHelper
+         * Creates a new WebXRDefaultExperience
          * @see http://doc.babylonjs.com/how_to/webxr
-         * @returns a promise for a new XREXperienceHelper
+         * @param options experience options
+         * @returns a promise for a new WebXRDefaultExperience
          */
-        createDefaultXRExperienceAsync(): Promise<WebXRExperienceHelper>;
+        createDefaultXRExperienceAsync(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
     }
 }
 
@@ -210,13 +208,8 @@ Scene.prototype.createDefaultVRExperience = function(webVROptions: VRExperienceH
     return new VRExperienceHelper(this, webVROptions);
 };
 
-Scene.prototype.createDefaultXRExperienceAsync = function(): Promise<WebXRExperienceHelper> {
-    return WebXRExperienceHelper.CreateAsync(this).then((helper) => {
-        var outputCanvas = new WebXRManagedOutputCanvas(helper);
-        return WebXREnterExitUI.CreateAsync(this, helper, { webXRManagedOutputCanvas: outputCanvas })
-            .then((ui) => {
-                new WebXRInput(helper);
-                return helper;
-            });
+Scene.prototype.createDefaultXRExperienceAsync = function(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience> {
+    return WebXRDefaultExperience.CreateAsync(this, options).then((helper) => {
+        return helper;
     });
 };
