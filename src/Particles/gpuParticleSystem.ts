@@ -1,5 +1,6 @@
 import { Nullable, float } from "../types";
-import { IAnimatable, Tools, IValueGradient, ColorGradient, FactorGradient, Color3Gradient } from "../Misc/tools";
+import { IAnimatable } from "../Misc/tools";
+import { FactorGradient, ColorGradient, Color3Gradient, IValueGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
 import { Color4, Color3, Vector3, Matrix, Tmp } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
@@ -1105,7 +1106,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         for (var x = 0; x < this._rawTextureWidth; x++) {
             var ratio = x / this._rawTextureWidth;
 
-            Tools.GetCurrentGradient(ratio, factorGradients, (currentGradient, nextGradient, scale) => {
+            GradientHelper.GetCurrentGradient(ratio, factorGradients, (currentGradient, nextGradient, scale) => {
                 data[x] = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
             });
         }
@@ -1144,7 +1145,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         for (var x = 0; x < this._rawTextureWidth; x++) {
             var ratio = x / this._rawTextureWidth;
 
-            Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
+            GradientHelper.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
 
                 Color4.LerpToRef((<ColorGradient>currentGradient).color1, (<ColorGradient>nextGradient).color1, scale, tmpColor);
                 data[x * 4] = tmpColor.r * 255;

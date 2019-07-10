@@ -24,6 +24,7 @@ import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { _MeshCollisionData } from '../Collisions/meshCollisionData';
 import { _DevTools } from '../Misc/devTools';
 import { RawTexture } from '../Materials/Textures/rawTexture';
+import { extractMinAndMax } from '../Maths/math.functions';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -1142,7 +1143,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _refreshBoundingInfo(data: Nullable<FloatArray>, bias: Nullable<Vector2>): void {
         if (data) {
-            var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices(), bias);
+            var extend = extractMinAndMax(data, 0, this.getTotalVertices(), bias);
             if (this._boundingInfo) {
                 this._boundingInfo.reConstruct(extend.minimum, extend.maximum);
             }

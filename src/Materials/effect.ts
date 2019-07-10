@@ -1194,7 +1194,7 @@ export class Effect implements IDisposable {
      */
     public setMatrix(uniformName: string, matrix: Matrix): Effect {
         if (this._cacheMatrix(uniformName, matrix)) {
-            this._engine.setMatrix(this._uniforms[uniformName], matrix);
+            this._engine.setMatrices(this._uniforms[uniformName], matrix.toArray() as Float32Array);
         }
         return this;
     }
@@ -1356,7 +1356,7 @@ export class Effect implements IDisposable {
     public setColor3(uniformName: string, color3: Color3): Effect {
 
         if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
-            this._engine.setColor3(this._uniforms[uniformName], color3);
+            this._engine.setFloat3(this._uniforms[uniformName], color3.r, color3.g, color3.b);
         }
         return this;
     }
@@ -1370,7 +1370,7 @@ export class Effect implements IDisposable {
      */
     public setColor4(uniformName: string, color3: Color3, alpha: number): Effect {
         if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
-            this._engine.setColor4(this._uniforms[uniformName], color3, alpha);
+            this._engine.setFloat4(this._uniforms[uniformName], color3.r, color3.g, color3.b, alpha);
         }
         return this;
     }

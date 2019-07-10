@@ -2,12 +2,9 @@ import { Observer, Observable } from "../Misc/observable";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import { StringDictionary } from "../Misc/stringDictionary";
 import { PromisePolyfill } from "../Misc/promise";
-import { Tools, ICustomAnimationFrameRequester, PerfCounter, IFileRequest } from "../Misc/tools";
-import { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
-import { Camera } from "../Cameras/camera";
+import { Tools, ICustomAnimationFrameRequester, IFileRequest } from "../Misc/tools";
+import { Nullable, FloatArray, DataArray, IndicesArray, float } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Color3, Color4, Viewport, Vector4 } from "../Maths/math";
-import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Effect, EffectCreationOptions, EffectFallbacks } from "../Materials/effect";
@@ -32,12 +29,43 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { IShaderProcessor } from './Processors/iShaderProcessor';
 import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
+import { PerfCounter } from '../Misc/perfCounter';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+
+/**
+ * @hidden
+ */
+export interface IColor4Like {
+    r: float;
+    g: float;
+    b: float;
+    a: float;
+}
+
+/**
+ * @hidden
+ */
+export interface IViewportLike {
+    x: float;
+    y: float;
+    width: float;
+    height: float;
+}
+
+/**
+ * Defines the interface used by objects containing a viewport (like a camera)
+ */
+interface IViewportOwnerLike {
+    /**
+     * Gets or sets the viewport
+     */
+    viewport: IViewportLike;
+}
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -847,7 +875,7 @@ export class Engine {
     private _compiledEffects: { [key: string]: Effect } = {};
     private _vertexAttribArraysEnabled: boolean[] = [];
     /** @hidden */
-    protected _cachedViewport: Nullable<Viewport>;
+    protected _cachedViewport: Nullable<IViewportLike>;
     private _cachedVertexArrayObject: Nullable<WebGLVertexArrayObject>;
     /** @hidden */
     protected _cachedVertexBuffers: any;
@@ -915,7 +943,7 @@ export class Engine {
     /**
      * Gets the current viewport
      */
-    public get currentViewport(): Nullable<Viewport> {
+    public get currentViewport(): Nullable<IViewportLike> {
         return this._cachedViewport;
     }
 
@@ -1638,12 +1666,12 @@ export class Engine {
 
     /**
      * Gets current aspect ratio
-     * @param camera defines the camera to use to get the aspect ratio
+     * @param viewportOwner defines the camera to use to get the aspect ratio
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the aspect ratio
      */
-    public getAspectRatio(camera: Camera, useScreen = false): number {
-        var viewport = camera.viewport;
+    public getAspectRatio(viewportOwner: IViewportOwnerLike, useScreen = false): number {
+        var viewport = viewportOwner.viewport;
         return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
     }
 
@@ -2097,7 +2125,7 @@ export class Engine {
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
      */
-    public clear(color: Nullable<Color4>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         this.applyStates();
 
         var mode = 0;
@@ -2124,7 +2152,7 @@ export class Engine {
      * @param height defines the height of the clear rectangle
      * @param clearColor defines the clear color
      */
-    public scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void {
+    public scissorClear(x: number, y: number, width: number, height: number, clearColor: IColor4Like): void {
         this.enableScissor(x, y, width, height);
         this.clear(clearColor, true, true, true);
         this.disableScissor();
@@ -2154,7 +2182,7 @@ export class Engine {
         gl.disable(gl.SCISSOR_TEST);
     }
 
-    private _viewportCached = new Vector4(0, 0, 0, 0);
+    private _viewportCached = { x: 0, y: 0, z: 0, w: 0 };
 
     /** @hidden */
     public _viewport(x: number, y: number, width: number, height: number): void {
@@ -2177,7 +2205,7 @@ export class Engine {
      * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
      * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
      */
-    public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
+    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         var width = requiredWidth || this.getRenderWidth();
         var height = requiredHeight || this.getRenderHeight();
         var x = viewport.x || 0;
@@ -2196,7 +2224,7 @@ export class Engine {
      * @param height defines the height of the viewport (in screen space)
      * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
      */
-    public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<Viewport> {
+    public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike> {
         let currentViewport = this._cachedViewport;
         this._cachedViewport = null;
 
@@ -3652,19 +3680,6 @@ export class Engine {
     }
 
     /**
-     * Set the value of an uniform to a matrix
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param matrix defines the matrix to store
-     */
-    public setMatrix(uniform: Nullable<WebGLUniformLocation>, matrix: Matrix): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniformMatrix4fv(uniform, false, matrix.toArray() as Float32Array);
-    }
-
-    /**
      * Set the value of an uniform to a matrix (3x3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrix defines the Float32Array representing the 3x3 matrix to store
@@ -3775,38 +3790,11 @@ export class Engine {
     }
 
     /**
-     * Set the value of an uniform to a Color3
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param color3 defines the color to store
-     */
-    public setColor3(uniform: Nullable<WebGLUniformLocation>, color3: Color3): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform3f(uniform, color3.r, color3.g, color3.b);
-    }
-
-    /**
-     * Set the value of an uniform to a Color3 and an alpha value
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param color3 defines the color to store
-     * @param alpha defines the alpha component to store
-     */
-    public setColor4(uniform: Nullable<WebGLUniformLocation>, color3: Color3, alpha: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
-    }
-
-    /**
      * Sets a Color4 on a uniform variable
      * @param uniform defines the uniform location
      * @param color4 defines the value to be set
      */
-    public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void {
+    public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: IColor4Like): void {
         if (!uniform) {
             return;
         }
@@ -5018,8 +5006,8 @@ export class Engine {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }
 
-        const lodMaxWidth = Math.round(Scalar.Log2(texture.width));
-        const lodMaxHeight = Math.round(Scalar.Log2(texture.height));
+        const lodMaxWidth = Math.round(Math.log(texture.width) * Math.LOG2E);
+        const lodMaxHeight = Math.round(Math.log(texture.height) * Math.LOG2E);
         const width = useTextureWidthAndHeight ? texture.width : Math.pow(2, Math.max(lodMaxWidth - lod, 0));
         const height = useTextureWidthAndHeight ? texture.height : Math.pow(2, Math.max(lodMaxHeight - lod, 0));
 

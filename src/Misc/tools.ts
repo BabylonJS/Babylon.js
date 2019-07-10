@@ -1,6 +1,4 @@
-import { FloatArray, IndicesArray, Nullable } from "../types";
-import { Color4, Color3, Vector2, Vector3 } from "../Maths/math";
-import { Scalar } from "../Maths/math.scalar";
+import { Nullable, float } from "../types";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { Observable } from "./observable";
 import { FilesInputStore } from "./filesInputStore";
@@ -16,6 +14,13 @@ import { WebRequest } from './webRequest';
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
 declare type Animation = import("../Animations/animation").Animation;
+
+interface IColor4Like {
+    r: float;
+    g: float;
+    b: float;
+    a: float;
+}
 
 /**
  * Interface for any object that can request an animation frame
@@ -45,85 +50,6 @@ export interface IAnimatable {
      * Array of animations
      */
     animations: Nullable<Array<Animation>>;
-}
-
-/** Interface used by value gradients (color, factor, ...) */
-export interface IValueGradient {
-    /**
-     * Gets or sets the gradient value (between 0 and 1)
-     */
-    gradient: number;
-}
-
-/** Class used to store color4 gradient */
-export class ColorGradient implements IValueGradient {
-    /**
-     * Gets or sets the gradient value (between 0 and 1)
-     */
-    public gradient: number;
-    /**
-     * Gets or sets first associated color
-     */
-    public color1: Color4;
-    /**
-     * Gets or sets second associated color
-     */
-    public color2?: Color4;
-
-    /**
-     * Will get a color picked randomly between color1 and color2.
-     * If color2 is undefined then color1 will be used
-     * @param result defines the target Color4 to store the result in
-     */
-    public getColorToRef(result: Color4) {
-        if (!this.color2) {
-            result.copyFrom(this.color1);
-            return;
-        }
-
-        Color4.LerpToRef(this.color1, this.color2, Math.random(), result);
-    }
-}
-
-/** Class used to store color 3 gradient */
-export class Color3Gradient implements IValueGradient {
-    /**
-     * Gets or sets the gradient value (between 0 and 1)
-     */
-    public gradient: number;
-    /**
-     * Gets or sets the associated color
-     */
-    public color: Color3;
-}
-
-/** Class used to store factor gradient */
-export class FactorGradient implements IValueGradient {
-    /**
-     * Gets or sets the gradient value (between 0 and 1)
-     */
-    public gradient: number;
-    /**
-     * Gets or sets first associated factor
-     */
-    public factor1: number;
-    /**
-     * Gets or sets second associated factor
-     */
-    public factor2?: number;
-
-    /**
-     * Will get a number picked randomly between factor1 and factor2.
-     * If factor2 is undefined then factor1 will be used
-     * @returns the picked number
-     */
-    public getFactor(): number {
-        if (this.factor2 === undefined) {
-            return this.factor1;
-        }
-
-        return Scalar.Lerp(this.factor1, this.factor2, Math.random());
-    }
 }
 
 /**
@@ -252,7 +178,7 @@ export class Tools {
      * @param pixels defines the source byte array
      * @param color defines the output color
      */
-    public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: Color4): void {
+    public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: IColor4Like): void {
         let wrappedU = ((Math.abs(u) * width) % width) | 0;
         let wrappedV = ((Math.abs(v) * height) % height) | 0;
 
@@ -518,83 +444,6 @@ export class Tools {
         }
 
         return "data:image/png;base64," + output;
-    }
-
-    /**
-     * Extracts minimum and maximum values from a list of indexed positions
-     * @param positions defines the positions to use
-     * @param indices defines the indices to the positions
-     * @param indexStart defines the start index
-     * @param indexCount defines the end index
-     * @param bias defines bias value to add to the result
-     * @return minimum and maximum values
-     */
-    public static ExtractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, bias: Nullable<Vector2> = null): { minimum: Vector3; maximum: Vector3 } {
-        var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-
-        for (var index = indexStart; index < indexStart + indexCount; index++) {
-            const offset = indices[index] * 3;
-            const x = positions[offset];
-            const y = positions[offset + 1];
-            const z = positions[offset + 2];
-            minimum.minimizeInPlaceFromFloats(x, y, z);
-            maximum.maximizeInPlaceFromFloats(x, y, z);
-        }
-
-        if (bias) {
-            minimum.x -= minimum.x * bias.x + bias.y;
-            minimum.y -= minimum.y * bias.x + bias.y;
-            minimum.z -= minimum.z * bias.x + bias.y;
-            maximum.x += maximum.x * bias.x + bias.y;
-            maximum.y += maximum.y * bias.x + bias.y;
-            maximum.z += maximum.z * bias.x + bias.y;
-        }
-
-        return {
-            minimum: minimum,
-            maximum: maximum
-        };
-    }
-
-    /**
-     * Extracts minimum and maximum values from a list of positions
-     * @param positions defines the positions to use
-     * @param start defines the start index in the positions array
-     * @param count defines the number of positions to handle
-     * @param bias defines bias value to add to the result
-     * @param stride defines the stride size to use (distance between two positions in the positions array)
-     * @return minimum and maximum values
-     */
-    public static ExtractMinAndMax(positions: FloatArray, start: number, count: number, bias: Nullable<Vector2> = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
-        var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-
-        if (!stride) {
-            stride = 3;
-        }
-
-        for (var index = start, offset = start * stride; index < start + count; index++ , offset += stride) {
-            const x = positions[offset];
-            const y = positions[offset + 1];
-            const z = positions[offset + 2];
-            minimum.minimizeInPlaceFromFloats(x, y, z);
-            maximum.maximizeInPlaceFromFloats(x, y, z);
-        }
-
-        if (bias) {
-            minimum.x -= minimum.x * bias.x + bias.y;
-            minimum.y -= minimum.y * bias.x + bias.y;
-            minimum.z -= minimum.z * bias.x + bias.y;
-            maximum.x += maximum.x * bias.x + bias.y;
-            maximum.y += maximum.y * bias.x + bias.y;
-            maximum.z += maximum.z * bias.x + bias.y;
-        }
-
-        return {
-            minimum: minimum,
-            maximum: maximum
-        };
     }
 
     /**
@@ -1184,17 +1033,6 @@ export class Tools {
      */
     public static Format(value: number, decimals: number = 2): string {
         return value.toFixed(decimals);
-    }
-
-    /**
-     * Checks if a given vector is inside a specific range
-     * @param v defines the vector to test
-     * @param min defines the minimum range
-     * @param max defines the maximum range
-     */
-    public static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void {
-        min.minimizeInPlace(v);
-        max.maximizeInPlace(v);
     }
 
     /**
@@ -1805,197 +1643,6 @@ export class Tools {
             }, delay);
         });
     }
-
-    /**
-     * Gets the current gradient from an array of IValueGradient
-     * @param ratio defines the current ratio to get
-     * @param gradients defines the array of IValueGradient
-     * @param updateFunc defines the callback function used to get the final value from the selected gradients
-     */
-    public static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void) {
-        for (var gradientIndex = 0; gradientIndex < gradients.length - 1; gradientIndex++) {
-            let currentGradient = gradients[gradientIndex];
-            let nextGradient = gradients[gradientIndex + 1];
-
-            if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
-                let scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
-                updateFunc(currentGradient, nextGradient, scale);
-                return;
-            }
-        }
-
-        // Use last index if over
-        const lastIndex = gradients.length - 1;
-        updateFunc(gradients[lastIndex], gradients[lastIndex], 1.0);
-    }
-}
-
-/**
- * This class is used to track a performance counter which is number based.
- * The user has access to many properties which give statistics of different nature.
- *
- * The implementer can track two kinds of Performance Counter: time and count.
- * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
- * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
- */
-export class PerfCounter {
-    /**
-     * Gets or sets a global boolean to turn on and off all the counters
-     */
-    public static Enabled = true;
-
-    /**
-     * Returns the smallest value ever
-     */
-    public get min(): number {
-        return this._min;
-    }
-
-    /**
-     * Returns the biggest value ever
-     */
-    public get max(): number {
-        return this._max;
-    }
-
-    /**
-     * Returns the average value since the performance counter is running
-     */
-    public get average(): number {
-        return this._average;
-    }
-
-    /**
-     * Returns the average value of the last second the counter was monitored
-     */
-    public get lastSecAverage(): number {
-        return this._lastSecAverage;
-    }
-
-    /**
-     * Returns the current value
-     */
-    public get current(): number {
-        return this._current;
-    }
-
-    /**
-     * Gets the accumulated total
-     */
-    public get total(): number {
-        return this._totalAccumulated;
-    }
-
-    /**
-     * Gets the total value count
-     */
-    public get count(): number {
-        return this._totalValueCount;
-    }
-
-    /**
-     * Creates a new counter
-     */
-    constructor() {
-        this._startMonitoringTime = 0;
-        this._min = 0;
-        this._max = 0;
-        this._average = 0;
-        this._lastSecAverage = 0;
-        this._current = 0;
-        this._totalValueCount = 0;
-        this._totalAccumulated = 0;
-        this._lastSecAccumulated = 0;
-        this._lastSecTime = 0;
-        this._lastSecValueCount = 0;
-    }
-
-    /**
-     * Call this method to start monitoring a new frame.
-     * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
-     */
-    public fetchNewFrame() {
-        this._totalValueCount++;
-        this._current = 0;
-        this._lastSecValueCount++;
-    }
-
-    /**
-     * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
-     * @param newCount the count value to add to the monitored count
-     * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
-     */
-    public addCount(newCount: number, fetchResult: boolean) {
-        if (!PerfCounter.Enabled) {
-            return;
-        }
-        this._current += newCount;
-        if (fetchResult) {
-            this._fetchResult();
-        }
-    }
-
-    /**
-     * Start monitoring this performance counter
-     */
-    public beginMonitoring() {
-        if (!PerfCounter.Enabled) {
-            return;
-        }
-        this._startMonitoringTime = PrecisionDate.Now;
-    }
-
-    /**
-     * Compute the time lapsed since the previous beginMonitoring() call.
-     * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
-     */
-    public endMonitoring(newFrame: boolean = true) {
-        if (!PerfCounter.Enabled) {
-            return;
-        }
-
-        if (newFrame) {
-            this.fetchNewFrame();
-        }
-
-        let currentTime = PrecisionDate.Now;
-        this._current = currentTime - this._startMonitoringTime;
-
-        if (newFrame) {
-            this._fetchResult();
-        }
-    }
-
-    private _fetchResult() {
-        this._totalAccumulated += this._current;
-        this._lastSecAccumulated += this._current;
-
-        // Min/Max update
-        this._min = Math.min(this._min, this._current);
-        this._max = Math.max(this._max, this._current);
-        this._average = this._totalAccumulated / this._totalValueCount;
-
-        // Reset last sec?
-        let now = PrecisionDate.Now;
-        if ((now - this._lastSecTime) > 1000) {
-            this._lastSecAverage = this._lastSecAccumulated / this._lastSecValueCount;
-            this._lastSecTime = now;
-            this._lastSecAccumulated = 0;
-            this._lastSecValueCount = 0;
-        }
-    }
-
-    private _startMonitoringTime: number;
-    private _min: number;
-    private _max: number;
-    private _average: number;
-    private _current: number;
-    private _totalValueCount: number;
-    private _totalAccumulated: number;
-    private _lastSecAverage: number;
-    private _lastSecAccumulated: number;
-    private _lastSecTime: number;
-    private _lastSecValueCount: number;
 }
 
 /**
