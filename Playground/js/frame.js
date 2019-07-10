@@ -8,7 +8,7 @@
     var refreshAnchor = document.getElementById("refresh");
     var editAnchor = document.getElementById("edit");
     var scripts;
-    var zipCode;
+    var zipCode; // TO DO - Rewrite frame.js with classes ... And zipTool.js
 
     if (location.href.toLowerCase().indexOf("noui") > -1) {
         fpsLabel.style.visibility = "hidden";

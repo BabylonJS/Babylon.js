@@ -6,7 +6,7 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    font-family: "acumin-pro";
+    font-family: "acumin-pro-condensed";
 }
 #waitDiv {
     position: absolute;
@@ -312,6 +312,7 @@ body {
 }
 .navbar .categoryTitle {
     display: inline-block;
+    width: 410px;
     vertical-align: top;
     background-color: #201936;
     padding-right: 20px;
@@ -322,7 +323,7 @@ body {
     float: left;
 }
 .navbar .version {
-    display: inline-block;
+    float: right;
     vertical-align: top;
     height: 55px;
     margin-right: 20px;
@@ -416,6 +417,7 @@ body {
     position: relative; 
 }
 .navbar .select .toDisplay {
+    font-family: "acumin-pro-extra-condensed";
     position: absolute;
     z-index: 10;
     right: 0;
@@ -476,7 +478,7 @@ body {
 }
 
 .navbar .select .toDisplay .option {
-    font-size: 16px;
+    font-size: 20px;
     height: 35px;
     line-height: 35px;
     padding: 1px 5px 1px 15px;
@@ -704,6 +706,10 @@ body {
         height:auto;
         padding: 20px;
         padding-bottom: 10px;
+    }
+
+    .navbar .categoryTitle {
+        width: 315px;
     }
 
     .navbar .select .toDisplayBig ul {

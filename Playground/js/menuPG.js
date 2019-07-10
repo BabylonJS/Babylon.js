@@ -72,6 +72,15 @@ class MenuPG {
         for (var i = 0; i < examplesButton.length; i++) {
             examplesButton[i].addEventListener("click", this.removeallOptions);
         }
+
+        // Fullscreen
+        document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function () {
+            if (document.webkitIsFullScreen) this.goFullPage();
+            else this.exitFullPage();
+        }.bind(this), false);
+
+        // Message before unload
+        window.onbeforeunload = exitPrompt;
     }
 
     /**
@@ -112,13 +121,14 @@ class MenuPG {
         if (evt.type == "mouseenter" && this.navBarMobile.offsetHeight > 0) return;
         this.removeAllSubItems();
 
-        var toDisplay = evt.target.querySelector('.toDisplaySub');
+        var target = evt.target;
+        if (target.nodeName == "IMG") target = evt.target.parentNode;
+
+        var toDisplay = target.querySelector('.toDisplaySub');
         if (toDisplay) {
             toDisplay.style.display = 'block';
 
             if (document.getElementsByClassName('navBarMobile')[0].offsetHeight > 0) {
-
-                var topBarHeight = 40;
                 var height = toDisplay.children.length * 33;
                 var parentTop = toDisplay.parentNode.getBoundingClientRect().top;
                 if ((height + parentTop) <= window.innerHeight) {
@@ -223,5 +233,67 @@ class MenuPG {
         this.canvasZoneElement.style.width = '50%';
         this.switchWrapperCode.style.display = 'block';
         this.fpsLabelElement.style.display = 'block';
-    }
+    };
+
+    /**
+     * Canvas full page
+     */
+    goFullPage () {
+        var canvasElement = document.getElementById("renderCanvas");
+        canvasElement.style.position = "absolute";
+        canvasElement.style.top = 0;
+        canvasElement.style.left = 0;
+        canvasElement.style.zIndex = 100;
+    };
+    /**
+     * Canvas exit full page
+     */
+    exitFullPage () {
+        document.getElementById("renderCanvas").style.position = "relative";
+        document.getElementById("renderCanvas").style.zIndex = 0;
+    };
+    /**
+     * Canvas full screen
+     */
+    goFullscreen (engine) {
+        engine.switchFullscreen(true);
+    };
+    /**
+     * Editor full screen
+     */
+    editorGoFullscreen () {
+        var editorDiv = document.getElementById("jsEditor");
+        if (editorDiv.requestFullscreen) {
+            editorDiv.requestFullscreen();
+        } else if (editorDiv.mozRequestFullScreen) {
+            editorDiv.mozRequestFullScreen();
+        } else if (editorDiv.webkitRequestFullscreen) {
+            editorDiv.webkitRequestFullscreen();
+        }
+
+    };
+
+    /**
+     * Display the metadatas form
+     */
+    displayMetadata () {
+        document.getElementById("saveLayer").style.display = "block";
+    };
+
+    /**
+     * Navigation Overwrites
+     */
+    // TO DO - Apply this when click on TS / JS button
+    exitPrompt (e) {
+        var safeToggle = document.getElementById("safemodeToggle1280");
+        if (safeToggle.classList.contains('checked')) {
+            e = e || window.event;
+            var message =
+                'This page is asking you to confirm that you want to leave - data you have entered may not be saved.';
+            if (e) {
+                e.returnValue = message;
+            }
+            return message;
+        }
+    };
 };

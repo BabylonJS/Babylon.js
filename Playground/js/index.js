@@ -3,108 +3,12 @@ utils = new Utils();
 monacoCreator = new MonacoCreator();
 settingsPG = new SettingsPG(monacoCreator);
 menuPG = new MenuPG();
-
-/**
- * Apply things to the differents menu sizes
- */
-var multipleSize = [1280, 1024, 'Mobile'];
-var setToMultipleID = function (id, thingToDo, param) {
-    multipleSize.forEach(function (size) {
-        if (thingToDo == "innerHTML") {
-            document.getElementById(id + size).innerHTML = param
-        }
-        else if (thingToDo == "click") {
-            if (param.length > 1) {
-                for (var i = 0; i < param.length; i++) {
-                    document.getElementById(id + size).addEventListener("click", param[i]);
-                }
-            }
-            else
-                document.getElementById(id + size).addEventListener("click", param);
-        }
-        else if (thingToDo == "addClass") {
-            document.getElementById(id + size).classList.add(param);
-        }
-        else if (thingToDo == "removeClass") {
-            document.getElementById(id + size).classList.remove(param);
-        }
-        else if (thingToDo == "display") {
-            document.getElementById(id + size).style.display = param;
-        }
-    });
-};
+zipTool = new zipTool();
 
 /**
  * View split
  */
 var splitInstance = Split(['#jsEditor', '#canvasZone']);
-
-/**
- * Language of the script
- */
-if (settingsPG.scriptLanguage == "TS") {
-    var compilerTriggerTimeoutID;
-    function triggerCompile(d, func) {
-        if (compilerTriggerTimeoutID !== null) {
-            window.clearTimeout(compilerTriggerTimeoutID);
-        }
-        compilerTriggerTimeoutID = window.setTimeout(function () {
-            try {
-
-                var output = transpileModule(d, {
-                    module: ts.ModuleKind.AMD,
-                    target: ts.ScriptTarget.ES5,
-                    noLib: true,
-                    noResolve: true,
-                    suppressOutputPathCheck: true
-                });
-                if (typeof output === "string") {
-                    func(output);
-                }
-            }
-            catch (e) {
-                utils.showError(e.message, e);
-            }
-        }, 100);
-    }
-    function transpileModule(input, options) {
-        var inputFileName = options.jsx ? "module.tsx" : "module.ts";
-        var sourceFile = ts.createSourceFile(inputFileName, input, options.target || ts.ScriptTarget.ES5);
-        // Output
-        var outputText;
-        var program = ts.createProgram([inputFileName], options, {
-            getSourceFile: function (fileName) { return fileName.indexOf("module") === 0 ? sourceFile : undefined; },
-            writeFile: function (_name, text) { outputText = text; },
-            getDefaultLibFileName: function () { return "lib.d.ts"; },
-            useCaseSensitiveFileNames: function () { return false; },
-            getCanonicalFileName: function (fileName) { return fileName; },
-            getCurrentDirectory: function () { return ""; },
-            getNewLine: function () { return "\r\n"; },
-            fileExists: function (fileName) { return fileName === inputFileName; },
-            readFile: function () { return ""; },
-            directoryExists: function () { return true; },
-            getDirectories: function () { return []; }
-        });
-        // Emit
-        program.emit();
-        if (outputText === undefined) {
-            throw new Error("Output generation failed");
-        }
-        return outputText;
-    }
-    function getRunCode(callBack) {
-        triggerCompile(monacoCreator.JsEditor.getValue(), function (result) {
-            callBack(result + "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }")
-        });
-    }
-
-}
-
-
-function getRunCode(callBack) {
-    var code = monacoCreator.JsEditor.getValue();
-    callBack(code);
-}
 
 
 var run = function () {
@@ -117,14 +21,21 @@ var run = function () {
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
     var scripts;
-    var zipCode;
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+
+    window.addEventListener("resize",
+        function () {
+            if (engine) {
+                engine.resize();
+            }
+        }
+    );
 
     // TO DO : Rewrite this with unpkg.com
     if (location.href.indexOf("indexStable") !== -1) {
-        setToMultipleID("currentVersion", "innerHTML", "v.3.0");
+        utils.setToMultipleID("currentVersion", "innerHTML", "v.3.0");
     } else {
-        setToMultipleID("currentVersion", "innerHTML", "v.4.0");
+        utils.setToMultipleID("currentVersion", "innerHTML", "v.4.0");
     }
 
     var checkTypescriptSupport = function (xhr) {
@@ -143,7 +54,7 @@ var run = function () {
             }
         }
         return true;
-    }
+    };
 
     var loadScript = function (scriptURL, title) {
         var xhr = new XMLHttpRequest();
@@ -328,24 +239,12 @@ var run = function () {
                     settingsPG.restoreTheme(monacoCreator);
                     // Restore language
                     settingsPG.setScriptLanguage();
-
-                    // TO DO - Check why this doesn't work.
-                    // // Remove editor if window size is less than 850px
-                    // var removeEditorForSmallScreen = function () {
-                    //     if (mq.matches) {
-                    //         splitInstance.collapse(0);
-                    //     } else {
-                    //         splitInstance.setSizes([50, 50]);
-                    //     }
-                    // }
-                    // var mq = window.matchMedia("(max-width: 850px)");
-                    // mq.addListener(removeEditorForSmallScreen);
                 }
             }
         };
 
         xhr.send(null);
-    }
+    };
 
     var createNewScript = function () {
         // check if checked is on
@@ -365,7 +264,7 @@ var run = function () {
         monacoCreator.JsEditor.setPosition({ lineNumber: 11, column: 0 });
         monacoCreator.JsEditor.focus();
         compileAndRun();
-    }
+    };
 
     var clear = function () {
         // check if checked is on
@@ -376,7 +275,7 @@ var run = function () {
         monacoCreator.JsEditor.setValue('');
         monacoCreator.JsEditor.setPosition({ lineNumber: 0, column: 0 });
         monacoCreator.JsEditor.focus();
-    }
+    };
 
     // TO DO - Is this really usefull ? Safe mode only available in full HD screen, not for small screen ? Why ?!
     var checkSafeMode = function (message) {
@@ -392,8 +291,11 @@ var run = function () {
         } else {
             return true;
         }
-    }
+    };
 
+    /**
+     * Metadatas form
+     */
     var showNoMetadata = function () {
         if (currentSnippetTitle) {
             document.getElementById("saveFormTitle").value = currentSnippetTitle;
@@ -422,17 +324,86 @@ var run = function () {
         document.getElementById("saveFormButtons").style.display = "block";
         document.getElementById("saveFormButtonOk").style.display = "inline-block";
     };
-    showNoMetadata();
-
     var hideNoMetadata = function () {
         document.getElementById("saveFormTitle").readOnly = true;
         document.getElementById("saveFormDescription").readOnly = true;
         document.getElementById("saveFormTags").readOnly = true;
         document.getElementById("saveFormButtonOk").style.display = "none";
-        setToMultipleID("metadataButton", "display", "inline-block");
+        utils.setToMultipleID("metadataButton", "display", "inline-block");
     };
+    showNoMetadata();
+    
+    /*
+     * Metadatas save
+     */
+    // TO DO - Search what is the appropriate place for this code
+    var save = function () {
 
-    compileAndRun = function () {
+        // Retrieve title if necessary
+        if (document.getElementById("saveLayer")) {
+            currentSnippetTitle = document.getElementById("saveFormTitle").value;
+            currentSnippetDescription = document.getElementById("saveFormDescription").value;
+            currentSnippetTags = document.getElementById("saveFormTags").value;
+        }
+
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState === 4) {
+                if (xmlHttp.status === 200) {
+                    var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
+                    var snippet = JSON.parse(xmlHttp.responseText);
+                    var newUrl = baseUrl + "#" + snippet.id;
+                    currentSnippetToken = snippet.id;
+                    if (snippet.version && snippet.version !== "0") {
+                        newUrl += "#" + snippet.version;
+                    }
+                    location.href = newUrl;
+                    // Hide the complete title & co message
+                    hideNoMetadata();
+                    compileAndRun();
+                } else {
+                    utils.showError("Unable to save your code. It may be too long.", null);
+                }
+            }
+        }
+
+        xmlHttp.open("POST", snippetV3Url + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+
+        var dataToSend = {
+            payload: JSON.stringify({
+                code: monacoCreator.JsEditor.getValue()
+            }),
+            name: currentSnippetTitle,
+            description: currentSnippetDescription,
+            tags: currentSnippetTags
+        };
+
+        xmlHttp.send(JSON.stringify(dataToSend));
+    };
+    var askForSave = function () {
+        if (currentSnippetTitle == null
+            || currentSnippetDescription == null
+            || currentSnippetTags == null) {
+
+            document.getElementById("saveLayer").style.display = "block";
+        }
+        else {
+            save();
+        }
+    };
+    document.getElementById("saveFormButtonOk").addEventListener("click", function () {
+        document.getElementById("saveLayer").style.display = "none";
+        save();
+    });
+    document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
+        document.getElementById("saveLayer").style.display = "none";
+    });
+
+    /**
+     * Compile the script in the editor, and run the preview in the canvas
+     */
+    var compileAndRun = function () {
         try {
             var waitRing = document.getElementById("waitDiv");
             if (waitRing) {
@@ -466,7 +437,7 @@ var run = function () {
             var createEngineFunction = "createDefaultEngine";
             var createSceneFunction;
 
-            getRunCode(function (code) {
+            monacoCreator.getRunCode(function (code) {
                 var createDefaultEngine = function () {
                     return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
                 }
@@ -497,7 +468,7 @@ var run = function () {
                     eval("runScript = function(scene, canvas) {" + code + "}");
                     runScript(scene, canvas);
 
-                    zipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
+                    zipTool.ZipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
                 } else {
                     //execute the code
                     eval(code);
@@ -526,7 +497,7 @@ var run = function () {
                         ? "createEngine()"
                         : defaultEngineZip;
 
-                    zipCode =
+                    zipTool.zipCode =
                         code + "\r\n\r\n" +
                         "var engine = " + createEngineZip + ";\r\n" +
                         "var scene = " + createSceneFunction + "();";
@@ -595,190 +566,11 @@ var run = function () {
         }
     };
 
-    window.addEventListener("resize",
-        function () {
-            if (engine) {
-                engine.resize();
-            }
-        });
-
-    // Load scripts list
-    loadScriptsList();
-
-    // Zip
-    var addContentToZip = function (zip, name, url, replace, buffer, then) {
-        if (url.substring(0, 5) == "data:" || url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
-            then();
-            return;
-        }
-
-        var xhr = new XMLHttpRequest();
-
-        xhr.open('GET', url, true);
-
-        if (buffer) {
-            xhr.responseType = "arraybuffer";
-        }
-
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    var text;
-                    if (!buffer) {
-                        if (replace) {
-                            var splits = replace.split("\r\n");
-                            for (var index = 0; index < splits.length; index++) {
-                                splits[index] = "        " + splits[index];
-                            }
-                            replace = splits.join("\r\n");
-
-                            text = xhr.responseText.replace("####INJECT####", replace);
-                        } else {
-                            text = xhr.responseText;
-                        }
-                    }
-
-                    zip.file(name, buffer ? xhr.response : text);
-
-                    then();
-                }
-            }
-        };
-
-        xhr.send(null);
-    }
-
-    var addTexturesToZip = function (zip, index, textures, folder, then) {
-
-        if (index === textures.length || !textures[index].name) {
-            then();
-            return;
-        }
-
-        if (textures[index].isRenderTarget || textures[index] instanceof BABYLON.DynamicTexture || textures[index].name.indexOf("data:") !== -1) {
-            addTexturesToZip(zip, index + 1, textures, folder, then);
-            return;
-        }
-
-        if (textures[index].isCube) {
-            if (textures[index].name.indexOf("dds") === -1) {
-                if (textures[index]._extensions) {
-                    for (var i = 0; i < 6; i++) {
-                        textures.push({ name: textures[index].name + textures[index]._extensions[i] });
-                    }
-                } else if (textures[index]._files) {
-                    for (var i = 0; i < 6; i++) {
-                        textures.push({ name: textures[index]._files[i] });
-                    }
-                }
-            }
-            else {
-                textures.push({ name: textures[index].name });
-            }
-            addTexturesToZip(zip, index + 1, textures, folder, then);
-            return;
-        }
-
-
-        if (folder == null) {
-            folder = zip.folder("textures");
-        }
-        var url;
-
-        if (textures[index].video) {
-            url = textures[index].video.currentSrc;
-        } else {
-            // url = textures[index].name;
-            url = textures[index].url ? textures[index].url : textures[index].name;
-        }
-
-        var name = textures[index].name.replace("textures/", "");
-        // var name = url.substr(url.lastIndexOf("/") + 1);
-
-        if (url != null) {
-            addContentToZip(folder,
-                name,
-                url,
-                null,
-                true,
-                function () {
-                    addTexturesToZip(zip, index + 1, textures, folder, then);
-                });
-        }
-        else {
-            addTexturesToZip(zip, index + 1, textures, folder, then);
-        }
-    }
-
-    var addImportedFilesToZip = function (zip, index, importedFiles, folder, then) {
-        if (index === importedFiles.length) {
-            then();
-            return;
-        }
-
-        if (!folder) {
-            folder = zip.folder("scenes");
-        }
-        var url = importedFiles[index];
-
-        var name = url.substr(url.lastIndexOf("/") + 1);
-
-        addContentToZip(folder,
-            name,
-            url,
-            null,
-            true,
-            function () {
-                addImportedFilesToZip(zip, index + 1, importedFiles, folder, then);
-            });
-    }
-
-    var getZip = function () {
-        if (engine.scenes.length === 0) {
-            return;
-        }
-
-        var zip = new JSZip();
-
-        var scene = engine.scenes[0];
-
-        var textures = scene.textures;
-
-        var importedFiles = scene.importedMeshesFiles;
-
-        document.getElementById("statusBar").innerHTML = "Creating archive... Please wait.";
-
-        if (zipCode.indexOf("textures/worldHeightMap.jpg") !== -1) {
-            textures.push({ name: "textures/worldHeightMap.jpg" });
-        }
-
-        addContentToZip(zip,
-            "index.html",
-            "zipContent/index.html",
-            zipCode,
-            false,
-            function () {
-                addTexturesToZip(zip,
-                    0,
-                    textures,
-                    null,
-                    function () {
-                        addImportedFilesToZip(zip,
-                            0,
-                            importedFiles,
-                            null,
-                            function () {
-                                var blob = zip.generate({ type: "blob" });
-                                saveAs(blob, "sample.zip");
-                                document.getElementById("statusBar").innerHTML = "";
-                            });
-                    });
-            });
-    }
-
-    // Versions
+    /**
+     * BJS version
+     */
     // TO DO - Rewrite that
-    setVersion = function (version) {
+    var setVersion = function (version) {
         // switch (version) {
         //     case "stable":
         //         location.href = "indexStable.html" + location.hash;
@@ -788,62 +580,32 @@ var run = function () {
         //         break;
         // }
     }
+    utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
 
     // TO DO - Make it work on small screens and mobile
-    showQRCode = function () {
+    var showQRCode = function () {
         $("#qrCodeImage").empty();
         var playgroundCode = window.location.href.split("#");
         playgroundCode.shift();
         $("#qrCodeImage").qrcode({ text: "https://playground.babylonjs.com/frame.html#" + (playgroundCode.join("#")) });
     };
 
-    // Fullscreen
-    document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function () {
-        if (document.webkitIsFullScreen) goFullPage();
-        else exitFullPage();
-    }, false);
-
-    var goFullPage = function () {
-        var canvasElement = document.getElementById("renderCanvas");
-        canvasElement.style.position = "absolute";
-        canvasElement.style.top = 0;
-        canvasElement.style.left = 0;
-        canvasElement.style.zIndex = 100;
-    }
-    var exitFullPage = function () {
-        document.getElementById("renderCanvas").style.position = "relative";
-        document.getElementById("renderCanvas").style.zIndex = 0;
-    }
-    var goFullscreen = function () {
-        if (engine) {
-            engine.switchFullscreen(true);
-        }
-    }
-    var editorGoFullscreen = function () {
-        var editorDiv = document.getElementById("jsEditor");
-        if (editorDiv.requestFullscreen) {
-            editorDiv.requestFullscreen();
-        } else if (editorDiv.mozRequestFullScreen) {
-            editorDiv.mozRequestFullScreen();
-        } else if (editorDiv.webkitRequestFullscreen) {
-            editorDiv.webkitRequestFullscreen();
-        }
-
-    }
-
+    /**
+     * Toggle the code editor
+     */
     var toggleEditor = function () {
         var editorButton = document.getElementById("editorButton1280");
         var scene = engine.scenes[0];
 
         // If the editor is present
         if (editorButton.classList.contains('checked')) {
-            setToMultipleID("editorButton", "removeClass", 'checked');
+            utils.setToMultipleID("editorButton", "removeClass", 'checked');
             splitInstance.collapse(0);
-            setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-square" aria-hidden="true"></i>');
+            utils.setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-square" aria-hidden="true"></i>');
         } else {
-            setToMultipleID("editorButton", "addClass", 'checked');
+            utils.setToMultipleID("editorButton", "addClass", 'checked');
             splitInstance.setSizes([50, 50]);  // Reset
-            setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-check-square" aria-hidden="true"></i>');
+            utils.setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
         engine.resize();
 
@@ -852,8 +614,9 @@ var run = function () {
         }
     }
 
-    
-
+    /**
+     * Toggle the BJS debug layer
+     */
     var toggleDebug = function () {
         // Always showing the debug layer, because you can close it by itself
         var scene = engine.scenes[0];
@@ -865,111 +628,14 @@ var run = function () {
         }
     }
 
-    var toggleMetadata = function () {
-        document.getElementById("saveLayer").style.display = "block";
-    }
+    // Load scripts list
+    loadScriptsList();
 
-    var formatCode = function () {
-        monacoCreator.JsEditor.getAction('editor.action.formatDocument').run();
-    }
-
-    var toggleMinimap = function () {
-        var minimapToggle = document.getElementById("minimapToggle1280");
-        if (minimapToggle.classList.contains('checked')) {
-            monacoCreator.JsEditor.updateOptions({ minimap: { enabled: false } });
-            setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-square" aria-hidden="true"></i>');
-        } else {
-            monacoCreator.JsEditor.updateOptions({ minimap: { enabled: true } });
-            setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-check-square" aria-hidden="true"></i>');
-        }
-        minimapToggle.classList.toggle('checked');
-    }
-
-
-    //Navigation Overwrites
-    var exitPrompt = function (e) {
-        var safeToggle = document.getElementById("safemodeToggle1280");
-        if (safeToggle.classList.contains('checked')) {
-            e = e || window.event;
-            var message =
-                'This page is asking you to confirm that you want to leave - data you have entered may not be saved.';
-            if (e) {
-                e.returnValue = message;
-            }
-            return message;
-        }
-    };
-
-    window.onbeforeunload = exitPrompt;
-
-    // Snippet
-    var save = function () {
-
-        // Retrieve title if necessary
-        if (document.getElementById("saveLayer")) {
-            currentSnippetTitle = document.getElementById("saveFormTitle").value;
-            currentSnippetDescription = document.getElementById("saveFormDescription").value;
-            currentSnippetTags = document.getElementById("saveFormTags").value;
-        }
-
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState === 4) {
-                if (xmlHttp.status === 200) {
-                    var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
-                    var snippet = JSON.parse(xmlHttp.responseText);
-                    var newUrl = baseUrl + "#" + snippet.id;
-                    currentSnippetToken = snippet.id;
-                    if (snippet.version && snippet.version !== "0") {
-                        newUrl += "#" + snippet.version;
-                    }
-                    location.href = newUrl;
-                    // Hide the complete title & co message
-                    hideNoMetadata();
-                    compileAndRun();
-                } else {
-                    utils.showError("Unable to save your code. It may be too long.", null);
-                }
-            }
-        }
-
-        xmlHttp.open("POST", snippetV3Url + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
-
-        var dataToSend = {
-            payload: JSON.stringify({
-                code: monacoCreator.JsEditor.getValue()
-            }),
-            name: currentSnippetTitle,
-            description: currentSnippetDescription,
-            tags: currentSnippetTags
-        };
-
-        xmlHttp.send(JSON.stringify(dataToSend));
-    }
-
-    var askForSave = function () {
-        if (currentSnippetTitle == null
-            || currentSnippetDescription == null
-            || currentSnippetTags == null) {
-
-            document.getElementById("saveLayer").style.display = "block";
-        }
-        else {
-            save();
-        }
-    };
-    document.getElementById("saveFormButtonOk").addEventListener("click", function () {
-        document.getElementById("saveLayer").style.display = "none";
-        save();
-    });
-    document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
-        document.getElementById("saveLayer").style.display = "none";
-    });
-    setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
-
+    /**
+     * HASH part
+     */
+    // TO DO - Rewrite / move this code
     var previousHash = "";
-
     var cleanHash = function () {
         var splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
@@ -979,7 +645,6 @@ var run = function () {
 
         location.hash = splits.join("#");
     }
-
     var checkHash = function (firstTime) {
         if (location.hash) {
             if (previousHash !== location.hash) {
@@ -1036,7 +701,7 @@ var run = function () {
                                 monacoCreator.BlockEditorChange = false;
                                 compileAndRun();
 
-                                // setToMultipleID("currentScript", "innerHTML", "Custom");
+                                // utils.setToMultipleID("currentScript", "innerHTML", "Custom");
                             }
                         }
                     };
@@ -1055,25 +720,27 @@ var run = function () {
         }
         setTimeout(checkHash, 200);
     }
-
     checkHash(true);
 
 
     // ---------- UI
+    // TO DO - A proper UI class
 
     // Run
-    setToMultipleID("runButton", "click", compileAndRun);
+    utils.setToMultipleID("runButton", "click", compileAndRun);
     // New
-    setToMultipleID("newButton", "click", createNewScript);
+    utils.setToMultipleID("newButton", "click", createNewScript);
     // Clear 
-    setToMultipleID("clearButton", "click", clear);
+    utils.setToMultipleID("clearButton", "click", clear);
     // Save
-    setToMultipleID("saveButton", "click", askForSave);
+    utils.setToMultipleID("saveButton", "click", askForSave);
     // Zip
-    setToMultipleID("zipButton", "click", getZip);
-    // // Themes
-    setToMultipleID("darkTheme", "click", [settingsPG.setTheme.bind(settingsPG, 'dark'), menuPG.clickOptionSub.bind(menuPG)]);
-    setToMultipleID("lightTheme", "click", [settingsPG.setTheme.bind(settingsPG, 'light'), menuPG.clickOptionSub.bind(menuPG)]);
+    utils.setToMultipleID("zipButton", "click", function() {
+        zipTool.getZip(engine);
+    });
+    // Themes
+    utils.setToMultipleID("darkTheme", "click", [settingsPG.setTheme.bind(settingsPG, 'dark'), menuPG.clickOptionSub.bind(menuPG)]);
+    utils.setToMultipleID("lightTheme", "click", [settingsPG.setTheme.bind(settingsPG, 'light'), menuPG.clickOptionSub.bind(menuPG)]);
     // Size
     var displayFontSize = document.getElementsByClassName('displayFontSize');
     for (var i = 0; i < displayFontSize.length; i++) {
@@ -1092,43 +759,43 @@ var run = function () {
         }
     }
     // Language (JS / TS)
-    setToMultipleID("toTSbutton", "click", function () {
+    utils.setToMultipleID("toTSbutton", "click", function () {
         settingsPG.ScriptLanguage = "TS";
         location.reload();
     });
-    setToMultipleID("toJSbutton", "click", function () {
+    utils.setToMultipleID("toJSbutton", "click", function () {
         settingsPG.ScriptLanguage = "JS";
         location.reload();
     });
     // Safe mode
-    setToMultipleID("safemodeToggle", 'click', function () {
+    utils.setToMultipleID("safemodeToggle", 'click', function () {
         document.getElementById("safemodeToggle1280").classList.toggle('checked');
         if (document.getElementById("safemodeToggle1280").classList.contains('checked')) {
-            setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
+            utils.setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
         } else {
-            setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square" aria-hidden="true"></i>');
+            utils.setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square" aria-hidden="true"></i>');
         }
     });
     // Editor
-    setToMultipleID("editorButton", "click", toggleEditor);
+    utils.setToMultipleID("editorButton", "click", toggleEditor);
     // FullScreen
-    setToMultipleID("fullscreenButton", "click", goFullscreen);
+    utils.setToMultipleID("fullscreenButton", "click", menuPG.goFullscreen);
     // Editor fullScreen
-    setToMultipleID("editorFullscreenButton", "click", editorGoFullscreen);
+    utils.setToMultipleID("editorFullscreenButton", "click", menuPG.editorGoFullscreen);
     // Format
-    setToMultipleID("formatButton", "click", formatCode);
+    utils.setToMultipleID("formatButton", "click", monacoCreator.formatCode.bind(monacoCreator));
     // Format
-    setToMultipleID("minimapToggle", "click", toggleMinimap);
+    utils.setToMultipleID("minimapToggle", "click", monacoCreator.toggleMinimap.bind(monacoCreator));
     // Debug
-    setToMultipleID("debugButton", "click", toggleDebug);
+    utils.setToMultipleID("debugButton", "click", toggleDebug);
     // Metadata
-    setToMultipleID("metadataButton", "click", toggleMetadata);
+    utils.setToMultipleID("metadataButton", "click", menuPG.displayMetadata);
 
     // Restore theme
     settingsPG.restoreTheme(monacoCreator);
     // Restore language
     settingsPG.setScriptLanguage();
-
+    //
     menuPG.resizeBigCanvas();
 }
 

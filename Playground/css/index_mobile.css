@@ -104,11 +104,12 @@
         left: 0;
         top: 40px;
         width: 180px;
-        height: auto;
+        height: 500px;
         min-height: 100px;
         max-height: calc(100% - 40px);
         text-align: left;
         overflow-y: auto;
+        overflow-x: hidden;
     }
     .navbar .select .toDisplay.languageJS .option {
         background-color: #3f3461;
@@ -150,8 +151,12 @@
         width: 180px;
         height: auto;
         text-align: left;
-        overflow-y: auto;
+        overflow: hidden;
         color: white;
+    }
+    .navbar .select .subSelect .toDisplaySub .option {
+        padding-left: 5px;
+        box-sizing: border-box;
     }
     .navbar .select .subSelect .toDisplaySub.languageJS {
         background-color: #9379e6;
