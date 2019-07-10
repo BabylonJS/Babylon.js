@@ -20,6 +20,8 @@ export class WebXRControllerModelLoader {
                 controllerModel.initControllerMesh(c.grip!.getScene(), (m) => {
                     controllerModel.mesh!.parent = c.grip!;
                     controllerModel.mesh!.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+                    controllerModel.mesh!.position.y = 0.034;
+                    controllerModel.mesh!.position.z = 0.052;
                 });
             }else if (c.inputSource.gamepad && c.inputSource.gamepad.id === "oculus-quest") {
                 OculusTouchController._IsQuest = true;
