@@ -35,3 +35,7 @@ export * from "./iInspectable";
 export * from "./brdfTextureTools";
 export * from "./gradients";
 export * from "./perfCounter";
+export * from "./fileRequest";
+export * from "./customAnimationFrameRequester";
+export * from "./retryStrategy";
+export * from "./loadFileError";

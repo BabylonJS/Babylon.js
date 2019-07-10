@@ -1,8 +1,5 @@
 import { Nullable, float } from "../types";
-import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { Observable } from "./observable";
-import { FilesInputStore } from "./filesInputStore";
-import { Constants } from "../Engines/constants";
 import { DomManagement } from "./domManagement";
 import { Logger } from "./logger";
 import { _TypeStore } from "./typeStore";
@@ -10,6 +7,11 @@ import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from './precisionDate';
 import { _DevTools } from './devTools';
 import { WebRequest } from './webRequest';
+import { IFileRequest } from './fileRequest';
+import { EngineStore } from '../Engines/engineStore';
+import { FileTools } from './fileTools';
+import { IOfflineProvider } from '../Offline/IOfflineProvider';
+import { PromisePolyfill } from './promise';
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
@@ -23,26 +25,6 @@ interface IColor4Like {
 }
 
 /**
- * Interface for any object that can request an animation frame
- */
-export interface ICustomAnimationFrameRequester {
-    /**
-     * This function will be called when the render loop is ready. If this is not populated, the engine's renderloop function will be called
-     */
-    renderFunction?: Function;
-    /**
-     * Called to request the next frame to render to
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
-     */
-    requestAnimationFrame: Function;
-    /**
-     * You can pass this value to cancelAnimationFrame() to cancel the refresh callback request
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame#Return_value
-     */
-    requestID?: number;
-}
-
-/**
  * Interface containing an array of animations
  */
 export interface IAnimatable {
@@ -53,78 +35,19 @@ export interface IAnimatable {
 }
 
 /**
- * @ignore
- * Application error to support additional information when loading a file
- */
-export class LoadFileError extends Error {
-    // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
-    // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
-
-    // Polyfill for Object.setPrototypeOf if necessary.
-    private static _setPrototypeOf: (o: any, proto: object | null) => any =
-        (Object as any).setPrototypeOf || ((o, proto) => { o.__proto__ = proto; return o; });
-
-    /**
-     * Creates a new LoadFileError
-     * @param message defines the message of the error
-     * @param request defines the optional web request
-     */
-    constructor(
-        message: string,
-        /** defines the optional web request */
-        public request?: WebRequest
-    ) {
-        super(message);
-        this.name = "LoadFileError";
-
-        LoadFileError._setPrototypeOf(this, LoadFileError.prototype);
-    }
-}
-
-/**
- * Class used to define a retry strategy when error happens while loading assets
- */
-export class RetryStrategy {
-    /**
-     * Function used to defines an exponential back off strategy
-     * @param maxRetries defines the maximum number of retries (3 by default)
-     * @param baseInterval defines the interval between retries
-     * @returns the strategy function to use
-     */
-    public static ExponentialBackoff(maxRetries = 3, baseInterval = 500) {
-        return (url: string, request: WebRequest, retryIndex: number): number => {
-            if (request.status !== 0 || retryIndex >= maxRetries || url.indexOf("file:") !== -1) {
-                return -1;
-            }
-
-            return Math.pow(2, retryIndex) * baseInterval;
-        };
-    }
-}
-
-/**
- * File request interface
- */
-export interface IFileRequest {
-    /**
-     * Raised when the request is complete (success or error).
-     */
-    onCompleteObservable: Observable<IFileRequest>;
-
-    /**
-     * Aborts the request for a file.
-     */
-    abort: () => void;
-}
-
-/**
  * Class containing a set of static utilities functions
  */
 export class Tools {
     /**
      * Gets or sets the base URL to use to load assets
      */
-    public static BaseUrl = "";
+    public static get BaseUrl() {
+        return FileTools.BaseUrl;
+    }
+
+    public static set BaseUrl(value: string) {
+        FileTools.BaseUrl = value;
+    }
 
     /**
      * Enable/Disable Custom HTTP Request Headers globally.
@@ -142,7 +65,13 @@ export class Tools {
     /**
      * Gets or sets the retry strategy to apply when an error happens while loading an asset
      */
-    public static DefaultRetryStrategy = RetryStrategy.ExponentialBackoff();
+    public static get DefaultRetryStrategy() {
+        return FileTools.DefaultRetryStrategy;
+    }
+
+    public static set DefaultRetryStrategy(strategy: (url: string, request: WebRequest, retryIndex: number) => number) {
+        FileTools.DefaultRetryStrategy = strategy;
+    }
 
     /**
      * Default behaviour for cors in the application.
@@ -155,7 +84,13 @@ export class Tools {
      * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
      * @ignorenaming
      */
-    public static UseFallbackTexture = true;
+    public static get UseFallbackTexture() {
+        return EngineStore.UseFallbackTexture;
+    }
+
+    public static set UseFallbackTexture(value: boolean) {
+        EngineStore.UseFallbackTexture = value;
+    }
 
     /**
      * Use this object to register external classes like custom textures or material
@@ -167,7 +102,13 @@ export class Tools {
      * Texture content used if a texture cannot loaded
      * @ignorenaming
      */
-    public static fallbackTexture = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
+    public static get fallbackTexture() {
+        return EngineStore.FallbackTexture;
+    }
+
+    public static set fallbackTexture(value: string) {
+        EngineStore.FallbackTexture = value;
+    }
 
     /**
      * Read the content of a byte array at a specified coordinates (taking in account wrapping)
@@ -290,73 +231,6 @@ export class Tools {
     }
 
     /**
-     * Find the next highest power of two.
-     * @param x Number to start search from.
-     * @return Next highest power of two.
-     */
-    public static CeilingPOT(x: number): number {
-        x--;
-        x |= x >> 1;
-        x |= x >> 2;
-        x |= x >> 4;
-        x |= x >> 8;
-        x |= x >> 16;
-        x++;
-        return x;
-    }
-
-    /**
-     * Find the next lowest power of two.
-     * @param x Number to start search from.
-     * @return Next lowest power of two.
-     */
-    public static FloorPOT(x: number): number {
-        x = x | (x >> 1);
-        x = x | (x >> 2);
-        x = x | (x >> 4);
-        x = x | (x >> 8);
-        x = x | (x >> 16);
-        return x - (x >> 1);
-    }
-
-    /**
-     * Find the nearest power of two.
-     * @param x Number to start search from.
-     * @return Next nearest power of two.
-     */
-    public static NearestPOT(x: number): number {
-        var c = Tools.CeilingPOT(x);
-        var f = Tools.FloorPOT(x);
-        return (c - x) > (x - f) ? f : c;
-    }
-
-    /**
-     * Get the closest exponent of two
-     * @param value defines the value to approximate
-     * @param max defines the maximum value to return
-     * @param mode defines how to define the closest value
-     * @returns closest exponent of two of the given value
-     */
-    public static GetExponentOfTwo(value: number, max: number, mode = Constants.SCALEMODE_NEAREST): number {
-        let pot;
-
-        switch (mode) {
-            case Constants.SCALEMODE_FLOOR:
-                pot = Tools.FloorPOT(value);
-                break;
-            case Constants.SCALEMODE_NEAREST:
-                pot = Tools.NearestPOT(value);
-                break;
-            case Constants.SCALEMODE_CEILING:
-            default:
-                pot = Tools.CeilingPOT(value);
-                break;
-        }
-
-        return Math.min(pot, max);
-    }
-
-    /**
      * Extracts the filename from a path
      * @param path defines the path to use
      * @returns the filename
@@ -476,114 +350,12 @@ export class Tools {
     }
 
     /**
-     * Queue a new function into the requested animation frame pool (ie. this function will be executed byt the browser for the next frame)
-     * @param func - the function to be called
-     * @param requester - the object that will request the next frame. Falls back to window.
-     * @returns frame number
-     */
-    public static QueueNewFrame(func: () => void, requester?: any): number {
-        if (!DomManagement.IsWindowObjectExist()) {
-            return setTimeout(func, 16);
-        }
-
-        if (!requester) {
-            requester = window;
-        }
-
-        if (requester.requestAnimationFrame) {
-            return requester.requestAnimationFrame(func);
-        }
-        else if (requester.msRequestAnimationFrame) {
-            return requester.msRequestAnimationFrame(func);
-        }
-        else if (requester.webkitRequestAnimationFrame) {
-            return requester.webkitRequestAnimationFrame(func);
-        }
-        else if (requester.mozRequestAnimationFrame) {
-            return requester.mozRequestAnimationFrame(func);
-        }
-        else if (requester.oRequestAnimationFrame) {
-            return requester.oRequestAnimationFrame(func);
-        }
-        else {
-            return window.setTimeout(func, 16);
-        }
-    }
-
-    /**
-     * Ask the browser to promote the current element to fullscreen rendering mode
-     * @param element defines the DOM element to promote
-     */
-    public static RequestFullscreen(element: HTMLElement): void {
-        var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || (<any>element).webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
-        if (!requestFunction) { return; }
-        requestFunction.call(element);
-    }
-
-    /**
-     * Asks the browser to exit fullscreen mode
-     */
-    public static ExitFullscreen(): void {
-        let anyDoc = document as any;
-
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        }
-        else if (anyDoc.mozCancelFullScreen) {
-            anyDoc.mozCancelFullScreen();
-        }
-        else if (anyDoc.webkitCancelFullScreen) {
-            anyDoc.webkitCancelFullScreen();
-        }
-        else if (anyDoc.msCancelFullScreen) {
-            anyDoc.msCancelFullScreen();
-        }
-    }
-
-    /**
-     * Ask the browser to promote the current element to pointerlock mode
-     * @param element defines the DOM element to promote
-     */
-    public static RequestPointerlock(element: HTMLElement): void {
-        element.requestPointerLock = element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
-        if (element.requestPointerLock) {
-            element.requestPointerLock();
-        }
-    }
-
-    /**
-     * Asks the browser to exit pointerlock mode
-     */
-    public static ExitPointerlock(): void {
-        let anyDoc = document as any;
-        document.exitPointerLock = document.exitPointerLock || anyDoc.msExitPointerLock || anyDoc.mozExitPointerLock || anyDoc.webkitExitPointerLock;
-
-        if (document.exitPointerLock) {
-            document.exitPointerLock();
-        }
-    }
-
-    /**
      * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
      * @param url define the url we are trying
      * @param element define the dom element where to configure the cors policy
      */
     public static SetCorsBehavior(url: string | string[], element: { crossOrigin: string | null }): void {
-        if (url && url.indexOf("data:") === 0) {
-            return;
-        }
-
-        if (Tools.CorsBehavior) {
-            if (typeof (Tools.CorsBehavior) === 'string' || Tools.CorsBehavior instanceof String) {
-                element.crossOrigin = <string>Tools.CorsBehavior;
-            }
-            else {
-                var result = Tools.CorsBehavior(url);
-                if (result) {
-                    element.crossOrigin = result;
-                }
-            }
-        }
+        FileTools.SetCorsBehavior(url, element);
     }
 
     // External files
@@ -601,109 +373,24 @@ export class Tools {
     /**
      * Gets or sets a function used to pre-process url before using them to load assets
      */
-    public static PreprocessUrl = (url: string) => {
-        return url;
+    public static get PreprocessUrl() {
+        return FileTools.PreprocessUrl;
+    }
+
+    public static set PreprocessUrl(processor: (url: string) => string) {
+        FileTools.PreprocessUrl = processor;
     }
 
     /**
-     * Loads an image as an HTMLImageElement.
-     * @param input url string, ArrayBuffer, or Blob to load
-     * @param onLoad callback called when the image successfully loads
-     * @param onError callback called when the image fails to load
-     * @param offlineProvider offline provider for caching
-     * @returns the HTMLImageElement of the loaded image
-     */
+    * Loads an image as an HTMLImageElement.
+    * @param input url string, ArrayBuffer, or Blob to load
+    * @param onLoad callback called when the image successfully loads
+    * @param onError callback called when the image fails to load
+    * @param offlineProvider offline provider for caching
+    * @returns the HTMLImageElement of the loaded image
+    */
     public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement {
-        let url: string;
-        let usingObjectURL = false;
-
-        if (input instanceof ArrayBuffer) {
-            url = URL.createObjectURL(new Blob([input]));
-            usingObjectURL = true;
-        }
-        else if (input instanceof Blob) {
-            url = URL.createObjectURL(input);
-            usingObjectURL = true;
-        }
-        else {
-            url = Tools.CleanUrl(input);
-            url = Tools.PreprocessUrl(input);
-        }
-
-        var img = new Image();
-        Tools.SetCorsBehavior(url, img);
-
-        const loadHandler = () => {
-            img.removeEventListener("load", loadHandler);
-            img.removeEventListener("error", errorHandler);
-
-            onLoad(img);
-
-            // Must revoke the URL after calling onLoad to avoid security exceptions in
-            // certain scenarios (e.g. when hosted in vscode).
-            if (usingObjectURL && img.src) {
-                URL.revokeObjectURL(img.src);
-            }
-        };
-
-        const errorHandler = (err: any) => {
-            img.removeEventListener("load", loadHandler);
-            img.removeEventListener("error", errorHandler);
-
-            Logger.Error("Error while trying to load image: " + input);
-
-            if (onError) {
-                onError("Error while trying to load image: " + input, err);
-            }
-
-            if (usingObjectURL && img.src) {
-                URL.revokeObjectURL(img.src);
-            }
-        };
-
-        img.addEventListener("load", loadHandler);
-        img.addEventListener("error", errorHandler);
-
-        var noOfflineSupport = () => {
-            img.src = url;
-        };
-
-        var loadFromOfflineSupport = () => {
-            if (offlineProvider) {
-                offlineProvider.loadImage(url, img);
-            }
-        };
-
-        if (url.substr(0, 5) !== "data:" && offlineProvider && offlineProvider.enableTexturesOffline) {
-            offlineProvider.open(loadFromOfflineSupport, noOfflineSupport);
-        }
-        else {
-            if (url.indexOf("file:") !== -1) {
-                var textureName = decodeURIComponent(url.substring(5).toLowerCase());
-                if (FilesInputStore.FilesToLoad[textureName]) {
-                    try {
-                        var blobURL;
-                        try {
-                            blobURL = URL.createObjectURL(FilesInputStore.FilesToLoad[textureName]);
-                        }
-                        catch (ex) {
-                            // Chrome doesn't support oneTimeOnly parameter
-                            blobURL = URL.createObjectURL(FilesInputStore.FilesToLoad[textureName]);
-                        }
-                        img.src = blobURL;
-                        usingObjectURL = true;
-                    }
-                    catch (e) {
-                        img.src = "";
-                    }
-                    return img;
-                }
-            }
-
-            noOfflineSupport();
-        }
-
-        return img;
+        return FileTools.LoadImage(input, onLoad, onError, offlineProvider);
     }
 
     /**
@@ -717,148 +404,7 @@ export class Tools {
      * @returns a file request object
      */
     public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
-        url = Tools.CleanUrl(url);
-
-        url = Tools.PreprocessUrl(url);
-
-        // If file and file input are set
-        if (url.indexOf("file:") !== -1) {
-            const fileName = decodeURIComponent(url.substring(5).toLowerCase());
-            if (FilesInputStore.FilesToLoad[fileName]) {
-                return Tools.ReadFile(FilesInputStore.FilesToLoad[fileName], onSuccess, onProgress, useArrayBuffer);
-            }
-        }
-
-        const loadUrl = Tools.BaseUrl + url;
-
-        let aborted = false;
-        const fileRequest: IFileRequest = {
-            onCompleteObservable: new Observable<IFileRequest>(),
-            abort: () => aborted = true,
-        };
-
-        const requestFile = () => {
-            let request = new WebRequest();
-            let retryHandle: Nullable<number> = null;
-
-            fileRequest.abort = () => {
-                aborted = true;
-
-                if (request.readyState !== (XMLHttpRequest.DONE || 4)) {
-                    request.abort();
-                }
-
-                if (retryHandle !== null) {
-                    clearTimeout(retryHandle);
-                    retryHandle = null;
-                }
-            };
-
-            const retryLoop = (retryIndex: number) => {
-                request.open('GET', loadUrl);
-
-                if (useArrayBuffer) {
-                    request.responseType = "arraybuffer";
-                }
-
-                if (onProgress) {
-                    request.addEventListener("progress", onProgress);
-                }
-
-                const onLoadEnd = () => {
-                    request.removeEventListener("loadend", onLoadEnd);
-                    fileRequest.onCompleteObservable.notifyObservers(fileRequest);
-                    fileRequest.onCompleteObservable.clear();
-                };
-
-                request.addEventListener("loadend", onLoadEnd);
-
-                const onReadyStateChange = () => {
-                    if (aborted) {
-                        return;
-                    }
-
-                    // In case of undefined state in some browsers.
-                    if (request.readyState === (XMLHttpRequest.DONE || 4)) {
-                        // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
-                        request.removeEventListener("readystatechange", onReadyStateChange);
-
-                        if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!DomManagement.IsWindowObjectExist() || Tools.IsFileURL()))) {
-                            onSuccess(!useArrayBuffer ? request.responseText : <ArrayBuffer>request.response, request.responseURL);
-                            return;
-                        }
-
-                        let retryStrategy = Tools.DefaultRetryStrategy;
-                        if (retryStrategy) {
-                            let waitTime = retryStrategy(loadUrl, request, retryIndex);
-                            if (waitTime !== -1) {
-                                // Prevent the request from completing for retry.
-                                request.removeEventListener("loadend", onLoadEnd);
-                                request = new WebRequest();
-                                retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
-                                return;
-                            }
-                        }
-
-                        let e = new LoadFileError("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl, request);
-                        if (onError) {
-                            onError(request, e);
-                        } else {
-                            throw e;
-                        }
-                    }
-                };
-
-                request.addEventListener("readystatechange", onReadyStateChange);
-
-                request.send();
-            };
-
-            retryLoop(0);
-        };
-
-        // Caching all files
-        if (offlineProvider && offlineProvider.enableSceneOffline) {
-            const noOfflineSupport = (request?: any) => {
-                if (request && request.status > 400) {
-                    if (onError) {
-                        onError(request);
-                    }
-                } else {
-                    if (!aborted) {
-                        requestFile();
-                    }
-                }
-            };
-
-            const loadFromOfflineSupport = () => {
-                // TODO: database needs to support aborting and should return a IFileRequest
-                if (aborted) {
-                    return;
-                }
-
-                if (offlineProvider) {
-                    offlineProvider.loadFile(url, (data) => {
-                        if (!aborted) {
-                            onSuccess(data);
-                        }
-
-                        fileRequest.onCompleteObservable.notifyObservers(fileRequest);
-                    }, onProgress ? (event) => {
-                        if (!aborted) {
-                            onProgress(event);
-                        }
-                    } : undefined, noOfflineSupport, useArrayBuffer);
-                }
-            };
-
-            offlineProvider.open(loadFromOfflineSupport, noOfflineSupport);
-        }
-        else {
-            requestFile();
-        }
-
-        return fileRequest;
+        return FileTools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
     }
 
     /**
@@ -868,7 +414,7 @@ export class Tools {
      */
     public static LoadFileAsync(url: string): Promise<ArrayBuffer> {
         return new Promise((resolve, reject) => {
-            Tools.LoadFile(url, (data) => {
+            FileTools.LoadFile(url, (data) => {
                 resolve(data as ArrayBuffer);
             }, undefined, undefined, true, (request, exception) => {
                 reject(exception);
@@ -984,33 +530,7 @@ export class Tools {
      * @returns a file request object
      */
     public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
-        let reader = new FileReader();
-        let request: IFileRequest = {
-            onCompleteObservable: new Observable<IFileRequest>(),
-            abort: () => reader.abort(),
-        };
-
-        reader.onloadend = (e) => request.onCompleteObservable.notifyObservers(request);
-        reader.onerror = (e) => {
-            Logger.Log("Error while reading file: " + fileToLoad.name);
-            callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
-        };
-        reader.onload = (e) => {
-            //target doesn't have result from ts 1.3
-            callback((<any>e.target)['result']);
-        };
-        if (progressCallBack) {
-            reader.onprogress = progressCallBack;
-        }
-        if (!useArrayBuffer) {
-            // Asynchronous read
-            reader.readAsText(fileToLoad);
-        }
-        else {
-            reader.readAsArrayBuffer(fileToLoad);
-        }
-
-        return request;
+        return FileTools.ReadFile(fileToLoad, callback, progressCallBack, useArrayBuffer);
     }
 
     /**
@@ -1058,26 +578,6 @@ export class Tools {
             }
         }
         return true;
-    }
-
-    /**
-     * Checks for a matching suffix at the end of a string (for ES5 and lower)
-     * @param str Source string
-     * @param suffix Suffix to search for in the source string
-     * @returns Boolean indicating whether the suffix was found (true) or not (false)
-     */
-    public static EndsWith(str: string, suffix: string): boolean {
-        return str.indexOf(suffix, str.length - suffix.length) !== -1;
-    }
-
-    /**
-     * Checks for a matching suffix at the beginning of a string (for ES5 and lower)
-     * @param str Source string
-     * @param suffix Suffix to search for in the source string
-     * @returns Boolean indicating whether the suffix was found (true) or not (false)
-     */
-    public static StartsWith(str: string, suffix: string): boolean {
-        return str.indexOf(suffix) === 0;
     }
 
     /**
@@ -1440,14 +940,6 @@ export class Tools {
     }
 
     /**
-     * Checks if the loaded document was accessed via `file:`-Protocol.
-     * @returns boolean
-     */
-    public static IsFileURL(): boolean {
-        return location.protocol === "file:";
-    }
-
-    /**
      * Checks if the window object exists
      * Back Compat only, please use DomManagement.IsWindowObjectExist instead.
      */
@@ -1761,3 +1253,9 @@ export class AsyncLoop {
         }, callback);
     }
 }
+
+// Will only be define if Tools is imported freeing up some space when only engine is required
+EngineStore.FallbackTexture = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
+
+// Register promise fallback for IE
+PromisePolyfill.Apply();

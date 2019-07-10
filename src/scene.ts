@@ -1,5 +1,5 @@
 import { Nullable } from "./types";
-import { IAnimatable, IFileRequest, Tools } from "./Misc/tools";
+import { IAnimatable, Tools } from "./Misc/tools";
 import { PrecisionDate } from "./Misc/precisionDate";
 import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
@@ -48,6 +48,7 @@ import { _DevTools } from './Misc/devTools';
 import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
 import { PerfCounter } from './Misc/perfCounter';
+import { IFileRequest } from './Misc/fileRequest';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
