@@ -10,6 +10,13 @@ zipTool = new zipTool();
  */
 var splitInstance = Split(['#jsEditor', '#canvasZone']);
 
+// TO DO - Make it work on small screens and mobile
+showQRCode = function () {
+    $("#qrCodeImage").empty();
+    var playgroundCode = window.location.href.split("#");
+    playgroundCode.shift();
+    $("#qrCodeImage").qrcode({ text: "https://playground.babylonjs.com/frame.html#" + (playgroundCode.join("#")) });
+};
 
 var run = function () {
 
@@ -581,14 +588,6 @@ var run = function () {
         // }
     }
     utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
-
-    // TO DO - Make it work on small screens and mobile
-    var showQRCode = function () {
-        $("#qrCodeImage").empty();
-        var playgroundCode = window.location.href.split("#");
-        playgroundCode.shift();
-        $("#qrCodeImage").qrcode({ text: "https://playground.babylonjs.com/frame.html#" + (playgroundCode.join("#")) });
-    };
 
     /**
      * Toggle the code editor
