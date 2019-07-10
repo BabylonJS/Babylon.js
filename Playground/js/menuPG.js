@@ -9,7 +9,6 @@ class MenuPG {
         this.allSubItems = document.querySelectorAll('.toDisplaySub');
         this.allSubSelect = document.querySelectorAll('.subSelect');
         this.allNoSubSelect = document.querySelectorAll('.noSubSelect');
-
         this.jsEditorElement = document.getElementById('jsEditor');
         this.canvasZoneElement = document.getElementById('canvasZone');
         this.switchWrapperCode = document.getElementById('switchWrapperCode');
@@ -55,7 +54,6 @@ class MenuPG {
         for (var index = 0; index < this.allSelect.length; index++) {
             this.allSelect[index].addEventListener('click', this.displayMenu.bind(this));
         }
-
         // Handle mouseover / click on subSelect
         for (var index = 0; index < this.allSubSelect.length; index++) {
             var ss = this.allSubSelect[index];
@@ -66,7 +64,6 @@ class MenuPG {
             var ss = this.allNoSubSelect[index];
             ss.addEventListener('mouseenter', this.removeAllSubItems.bind(this));
         }
-
         // Examples must remove all the other menus
         var examplesButton = document.getElementsByClassName("examplesButton");
         for (var i = 0; i < examplesButton.length; i++) {
@@ -143,6 +140,7 @@ class MenuPG {
         evt.preventDefault();
         evt.stopPropagation();
     };
+      
     /**
      * Handle click on subOptions
      */

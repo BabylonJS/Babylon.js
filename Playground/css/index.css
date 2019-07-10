@@ -286,6 +286,7 @@ body {
     cursor: default;
     pointer-events: none;
     user-select: none;
+    box-shadow: 0 2px 5px #000;
 }
 .fpsLabel.languageJS {
     background-color: #3f3461;
@@ -446,7 +447,7 @@ body {
 .navbar .select .subSelect .toDisplaySub {
     position: absolute;
     z-index: 10;
-    left: 100%;
+    right: 100%;
     top: 0;
     min-width: 100%;
     display: none;
@@ -656,6 +657,7 @@ body {
     border-radius: 4px;
     color: white;
     font-size: 14px;
+    box-shadow: 0 3px 10px #000;
 }
 .save-layer .save-form .separator {
     width: 350px;

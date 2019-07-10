@@ -96,6 +96,13 @@ var run = function () {
         else {
             xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list_ts.json', true);
         }
+        return outputText;
+    }
+    function getRunCode(callBack) {
+        triggerCompile(monacoCreator.JsEditor.getValue(), function (result) {
+            callBack(result + "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }")
+        });
+    }
 
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
@@ -689,7 +696,6 @@ var run = function () {
                                         document.getElementById("saveFormTitle").value = currentSnippetTitle;
                                         document.getElementById("saveFormDescription").value = currentSnippetDescription;
                                         document.getElementById("saveFormTags").value = currentSnippetTags;
-
                                         hideNoMetadata();
                                     }
                                 }
