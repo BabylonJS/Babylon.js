@@ -80,7 +80,7 @@ class MenuPG {
         }.bind(this), false);
 
         // Message before unload
-        window.onbeforeunload = exitPrompt;
+        window.onbeforeunload = this.exitPrompt;
     }
 
     /**

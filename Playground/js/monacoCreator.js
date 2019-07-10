@@ -163,7 +163,7 @@ class MonacoCreator {
             catch (e) {
                 utils.showError(e.message, e);
             }
-        }, 100);
+        }.bind(this), 100);
     };
     
     /**
