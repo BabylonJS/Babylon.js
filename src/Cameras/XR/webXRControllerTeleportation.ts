@@ -100,7 +100,7 @@ export class WebXRControllerTeleportation {
                 }
 
                 if (c.inputSource.gamepad) {
-                    if (c.inputSource.gamepad.axes[1]) {
+                    if (c.inputSource.gamepad.axes[1] !== undefined) {
                         // Forward teleportation
                         if (c.inputSource.gamepad.axes[1] < -0.7) {
                             forwardReadyToTeleport = true;
@@ -145,7 +145,7 @@ export class WebXRControllerTeleportation {
                         }
                     }
 
-                    if (c.inputSource.gamepad.axes[0]) {
+                    if (c.inputSource.gamepad.axes[0] !== undefined) {
                         if (c.inputSource.gamepad.axes[0] < -0.7) {
                             leftReadyToTeleport = true;
                         }else {
