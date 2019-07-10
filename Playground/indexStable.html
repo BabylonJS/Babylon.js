@@ -84,12 +84,12 @@
                     </div>
                     <div class="option subSelect">Font size <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub displayFontSize languageJS">
-                            <div class="option" onclick="setFontSize(12);">12</div>
-                            <div class="option selected" onclick="setFontSize(14);">14</div>
-                            <div class="option" onclick="setFontSize(16);">16</div>
-                            <div class="option" onclick="setFontSize(18);">18</div>
-                            <div class="option" onclick="setFontSize(20);">20</div>
-                            <div class="option" onclick="setFontSize(22);">22</div>
+                            <div class="option" onclick="settingsPG.setFontSize(12);">12</div>
+                            <div class="option selected" onclick="settingsPG.setFontSize(14);">14</div>
+                            <div class="option" onclick="settingsPG.setFontSize(16);">16</div>
+                            <div class="option" onclick="settingsPG.setFontSize(18);">18</div>
+                            <div class="option" onclick="settingsPG.setFontSize(20);">20</div>
+                            <div class="option" onclick="settingsPG.setFontSize(22);">22</div>
                         </div>
                     </div>
                     <div class="option noSubSelect" id="safemodeToggle1280">Safe mode
@@ -104,7 +104,8 @@
                     <div class="option noSubSelect" id="minimapToggle1280">Minimap
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link <i
+                            class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" id="qrCodeImage">QR Code Image</div>
                         </div>
@@ -157,12 +158,12 @@
                     </div>
                     <div class="option subSelect">Font size <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub displayFontSize">
-                            <div class="option" onclick="setFontSize(12);">12</div>
-                            <div class="option selected" onclick="setFontSize(14);">14</div>
-                            <div class="option" onclick="setFontSize(16);">16</div>
-                            <div class="option" onclick="setFontSize(18);">18</div>
-                            <div class="option" onclick="setFontSize(20);">20</div>
-                            <div class="option" onclick="setFontSize(22);">22</div>
+                            <div class="option" onclick="settingsPG.setFontSize(12);">12</div>
+                            <div class="option selected" onclick="settingsPG.setFontSize(14);">14</div>
+                            <div class="option" onclick="settingsPG.setFontSize(16);">16</div>
+                            <div class="option" onclick="settingsPG.setFontSize(18);">18</div>
+                            <div class="option" onclick="settingsPG.setFontSize(20);">20</div>
+                            <div class="option" onclick="settingsPG.setFontSize(22);">22</div>
                         </div>
                     </div>
                     <div class="option noSubSelect" id="safemodeToggle1024">Safe mode
@@ -177,7 +178,8 @@
                     <div class="option noSubSelect" id="minimapToggle1024">Minimap
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link <i
+                            class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" id="qrCodeImage">QR Code Image</div>
                         </div>
@@ -202,136 +204,62 @@
         </div>
     </div>
 
-    <!-- Little screens -->
-    <div class="navbar navBar710 languageJS">
-        <div class="categoryTitle">
-            <img class="logo" src="css/img/logo_v4.svg">
-            <div class="version"><span class="versionSub" id="mainTitle710"></span></div>
-        </div>
-
-        <div class="category languageJS" id="JStoTSbar">
-            <div class="buttonJStoTS languageTS" id="toTSbutton710">TS</div>
-            <div class="buttonJStoTS languageJS" id="toJSbutton710">JS</div>
-            <div class="buttonSpaceKiller"></div>
-            <div class="button run" id="runButton710"><img src="css/img/playButton.svg"></div>
-            <div class="button" id="saveButton710"><img src="css/img/saveButton.svg"></div>
-            <div class="button removeOnPhone" id="zipButton710"><img src="css/img/downloadButton.svg"></div>
-            <div class="button" id="newButton710"><img src="css/img/newButton.svg"></div>
-            <div class="button removeOnPhone" id="clearButton710"><img src="css/img/clearButton.svg"></div>
-
-            <div class="button select"><img src="css/img/optionsButton.svg">
-                <div class="toDisplay">
-                    <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
-
-                        <div class="toDisplaySub">
-                            <div class="option selected" id="darkTheme710">Dark</div>
-                            <div class="option" id="lightTheme710">Light</div>
-                        </div>
-                    </div>
-                    <div class="option subSelect">Font size <i class="fa fa-chevron-right" aria-hidden="true"></i>
-                        <div class="toDisplaySub displayFontSize">
-                            <div class="option" onclick="setFontSize(12);">12</div>
-                            <div class="option selected" onclick="setFontSize(14);">14</div>
-                            <div class="option" onclick="setFontSize(16);">16</div>
-                            <div class="option" onclick="setFontSize(18);">18</div>
-                            <div class="option" onclick="setFontSize(20);">20</div>
-                            <div class="option" onclick="setFontSize(22);">22</div>
-                        </div>
-                    </div>
-                    <div class="option noSubSelect" id="safemodeToggle710">Safe mode
-                        <i class="fa fa-square" aria-hidden="true"></i>
-                    </div>
-                    <div class="option checked noSubSelect" id="editorButton710">Editor
-                        <i class="fa fa-check-square" aria-hidden="true"></i>
-                    </div>
-                    <div class="option noSubSelect" id="fullscreenButton710">Fullscreen</div>
-                    <div class="option noSubSelect" id="editorFullscreenButton710">Editor Fullscreen</div>
-                    <div class="option noSubSelect" id="formatButton710">Format code</div>
-                    <div class="option noSubSelect" id="minimapToggle710">Minimap
-                        <i class="fa fa-square" aria-hidden="true"></i>
-                    </div>
-                    <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link <i class="fa fa-chevron-right" aria-hidden="true"></i>
-                        <div class="toDisplaySub">
-                            <div class="option" id="qrCodeImage">QR Code Image</div>
-                        </div>
-                    </div>
-                    <div class="option uncheck noSubSelect" id="debugButton710">Inspector
-                        <i class="fa fa-square" aria-hidden="true"></i>
-                    </div>
-                    <div class="option nosubselect" id="metadataButton710">Metadata</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="category right">
-            <div class="button select" style="display: none;">
-                <span id="currentVersion710">v.</span>
-                <div class="toDisplay currentVersionDisplay">
-                    <div class="option" onclick="setVersion('4.0');">4.0</div>
-                    <div class="option" onclick="setVersion('3.0');">3.0</div>
-                </div>
-            </div>
-            <div class="button select"><img class="examplesButton" src="css/img/examplesButton.svg"></div>
-        </div>
-    </div>
-
     <!-- Mobile -->
     <div class="navbar navBarMobile languageJS">
-        <div class="categoryTitle">
-            <img class="logo" src="css/img/logo_v4.svg">
-            <div class="version"><span class="versionSub" id="mainTitleMobile"></span></div>
-        </div>
-
         <div class="category languageJS" id="JStoTSbar">
-            <div class="buttonJStoTS languageTS" id="toTSbuttonMobile">TS</div>
-            <div class="buttonJStoTS languageJS" id="toJSbuttonMobile">JS</div>
-            <div class="buttonSpaceKiller"></div>
-            <div class="button run" id="runButtonMobile"><img src="css/img/playButton.svg"></div>
-            <div class="button" id="saveButtonMobile"><img src="css/img/saveButton.svg"></div>
-            <div class="button removeOnPhone" id="zipButtonMobile"><img src="css/img/downloadButton.svg"></div>
-            <div class="button" id="newButtonMobile"><img src="css/img/newButton.svg"></div>
-            <div class="button removeOnPhone" id="clearButtonMobile"><img src="css/img/clearButton.svg"></div>
-
-            <div class="button select"><img src="css/img/optionsButton.svg">
+            <div class="button select"><img src="css/img/hamburgerButton.svg">
                 <div class="toDisplay">
-                    <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option noSubSelect languageTS" id="toTSbuttonMobile"><img src="css/img/logoTS.svg">TypeScript</div>
+                    <div class="option noSubSelect languageJS" id="toJSbuttonMobile"><img src="css/img/logoJS.svg">JavaScript</div>
+                    <div class="option noSubSelect run" id="runButtonMobile"><img src="css/img/playButton.svg">Run</div>
+                    <div class="option noSubSelect" id="saveButtonMobile"><img src="css/img/saveButton.svg">Save</div>
+                    <div class="option noSubSelect" id="zipButtonMobile"><img src="css/img/downloadButton.svg">Download
+                    </div>
+                    <div class="option noSubSelect" id="newButtonMobile"><img src="css/img/newButton.svg">New</div>
+                    <div class="option noSubSelect" id="clearButtonMobile"><img src="css/img/clearButton.svg">Clear</div>
+                    <div class="option noSubSelect" id="debugButtonMobile"><img src="css/img/inspectorButton.svg">Inspector
+                    </div>
+                    <div class="option subSelect"><img src="css/img/optionsButton.svg">Theme
                         <div class="toDisplaySub">
                             <div class="option selected" id="darkThemeMobile">Dark</div>
                             <div class="option" id="lightThemeMobile">Light</div>
                         </div>
                     </div>
-                    <div class="option subSelect">Font size <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect"><img src="css/img/optionsButton.svg">Font size
                         <div class="toDisplaySub displayFontSize">
-                            <div class="option" onclick="setFontSize(12);">12</div>
-                            <div class="option selected" onclick="setFontSize(14);">14</div>
-                            <div class="option" onclick="setFontSize(16);">16</div>
-                            <div class="option" onclick="setFontSize(18);">18</div>
-                            <div class="option" onclick="setFontSize(20);">20</div>
-                            <div class="option" onclick="setFontSize(22);">22</div>
+                            <div class="option" onclick="settingsPG.setFontSize(8);">8</div>
+                            <div class="option" onclick="settingsPG.setFontSize(10);">10</div>
+                            <div class="option selected" onclick="settingsPG.setFontSize(12);">12</div>
+                            <div class="option" onclick="settingsPG.setFontSize(14);">14</div>
+                            <div class="option" onclick="settingsPG.setFontSize(16);">16</div>
+                            <div class="option" onclick="settingsPG.setFontSize(18);">18</div>
+                            <div class="option" onclick="settingsPG.setFontSize(20);">20</div>
+                            <div class="option" onclick="settingsPG.setFontSize(22);">22</div>
                         </div>
                     </div>
-                    <div class="option noSubSelect" id="safemodeToggleMobile">Safe mode
+                    <div style="display: none;" class="option noSubSelect" id="safemodeToggleMobile">Safe mode
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option checked noSubSelect" id="editorButtonMobile">Editor
+                    <div style="display: none;" class="option checked noSubSelect" id="editorButtonMobile">Editor
                         <i class="fa fa-check-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option nosubselect" id="fullscreenButtonMobile" style="display: none">Fullscreen</div>
-                    <div class="option nosubselect" id="editorFullscreenButtonMobile" style="display: none">Editor Fullscreen</div>
-                    <div class="option nosubselect" id="formatButtonMobile">Format code</div>
-                    <div class="option nosubselect" id="minimapToggleMobile">Minimap
+                    <div style="display: none;" class="option nosubselect" id="fullscreenButtonMobile" style="display: none">Fullscreen</div>
+                    <div style="display: none;" class="option nosubselect" id="editorFullscreenButtonMobile" style="display: none">Editor
+                        Fullscreen</div>
+                    <div class="option nosubselect" id="formatButtonMobile"><img src="css/img/optionsButton.svg">Format code</div>
+                    <div style="display: none;" class="option nosubselect" id="minimapToggleMobile">Minimap
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();"><img src="css/img/optionsButton.svg">QR Code Link
                         <div class="toDisplaySub">
                             <div class="option" id="qrCodeImage">QR Code Image</div>
                         </div>
                     </div>
-                    <div class="option uncheck noSubSelect" id="debugButtonMobile">Inspector
-                        <i class="fa fa-square" aria-hidden="true"></i>
-                    </div>
-                    <div class="option nosubselect" id="metadataButtonMobile">Metadata</div>
-                    <div class="option subSelect">Links / Tools <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option nosubselect" id="metadataButtonMobile"><img
+                            src="css/img/metadataButton.svg">Metadata</div>
+                    <div class="option nosubselect"><img class="examplesButton"
+                            src="css/img/examplesButton.svg">Examples</div>
+                    <div class="option subSelect"><img src="css/img/examplesButton.svg">Links / Tools
                         <div class="toDisplaySub displayFooterLinks">
                             <div class="option link">
                                 <a target='_new' href="https://www.netlify.com/">Deployed by Netlify</a>
@@ -352,6 +280,10 @@
                     </div>
                 </div>
             </div>
+            <div class="categoryTitle">
+                <img class="logo" src="css/img/logo_v4.svg">
+                <div class="version"><span class="versionSub" id="mainTitleMobile"></span></div>
+            </div>
         </div>
 
         <div class="category right">
@@ -362,7 +294,11 @@
                     <div class="option" onclick="setVersion('3.0');">3.0</div>
                 </div>
             </div>
-            <div class="button select"><img class="examplesButton" src="css/img/examplesButton.svg"></div>
+        </div>
+
+        <div id="switchWrapper" class="languageJS">
+            <img id="switchWrapperCode" src="css/img/codeButton.svg">
+            <img id="switchWrapperCanvas" src="css/img/canvas3Dbutton.svg">
         </div>
     </div>
 
@@ -376,11 +312,12 @@
     </div>
     <div id="exampleList" class="javascript">
         <div id="exampleBanner" class="languageJS">
-            <h1>Examples</h1>
+            <h1>Examples<img id="examplesButtonClose" src="css/img/clearButton.svg"></h1>
         </div>
         <div class="horizontalSeparator"></div>
         <input id="filterBar" type="text" placeholder="Filter examples...">
-        <img id="filterBarClear" src="https://d33wubrfki0l68.cloudfront.net/17ca450bae302631f4857cd8c3992234ec5dd9a7/057f9/img/ui/clear_button.png">
+        <img id="filterBarClear"
+            src="https://d33wubrfki0l68.cloudfront.net/17ca450bae302631f4857cd8c3992234ec5dd9a7/057f9/img/ui/clear_button.png">
     </div>
 
     <div class="fpsLabel languageJS" id="fpsLabel">FPS</div>
@@ -447,15 +384,20 @@
     <script src="js/jquery.qrcode.js"></script>
     <script src="js/qrcode.js"></script>
 
-    <!-- TO DO : Comment this. What is it ? -->
+    <!-- TO DO : Why is this a split here ? It's already in the JS code -->
     <script>
         Split(['#jsEditor', '#canvasZone']);
     </script>
 
-<!-- Main scripts -->
-    <script src="js/actions.js"></script>
+    <!-- Main scripts -->
     <script src="js/pbt.js"></script>
     <script src="js/libs/typescript.js"></script>
+    <script src="js/examples.js"></script>
+    <script src="js/monacoCreator.js"></script>
+    <script src="js/settingsPG.js"></script>
+    <script src="js/menuPG.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/zipTool.js"></script>
     <script src="js/index.js"></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->

@@ -3,6 +3,7 @@
  */
 class Utils {
     constructor() {
+        this.multipleSize = [1280, 1024, 'Mobile'];
     }
 
     // TO DO - Comment this
@@ -10,9 +11,9 @@ class Utils {
         if (monacoCreator.BlockEditorChange) return;
 
         // setToMultipleID("currentScript", "innerHTML", "Custom");
-        setToMultipleID("safemodeToggle", "addClass", "checked");
+        this.setToMultipleID("safemodeToggle", "addClass", "checked");
         // setToMultipleID("minimapToggle", "addClass", "checked"); // Why ?!
-        setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
+        this.setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
     };
 
     /**
@@ -44,6 +45,35 @@ class Utils {
         // Close button error
         document.getElementById("errorZone").querySelector('.close').addEventListener('click', function () {
             document.getElementById("errorZone").style.display = 'none';
+        });
+    };
+
+    /**
+     * Apply things to the differents menu sizes
+     */
+    setToMultipleID(id, thingToDo, param) {
+        this.multipleSize.forEach(function (size) {
+            if (thingToDo == "innerHTML") {
+                document.getElementById(id + size).innerHTML = param
+            }
+            else if (thingToDo == "click") {
+                if (param.length > 1) {
+                    for (var i = 0; i < param.length; i++) {
+                        document.getElementById(id + size).addEventListener("click", param[i]);
+                    }
+                }
+                else
+                    document.getElementById(id + size).addEventListener("click", param);
+            }
+            else if (thingToDo == "addClass") {
+                document.getElementById(id + size).classList.add(param);
+            }
+            else if (thingToDo == "removeClass") {
+                document.getElementById(id + size).classList.remove(param);
+            }
+            else if (thingToDo == "display") {
+                document.getElementById(id + size).style.display = param;
+            }
         });
     };
 }

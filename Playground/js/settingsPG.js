@@ -88,10 +88,10 @@ class SettingsPG {
             }
         }
         if (this.scriptLanguage == "JS") {
-            setToMultipleID("toJSbutton", "removeClass", "floatLeft");
+            utils.setToMultipleID("toJSbutton", "removeClass", "floatLeft");
         }
         else if (this.scriptLanguage == "TS") {
-            setToMultipleID("toJSbutton", "addClass", "floatLeft");
+            utils.setToMultipleID("toJSbutton", "addClass", "floatLeft");
         }
     };
     /**
@@ -101,15 +101,15 @@ class SettingsPG {
         localStorage.setItem("bjs-playground-theme", theme);
         // Get the Monaco theme name.
         // Change the selected button style
-        setToMultipleID("darkTheme", "removeClass", "selected");
-        setToMultipleID("lightTheme", "removeClass", "selected");
+        utils.setToMultipleID("darkTheme", "removeClass", "selected");
+        utils.setToMultipleID("lightTheme", "removeClass", "selected");
         if (theme == 'dark') {
             this.vsTheme = 'vs-dark';
-            setToMultipleID("darkTheme", "addClass", "selected");
+            utils.setToMultipleID("darkTheme", "addClass", "selected");
         }
         else {
             this.vsTheme = 'vs';
-            setToMultipleID("lightTheme", "addClass", "selected");
+            utils.setToMultipleID("lightTheme", "addClass", "selected");
         }
 
         this.monacoCreator.createMonacoEditor();
