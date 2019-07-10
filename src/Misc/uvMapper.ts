@@ -190,7 +190,7 @@ function projectMat(vector: Vector3) {
 // TODO
 const USER_FILL_HOLES = 0;
 const USER_FILL_HOLES_QUALITY = 1;
-const USER_ISLAND_MARGIN = 1;
+const USER_ISLAND_MARGIN = 0;
 const SMALL_NUM = 1e-12;
 
 // Porting smart uv project code from blender
@@ -1019,6 +1019,7 @@ export class UvMapper {
 	}
 
 	main(obList: Mesh[],
+		texel_world_size: number = 1 / 4,
 		island_margin: number = 0, 
 		projection_limit: number = 89,
 		user_area_weight: number = 0,
@@ -1198,12 +1199,12 @@ export class UvMapper {
 				collected_islandList = collected_islandList.concat(islandList);
 			} else {
 				collected_islandList = this.getUvIslands(faceProjectionGroupList, deletedFaces);
-				this.packIslands(collected_islandList);
+				this.packIslands(collected_islandList, texel_world_size * island_margin);
 			}
 		}
 
 		if (USER_SHARE_SPACE) {
-			this.packIslands(collected_islandList);
+			this.packIslands(collected_islandList, texel_world_size * island_margin);
 		}
 
 		// Aspect TODO... not necessary
@@ -1331,7 +1332,7 @@ export class UvMapper {
 		this.debugUvs(newUvs, indices);
 	}
 
-	packIslands(islandList: Island[]) {
+	packIslands(islandList: Island[], margin: number) {
 		if (USER_FILL_HOLES) {
 			this.mergeUvIslands(islandList);
 		}
@@ -1346,15 +1347,13 @@ export class UvMapper {
 			let w = maxx - minx;
 			let h = maxy - miny;
 
-			if (USER_ISLAND_MARGIN) {
-				minx -= USER_ISLAND_MARGIN * w / 2;
-				miny -= USER_ISLAND_MARGIN * h / 2;
-				maxx += USER_ISLAND_MARGIN * w / 2;
-				maxy += USER_ISLAND_MARGIN * h / 2;
+			minx -= USER_ISLAND_MARGIN * w / 2 + margin;
+			miny -= USER_ISLAND_MARGIN * h / 2 + margin;
+			maxx += USER_ISLAND_MARGIN * w / 2 + margin;
+			maxy += USER_ISLAND_MARGIN * h / 2 + margin;
 
-				w = maxx - minx;
-				h = maxy - miny;
-			}
+			w = maxx - minx;
+			h = maxy - miny;
 
 			if (w < SMALL_NUM) {
 				w = SMALL_NUM;
@@ -1404,14 +1403,14 @@ export class UvMapper {
 		}
 	}
 
-	constructor(scene: Scene) {
+	constructor(scene: Scene, texelSize: number) {
 		// this.debPointInTri2D();
 		// this.debugFitAABB();
 		// let sphere = MeshBuilder.CreateSphere("aa", { diameter: 1, segments: 30 }, scene);
 		// let cylinder = MeshBuilder.CreateCylinder("aa", { diameter: 1 }, scene);
 		// cylinder.position.addInPlace(new Vector3(0, 5, 1));
 		// cylinder.scaling.scaleInPlace(5);
-		this.main(scene.meshes as Mesh[]);
+		this.main(scene.meshes as Mesh[], texelSize, 2);
 		// let mat = new StandardMaterial("test", scene);
 		// sphere.material = mat;
 		// mat.emissiveTexture = new Texture("./LogoPBT.png", scene);

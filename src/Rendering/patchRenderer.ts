@@ -117,7 +117,7 @@ export class PatchRenderer {
 
     private _near: number;
     private _far: number;
-    private _texelSize: number;
+    private _texelWorldSize: number;
     private _frameBuffer0: WebGLFramebuffer;
     private _frameBuffer1: WebGLFramebuffer;
 
@@ -154,15 +154,15 @@ export class PatchRenderer {
      * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
      */
-    constructor(scene: Scene, meshes: Mesh[], texelSize: number) {
+    constructor(scene: Scene, meshes: Mesh[], texelWorldSize: number) {
 
         // DEBUG UVMapper
-        let uvm = new UvMapper(scene);
+        let uvm = new UvMapper(scene, texelWorldSize);
         
         this._scene = scene;
         this._near = 0.1;
         this._far = 1000;
-        this._texelSize = texelSize;
+        this._texelWorldSize = texelWorldSize;
         this._meshes = meshes;
 
         // PatchRenderer._SceneComponentInitialization(this._scene);
@@ -277,7 +277,7 @@ export class PatchRenderer {
                 7,
                 this._scene,
                 {
-                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST],
+                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST, Texture.NEAREST_NEAREST_MIPNEAREST],
                     types: [Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT],
                     generateMipMaps: true
                 }
@@ -353,7 +353,7 @@ export class PatchRenderer {
 
     public renderToRadiosityTexture(subMesh: SubMesh, patch: Patch, doNotWriteToGathering = false) {
         var mesh = subMesh.getRenderingMesh();
-        var area = this._texelSize * this._texelSize * Math.PI / 8; // TODO : check why /4 diverges
+        var area = this._texelWorldSize * this._texelWorldSize * Math.PI / 8; // TODO : check why /4 diverges
         var mrt: MultiRenderTarget = (<any>mesh).residualTexture;
         var destResidualTexture = mrt.textures[5]._texture as InternalTexture;
         var destGatheringTexture = mrt.textures[6]._texture as InternalTexture;
@@ -452,22 +452,19 @@ export class PatchRenderer {
             shooter = emissiveMeshes[k].subMeshes[0]; // TODO : mesh ? submesh ?
 
             // TODO : factorize code with gatherRadiosity
-            energyShot += this.updatePatches(shooter).energyLeft;
+            let o = this.updatePatches(shooter);
+            energyShot += o.energyLeft;
+            let patches = o.patches;
+
             this.consumeEnergyInTexture(shooter);
 
-            for (let i = 0; i < shooter.radiosityPatches.length; i++) {
-                this._currentPatch = shooter.radiosityPatches[i];
-                this._patchMap.render(false);
-
-                for (let j = 0; j < this._patchedSubMeshes.length; j++) {
-                    if (this._patchedSubMeshes[j] === shooter) {
-                        continue;
-                    }
-
-                    this.renderToRadiosityTexture(this._patchedSubMeshes[j], shooter.radiosityPatches[i], !singlePass);
-                }
-            }
+            this.renderPatches(patches, shooter);
         }
+
+        var engine = this._scene.getEngine();
+        engine.restoreDefaultFramebuffer();
+        engine.setViewport((<Camera>this._scene.activeCamera).viewport);
+        this._isCurrentlyGathering = false;
 
         return {
             hasShot: true,
@@ -540,6 +537,29 @@ export class PatchRenderer {
 
         let shootingDate = Date.now();
 
+        this.renderPatches(patches, shooter);
+
+        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+            duration = Date.now() - shootingDate;
+            console.log(`Shooting radiosity for all patches took ${duration}ms.`);
+            console.log(`Currently shooting ${patches.length * 1000 / duration} patches/s.`);
+            console.log("\n========================")
+            console.log("ENDING RADIOSITY PASS")
+            console.log("========================")
+            duration = Date.now() - dateBegin;
+            console.log(`Total pass took : ${duration / 1000}s.`)
+        }
+
+        var engine = this._scene.getEngine();
+        engine.restoreDefaultFramebuffer();
+        engine.setViewport((<Camera>this._scene.activeCamera).viewport);
+        this._isCurrentlyGathering = false;
+        return true;
+    }
+
+    private renderPatches(patches: Patch[], shooter: SubMesh) {
+        let duration;
+
         for (let i = 0; i < patches.length; i++) {
             this._currentPatch = patches[i];
 
@@ -581,23 +601,6 @@ export class PatchRenderer {
                 console.log(`Total shooting radiosity for ${this._patchedSubMeshes.length} submeshes took ${duration}ms.`);
             }
         }
-
-        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
-            duration = Date.now() - shootingDate;
-            console.log(`Shooting radiosity for all patches took ${duration}ms.`);
-            console.log(`Currently shooting ${patches.length * 1000 / duration} patches/s.`);
-            console.log("\n========================")
-            console.log("ENDING RADIOSITY PASS")
-            console.log("========================")
-            duration = Date.now() - dateBegin;
-            console.log(`Total pass took : ${duration / 1000}s.`)
-        }
-
-        var engine = this._scene.getEngine();
-        engine.restoreDefaultFramebuffer();
-        engine.setViewport((<Camera>this._scene.activeCamera).viewport);
-        this._isCurrentlyGathering = false;
-        return true;
     }
 
     public consumeEnergyInTexture(shooter: SubMesh) {

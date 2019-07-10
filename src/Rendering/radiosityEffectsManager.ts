@@ -130,7 +130,7 @@ export class RadiosityEffectsManager {
 
 	public isShootEffectReady(): boolean {
 		var attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
-		var uniforms = ["view", "shootPos", "shootNormal", "shootEnergy", "shootDArea", "nearFar"]; // ["world", "mBones", "view", "nearFar"]
+		var uniforms = ["view", "shootPos", "shootNormal", "shootEnergy", "shootDArea", "nearFar", "gatheringScale"]; // ["world", "mBones", "view", "nearFar"]
 		var samplers = ["itemBuffer", "worldPosBuffer", "worldNormalBuffer", "idBuffer", "residualBuffer", "gatheringBuffer"];
 		var defines = [];
 		if (this.useDepthCompare) {
