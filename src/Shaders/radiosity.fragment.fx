@@ -5,7 +5,11 @@ layout(location = 0) out vec4 glFragData[2];
 // Attributes
 in vec2 vUV;
 
+#ifdef HEMICUBE
+uniform samplerCube itemBuffer;
+#else
 uniform sampler2D itemBuffer;
+#endif
 uniform sampler2D idBuffer;
 uniform sampler2D worldPosBuffer;
 uniform sampler2D worldNormalBuffer;
@@ -17,6 +21,7 @@ uniform vec3 shootNormal;  // world-space normal of shooter
 uniform vec3 shootEnergy;  // energy from shooter residual texture
 uniform float shootDArea;  // the delta area of the shooter
 uniform float gatheringScale;  // scaling of the value written to gathering texture
+uniform vec2 nearFar;
 
 uniform vec3 recvColor;  // reflectivity
 
@@ -28,21 +33,52 @@ vec3 id;          // ID of receiver
 vec3 worldPos;    // world pos of receiving element
 vec3 worldNormal; // world normal of receiving element
 
-float visible()
+vec3 visible()
 {
-  vec3 proj = normalize((view * vec4(worldPos, 1.0))).xyz;
+  // Look up projected point in hemisphere item buffer
+  vec3 proj = (view * vec4(worldPos, 1.0)).xyz;
+  #ifdef HEMICUBE
+  // proj = normalize(proj);
+  // proj.xyz = proj.zxy;
+  proj.y = -proj.y;
+  #ifdef DEPTH_COMPARE
+  float depthProj = proj.z;
+  float farMinusNear = nearFar.y - nearFar.x;
+
+  // TODO : there is a more efficient way to project depth without this costly operation for each fragment
+  depthProj = (depthProj * (nearFar.y + nearFar.x) - 2.0 * nearFar.y * nearFar.x) / farMinusNear;
+  // depthProj = depthProj * 0.5 + 0.5;
+
+  float depth = texture(itemBuffer, proj).r;
+  return vec3(depthProj - depth <= 1e-6);
+  #else
+  return vec3(texture(itemBuffer, proj).xyz == id);
+  #endif
+  #else
+  #ifdef DEPTH_COMPARE
+  float depthProj = proj.z;
+  proj = normalize(proj);
 
   // Vector is in [-1,1], scale to [0..1] for texture lookup
   proj.xy = proj.xy * 0.5 + 0.5;
-  // proj.x += 0.5 / 4096.0;
-  // proj.y += 0.5 / 4096.0;
-  // Look up projected point in hemisphere item buffer
-  vec3 xtex = texture(itemBuffer, proj.xy).xyz;
 
+  float farMinusNear = nearFar.y - nearFar.x;
+
+  depthProj = (2.0 * depthProj - nearFar.y - nearFar.x) / farMinusNear;
+  depthProj = depthProj * 0.5 + 0.5;
+
+  float depth = texture(itemBuffer, proj.xy).r;
+  return float(depthProj - depth <= 1e-6);
+  #else
   // Compare the value in item buffer to the ID of the fragment
-  // return vec3(xtex.x == id.x && xtex.y == id.y && xtex.z == id.z);
+  proj = normalize(proj);
+
+  // Vector is in [-1,1], scale to [0..1] for texture lookup
+  proj.xy = proj.xy * 0.5 + 0.5;
+  vec3 xtex = texture(itemBuffer, proj.xy).xyz;
   return float(xtex == id);
-  //return xtex;
+  #endif
+  #endif
 }
 
 vec3 formFactorEnergy()
@@ -54,7 +90,7 @@ vec3 formFactorEnergy()
   r = normalize(r);
 
   // the angles of the receiver and the shooter from r
-  float cosi = dot(worldNormal, r);
+  float cosi = max(dot(worldNormal, r), 0.0);
   float cosj = -dot(shootNormal, r);
 
   // compute the disc approximation form factor
@@ -80,6 +116,6 @@ void main(void) {
     worldNormal = texture(worldNormalBuffer, vUV).xyz;
     
     vec3 energy = formFactorEnergy();
-	  glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
+    glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
     glFragData[1] = vec4(energy * gatheringScale + texture(gatheringBuffer, vUV).xyz, worldPos4.a);
 }
