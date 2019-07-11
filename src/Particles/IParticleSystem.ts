@@ -5,7 +5,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
 import { Scene } from "../scene";
-import { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/tools";
+import { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
 
 declare type Animation = import("../Animations/animation").Animation;
 
