@@ -1,5 +1,4 @@
 import { Nullable } from "../types";
-import { Tools } from "./tools";
 
 enum PromiseStates {
     Pending,
@@ -70,7 +69,7 @@ class InternalPromise<T> {
         newPromise._parent = this;
 
         if (this._state !== PromiseStates.Pending) {
-            Tools.SetImmediate(() => {
+            setTimeout(() => {
                 if (this._state === PromiseStates.Fulfilled || this._rejectWasConsumed) {
                     let returnedValue = newPromise._resolve(this._result);
 

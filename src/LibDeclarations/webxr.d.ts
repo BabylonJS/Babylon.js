@@ -40,10 +40,10 @@ interface XRSpace extends EventTarget {
 }
 
 interface XRRenderState {
-    depthNear: number ;
-    depthFar: number ;
-    inlineVerticalFieldOfView: number | undefined;
-    baseLayer: XRWebGLLayer | undefined;
+    depthNear?: number;
+    depthFar?: number;
+    inlineVerticalFieldOfView?: number;
+    baseLayer?: XRWebGLLayer;
 }
 
 interface XRInputSource {
@@ -58,7 +58,7 @@ interface XRInputSource {
 interface XRSession {
     addEventListener: Function;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
-    updateRenderState(XRRenderStateInit: any): Promise<void>;
+    updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
     requestAnimationFrame: Function;
     end(): Promise<void>;
     renderState: XRRenderState;

@@ -9,7 +9,6 @@ import { EngineStore } from "./Engines/engineStore";
 import { _DevTools } from './Misc/devTools';
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { IInspectable } from './Misc/iInspectable';
-import { Tools } from './Misc/tools';
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -830,8 +829,8 @@ export class Node implements IBehaviorAware<Node> {
                 var minBox = boundingBox.minimumWorld;
                 var maxBox = boundingBox.maximumWorld;
 
-                Tools.CheckExtends(minBox, min, max);
-                Tools.CheckExtends(maxBox, min, max);
+                Vector3.CheckExtends(minBox, min, max);
+                Vector3.CheckExtends(maxBox, min, max);
             }
         }
 
