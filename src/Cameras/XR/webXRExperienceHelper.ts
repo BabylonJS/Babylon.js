@@ -123,7 +123,7 @@ export class WebXRExperienceHelper implements IDisposable {
         }).then(() => {
             return outputCanvas.initializeXRLayerAsync(this.sessionManager.session);
         }).then(() => {
-            return this.sessionManager.updateRenderStateAsync({baseLayer: outputCanvas.xrLayer});
+            return this.sessionManager.updateRenderStateAsync({depthFar: this.camera.maxZ, depthNear: this.camera.minZ, baseLayer: outputCanvas.xrLayer!});
         }).then(() => {
             return this.sessionManager.startRenderingToXRAsync();
         }).then(() => {
