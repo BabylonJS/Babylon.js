@@ -1,6 +1,5 @@
 import { TransformNode } from "../Meshes/transformNode";
 import { Vector3 } from "../Maths/math";
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Scene } from "../scene";
 
@@ -18,7 +17,7 @@ export interface INavigationEnginePlugin {
      * @param mesh of all the geometry used to compute the navigation mesh
      * @param parameters bunch of parameters used to filter geometry
      */
-    createMavMesh(mesh: AbstractMesh, parameters: INavMeshParameters): void;
+    createMavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
 
     /**
      * Create a navigation mesh debug mesh
@@ -41,6 +40,14 @@ export interface INavigationEnginePlugin {
      * @returns the closest point to position constrained by the navigation mesh
      */
     getRandomPointAround(position: Vector3, maxRadius: number): Vector3;
+
+    /**
+     * Compute a navigation path from start to end. Returns an empty array if no path can be computed
+     * @param start world position
+     * @param end world position
+     * @returns array containing world position composing the path
+     */
+    computePath(start: Vector3, end: Vector3): Vector3[];
 
     /**
      * If this plugin is supported

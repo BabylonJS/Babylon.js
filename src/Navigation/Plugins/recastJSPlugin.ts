@@ -1,13 +1,13 @@
 import { INavigationEnginePlugin, ICrowd, IAgentParameters, INavMeshParameters } from "../../Navigation/INavigationEngine";
 import { Logger } from "../../Misc/logger";
 import { VertexData } from "../../Meshes/mesh.vertexData";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import { Scene } from "../../scene";
 import { Vector3 } from '../../Maths/math';
 import { TransformNode } from "../../Meshes/transformNode";
 import { Observer } from "../../Misc/observable";
 import { Nullable } from "../../types";
+import { VertexBuffer } from "../../Meshes/buffer";
 
 declare var Recast: any;
 
@@ -52,7 +52,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param mesh of all the geometry used to compute the navigatio mesh
      * @param parameters bunch of parameters used to filter geometry
      */
-    createMavMesh(mesh: AbstractMesh, parameters: INavMeshParameters): void {
+    createMavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void {
         const rc = new this.bjsRECAST.rcConfig();
         rc.cs = parameters.cs;
         rc.ch = parameters.ch;
@@ -69,9 +69,46 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         rc.detailSampleMaxError = parameters.detailSampleMaxError;
 
         this.navMesh = new this.bjsRECAST.NavMesh();
-        const meshIndices = mesh.getIndices();
-        const positions = mesh.getVerticesData('position');
-        this.navMesh.build(positions, mesh.getTotalVertices(), meshIndices, mesh.getTotalIndices(), rc);
+
+        var index: number;
+        var tri: number;
+        var pt: number;
+
+        var indices = [];
+        var positions = [];
+        var offset = 0;
+        for (index = 0; index < meshes.length; index++) {
+            if (meshes[index]) {
+                var mesh = meshes[index];
+
+                const meshIndices = mesh.getIndices();
+                if (!meshIndices) {
+                    continue;
+                }
+                const meshPositions = mesh.getVerticesData(VertexBuffer.PositionKind, false, false);
+                if (!meshPositions) {
+                    continue;
+                }
+
+                const wm = mesh.computeWorldMatrix(false);
+
+                for (tri = 0; tri < meshIndices.length; tri++) {
+                    indices.push(meshIndices[tri] + offset);
+                }
+
+                var transformed = Vector3.Zero();
+                var position = Vector3.Zero();
+                for (pt = 0; pt < meshPositions.length; pt += 3) {
+                    Vector3.FromArrayToRef(meshPositions, pt, position);
+                    Vector3.TransformCoordinatesToRef(position, wm, transformed);
+                    positions.push(transformed.x, transformed.y, transformed.z);
+                }
+                
+                offset += meshPositions.length / 3;
+            }
+        }
+
+        this.navMesh.build(positions, offset, indices, indices.length, rc);
     }
 
     /**
@@ -133,6 +170,28 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         var ret = this.navMesh.getRandomPointAround(p, maxRadius);
         var pr = new Vector3(ret.x, ret.y, ret.z);
         return pr;
+    }
+
+    /**
+     * Compute a navigation path from start to end. Returns an empty array if no path can be computed
+     * @param start world position
+     * @param end world position
+     * @returns array containing world position composing the path
+     */
+    computePath(start: Vector3, end: Vector3): Vector3[]
+    {
+        var pt: number;
+        let startPos = new this.bjsRECAST.Vec3(start.x, start.y, start.z);
+        let endPos = new this.bjsRECAST.Vec3(end.x, end.y, end.z);
+        let navPath = this.navMesh.computePath(startPos, endPos);
+        let pointCount = navPath.getPointCount();
+        var positions = [];
+        for (pt = 0; pt < pointCount; pt++)
+        {
+            let p = navPath.getPoint(pt);
+            positions.push(new Vector3(p.x, p.y, p.z));
+        }
+        return positions;
     }
 
     /**
