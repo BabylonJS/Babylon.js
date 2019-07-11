@@ -13,6 +13,7 @@ import { Constants } from "../Engines/constants";
 import { Tools } from "../Misc/tools";
 import { Tags } from "../Misc/tags";
 import { DataBuffer } from './dataBuffer';
+import { extractMinAndMax } from '../Maths/math.functions';
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
@@ -693,7 +694,7 @@ export class Geometry implements IGetSetVerticesData {
             data = this.getVerticesData(VertexBuffer.PositionKind)!;
         }
 
-        this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
+        this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
     }
 
     private _applyToMesh(mesh: Mesh): void {
