@@ -2560,6 +2560,17 @@ export class Vector3 {
     }
 
     /**
+     * Checks if a given vector is inside a specific range
+     * @param v defines the vector to test
+     * @param min defines the minimum range
+     * @param max defines the maximum range
+     */
+    public static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void {
+        min.minimizeInPlace(v);
+        max.maximizeInPlace(v);
+    }
+
+    /**
      * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
      * @param value1 defines the first control point
      * @param tangent1 defines the first tangent vector

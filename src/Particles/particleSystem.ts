@@ -1,5 +1,6 @@
 import { Nullable } from "../types";
-import { IAnimatable, Tools, FactorGradient, ColorGradient, Color3Gradient } from "../Misc/tools";
+import { IAnimatable } from "../Misc/tools";
+import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
 import { Observable, Observer } from "../Misc/observable";
 import { Color4, Color3, Vector3, Matrix, Tmp, ISize, Vector4 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
@@ -254,7 +255,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 // Color
                 if (this._colorGradients && this._colorGradients.length > 0) {
-                    Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
+                    GradientHelper.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
                         if (currentGradient !== particle._currentColorGradient) {
                             particle._currentColor1.copyFrom(particle._currentColor2);
                             (<ColorGradient>nextGradient).getColorToRef(particle._currentColor2);
@@ -274,7 +275,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 // Angular speed
                 if (this._angularSpeedGradients && this._angularSpeedGradients.length > 0) {
-                    Tools.GetCurrentGradient(ratio, this._angularSpeedGradients, (currentGradient, nextGradient, scale) => {
+                    GradientHelper.GetCurrentGradient(ratio, this._angularSpeedGradients, (currentGradient, nextGradient, scale) => {
                         if (currentGradient !== particle._currentAngularSpeedGradient) {
                             particle._currentAngularSpeed1 = particle._currentAngularSpeed2;
                             particle._currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();
@@ -290,7 +291,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 /// Velocity
                 if (this._velocityGradients && this._velocityGradients.length > 0) {
-                    Tools.GetCurrentGradient(ratio, this._velocityGradients, (currentGradient, nextGradient, scale) => {
+                    GradientHelper.GetCurrentGradient(ratio, this._velocityGradients, (currentGradient, nextGradient, scale) => {
                         if (currentGradient !== particle._currentVelocityGradient) {
                             particle._currentVelocity1 = particle._currentVelocity2;
                             particle._currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
@@ -304,7 +305,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 /// Limit velocity
                 if (this._limitVelocityGradients && this._limitVelocityGradients.length > 0) {
-                    Tools.GetCurrentGradient(ratio, this._limitVelocityGradients, (currentGradient, nextGradient, scale) => {
+                    GradientHelper.GetCurrentGradient(ratio, this._limitVelocityGradients, (currentGradient, nextGradient, scale) => {
                         if (currentGradient !== particle._currentLimitVelocityGradient) {
                             particle._currentLimitVelocity1 = particle._currentLimitVelocity2;
                             particle._currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();
@@ -322,7 +323,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 /// Drag
                 if (this._dragGradients && this._dragGradients.length > 0) {
-                    Tools.GetCurrentGradient(ratio, this._dragGradients, (currentGradient, nextGradient, scale) => {
+                    GradientHelper.GetCurrentGradient(ratio, this._dragGradients, (currentGradient, nextGradient, scale) => {
                         if (currentGradient !== particle._currentDragGradient) {
                             particle._currentDrag1 = particle._currentDrag2;
                             particle._currentDrag2 = (<FactorGradient>nextGradient).getFactor();
@@ -358,7 +359,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 // Size
                 if (this._sizeGradients && this._sizeGradients.length > 0) {
-                    Tools.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
+                    GradientHelper.GetCurrentGradient(ratio, this._sizeGradients, (currentGradient, nextGradient, scale) => {
                         if (currentGradient !== particle._currentSizeGradient) {
                             particle._currentSize1 = particle._currentSize2;
                             particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();
@@ -371,7 +372,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 // Remap data
                 if (this._useRampGradients) {
                     if (this._colorRemapGradients && this._colorRemapGradients.length > 0) {
-                        Tools.GetCurrentGradient(ratio, this._colorRemapGradients, (currentGradient, nextGradient, scale) => {
+                        GradientHelper.GetCurrentGradient(ratio, this._colorRemapGradients, (currentGradient, nextGradient, scale) => {
                             let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
                             let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
 
@@ -381,7 +382,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     }
 
                     if (this._alphaRemapGradients && this._alphaRemapGradients.length > 0) {
-                        Tools.GetCurrentGradient(ratio, this._alphaRemapGradients, (currentGradient, nextGradient, scale) => {
+                        GradientHelper.GetCurrentGradient(ratio, this._alphaRemapGradients, (currentGradient, nextGradient, scale) => {
                             let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
                             let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
 
@@ -737,7 +738,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         for (var x = 0; x < this._rawTextureWidth; x++) {
             var ratio = x / this._rawTextureWidth;
 
-            Tools.GetCurrentGradient(ratio, this._rampGradients, (currentGradient, nextGradient, scale) => {
+            GradientHelper.GetCurrentGradient(ratio, this._rampGradients, (currentGradient, nextGradient, scale) => {
 
                 Color3.LerpToRef((<Color3Gradient>currentGradient).color, (<Color3Gradient>nextGradient).color, scale, tmpColor);
                 data[x * 4] = tmpColor.r * 255;
@@ -1321,7 +1322,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             // Life time
             if (this.targetStopDuration && this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
                 let ratio = Scalar.Clamp(this._actualFrame / this.targetStopDuration);
-                Tools.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient) => {
+                GradientHelper.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient) => {
                     let factorGradient1 = (<FactorGradient>currentGradient);
                     let factorGradient2 = (<FactorGradient>nextGradient);
                     let lifeTime1 = factorGradient1.getFactor();
@@ -1353,7 +1354,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             // Adjust scale by start size
             if (this._startSizeGradients && this._startSizeGradients[0] && this.targetStopDuration) {
                 const ratio = this._actualFrame / this.targetStopDuration;
-                Tools.GetCurrentGradient(ratio, this._startSizeGradients, (currentGradient, nextGradient, scale) => {
+                GradientHelper.GetCurrentGradient(ratio, this._startSizeGradients, (currentGradient, nextGradient, scale) => {
                     if (currentGradient !== this._currentStartSizeGradient) {
                         this._currentStartSize1 = this._currentStartSize2;
                         this._currentStartSize2 = (<FactorGradient>nextGradient).getFactor();
@@ -1615,7 +1616,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
             if (this._emitRateGradients && this._emitRateGradients.length > 0 && this.targetStopDuration) {
                 const ratio = this._actualFrame / this.targetStopDuration;
-                Tools.GetCurrentGradient(ratio, this._emitRateGradients, (currentGradient, nextGradient, scale) => {
+                GradientHelper.GetCurrentGradient(ratio, this._emitRateGradients, (currentGradient, nextGradient, scale) => {
                     if (currentGradient !== this._currentEmitRateGradient) {
                         this._currentEmitRate1 = this._currentEmitRate2;
                         this._currentEmitRate2 = (<FactorGradient>nextGradient).getFactor();

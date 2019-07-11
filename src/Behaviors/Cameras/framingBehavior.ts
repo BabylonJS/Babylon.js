@@ -4,7 +4,6 @@ import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ExponentialEase, EasingFunction } from "../../Animations/easing";
 import { Nullable } from "../../types";
 import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
-import { Tools } from "../../Misc/tools";
 import { PrecisionDate } from "../../Misc/precisionDate";
 import { Observer } from "../../Misc/observable";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -293,8 +292,8 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
 
         for (let i = 0; i < meshes.length; i++) {
             let boundingInfo = meshes[i].getHierarchyBoundingVectors(true);
-            Tools.CheckExtends(boundingInfo.min, min, max);
-            Tools.CheckExtends(boundingInfo.max, min, max);
+            Vector3.CheckExtends(boundingInfo.min, min, max);
+            Vector3.CheckExtends(boundingInfo.max, min, max);
         }
 
         this.zoomOnBoundingInfo(min, max, focusOnOriginXZ, onAnimationEnd);
