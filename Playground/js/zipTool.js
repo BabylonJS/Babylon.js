@@ -1,8 +1,10 @@
 /**
  * This JS file contains the ZIP tools
  */
-class zipTool {
-    constructor() {
+class ZipTool {
+    constructor(parent) {
+        this.parent = parent;
+        
         this.zipCode;
     }
 
@@ -107,7 +109,7 @@ class zipTool {
                 true,
                 function () {
                     this.addTexturesToZip(zip, index + 1, textures, folder, then);
-                });
+                }.bind(this));
         }
         else {
             this.addTexturesToZip(zip, index + 1, textures, folder, then);

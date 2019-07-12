@@ -9,6 +9,9 @@
         top: 40px;
         bottom: 0;
     }
+    #exampleList #exampleBanner h1 img {
+        display: block;
+    }
     .navbarBottom {
         display: none;
     }
@@ -37,6 +40,7 @@
         right: 0;
         width: 40px;
         height: 40px;
+        cursor: pointer;
     }
     #switchWrapper img {
         width: 40px;
@@ -48,12 +52,13 @@
     #JStoTSbar .buttonJStoTS {
         border-top-left-radius: 12px;
     }
-
+    
     .navbar, .navbar .category, #JStoTSbar {
         height: 40px;
         line-height: 40px;
         padding: 0;
         width: 100%;
+        background-color: #201936;
     }
     .navbar .category.right {
         display: none;
@@ -83,7 +88,14 @@
     .navbar.languageJS .select {
         background-color: #3f3461;
     }
+    .navbarlanguageJS .select:active {
+        background-color: #3f3461;
+
+    }
     .navbar.languageTS .select {
+        background-color: #bb464b;
+    }
+    .navbar.languageTS .select:active {
         background-color: #bb464b;
     }
     .navbar .select, .navbar .select img {
@@ -93,7 +105,19 @@
     .navbar .select img {
         filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
     }
+    .navbar .select img:active {
+        filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
+    }
+    .navbar .select img:focus {
+        filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
+    }
     .navbar .select img:hover {
+        filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
+    }
+    .navbar .select:active img {
+        filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
+    }
+    .navbar .select:focus img {
         filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
     }
     .navbar .select:hover img {
@@ -117,11 +141,23 @@
     .navbar .select .toDisplay.languageJS .option:active {
         background-color: #9379e6;
     }
+    .navbar .select .toDisplay.languageJS .option:hover {
+        background-color: #9379e6;
+    }
     .navbar .select .toDisplay.languageTS .option {
         background-color: #bb464b;
     }
     .navbar .select .toDisplay.languageTS .option:active {
         background-color: #e0684b;
+    }
+    .navbar .select .toDisplay.languageTS .option:hover {
+        background-color: #e0684b;
+    }
+    .navbar .select .toDisplay #toTSbuttonMobile {
+        padding-left : 12px;
+    }
+    .navbar .select .toDisplay #toJSbuttonMobile {
+        padding-left : 12px;
     }
     .navbar .select .toDisplay .option {
         padding: 1px;
@@ -165,9 +201,11 @@
         background-color: #e0684b;
     }
     .navbar .select .subSelect .toDisplaySub.languageJS .option {
+        background-color: #9379e6;
         color: white;
     }
     .navbar .select .subSelect .toDisplaySub.languageTS .option {
+        background-color: #e0684b;
         color: white;
     }
 

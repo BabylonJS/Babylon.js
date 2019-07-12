@@ -136,6 +136,7 @@ body {
 }      
 
 #exampleList {
+    z-index: 10;
     display: none;
     position: absolute;
     top: 55px;
@@ -164,6 +165,7 @@ body {
     line-height: 36px;
 }
 #exampleList #exampleBanner h1 img {
+    display: none;
     float: right;
     width: 36px;
     margin-right: 10px;
@@ -278,7 +280,7 @@ body {
     right: 0;
     width: 60px;
     padding: 2px 8px 5px 0px;
-    z-index:10;
+    z-index: 4;
     background-color: #3f3461;
     color:white;
     font-size: 18px;
@@ -427,17 +429,30 @@ body {
     text-transform: uppercase;
     background-color: #201936;
 }
+.navbar .select .toDisplay .option {
+    font-size: 20px;
+    height: 35px;
+    line-height: 35px;
+    padding: 1px 5px 1px 15px;
+    text-align: left;
+}
 .navbar .select .toDisplay.languageJS {
     background-color: #3f3461;
 }
 .navbar .select .toDisplay.languageJS .option {
     background-color: #9379e6;
 }
+.navbar .select .toDisplay.languageJS .option:hover {
+    background-color: #bfabff;
+}
 .navbar .select .toDisplay.languageTS {
     background-color: #bb464b;
 }
 .navbar .select .toDisplay.languageTS .option {
     background-color: #e0684b;
+}
+.navbar .select .toDisplay.languageTS .option:hover {
+    background-color: #ff7656;
 }
 .navbar .select .toDisplay.currentVersionDisplay {
     width: auto;
@@ -477,22 +492,6 @@ body {
     background-color: #ff7656;
 }
 
-.navbar .select .toDisplay .option {
-    font-size: 20px;
-    height: 35px;
-    line-height: 35px;
-    padding: 1px 5px 1px 15px;
-    text-align: left;
-}
-
-.navbar .select .toDisplay .option.light {
-    background-color: white;
-    color: #E0684B;
-}
-.navbar .select .toDisplay .option.light:hover {
-    cursor: pointer;
-    background-color: #d9d9d9;
-}
 
 .navbar .select .toDisplayBig.dark {
     background-color: #333;    

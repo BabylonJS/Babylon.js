@@ -2,17 +2,17 @@
  * This JS file contains utils functions
  */
 class Utils {
-    constructor() {
+    constructor(parent) {
+        this.parent = parent;
+        
         this.multipleSize = [1280, 1024, 'Mobile'];
     }
 
-    // TO DO - Comment this
+    // TO DO - Comment this correctly
     markDirty() {
-        if (monacoCreator.BlockEditorChange) return;
+        if (this.parent.monacoCreator.BlockEditorChange) return;
 
-        // setToMultipleID("currentScript", "innerHTML", "Custom");
-        this.setToMultipleID("safemodeToggle", "addClass", "checked");
-        // setToMultipleID("minimapToggle", "addClass", "checked"); // Why ?!
+        this.setToMultipleID("safemodeToggle", "addClass", "checked");!
         this.setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
     };
 
@@ -75,5 +75,14 @@ class Utils {
                 document.getElementById(id + size).style.display = param;
             }
         });
+    };
+
+    /**
+     * Function to get the current screen size
+     */
+    getCurrentSize() {
+        for(var i = 0; i < this.multipleSize.length; i++) {
+            if(document.getElementById("menuButton" + this.multipleSize[i]).offsetHeight > 0) return this.multipleSize[i];
+        }
     };
 }

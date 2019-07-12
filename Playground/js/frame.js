@@ -1,5 +1,7 @@
 ﻿import { utils } from "mocha";
 
+// TO DO - Rewrite frame.js to work with the new class architecture.
+
 (function() {
     var snippetUrl = "https://snippet.babylonjs.com";
     var currentSnippetToken;
@@ -8,7 +10,7 @@
     var refreshAnchor = document.getElementById("refresh");
     var editAnchor = document.getElementById("edit");
     var scripts;
-    var zipCode; // TO DO - Rewrite frame.js with classes ... And zipTool.js
+    var zipCode;
 
     if (location.href.toLowerCase().indexOf("noui") > -1) {
         fpsLabel.style.visibility = "hidden";

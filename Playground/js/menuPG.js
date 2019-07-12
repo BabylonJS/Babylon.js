@@ -2,7 +2,9 @@
  * This JS file is for UI displaying
  */
 class MenuPG {
-    constructor() {
+    constructor(parent) {
+        this.parent = parent;
+
         this.allSelect = document.querySelectorAll('.select');
         this.allToDisplay = document.querySelectorAll('.toDisplay');
         this.allToDisplayBig = document.querySelectorAll('.toDisplayBig');
@@ -12,6 +14,7 @@ class MenuPG {
 
         this.jsEditorElement = document.getElementById('jsEditor');
         this.canvasZoneElement = document.getElementById('canvasZone');
+        this.switchWrapper = document.getElementById('switchWrapper');
         this.switchWrapperCode = document.getElementById('switchWrapperCode');
         this.switchWrapperCanvas = document.getElementById('switchWrapperCanvas');
         this.fpsLabelElement = document.getElementById('fpsLabel');
@@ -30,17 +33,6 @@ class MenuPG {
                 this.resizeSplitted();
             }
         }.bind(this);
-
-        // Click on BJS logo redirection to BJS homepage
-        let logos = document.getElementsByClassName('logo');
-        for (var i = 0; i < logos.length; i++) {
-            logos[i].addEventListener('click', function () {
-                window.open("https://babylonjs.com", "_target");
-            });
-        }
-
-        // On click anywhere, remove displayed options
-        window.addEventListener('click', this.removeallOptions);
 
         // In mobile mode, resize JSEditor and canvas
         this.switchWrapperCode.addEventListener('click', this.resizeBigJsEditor.bind(this));
@@ -79,8 +71,23 @@ class MenuPG {
             else this.exitFullPage();
         }.bind(this), false);
 
+        // Click on BJS logo redirection to BJS homepage
+        let logos = document.getElementsByClassName('logo');
+        for (var i = 0; i < logos.length; i++) {
+            logos[i].addEventListener('click', function () {
+                window.open("https://babylonjs.com", "_target");
+            });
+        }
+
         // Message before unload
-        window.onbeforeunload = this.exitPrompt;
+        window.addEventListener('beforeunload', function () {
+            this.exitPrompt();
+        }.bind(this));
+
+        // On click anywhere, remove displayed options
+        window.addEventListener('click', function () {
+            this.removeAllOptions();
+        }.bind(this));
     }
 
     /**
@@ -175,6 +182,7 @@ class MenuPG {
      * Remove displayed options
      */
     removeAllOptions() {
+        this.parent.examples.hideExamples();
         this.removeAllSubItems();
 
         for (var index = 0; index < this.allToDisplay.length; index++) {
@@ -198,6 +206,8 @@ class MenuPG {
         if (this.navBarMobile.offsetHeight > 0) {
             this.removeAllOptions();
             this.canvasZoneElement.style.width = '0';
+            this.switchWrapper.style.left = "";
+            this.switchWrapper.style.right = "0";
             this.switchWrapperCode.style.display = 'none';
             this.fpsLabelElement.style.display = 'none';
             this.jsEditorElement.style.width = '100%';
@@ -217,6 +227,8 @@ class MenuPG {
             document.getElementsByClassName('gutter-horizontal')[0].style.display = 'none';
             this.switchWrapperCanvas.style.display = 'none';
             this.canvasZoneElement.style.width = '100%';
+            this.switchWrapper.style.left = "0";
+            this.switchWrapper.style.right = "";
             this.switchWrapperCode.style.display = 'block';
             this.fpsLabelElement.style.display = 'block';
         }
@@ -238,7 +250,7 @@ class MenuPG {
     /**
      * Canvas full page
      */
-    goFullPage () {
+    goFullPage() {
         var canvasElement = document.getElementById("renderCanvas");
         canvasElement.style.position = "absolute";
         canvasElement.style.top = 0;
@@ -248,20 +260,20 @@ class MenuPG {
     /**
      * Canvas exit full page
      */
-    exitFullPage () {
+    exitFullPage() {
         document.getElementById("renderCanvas").style.position = "relative";
         document.getElementById("renderCanvas").style.zIndex = 0;
     };
     /**
      * Canvas full screen
      */
-    goFullscreen (engine) {
+    goFullscreen(engine) {
         engine.switchFullscreen(true);
     };
     /**
      * Editor full screen
      */
-    editorGoFullscreen () {
+    editorGoFullscreen() {
         var editorDiv = document.getElementById("jsEditor");
         if (editorDiv.requestFullscreen) {
             editorDiv.requestFullscreen();
@@ -276,7 +288,8 @@ class MenuPG {
     /**
      * Display the metadatas form
      */
-    displayMetadata () {
+    displayMetadata() {
+        this.removeAllOptions();
         document.getElementById("saveLayer").style.display = "block";
     };
 
@@ -284,7 +297,8 @@ class MenuPG {
      * Navigation Overwrites
      */
     // TO DO - Apply this when click on TS / JS button
-    exitPrompt (e) {
+    // TO DO - Make it work with all sizes
+    exitPrompt(e) {
         var safeToggle = document.getElementById("safemodeToggle1280");
         if (safeToggle.classList.contains('checked')) {
             e = e || window.event;
@@ -294,6 +308,26 @@ class MenuPG {
                 e.returnValue = message;
             }
             return message;
+        }
+    };
+
+    // TO DO - Make it work with all sizes
+    showQRCode() {
+        console.log("Plop");
+        $("#qrCodeImage1280").empty();
+        var playgroundCode = window.location.href.split("#");
+        playgroundCode.shift();
+        $("#qrCodeImage1280").qrcode({ text: "https://playground.babylonjs.com/frame.html#" + (playgroundCode.join("#")) });
+    };
+
+    /**
+     * Comes from "pbt.js"
+     */
+    // TO DO - Comment this correctly
+    showBJSPGMenu() {
+        var headings = document.getElementsByClassName('category');
+        for (var i = 0; i < headings.length; i++) {
+            headings[i].style.visibility = 'visible';
         }
     };
 };
