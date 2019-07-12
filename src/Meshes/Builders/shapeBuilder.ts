@@ -1,8 +1,9 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Vector3, Tmp, Vector4, Path3D, Matrix } from "../../Maths/math";
+import { Vector3, Tmp, Vector4, Matrix } from "../../Maths/math";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { RibbonBuilder } from "./ribbonBuilder";
+import { Path3D } from '../../Maths/math.path';
 
 Mesh.ExtrudeShape = (name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
     var options = {

@@ -6,7 +6,7 @@ import { Tags } from "../Misc/tags";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Quaternion, Matrix, Vector3, Vector2, Plane, Vector4, Path3D } from "../Maths/math";
+import { Quaternion, Matrix, Vector3, Vector2, Plane, Vector4 } from "../Maths/math";
 import { Color3, Color4 } from '../Maths/math.color';
 import { Engine } from "../Engines/engine";
 import { Node } from "../node";
@@ -31,6 +31,7 @@ import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
 import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from './meshLODLevel';
+import { Path3D } from '../Maths/math.path';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
