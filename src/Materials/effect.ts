@@ -382,8 +382,8 @@ export class Effect implements IDisposable {
 
     private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any) {
         if (baseName) {
-            var vertex = baseName.vertexElement || baseName.vertex || baseName;
-            var fragment = baseName.fragmentElement || baseName.fragment || baseName;
+            var vertex = baseName.vertexElement || baseName.vertex || baseName.spectorName || baseName;
+            var fragment = baseName.fragmentElement || baseName.fragment || baseName.spectorName || baseName;
 
             this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
             this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
