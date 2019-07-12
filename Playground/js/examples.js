@@ -2,7 +2,9 @@
  * This JS file is for examples list and actions linked to examples.
  */
 class Examples {
-    constructor() {
+    constructor(parent) {
+        this.parent = parent;
+
         this.isExamplesDisplayed = false;
 
         // There's a "close" button on the mobile interface.

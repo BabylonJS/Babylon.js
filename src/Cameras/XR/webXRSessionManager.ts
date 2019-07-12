@@ -102,7 +102,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param state state to set
      * @returns a promise that resolves once the render state has been updated
      */
-    public updateRenderStateAsync(state: any) {
+    public updateRenderStateAsync(state: XRRenderState) {
         if (state.baseLayer) {
             this.baseLayer = state.baseLayer;
         }

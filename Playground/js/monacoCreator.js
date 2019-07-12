@@ -2,14 +2,14 @@
  * This JS file is for Monaco management
  */
 class MonacoCreator {
-    constructor() {
+    constructor(parent) {
+        this.parent = parent;
+        
         this.jsEditor = null;
         this.monacoMode = "javascript";
         this.blockEditorChange = false;
 
         this.compilerTriggerTimeoutID = null;
-
-        this.loadMonaco();
     }
 
     // ACCESSORS
@@ -56,11 +56,11 @@ class MonacoCreator {
                             monaco.languages.typescript.typescriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
                         }
 
-                        run();
-                    });
+                        this.parent.main.run();
+                    }.bind(this));
                 }
             }
-        };
+        }.bind(this);
         xhr.send(null);
     };
 
@@ -84,7 +84,7 @@ class MonacoCreator {
             automaticLayout: true,
             scrollBeyondLastLine: false,
             readOnly: false,
-            theme: settingsPG.vsTheme,
+            theme: this.parent.settingsPG.vsTheme,
             contextmenu: false,
             folding: true,
             showFoldingControls: "always",
@@ -97,8 +97,8 @@ class MonacoCreator {
         this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
         this.jsEditor.setValue(oldCode);
         this.jsEditor.onKeyUp(function () {
-            utils.markDirty();
-        });
+            this.parent.utils.markDirty();
+        }.bind(this));
     };
 
     /**
@@ -115,10 +115,10 @@ class MonacoCreator {
         var minimapToggle = document.getElementById("minimapToggle1280");
         if (minimapToggle.classList.contains('checked')) {
             this.jsEditor.updateOptions({ minimap: { enabled: false } });
-            utils.setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-square" aria-hidden="true"></i>');
+            this.parent.utils.setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-square" aria-hidden="true"></i>');
         } else {
             this.jsEditor.updateOptions({ minimap: { enabled: true } });
-            utils.setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-check-square" aria-hidden="true"></i>');
+            this.parent.utils.setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
         minimapToggle.classList.toggle('checked');
     };
@@ -128,9 +128,9 @@ class MonacoCreator {
      * @param {Function} callBack : Function that will be called after retrieving the code.
      */
     getRunCode(callBack) {
-        if (settingsPG.ScriptLanguage == "JS")
+        if (this.parent.settingsPG.ScriptLanguage == "JS")
             callBack(this.jsEditor.getValue());
-        else if (settingsPG.ScriptLanguage == "TS") {
+        else if (this.parent.settingsPG.ScriptLanguage == "TS") {
             this.triggerCompile(this.JsEditor.getValue(), function (result) {
                 callBack(result + "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }")
             });
@@ -161,7 +161,7 @@ class MonacoCreator {
                 }
             }
             catch (e) {
-                utils.showError(e.message, e);
+                this.parent.utils.showError(e.message, e);
             }
         }.bind(this), 100);
     };

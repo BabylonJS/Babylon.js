@@ -1,6 +1,5 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
 import { Observer, Observable } from "../Misc/observable";
-import { Tools } from "../Misc/tools";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
@@ -326,8 +325,8 @@ export class HighlightLayer extends EffectLayer {
     protected _createTextureAndPostProcesses(): void {
         var blurTextureWidth = this._mainTextureDesiredSize.width * this._options.blurTextureSizeRatio;
         var blurTextureHeight = this._mainTextureDesiredSize.height * this._options.blurTextureSizeRatio;
-        blurTextureWidth = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
-        blurTextureHeight = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
+        blurTextureWidth = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
+        blurTextureHeight = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
         var textureType = 0;
         if (this._engine.getCaps().textureHalfFloatRender) {
