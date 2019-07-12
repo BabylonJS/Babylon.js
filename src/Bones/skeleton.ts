@@ -1,7 +1,7 @@
 import { Bone } from "./bone";
 
 import { Observable } from "../Misc/observable";
-import { Vector3, Matrix, Tmp } from "../Maths/math";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -476,8 +476,8 @@ export class Skeleton implements IAnimatable {
 
                         if (!bone.getParent()) {
                             var matrix = bone.getBaseMatrix();
-                            matrix.multiplyToRef(poseMatrix, Tmp.Matrix[1]);
-                            bone._updateDifferenceMatrix(Tmp.Matrix[1]);
+                            matrix.multiplyToRef(poseMatrix, TmpVectors.Matrix[1]);
+                            bone._updateDifferenceMatrix(TmpVectors.Matrix[1]);
                         }
                     }
 

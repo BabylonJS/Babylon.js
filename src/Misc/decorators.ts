@@ -1,6 +1,6 @@
 import { Tags } from "../Misc/tags";
 import { Nullable } from "../types";
-import { Quaternion, Vector2, Vector3, Matrix } from "../Maths/math";
+import { Quaternion, Vector2, Vector3, Matrix } from "../Maths/math.vector";
 import { _DevTools } from './devTools';
 import { IAnimatable } from '../Animations/animatable.interface';
 import { Color4, Color3 } from '../Maths/math.color';

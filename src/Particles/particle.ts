@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Vector2, Vector3, Tmp, Vector4 } from "../Maths/math";
+import { Vector2, Vector3, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Color4 } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -190,17 +190,17 @@ export class Particle {
             var emitterMesh = (<AbstractMesh>subEmitter.particleSystem.emitter);
             emitterMesh.position.copyFrom(this.position);
             if (subEmitter.inheritDirection) {
-                emitterMesh.position.subtractToRef(this.direction, Tmp.Vector3[0]);
+                emitterMesh.position.subtractToRef(this.direction, TmpVectors.Vector3[0]);
                 // Look at using Y as forward
-                emitterMesh.lookAt(Tmp.Vector3[0], 0, Math.PI / 2);
+                emitterMesh.lookAt(TmpVectors.Vector3[0], 0, Math.PI / 2);
             }
         } else {
             var emitterPosition = (<Vector3>subEmitter.particleSystem.emitter);
             emitterPosition.copyFrom(this.position);
         }
         // Set inheritedVelocityOffset to be used when new particles are created
-        this.direction.scaleToRef(subEmitter.inheritedVelocityAmount / 2, Tmp.Vector3[0]);
-        subEmitter.particleSystem._inheritedVelocityOffset.copyFrom(Tmp.Vector3[0]);
+        this.direction.scaleToRef(subEmitter.inheritedVelocityAmount / 2, TmpVectors.Vector3[0]);
+        subEmitter.particleSystem._inheritedVelocityOffset.copyFrom(TmpVectors.Vector3[0]);
     }
 
     /** @hidden */

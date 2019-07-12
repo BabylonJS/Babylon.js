@@ -3,7 +3,7 @@ import { PointerInfoPre, PointerInfo, PointerEventTypes } from '../Events/pointe
 import { Nullable } from '../types';
 import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { PickingInfo } from '../Collisions/pickingInfo';
-import { Vector2, Matrix } from '../Maths/math';
+import { Vector2, Matrix } from '../Maths/math.vector';
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Constants } from '../Engines/constants';
 import { ActionEvent } from '../Actions/actionEvent';

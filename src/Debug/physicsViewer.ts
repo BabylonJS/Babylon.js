@@ -4,7 +4,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
-import { Quaternion, Vector3 } from "../Maths/math";
+import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";

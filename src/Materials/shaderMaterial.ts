@@ -1,6 +1,6 @@
 import { SerializationHelper } from "../Misc/decorators";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math";
+import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { BaseSubMesh } from "../Meshes/subMesh";

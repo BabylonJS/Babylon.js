@@ -1,6 +1,6 @@
 import { Logger } from "../../../Misc/logger";
 import { Scene } from "../../../scene";
-import { Vector3, Vector2 } from "../../../Maths/math";
+import { Vector3, Vector2 } from "../../../Maths/math.vector";
 import { Color4, Color3 } from '../../../Maths/math.color';
 import { _TimeToken } from "../../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";

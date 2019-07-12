@@ -1,4 +1,4 @@
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 
 /**
  * Holds the data for the raycast result

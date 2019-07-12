@@ -1,6 +1,7 @@
 import { Nullable } from "babylonjs/types";
 import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Color3, Matrix } from "babylonjs/Maths/math";
+import { Matrix } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { Tags } from "babylonjs/Misc/tags";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";

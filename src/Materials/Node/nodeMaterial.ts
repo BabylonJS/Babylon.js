@@ -2,7 +2,7 @@ import { NodeMaterialBlock } from './nodeMaterialBlock';
 import { PushMaterial } from '../pushMaterial';
 import { Scene } from '../../scene';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { Matrix } from '../../Maths/math';
+import { Matrix } from '../../Maths/math.vector';
 import { Color4 } from '../../Maths/math.color';
 import { Mesh } from '../../Meshes/mesh';
 import { Engine } from '../../Engines/engine';

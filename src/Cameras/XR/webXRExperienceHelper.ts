@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { IDisposable, Scene } from "../../scene";
-import { Quaternion, Vector3 } from "../../Maths/math";
+import { Quaternion, Vector3 } from "../../Maths/math.vector";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Camera } from "../../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
@@ -123,7 +123,7 @@ export class WebXRExperienceHelper implements IDisposable {
         }).then(() => {
             return outputCanvas.initializeXRLayerAsync(this.sessionManager.session);
         }).then(() => {
-            return this.sessionManager.updateRenderStateAsync({depthFar: this.camera.maxZ, depthNear: this.camera.minZ, baseLayer: outputCanvas.xrLayer!});
+            return this.sessionManager.updateRenderStateAsync({ depthFar: this.camera.maxZ, depthNear: this.camera.minZ, baseLayer: outputCanvas.xrLayer! });
         }).then(() => {
             return this.sessionManager.startRenderingToXRAsync();
         }).then(() => {

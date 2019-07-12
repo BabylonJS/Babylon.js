@@ -1,6 +1,6 @@
 import { Scene } from "./scene";
 import { Nullable } from "./types";
-import { Matrix, Vector3 } from "./Maths/math";
+import { Matrix, Vector3 } from "./Maths/math.vector";
 import { Engine } from "./Engines/engine";
 import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";

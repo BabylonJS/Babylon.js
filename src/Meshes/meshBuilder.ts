@@ -18,7 +18,7 @@ import { PolyhedronBuilder } from "./Builders/polyhedronBuilder";
 import { IcoSphereBuilder } from "./Builders/icoSphereBuilder";
 import { DecalBuilder } from "./Builders/decalBuilder";
 
-import { Vector4, Vector3, Vector2, Plane } from "../Maths/math";
+import { Vector4, Vector3, Vector2 } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Mesh } from "./mesh";
@@ -26,6 +26,7 @@ import { LinesMesh } from "./linesMesh";
 import { GroundMesh } from "./groundMesh";
 import { AbstractMesh } from "./abstractMesh";
 import { Color4, Color3 } from '../Maths/math.color';
+import { Plane } from '../Maths/math.plane';
 
 declare var earcut: any;
 

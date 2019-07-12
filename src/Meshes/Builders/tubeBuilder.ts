@@ -1,6 +1,6 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Vector3, Tmp, Vector4, Matrix } from "../../Maths/math";
+import { Vector3, TmpVectors, Vector4, Matrix } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { RibbonBuilder } from "./ribbonBuilder";
 import { Path3D } from '../../Maths/math.path';
@@ -80,7 +80,7 @@ export class TubeBuilder {
             var rad: number;
             var normal: Vector3;
             var rotated: Vector3;
-            var rotationMatrix: Matrix = Tmp.Matrix[0];
+            var rotationMatrix: Matrix = TmpVectors.Matrix[0];
             var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 2;
             for (var i = 0; i < path.length; i++) {
                 rad = radiusFunctionFinal(i, distances[i]); // current radius

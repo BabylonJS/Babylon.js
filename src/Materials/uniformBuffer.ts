@@ -1,6 +1,6 @@
 import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray } from "../types";
-import { Matrix, Vector3, Vector4 } from "../Maths/math";
+import { Matrix, Vector3, Vector4 } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
 import { Effect } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";

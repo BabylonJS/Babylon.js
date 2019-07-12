@@ -2,7 +2,7 @@ import { serialize, SerializationHelper } from "../../Misc/decorators";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Plane } from "../../Maths/math";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { _AlphaState } from "../../States/index";
@@ -12,6 +12,7 @@ import { IInspectable } from '../../Misc/iInspectable';
 import { Engine } from '../../Engines/engine';
 import { TimingTools } from '../../Misc/timingTools';
 import { InstantiationTools } from '../../Misc/instantiationTools';
+import { Plane } from '../../Maths/math.plane';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;

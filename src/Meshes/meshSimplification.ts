@@ -1,5 +1,5 @@
 import { IndicesArray } from "../types";
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";

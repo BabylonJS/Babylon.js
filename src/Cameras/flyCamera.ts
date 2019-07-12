@@ -1,7 +1,7 @@
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Vector3, Quaternion } from "../Maths/math";
+import { Vector3, Quaternion } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TargetCamera } from "./targetCamera";

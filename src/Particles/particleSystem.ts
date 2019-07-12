@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
 import { Observable, Observer } from "../Misc/observable";
-import { Vector3, Matrix, Tmp, Vector4 } from "../Maths/math";
+import { Vector3, Matrix, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Buffer } from "../Meshes/buffer";
@@ -29,7 +29,7 @@ import { IAnimatable } from '../Animations/animatable.interface';
 import "../Shaders/particles.fragment";
 import "../Shaders/particles.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
-import { Color4, Color3 } from '../Maths/math.color';
+import { Color4, Color3, TmpColors } from '../Maths/math.color';
 import { ISize } from '../Maths/math.size';
 
 /**
@@ -346,8 +346,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     let fetchedColorG = this._fetchR(particle._randomNoiseCoordinates1.z, particle._randomNoiseCoordinates2.x, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
                     let fetchedColorB = this._fetchR(particle._randomNoiseCoordinates2.y, particle._randomNoiseCoordinates2.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
 
-                    let force = Tmp.Vector3[0];
-                    let scaledForce = Tmp.Vector3[1];
+                    let force = TmpVectors.Vector3[0];
+                    let scaledForce = TmpVectors.Vector3[1];
 
                     force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.y, (2 * fetchedColorB - 1) * this.noiseStrength.z);
 
@@ -735,7 +735,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         let data = new Uint8Array(this._rawTextureWidth * 4);
-        let tmpColor = Tmp.Color3[0];
+        let tmpColor = TmpColors.Color3[0];
 
         for (var x = 0; x < this._rawTextureWidth; x++) {
             var ratio = x / this._rawTextureWidth;

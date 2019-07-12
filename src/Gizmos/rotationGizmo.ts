@@ -1,7 +1,7 @@
 import { Logger } from "../Misc/logger";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";

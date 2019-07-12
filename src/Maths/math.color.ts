@@ -1,6 +1,7 @@
 import { DeepImmutable, FloatArray } from '../types';
 import { Scalar } from './math.scalar';
 import { ToLinearSpace, ToGammaSpace } from './math.constants';
+import { ArrayTools } from '../Misc/arrayTools';
 
 /**
  * Class used to hold a RBG color
@@ -980,4 +981,12 @@ export class Color4 {
 
         return colors;
     }
+}
+
+/**
+ * @hidden
+ */
+export class TmpColors {
+    public static Color3: Color3[] = ArrayTools.BuildArray(3, Color3.Black);
+    public static Color4: Color4[] = ArrayTools.BuildArray(3, () => new Color4(0, 0, 0, 0));
 }

@@ -1,4 +1,4 @@
-import { Matrix } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";

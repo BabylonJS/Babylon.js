@@ -1,7 +1,7 @@
 import { SmartArray } from "../../Misc/smartArray";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Vector2 } from "../../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { VertexBuffer } from "../../Meshes/buffer";
 import { SubMesh } from "../../Meshes/subMesh";

@@ -4,7 +4,7 @@ import { Condition } from "./condition";
 import { Logger } from "../Misc/logger";
 import { Observable } from "../Misc/observable";
 import { Color3 } from "../Maths/math.color";
-import { Vector3, Matrix, Quaternion } from "../Maths/math";
+import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
 import { Animation } from "../Animations/animation";
 import { _TypeStore } from '../Misc/typeStore';
 

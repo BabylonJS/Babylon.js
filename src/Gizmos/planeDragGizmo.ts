@@ -1,7 +1,7 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
-import { Vector3, Matrix } from "../Maths/math";
+import { Vector3, Matrix } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";

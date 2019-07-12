@@ -6,7 +6,7 @@ import { PickingInfo } from "../Collisions/pickingInfo";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { EngineStore } from "../Engines/engineStore";
 import { HemisphericLight } from '../Lights/hemisphericLight';
-import { Vector3 } from '../Maths/math';
+import { Vector3 } from '../Maths/math.vector';
 import { Camera } from '../Cameras/camera';
 import { Color3 } from '../Maths/math.color';
 

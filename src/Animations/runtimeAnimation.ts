@@ -1,5 +1,5 @@
 import { DeepImmutable, Nullable } from "../types";
-import { Quaternion, Vector3, Vector2, Matrix } from "../Maths/math";
+import { Quaternion, Vector3, Vector2, Matrix } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { Animation, _IAnimationState } from "./animation";
 import { AnimationEvent } from "./animationEvent";

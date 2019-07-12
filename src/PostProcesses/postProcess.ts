@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { SmartArray } from "../Misc/smartArray";
 import { Observable, Observer } from "../Misc/observable";
-import { Vector2 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";

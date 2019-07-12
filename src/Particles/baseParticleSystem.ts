@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Vector2, Vector3 } from "../Maths/math";
+import { Vector2, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ImageProcessingConfiguration, ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
 import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";

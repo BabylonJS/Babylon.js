@@ -1,5 +1,5 @@
 import { Camera } from "../camera";
-import { Matrix } from "../../Maths/math";
+import { Matrix } from "../../Maths/math.vector";
 import { Viewport } from '../../Maths/math.viewport';
 
 Camera._setWebVRRigMode = function(camera: Camera, rigParams: any) {

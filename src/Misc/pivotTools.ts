@@ -1,4 +1,4 @@
-import { Vector3, Matrix } from '../Maths/math';
+import { Vector3, Matrix } from '../Maths/math.vector';
 import { AbstractMesh } from '../Meshes/abstractMesh';
 
 /**

@@ -3,7 +3,7 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
-import { Matrix } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
 import { SmartArray } from "../Misc/smartArray";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";

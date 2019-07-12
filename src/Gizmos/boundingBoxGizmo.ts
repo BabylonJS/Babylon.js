@@ -3,7 +3,7 @@ import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
 import { Scene } from "../scene";
-import { Quaternion, Matrix, Vector3 } from "../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";

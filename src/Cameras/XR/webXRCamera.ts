@@ -1,4 +1,4 @@
-import { Vector3, Matrix, Quaternion } from "../../Maths/math";
+import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
 import { Scene } from "../../scene";
 import { Camera } from "../../Cameras/camera";
 import { FreeCamera } from "../../Cameras/freeCamera";

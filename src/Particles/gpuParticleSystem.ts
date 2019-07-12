@@ -1,8 +1,8 @@
 import { Nullable, float } from "../types";
 import { FactorGradient, ColorGradient, Color3Gradient, IValueGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
-import { Vector3, Matrix, Tmp } from "../Maths/math";
-import { Color4, Color3 } from '../Maths/math.color';
+import { Vector3, Matrix } from "../Maths/math.vector";
+import { Color4, Color3, TmpColors } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Buffer } from "../Meshes/buffer";
@@ -1141,7 +1141,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         let data = new Uint8Array(this._rawTextureWidth * 4);
-        let tmpColor = Tmp.Color4[0];
+        let tmpColor = TmpColors.Color4[0];
 
         for (var x = 0; x < this._rawTextureWidth; x++) {
             var ratio = x / this._rawTextureWidth;

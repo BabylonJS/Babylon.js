@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Vector2, Vector3 } from "../Maths/math";
+import { Vector2, Vector3 } from "../Maths/math.vector";
 import { Color3, Color4 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";

@@ -2,7 +2,7 @@ import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Vector2 } from "../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";

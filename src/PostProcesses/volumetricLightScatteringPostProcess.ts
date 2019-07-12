@@ -1,7 +1,7 @@
 import { serializeAsVector3, serialize, serializeAsMeshReference } from "../Misc/decorators";
 import { SmartArray } from "../Misc/smartArray";
 import { Logger } from "../Misc/logger";
-import { Vector2, Vector3, Matrix } from "../Maths/math";
+import { Vector2, Vector3, Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { SubMesh } from "../Meshes/subMesh";

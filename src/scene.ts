@@ -6,7 +6,7 @@ import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { Plane, Vector2, Vector3, Matrix, Frustum } from "./Maths/math";
+import { Vector2, Vector3, Matrix } from "./Maths/math.vector";
 import { Geometry } from "./Meshes/geometry";
 import { TransformNode } from "./Meshes/transformNode";
 import { SubMesh } from "./Meshes/subMesh";
@@ -51,6 +51,8 @@ import { InputManager } from './Inputs/scene.inputManager';
 import { PerfCounter } from './Misc/perfCounter';
 import { IFileRequest } from './Misc/fileRequest';
 import { Color4, Color3 } from './Maths/math.color';
+import { Plane } from './Maths/math.plane';
+import { Frustum } from './Maths/math.frustum';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;

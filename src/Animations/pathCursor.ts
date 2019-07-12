@@ -1,4 +1,4 @@
-import { Vector3 } from '../Maths/math';
+import { Vector3 } from '../Maths/math.vector';
 import { Path2 } from '../Maths/math.path';
 
 /**
