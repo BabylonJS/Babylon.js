@@ -1,7 +1,9 @@
 import { IndicesArray, Nullable } from "babylonjs/types";
 import { Deferred } from "babylonjs/Misc/deferred";
 import { Quaternion, Color3, Vector3, Matrix } from "babylonjs/Maths/math";
-import { LoadFileError, IFileRequest, IAnimatable, Tools } from "babylonjs/Misc/tools";
+import { IAnimatable, Tools } from "babylonjs/Misc/tools";
+import { IFileRequest } from "babylonjs/Misc/fileRequest";
+import { LoadFileError } from "babylonjs/Misc/loadFileError";
 import { Camera } from "babylonjs/Cameras/camera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
@@ -1555,12 +1557,14 @@ export class GLTFLoader implements IGLTFLoader {
 
             if (properties.baseColorTexture) {
                 promises.push(this.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Base Color)`;
                     babylonMaterial.albedoTexture = texture;
                 }));
             }
 
             if (properties.metallicRoughnessTexture) {
                 promises.push(this.loadTextureInfoAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Metallic Roughness)`;
                     babylonMaterial.metallicTexture = texture;
                 }));
 
@@ -1697,6 +1701,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (material.normalTexture) {
             promises.push(this.loadTextureInfoAsync(`${context}/normalTexture`, material.normalTexture, (texture) => {
+                texture.name = `${babylonMaterial.name} (Normal)`;
                 babylonMaterial.bumpTexture = texture;
             }));
 
@@ -1711,6 +1716,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (material.occlusionTexture) {
             promises.push(this.loadTextureInfoAsync(`${context}/occlusionTexture`, material.occlusionTexture, (texture) => {
+                texture.name = `${babylonMaterial.name} (Occlusion)`;
                 babylonMaterial.ambientTexture = texture;
             }));
 
@@ -1722,6 +1728,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (material.emissiveTexture) {
             promises.push(this.loadTextureInfoAsync(`${context}/emissiveTexture`, material.emissiveTexture, (texture) => {
+                texture.name = `${babylonMaterial.name} (Emissive)`;
                 babylonMaterial.emissiveTexture = texture;
             }));
         }
@@ -1787,11 +1794,6 @@ export class GLTFLoader implements IGLTFLoader {
         const texture = ArrayItem.Get(`${context}/index`, this._gltf.textures, textureInfo.index);
         const promise = this._loadTextureAsync(`/textures/${textureInfo.index}`, texture, (babylonTexture) => {
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
-            if (texture.name)
-            {
-                babylonTexture.name = texture.name;
-            }
-
             GLTFLoader.AddPointerMetadata(babylonTexture, context);
             this._parent.onTextureLoadedObservable.notifyObservers(babylonTexture);
             assign(babylonTexture);

@@ -21,7 +21,7 @@ export class WebXRCamera extends FreeCamera {
         super(name, Vector3.Zero(), scene);
 
         // Initial camera configuration
-        this.minZ = 0;
+        this.minZ = 0.1;
         this.rotationQuaternion = new Quaternion();
         this.cameraRigMode = Camera.RIG_MODE_CUSTOM;
         this.updateUpVectorFromRotation = true;
@@ -31,7 +31,7 @@ export class WebXRCamera extends FreeCamera {
     private _updateNumberOfRigCameras(viewCount = 1) {
         while (this.rigCameras.length < viewCount) {
             var newCamera = new TargetCamera("view: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
-            newCamera.minZ = 0;
+            newCamera.minZ = 0.1;
             newCamera.parent = this;
             newCamera.rotationQuaternion = new Quaternion();
             newCamera.updateUpVectorFromRotation = true;

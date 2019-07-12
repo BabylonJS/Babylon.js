@@ -1,5 +1,4 @@
 import { Nullable } from "../types";
-import { Tools } from "../Misc/tools";
 import { SmartArray } from "../Misc/smartArray";
 import { Observable, Observer } from "../Misc/observable";
 import { Color4, Vector2 } from "../Maths/math";
@@ -8,11 +7,11 @@ import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 import "../Shaders/postprocess.vertex";
 import { IInspectable } from '../Misc/iInspectable';
+import { Engine } from '../Engines/engine';
 
-declare type Scene  = import("../scene").Scene;
+declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
 declare type WebVRFreeCamera = import("../Cameras/VR/webVRCamera").WebVRFreeCamera;
-declare type Engine = import("../Engines/engine").Engine;
 declare type Animation = import("../Animations/animation").Animation;
 
 /**
@@ -98,7 +97,7 @@ export class PostProcess {
      * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
      *
      */
-    public scaleMode = Constants.SCALEMODE_FLOOR;
+    public scaleMode = Engine.SCALEMODE_FLOOR;
     /**
     * Force textures to be a power of two (default: false)
     */
@@ -464,11 +463,11 @@ export class PostProcess {
 
             if (this.renderTargetSamplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || this.alwaysForcePOT) {
                 if (!(<PostProcessOptions>this._options).width) {
-                    desiredWidth = engine.needPOTTextures ? Tools.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
+                    desiredWidth = engine.needPOTTextures ? Engine.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
                 }
 
                 if (!(<PostProcessOptions>this._options).height) {
-                    desiredHeight = engine.needPOTTextures ? Tools.GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode) : desiredHeight;
+                    desiredHeight = engine.needPOTTextures ? Engine.GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode) : desiredHeight;
                 }
             }
 

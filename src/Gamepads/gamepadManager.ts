@@ -1,4 +1,3 @@
-import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { DomManagement } from "../Misc/domManagement";
 import { Nullable } from "../types";
@@ -9,6 +8,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { PoseEnabledControllerHelper } from "../Gamepads/Controllers/poseEnabledController";
 import { Xbox360Pad } from "./xboxGamepad";
 import { Gamepad, GenericPad } from "./gamepad";
+import { Engine } from '../Engines/engine';
 /**
  * Manager for handling gamepads
  */
@@ -211,7 +211,7 @@ export class GamepadManager {
         }
 
         if (this._isMonitoring && !this._scene) {
-            Tools.QueueNewFrame(() => { this._checkGamepadsStatus(); });
+            Engine.QueueNewFrame(() => { this._checkGamepadsStatus(); });
         }
     }
 
