@@ -1,6 +1,7 @@
 import { Nullable, FloatArray } from "../../types";
 import { Scene } from "../../scene";
-import { Vector3, Vector2, Color4, Tmp, Vector4 } from "../../Maths/math";
+import { Vector3, Vector2, Tmp, Vector4 } from "../../Maths/math";
+import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";

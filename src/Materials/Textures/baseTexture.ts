@@ -1,16 +1,18 @@
 import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
 import { Observer, Observable } from "../../Misc/observable";
-import { Tools, IAnimatable } from "../../Misc/tools";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Size, ISize } from "../../Maths/math";
+import { Matrix } from "../../Maths/math";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
+import { IAnimatable } from '../../Animations/animatable.interface';
+import { GUID } from '../../Misc/guid';
+import { ISize, Size } from '../../Maths/math.size';
 
 declare type Animation = import("../../Animations/animation").Animation;
 
@@ -299,7 +301,7 @@ export class BaseTexture implements IAnimatable {
      */
     public get uid(): string {
         if (!this._uid) {
-            this._uid = Tools.RandomId();
+            this._uid = GUID.RandomId();
         }
         return this._uid;
     }

@@ -3,7 +3,7 @@ import { Observable } from "../Misc/observable";
 import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene, IDisposable } from "../scene";
-import { Quaternion, Matrix, Vector3, Color3, Color4, Plane, Tmp, Epsilon, Axis, Vector2 } from "../Maths/math";
+import { Quaternion, Matrix, Vector3, Plane, Tmp, Axis, Vector2 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { Node } from "../node";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -25,6 +25,8 @@ import { _MeshCollisionData } from '../Collisions/meshCollisionData';
 import { _DevTools } from '../Misc/devTools';
 import { RawTexture } from '../Materials/Textures/rawTexture';
 import { extractMinAndMax } from '../Maths/math.functions';
+import { Color3, Color4 } from '../Maths/math.color';
+import { Epsilon } from '../Maths/math.constants';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;

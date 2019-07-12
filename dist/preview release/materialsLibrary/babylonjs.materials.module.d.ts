@@ -37,13 +37,13 @@ declare module "babylonjs-materials/cell/cell.vertex" {
 declare module "babylonjs-materials/cell/cellMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { SubMesh } from "babylonjs/Meshes/subMesh";
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { Scene } from "babylonjs/scene";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import "babylonjs-materials/cell/cell.fragment";
     import "babylonjs-materials/cell/cell.vertex";
     export class CellMaterial extends PushMaterial {
@@ -231,13 +231,13 @@ declare module "babylonjs-materials/fire/fire.vertex" {
 declare module "babylonjs-materials/fire/fireMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { SubMesh } from "babylonjs/Meshes/subMesh";
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { Scene } from "babylonjs/scene";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import "babylonjs-materials/fire/fire.fragment";
     import "babylonjs-materials/fire/fire.vertex";
     export class FireMaterial extends PushMaterial {
@@ -310,7 +310,7 @@ declare module "babylonjs-materials/fur/fur.vertex" {
 declare module "babylonjs-materials/fur/furMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Vector3, Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -406,7 +406,7 @@ declare module "babylonjs-materials/gradient/gradient.vertex" {
 declare module "babylonjs-materials/gradient/gradientMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -580,7 +580,7 @@ declare module "babylonjs-materials/lava/lava.vertex" {
 declare module "babylonjs-materials/lava/lavaMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -666,7 +666,7 @@ declare module "babylonjs-materials/mix/mix.vertex" {
 declare module "babylonjs-materials/mix/mixMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -772,7 +772,7 @@ declare module "babylonjs-materials/normal/normal.vertex" {
 declare module "babylonjs-materials/normal/normalMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -916,7 +916,7 @@ declare module "babylonjs-materials/simple/simple.vertex" {
 declare module "babylonjs-materials/simple/simpleMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -978,7 +978,7 @@ declare module "babylonjs-materials/sky/sky.vertex" {
 declare module "babylonjs-materials/sky/skyMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Vector3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -1162,7 +1162,7 @@ declare module "babylonjs-materials/terrain/terrain.vertex" {
 declare module "babylonjs-materials/terrain/terrainMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -1253,7 +1253,7 @@ declare module "babylonjs-materials/triPlanar/triplanar.vertex" {
 declare module "babylonjs-materials/triPlanar/triPlanarMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -1346,7 +1346,7 @@ declare module "babylonjs-materials/water/water.vertex" {
 declare module "babylonjs-materials/water/waterMaterial" {
     import { Nullable } from "babylonjs/types";
     import { Vector2, Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { SmartArray } from "babylonjs/Misc/smartArray";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";

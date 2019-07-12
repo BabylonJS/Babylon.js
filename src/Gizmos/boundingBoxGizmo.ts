@@ -3,7 +3,7 @@ import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
 import { Scene } from "../scene";
-import { Quaternion, Matrix, Vector3, Color3, Epsilon } from "../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
@@ -16,9 +16,11 @@ import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PivotTools } from "../Misc/pivotTools";
+import { Color3 } from '../Maths/math.color';
 
 import "../Meshes/Builders/boxBuilder";
 import { LinesMesh } from '../Meshes/linesMesh';
+import { Epsilon } from '../Maths/math.constants';
 
 /**
  * Bounding box gizmo

@@ -2,7 +2,7 @@ import { Nullable } from '../types';
 import { Texture } from '../Materials/Textures/texture';
 import { Engine } from '../Engines/engine';
 import { VertexBuffer } from '../Meshes/buffer';
-import { Viewport } from '../Maths/math';
+import { Viewport } from '../Maths/math.viewport';
 import { Constants } from '../Engines/constants';
 import { Observable } from '../Misc/observable';
 import { Effect } from './effect';
@@ -15,7 +15,7 @@ export class EffectRenderer {
     // Fullscreen quad buffers
     private static _Vertices = [1, 1, -1, 1, -1, -1, 1, -1];
     private static _Indices = [0, 1, 2, 0, 2, 3];
-    private _vertexBuffers: {[key: string]: VertexBuffer};
+    private _vertexBuffers: { [key: string]: VertexBuffer };
     private _indexBuffer: DataBuffer;
 
     private _ringBufferIndex = 0;
@@ -90,7 +90,7 @@ export class EffectRenderer {
             // Set the output to the next screenbuffer
             if ((effectWrappers as Array<EffectWrapper>).length > 1 && i != (effectWrappers as Array<EffectWrapper>).length - 1) {
                 renderTo = this._getNextFrameBuffer();
-            }else {
+            } else {
                 renderTo = outputTexture;
             }
 
@@ -180,12 +180,12 @@ export class EffectWrapper {
      * @param creationOptions options to create the effect
      */
     constructor(creationOptions: EffectWrapperCreationOptions) {
-        this.effect = new Effect({fragmentSource: creationOptions.fragmentShader, vertex: "postprocess"}, creationOptions.attributeNames, creationOptions.uniformNames, creationOptions.samplerNames, creationOptions.engine);
+        this.effect = new Effect({ fragmentSource: creationOptions.fragmentShader, vertex: "postprocess" }, creationOptions.attributeNames, creationOptions.uniformNames, creationOptions.samplerNames, creationOptions.engine);
     }
 
-     /**
-     * Disposes of the effect wrapper
-     */
+    /**
+    * Disposes of the effect wrapper
+    */
     public dispose() {
         this.effect.dispose();
     }

@@ -1,8 +1,8 @@
 import { Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Scene } from "../scene";
-import { Vector3, Vector4, Color3, Color4 } from "../Maths/math";
-
+import { Vector3, Vector4 } from "../Maths/math";
+import { Color3, Color4 } from "../Maths/math.color";
 import { Condition, ValueCondition } from "./condition";
 import { Action, IAction } from "./action";
 import { DoNothingAction } from "./directActions";

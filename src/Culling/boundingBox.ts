@@ -1,9 +1,10 @@
 import { DeepImmutable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
-import { Matrix, Vector3, Plane, Epsilon } from "../Maths/math";
+import { Matrix, Vector3, Plane } from "../Maths/math";
 import { BoundingSphere } from "../Culling/boundingSphere";
 
 import { ICullable } from "./boundingInfo";
+import { Epsilon } from '../Maths/math.constants';
 
 /**
  * Class used to store bounding box information

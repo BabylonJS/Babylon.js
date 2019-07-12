@@ -1,11 +1,12 @@
 import { Nullable } from "./types";
-import { IAnimatable, Tools } from "./Misc/tools";
+import { Tools } from "./Misc/tools";
+import { IAnimatable } from './Animations/animatable.interface';
 import { PrecisionDate } from "./Misc/precisionDate";
 import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { Color4, Color3, Plane, Vector2, Vector3, Matrix, Frustum } from "./Maths/math";
+import { Plane, Vector2, Vector3, Matrix, Frustum } from "./Maths/math";
 import { Geometry } from "./Meshes/geometry";
 import { TransformNode } from "./Meshes/transformNode";
 import { SubMesh } from "./Meshes/subMesh";
@@ -49,6 +50,7 @@ import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
 import { PerfCounter } from './Misc/perfCounter';
 import { IFileRequest } from './Misc/fileRequest';
+import { Color4, Color3 } from './Maths/math.color';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;

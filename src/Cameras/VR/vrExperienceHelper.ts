@@ -9,7 +9,8 @@ import { VRDeviceOrientationFreeCamera } from "../../Cameras/VR/vrDeviceOrientat
 import { WebVROptions, WebVRFreeCamera } from "../../Cameras/VR/webVRCamera";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Scene, IDisposable } from "../../scene";
-import { Quaternion, Matrix, Vector3, Color3, Color4, Axis } from "../../Maths/math";
+import { Quaternion, Matrix, Vector3, Axis } from "../../Maths/math";
+import { Color3, Color4 } from '../../Maths/math.color';
 import { Gamepad, StickValues } from "../../Gamepads/gamepad";
 import { PoseEnabledController, PoseEnabledControllerType } from "../../Gamepads/Controllers/poseEnabledController";
 import { WebVRController } from "../../Gamepads/Controllers/webVRController";
@@ -825,7 +826,7 @@ export class VRExperienceHelper {
                 if (scene.activeCamera === this.vrDeviceOrientationCamera && (e.event as PointerEvent).pointerType === "mouse") {
                     if (e.type === PointerEventTypes.POINTERDOWN) {
                         this._cameraGazer._selectionPointerDown();
-                    }else if (e.type === PointerEventTypes.POINTERUP) {
+                    } else if (e.type === PointerEventTypes.POINTERUP) {
                         this._cameraGazer._selectionPointerUp();
                     }
                 }
@@ -1002,7 +1003,7 @@ export class VRExperienceHelper {
         if (this._webVRready) {
             if (!this._webVRpresenting) {
                 this._scene.getEngine().onVRRequestPresentComplete.addOnce((result) => {
-                    this.onAfterEnteringVRObservable.notifyObservers({success: result});
+                    this.onAfterEnteringVRObservable.notifyObservers({ success: result });
                 });
                 this._webVRCamera.position = this._position;
                 this._scene.activeCamera = this._webVRCamera;
@@ -1017,7 +1018,7 @@ export class VRExperienceHelper {
             this._scene.getEngine().enterFullscreen(this.requestPointerLockOnFullScreen);
             this.updateButtonVisibility();
             this._vrDeviceOrientationCamera.onViewMatrixChangedObservable.addOnce(() => {
-                this.onAfterEnteringVRObservable.notifyObservers({success: true});
+                this.onAfterEnteringVRObservable.notifyObservers({ success: true });
             });
         }
 

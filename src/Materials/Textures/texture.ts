@@ -1,6 +1,5 @@
 import { serialize, SerializationHelper } from "../../Misc/decorators";
 import { Observable } from "../../Misc/observable";
-import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix, Vector3, Plane } from "../../Maths/math";
@@ -11,6 +10,8 @@ import { _TypeStore } from '../../Misc/typeStore';
 import { _DevTools } from '../../Misc/devTools';
 import { IInspectable } from '../../Misc/iInspectable';
 import { Engine } from '../../Engines/engine';
+import { TimingTools } from '../../Misc/timingTools';
+import { InstantiationTools } from '../../Misc/instantiationTools';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -346,7 +347,7 @@ export class Texture extends BaseTexture {
             }
         } else {
             if (this._texture.isReady) {
-                Tools.SetImmediate(() => load());
+                TimingTools.SetImmediate(() => load());
             } else {
                 this._texture.onLoadedObservable.add(load);
             }
@@ -401,7 +402,7 @@ export class Texture extends BaseTexture {
         } else {
             if (this._delayedOnLoad) {
                 if (this._texture.isReady) {
-                    Tools.SetImmediate(this._delayedOnLoad);
+                    TimingTools.SetImmediate(this._delayedOnLoad);
                 } else {
                     this._texture.onLoadedObservable.add(this._delayedOnLoad);
                 }
@@ -619,7 +620,7 @@ export class Texture extends BaseTexture {
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> {
         if (parsedTexture.customType) {
-            var customTexture = Tools.Instantiate(parsedTexture.customType);
+            var customTexture = InstantiationTools.Instantiate(parsedTexture.customType);
             // Update Sampling Mode
             var parsedCustomTexture: any = customTexture.Parse(parsedTexture, scene, rootUrl);
             if (parsedTexture.samplingMode && parsedCustomTexture.updateSamplingMode && parsedCustomTexture._samplingMode) {

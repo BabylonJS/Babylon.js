@@ -1,9 +1,10 @@
-import { Vector3, Matrix, Quaternion, Viewport } from "../../Maths/math";
+import { Vector3, Matrix, Quaternion } from "../../Maths/math";
 import { Scene } from "../../scene";
 import { Camera } from "../../Cameras/camera";
 import { FreeCamera } from "../../Cameras/freeCamera";
 import { TargetCamera } from "../../Cameras/targetCamera";
 import { WebXRSessionManager } from "./webXRSessionManager";
+import { Viewport } from '../../Maths/math.viewport';
 
 /**
  * WebXR Camera which holds the views for the xrSession

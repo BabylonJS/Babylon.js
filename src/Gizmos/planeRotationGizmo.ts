@@ -1,7 +1,8 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
-import { Quaternion, Matrix, Vector3, Color3 } from "../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../Maths/math";
+import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";

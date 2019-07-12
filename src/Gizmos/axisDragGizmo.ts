@@ -1,7 +1,7 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
-import { Vector3, Color3, Matrix } from "../Maths/math";
+import { Vector3, Matrix } from "../Maths/math";
 import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -15,6 +15,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Scene } from "../scene";
 import { PositionGizmo } from "./positionGizmo";
+import { Color3 } from '../Maths/math.color';
 /**
  * Single axis drag gizmo
  */
@@ -179,8 +180,7 @@ export class AxisDragGizmo extends Gizmo {
         this.onSnapObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();
-        if (this._arrow)
-        {
+        if (this._arrow) {
             this._arrow.dispose();
         }
         [this._coloredMaterial, this._hoverMaterial].forEach((matl) => {

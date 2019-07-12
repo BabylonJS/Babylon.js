@@ -1,5 +1,6 @@
 import { DeepImmutable, Nullable } from "../types";
-import { Quaternion, Vector3, Vector2, Size, Color3, Matrix } from "../Maths/math";
+import { Quaternion, Vector3, Vector2, Matrix } from "../Maths/math";
+import { Color3 } from '../Maths/math.color';
 import { Animation, _IAnimationState } from "./animation";
 import { AnimationEvent } from "./animationEvent";
 
@@ -7,6 +8,7 @@ declare type Animatable = import("./animatable").Animatable;
 
 import { Scene } from "../scene";
 import { IAnimationKey } from './animationKey';
+import { Size } from '../Maths/math.size';
 
 // Static values to help the garbage collector
 

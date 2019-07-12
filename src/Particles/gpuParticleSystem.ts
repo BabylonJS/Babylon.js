@@ -1,8 +1,8 @@
 import { Nullable, float } from "../types";
-import { IAnimatable } from "../Misc/tools";
 import { FactorGradient, ColorGradient, Color3Gradient, IValueGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
-import { Color4, Color3, Vector3, Matrix, Tmp } from "../Maths/math";
+import { Vector3, Matrix, Tmp } from "../Maths/math";
+import { Color4, Color3 } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Buffer } from "../Meshes/buffer";
@@ -22,6 +22,7 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
 import { DeepCopier } from "../Misc/deepCopier";
+import { IAnimatable } from '../Animations/animatable.interface';
 
 import "../Shaders/gpuUpdateParticles.fragment";
 import "../Shaders/gpuUpdateParticles.vertex";

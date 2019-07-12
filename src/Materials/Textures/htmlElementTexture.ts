@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
-import { Matrix } from "../../Maths/math";
+import { Matrix } from '../../Maths/math';
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
