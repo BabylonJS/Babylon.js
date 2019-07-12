@@ -14,7 +14,7 @@ export interface INavigationEnginePlugin {
 
     /**
      * Creates a navigation mesh
-     * @param mesh of all the geometry used to compute the navigation mesh
+     * @param meshes array of all the geometry used to compute the navigatio mesh
      * @param parameters bunch of parameters used to filter geometry
      */
     createMavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
