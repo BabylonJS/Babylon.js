@@ -219,7 +219,7 @@ export class EffectWrapper {
      * Creates an effect to be renderer
      * @param creationOptions options to create the effect
      */
-    constructor(creationOptions: EffectWrapperCreationOptions) {       
+    constructor(creationOptions: EffectWrapperCreationOptions) {
         this.effect = new Effect({
                 fragmentSource: creationOptions.fragmentShader,
                 vertexSource: creationOptions.vertexShader || "postprocess",
