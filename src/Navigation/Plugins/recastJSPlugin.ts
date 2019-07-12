@@ -103,7 +103,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                     Vector3.TransformCoordinatesToRef(position, wm, transformed);
                     positions.push(transformed.x, transformed.y, transformed.z);
                 }
-                
+
                 offset += meshPositions.length / 3;
             }
         }
