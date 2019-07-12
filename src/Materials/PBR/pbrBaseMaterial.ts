@@ -1,13 +1,12 @@
 import { serialize, serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
 import { Observer } from "../../Misc/observable";
-import { IAnimatable } from "../../Misc/tools";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
-import { Matrix, Color3, Vector4, Tmp } from "../../Maths/math";
+import { Matrix, Vector4, Tmp } from "../../Maths/math";
 import { VertexBuffer } from "../../Meshes/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -19,6 +18,7 @@ import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrA
 import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { IMaterialSheenDefines, PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
+import { Color3 } from '../../Maths/math.color';
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
@@ -34,6 +34,7 @@ import { CubeTexture } from "../../Materials/Textures/cubeTexture";
 
 import { MaterialFlags } from "../materialFlags";
 import { Constants } from "../../Engines/constants";
+import { IAnimatable } from '../../Animations/animatable.interface';
 
 import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";

@@ -6,8 +6,9 @@ import { PickingInfo } from "../Collisions/pickingInfo";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { EngineStore } from "../Engines/engineStore";
 import { HemisphericLight } from '../Lights/hemisphericLight';
-import { Vector3, Color3 } from '../Maths/math';
+import { Vector3 } from '../Maths/math';
 import { Camera } from '../Cameras/camera';
+import { Color3 } from '../Maths/math.color';
 
 /**
  * Renders a layer on top of an existing scene
@@ -125,7 +126,7 @@ export class UtilityLayerRenderer implements IDisposable {
         public originalScene: Scene,
         handleEvents: boolean = true) {
         // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
-        this.utilityLayerScene = new Scene(originalScene.getEngine(), {virtual: true});
+        this.utilityLayerScene = new Scene(originalScene.getEngine(), { virtual: true });
         this.utilityLayerScene.useRightHandedSystem = originalScene.useRightHandedSystem;
         this.utilityLayerScene._allowPostProcessClearColor = false;
 

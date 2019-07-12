@@ -1,7 +1,7 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
-import { Vector3, Color3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
@@ -14,6 +14,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { ScaleGizmo } from "./scaleGizmo";
+import { Color3 } from '../Maths/math.color';
 
 /**
  * Single axis scale gizmo

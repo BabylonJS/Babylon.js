@@ -1,5 +1,6 @@
 import { Nullable } from "../types";
-import { Color4, Vector2, Vector3, Tmp, Vector4 } from "../Maths/math";
+import { Vector2, Vector3, Tmp, Vector4 } from "../Maths/math";
+import { Color4 } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ParticleSystem } from "./particleSystem";

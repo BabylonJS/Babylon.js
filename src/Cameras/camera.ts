@@ -5,7 +5,7 @@ import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { CameraInputsManager } from "./cameraInputsManager";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Viewport, Plane, Frustum } from "../Maths/math";
+import { Matrix, Vector3, Plane, Frustum } from "../Maths/math";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -13,6 +13,7 @@ import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
+import { Viewport } from '../Maths/math.viewport';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;

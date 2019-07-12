@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Color4 } from "../Maths/math";
+import { Color4 } from "../Maths/math.color";
 import { Mesh } from "../Meshes/mesh";
 import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";

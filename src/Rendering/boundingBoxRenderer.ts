@@ -3,7 +3,7 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
-import { Color3, Matrix } from "../Maths/math";
+import { Matrix } from "../Maths/math";
 import { SmartArray } from "../Misc/smartArray";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
@@ -17,6 +17,7 @@ import "../Meshes/Builders/boxBuilder";
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { Color3 } from '../Maths/math.color';
 
 declare module "../scene" {
     export interface Scene {

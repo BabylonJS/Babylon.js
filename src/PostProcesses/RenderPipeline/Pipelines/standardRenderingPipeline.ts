@@ -1,6 +1,6 @@
 import { Nullable } from "../../../types";
 import { serialize, serializeAsTexture, SerializationHelper } from "../../../Misc/decorators";
-import { IAnimatable } from "../../../Misc/tools";
+import { IAnimatable } from '../../../Animations/animatable.interface';
 import { Logger } from "../../../Misc/logger";
 import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math";
 import { Scalar } from "../../../Maths/math.scalar";

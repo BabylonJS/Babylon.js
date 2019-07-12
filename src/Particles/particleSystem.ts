@@ -1,8 +1,7 @@
 import { Nullable } from "../types";
-import { IAnimatable } from "../Misc/tools";
 import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
 import { Observable, Observer } from "../Misc/observable";
-import { Color4, Color3, Vector3, Matrix, Tmp, ISize, Vector4 } from "../Maths/math";
+import { Vector3, Matrix, Tmp, Vector4 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Buffer } from "../Meshes/buffer";
@@ -25,10 +24,13 @@ import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { DeepCopier } from "../Misc/deepCopier";
 import { _TypeStore } from '../Misc/typeStore';
+import { IAnimatable } from '../Animations/animatable.interface';
 
 import "../Shaders/particles.fragment";
 import "../Shaders/particles.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { Color4, Color3 } from '../Maths/math.color';
+import { ISize } from '../Maths/math.size';
 
 /**
  * This represents a particle system in Babylon.

@@ -1,7 +1,7 @@
 import { Nullable } from "babylonjs/types";
 import { serializeAsVector2, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
 import { Plane, Vector3, Vector2, Color3, Matrix } from "babylonjs/Maths/math";
-import { IAnimatable } from "babylonjs/Misc/tools";
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { Constants } from "babylonjs/Engines/constants";
 import { SmartArray } from "babylonjs/Misc/smartArray";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";

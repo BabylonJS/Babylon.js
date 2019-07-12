@@ -1,7 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
 import { Color3, Matrix } from "babylonjs/Maths/math";
-import { IAnimatable } from "babylonjs/Misc/tools";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
@@ -14,6 +13,7 @@ import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 import "./cell.fragment";
 import "./cell.vertex";

@@ -1,6 +1,7 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Vector4, Color4 } from "../../Maths/math";
+import { Matrix, Vector3, Vector4 } from "../../Maths/math";
+import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
@@ -47,7 +48,8 @@ VertexData.CreateTiledBox = function(options: { pattern?: number, size?: number,
             height: height,
             alignVertical: alignV,
             alignHorizontal: alignH,
-            sideOrientation: sideOrientation});
+            sideOrientation: sideOrientation
+        });
     }
 
     for (var f = 2; f < 4; f++) { //sides
@@ -59,7 +61,8 @@ VertexData.CreateTiledBox = function(options: { pattern?: number, size?: number,
             height: height,
             alignVertical: alignV,
             alignHorizontal: alignH,
-            sideOrientation: sideOrientation});
+            sideOrientation: sideOrientation
+        });
     }
 
     var baseAlignV = alignV;
@@ -79,7 +82,8 @@ VertexData.CreateTiledBox = function(options: { pattern?: number, size?: number,
             height: depth,
             alignVertical: baseAlignV,
             alignHorizontal: alignH,
-            sideOrientation: sideOrientation});
+            sideOrientation: sideOrientation
+        });
     }
 
     var positions: Array<number> = [];
@@ -101,8 +105,8 @@ VertexData.CreateTiledBox = function(options: { pattern?: number, size?: number,
         facePositions[f] = [];
         faceNormals[f] = [];
         for (var p = 0; p < len / 3; p++) {
-            facePositions[f].push(new Vector3(faceVertexData[f].positions![ 3 * p], faceVertexData[f].positions![ 3 * p + 1], faceVertexData[f].positions![ 3 * p + 2]));
-            faceNormals[f].push(new Vector3(faceVertexData[f].normals![ 3 * p], faceVertexData[f].normals![ 3 * p + 1], faceVertexData[f].normals![ 3 * p + 2]));
+            facePositions[f].push(new Vector3(faceVertexData[f].positions![3 * p], faceVertexData[f].positions![3 * p + 1], faceVertexData[f].positions![3 * p + 2]));
+            faceNormals[f].push(new Vector3(faceVertexData[f].normals![3 * p], faceVertexData[f].normals![3 * p + 1], faceVertexData[f].normals![3 * p + 2]));
         }
         // uvs
         lu = faceVertexData[f].uvs!.length;
@@ -215,7 +219,7 @@ export class TiledBoxBuilder {
      * @param scene defines the hosting scene
      * @returns the box mesh
      */
-    public static CreateTiledBox(name: string, options: { pattern?: number, width?: number, height?: number, depth?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, alignHorizontal?: number, alignVertical?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, updatable?: boolean}, scene: Nullable<Scene> = null): Mesh {
+    public static CreateTiledBox(name: string, options: { pattern?: number, width?: number, height?: number, depth?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, alignHorizontal?: number, alignVertical?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         var box = new Mesh(name, scene);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

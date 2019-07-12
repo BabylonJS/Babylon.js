@@ -1,13 +1,14 @@
 import { Nullable } from "../types";
 import { SmartArray } from "../Misc/smartArray";
 import { Observable, Observer } from "../Misc/observable";
-import { Color4, Vector2 } from "../Maths/math";
+import { Vector2 } from "../Maths/math";
 import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 import "../Shaders/postprocess.vertex";
 import { IInspectable } from '../Misc/iInspectable';
 import { Engine } from '../Engines/engine';
+import { Color4 } from '../Maths/math.color';
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;

@@ -1,6 +1,6 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, ToGammaSpace } from "../../Maths/math";
+import { Matrix, Vector3 } from "../../Maths/math";
 import { Engine } from "../../Engines/engine";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
@@ -12,6 +12,7 @@ import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/c
 import { _TypeStore } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
 import "../../Engines/Extensions/engine.rawTexture";
+import { ToGammaSpace } from '../../Maths/math.constants';
 
 /**
  * This represents a texture coming from an HDR input.

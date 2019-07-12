@@ -1,7 +1,7 @@
 import { Observer, Observable } from "../Misc/observable";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import { StringDictionary } from "../Misc/stringDictionary";
-import { Nullable, FloatArray, DataArray, IndicesArray, float } from "../types";
+import { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
 import { Scene } from "../scene";
 import { VertexBuffer } from "../Meshes/buffer";
 import { UniformBuffer } from "../Materials/uniformBuffer";
@@ -31,32 +31,13 @@ import { PerfCounter } from '../Misc/perfCounter';
 import { IFileRequest } from '../Misc/fileRequest';
 import { ICustomAnimationFrameRequester } from '../Misc/customAnimationFrameRequester';
 import { FileTools } from '../Misc/fileTools';
+import { IViewportLike, IColor4Like } from '../Maths/math.like';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
-
-/**
- * @hidden
- */
-export interface IColor4Like {
-    r: float;
-    g: float;
-    b: float;
-    a: float;
-}
-
-/**
- * @hidden
- */
-export interface IViewportLike {
-    x: float;
-    y: float;
-    width: float;
-    height: float;
-}
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)

@@ -4,7 +4,7 @@ import { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import { Nullable, int, float } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Color3, Vector4 } from "../../Maths/math";
+import { Matrix, Vector3, Vector4 } from "../../Maths/math";
 import { VertexBuffer } from "../../Meshes/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -24,6 +24,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/ind
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from "../../Misc/typeStore";
 import { MaterialFlags } from "../materialFlags";
+import { Color3 } from '../../Maths/math.color';
 
 import "../../Shaders/background.fragment";
 import "../../Shaders/background.vertex";

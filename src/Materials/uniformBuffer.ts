@@ -1,10 +1,11 @@
 import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray } from "../types";
-import { Matrix, Vector3, Color3, Vector4 } from "../Maths/math";
+import { Matrix, Vector3, Vector4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { Effect } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { Color3 } from '../Maths/math.color';
 /**
  * Uniform buffer objects.
  *

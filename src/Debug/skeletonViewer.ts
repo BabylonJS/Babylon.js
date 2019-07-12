@@ -1,4 +1,5 @@
-import { Color3, Vector3, Matrix, Tmp } from "../Maths/math";
+import { Vector3, Matrix, Tmp } from "../Maths/math";
+import { Color3 } from '../Maths/math.color';
 import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { Bone } from "../Bones/bone";

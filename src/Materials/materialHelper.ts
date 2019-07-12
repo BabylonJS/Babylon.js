@@ -2,7 +2,7 @@ import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Tmp, Color3 } from "../Maths/math";
+import { Tmp } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -15,6 +15,7 @@ import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
+import { Color3 } from '../Maths/math.color';
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for

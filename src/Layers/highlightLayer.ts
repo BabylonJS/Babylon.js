@@ -3,7 +3,7 @@ import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Vector2, Color3, Color4 } from "../Maths/math";
+import { Vector2 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
@@ -23,6 +23,7 @@ import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
+import { Color4, Color3 } from '../Maths/math.color';
 
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";

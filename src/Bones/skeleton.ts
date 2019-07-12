@@ -1,6 +1,5 @@
 import { Bone } from "./bone";
 
-import { IAnimatable } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, Tmp } from "../Maths/math";
 import { Scene } from "../scene";
@@ -16,6 +15,7 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import { IInspectable } from '../Misc/iInspectable';
+import { IAnimatable } from '../Animations/animatable.interface';
 
 /**
  * Class used to handle skinning animations
@@ -491,7 +491,7 @@ export class Skeleton implements IAnimatable {
 
                             mesh._transformMatrixTexture = RawTexture.CreateRGBATexture(mesh._bonesTransformMatrices, (this.bones.length + 1) * 4, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
                         }
-                     }
+                    }
                 }
 
                 this._computeTransformMatrices(mesh._bonesTransformMatrices, poseMatrix);

@@ -1,5 +1,6 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { Tools, IAnimatable } from "../Misc/tools";
+import { Tools } from "../Misc/tools";
+import { IAnimatable } from '../Animations/animatable.interface';
 import { SmartArray } from "../Misc/smartArray";
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
@@ -1008,9 +1009,9 @@ export class Material implements IAnimatable {
         }
     }
 
-        /**
-     * Indicates that we need to re-calculated for all submeshes
-     */
+    /**
+ * Indicates that we need to re-calculated for all submeshes
+ */
     protected _markAllSubMeshesAsAllDirty() {
         this._markAllSubMeshesAsDirty(Material._AllDirtyCallBack);
     }
