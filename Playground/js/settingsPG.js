@@ -4,13 +4,11 @@
  * - Script language
  * - Font size
  */
-/**
- * TO DO :
- * - Set the font in the localStorage
- */
 class SettingsPG {
-    constructor(monacoCreator) {
-        this.monacoCreator = monacoCreator;
+    constructor(parent) {
+        this.parent = parent;
+
+        // TO DO - Set the fond in the localStorage (same as theme and language)
 
         // The elements that will color with languages
         this.elementForscriptLanguage = [
@@ -37,11 +35,11 @@ class SettingsPG {
         this.defaultScene = "scripts/basic scene.js";
         if(this.scriptLanguage == "JS") {
             this.defaultScene = "scripts/basic scene.js";
-            monacoCreator.monacoMode = "javascript";
+            this.parent.monacoCreator.monacoMode = "javascript";
         }
         else if(this.scriptLanguage == "TS") {
             this.defaultScene = "scripts/basic scene.txt";
-            monacoCreator.monacoMode = "typescript";
+            this.parent.monacoCreator.monacoMode = "typescript";
         }
     }
 
@@ -62,7 +60,7 @@ class SettingsPG {
      */
     setFontSize(size) {
         this.fontSize = size;
-        this.monacoCreator.jsEditor.updateOptions({ fontSize: size });
+        this.parent.monacoCreator.jsEditor.updateOptions({ fontSize: size });
         var array = document.getElementsByClassName("displayFontSize");
         for (var i = 0; i < array.length; i++) {
             var subArray = array[i].children;
@@ -88,10 +86,10 @@ class SettingsPG {
             }
         }
         if (this.scriptLanguage == "JS") {
-            utils.setToMultipleID("toJSbutton", "removeClass", "floatLeft");
+            this.parent.utils.setToMultipleID("toJSbutton", "removeClass", "floatLeft");
         }
         else if (this.scriptLanguage == "TS") {
-            utils.setToMultipleID("toJSbutton", "addClass", "floatLeft");
+            this.parent.utils.setToMultipleID("toJSbutton", "addClass", "floatLeft");
         }
     };
     /**
@@ -101,18 +99,18 @@ class SettingsPG {
         localStorage.setItem("bjs-playground-theme", theme);
         // Get the Monaco theme name.
         // Change the selected button style
-        utils.setToMultipleID("darkTheme", "removeClass", "selected");
-        utils.setToMultipleID("lightTheme", "removeClass", "selected");
+        this.parent.utils.setToMultipleID("darkTheme", "removeClass", "selected");
+        this.parent.utils.setToMultipleID("lightTheme", "removeClass", "selected");
         if (theme == 'dark') {
             this.vsTheme = 'vs-dark';
-            utils.setToMultipleID("darkTheme", "addClass", "selected");
+            this.parent.utils.setToMultipleID("darkTheme", "addClass", "selected");
         }
         else {
             this.vsTheme = 'vs';
-            utils.setToMultipleID("lightTheme", "addClass", "selected");
+            this.parent.utils.setToMultipleID("lightTheme", "addClass", "selected");
         }
 
-        this.monacoCreator.createMonacoEditor();
+        this.parent.monacoCreator.createMonacoEditor();
 
         this.setFontSize(this.fontSize);
         // Color the elements to theme
@@ -127,7 +125,7 @@ class SettingsPG {
             }
         }
     };
-    restoreTheme(monacoCreator) {
-        this.setTheme(this.vsTheme, monacoCreator);
+    restoreTheme() {
+        this.setTheme(this.vsTheme, this.parent.monacoCreator);
     };
 };

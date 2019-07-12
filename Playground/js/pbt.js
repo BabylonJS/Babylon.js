@@ -521,12 +521,4 @@ var PBT = function() {
     }
 }
 
-showBJSPGMenu = function() {
-    var headings = document.getElementsByClassName('category');
-    
-    for (var i = 0; i < headings.length; i ++) {
-        headings[i].style.visibility = 'visible';
-    }
-}
-
     
