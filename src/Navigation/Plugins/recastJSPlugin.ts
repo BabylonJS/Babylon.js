@@ -38,7 +38,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         if (typeof recastInjection === "function") {
             recastInjection(this.bjsRECAST);
         } else {
-            this.bjsRECAST = recastInjection();
+            this.bjsRECAST = recastInjection;
         }
 
         if (!this.isSupported()) {
