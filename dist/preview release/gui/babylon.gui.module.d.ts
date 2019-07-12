@@ -3012,7 +3012,7 @@ declare module "babylonjs-gui/2D/controls/index" {
     export * from "babylonjs-gui/2D/controls/statics";
 }
 declare module "babylonjs-gui/2D/adtInstrumentation" {
-    import { PerfCounter } from "babylonjs/Misc/tools";
+    import { PerfCounter } from "babylonjs/Misc/perfCounter";
     import { IDisposable } from "babylonjs/scene";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**

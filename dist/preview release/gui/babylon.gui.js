@@ -355,8 +355,8 @@ module.exports = g;
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return AdvancedDynamicTextureInstrumentation; });
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Maths/math");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/perfCounter */ "babylonjs/Maths/math");
+/* harmony import */ var babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0__);
 
 /**
  * This class can be used to get instrumentation data from a AdvancedDynamicTexture object
@@ -374,9 +374,9 @@ var AdvancedDynamicTextureInstrumentation = /** @class */ (function () {
     texture) {
         this.texture = texture;
         this._captureRenderTime = false;
-        this._renderTime = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["PerfCounter"]();
+        this._renderTime = new babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0__["PerfCounter"]();
         this._captureLayoutTime = false;
-        this._layoutTime = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["PerfCounter"]();
+        this._layoutTime = new babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0__["PerfCounter"]();
         // Observers
         this._onBeginRenderObserver = null;
         this._onEndRenderObserver = null;

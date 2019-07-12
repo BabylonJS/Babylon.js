@@ -48,6 +48,991 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A class serves as a medium between the observable and its observers
+     */
+    export class EventState {
+        /**
+         * Create a new EventState
+         * @param mask defines the mask associated with this state
+         * @param skipNextObservers defines a flag which will instruct the observable to skip following observers when set to true
+         * @param target defines the original target of the state
+         * @param currentTarget defines the current target of the state
+         */
+        constructor(mask: number, skipNextObservers?: boolean, target?: any, currentTarget?: any);
+        /**
+         * Initialize the current event state
+         * @param mask defines the mask associated with this state
+         * @param skipNextObservers defines a flag which will instruct the observable to skip following observers when set to true
+         * @param target defines the original target of the state
+         * @param currentTarget defines the current target of the state
+         * @returns the current event state
+         */
+        initalize(mask: number, skipNextObservers?: boolean, target?: any, currentTarget?: any): EventState;
+        /**
+         * An Observer can set this property to true to prevent subsequent observers of being notified
+         */
+        skipNextObservers: boolean;
+        /**
+         * Get the mask value that were used to trigger the event corresponding to this EventState object
+         */
+        mask: number;
+        /**
+         * The object that originally notified the event
+         */
+        target?: any;
+        /**
+         * The current object in the bubbling phase
+         */
+        currentTarget?: any;
+        /**
+         * This will be populated with the return value of the last function that was executed.
+         * If it is the first function in the callback chain it will be the event data.
+         */
+        lastReturnValue?: any;
+    }
+    /**
+     * Represent an Observer registered to a given Observable object.
+     */
+    export class Observer<T> {
+        /**
+         * Defines the callback to call when the observer is notified
+         */
+        callback: (eventData: T, eventState: EventState) => void;
+        /**
+         * Defines the mask of the observer (used to filter notifications)
+         */
+        mask: number;
+        /**
+         * Defines the current scope used to restore the JS context
+         */
+        scope: any;
+        /** @hidden */
+        _willBeUnregistered: boolean;
+        /**
+         * Gets or sets a property defining that the observer as to be unregistered after the next notification
+         */
+        unregisterOnNextCall: boolean;
+        /**
+         * Creates a new observer
+         * @param callback defines the callback to call when the observer is notified
+         * @param mask defines the mask of the observer (used to filter notifications)
+         * @param scope defines the current scope used to restore the JS context
+         */
+        constructor(
+        /**
+         * Defines the callback to call when the observer is notified
+         */
+        callback: (eventData: T, eventState: EventState) => void, 
+        /**
+         * Defines the mask of the observer (used to filter notifications)
+         */
+        mask: number, 
+        /**
+         * Defines the current scope used to restore the JS context
+         */
+        scope?: any);
+    }
+    /**
+     * Represent a list of observers registered to multiple Observables object.
+     */
+    export class MultiObserver<T> {
+        private _observers;
+        private _observables;
+        /**
+         * Release associated resources
+         */
+        dispose(): void;
+        /**
+         * Raise a callback when one of the observable will notify
+         * @param observables defines a list of observables to watch
+         * @param callback defines the callback to call on notification
+         * @param mask defines the mask used to filter notifications
+         * @param scope defines the current scope used to restore the JS context
+         * @returns the new MultiObserver
+         */
+        static Watch<T>(observables: Observable<T>[], callback: (eventData: T, eventState: EventState) => void, mask?: number, scope?: any): MultiObserver<T>;
+    }
+    /**
+     * The Observable class is a simple implementation of the Observable pattern.
+     *
+     * There's one slight particularity though: a given Observable can notify its observer using a particular mask value, only the Observers registered with this mask value will be notified.
+     * This enable a more fine grained execution without having to rely on multiple different Observable objects.
+     * For instance you may have a given Observable that have four different types of notifications: Move (mask = 0x01), Stop (mask = 0x02), Turn Right (mask = 0X04), Turn Left (mask = 0X08).
+     * A given observer can register itself with only Move and Stop (mask = 0x03), then it will only be notified when one of these two occurs and will never be for Turn Left/Right.
+     */
+    export class Observable<T> {
+        private _observers;
+        private _eventState;
+        private _onObserverAdded;
+        /**
+         * Gets the list of observers
+         */
+        readonly observers: Array<Observer<T>>;
+        /**
+         * Creates a new observable
+         * @param onObserverAdded defines a callback to call when a new observer is added
+         */
+        constructor(onObserverAdded?: (observer: Observer<T>) => void);
+        /**
+         * Create a new Observer with the specified callback
+         * @param callback the callback that will be executed for that Observer
+         * @param mask the mask used to filter observers
+         * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
+         * @param scope optional scope for the callback to be called from
+         * @param unregisterOnFirstCall defines if the observer as to be unregistered after the next notification
+         * @returns the new observer created for the callback
+         */
+        add(callback: (eventData: T, eventState: EventState) => void, mask?: number, insertFirst?: boolean, scope?: any, unregisterOnFirstCall?: boolean): Nullable<Observer<T>>;
+        /**
+         * Create a new Observer with the specified callback and unregisters after the next notification
+         * @param callback the callback that will be executed for that Observer
+         * @returns the new observer created for the callback
+         */
+        addOnce(callback: (eventData: T, eventState: EventState) => void): Nullable<Observer<T>>;
+        /**
+         * Remove an Observer from the Observable object
+         * @param observer the instance of the Observer to remove
+         * @returns false if it doesn't belong to this Observable
+         */
+        remove(observer: Nullable<Observer<T>>): boolean;
+        /**
+         * Remove a callback from the Observable object
+         * @param callback the callback to remove
+         * @param scope optional scope. If used only the callbacks with this scope will be removed
+         * @returns false if it doesn't belong to this Observable
+        */
+        removeCallback(callback: (eventData: T, eventState: EventState) => void, scope?: any): boolean;
+        private _deferUnregister;
+        private _remove;
+        /**
+         * Moves the observable to the top of the observer list making it get called first when notified
+         * @param observer the observer to move
+         */
+        makeObserverTopPriority(observer: Observer<T>): void;
+        /**
+         * Moves the observable to the bottom of the observer list making it get called last when notified
+         * @param observer the observer to move
+         */
+        makeObserverBottomPriority(observer: Observer<T>): void;
+        /**
+         * Notify all Observers by calling their respective callback with the given data
+         * Will return true if all observers were executed, false if an observer set skipNextObservers to true, then prevent the subsequent ones to execute
+         * @param eventData defines the data to send to all observers
+         * @param mask defines the mask of the current notification (observers with incompatible mask (ie mask & observer.mask === 0) will not be notified)
+         * @param target defines the original target of the state
+         * @param currentTarget defines the current target of the state
+         * @returns false if the complete observer chain was not processed (because one observer set the skipNextObservers to true)
+         */
+        notifyObservers(eventData: T, mask?: number, target?: any, currentTarget?: any): boolean;
+        /**
+         * Calling this will execute each callback, expecting it to be a promise or return a value.
+         * If at any point in the chain one function fails, the promise will fail and the execution will not continue.
+         * This is useful when a chain of events (sometimes async events) is needed to initialize a certain object
+         * and it is crucial that all callbacks will be executed.
+         * The order of the callbacks is kept, callbacks are not executed parallel.
+         *
+         * @param eventData The data to be sent to each callback
+         * @param mask is used to filter observers defaults to -1
+         * @param target defines the callback target (see EventState)
+         * @param currentTarget defines he current object in the bubbling phase
+         * @returns {Promise<T>} will return a Promise than resolves when all callbacks executed successfully.
+         */
+        notifyObserversWithPromise(eventData: T, mask?: number, target?: any, currentTarget?: any): Promise<T>;
+        /**
+         * Notify a specific observer
+         * @param observer defines the observer to notify
+         * @param eventData defines the data to be sent to each callback
+         * @param mask is used to filter observers defaults to -1
+         */
+        notifyObserver(observer: Observer<T>, eventData: T, mask?: number): void;
+        /**
+         * Gets a boolean indicating if the observable has at least one observer
+         * @returns true is the Observable has at least one Observer registered
+         */
+        hasObservers(): boolean;
+        /**
+        * Clear the list of observers
+        */
+        clear(): void;
+        /**
+         * Clone the current observable
+         * @returns a new observable
+         */
+        clone(): Observable<T>;
+        /**
+         * Does this observable handles observer registered with a given mask
+         * @param mask defines the mask to be tested
+         * @return whether or not one observer registered with the given mask is handeled
+        **/
+        hasSpecificMask(mask?: number): boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Sets of helpers dealing with the DOM and some of the recurrent functions needed in
+     * Babylon.js
+     */
+    export class DomManagement {
+        /**
+         * Checks if the window object exists
+         * @returns true if the window object exists
+         */
+        static IsWindowObjectExist(): boolean;
+        /**
+         * Extracts text content from a DOM element hierarchy
+         * @param element defines the root element
+         * @returns a string
+         */
+        static GetDOMTextContent(element: HTMLElement): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Logger used througouht the application to allow configuration of
+     * the log level required for the messages.
+     */
+    export class Logger {
+        /**
+         * No log
+         */
+        static readonly NoneLogLevel: number;
+        /**
+         * Only message logs
+         */
+        static readonly MessageLogLevel: number;
+        /**
+         * Only warning logs
+         */
+        static readonly WarningLogLevel: number;
+        /**
+         * Only error logs
+         */
+        static readonly ErrorLogLevel: number;
+        /**
+         * All logs
+         */
+        static readonly AllLogLevel: number;
+        private static _LogCache;
+        /**
+         * Gets a value indicating the number of loading errors
+         * @ignorenaming
+         */
+        static errorsCount: number;
+        /**
+         * Callback called when a new log is added
+         */
+        static OnNewCacheEntry: (entry: string) => void;
+        private static _AddLogEntry;
+        private static _FormatMessage;
+        private static _LogDisabled;
+        private static _LogEnabled;
+        private static _WarnDisabled;
+        private static _WarnEnabled;
+        private static _ErrorDisabled;
+        private static _ErrorEnabled;
+        /**
+         * Log a message to the console
+         */
+        static Log: (message: string) => void;
+        /**
+         * Write a warning message to the console
+         */
+        static Warn: (message: string) => void;
+        /**
+         * Write an error message to the console
+         */
+        static Error: (message: string) => void;
+        /**
+         * Gets current log cache (list of logs)
+         */
+        static readonly LogCache: string;
+        /**
+         * Clears the log cache
+         */
+        static ClearLogCache(): void;
+        /**
+         * Sets the current log level (MessageLogLevel / WarningLogLevel / ErrorLogLevel)
+         */
+        static LogLevels: number;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class _TypeStore {
+        /** @hidden */
+        static RegisteredTypes: {
+            [key: string]: Object;
+        };
+        /** @hidden */
+        static GetClass(fqdn: string): any;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing a set of static utilities functions for deep copy.
+     */
+    export class DeepCopier {
+        /**
+         * Tries to copy an object by duplicating every property
+         * @param source defines the source object
+         * @param destination defines the target object
+         * @param doNotCopyList defines a list of properties to avoid
+         * @param mustCopyList defines a list of properties to copy (even if they start with _)
+         */
+        static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[]): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing a set of static utilities functions for precision date
+     */
+    export class PrecisionDate {
+        /**
+         * Gets either window.performance.now() if supported or Date.now() else
+         */
+        static readonly Now: number;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class _DevTools {
+        static WarnImport(name: string): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Extended version of XMLHttpRequest with support for customizations (headers, ...)
+     */
+    export class WebRequest {
+        private _xhr;
+        /**
+         * Custom HTTP Request Headers to be sent with XMLHttpRequests
+         * i.e. when loading files, where the server/service expects an Authorization header
+         */
+        static CustomRequestHeaders: {
+            [key: string]: string;
+        };
+        /**
+         * Add callback functions in this array to update all the requests before they get sent to the network
+         */
+        static CustomRequestModifiers: ((request: XMLHttpRequest, url: string) => void)[];
+        private _injectCustomRequestHeaders;
+        /**
+         * Gets or sets a function to be called when loading progress changes
+         */
+        onprogress: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
+        /**
+         * Returns client's state
+         */
+        readonly readyState: number;
+        /**
+         * Returns client's status
+         */
+        readonly status: number;
+        /**
+         * Returns client's status as a text
+         */
+        readonly statusText: string;
+        /**
+         * Returns client's response
+         */
+        readonly response: any;
+        /**
+         * Returns client's response url
+         */
+        readonly responseURL: string;
+        /**
+         * Returns client's response as text
+         */
+        readonly responseText: string;
+        /**
+         * Gets or sets the expected response type
+         */
+        responseType: XMLHttpRequestResponseType;
+        /** @hidden */
+        addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        /** @hidden */
+        removeEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        /**
+         * Cancels any network activity
+         */
+        abort(): void;
+        /**
+         * Initiates the request. The optional argument provides the request body. The argument is ignored if request method is GET or HEAD
+         * @param body defines an optional request body
+         */
+        send(body?: Document | BodyInit | null): void;
+        /**
+         * Sets the request method, request URL
+         * @param method defines the method to use (GET, POST, etc..)
+         * @param url defines the url to connect with
+         */
+        open(method: string, url: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * File request interface
+     */
+    export interface IFileRequest {
+        /**
+         * Raised when the request is complete (success or error).
+         */
+        onCompleteObservable: Observable<IFileRequest>;
+        /**
+         * Aborts the request for a file.
+         */
+        abort: () => void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
+     */
+    export class PerformanceMonitor {
+        private _enabled;
+        private _rollingFrameTime;
+        private _lastFrameTimeMs;
+        /**
+         * constructor
+         * @param frameSampleSize The number of samples required to saturate the sliding window
+         */
+        constructor(frameSampleSize?: number);
+        /**
+         * Samples current frame
+         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
+         */
+        sampleFrame(timeMs?: number): void;
+        /**
+         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFrameTime: number;
+        /**
+         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFrameTimeVariance: number;
+        /**
+         * Returns the frame time of the most recent frame
+         */
+        readonly instantaneousFrameTime: number;
+        /**
+         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFPS: number;
+        /**
+         * Returns the average framerate in frames per second using the most recent frame time
+         */
+        readonly instantaneousFPS: number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         */
+        readonly isSaturated: boolean;
+        /**
+         * Enables contributions to the sliding window sample set
+         */
+        enable(): void;
+        /**
+         * Disables contributions to the sliding window sample set
+         * Samples will not be interpolated over the disabled period
+         */
+        disable(): void;
+        /**
+         * Returns true if sampling is enabled
+         */
+        readonly isEnabled: boolean;
+        /**
+         * Resets performance monitor
+         */
+        reset(): void;
+    }
+    /**
+     * RollingAverage
+     *
+     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
+     */
+    export class RollingAverage {
+        /**
+         * Current average
+         */
+        average: number;
+        /**
+         * Current variance
+         */
+        variance: number;
+        protected _samples: Array<number>;
+        protected _sampleCount: number;
+        protected _pos: number;
+        protected _m2: number;
+        /**
+         * constructor
+         * @param length The number of samples required to saturate the sliding window
+         */
+        constructor(length: number);
+        /**
+         * Adds a sample to the sample set
+         * @param v The sample value
+         */
+        add(v: number): void;
+        /**
+         * Returns previously added values or null if outside of history or outside the sliding window domain
+         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
+         * @return Value previously recorded with add() or null if outside of range
+         */
+        history(i: number): number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         * @return true if sample-set saturated
+         */
+        isSaturated(): boolean;
+        /**
+         * Resets the rolling average (equivalent to 0 samples taken so far)
+         */
+        reset(): void;
+        /**
+         * Wraps a value around the sample range boundaries
+         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
+         * @return Wrapped position in sample range
+         */
+        protected _wrapPosition(i: number): number;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class implement a typical dictionary using a string as key and the generic type T as value.
+     * The underlying implementation relies on an associative array to ensure the best performances.
+     * The value can be anything including 'null' but except 'undefined'
+     */
+    export class StringDictionary<T> {
+        /**
+         * This will clear this dictionary and copy the content from the 'source' one.
+         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
+         * @param source the dictionary to take the content from and copy to this dictionary
+         */
+        copyFrom(source: StringDictionary<T>): void;
+        /**
+         * Get a value based from its key
+         * @param key the given key to get the matching value from
+         * @return the value if found, otherwise undefined is returned
+         */
+        get(key: string): T | undefined;
+        /**
+         * Get a value from its key or add it if it doesn't exist.
+         * This method will ensure you that a given key/data will be present in the dictionary.
+         * @param key the given key to get the matching value from
+         * @param factory the factory that will create the value if the key is not present in the dictionary.
+         * The factory will only be invoked if there's no data for the given key.
+         * @return the value corresponding to the key.
+         */
+        getOrAddWithFactory(key: string, factory: (key: string) => T): T;
+        /**
+         * Get a value from its key if present in the dictionary otherwise add it
+         * @param key the key to get the value from
+         * @param val if there's no such key/value pair in the dictionary add it with this value
+         * @return the value corresponding to the key
+         */
+        getOrAdd(key: string, val: T): T;
+        /**
+         * Check if there's a given key in the dictionary
+         * @param key the key to check for
+         * @return true if the key is present, false otherwise
+         */
+        contains(key: string): boolean;
+        /**
+         * Add a new key and its corresponding value
+         * @param key the key to add
+         * @param value the value corresponding to the key
+         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
+         */
+        add(key: string, value: T): boolean;
+        /**
+         * Update a specific value associated to a key
+         * @param key defines the key to use
+         * @param value defines the value to store
+         * @returns true if the value was updated (or false if the key was not found)
+         */
+        set(key: string, value: T): boolean;
+        /**
+         * Get the element of the given key and remove it from the dictionary
+         * @param key defines the key to search
+         * @returns the value associated with the key or null if not found
+         */
+        getAndRemove(key: string): Nullable<T>;
+        /**
+         * Remove a key/value from the dictionary.
+         * @param key the key to remove
+         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
+         */
+        remove(key: string): boolean;
+        /**
+         * Clear the whole content of the dictionary
+         */
+        clear(): void;
+        /**
+         * Gets the current count
+         */
+        readonly count: number;
+        /**
+         * Execute a callback on each key/val of the dictionary.
+         * Note that you can remove any element in this dictionary in the callback implementation
+         * @param callback the callback to execute on a given key/value pair
+         */
+        forEach(callback: (key: string, val: T) => void): void;
+        /**
+         * Execute a callback on every occurrence of the dictionary until it returns a valid TRes object.
+         * If the callback returns null or undefined the method will iterate to the next key/value pair
+         * Note that you can remove any element in this dictionary in the callback implementation
+         * @param callback the callback to execute, if it return a valid T instanced object the enumeration will stop and the object will be returned
+         * @returns the first item
+         */
+        first<TRes>(callback: (key: string, val: T) => TRes): TRes | null;
+        private _count;
+        private _data;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store gfx data (like WebGLBuffer)
+     */
+    export class DataBuffer {
+        /**
+         * Gets or sets the number of objects referencing this buffer
+         */
+        references: number;
+        /** Gets or sets the size of the underlying buffer */
+        capacity: number;
+        /**
+         * Gets or sets a boolean indicating if the buffer contains 32bits indices
+         */
+        is32Bits: boolean;
+        /**
+         * Gets the underlying buffer
+         */
+        readonly underlyingResource: any;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store data that will be store in GPU memory
+     */
+    export class Buffer {
+        private _engine;
+        private _buffer;
+        /** @hidden */
+        _data: Nullable<DataArray>;
+        private _updatable;
+        private _instanced;
+        /**
+         * Gets the byte stride.
+         */
+        readonly byteStride: number;
+        /**
+         * Constructor
+         * @param engine the engine
+         * @param data the data to use for this buffer
+         * @param updatable whether the data is updatable
+         * @param stride the stride (optional)
+         * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
+         * @param instanced whether the buffer is instanced (optional)
+         * @param useBytes set to true if the stride in in bytes (optional)
+         */
+        constructor(engine: any, data: DataArray, updatable: boolean, stride?: number, postponeInternalCreation?: boolean, instanced?: boolean, useBytes?: boolean);
+        /**
+         * Create a new VertexBuffer based on the current buffer
+         * @param kind defines the vertex buffer kind (position, normal, etc.)
+         * @param offset defines offset in the buffer (0 by default)
+         * @param size defines the size in floats of attributes (position is 3 for instance)
+         * @param stride defines the stride size in floats in the buffer (the offset to apply to reach next value when data is interleaved)
+         * @param instanced defines if the vertex buffer contains indexed data
+         * @param useBytes defines if the offset and stride are in bytes
+         * @returns the new vertex buffer
+         */
+        createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean, useBytes?: boolean): VertexBuffer;
+        /**
+         * Gets a boolean indicating if the Buffer is updatable?
+         * @returns true if the buffer is updatable
+         */
+        isUpdatable(): boolean;
+        /**
+         * Gets current buffer's data
+         * @returns a DataArray or null
+         */
+        getData(): Nullable<DataArray>;
+        /**
+         * Gets underlying native buffer
+         * @returns underlying native buffer
+         */
+        getBuffer(): Nullable<DataBuffer>;
+        /**
+         * Gets the stride in float32 units (i.e. byte stride / 4).
+         * May not be an integer if the byte stride is not divisible by 4.
+         * DEPRECATED. Use byteStride instead.
+         * @returns the stride in float32 units
+         */
+        getStrideSize(): number;
+        /**
+         * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
+         * @param data defines the data to store
+         */
+        create(data?: Nullable<DataArray>): void;
+        /** @hidden */
+        _rebuild(): void;
+        /**
+         * Update current buffer data
+         * @param data defines the data to store
+         */
+        update(data: DataArray): void;
+        /**
+         * Updates the data directly.
+         * @param data the new data
+         * @param offset the new offset
+         * @param vertexCount the vertex count (optional)
+         * @param useBytes set to true if the offset is in bytes
+         */
+        updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes?: boolean): void;
+        /**
+         * Release all resources
+         */
+        dispose(): void;
+    }
+    /**
+         * Specialized buffer used to store vertex data
+         */
+    export class VertexBuffer {
+        /** @hidden */
+        _buffer: Buffer;
+        private _kind;
+        private _size;
+        private _ownsBuffer;
+        private _instanced;
+        private _instanceDivisor;
+        /**
+         * The byte type.
+         */
+        static readonly BYTE: number;
+        /**
+         * The unsigned byte type.
+         */
+        static readonly UNSIGNED_BYTE: number;
+        /**
+         * The short type.
+         */
+        static readonly SHORT: number;
+        /**
+         * The unsigned short type.
+         */
+        static readonly UNSIGNED_SHORT: number;
+        /**
+         * The integer type.
+         */
+        static readonly INT: number;
+        /**
+         * The unsigned integer type.
+         */
+        static readonly UNSIGNED_INT: number;
+        /**
+         * The float type.
+         */
+        static readonly FLOAT: number;
+        /**
+         * Gets or sets the instance divisor when in instanced mode
+         */
+        instanceDivisor: number;
+        /**
+         * Gets the byte stride.
+         */
+        readonly byteStride: number;
+        /**
+         * Gets the byte offset.
+         */
+        readonly byteOffset: number;
+        /**
+         * Gets whether integer data values should be normalized into a certain range when being casted to a float.
+         */
+        readonly normalized: boolean;
+        /**
+         * Gets the data type of each component in the array.
+         */
+        readonly type: number;
+        /**
+         * Constructor
+         * @param engine the engine
+         * @param data the data to use for this vertex buffer
+         * @param kind the vertex buffer kind
+         * @param updatable whether the data is updatable
+         * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
+         * @param stride the stride (optional)
+         * @param instanced whether the buffer is instanced (optional)
+         * @param offset the offset of the data (optional)
+         * @param size the number of components (optional)
+         * @param type the type of the component (optional)
+         * @param normalized whether the data contains normalized data (optional)
+         * @param useBytes set to true if stride and offset are in bytes (optional)
+         */
+        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean);
+        /** @hidden */
+        _rebuild(): void;
+        /**
+         * Returns the kind of the VertexBuffer (string)
+         * @returns a string
+         */
+        getKind(): string;
+        /**
+         * Gets a boolean indicating if the VertexBuffer is updatable?
+         * @returns true if the buffer is updatable
+         */
+        isUpdatable(): boolean;
+        /**
+         * Gets current buffer's data
+         * @returns a DataArray or null
+         */
+        getData(): Nullable<DataArray>;
+        /**
+         * Gets underlying native buffer
+         * @returns underlying native buffer
+         */
+        getBuffer(): Nullable<DataBuffer>;
+        /**
+         * Gets the stride in float32 units (i.e. byte stride / 4).
+         * May not be an integer if the byte stride is not divisible by 4.
+         * DEPRECATED. Use byteStride instead.
+         * @returns the stride in float32 units
+         */
+        getStrideSize(): number;
+        /**
+         * Returns the offset as a multiple of the type byte length.
+         * DEPRECATED. Use byteOffset instead.
+         * @returns the offset in bytes
+         */
+        getOffset(): number;
+        /**
+         * Returns the number of components per vertex attribute (integer)
+         * @returns the size in float
+         */
+        getSize(): number;
+        /**
+         * Gets a boolean indicating is the internal buffer of the VertexBuffer is instanced
+         * @returns true if this buffer is instanced
+         */
+        getIsInstanced(): boolean;
+        /**
+         * Returns the instancing divisor, zero for non-instanced (integer).
+         * @returns a number
+         */
+        getInstanceDivisor(): number;
+        /**
+         * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
+         * @param data defines the data to store
+         */
+        create(data?: DataArray): void;
+        /**
+         * Updates the underlying buffer according to the passed numeric array or Float32Array.
+         * This function will create a new buffer if the current one is not updatable
+         * @param data defines the data to store
+         */
+        update(data: DataArray): void;
+        /**
+         * Updates directly the underlying WebGLBuffer according to the passed numeric array or Float32Array.
+         * Returns the directly updated WebGLBuffer.
+         * @param data the new data
+         * @param offset the new offset
+         * @param useBytes set to true if the offset is in bytes
+         */
+        updateDirectly(data: DataArray, offset: number, useBytes?: boolean): void;
+        /**
+         * Disposes the VertexBuffer and the underlying WebGLBuffer.
+         */
+        dispose(): void;
+        /**
+         * Enumerates each value of this vertex buffer as numbers.
+         * @param count the number of values to enumerate
+         * @param callback the callback function called for each value
+         */
+        forEach(count: number, callback: (value: number, index: number) => void): void;
+        /**
+         * Positions
+         */
+        static readonly PositionKind: string;
+        /**
+         * Normals
+         */
+        static readonly NormalKind: string;
+        /**
+         * Tangents
+         */
+        static readonly TangentKind: string;
+        /**
+         * Texture coordinates
+         */
+        static readonly UVKind: string;
+        /**
+         * Texture coordinates 2
+         */
+        static readonly UV2Kind: string;
+        /**
+         * Texture coordinates 3
+         */
+        static readonly UV3Kind: string;
+        /**
+         * Texture coordinates 4
+         */
+        static readonly UV4Kind: string;
+        /**
+         * Texture coordinates 5
+         */
+        static readonly UV5Kind: string;
+        /**
+         * Texture coordinates 6
+         */
+        static readonly UV6Kind: string;
+        /**
+         * Colors
+         */
+        static readonly ColorKind: string;
+        /**
+         * Matrix indices (for bones)
+         */
+        static readonly MatricesIndicesKind: string;
+        /**
+         * Matrix weights (for bones)
+         */
+        static readonly MatricesWeightsKind: string;
+        /**
+         * Additional matrix indices (for bones)
+         */
+        static readonly MatricesIndicesExtraKind: string;
+        /**
+         * Additional matrix weights (for bones)
+         */
+        static readonly MatricesWeightsExtraKind: string;
+        /**
+         * Deduces the stride given a kind.
+         * @param kind The kind string to deduce
+         * @returns The deduced stride
+         */
+        static DeduceStride(kind: string): number;
+        /**
+         * Gets the byte length of the given type.
+         * @param type the type
+         * @returns the number of bytes
+         */
+        static GetTypeByteLength(type: number): number;
+        /**
+         * Enumerates each value of the given parameters as numbers.
+         * @param data the data to enumerate
+         * @param byteOffset the byte offset of the data
+         * @param byteStride the byte stride of the data
+         * @param componentCount the number of components per element
+         * @param componentType the type of the component
+         * @param count the number of values to enumerate
+         * @param normalized whether the data is normalized
+         * @param callback the callback function called for each value
+         */
+        static ForEach(data: DataArray, byteOffset: number, byteStride: number, componentCount: number, componentType: number, count: number, normalized: boolean, callback: (value: number, index: number) => void): void;
+        private static _GetFloatValue;
+    }
+}
+declare module BABYLON {
+    /**
      * Class containing a set of static utilities functions for arrays.
      */
     export class ArrayTools {
@@ -1770,6 +2755,13 @@ declare module BABYLON {
          * @param result defines the Vector3 where to store the result
          */
         static ClampToRef(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, result: Vector3): void;
+        /**
+         * Checks if a given vector is inside a specific range
+         * @param v defines the vector to test
+         * @param min defines the minimum range
+         * @param max defines the maximum range
+         */
+        static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void;
         /**
          * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
          * @param value1 defines the first control point
@@ -4198,278 +5190,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /**
-     * Class used to enable access to offline support
-     * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
-     */
-    export interface IOfflineProvider {
-        /**
-         * Gets a boolean indicating if scene must be saved in the database
-         */
-        enableSceneOffline: boolean;
-        /**
-         * Gets a boolean indicating if textures must be saved in the database
-         */
-        enableTexturesOffline: boolean;
-        /**
-         * Open the offline support and make it available
-         * @param successCallback defines the callback to call on success
-         * @param errorCallback defines the callback to call on error
-         */
-        open(successCallback: () => void, errorCallback: () => void): void;
-        /**
-         * Loads an image from the offline support
-         * @param url defines the url to load from
-         * @param image defines the target DOM image
-         */
-        loadImage(url: string, image: HTMLImageElement): void;
-        /**
-         * Loads a file from offline support
-         * @param url defines the URL to load from
-         * @param sceneLoaded defines a callback to call on success
-         * @param progressCallBack defines a callback to call when progress changed
-         * @param errorCallback defines a callback to call on error
-         * @param useArrayBuffer defines a boolean to use array buffer instead of text string
-         */
-        loadFile(url: string, sceneLoaded: (data: any) => void, progressCallBack?: (data: any) => void, errorCallback?: () => void, useArrayBuffer?: boolean): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * A class serves as a medium between the observable and its observers
-     */
-    export class EventState {
-        /**
-         * Create a new EventState
-         * @param mask defines the mask associated with this state
-         * @param skipNextObservers defines a flag which will instruct the observable to skip following observers when set to true
-         * @param target defines the original target of the state
-         * @param currentTarget defines the current target of the state
-         */
-        constructor(mask: number, skipNextObservers?: boolean, target?: any, currentTarget?: any);
-        /**
-         * Initialize the current event state
-         * @param mask defines the mask associated with this state
-         * @param skipNextObservers defines a flag which will instruct the observable to skip following observers when set to true
-         * @param target defines the original target of the state
-         * @param currentTarget defines the current target of the state
-         * @returns the current event state
-         */
-        initalize(mask: number, skipNextObservers?: boolean, target?: any, currentTarget?: any): EventState;
-        /**
-         * An Observer can set this property to true to prevent subsequent observers of being notified
-         */
-        skipNextObservers: boolean;
-        /**
-         * Get the mask value that were used to trigger the event corresponding to this EventState object
-         */
-        mask: number;
-        /**
-         * The object that originally notified the event
-         */
-        target?: any;
-        /**
-         * The current object in the bubbling phase
-         */
-        currentTarget?: any;
-        /**
-         * This will be populated with the return value of the last function that was executed.
-         * If it is the first function in the callback chain it will be the event data.
-         */
-        lastReturnValue?: any;
-    }
-    /**
-     * Represent an Observer registered to a given Observable object.
-     */
-    export class Observer<T> {
-        /**
-         * Defines the callback to call when the observer is notified
-         */
-        callback: (eventData: T, eventState: EventState) => void;
-        /**
-         * Defines the mask of the observer (used to filter notifications)
-         */
-        mask: number;
-        /**
-         * Defines the current scope used to restore the JS context
-         */
-        scope: any;
-        /** @hidden */
-        _willBeUnregistered: boolean;
-        /**
-         * Gets or sets a property defining that the observer as to be unregistered after the next notification
-         */
-        unregisterOnNextCall: boolean;
-        /**
-         * Creates a new observer
-         * @param callback defines the callback to call when the observer is notified
-         * @param mask defines the mask of the observer (used to filter notifications)
-         * @param scope defines the current scope used to restore the JS context
-         */
-        constructor(
-        /**
-         * Defines the callback to call when the observer is notified
-         */
-        callback: (eventData: T, eventState: EventState) => void, 
-        /**
-         * Defines the mask of the observer (used to filter notifications)
-         */
-        mask: number, 
-        /**
-         * Defines the current scope used to restore the JS context
-         */
-        scope?: any);
-    }
-    /**
-     * Represent a list of observers registered to multiple Observables object.
-     */
-    export class MultiObserver<T> {
-        private _observers;
-        private _observables;
-        /**
-         * Release associated resources
-         */
-        dispose(): void;
-        /**
-         * Raise a callback when one of the observable will notify
-         * @param observables defines a list of observables to watch
-         * @param callback defines the callback to call on notification
-         * @param mask defines the mask used to filter notifications
-         * @param scope defines the current scope used to restore the JS context
-         * @returns the new MultiObserver
-         */
-        static Watch<T>(observables: Observable<T>[], callback: (eventData: T, eventState: EventState) => void, mask?: number, scope?: any): MultiObserver<T>;
-    }
-    /**
-     * The Observable class is a simple implementation of the Observable pattern.
-     *
-     * There's one slight particularity though: a given Observable can notify its observer using a particular mask value, only the Observers registered with this mask value will be notified.
-     * This enable a more fine grained execution without having to rely on multiple different Observable objects.
-     * For instance you may have a given Observable that have four different types of notifications: Move (mask = 0x01), Stop (mask = 0x02), Turn Right (mask = 0X04), Turn Left (mask = 0X08).
-     * A given observer can register itself with only Move and Stop (mask = 0x03), then it will only be notified when one of these two occurs and will never be for Turn Left/Right.
-     */
-    export class Observable<T> {
-        private _observers;
-        private _eventState;
-        private _onObserverAdded;
-        /**
-         * Gets the list of observers
-         */
-        readonly observers: Array<Observer<T>>;
-        /**
-         * Creates a new observable
-         * @param onObserverAdded defines a callback to call when a new observer is added
-         */
-        constructor(onObserverAdded?: (observer: Observer<T>) => void);
-        /**
-         * Create a new Observer with the specified callback
-         * @param callback the callback that will be executed for that Observer
-         * @param mask the mask used to filter observers
-         * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
-         * @param scope optional scope for the callback to be called from
-         * @param unregisterOnFirstCall defines if the observer as to be unregistered after the next notification
-         * @returns the new observer created for the callback
-         */
-        add(callback: (eventData: T, eventState: EventState) => void, mask?: number, insertFirst?: boolean, scope?: any, unregisterOnFirstCall?: boolean): Nullable<Observer<T>>;
-        /**
-         * Create a new Observer with the specified callback and unregisters after the next notification
-         * @param callback the callback that will be executed for that Observer
-         * @returns the new observer created for the callback
-         */
-        addOnce(callback: (eventData: T, eventState: EventState) => void): Nullable<Observer<T>>;
-        /**
-         * Remove an Observer from the Observable object
-         * @param observer the instance of the Observer to remove
-         * @returns false if it doesn't belong to this Observable
-         */
-        remove(observer: Nullable<Observer<T>>): boolean;
-        /**
-         * Remove a callback from the Observable object
-         * @param callback the callback to remove
-         * @param scope optional scope. If used only the callbacks with this scope will be removed
-         * @returns false if it doesn't belong to this Observable
-        */
-        removeCallback(callback: (eventData: T, eventState: EventState) => void, scope?: any): boolean;
-        private _deferUnregister;
-        private _remove;
-        /**
-         * Moves the observable to the top of the observer list making it get called first when notified
-         * @param observer the observer to move
-         */
-        makeObserverTopPriority(observer: Observer<T>): void;
-        /**
-         * Moves the observable to the bottom of the observer list making it get called last when notified
-         * @param observer the observer to move
-         */
-        makeObserverBottomPriority(observer: Observer<T>): void;
-        /**
-         * Notify all Observers by calling their respective callback with the given data
-         * Will return true if all observers were executed, false if an observer set skipNextObservers to true, then prevent the subsequent ones to execute
-         * @param eventData defines the data to send to all observers
-         * @param mask defines the mask of the current notification (observers with incompatible mask (ie mask & observer.mask === 0) will not be notified)
-         * @param target defines the original target of the state
-         * @param currentTarget defines the current target of the state
-         * @returns false if the complete observer chain was not processed (because one observer set the skipNextObservers to true)
-         */
-        notifyObservers(eventData: T, mask?: number, target?: any, currentTarget?: any): boolean;
-        /**
-         * Calling this will execute each callback, expecting it to be a promise or return a value.
-         * If at any point in the chain one function fails, the promise will fail and the execution will not continue.
-         * This is useful when a chain of events (sometimes async events) is needed to initialize a certain object
-         * and it is crucial that all callbacks will be executed.
-         * The order of the callbacks is kept, callbacks are not executed parallel.
-         *
-         * @param eventData The data to be sent to each callback
-         * @param mask is used to filter observers defaults to -1
-         * @param target defines the callback target (see EventState)
-         * @param currentTarget defines he current object in the bubbling phase
-         * @returns {Promise<T>} will return a Promise than resolves when all callbacks executed successfully.
-         */
-        notifyObserversWithPromise(eventData: T, mask?: number, target?: any, currentTarget?: any): Promise<T>;
-        /**
-         * Notify a specific observer
-         * @param observer defines the observer to notify
-         * @param eventData defines the data to be sent to each callback
-         * @param mask is used to filter observers defaults to -1
-         */
-        notifyObserver(observer: Observer<T>, eventData: T, mask?: number): void;
-        /**
-         * Gets a boolean indicating if the observable has at least one observer
-         * @returns true is the Observable has at least one Observer registered
-         */
-        hasObservers(): boolean;
-        /**
-        * Clear the list of observers
-        */
-        clear(): void;
-        /**
-         * Clone the current observable
-         * @returns a new observable
-         */
-        clone(): Observable<T>;
-        /**
-         * Does this observable handles observer registered with a given mask
-         * @param mask defines the mask to be tested
-         * @return whether or not one observer registered with the given mask is handeled
-        **/
-        hasSpecificMask(mask?: number): boolean;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to help managing file picking and drag'n'drop
-     * File Storage
-     */
-    export class FilesInputStore {
-        /**
-         * List of files ready to be loaded
-         */
-        static FilesToLoad: {
-            [key: string]: File;
-        };
-    }
-}
-declare module BABYLON {
     /** Defines the cross module used constants to avoid circular dependncies */
     export class Constants {
         /** Defines that alpha blending is disabled */
@@ -4884,380 +5604,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Sets of helpers dealing with the DOM and some of the recurrent functions needed in
-     * Babylon.js
-     */
-    export class DomManagement {
-        /**
-         * Checks if the window object exists
-         * @returns true if the window object exists
-         */
-        static IsWindowObjectExist(): boolean;
-        /**
-         * Extracts text content from a DOM element hierarchy
-         * @param element defines the root element
-         * @returns a string
-         */
-        static GetDOMTextContent(element: HTMLElement): string;
-    }
-}
-declare module BABYLON {
-    /**
-     * Logger used througouht the application to allow configuration of
-     * the log level required for the messages.
-     */
-    export class Logger {
-        /**
-         * No log
-         */
-        static readonly NoneLogLevel: number;
-        /**
-         * Only message logs
-         */
-        static readonly MessageLogLevel: number;
-        /**
-         * Only warning logs
-         */
-        static readonly WarningLogLevel: number;
-        /**
-         * Only error logs
-         */
-        static readonly ErrorLogLevel: number;
-        /**
-         * All logs
-         */
-        static readonly AllLogLevel: number;
-        private static _LogCache;
-        /**
-         * Gets a value indicating the number of loading errors
-         * @ignorenaming
-         */
-        static errorsCount: number;
-        /**
-         * Callback called when a new log is added
-         */
-        static OnNewCacheEntry: (entry: string) => void;
-        private static _AddLogEntry;
-        private static _FormatMessage;
-        private static _LogDisabled;
-        private static _LogEnabled;
-        private static _WarnDisabled;
-        private static _WarnEnabled;
-        private static _ErrorDisabled;
-        private static _ErrorEnabled;
-        /**
-         * Log a message to the console
-         */
-        static Log: (message: string) => void;
-        /**
-         * Write a warning message to the console
-         */
-        static Warn: (message: string) => void;
-        /**
-         * Write an error message to the console
-         */
-        static Error: (message: string) => void;
-        /**
-         * Gets current log cache (list of logs)
-         */
-        static readonly LogCache: string;
-        /**
-         * Clears the log cache
-         */
-        static ClearLogCache(): void;
-        /**
-         * Sets the current log level (MessageLogLevel / WarningLogLevel / ErrorLogLevel)
-         */
-        static LogLevels: number;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class _TypeStore {
-        /** @hidden */
-        static RegisteredTypes: {
-            [key: string]: Object;
-        };
-        /** @hidden */
-        static GetClass(fqdn: string): any;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class containing a set of static utilities functions for deep copy.
-     */
-    export class DeepCopier {
-        /**
-         * Tries to copy an object by duplicating every property
-         * @param source defines the source object
-         * @param destination defines the target object
-         * @param doNotCopyList defines a list of properties to avoid
-         * @param mustCopyList defines a list of properties to copy (even if they start with _)
-         */
-        static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[]): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class containing a set of static utilities functions for precision date
-     */
-    export class PrecisionDate {
-        /**
-         * Gets either window.performance.now() if supported or Date.now() else
-         */
-        static readonly Now: number;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class _DevTools {
-        static WarnImport(name: string): string;
-    }
-}
-declare module BABYLON {
-    /**
-     * Extended version of XMLHttpRequest with support for customizations (headers, ...)
-     */
-    export class WebRequest {
-        private _xhr;
-        /**
-         * Custom HTTP Request Headers to be sent with XMLHttpRequests
-         * i.e. when loading files, where the server/service expects an Authorization header
-         */
-        static CustomRequestHeaders: {
-            [key: string]: string;
-        };
-        /**
-         * Add callback functions in this array to update all the requests before they get sent to the network
-         */
-        static CustomRequestModifiers: ((request: XMLHttpRequest, url: string) => void)[];
-        private _injectCustomRequestHeaders;
-        /**
-         * Gets or sets a function to be called when loading progress changes
-         */
-        onprogress: ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null;
-        /**
-         * Returns client's state
-         */
-        readonly readyState: number;
-        /**
-         * Returns client's status
-         */
-        readonly status: number;
-        /**
-         * Returns client's status as a text
-         */
-        readonly statusText: string;
-        /**
-         * Returns client's response
-         */
-        readonly response: any;
-        /**
-         * Returns client's response url
-         */
-        readonly responseURL: string;
-        /**
-         * Returns client's response as text
-         */
-        readonly responseText: string;
-        /**
-         * Gets or sets the expected response type
-         */
-        responseType: XMLHttpRequestResponseType;
-        /** @hidden */
-        addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-        /** @hidden */
-        removeEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-        /**
-         * Cancels any network activity
-         */
-        abort(): void;
-        /**
-         * Initiates the request. The optional argument provides the request body. The argument is ignored if request method is GET or HEAD
-         * @param body defines an optional request body
-         */
-        send(body?: Document | BodyInit | null): void;
-        /**
-         * Sets the request method, request URL
-         * @param method defines the method to use (GET, POST, etc..)
-         * @param url defines the url to connect with
-         */
-        open(method: string, url: string): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to evalaute queries containing `and` and `or` operators
-     */
-    export class AndOrNotEvaluator {
-        /**
-         * Evaluate a query
-         * @param query defines the query to evaluate
-         * @param evaluateCallback defines the callback used to filter result
-         * @returns true if the query matches
-         */
-        static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean;
-        private static _HandleParenthesisContent;
-        private static _SimplifyNegation;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store custom tags
-     */
-    export class Tags {
-        /**
-         * Adds support for tags on the given object
-         * @param obj defines the object to use
-         */
-        static EnableFor(obj: any): void;
-        /**
-         * Removes tags support
-         * @param obj defines the object to use
-         */
-        static DisableFor(obj: any): void;
-        /**
-         * Gets a boolean indicating if the given object has tags
-         * @param obj defines the object to use
-         * @returns a boolean
-         */
-        static HasTags(obj: any): boolean;
-        /**
-         * Gets the tags available on a given object
-         * @param obj defines the object to use
-         * @param asString defines if the tags must be returned as a string instead of an array of strings
-         * @returns the tags
-         */
-        static GetTags(obj: any, asString?: boolean): any;
-        /**
-         * Adds tags to an object
-         * @param obj defines the object to use
-         * @param tagsString defines the tag string. The tags 'true' and 'false' are reserved and cannot be used as tags.
-         * A tag cannot start with '||', '&&', and '!'. It cannot contain whitespaces
-         */
-        static AddTagsTo(obj: any, tagsString: string): void;
-        /**
-         * @hidden
-         */
-        static _AddTagTo(obj: any, tag: string): void;
-        /**
-         * Removes specific tags from a specific object
-         * @param obj defines the object to use
-         * @param tagsString defines the tags to remove
-         */
-        static RemoveTagsFrom(obj: any, tagsString: string): void;
-        /**
-         * @hidden
-         */
-        static _RemoveTagFrom(obj: any, tag: string): void;
-        /**
-         * Defines if tags hosted on an object match a given query
-         * @param obj defines the object to use
-         * @param tagsQuery defines the tag query
-         * @returns a boolean
-         */
-        static MatchesQuery(obj: any, tagsQuery: string): boolean;
-    }
-}
-declare module BABYLON {
-    /**
-     * Manages the defines for the Material
-     */
-    export class MaterialDefines {
-        /** @hidden */
-        protected _keys: string[];
-        private _isDirty;
-        /** @hidden */
-        _renderId: number;
-        /** @hidden */
-        _areLightsDirty: boolean;
-        /** @hidden */
-        _areAttributesDirty: boolean;
-        /** @hidden */
-        _areTexturesDirty: boolean;
-        /** @hidden */
-        _areFresnelDirty: boolean;
-        /** @hidden */
-        _areMiscDirty: boolean;
-        /** @hidden */
-        _areImageProcessingDirty: boolean;
-        /** @hidden */
-        _normals: boolean;
-        /** @hidden */
-        _uvs: boolean;
-        /** @hidden */
-        _needNormals: boolean;
-        /** @hidden */
-        _needUVs: boolean;
-        [id: string]: any;
-        /**
-         * Specifies if the material needs to be re-calculated
-         */
-        readonly isDirty: boolean;
-        /**
-         * Marks the material to indicate that it has been re-calculated
-         */
-        markAsProcessed(): void;
-        /**
-         * Marks the material to indicate that it needs to be re-calculated
-         */
-        markAsUnprocessed(): void;
-        /**
-         * Marks the material to indicate all of its defines need to be re-calculated
-         */
-        markAllAsDirty(): void;
-        /**
-         * Marks the material to indicate that image processing needs to be re-calculated
-         */
-        markAsImageProcessingDirty(): void;
-        /**
-         * Marks the material to indicate the lights need to be re-calculated
-         */
-        markAsLightDirty(): void;
-        /**
-         * Marks the attribute state as changed
-         */
-        markAsAttributesDirty(): void;
-        /**
-         * Marks the texture state as changed
-         */
-        markAsTexturesDirty(): void;
-        /**
-         * Marks the fresnel state as changed
-         */
-        markAsFresnelDirty(): void;
-        /**
-         * Marks the misc state as changed
-         */
-        markAsMiscDirty(): void;
-        /**
-         * Rebuilds the material defines
-         */
-        rebuild(): void;
-        /**
-         * Specifies if two material defines are equal
-         * @param other - A material define instance to compare to
-         * @returns - Boolean indicating if the material defines are equal (true) or not (false)
-         */
-        isEqual(other: MaterialDefines): boolean;
-        /**
-         * Clones this instance's defines to another instance
-         * @param other - material defines to clone values to
-         */
-        cloneTo(other: MaterialDefines): void;
-        /**
-         * Resets the material define values
-         */
-        reset(): void;
-        /**
-         * Converts the material define values to a string
-         * @returns - String of material define information
-         */
-        toString(): string;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to store and describe the pipeline context associated with an effect
      */
     export interface IPipelineContext {
@@ -5271,27 +5617,6 @@ declare module BABYLON {
         isReady: boolean;
         /** @hidden */
         _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store gfx data (like WebGLBuffer)
-     */
-    export class DataBuffer {
-        /**
-         * Gets or sets the number of objects referencing this buffer
-         */
-        references: number;
-        /** Gets or sets the size of the underlying buffer */
-        capacity: number;
-        /**
-         * Gets or sets a boolean indicating if the buffer contains 32bits indices
-         */
-        is32Bits: boolean;
-        /**
-         * Gets the underlying buffer
-         */
-        readonly underlyingResource: any;
     }
 }
 declare module BABYLON {
@@ -5323,6 +5648,27 @@ declare module BABYLON {
         version: string;
         platformName: string;
         lookForClosingBracketForUniformBuffer?: boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Helper to manipulate strings
+     */
+    export class StringTools {
+        /**
+         * Checks for a matching suffix at the end of a string (for ES5 and lower)
+         * @param str Source string
+         * @param suffix Suffix to search for in the source string
+         * @returns Boolean indicating whether the suffix was found (true) or not (false)
+         */
+        static EndsWith(str: string, suffix: string): boolean;
+        /**
+         * Checks for a matching suffix at the beginning of a string (for ES5 and lower)
+         * @param str Source string
+         * @param suffix Suffix to search for in the source string
+         * @returns Boolean indicating whether the suffix was found (true) or not (false)
+         */
+        static StartsWith(str: string, suffix: string): boolean;
     }
 }
 declare module BABYLON {
@@ -5419,6 +5765,163 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * @ignore
+     * Application error to support additional information when loading a file
+     */
+    export class LoadFileError extends Error {
+        /** defines the optional web request */
+        request?: WebRequest | undefined;
+        private static _setPrototypeOf;
+        /**
+         * Creates a new LoadFileError
+         * @param message defines the message of the error
+         * @param request defines the optional web request
+         */
+        constructor(message: string, 
+        /** defines the optional web request */
+        request?: WebRequest | undefined);
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to enable access to offline support
+     * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
+     */
+    export interface IOfflineProvider {
+        /**
+         * Gets a boolean indicating if scene must be saved in the database
+         */
+        enableSceneOffline: boolean;
+        /**
+         * Gets a boolean indicating if textures must be saved in the database
+         */
+        enableTexturesOffline: boolean;
+        /**
+         * Open the offline support and make it available
+         * @param successCallback defines the callback to call on success
+         * @param errorCallback defines the callback to call on error
+         */
+        open(successCallback: () => void, errorCallback: () => void): void;
+        /**
+         * Loads an image from the offline support
+         * @param url defines the url to load from
+         * @param image defines the target DOM image
+         */
+        loadImage(url: string, image: HTMLImageElement): void;
+        /**
+         * Loads a file from offline support
+         * @param url defines the URL to load from
+         * @param sceneLoaded defines a callback to call on success
+         * @param progressCallBack defines a callback to call when progress changed
+         * @param errorCallback defines a callback to call on error
+         * @param useArrayBuffer defines a boolean to use array buffer instead of text string
+         */
+        loadFile(url: string, sceneLoaded: (data: any) => void, progressCallBack?: (data: any) => void, errorCallback?: () => void, useArrayBuffer?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to help managing file picking and drag'n'drop
+     * File Storage
+     */
+    export class FilesInputStore {
+        /**
+         * List of files ready to be loaded
+         */
+        static FilesToLoad: {
+            [key: string]: File;
+        };
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to define a retry strategy when error happens while loading assets
+     */
+    export class RetryStrategy {
+        /**
+         * Function used to defines an exponential back off strategy
+         * @param maxRetries defines the maximum number of retries (3 by default)
+         * @param baseInterval defines the interval between retries
+         * @returns the strategy function to use
+         */
+        static ExponentialBackoff(maxRetries?: number, baseInterval?: number): (url: string, request: WebRequest, retryIndex: number) => number;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export class FileTools {
+        /**
+         * Gets or sets the retry strategy to apply when an error happens while loading an asset
+         */
+        static DefaultRetryStrategy: (url: string, request: WebRequest, retryIndex: number) => number;
+        /**
+         * Gets or sets the base URL to use to load assets
+         */
+        static BaseUrl: string;
+        /**
+         * Default behaviour for cors in the application.
+         * It can be a string if the expected behavior is identical in the entire app.
+         * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
+         */
+        static CorsBehavior: string | ((url: string | string[]) => string);
+        /**
+         * Gets or sets a function used to pre-process url before using them to load assets
+         */
+        static PreprocessUrl: (url: string) => string;
+        /**
+         * Removes unwanted characters from an url
+         * @param url defines the url to clean
+         * @returns the cleaned url
+         */
+        private static _CleanUrl;
+        /**
+         * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
+         * @param url define the url we are trying
+         * @param element define the dom element where to configure the cors policy
+         */
+        static SetCorsBehavior(url: string | string[], element: {
+            crossOrigin: string | null;
+        }): void;
+        /**
+         * Loads an image as an HTMLImageElement.
+         * @param input url string, ArrayBuffer, or Blob to load
+         * @param onLoad callback called when the image successfully loads
+         * @param onError callback called when the image fails to load
+         * @param offlineProvider offline provider for caching
+         * @returns the HTMLImageElement of the loaded image
+         */
+        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
+        /**
+         * Loads a file
+         * @param fileToLoad defines the file to load
+         * @param callback defines the callback to call when data is loaded
+         * @param progressCallBack defines the callback to call during loading process
+         * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+         * @returns a file request object
+         */
+        static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest;
+        /**
+         * Loads a file
+         * @param url url string, ArrayBuffer, or Blob to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param offlineProvider defines the offline provider for caching
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @returns a file request object
+         */
+        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
+        /**
+         * Checks if the loaded document was accessed via `file:`-Protocol.
+         * @returns boolean
+         */
+        static IsFileURL(): boolean;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export class ShaderProcessor {
         static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void): void;
@@ -5432,544 +5935,6 @@ declare module BABYLON {
         private static _PreparePreProcessors;
         private static _ProcessShaderConversion;
         private static _ProcessIncludes;
-    }
-}
-declare module BABYLON {
-    /**
-     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
-     */
-    export class PerformanceMonitor {
-        private _enabled;
-        private _rollingFrameTime;
-        private _lastFrameTimeMs;
-        /**
-         * constructor
-         * @param frameSampleSize The number of samples required to saturate the sliding window
-         */
-        constructor(frameSampleSize?: number);
-        /**
-         * Samples current frame
-         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
-         */
-        sampleFrame(timeMs?: number): void;
-        /**
-         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFrameTime: number;
-        /**
-         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFrameTimeVariance: number;
-        /**
-         * Returns the frame time of the most recent frame
-         */
-        readonly instantaneousFrameTime: number;
-        /**
-         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFPS: number;
-        /**
-         * Returns the average framerate in frames per second using the most recent frame time
-         */
-        readonly instantaneousFPS: number;
-        /**
-         * Returns true if enough samples have been taken to completely fill the sliding window
-         */
-        readonly isSaturated: boolean;
-        /**
-         * Enables contributions to the sliding window sample set
-         */
-        enable(): void;
-        /**
-         * Disables contributions to the sliding window sample set
-         * Samples will not be interpolated over the disabled period
-         */
-        disable(): void;
-        /**
-         * Returns true if sampling is enabled
-         */
-        readonly isEnabled: boolean;
-        /**
-         * Resets performance monitor
-         */
-        reset(): void;
-    }
-    /**
-     * RollingAverage
-     *
-     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
-     */
-    export class RollingAverage {
-        /**
-         * Current average
-         */
-        average: number;
-        /**
-         * Current variance
-         */
-        variance: number;
-        protected _samples: Array<number>;
-        protected _sampleCount: number;
-        protected _pos: number;
-        protected _m2: number;
-        /**
-         * constructor
-         * @param length The number of samples required to saturate the sliding window
-         */
-        constructor(length: number);
-        /**
-         * Adds a sample to the sample set
-         * @param v The sample value
-         */
-        add(v: number): void;
-        /**
-         * Returns previously added values or null if outside of history or outside the sliding window domain
-         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
-         * @return Value previously recorded with add() or null if outside of range
-         */
-        history(i: number): number;
-        /**
-         * Returns true if enough samples have been taken to completely fill the sliding window
-         * @return true if sample-set saturated
-         */
-        isSaturated(): boolean;
-        /**
-         * Resets the rolling average (equivalent to 0 samples taken so far)
-         */
-        reset(): void;
-        /**
-         * Wraps a value around the sample range boundaries
-         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
-         * @return Wrapped position in sample range
-         */
-        protected _wrapPosition(i: number): number;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class implement a typical dictionary using a string as key and the generic type T as value.
-     * The underlying implementation relies on an associative array to ensure the best performances.
-     * The value can be anything including 'null' but except 'undefined'
-     */
-    export class StringDictionary<T> {
-        /**
-         * This will clear this dictionary and copy the content from the 'source' one.
-         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
-         * @param source the dictionary to take the content from and copy to this dictionary
-         */
-        copyFrom(source: StringDictionary<T>): void;
-        /**
-         * Get a value based from its key
-         * @param key the given key to get the matching value from
-         * @return the value if found, otherwise undefined is returned
-         */
-        get(key: string): T | undefined;
-        /**
-         * Get a value from its key or add it if it doesn't exist.
-         * This method will ensure you that a given key/data will be present in the dictionary.
-         * @param key the given key to get the matching value from
-         * @param factory the factory that will create the value if the key is not present in the dictionary.
-         * The factory will only be invoked if there's no data for the given key.
-         * @return the value corresponding to the key.
-         */
-        getOrAddWithFactory(key: string, factory: (key: string) => T): T;
-        /**
-         * Get a value from its key if present in the dictionary otherwise add it
-         * @param key the key to get the value from
-         * @param val if there's no such key/value pair in the dictionary add it with this value
-         * @return the value corresponding to the key
-         */
-        getOrAdd(key: string, val: T): T;
-        /**
-         * Check if there's a given key in the dictionary
-         * @param key the key to check for
-         * @return true if the key is present, false otherwise
-         */
-        contains(key: string): boolean;
-        /**
-         * Add a new key and its corresponding value
-         * @param key the key to add
-         * @param value the value corresponding to the key
-         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
-         */
-        add(key: string, value: T): boolean;
-        /**
-         * Update a specific value associated to a key
-         * @param key defines the key to use
-         * @param value defines the value to store
-         * @returns true if the value was updated (or false if the key was not found)
-         */
-        set(key: string, value: T): boolean;
-        /**
-         * Get the element of the given key and remove it from the dictionary
-         * @param key defines the key to search
-         * @returns the value associated with the key or null if not found
-         */
-        getAndRemove(key: string): Nullable<T>;
-        /**
-         * Remove a key/value from the dictionary.
-         * @param key the key to remove
-         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
-         */
-        remove(key: string): boolean;
-        /**
-         * Clear the whole content of the dictionary
-         */
-        clear(): void;
-        /**
-         * Gets the current count
-         */
-        readonly count: number;
-        /**
-         * Execute a callback on each key/val of the dictionary.
-         * Note that you can remove any element in this dictionary in the callback implementation
-         * @param callback the callback to execute on a given key/value pair
-         */
-        forEach(callback: (key: string, val: T) => void): void;
-        /**
-         * Execute a callback on every occurrence of the dictionary until it returns a valid TRes object.
-         * If the callback returns null or undefined the method will iterate to the next key/value pair
-         * Note that you can remove any element in this dictionary in the callback implementation
-         * @param callback the callback to execute, if it return a valid T instanced object the enumeration will stop and the object will be returned
-         * @returns the first item
-         */
-        first<TRes>(callback: (key: string, val: T) => TRes): TRes | null;
-        private _count;
-        private _data;
-    }
-}
-declare module BABYLON {
-    /**
-     * Helper class that provides a small promise polyfill
-     */
-    export class PromisePolyfill {
-        /**
-         * Static function used to check if the polyfill is required
-         * If this is the case then the function will inject the polyfill to window.Promise
-         * @param force defines a boolean used to force the injection (mostly for testing purposes)
-         */
-        static Apply(force?: boolean): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store data that will be store in GPU memory
-     */
-    export class Buffer {
-        private _engine;
-        private _buffer;
-        /** @hidden */
-        _data: Nullable<DataArray>;
-        private _updatable;
-        private _instanced;
-        /**
-         * Gets the byte stride.
-         */
-        readonly byteStride: number;
-        /**
-         * Constructor
-         * @param engine the engine
-         * @param data the data to use for this buffer
-         * @param updatable whether the data is updatable
-         * @param stride the stride (optional)
-         * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
-         * @param instanced whether the buffer is instanced (optional)
-         * @param useBytes set to true if the stride in in bytes (optional)
-         */
-        constructor(engine: any, data: DataArray, updatable: boolean, stride?: number, postponeInternalCreation?: boolean, instanced?: boolean, useBytes?: boolean);
-        /**
-         * Create a new VertexBuffer based on the current buffer
-         * @param kind defines the vertex buffer kind (position, normal, etc.)
-         * @param offset defines offset in the buffer (0 by default)
-         * @param size defines the size in floats of attributes (position is 3 for instance)
-         * @param stride defines the stride size in floats in the buffer (the offset to apply to reach next value when data is interleaved)
-         * @param instanced defines if the vertex buffer contains indexed data
-         * @param useBytes defines if the offset and stride are in bytes
-         * @returns the new vertex buffer
-         */
-        createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean, useBytes?: boolean): VertexBuffer;
-        /**
-         * Gets a boolean indicating if the Buffer is updatable?
-         * @returns true if the buffer is updatable
-         */
-        isUpdatable(): boolean;
-        /**
-         * Gets current buffer's data
-         * @returns a DataArray or null
-         */
-        getData(): Nullable<DataArray>;
-        /**
-         * Gets underlying native buffer
-         * @returns underlying native buffer
-         */
-        getBuffer(): Nullable<DataBuffer>;
-        /**
-         * Gets the stride in float32 units (i.e. byte stride / 4).
-         * May not be an integer if the byte stride is not divisible by 4.
-         * DEPRECATED. Use byteStride instead.
-         * @returns the stride in float32 units
-         */
-        getStrideSize(): number;
-        /**
-         * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
-         * @param data defines the data to store
-         */
-        create(data?: Nullable<DataArray>): void;
-        /** @hidden */
-        _rebuild(): void;
-        /**
-         * Update current buffer data
-         * @param data defines the data to store
-         */
-        update(data: DataArray): void;
-        /**
-         * Updates the data directly.
-         * @param data the new data
-         * @param offset the new offset
-         * @param vertexCount the vertex count (optional)
-         * @param useBytes set to true if the offset is in bytes
-         */
-        updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes?: boolean): void;
-        /**
-         * Release all resources
-         */
-        dispose(): void;
-    }
-    /**
-         * Specialized buffer used to store vertex data
-         */
-    export class VertexBuffer {
-        /** @hidden */
-        _buffer: Buffer;
-        private _kind;
-        private _size;
-        private _ownsBuffer;
-        private _instanced;
-        private _instanceDivisor;
-        /**
-         * The byte type.
-         */
-        static readonly BYTE: number;
-        /**
-         * The unsigned byte type.
-         */
-        static readonly UNSIGNED_BYTE: number;
-        /**
-         * The short type.
-         */
-        static readonly SHORT: number;
-        /**
-         * The unsigned short type.
-         */
-        static readonly UNSIGNED_SHORT: number;
-        /**
-         * The integer type.
-         */
-        static readonly INT: number;
-        /**
-         * The unsigned integer type.
-         */
-        static readonly UNSIGNED_INT: number;
-        /**
-         * The float type.
-         */
-        static readonly FLOAT: number;
-        /**
-         * Gets or sets the instance divisor when in instanced mode
-         */
-        instanceDivisor: number;
-        /**
-         * Gets the byte stride.
-         */
-        readonly byteStride: number;
-        /**
-         * Gets the byte offset.
-         */
-        readonly byteOffset: number;
-        /**
-         * Gets whether integer data values should be normalized into a certain range when being casted to a float.
-         */
-        readonly normalized: boolean;
-        /**
-         * Gets the data type of each component in the array.
-         */
-        readonly type: number;
-        /**
-         * Constructor
-         * @param engine the engine
-         * @param data the data to use for this vertex buffer
-         * @param kind the vertex buffer kind
-         * @param updatable whether the data is updatable
-         * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
-         * @param stride the stride (optional)
-         * @param instanced whether the buffer is instanced (optional)
-         * @param offset the offset of the data (optional)
-         * @param size the number of components (optional)
-         * @param type the type of the component (optional)
-         * @param normalized whether the data contains normalized data (optional)
-         * @param useBytes set to true if stride and offset are in bytes (optional)
-         */
-        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean);
-        /** @hidden */
-        _rebuild(): void;
-        /**
-         * Returns the kind of the VertexBuffer (string)
-         * @returns a string
-         */
-        getKind(): string;
-        /**
-         * Gets a boolean indicating if the VertexBuffer is updatable?
-         * @returns true if the buffer is updatable
-         */
-        isUpdatable(): boolean;
-        /**
-         * Gets current buffer's data
-         * @returns a DataArray or null
-         */
-        getData(): Nullable<DataArray>;
-        /**
-         * Gets underlying native buffer
-         * @returns underlying native buffer
-         */
-        getBuffer(): Nullable<DataBuffer>;
-        /**
-         * Gets the stride in float32 units (i.e. byte stride / 4).
-         * May not be an integer if the byte stride is not divisible by 4.
-         * DEPRECATED. Use byteStride instead.
-         * @returns the stride in float32 units
-         */
-        getStrideSize(): number;
-        /**
-         * Returns the offset as a multiple of the type byte length.
-         * DEPRECATED. Use byteOffset instead.
-         * @returns the offset in bytes
-         */
-        getOffset(): number;
-        /**
-         * Returns the number of components per vertex attribute (integer)
-         * @returns the size in float
-         */
-        getSize(): number;
-        /**
-         * Gets a boolean indicating is the internal buffer of the VertexBuffer is instanced
-         * @returns true if this buffer is instanced
-         */
-        getIsInstanced(): boolean;
-        /**
-         * Returns the instancing divisor, zero for non-instanced (integer).
-         * @returns a number
-         */
-        getInstanceDivisor(): number;
-        /**
-         * Store data into the buffer. If the buffer was already used it will be either recreated or updated depending on isUpdatable property
-         * @param data defines the data to store
-         */
-        create(data?: DataArray): void;
-        /**
-         * Updates the underlying buffer according to the passed numeric array or Float32Array.
-         * This function will create a new buffer if the current one is not updatable
-         * @param data defines the data to store
-         */
-        update(data: DataArray): void;
-        /**
-         * Updates directly the underlying WebGLBuffer according to the passed numeric array or Float32Array.
-         * Returns the directly updated WebGLBuffer.
-         * @param data the new data
-         * @param offset the new offset
-         * @param useBytes set to true if the offset is in bytes
-         */
-        updateDirectly(data: DataArray, offset: number, useBytes?: boolean): void;
-        /**
-         * Disposes the VertexBuffer and the underlying WebGLBuffer.
-         */
-        dispose(): void;
-        /**
-         * Enumerates each value of this vertex buffer as numbers.
-         * @param count the number of values to enumerate
-         * @param callback the callback function called for each value
-         */
-        forEach(count: number, callback: (value: number, index: number) => void): void;
-        /**
-         * Positions
-         */
-        static readonly PositionKind: string;
-        /**
-         * Normals
-         */
-        static readonly NormalKind: string;
-        /**
-         * Tangents
-         */
-        static readonly TangentKind: string;
-        /**
-         * Texture coordinates
-         */
-        static readonly UVKind: string;
-        /**
-         * Texture coordinates 2
-         */
-        static readonly UV2Kind: string;
-        /**
-         * Texture coordinates 3
-         */
-        static readonly UV3Kind: string;
-        /**
-         * Texture coordinates 4
-         */
-        static readonly UV4Kind: string;
-        /**
-         * Texture coordinates 5
-         */
-        static readonly UV5Kind: string;
-        /**
-         * Texture coordinates 6
-         */
-        static readonly UV6Kind: string;
-        /**
-         * Colors
-         */
-        static readonly ColorKind: string;
-        /**
-         * Matrix indices (for bones)
-         */
-        static readonly MatricesIndicesKind: string;
-        /**
-         * Matrix weights (for bones)
-         */
-        static readonly MatricesWeightsKind: string;
-        /**
-         * Additional matrix indices (for bones)
-         */
-        static readonly MatricesIndicesExtraKind: string;
-        /**
-         * Additional matrix weights (for bones)
-         */
-        static readonly MatricesWeightsExtraKind: string;
-        /**
-         * Deduces the stride given a kind.
-         * @param kind The kind string to deduce
-         * @returns The deduced stride
-         */
-        static DeduceStride(kind: string): number;
-        /**
-         * Gets the byte length of the given type.
-         * @param type the type
-         * @returns the number of bytes
-         */
-        static GetTypeByteLength(type: number): number;
-        /**
-         * Enumerates each value of the given parameters as numbers.
-         * @param data the data to enumerate
-         * @param byteOffset the byte offset of the data
-         * @param byteStride the byte stride of the data
-         * @param componentCount the number of components per element
-         * @param componentType the type of the component
-         * @param count the number of values to enumerate
-         * @param normalized whether the data is normalized
-         * @param callback the callback function called for each value
-         */
-        static ForEach(data: DataArray, byteOffset: number, byteStride: number, componentCount: number, componentType: number, count: number, normalized: boolean, callback: (value: number, index: number) => void): void;
-        private static _GetFloatValue;
     }
 }
 declare module BABYLON {
@@ -6143,133 +6108,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * CubeMap information grouping all the data for each faces as well as the cubemap size.
-     */
-    export interface CubeMapInfo {
-        /**
-         * The pixel array for the front face.
-         * This is stored in format, left to right, up to down format.
-         */
-        front: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the back face.
-         * This is stored in format, left to right, up to down format.
-         */
-        back: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the left face.
-         * This is stored in format, left to right, up to down format.
-         */
-        left: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the right face.
-         * This is stored in format, left to right, up to down format.
-         */
-        right: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the up face.
-         * This is stored in format, left to right, up to down format.
-         */
-        up: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the down face.
-         * This is stored in format, left to right, up to down format.
-         */
-        down: Nullable<ArrayBufferView>;
-        /**
-         * The size of the cubemap stored.
-         *
-         * Each faces will be size * size pixels.
-         */
-        size: number;
-        /**
-         * The format of the texture.
-         *
-         * RGBA, RGB.
-         */
-        format: number;
-        /**
-         * The type of the texture data.
-         *
-         * UNSIGNED_INT, FLOAT.
-         */
-        type: number;
-        /**
-         * Specifies whether the texture is in gamma space.
-         */
-        gammaSpace: boolean;
-    }
-    /**
-     * Helper class useful to convert panorama picture to their cubemap representation in 6 faces.
-     */
-    export class PanoramaToCubeMapTools {
-        private static FACE_FRONT;
-        private static FACE_BACK;
-        private static FACE_RIGHT;
-        private static FACE_LEFT;
-        private static FACE_DOWN;
-        private static FACE_UP;
-        /**
-         * Converts a panorma stored in RGB right to left up to down format into a cubemap (6 faces).
-         *
-         * @param float32Array The source data.
-         * @param inputWidth The width of the input panorama.
-         * @param inputHeight The height of the input panorama.
-         * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
-         * @return The cubemap data
-         */
-        static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo;
-        private static CreateCubemapTexture;
-        private static CalcProjectionSpherical;
-    }
-}
-declare module BABYLON {
-    /**
-     * Helper class dealing with the extraction of spherical polynomial dataArray
-     * from a cube map.
-     */
-    export class CubeMapToSphericalPolynomialTools {
-        private static FileFaces;
-        /**
-         * Converts a texture to the according Spherical Polynomial data.
-         * This extracts the first 3 orders only as they are the only one used in the lighting.
-         *
-         * @param texture The texture to extract the information from.
-         * @return The Spherical Polynomial data.
-         */
-        static ConvertCubeMapTextureToSphericalPolynomial(texture: BaseTexture): SphericalPolynomial | null;
-        /**
-         * Converts a cubemap to the according Spherical Polynomial data.
-         * This extracts the first 3 orders only as they are the only one used in the lighting.
-         *
-         * @param cubeInfo The Cube map to extract the information from.
-         * @return The Spherical Polynomial data.
-         */
-        static ConvertCubeMapToSphericalPolynomial(cubeInfo: CubeMapInfo): SphericalPolynomial;
-    }
-}
-declare module BABYLON {
-    /**
-     * The engine store class is responsible to hold all the instances of Engine and Scene created
-     * during the life time of the application.
-     */
-    export class EngineStore {
-        /** Gets the list of created engines */
-        static Instances: Engine[];
-        /** @hidden */
-        static _LastCreatedScene: Nullable<Scene>;
-        /**
-         * Gets the latest created engine
-         */
-        static readonly LastCreatedEngine: Nullable<Engine>;
-        /**
-         * Gets the latest created scene
-         */
-        static readonly LastCreatedScene: Nullable<Scene>;
-    }
-}
-declare module BABYLON {
-    /**
      * Define options used to create a render target texture
      */
     export class RenderTargetCreationOptions {
@@ -6400,602 +6238,331 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to store data associated with WebGL texture data for the engine
-     * This class should not be used directly
+     * Class used to evalaute queries containing `and` and `or` operators
      */
-    export class InternalTexture {
-        /** @hidden */
-        static _UpdateRGBDAsync: (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: SphericalPolynomial | null, lodScale: number, lodOffset: number) => Promise<void>;
+    export class AndOrNotEvaluator {
         /**
-         * The source of the texture data is unknown
+         * Evaluate a query
+         * @param query defines the query to evaluate
+         * @param evaluateCallback defines the callback used to filter result
+         * @returns true if the query matches
          */
-        static DATASOURCE_UNKNOWN: number;
-        /**
-         * Texture data comes from an URL
-         */
-        static DATASOURCE_URL: number;
-        /**
-         * Texture data is only used for temporary storage
-         */
-        static DATASOURCE_TEMP: number;
-        /**
-         * Texture data comes from raw data (ArrayBuffer)
-         */
-        static DATASOURCE_RAW: number;
-        /**
-         * Texture content is dynamic (video or dynamic texture)
-         */
-        static DATASOURCE_DYNAMIC: number;
-        /**
-         * Texture content is generated by rendering to it
-         */
-        static DATASOURCE_RENDERTARGET: number;
-        /**
-         * Texture content is part of a multi render target process
-         */
-        static DATASOURCE_MULTIRENDERTARGET: number;
-        /**
-         * Texture data comes from a cube data file
-         */
-        static DATASOURCE_CUBE: number;
-        /**
-         * Texture data comes from a raw cube data
-         */
-        static DATASOURCE_CUBERAW: number;
-        /**
-         * Texture data come from a prefiltered cube data file
-         */
-        static DATASOURCE_CUBEPREFILTERED: number;
-        /**
-         * Texture content is raw 3D data
-         */
-        static DATASOURCE_RAW3D: number;
-        /**
-         * Texture content is a depth texture
-         */
-        static DATASOURCE_DEPTHTEXTURE: number;
-        /**
-         * Texture data comes from a raw cube data encoded with RGBD
-         */
-        static DATASOURCE_CUBERAW_RGBD: number;
-        /**
-         * Defines if the texture is ready
-         */
-        isReady: boolean;
-        /**
-         * Defines if the texture is a cube texture
-         */
-        isCube: boolean;
-        /**
-         * Defines if the texture contains 3D data
-         */
-        is3D: boolean;
-        /**
-         * Defines if the texture contains multiview data
-         */
-        isMultiview: boolean;
-        /**
-         * Gets the URL used to load this texture
-         */
-        url: string;
-        /**
-         * Gets the sampling mode of the texture
-         */
-        samplingMode: number;
-        /**
-         * Gets a boolean indicating if the texture needs mipmaps generation
-         */
-        generateMipMaps: boolean;
-        /**
-         * Gets the number of samples used by the texture (WebGL2+ only)
-         */
-        samples: number;
-        /**
-         * Gets the type of the texture (int, float...)
-         */
-        type: number;
-        /**
-         * Gets the format of the texture (RGB, RGBA...)
-         */
-        format: number;
-        /**
-         * Observable called when the texture is loaded
-         */
-        onLoadedObservable: Observable<InternalTexture>;
-        /**
-         * Gets the width of the texture
-         */
-        width: number;
-        /**
-         * Gets the height of the texture
-         */
-        height: number;
-        /**
-         * Gets the depth of the texture
-         */
-        depth: number;
-        /**
-         * Gets the initial width of the texture (It could be rescaled if the current system does not support non power of two textures)
-         */
-        baseWidth: number;
-        /**
-         * Gets the initial height of the texture (It could be rescaled if the current system does not support non power of two textures)
-         */
-        baseHeight: number;
-        /**
-         * Gets the initial depth of the texture (It could be rescaled if the current system does not support non power of two textures)
-         */
-        baseDepth: number;
-        /**
-         * Gets a boolean indicating if the texture is inverted on Y axis
-         */
-        invertY: boolean;
-        /** @hidden */
-        _invertVScale: boolean;
-        /** @hidden */
-        _associatedChannel: number;
-        /** @hidden */
-        _dataSource: number;
-        /** @hidden */
-        _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
-        /** @hidden */
-        _bufferView: Nullable<ArrayBufferView>;
-        /** @hidden */
-        _bufferViewArray: Nullable<ArrayBufferView[]>;
-        /** @hidden */
-        _bufferViewArrayArray: Nullable<ArrayBufferView[][]>;
-        /** @hidden */
-        _size: number;
-        /** @hidden */
-        _extension: string;
-        /** @hidden */
-        _files: Nullable<string[]>;
-        /** @hidden */
-        _workingCanvas: Nullable<HTMLCanvasElement>;
-        /** @hidden */
-        _workingContext: Nullable<CanvasRenderingContext2D>;
-        /** @hidden */
-        _framebuffer: Nullable<WebGLFramebuffer>;
-        /** @hidden */
-        _depthStencilBuffer: Nullable<WebGLRenderbuffer>;
-        /** @hidden */
-        _MSAAFramebuffer: Nullable<WebGLFramebuffer>;
-        /** @hidden */
-        _MSAARenderBuffer: Nullable<WebGLRenderbuffer>;
-        /** @hidden */
-        _attachments: Nullable<number[]>;
-        /** @hidden */
-        _cachedCoordinatesMode: Nullable<number>;
-        /** @hidden */
-        _cachedWrapU: Nullable<number>;
-        /** @hidden */
-        _cachedWrapV: Nullable<number>;
-        /** @hidden */
-        _cachedWrapR: Nullable<number>;
-        /** @hidden */
-        _cachedAnisotropicFilteringLevel: Nullable<number>;
-        /** @hidden */
-        _isDisabled: boolean;
-        /** @hidden */
-        _compression: Nullable<string>;
-        /** @hidden */
-        _generateStencilBuffer: boolean;
-        /** @hidden */
-        _generateDepthBuffer: boolean;
-        /** @hidden */
-        _comparisonFunction: number;
-        /** @hidden */
-        _sphericalPolynomial: Nullable<SphericalPolynomial>;
-        /** @hidden */
-        _lodGenerationScale: number;
-        /** @hidden */
-        _lodGenerationOffset: number;
-        /** @hidden */
-        _colorTextureArray: Nullable<WebGLTexture>;
-        /** @hidden */
-        _depthStencilTextureArray: Nullable<WebGLTexture>;
-        /** @hidden */
-        _lodTextureHigh: Nullable<BaseTexture>;
-        /** @hidden */
-        _lodTextureMid: Nullable<BaseTexture>;
-        /** @hidden */
-        _lodTextureLow: Nullable<BaseTexture>;
-        /** @hidden */
-        _isRGBD: boolean;
-        /** @hidden */
-        _linearSpecularLOD: boolean;
-        /** @hidden */
-        _irradianceTexture: Nullable<BaseTexture>;
-        /** @hidden */
-        _webGLTexture: Nullable<WebGLTexture>;
-        /** @hidden */
-        _references: number;
-        private _engine;
-        /**
-         * Gets the Engine the texture belongs to.
-         * @returns The babylon engine
-         */
-        getEngine(): Engine;
-        /**
-         * Gets the data source type of the texture (can be one of the InternalTexture.DATASOURCE_XXXX)
-         */
-        readonly dataSource: number;
-        /**
-         * Creates a new InternalTexture
-         * @param engine defines the engine to use
-         * @param dataSource defines the type of data that will be used
-         * @param delayAllocation if the texture allocation should be delayed (default: false)
-         */
-        constructor(engine: Engine, dataSource: number, delayAllocation?: boolean);
-        /**
-         * Increments the number of references (ie. the number of Texture that point to it)
-         */
-        incrementReferences(): void;
-        /**
-         * Change the size of the texture (not the size of the content)
-         * @param width defines the new width
-         * @param height defines the new height
-         * @param depth defines the new depth (1 by default)
-         */
-        updateSize(width: int, height: int, depth?: int): void;
-        /** @hidden */
-        _rebuild(): void;
-        /** @hidden */
-        _swapAndDie(target: InternalTexture): void;
-        /**
-         * Dispose the current allocated resources
-         */
-        dispose(): void;
+        static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean;
+        private static _HandleParenthesisContent;
+        private static _SimplifyNegation;
     }
 }
 declare module BABYLON {
     /**
-     * This represents the main contract an easing function should follow.
-     * Easing functions are used throughout the animation system.
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     * Class used to store custom tags
      */
-    export interface IEasingFunction {
+    export class Tags {
         /**
-         * Given an input gradient between 0 and 1, this returns the corrseponding value
-         * of the easing function.
-         * The link below provides some of the most common examples of easing functions.
-         * @see https://easings.net/
-         * @param gradient Defines the value between 0 and 1 we want the easing value for
-         * @returns the corresponding value on the curve defined by the easing function
+         * Adds support for tags on the given object
+         * @param obj defines the object to use
          */
-        ease(gradient: number): number;
-    }
-    /**
-     * Base class used for every default easing function.
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class EasingFunction implements IEasingFunction {
+        static EnableFor(obj: any): void;
         /**
-         * Interpolation follows the mathematical formula associated with the easing function.
+         * Removes tags support
+         * @param obj defines the object to use
          */
-        static readonly EASINGMODE_EASEIN: number;
+        static DisableFor(obj: any): void;
         /**
-         * Interpolation follows 100% interpolation minus the output of the formula associated with the easing function.
+         * Gets a boolean indicating if the given object has tags
+         * @param obj defines the object to use
+         * @returns a boolean
          */
-        static readonly EASINGMODE_EASEOUT: number;
+        static HasTags(obj: any): boolean;
         /**
-         * Interpolation uses EaseIn for the first half of the animation and EaseOut for the second half.
+         * Gets the tags available on a given object
+         * @param obj defines the object to use
+         * @param asString defines if the tags must be returned as a string instead of an array of strings
+         * @returns the tags
          */
-        static readonly EASINGMODE_EASEINOUT: number;
-        private _easingMode;
+        static GetTags(obj: any, asString?: boolean): any;
         /**
-         * Sets the easing mode of the current function.
-         * @param easingMode Defines the willing mode (EASINGMODE_EASEIN, EASINGMODE_EASEOUT or EASINGMODE_EASEINOUT)
+         * Adds tags to an object
+         * @param obj defines the object to use
+         * @param tagsString defines the tag string. The tags 'true' and 'false' are reserved and cannot be used as tags.
+         * A tag cannot start with '||', '&&', and '!'. It cannot contain whitespaces
          */
-        setEasingMode(easingMode: number): void;
-        /**
-         * Gets the current easing mode.
-         * @returns the easing mode
-         */
-        getEasingMode(): number;
+        static AddTagsTo(obj: any, tagsString: string): void;
         /**
          * @hidden
          */
-        easeInCore(gradient: number): number;
+        static _AddTagTo(obj: any, tag: string): void;
         /**
-         * Given an input gradient between 0 and 1, this returns the corresponding value
-         * of the easing function.
-         * @param gradient Defines the value between 0 and 1 we want the easing value for
-         * @returns the corresponding value on the curve defined by the easing function
+         * Removes specific tags from a specific object
+         * @param obj defines the object to use
+         * @param tagsString defines the tags to remove
          */
-        ease(gradient: number): number;
-    }
-    /**
-     * Easing function with a circle shape (see link below).
-     * @see https://easings.net/#easeInCirc
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class CircleEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a ease back shape (see link below).
-     * @see https://easings.net/#easeInBack
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class BackEase extends EasingFunction implements IEasingFunction {
-        /** Defines the amplitude of the function */
-        amplitude: number;
+        static RemoveTagsFrom(obj: any, tagsString: string): void;
         /**
-         * Instantiates a back ease easing
-         * @see https://easings.net/#easeInBack
-         * @param amplitude Defines the amplitude of the function
+         * @hidden
          */
-        constructor(
-        /** Defines the amplitude of the function */
-        amplitude?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a bouncing shape (see link below).
-     * @see https://easings.net/#easeInBounce
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class BounceEase extends EasingFunction implements IEasingFunction {
-        /** Defines the number of bounces */
-        bounces: number;
-        /** Defines the amplitude of the bounce */
-        bounciness: number;
+        static _RemoveTagFrom(obj: any, tag: string): void;
         /**
-         * Instantiates a bounce easing
-         * @see https://easings.net/#easeInBounce
-         * @param bounces Defines the number of bounces
-         * @param bounciness Defines the amplitude of the bounce
+         * Defines if tags hosted on an object match a given query
+         * @param obj defines the object to use
+         * @param tagsQuery defines the tag query
+         * @returns a boolean
          */
-        constructor(
-        /** Defines the number of bounces */
-        bounces?: number, 
-        /** Defines the amplitude of the bounce */
-        bounciness?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a power of 3 shape (see link below).
-     * @see https://easings.net/#easeInCubic
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class CubicEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with an elastic shape (see link below).
-     * @see https://easings.net/#easeInElastic
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class ElasticEase extends EasingFunction implements IEasingFunction {
-        /** Defines the number of oscillations*/
-        oscillations: number;
-        /** Defines the amplitude of the oscillations*/
-        springiness: number;
-        /**
-         * Instantiates an elastic easing function
-         * @see https://easings.net/#easeInElastic
-         * @param oscillations Defines the number of oscillations
-         * @param springiness Defines the amplitude of the oscillations
-         */
-        constructor(
-        /** Defines the number of oscillations*/
-        oscillations?: number, 
-        /** Defines the amplitude of the oscillations*/
-        springiness?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with an exponential shape (see link below).
-     * @see https://easings.net/#easeInExpo
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class ExponentialEase extends EasingFunction implements IEasingFunction {
-        /** Defines the exponent of the function */
-        exponent: number;
-        /**
-         * Instantiates an exponential easing function
-         * @see https://easings.net/#easeInExpo
-         * @param exponent Defines the exponent of the function
-         */
-        constructor(
-        /** Defines the exponent of the function */
-        exponent?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a power shape (see link below).
-     * @see https://easings.net/#easeInQuad
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class PowerEase extends EasingFunction implements IEasingFunction {
-        /** Defines the power of the function */
-        power: number;
-        /**
-         * Instantiates an power base easing function
-         * @see https://easings.net/#easeInQuad
-         * @param power Defines the power of the function
-         */
-        constructor(
-        /** Defines the power of the function */
-        power?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a power of 2 shape (see link below).
-     * @see https://easings.net/#easeInQuad
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class QuadraticEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a power of 4 shape (see link below).
-     * @see https://easings.net/#easeInQuart
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class QuarticEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a power of 5 shape (see link below).
-     * @see https://easings.net/#easeInQuint
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class QuinticEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a sin shape (see link below).
-     * @see https://easings.net/#easeInSine
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class SineEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a bezier shape (see link below).
-     * @see http://cubic-bezier.com/#.17,.67,.83,.67
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class BezierCurveEase extends EasingFunction implements IEasingFunction {
-        /** Defines the x component of the start tangent in the bezier curve */
-        x1: number;
-        /** Defines the y component of the start tangent in the bezier curve */
-        y1: number;
-        /** Defines the x component of the end tangent in the bezier curve */
-        x2: number;
-        /** Defines the y component of the end tangent in the bezier curve */
-        y2: number;
-        /**
-         * Instantiates a bezier function
-         * @see http://cubic-bezier.com/#.17,.67,.83,.67
-         * @param x1 Defines the x component of the start tangent in the bezier curve
-         * @param y1 Defines the y component of the start tangent in the bezier curve
-         * @param x2 Defines the x component of the end tangent in the bezier curve
-         * @param y2 Defines the y component of the end tangent in the bezier curve
-         */
-        constructor(
-        /** Defines the x component of the start tangent in the bezier curve */
-        x1?: number, 
-        /** Defines the y component of the start tangent in the bezier curve */
-        y1?: number, 
-        /** Defines the x component of the end tangent in the bezier curve */
-        x2?: number, 
-        /** Defines the y component of the end tangent in the bezier curve */
-        y2?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
+        static MatchesQuery(obj: any, tagsQuery: string): boolean;
     }
 }
 declare module BABYLON {
     /**
-     * Defines an interface which represents an animation key frame
+     * Defines an array and its length.
+     * It can be helpfull to group result from both Arrays and smart arrays in one structure.
      */
-    export interface IAnimationKey {
+    export interface ISmartArrayLike<T> {
         /**
-         * Frame of the key frame
+         * The data of the array.
          */
-        frame: number;
+        data: Array<T>;
         /**
-         * Value at the specifies key frame
+         * The active length of the array.
          */
-        value: any;
-        /**
-         * The input tangent for the cubic hermite spline
-         */
-        inTangent?: any;
-        /**
-         * The output tangent for the cubic hermite spline
-         */
-        outTangent?: any;
-        /**
-         * The animation interpolation type
-         */
-        interpolation?: AnimationKeyInterpolation;
+        length: number;
     }
     /**
-     * Enum for the animation key frame interpolation type
+     * Defines an GC Friendly array where the backfield array do not shrink to prevent over allocations.
      */
-    export enum AnimationKeyInterpolation {
+    export class SmartArray<T> implements ISmartArrayLike<T> {
         /**
-         * Do not interpolate between keys and use the start key value only. Tangents are ignored
+         * The full set of data from the array.
          */
-        STEP = 1
+        data: Array<T>;
+        /**
+         * The active length of the array.
+         */
+        length: number;
+        protected _id: number;
+        /**
+         * Instantiates a Smart Array.
+         * @param capacity defines the default capacity of the array.
+         */
+        constructor(capacity: number);
+        /**
+         * Pushes a value at the end of the active data.
+         * @param value defines the object to push in the array.
+         */
+        push(value: T): void;
+        /**
+         * Iterates over the active data and apply the lambda to them.
+         * @param func defines the action to apply on each value.
+         */
+        forEach(func: (content: T) => void): void;
+        /**
+         * Sorts the full sets of data.
+         * @param compareFn defines the comparison function to apply.
+         */
+        sort(compareFn: (a: T, b: T) => number): void;
+        /**
+         * Resets the active data to an empty array.
+         */
+        reset(): void;
+        /**
+         * Releases all the data from the array as well as the array.
+         */
+        dispose(): void;
+        /**
+         * Concats the active data with a given array.
+         * @param array defines the data to concatenate with.
+         */
+        concat(array: any): void;
+        /**
+         * Returns the position of a value in the active data.
+         * @param value defines the value to find the index for
+         * @returns the index if found in the active data otherwise -1
+         */
+        indexOf(value: T): number;
+        /**
+         * Returns whether an element is part of the active data.
+         * @param value defines the value to look for
+         * @returns true if found in the active data otherwise false
+         */
+        contains(value: T): boolean;
+        private static _GlobalId;
+    }
+    /**
+     * Defines an GC Friendly array where the backfield array do not shrink to prevent over allocations.
+     * The data in this array can only be present once
+     */
+    export class SmartArrayNoDuplicate<T> extends SmartArray<T> {
+        private _duplicateId;
+        /**
+         * Pushes a value at the end of the active data.
+         * THIS DOES NOT PREVENT DUPPLICATE DATA
+         * @param value defines the object to push in the array.
+         */
+        push(value: T): void;
+        /**
+         * Pushes a value at the end of the active data.
+         * If the data is already present, it won t be added again
+         * @param value defines the object to push in the array.
+         * @returns true if added false if it was already present
+         */
+        pushNoDuplicate(value: T): boolean;
+        /**
+         * Resets the active data to an empty array.
+         */
+        reset(): void;
+        /**
+         * Concats the active data with a given array.
+         * This ensures no dupplicate will be present in the result.
+         * @param array defines the data to concatenate with.
+         */
+        concatWithNoDuplicate(array: any): void;
     }
 }
 declare module BABYLON {
     /**
-     * Represents the range of an animation
+     * @ignore
+     * This is a list of all the different input types that are available in the application.
+     * Fo instance: ArcRotateCameraGamepadInput...
      */
-    export class AnimationRange {
-        /**The name of the animation range**/
-        name: string;
-        /**The starting frame of the animation */
-        from: number;
-        /**The ending frame of the animation*/
-        to: number;
-        /**
-         * Initializes the range of an animation
-         * @param name The name of the animation range
-         * @param from The starting frame of the animation
-         * @param to The ending frame of the animation
-         */
-        constructor(
-        /**The name of the animation range**/
-        name: string, 
-        /**The starting frame of the animation */
-        from: number, 
-        /**The ending frame of the animation*/
-        to: number);
-        /**
-         * Makes a copy of the animation range
-         * @returns A copy of the animation range
-         */
-        clone(): AnimationRange;
-    }
-}
-declare module BABYLON {
+    export var CameraInputTypes: {};
     /**
-     * Composed of a frame, and an action function
+     * This is the contract to implement in order to create a new input class.
+     * Inputs are dealing with listening to user actions and moving the camera accordingly.
      */
-    export class AnimationEvent {
-        /** The frame for which the event is triggered **/
-        frame: number;
-        /** The event to perform when triggered **/
-        action: (currentFrame: number) => void;
-        /** Specifies if the event should be triggered only once**/
-        onlyOnce?: boolean | undefined;
+    export interface ICameraInput<TCamera extends Camera> {
         /**
-         * Specifies if the animation event is done
+         * Defines the camera the input is attached to.
          */
-        isDone: boolean;
+        camera: Nullable<TCamera>;
         /**
-         * Initializes the animation event
-         * @param frame The frame for which the event is triggered
-         * @param action The event to perform when triggered
-         * @param onlyOnce Specifies if the event should be triggered only once
+         * Gets the class name of the current intput.
+         * @returns the class name
          */
-        constructor(
-        /** The frame for which the event is triggered **/
-        frame: number, 
-        /** The event to perform when triggered **/
-        action: (currentFrame: number) => void, 
-        /** Specifies if the event should be triggered only once**/
-        onlyOnce?: boolean | undefined);
-        /** @hidden */
-        _clone(): AnimationEvent;
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs?: () => void;
+    }
+    /**
+     * Represents a map of input types to input instance or input index to input instance.
+     */
+    export interface CameraInputsMap<TCamera extends Camera> {
+        /**
+         * Accessor to the input by input type.
+         */
+        [name: string]: ICameraInput<TCamera>;
+        /**
+         * Accessor to the input by input index.
+         */
+        [idx: number]: ICameraInput<TCamera>;
+    }
+    /**
+     * This represents the input manager used within a camera.
+     * It helps dealing with all the different kind of input attached to a camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class CameraInputsManager<TCamera extends Camera> {
+        /**
+         * Defines the list of inputs attahed to the camera.
+         */
+        attached: CameraInputsMap<TCamera>;
+        /**
+         * Defines the dom element the camera is collecting inputs from.
+         * This is null if the controls have not been attached.
+         */
+        attachedElement: Nullable<HTMLElement>;
+        /**
+         * Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        noPreventDefault: boolean;
+        /**
+         * Defined the camera the input manager belongs to.
+         */
+        camera: TCamera;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs: () => void;
+        /**
+         * Instantiate a new Camera Input Manager.
+         * @param camera Defines the camera the input manager blongs to
+         */
+        constructor(camera: TCamera);
+        /**
+         * Add an input method to a camera
+         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+         * @param input camera input method
+         */
+        add(input: ICameraInput<TCamera>): void;
+        /**
+         * Remove a specific input method from a camera
+         * example: camera.inputs.remove(camera.inputs.attached.mouse);
+         * @param inputToRemove camera input method
+         */
+        remove(inputToRemove: ICameraInput<TCamera>): void;
+        /**
+         * Remove a specific input type from a camera
+         * example: camera.inputs.remove("ArcRotateCameraGamepadInput");
+         * @param inputType the type of the input to remove
+         */
+        removeByType(inputType: string): void;
+        private _addCheckInputs;
+        /**
+         * Attach the input controls to the currently attached dom element to listen the events from.
+         * @param input Defines the input to attach
+         */
+        attachInput(input: ICameraInput<TCamera>): void;
+        /**
+         * Attach the current manager inputs controls to a specific dom element to listen the events from.
+         * @param element Defines the dom element to collect the events from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current manager inputs controls from a specific dom element.
+         * @param element Defines the dom element to collect the events from
+         * @param disconnect Defines whether the input should be removed from the current list of attached inputs
+         */
+        detachElement(element: HTMLElement, disconnect?: boolean): void;
+        /**
+         * Rebuild the dynamic inputCheck function from the current list of
+         * defined inputs in the manager.
+         */
+        rebuildInputCheck(): void;
+        /**
+         * Remove all attached input methods from a camera
+         */
+        clear(): void;
+        /**
+         * Serialize the current input manager attached to a camera.
+         * This ensures than once parsed,
+         * the input associated to the camera will be identical to the current ones
+         * @param serializedCamera Defines the camera serialization JSON the input serialization should write to
+         */
+        serialize(serializedCamera: any): void;
+        /**
+         * Parses an input manager serialized JSON to restore the previous list of inputs
+         * and states associated to a camera.
+         * @param parsedCamera Defines the JSON to parse
+         */
+        parse(parsedCamera: any): void;
     }
 }
 declare module BABYLON {
@@ -7466,109 +7033,31 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines an array and its length.
-     * It can be helpfull to group result from both Arrays and smart arrays in one structure.
+     * Extracts minimum and maximum values from a list of indexed positions
+     * @param positions defines the positions to use
+     * @param indices defines the indices to the positions
+     * @param indexStart defines the start index
+     * @param indexCount defines the end index
+     * @param bias defines bias value to add to the result
+     * @return minimum and maximum values
      */
-    export interface ISmartArrayLike<T> {
-        /**
-         * The data of the array.
-         */
-        data: Array<T>;
-        /**
-         * The active length of the array.
-         */
-        length: number;
-    }
+    export function extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, bias?: Nullable<Vector2>): {
+        minimum: Vector3;
+        maximum: Vector3;
+    };
     /**
-     * Defines an GC Friendly array where the backfield array do not shrink to prevent over allocations.
+     * Extracts minimum and maximum values from a list of positions
+     * @param positions defines the positions to use
+     * @param start defines the start index in the positions array
+     * @param count defines the number of positions to handle
+     * @param bias defines bias value to add to the result
+     * @param stride defines the stride size to use (distance between two positions in the positions array)
+     * @return minimum and maximum values
      */
-    export class SmartArray<T> implements ISmartArrayLike<T> {
-        /**
-         * The full set of data from the array.
-         */
-        data: Array<T>;
-        /**
-         * The active length of the array.
-         */
-        length: number;
-        protected _id: number;
-        /**
-         * Instantiates a Smart Array.
-         * @param capacity defines the default capacity of the array.
-         */
-        constructor(capacity: number);
-        /**
-         * Pushes a value at the end of the active data.
-         * @param value defines the object to push in the array.
-         */
-        push(value: T): void;
-        /**
-         * Iterates over the active data and apply the lambda to them.
-         * @param func defines the action to apply on each value.
-         */
-        forEach(func: (content: T) => void): void;
-        /**
-         * Sorts the full sets of data.
-         * @param compareFn defines the comparison function to apply.
-         */
-        sort(compareFn: (a: T, b: T) => number): void;
-        /**
-         * Resets the active data to an empty array.
-         */
-        reset(): void;
-        /**
-         * Releases all the data from the array as well as the array.
-         */
-        dispose(): void;
-        /**
-         * Concats the active data with a given array.
-         * @param array defines the data to concatenate with.
-         */
-        concat(array: any): void;
-        /**
-         * Returns the position of a value in the active data.
-         * @param value defines the value to find the index for
-         * @returns the index if found in the active data otherwise -1
-         */
-        indexOf(value: T): number;
-        /**
-         * Returns whether an element is part of the active data.
-         * @param value defines the value to look for
-         * @returns true if found in the active data otherwise false
-         */
-        contains(value: T): boolean;
-        private static _GlobalId;
-    }
-    /**
-     * Defines an GC Friendly array where the backfield array do not shrink to prevent over allocations.
-     * The data in this array can only be present once
-     */
-    export class SmartArrayNoDuplicate<T> extends SmartArray<T> {
-        private _duplicateId;
-        /**
-         * Pushes a value at the end of the active data.
-         * THIS DOES NOT PREVENT DUPPLICATE DATA
-         * @param value defines the object to push in the array.
-         */
-        push(value: T): void;
-        /**
-         * Pushes a value at the end of the active data.
-         * If the data is already present, it won t be added again
-         * @param value defines the object to push in the array.
-         * @returns true if added false if it was already present
-         */
-        pushNoDuplicate(value: T): boolean;
-        /**
-         * Resets the active data to an empty array.
-         */
-        reset(): void;
-        /**
-         * Concats the active data with a given array.
-         * This ensures no dupplicate will be present in the result.
-         * @param array defines the data to concatenate with.
-         */
-        concatWithNoDuplicate(array: any): void;
-    }
+    export function extractMinAndMax(positions: FloatArray, start: number, count: number, bias?: Nullable<Vector2>, stride?: number): {
+        minimum: Vector3;
+        maximum: Vector3;
+    };
 }
 declare module BABYLON {
     /**
@@ -7881,6 +7370,616 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Manages the defines for the Material
+     */
+    export class MaterialDefines {
+        /** @hidden */
+        protected _keys: string[];
+        private _isDirty;
+        /** @hidden */
+        _renderId: number;
+        /** @hidden */
+        _areLightsDirty: boolean;
+        /** @hidden */
+        _areAttributesDirty: boolean;
+        /** @hidden */
+        _areTexturesDirty: boolean;
+        /** @hidden */
+        _areFresnelDirty: boolean;
+        /** @hidden */
+        _areMiscDirty: boolean;
+        /** @hidden */
+        _areImageProcessingDirty: boolean;
+        /** @hidden */
+        _normals: boolean;
+        /** @hidden */
+        _uvs: boolean;
+        /** @hidden */
+        _needNormals: boolean;
+        /** @hidden */
+        _needUVs: boolean;
+        [id: string]: any;
+        /**
+         * Specifies if the material needs to be re-calculated
+         */
+        readonly isDirty: boolean;
+        /**
+         * Marks the material to indicate that it has been re-calculated
+         */
+        markAsProcessed(): void;
+        /**
+         * Marks the material to indicate that it needs to be re-calculated
+         */
+        markAsUnprocessed(): void;
+        /**
+         * Marks the material to indicate all of its defines need to be re-calculated
+         */
+        markAllAsDirty(): void;
+        /**
+         * Marks the material to indicate that image processing needs to be re-calculated
+         */
+        markAsImageProcessingDirty(): void;
+        /**
+         * Marks the material to indicate the lights need to be re-calculated
+         */
+        markAsLightDirty(): void;
+        /**
+         * Marks the attribute state as changed
+         */
+        markAsAttributesDirty(): void;
+        /**
+         * Marks the texture state as changed
+         */
+        markAsTexturesDirty(): void;
+        /**
+         * Marks the fresnel state as changed
+         */
+        markAsFresnelDirty(): void;
+        /**
+         * Marks the misc state as changed
+         */
+        markAsMiscDirty(): void;
+        /**
+         * Rebuilds the material defines
+         */
+        rebuild(): void;
+        /**
+         * Specifies if two material defines are equal
+         * @param other - A material define instance to compare to
+         * @returns - Boolean indicating if the material defines are equal (true) or not (false)
+         */
+        isEqual(other: MaterialDefines): boolean;
+        /**
+         * Clones this instance's defines to another instance
+         * @param other - material defines to clone values to
+         */
+        cloneTo(other: MaterialDefines): void;
+        /**
+         * Resets the material define values
+         */
+        reset(): void;
+        /**
+         * Converts the material define values to a string
+         * @returns - String of material define information
+         */
+        toString(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+     * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+     */
+    export class ColorCurves {
+        private _dirty;
+        private _tempColor;
+        private _globalCurve;
+        private _highlightsCurve;
+        private _midtonesCurve;
+        private _shadowsCurve;
+        private _positiveCurve;
+        private _negativeCurve;
+        private _globalHue;
+        private _globalDensity;
+        private _globalSaturation;
+        private _globalExposure;
+        /**
+         * Gets the global Hue value.
+         * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+         */
+        /**
+        * Sets the global Hue value.
+        * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+        */
+        globalHue: number;
+        /**
+         * Gets the global Density value.
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+         * Values less than zero provide a filter of opposite hue.
+         */
+        /**
+        * Sets the global Density value.
+        * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+        * Values less than zero provide a filter of opposite hue.
+        */
+        globalDensity: number;
+        /**
+         * Gets the global Saturation value.
+         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+         */
+        /**
+        * Sets the global Saturation value.
+        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+        */
+        globalSaturation: number;
+        /**
+         * Gets the global Exposure value.
+         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+         */
+        /**
+        * Sets the global Exposure value.
+        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+        */
+        globalExposure: number;
+        private _highlightsHue;
+        private _highlightsDensity;
+        private _highlightsSaturation;
+        private _highlightsExposure;
+        /**
+         * Gets the highlights Hue value.
+         * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+         */
+        /**
+        * Sets the highlights Hue value.
+        * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+        */
+        highlightsHue: number;
+        /**
+         * Gets the highlights Density value.
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+         * Values less than zero provide a filter of opposite hue.
+         */
+        /**
+        * Sets the highlights Density value.
+        * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+        * Values less than zero provide a filter of opposite hue.
+        */
+        highlightsDensity: number;
+        /**
+         * Gets the highlights Saturation value.
+         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+         */
+        /**
+        * Sets the highlights Saturation value.
+        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+        */
+        highlightsSaturation: number;
+        /**
+         * Gets the highlights Exposure value.
+         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+         */
+        /**
+        * Sets the highlights Exposure value.
+        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+        */
+        highlightsExposure: number;
+        private _midtonesHue;
+        private _midtonesDensity;
+        private _midtonesSaturation;
+        private _midtonesExposure;
+        /**
+         * Gets the midtones Hue value.
+         * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+         */
+        /**
+        * Sets the midtones Hue value.
+        * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+        */
+        midtonesHue: number;
+        /**
+         * Gets the midtones Density value.
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+         * Values less than zero provide a filter of opposite hue.
+         */
+        /**
+        * Sets the midtones Density value.
+        * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+        * Values less than zero provide a filter of opposite hue.
+        */
+        midtonesDensity: number;
+        /**
+         * Gets the midtones Saturation value.
+         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+         */
+        /**
+        * Sets the midtones Saturation value.
+        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+        */
+        midtonesSaturation: number;
+        /**
+         * Gets the midtones Exposure value.
+         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+         */
+        /**
+        * Sets the midtones Exposure value.
+        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+        */
+        midtonesExposure: number;
+        private _shadowsHue;
+        private _shadowsDensity;
+        private _shadowsSaturation;
+        private _shadowsExposure;
+        /**
+         * Gets the shadows Hue value.
+         * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+         */
+        /**
+        * Sets the shadows Hue value.
+        * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+        */
+        shadowsHue: number;
+        /**
+         * Gets the shadows Density value.
+         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+         * Values less than zero provide a filter of opposite hue.
+         */
+        /**
+        * Sets the shadows Density value.
+        * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
+        * Values less than zero provide a filter of opposite hue.
+        */
+        shadowsDensity: number;
+        /**
+         * Gets the shadows Saturation value.
+         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+         */
+        /**
+        * Sets the shadows Saturation value.
+        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
+        */
+        shadowsSaturation: number;
+        /**
+         * Gets the shadows Exposure value.
+         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+         */
+        /**
+        * Sets the shadows Exposure value.
+        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
+        */
+        shadowsExposure: number;
+        /**
+         * Returns the class name
+         * @returns The class name
+         */
+        getClassName(): string;
+        /**
+         * Binds the color curves to the shader.
+         * @param colorCurves The color curve to bind
+         * @param effect The effect to bind to
+         * @param positiveUniform The positive uniform shader parameter
+         * @param neutralUniform The neutral uniform shader parameter
+         * @param negativeUniform The negative uniform shader parameter
+         */
+        static Bind(colorCurves: ColorCurves, effect: Effect, positiveUniform?: string, neutralUniform?: string, negativeUniform?: string): void;
+        /**
+         * Prepare the list of uniforms associated with the ColorCurves effects.
+         * @param uniformsList The list of uniforms used in the effect
+         */
+        static PrepareUniforms(uniformsList: string[]): void;
+        /**
+         * Returns color grading data based on a hue, density, saturation and exposure value.
+         * @param filterHue The hue of the color filter.
+         * @param filterDensity The density of the color filter.
+         * @param saturation The saturation.
+         * @param exposure The exposure.
+         * @param result The result data container.
+         */
+        private getColorGradingDataToRef;
+        /**
+         * Takes an input slider value and returns an adjusted value that provides extra control near the centre.
+         * @param value The input slider value in range [-100,100].
+         * @returns Adjusted value.
+         */
+        private static applyColorGradingSliderNonlinear;
+        /**
+         * Returns an RGBA Color4 based on Hue, Saturation and Brightness (also referred to as value, HSV).
+         * @param hue The hue (H) input.
+         * @param saturation The saturation (S) input.
+         * @param brightness The brightness (B) input.
+         * @result An RGBA color represented as Vector4.
+         */
+        private static fromHSBToRef;
+        /**
+         * Returns a value clamped between min and max
+         * @param value The value to clamp
+         * @param min The minimum of value
+         * @param max The maximum of value
+         * @returns The clamped value.
+         */
+        private static clamp;
+        /**
+         * Clones the current color curve instance.
+         * @return The cloned curves
+         */
+        clone(): ColorCurves;
+        /**
+         * Serializes the current color curve instance to a json representation.
+         * @return a JSON representation
+         */
+        serialize(): any;
+        /**
+         * Parses the color curve from a json representation.
+         * @param source the JSON source to parse
+         * @return The parsed curves
+         */
+        static Parse(source: any): ColorCurves;
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface to follow in your material defines to integrate easily the
+     * Image proccessing functions.
+     * @hidden
+     */
+    export interface IImageProcessingConfigurationDefines {
+        IMAGEPROCESSING: boolean;
+        VIGNETTE: boolean;
+        VIGNETTEBLENDMODEMULTIPLY: boolean;
+        VIGNETTEBLENDMODEOPAQUE: boolean;
+        TONEMAPPING: boolean;
+        TONEMAPPING_ACES: boolean;
+        CONTRAST: boolean;
+        EXPOSURE: boolean;
+        COLORCURVES: boolean;
+        COLORGRADING: boolean;
+        COLORGRADING3D: boolean;
+        SAMPLER3DGREENDEPTH: boolean;
+        SAMPLER3DBGRMAP: boolean;
+        IMAGEPROCESSINGPOSTPROCESS: boolean;
+    }
+    /**
+     * @hidden
+     */
+    export class ImageProcessingConfigurationDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+        IMAGEPROCESSING: boolean;
+        VIGNETTE: boolean;
+        VIGNETTEBLENDMODEMULTIPLY: boolean;
+        VIGNETTEBLENDMODEOPAQUE: boolean;
+        TONEMAPPING: boolean;
+        TONEMAPPING_ACES: boolean;
+        CONTRAST: boolean;
+        COLORCURVES: boolean;
+        COLORGRADING: boolean;
+        COLORGRADING3D: boolean;
+        SAMPLER3DGREENDEPTH: boolean;
+        SAMPLER3DBGRMAP: boolean;
+        IMAGEPROCESSINGPOSTPROCESS: boolean;
+        EXPOSURE: boolean;
+        constructor();
+    }
+    /**
+     * This groups together the common properties used for image processing either in direct forward pass
+     * or through post processing effect depending on the use of the image processing pipeline in your scene
+     * or not.
+     */
+    export class ImageProcessingConfiguration {
+        /**
+         * Default tone mapping applied in BabylonJS.
+         */
+        static readonly TONEMAPPING_STANDARD: number;
+        /**
+         * ACES Tone mapping (used by default in unreal and unity). This can help getting closer
+         * to other engines rendering to increase portability.
+         */
+        static readonly TONEMAPPING_ACES: number;
+        /**
+         * Color curves setup used in the effect if colorCurvesEnabled is set to true
+         */
+        colorCurves: Nullable<ColorCurves>;
+        private _colorCurvesEnabled;
+        /**
+         * Gets wether the color curves effect is enabled.
+         */
+        /**
+        * Sets wether the color curves effect is enabled.
+        */
+        colorCurvesEnabled: boolean;
+        private _colorGradingTexture;
+        /**
+         * Color grading LUT texture used in the effect if colorGradingEnabled is set to true
+         */
+        /**
+        * Color grading LUT texture used in the effect if colorGradingEnabled is set to true
+        */
+        colorGradingTexture: Nullable<BaseTexture>;
+        private _colorGradingEnabled;
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        /**
+        * Sets wether the color grading effect is enabled.
+        */
+        colorGradingEnabled: boolean;
+        private _colorGradingWithGreenDepth;
+        /**
+         * Gets wether the color grading effect is using a green depth for the 3d Texture.
+         */
+        /**
+        * Sets wether the color grading effect is using a green depth for the 3d Texture.
+        */
+        colorGradingWithGreenDepth: boolean;
+        private _colorGradingBGR;
+        /**
+         * Gets wether the color grading texture contains BGR values.
+         */
+        /**
+        * Sets wether the color grading texture contains BGR values.
+        */
+        colorGradingBGR: boolean;
+        /** @hidden */
+        _exposure: number;
+        /**
+         * Gets the Exposure used in the effect.
+         */
+        /**
+        * Sets the Exposure used in the effect.
+        */
+        exposure: number;
+        private _toneMappingEnabled;
+        /**
+         * Gets wether the tone mapping effect is enabled.
+         */
+        /**
+        * Sets wether the tone mapping effect is enabled.
+        */
+        toneMappingEnabled: boolean;
+        private _toneMappingType;
+        /**
+         * Gets the type of tone mapping effect.
+         */
+        /**
+        * Sets the type of tone mapping effect used in BabylonJS.
+        */
+        toneMappingType: number;
+        protected _contrast: number;
+        /**
+         * Gets the contrast used in the effect.
+         */
+        /**
+        * Sets the contrast used in the effect.
+        */
+        contrast: number;
+        /**
+         * Vignette stretch size.
+         */
+        vignetteStretch: number;
+        /**
+         * Vignette centre X Offset.
+         */
+        vignetteCentreX: number;
+        /**
+         * Vignette centre Y Offset.
+         */
+        vignetteCentreY: number;
+        /**
+         * Vignette weight or intensity of the vignette effect.
+         */
+        vignetteWeight: number;
+        /**
+         * Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
+         * if vignetteEnabled is set to true.
+         */
+        vignetteColor: Color4;
+        /**
+         * Camera field of view used by the Vignette effect.
+         */
+        vignetteCameraFov: number;
+        private _vignetteBlendMode;
+        /**
+         * Gets the vignette blend mode allowing different kind of effect.
+         */
+        /**
+        * Sets the vignette blend mode allowing different kind of effect.
+        */
+        vignetteBlendMode: number;
+        private _vignetteEnabled;
+        /**
+         * Gets wether the vignette effect is enabled.
+         */
+        /**
+        * Sets wether the vignette effect is enabled.
+        */
+        vignetteEnabled: boolean;
+        private _applyByPostProcess;
+        /**
+         * Gets wether the image processing is applied through a post process or not.
+         */
+        /**
+        * Sets wether the image processing is applied through a post process or not.
+        */
+        applyByPostProcess: boolean;
+        private _isEnabled;
+        /**
+         * Gets wether the image processing is enabled or not.
+         */
+        /**
+        * Sets wether the image processing is enabled or not.
+        */
+        isEnabled: boolean;
+        /**
+        * An event triggered when the configuration changes and requires Shader to Update some parameters.
+        */
+        onUpdateParameters: Observable<ImageProcessingConfiguration>;
+        /**
+         * Method called each time the image processing information changes requires to recompile the effect.
+         */
+        protected _updateParameters(): void;
+        /**
+         * Gets the current class name.
+         * @return "ImageProcessingConfiguration"
+         */
+        getClassName(): string;
+        /**
+         * Prepare the list of uniforms associated with the Image Processing effects.
+         * @param uniforms The list of uniforms used in the effect
+         * @param defines the list of defines currently in use
+         */
+        static PrepareUniforms(uniforms: string[], defines: IImageProcessingConfigurationDefines): void;
+        /**
+         * Prepare the list of samplers associated with the Image Processing effects.
+         * @param samplersList The list of uniforms used in the effect
+         * @param defines the list of defines currently in use
+         */
+        static PrepareSamplers(samplersList: string[], defines: IImageProcessingConfigurationDefines): void;
+        /**
+         * Prepare the list of defines associated to the shader.
+         * @param defines the list of defines to complete
+         * @param forPostProcess Define if we are currently in post process mode or not
+         */
+        prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess?: boolean): void;
+        /**
+         * Returns true if all the image processing information are ready.
+         * @returns True if ready, otherwise, false
+         */
+        isReady(): boolean;
+        /**
+         * Binds the image processing to the shader.
+         * @param effect The effect to bind to
+         * @param aspectRatio Define the current aspect ratio of the effect
+         */
+        bind(effect: Effect, aspectRatio?: number): void;
+        /**
+         * Clones the current image processing instance.
+         * @return The cloned image processing
+         */
+        clone(): ImageProcessingConfiguration;
+        /**
+         * Serializes the current image processing instance to a json representation.
+         * @return a JSON representation
+         */
+        serialize(): any;
+        /**
+         * Parses the image processing from a json representation.
+         * @param source the JSON source to parse
+         * @return The parsed image processing
+         */
+        static Parse(source: any): ImageProcessingConfiguration;
+        private static _VIGNETTEMODE_MULTIPLY;
+        private static _VIGNETTEMODE_OPAQUE;
+        /**
+         * Used to apply the vignette as a mix with the pixel color.
+         */
+        static readonly VIGNETTEMODE_MULTIPLY: number;
+        /**
+         * Used to apply the vignette as a replacement of the pixel color.
+         */
+        static readonly VIGNETTEMODE_OPAQUE: number;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var postprocessVertexShader: {
         name: string;
@@ -8033,155 +8132,6 @@ declare module BABYLON {
          * @return the class name
          */
         getClassName(): string;
-    }
-}
-declare module BABYLON {
-    /**
-     * @ignore
-     * This is a list of all the different input types that are available in the application.
-     * Fo instance: ArcRotateCameraGamepadInput...
-     */
-    export var CameraInputTypes: {};
-    /**
-     * This is the contract to implement in order to create a new input class.
-     * Inputs are dealing with listening to user actions and moving the camera accordingly.
-     */
-    export interface ICameraInput<TCamera extends Camera> {
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: Nullable<TCamera>;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
-         */
-        getSimpleName(): string;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs?: () => void;
-    }
-    /**
-     * Represents a map of input types to input instance or input index to input instance.
-     */
-    export interface CameraInputsMap<TCamera extends Camera> {
-        /**
-         * Accessor to the input by input type.
-         */
-        [name: string]: ICameraInput<TCamera>;
-        /**
-         * Accessor to the input by input index.
-         */
-        [idx: number]: ICameraInput<TCamera>;
-    }
-    /**
-     * This represents the input manager used within a camera.
-     * It helps dealing with all the different kind of input attached to a camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    export class CameraInputsManager<TCamera extends Camera> {
-        /**
-         * Defines the list of inputs attahed to the camera.
-         */
-        attached: CameraInputsMap<TCamera>;
-        /**
-         * Defines the dom element the camera is collecting inputs from.
-         * This is null if the controls have not been attached.
-         */
-        attachedElement: Nullable<HTMLElement>;
-        /**
-         * Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        noPreventDefault: boolean;
-        /**
-         * Defined the camera the input manager belongs to.
-         */
-        camera: TCamera;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs: () => void;
-        /**
-         * Instantiate a new Camera Input Manager.
-         * @param camera Defines the camera the input manager blongs to
-         */
-        constructor(camera: TCamera);
-        /**
-         * Add an input method to a camera
-         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-         * @param input camera input method
-         */
-        add(input: ICameraInput<TCamera>): void;
-        /**
-         * Remove a specific input method from a camera
-         * example: camera.inputs.remove(camera.inputs.attached.mouse);
-         * @param inputToRemove camera input method
-         */
-        remove(inputToRemove: ICameraInput<TCamera>): void;
-        /**
-         * Remove a specific input type from a camera
-         * example: camera.inputs.remove("ArcRotateCameraGamepadInput");
-         * @param inputType the type of the input to remove
-         */
-        removeByType(inputType: string): void;
-        private _addCheckInputs;
-        /**
-         * Attach the input controls to the currently attached dom element to listen the events from.
-         * @param input Defines the input to attach
-         */
-        attachInput(input: ICameraInput<TCamera>): void;
-        /**
-         * Attach the current manager inputs controls to a specific dom element to listen the events from.
-         * @param element Defines the dom element to collect the events from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachElement(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current manager inputs controls from a specific dom element.
-         * @param element Defines the dom element to collect the events from
-         * @param disconnect Defines whether the input should be removed from the current list of attached inputs
-         */
-        detachElement(element: HTMLElement, disconnect?: boolean): void;
-        /**
-         * Rebuild the dynamic inputCheck function from the current list of
-         * defined inputs in the manager.
-         */
-        rebuildInputCheck(): void;
-        /**
-         * Remove all attached input methods from a camera
-         */
-        clear(): void;
-        /**
-         * Serialize the current input manager attached to a camera.
-         * This ensures than once parsed,
-         * the input associated to the camera will be identical to the current ones
-         * @param serializedCamera Defines the camera serialization JSON the input serialization should write to
-         */
-        serialize(serializedCamera: any): void;
-        /**
-         * Parses an input manager serialized JSON to restore the previous list of inputs
-         * and states associated to a camera.
-         * @param parsedCamera Defines the JSON to parse
-         */
-        parse(parsedCamera: any): void;
     }
 }
 declare module BABYLON {
@@ -8869,6 +8819,1250 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * This represents the main contract an easing function should follow.
+     * Easing functions are used throughout the animation system.
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export interface IEasingFunction {
+        /**
+         * Given an input gradient between 0 and 1, this returns the corrseponding value
+         * of the easing function.
+         * The link below provides some of the most common examples of easing functions.
+         * @see https://easings.net/
+         * @param gradient Defines the value between 0 and 1 we want the easing value for
+         * @returns the corresponding value on the curve defined by the easing function
+         */
+        ease(gradient: number): number;
+    }
+    /**
+     * Base class used for every default easing function.
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class EasingFunction implements IEasingFunction {
+        /**
+         * Interpolation follows the mathematical formula associated with the easing function.
+         */
+        static readonly EASINGMODE_EASEIN: number;
+        /**
+         * Interpolation follows 100% interpolation minus the output of the formula associated with the easing function.
+         */
+        static readonly EASINGMODE_EASEOUT: number;
+        /**
+         * Interpolation uses EaseIn for the first half of the animation and EaseOut for the second half.
+         */
+        static readonly EASINGMODE_EASEINOUT: number;
+        private _easingMode;
+        /**
+         * Sets the easing mode of the current function.
+         * @param easingMode Defines the willing mode (EASINGMODE_EASEIN, EASINGMODE_EASEOUT or EASINGMODE_EASEINOUT)
+         */
+        setEasingMode(easingMode: number): void;
+        /**
+         * Gets the current easing mode.
+         * @returns the easing mode
+         */
+        getEasingMode(): number;
+        /**
+         * @hidden
+         */
+        easeInCore(gradient: number): number;
+        /**
+         * Given an input gradient between 0 and 1, this returns the corresponding value
+         * of the easing function.
+         * @param gradient Defines the value between 0 and 1 we want the easing value for
+         * @returns the corresponding value on the curve defined by the easing function
+         */
+        ease(gradient: number): number;
+    }
+    /**
+     * Easing function with a circle shape (see link below).
+     * @see https://easings.net/#easeInCirc
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class CircleEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a ease back shape (see link below).
+     * @see https://easings.net/#easeInBack
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class BackEase extends EasingFunction implements IEasingFunction {
+        /** Defines the amplitude of the function */
+        amplitude: number;
+        /**
+         * Instantiates a back ease easing
+         * @see https://easings.net/#easeInBack
+         * @param amplitude Defines the amplitude of the function
+         */
+        constructor(
+        /** Defines the amplitude of the function */
+        amplitude?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a bouncing shape (see link below).
+     * @see https://easings.net/#easeInBounce
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class BounceEase extends EasingFunction implements IEasingFunction {
+        /** Defines the number of bounces */
+        bounces: number;
+        /** Defines the amplitude of the bounce */
+        bounciness: number;
+        /**
+         * Instantiates a bounce easing
+         * @see https://easings.net/#easeInBounce
+         * @param bounces Defines the number of bounces
+         * @param bounciness Defines the amplitude of the bounce
+         */
+        constructor(
+        /** Defines the number of bounces */
+        bounces?: number, 
+        /** Defines the amplitude of the bounce */
+        bounciness?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a power of 3 shape (see link below).
+     * @see https://easings.net/#easeInCubic
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class CubicEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with an elastic shape (see link below).
+     * @see https://easings.net/#easeInElastic
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class ElasticEase extends EasingFunction implements IEasingFunction {
+        /** Defines the number of oscillations*/
+        oscillations: number;
+        /** Defines the amplitude of the oscillations*/
+        springiness: number;
+        /**
+         * Instantiates an elastic easing function
+         * @see https://easings.net/#easeInElastic
+         * @param oscillations Defines the number of oscillations
+         * @param springiness Defines the amplitude of the oscillations
+         */
+        constructor(
+        /** Defines the number of oscillations*/
+        oscillations?: number, 
+        /** Defines the amplitude of the oscillations*/
+        springiness?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with an exponential shape (see link below).
+     * @see https://easings.net/#easeInExpo
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class ExponentialEase extends EasingFunction implements IEasingFunction {
+        /** Defines the exponent of the function */
+        exponent: number;
+        /**
+         * Instantiates an exponential easing function
+         * @see https://easings.net/#easeInExpo
+         * @param exponent Defines the exponent of the function
+         */
+        constructor(
+        /** Defines the exponent of the function */
+        exponent?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a power shape (see link below).
+     * @see https://easings.net/#easeInQuad
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class PowerEase extends EasingFunction implements IEasingFunction {
+        /** Defines the power of the function */
+        power: number;
+        /**
+         * Instantiates an power base easing function
+         * @see https://easings.net/#easeInQuad
+         * @param power Defines the power of the function
+         */
+        constructor(
+        /** Defines the power of the function */
+        power?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a power of 2 shape (see link below).
+     * @see https://easings.net/#easeInQuad
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class QuadraticEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a power of 4 shape (see link below).
+     * @see https://easings.net/#easeInQuart
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class QuarticEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a power of 5 shape (see link below).
+     * @see https://easings.net/#easeInQuint
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class QuinticEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a sin shape (see link below).
+     * @see https://easings.net/#easeInSine
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class SineEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a bezier shape (see link below).
+     * @see http://cubic-bezier.com/#.17,.67,.83,.67
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class BezierCurveEase extends EasingFunction implements IEasingFunction {
+        /** Defines the x component of the start tangent in the bezier curve */
+        x1: number;
+        /** Defines the y component of the start tangent in the bezier curve */
+        y1: number;
+        /** Defines the x component of the end tangent in the bezier curve */
+        x2: number;
+        /** Defines the y component of the end tangent in the bezier curve */
+        y2: number;
+        /**
+         * Instantiates a bezier function
+         * @see http://cubic-bezier.com/#.17,.67,.83,.67
+         * @param x1 Defines the x component of the start tangent in the bezier curve
+         * @param y1 Defines the y component of the start tangent in the bezier curve
+         * @param x2 Defines the x component of the end tangent in the bezier curve
+         * @param y2 Defines the y component of the end tangent in the bezier curve
+         */
+        constructor(
+        /** Defines the x component of the start tangent in the bezier curve */
+        x1?: number, 
+        /** Defines the y component of the start tangent in the bezier curve */
+        y1?: number, 
+        /** Defines the x component of the end tangent in the bezier curve */
+        x2?: number, 
+        /** Defines the y component of the end tangent in the bezier curve */
+        y2?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines an interface which represents an animation key frame
+     */
+    export interface IAnimationKey {
+        /**
+         * Frame of the key frame
+         */
+        frame: number;
+        /**
+         * Value at the specifies key frame
+         */
+        value: any;
+        /**
+         * The input tangent for the cubic hermite spline
+         */
+        inTangent?: any;
+        /**
+         * The output tangent for the cubic hermite spline
+         */
+        outTangent?: any;
+        /**
+         * The animation interpolation type
+         */
+        interpolation?: AnimationKeyInterpolation;
+    }
+    /**
+     * Enum for the animation key frame interpolation type
+     */
+    export enum AnimationKeyInterpolation {
+        /**
+         * Do not interpolate between keys and use the start key value only. Tangents are ignored
+         */
+        STEP = 1
+    }
+}
+declare module BABYLON {
+    /**
+     * Represents the range of an animation
+     */
+    export class AnimationRange {
+        /**The name of the animation range**/
+        name: string;
+        /**The starting frame of the animation */
+        from: number;
+        /**The ending frame of the animation*/
+        to: number;
+        /**
+         * Initializes the range of an animation
+         * @param name The name of the animation range
+         * @param from The starting frame of the animation
+         * @param to The ending frame of the animation
+         */
+        constructor(
+        /**The name of the animation range**/
+        name: string, 
+        /**The starting frame of the animation */
+        from: number, 
+        /**The ending frame of the animation*/
+        to: number);
+        /**
+         * Makes a copy of the animation range
+         * @returns A copy of the animation range
+         */
+        clone(): AnimationRange;
+    }
+}
+declare module BABYLON {
+    /**
+     * Composed of a frame, and an action function
+     */
+    export class AnimationEvent {
+        /** The frame for which the event is triggered **/
+        frame: number;
+        /** The event to perform when triggered **/
+        action: (currentFrame: number) => void;
+        /** Specifies if the event should be triggered only once**/
+        onlyOnce?: boolean | undefined;
+        /**
+         * Specifies if the animation event is done
+         */
+        isDone: boolean;
+        /**
+         * Initializes the animation event
+         * @param frame The frame for which the event is triggered
+         * @param action The event to perform when triggered
+         * @param onlyOnce Specifies if the event should be triggered only once
+         */
+        constructor(
+        /** The frame for which the event is triggered **/
+        frame: number, 
+        /** The event to perform when triggered **/
+        action: (currentFrame: number) => void, 
+        /** Specifies if the event should be triggered only once**/
+        onlyOnce?: boolean | undefined);
+        /** @hidden */
+        _clone(): AnimationEvent;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines a runtime animation
+     */
+    export class RuntimeAnimation {
+        private _events;
+        /**
+         * The current frame of the runtime animation
+         */
+        private _currentFrame;
+        /**
+         * The animation used by the runtime animation
+         */
+        private _animation;
+        /**
+         * The target of the runtime animation
+         */
+        private _target;
+        /**
+         * The initiating animatable
+         */
+        private _host;
+        /**
+         * The original value of the runtime animation
+         */
+        private _originalValue;
+        /**
+         * The original blend value of the runtime animation
+         */
+        private _originalBlendValue;
+        /**
+         * The offsets cache of the runtime animation
+         */
+        private _offsetsCache;
+        /**
+         * The high limits cache of the runtime animation
+         */
+        private _highLimitsCache;
+        /**
+         * Specifies if the runtime animation has been stopped
+         */
+        private _stopped;
+        /**
+         * The blending factor of the runtime animation
+         */
+        private _blendingFactor;
+        /**
+         * The BabylonJS scene
+         */
+        private _scene;
+        /**
+         * The current value of the runtime animation
+         */
+        private _currentValue;
+        /** @hidden */
+        _animationState: _IAnimationState;
+        /**
+         * The active target of the runtime animation
+         */
+        private _activeTargets;
+        private _currentActiveTarget;
+        private _directTarget;
+        /**
+         * The target path of the runtime animation
+         */
+        private _targetPath;
+        /**
+         * The weight of the runtime animation
+         */
+        private _weight;
+        /**
+         * The ratio offset of the runtime animation
+         */
+        private _ratioOffset;
+        /**
+         * The previous delay of the runtime animation
+         */
+        private _previousDelay;
+        /**
+         * The previous ratio of the runtime animation
+         */
+        private _previousRatio;
+        private _enableBlending;
+        private _keys;
+        private _minFrame;
+        private _maxFrame;
+        private _minValue;
+        private _maxValue;
+        private _targetIsArray;
+        /**
+         * Gets the current frame of the runtime animation
+         */
+        readonly currentFrame: number;
+        /**
+         * Gets the weight of the runtime animation
+         */
+        readonly weight: number;
+        /**
+         * Gets the current value of the runtime animation
+         */
+        readonly currentValue: any;
+        /**
+         * Gets the target path of the runtime animation
+         */
+        readonly targetPath: string;
+        /**
+         * Gets the actual target of the runtime animation
+         */
+        readonly target: any;
+        /** @hidden */
+        _onLoop: () => void;
+        /**
+         * Create a new RuntimeAnimation object
+         * @param target defines the target of the animation
+         * @param animation defines the source animation object
+         * @param scene defines the hosting scene
+         * @param host defines the initiating Animatable
+         */
+        constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
+        private _preparePath;
+        /**
+         * Gets the animation from the runtime animation
+         */
+        readonly animation: Animation;
+        /**
+         * Resets the runtime animation to the beginning
+         * @param restoreOriginal defines whether to restore the target property to the original value
+         */
+        reset(restoreOriginal?: boolean): void;
+        /**
+         * Specifies if the runtime animation is stopped
+         * @returns Boolean specifying if the runtime animation is stopped
+         */
+        isStopped(): boolean;
+        /**
+         * Disposes of the runtime animation
+         */
+        dispose(): void;
+        /**
+         * Apply the interpolated value to the target
+         * @param currentValue defines the value computed by the animation
+         * @param weight defines the weight to apply to this value (Defaults to 1.0)
+         */
+        setValue(currentValue: any, weight: number): void;
+        private _getOriginalValues;
+        private _setValue;
+        /**
+         * Gets the loop pmode of the runtime animation
+         * @returns Loop Mode
+         */
+        private _getCorrectLoopMode;
+        /**
+         * Move the current animation to a given frame
+         * @param frame defines the frame to move to
+         */
+        goToFrame(frame: number): void;
+        /**
+         * @hidden Internal use only
+         */
+        _prepareForSpeedRatioChange(newSpeedRatio: number): void;
+        /**
+         * Execute the current animation
+         * @param delay defines the delay to add to the current frame
+         * @param from defines the lower bound of the animation range
+         * @param to defines the upper bound of the animation range
+         * @param loop defines if the current animation must loop
+         * @param speedRatio defines the current speed ratio
+         * @param weight defines the weight of the animation (default is -1 so no weight)
+         * @param onLoop optional callback called when animation loops
+         * @returns a boolean indicating if the animation is running
+         */
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store an actual running animation
+     */
+    export class Animatable {
+        /** defines the target object */
+        target: any;
+        /** defines the starting frame number (default is 0) */
+        fromFrame: number;
+        /** defines the ending frame number (default is 100) */
+        toFrame: number;
+        /** defines if the animation must loop (default is false)  */
+        loopAnimation: boolean;
+        /** defines a callback to call when animation ends if it is not looping */
+        onAnimationEnd?: (() => void) | null | undefined;
+        /** defines a callback to call when animation loops */
+        onAnimationLoop?: (() => void) | null | undefined;
+        private _localDelayOffset;
+        private _pausedDelay;
+        private _runtimeAnimations;
+        private _paused;
+        private _scene;
+        private _speedRatio;
+        private _weight;
+        private _syncRoot;
+        /**
+         * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
+         * This will only apply for non looping animation (default is true)
+         */
+        disposeOnEnd: boolean;
+        /**
+         * Gets a boolean indicating if the animation has started
+         */
+        animationStarted: boolean;
+        /**
+         * Observer raised when the animation ends
+         */
+        onAnimationEndObservable: Observable<Animatable>;
+        /**
+         * Observer raised when the animation loops
+         */
+        onAnimationLoopObservable: Observable<Animatable>;
+        /**
+         * Gets the root Animatable used to synchronize and normalize animations
+         */
+        readonly syncRoot: Nullable<Animatable>;
+        /**
+         * Gets the current frame of the first RuntimeAnimation
+         * Used to synchronize Animatables
+         */
+        readonly masterFrame: number;
+        /**
+         * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
+         */
+        weight: number;
+        /**
+         * Gets or sets the speed ratio to apply to the animatable (1.0 by default)
+         */
+        speedRatio: number;
+        /**
+         * Creates a new Animatable
+         * @param scene defines the hosting scene
+         * @param target defines the target object
+         * @param fromFrame defines the starting frame number (default is 0)
+         * @param toFrame defines the ending frame number (default is 100)
+         * @param loopAnimation defines if the animation must loop (default is false)
+         * @param speedRatio defines the factor to apply to animation speed (default is 1)
+         * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
+         * @param animations defines a group of animation to add to the new Animatable
+         * @param onAnimationLoop defines a callback to call when animation loops
+         */
+        constructor(scene: Scene, 
+        /** defines the target object */
+        target: any, 
+        /** defines the starting frame number (default is 0) */
+        fromFrame?: number, 
+        /** defines the ending frame number (default is 100) */
+        toFrame?: number, 
+        /** defines if the animation must loop (default is false)  */
+        loopAnimation?: boolean, speedRatio?: number, 
+        /** defines a callback to call when animation ends if it is not looping */
+        onAnimationEnd?: (() => void) | null | undefined, animations?: Animation[], 
+        /** defines a callback to call when animation loops */
+        onAnimationLoop?: (() => void) | null | undefined);
+        /**
+         * Synchronize and normalize current Animatable with a source Animatable
+         * This is useful when using animation weights and when animations are not of the same length
+         * @param root defines the root Animatable to synchronize with
+         * @returns the current Animatable
+         */
+        syncWith(root: Animatable): Animatable;
+        /**
+         * Gets the list of runtime animations
+         * @returns an array of RuntimeAnimation
+         */
+        getAnimations(): RuntimeAnimation[];
+        /**
+         * Adds more animations to the current animatable
+         * @param target defines the target of the animations
+         * @param animations defines the new animations to add
+         */
+        appendAnimations(target: any, animations: Animation[]): void;
+        /**
+         * Gets the source animation for a specific property
+         * @param property defines the propertyu to look for
+         * @returns null or the source animation for the given property
+         */
+        getAnimationByTargetProperty(property: string): Nullable<Animation>;
+        /**
+         * Gets the runtime animation for a specific property
+         * @param property defines the propertyu to look for
+         * @returns null or the runtime animation for the given property
+         */
+        getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation>;
+        /**
+         * Resets the animatable to its original state
+         */
+        reset(): void;
+        /**
+         * Allows the animatable to blend with current running animations
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         * @param blendingSpeed defines the blending speed to use
+         */
+        enableBlending(blendingSpeed: number): void;
+        /**
+         * Disable animation blending
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         */
+        disableBlending(): void;
+        /**
+         * Jump directly to a given frame
+         * @param frame defines the frame to jump to
+         */
+        goToFrame(frame: number): void;
+        /**
+         * Pause the animation
+         */
+        pause(): void;
+        /**
+         * Restart the animation
+         */
+        restart(): void;
+        private _raiseOnAnimationEnd;
+        /**
+         * Stop and delete the current animation
+         * @param animationName defines a string used to only stop some of the runtime animations instead of all
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+         */
+        stop(animationName?: string, targetMask?: (target: any) => boolean): void;
+        /**
+         * Wait asynchronously for the animation to end
+         * @returns a promise which will be fullfilled when the animation ends
+         */
+        waitAsync(): Promise<Animatable>;
+        /** @hidden */
+        _animate(delay: number): boolean;
+    }
+        interface Scene {
+            /** @hidden */
+            _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void;
+            /** @hidden */
+            _processLateAnimationBindingsForMatrices(holder: {
+                totalWeight: number;
+                animations: RuntimeAnimation[];
+                originalValue: Matrix;
+            }): any;
+            /** @hidden */
+            _processLateAnimationBindingsForQuaternions(holder: {
+                totalWeight: number;
+                animations: RuntimeAnimation[];
+                originalValue: Quaternion;
+            }, refQuaternion: Quaternion): Quaternion;
+            /** @hidden */
+            _processLateAnimationBindings(): void;
+            /**
+             * Will start the animation sequence of a given target
+             * @param target defines the target
+             * @param from defines from which frame should animation start
+             * @param to defines until which frame should animation run.
+             * @param weight defines the weight to apply to the animation (1.0 by default)
+             * @param loop defines if the animation loops
+             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+             * @param onAnimationEnd defines the function to be executed when the animation ends
+             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the animatable object created for this animation
+             */
+            beginWeightedAnimation(target: any, from: number, to: number, weight: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
+            /**
+             * Will start the animation sequence of a given target
+             * @param target defines the target
+             * @param from defines from which frame should animation start
+             * @param to defines until which frame should animation run.
+             * @param loop defines if the animation loops
+             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+             * @param onAnimationEnd defines the function to be executed when the animation ends
+             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+             * @param stopCurrent defines if the current animations must be stopped first (true by default)
+             * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the animatable object created for this animation
+             */
+            beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
+            /**
+             * Will start the animation sequence of a given target and its hierarchy
+             * @param target defines the target
+             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+             * @param from defines from which frame should animation start
+             * @param to defines until which frame should animation run.
+             * @param loop defines if the animation loops
+             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+             * @param onAnimationEnd defines the function to be executed when the animation ends
+             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+             * @param stopCurrent defines if the current animations must be stopped first (true by default)
+             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the list of created animatables
+             */
+            beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[];
+            /**
+             * Begin a new animation on a given node
+             * @param target defines the target where the animation will take place
+             * @param animations defines the list of animations to start
+             * @param from defines the initial value
+             * @param to defines the final value
+             * @param loop defines if you want animation to loop (off by default)
+             * @param speedRatio defines the speed ratio to apply to all animations
+             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the list of created animatables
+             */
+            beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable;
+            /**
+             * Begin a new animation on a given node and its hierarchy
+             * @param target defines the root node where the animation will take place
+             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+             * @param animations defines the list of animations to start
+             * @param from defines the initial value
+             * @param to defines the final value
+             * @param loop defines if you want animation to loop (off by default)
+             * @param speedRatio defines the speed ratio to apply to all animations
+             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the list of animatables created for all nodes
+             */
+            beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[];
+            /**
+             * Gets the animatable associated with a specific target
+             * @param target defines the target of the animatable
+             * @returns the required animatable if found
+             */
+            getAnimatableByTarget(target: any): Nullable<Animatable>;
+            /**
+             * Gets all animatables associated with a given target
+             * @param target defines the target to look animatables for
+             * @returns an array of Animatables
+             */
+            getAllAnimatablesByTarget(target: any): Array<Animatable>;
+            /**
+            * Stops and removes all animations that have been applied to the scene
+            */
+            stopAllAnimations(): void;
+        }
+        interface Bone {
+            /**
+             * Copy an animation range from another bone
+             * @param source defines the source bone
+             * @param rangeName defines the range name to copy
+             * @param frameOffset defines the frame offset
+             * @param rescaleAsRequired defines if rescaling must be applied if required
+             * @param skelDimensionsRatio defines the scaling ratio
+             * @returns true if operation was successful
+             */
+            copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired: boolean, skelDimensionsRatio: Nullable<Vector3>): boolean;
+        }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export class _IAnimationState {
+        key: number;
+        repeatCount: number;
+        workValue?: any;
+        loopMode?: number;
+        offsetValue?: any;
+        highLimitValue?: any;
+    }
+    /**
+     * Class used to store any kind of animation
+     */
+    export class Animation {
+        /**Name of the animation */
+        name: string;
+        /**Property to animate */
+        targetProperty: string;
+        /**The frames per second of the animation */
+        framePerSecond: number;
+        /**The data type of the animation */
+        dataType: number;
+        /**The loop mode of the animation */
+        loopMode?: number | undefined;
+        /**Specifies if blending should be enabled */
+        enableBlending?: boolean | undefined;
+        /**
+         * Use matrix interpolation instead of using direct key value when animating matrices
+         */
+        static AllowMatricesInterpolation: boolean;
+        /**
+         * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
+         */
+        static AllowMatrixDecomposeForInterpolation: boolean;
+        /**
+         * Stores the key frames of the animation
+         */
+        private _keys;
+        /**
+         * Stores the easing function of the animation
+         */
+        private _easingFunction;
+        /**
+         * @hidden Internal use only
+         */
+        _runtimeAnimations: RuntimeAnimation[];
+        /**
+         * The set of event that will be linked to this animation
+         */
+        private _events;
+        /**
+         * Stores an array of target property paths
+         */
+        targetPropertyPath: string[];
+        /**
+         * Stores the blending speed of the animation
+         */
+        blendingSpeed: number;
+        /**
+         * Stores the animation ranges for the animation
+         */
+        private _ranges;
+        /**
+         * @hidden Internal use
+         */
+        static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Nullable<Animation>;
+        /**
+         * Sets up an animation
+         * @param property The property to animate
+         * @param animationType The animation type to apply
+         * @param framePerSecond The frames per second of the animation
+         * @param easingFunction The easing function used in the animation
+         * @returns The created animation
+         */
+        static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation;
+        /**
+         * Create and start an animation on a node
+         * @param name defines the name of the global animation that will be run on all nodes
+         * @param node defines the root node where the animation will take place
+         * @param targetProperty defines property to animate
+         * @param framePerSecond defines the number of frame per second yo use
+         * @param totalFrame defines the number of frames in total
+         * @param from defines the initial value
+         * @param to defines the final value
+         * @param loopMode defines which loop mode you want to use (off by default)
+         * @param easingFunction defines the easing function to use (linear by default)
+         * @param onAnimationEnd defines the callback to call when animation end
+         * @returns the animatable created for this animation
+         */
+        static CreateAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
+        /**
+         * Create and start an animation on a node and its descendants
+         * @param name defines the name of the global animation that will be run on all nodes
+         * @param node defines the root node where the animation will take place
+         * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used
+         * @param targetProperty defines property to animate
+         * @param framePerSecond defines the number of frame per second to use
+         * @param totalFrame defines the number of frames in total
+         * @param from defines the initial value
+         * @param to defines the final value
+         * @param loopMode defines which loop mode you want to use (off by default)
+         * @param easingFunction defines the easing function to use (linear by default)
+         * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @returns the list of animatables created for all nodes
+         * @example https://www.babylonjs-playground.com/#MH0VLI
+         */
+        static CreateAndStartHierarchyAnimation(name: string, node: Node, directDescendantsOnly: boolean, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable[]>;
+        /**
+         * Creates a new animation, merges it with the existing animations and starts it
+         * @param name Name of the animation
+         * @param node Node which contains the scene that begins the animations
+         * @param targetProperty Specifies which property to animate
+         * @param framePerSecond The frames per second of the animation
+         * @param totalFrame The total number of frames
+         * @param from The frame at the beginning of the animation
+         * @param to The frame at the end of the animation
+         * @param loopMode Specifies the loop mode of the animation
+         * @param easingFunction (Optional) The easing function of the animation, which allow custom mathematical formulas for animations
+         * @param onAnimationEnd Callback to run once the animation is complete
+         * @returns Nullable animation
+         */
+        static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
+        /**
+         * Transition property of an host to the target Value
+         * @param property The property to transition
+         * @param targetValue The target Value of the property
+         * @param host The object where the property to animate belongs
+         * @param scene Scene used to run the animation
+         * @param frameRate Framerate (in frame/s) to use
+         * @param transition The transition type we want to use
+         * @param duration The duration of the animation, in milliseconds
+         * @param onAnimationEnd Callback trigger at the end of the animation
+         * @returns Nullable animation
+         */
+        static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number, onAnimationEnd?: Nullable<() => void>): Nullable<Animatable>;
+        /**
+         * Return the array of runtime animations currently using this animation
+         */
+        readonly runtimeAnimations: RuntimeAnimation[];
+        /**
+         * Specifies if any of the runtime animations are currently running
+         */
+        readonly hasRunningRuntimeAnimations: boolean;
+        /**
+         * Initializes the animation
+         * @param name Name of the animation
+         * @param targetProperty Property to animate
+         * @param framePerSecond The frames per second of the animation
+         * @param dataType The data type of the animation
+         * @param loopMode The loop mode of the animation
+         * @param enableBlending Specifies if blending should be enabled
+         */
+        constructor(
+        /**Name of the animation */
+        name: string, 
+        /**Property to animate */
+        targetProperty: string, 
+        /**The frames per second of the animation */
+        framePerSecond: number, 
+        /**The data type of the animation */
+        dataType: number, 
+        /**The loop mode of the animation */
+        loopMode?: number | undefined, 
+        /**Specifies if blending should be enabled */
+        enableBlending?: boolean | undefined);
+        /**
+         * Converts the animation to a string
+         * @param fullDetails support for multiple levels of logging within scene loading
+         * @returns String form of the animation
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+         * Add an event to this animation
+         * @param event Event to add
+         */
+        addEvent(event: AnimationEvent): void;
+        /**
+         * Remove all events found at the given frame
+         * @param frame The frame to remove events from
+         */
+        removeEvents(frame: number): void;
+        /**
+         * Retrieves all the events from the animation
+         * @returns Events from the animation
+         */
+        getEvents(): AnimationEvent[];
+        /**
+         * Creates an animation range
+         * @param name Name of the animation range
+         * @param from Starting frame of the animation range
+         * @param to Ending frame of the animation
+         */
+        createRange(name: string, from: number, to: number): void;
+        /**
+         * Deletes an animation range by name
+         * @param name Name of the animation range to delete
+         * @param deleteFrames Specifies if the key frames for the range should also be deleted (true) or not (false)
+         */
+        deleteRange(name: string, deleteFrames?: boolean): void;
+        /**
+         * Gets the animation range by name, or null if not defined
+         * @param name Name of the animation range
+         * @returns Nullable animation range
+         */
+        getRange(name: string): Nullable<AnimationRange>;
+        /**
+         * Gets the key frames from the animation
+         * @returns The key frames of the animation
+         */
+        getKeys(): Array<IAnimationKey>;
+        /**
+         * Gets the highest frame rate of the animation
+         * @returns Highest frame rate of the animation
+         */
+        getHighestFrame(): number;
+        /**
+         * Gets the easing function of the animation
+         * @returns Easing function of the animation
+         */
+        getEasingFunction(): IEasingFunction;
+        /**
+         * Sets the easing function of the animation
+         * @param easingFunction A custom mathematical formula for animation
+         */
+        setEasingFunction(easingFunction: EasingFunction): void;
+        /**
+         * Interpolates a scalar linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated scalar value
+         */
+        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
+        /**
+         * Interpolates a scalar cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated scalar value
+         */
+        floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number;
+        /**
+         * Interpolates a quaternion using a spherical linear interpolation
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated quaternion value
+         */
+        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
+        /**
+         * Interpolates a quaternion cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation curve
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated quaternion value
+         */
+        quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion;
+        /**
+         * Interpolates a Vector3 linearl
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated scalar value
+         */
+        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
+        /**
+         * Interpolates a Vector3 cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns InterpolatedVector3 value
+         */
+        vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3;
+        /**
+         * Interpolates a Vector2 linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Vector2 value
+         */
+        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
+        /**
+         * Interpolates a Vector2 cubically
+         * @param startValue Start value of the animation curve
+         * @param outTangent End tangent of the animation
+         * @param endValue End value of the animation curve
+         * @param inTangent Start tangent of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Vector2 value
+         */
+        vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2;
+        /**
+         * Interpolates a size linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Size value
+         */
+        sizeInterpolateFunction(startValue: Size, endValue: Size, gradient: number): Size;
+        /**
+         * Interpolates a Color3 linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Color3 value
+         */
+        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
+        /**
+         * @hidden Internal use only
+         */
+        _getKeyValue(value: any): any;
+        /**
+         * @hidden Internal use only
+         */
+        _interpolate(currentFrame: number, state: _IAnimationState): any;
+        /**
+         * Defines the function to use to interpolate matrices
+         * @param startValue defines the start matrix
+         * @param endValue defines the end matrix
+         * @param gradient defines the gradient between both matrices
+         * @param result defines an optional target matrix where to store the interpolation
+         * @returns the interpolated matrix
+         */
+        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number, result?: Matrix): Matrix;
+        /**
+         * Makes a copy of the animation
+         * @returns Cloned animation
+         */
+        clone(): Animation;
+        /**
+         * Sets the key frames of the animation
+         * @param values The animation key frames to set
+         */
+        setKeys(values: Array<IAnimationKey>): void;
+        /**
+         * Serializes the animation to an object
+         * @returns Serialized object
+         */
+        serialize(): any;
+        /**
+         * Float animation type
+         */
+        private static _ANIMATIONTYPE_FLOAT;
+        /**
+         * Vector3 animation type
+         */
+        private static _ANIMATIONTYPE_VECTOR3;
+        /**
+         * Quaternion animation type
+         */
+        private static _ANIMATIONTYPE_QUATERNION;
+        /**
+         * Matrix animation type
+         */
+        private static _ANIMATIONTYPE_MATRIX;
+        /**
+         * Color3 animation type
+         */
+        private static _ANIMATIONTYPE_COLOR3;
+        /**
+         * Vector2 animation type
+         */
+        private static _ANIMATIONTYPE_VECTOR2;
+        /**
+         * Size animation type
+         */
+        private static _ANIMATIONTYPE_SIZE;
+        /**
+         * Relative Loop Mode
+         */
+        private static _ANIMATIONLOOPMODE_RELATIVE;
+        /**
+         * Cycle Loop Mode
+         */
+        private static _ANIMATIONLOOPMODE_CYCLE;
+        /**
+         * Constant Loop Mode
+         */
+        private static _ANIMATIONLOOPMODE_CONSTANT;
+        /**
+         * Get the float animation type
+         */
+        static readonly ANIMATIONTYPE_FLOAT: number;
+        /**
+         * Get the Vector3 animation type
+         */
+        static readonly ANIMATIONTYPE_VECTOR3: number;
+        /**
+         * Get the Vector2 animation type
+         */
+        static readonly ANIMATIONTYPE_VECTOR2: number;
+        /**
+         * Get the Size animation type
+         */
+        static readonly ANIMATIONTYPE_SIZE: number;
+        /**
+         * Get the Quaternion animation type
+         */
+        static readonly ANIMATIONTYPE_QUATERNION: number;
+        /**
+         * Get the Matrix animation type
+         */
+        static readonly ANIMATIONTYPE_MATRIX: number;
+        /**
+         * Get the Color3 animation type
+         */
+        static readonly ANIMATIONTYPE_COLOR3: number;
+        /**
+         * Get the Relative Loop Mode
+         */
+        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
+        /**
+         * Get the Cycle Loop Mode
+         */
+        static readonly ANIMATIONLOOPMODE_CYCLE: number;
+        /**
+         * Get the Constant Loop Mode
+         */
+        static readonly ANIMATIONLOOPMODE_CONSTANT: number;
+        /** @hidden */
+        static _UniversalLerp(left: any, right: any, amount: number): any;
+        /**
+         * Parses an animation object and creates an animation
+         * @param parsedAnimation Parsed animation object
+         * @returns Animation object
+         */
+        static Parse(parsedAnimation: any): Animation;
+        /**
+         * Appends the serialized animations from the source animations
+         * @param source Source containing the animations
+         * @param destination Target to store the animations
+         */
+        static AppendSerializedAnimations(source: IAnimatable, destination: any): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to override all child animations of a given target
      */
     export class AnimationPropertiesOverride {
@@ -9511,457 +10705,6 @@ declare module BABYLON {
          */
         static CreateRTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
     }
-}
-declare module BABYLON {
-    /**
-     * Defines a runtime animation
-     */
-    export class RuntimeAnimation {
-        private _events;
-        /**
-         * The current frame of the runtime animation
-         */
-        private _currentFrame;
-        /**
-         * The animation used by the runtime animation
-         */
-        private _animation;
-        /**
-         * The target of the runtime animation
-         */
-        private _target;
-        /**
-         * The initiating animatable
-         */
-        private _host;
-        /**
-         * The original value of the runtime animation
-         */
-        private _originalValue;
-        /**
-         * The original blend value of the runtime animation
-         */
-        private _originalBlendValue;
-        /**
-         * The offsets cache of the runtime animation
-         */
-        private _offsetsCache;
-        /**
-         * The high limits cache of the runtime animation
-         */
-        private _highLimitsCache;
-        /**
-         * Specifies if the runtime animation has been stopped
-         */
-        private _stopped;
-        /**
-         * The blending factor of the runtime animation
-         */
-        private _blendingFactor;
-        /**
-         * The BabylonJS scene
-         */
-        private _scene;
-        /**
-         * The current value of the runtime animation
-         */
-        private _currentValue;
-        /** @hidden */
-        _animationState: _IAnimationState;
-        /**
-         * The active target of the runtime animation
-         */
-        private _activeTargets;
-        private _currentActiveTarget;
-        private _directTarget;
-        /**
-         * The target path of the runtime animation
-         */
-        private _targetPath;
-        /**
-         * The weight of the runtime animation
-         */
-        private _weight;
-        /**
-         * The ratio offset of the runtime animation
-         */
-        private _ratioOffset;
-        /**
-         * The previous delay of the runtime animation
-         */
-        private _previousDelay;
-        /**
-         * The previous ratio of the runtime animation
-         */
-        private _previousRatio;
-        private _enableBlending;
-        private _keys;
-        private _minFrame;
-        private _maxFrame;
-        private _minValue;
-        private _maxValue;
-        private _targetIsArray;
-        /**
-         * Gets the current frame of the runtime animation
-         */
-        readonly currentFrame: number;
-        /**
-         * Gets the weight of the runtime animation
-         */
-        readonly weight: number;
-        /**
-         * Gets the current value of the runtime animation
-         */
-        readonly currentValue: any;
-        /**
-         * Gets the target path of the runtime animation
-         */
-        readonly targetPath: string;
-        /**
-         * Gets the actual target of the runtime animation
-         */
-        readonly target: any;
-        /** @hidden */
-        _onLoop: () => void;
-        /**
-         * Create a new RuntimeAnimation object
-         * @param target defines the target of the animation
-         * @param animation defines the source animation object
-         * @param scene defines the hosting scene
-         * @param host defines the initiating Animatable
-         */
-        constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
-        private _preparePath;
-        /**
-         * Gets the animation from the runtime animation
-         */
-        readonly animation: Animation;
-        /**
-         * Resets the runtime animation to the beginning
-         * @param restoreOriginal defines whether to restore the target property to the original value
-         */
-        reset(restoreOriginal?: boolean): void;
-        /**
-         * Specifies if the runtime animation is stopped
-         * @returns Boolean specifying if the runtime animation is stopped
-         */
-        isStopped(): boolean;
-        /**
-         * Disposes of the runtime animation
-         */
-        dispose(): void;
-        /**
-         * Apply the interpolated value to the target
-         * @param currentValue defines the value computed by the animation
-         * @param weight defines the weight to apply to this value (Defaults to 1.0)
-         */
-        setValue(currentValue: any, weight: number): void;
-        private _getOriginalValues;
-        private _setValue;
-        /**
-         * Gets the loop pmode of the runtime animation
-         * @returns Loop Mode
-         */
-        private _getCorrectLoopMode;
-        /**
-         * Move the current animation to a given frame
-         * @param frame defines the frame to move to
-         */
-        goToFrame(frame: number): void;
-        /**
-         * @hidden Internal use only
-         */
-        _prepareForSpeedRatioChange(newSpeedRatio: number): void;
-        /**
-         * Execute the current animation
-         * @param delay defines the delay to add to the current frame
-         * @param from defines the lower bound of the animation range
-         * @param to defines the upper bound of the animation range
-         * @param loop defines if the current animation must loop
-         * @param speedRatio defines the current speed ratio
-         * @param weight defines the weight of the animation (default is -1 so no weight)
-         * @param onLoop optional callback called when animation loops
-         * @returns a boolean indicating if the animation is running
-         */
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store an actual running animation
-     */
-    export class Animatable {
-        /** defines the target object */
-        target: any;
-        /** defines the starting frame number (default is 0) */
-        fromFrame: number;
-        /** defines the ending frame number (default is 100) */
-        toFrame: number;
-        /** defines if the animation must loop (default is false)  */
-        loopAnimation: boolean;
-        /** defines a callback to call when animation ends if it is not looping */
-        onAnimationEnd?: (() => void) | null | undefined;
-        /** defines a callback to call when animation loops */
-        onAnimationLoop?: (() => void) | null | undefined;
-        private _localDelayOffset;
-        private _pausedDelay;
-        private _runtimeAnimations;
-        private _paused;
-        private _scene;
-        private _speedRatio;
-        private _weight;
-        private _syncRoot;
-        /**
-         * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
-         * This will only apply for non looping animation (default is true)
-         */
-        disposeOnEnd: boolean;
-        /**
-         * Gets a boolean indicating if the animation has started
-         */
-        animationStarted: boolean;
-        /**
-         * Observer raised when the animation ends
-         */
-        onAnimationEndObservable: Observable<Animatable>;
-        /**
-         * Observer raised when the animation loops
-         */
-        onAnimationLoopObservable: Observable<Animatable>;
-        /**
-         * Gets the root Animatable used to synchronize and normalize animations
-         */
-        readonly syncRoot: Nullable<Animatable>;
-        /**
-         * Gets the current frame of the first RuntimeAnimation
-         * Used to synchronize Animatables
-         */
-        readonly masterFrame: number;
-        /**
-         * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
-         */
-        weight: number;
-        /**
-         * Gets or sets the speed ratio to apply to the animatable (1.0 by default)
-         */
-        speedRatio: number;
-        /**
-         * Creates a new Animatable
-         * @param scene defines the hosting scene
-         * @param target defines the target object
-         * @param fromFrame defines the starting frame number (default is 0)
-         * @param toFrame defines the ending frame number (default is 100)
-         * @param loopAnimation defines if the animation must loop (default is false)
-         * @param speedRatio defines the factor to apply to animation speed (default is 1)
-         * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
-         * @param animations defines a group of animation to add to the new Animatable
-         * @param onAnimationLoop defines a callback to call when animation loops
-         */
-        constructor(scene: Scene, 
-        /** defines the target object */
-        target: any, 
-        /** defines the starting frame number (default is 0) */
-        fromFrame?: number, 
-        /** defines the ending frame number (default is 100) */
-        toFrame?: number, 
-        /** defines if the animation must loop (default is false)  */
-        loopAnimation?: boolean, speedRatio?: number, 
-        /** defines a callback to call when animation ends if it is not looping */
-        onAnimationEnd?: (() => void) | null | undefined, animations?: Animation[], 
-        /** defines a callback to call when animation loops */
-        onAnimationLoop?: (() => void) | null | undefined);
-        /**
-         * Synchronize and normalize current Animatable with a source Animatable
-         * This is useful when using animation weights and when animations are not of the same length
-         * @param root defines the root Animatable to synchronize with
-         * @returns the current Animatable
-         */
-        syncWith(root: Animatable): Animatable;
-        /**
-         * Gets the list of runtime animations
-         * @returns an array of RuntimeAnimation
-         */
-        getAnimations(): RuntimeAnimation[];
-        /**
-         * Adds more animations to the current animatable
-         * @param target defines the target of the animations
-         * @param animations defines the new animations to add
-         */
-        appendAnimations(target: any, animations: Animation[]): void;
-        /**
-         * Gets the source animation for a specific property
-         * @param property defines the propertyu to look for
-         * @returns null or the source animation for the given property
-         */
-        getAnimationByTargetProperty(property: string): Nullable<Animation>;
-        /**
-         * Gets the runtime animation for a specific property
-         * @param property defines the propertyu to look for
-         * @returns null or the runtime animation for the given property
-         */
-        getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation>;
-        /**
-         * Resets the animatable to its original state
-         */
-        reset(): void;
-        /**
-         * Allows the animatable to blend with current running animations
-         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
-         * @param blendingSpeed defines the blending speed to use
-         */
-        enableBlending(blendingSpeed: number): void;
-        /**
-         * Disable animation blending
-         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
-         */
-        disableBlending(): void;
-        /**
-         * Jump directly to a given frame
-         * @param frame defines the frame to jump to
-         */
-        goToFrame(frame: number): void;
-        /**
-         * Pause the animation
-         */
-        pause(): void;
-        /**
-         * Restart the animation
-         */
-        restart(): void;
-        private _raiseOnAnimationEnd;
-        /**
-         * Stop and delete the current animation
-         * @param animationName defines a string used to only stop some of the runtime animations instead of all
-         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
-         */
-        stop(animationName?: string, targetMask?: (target: any) => boolean): void;
-        /**
-         * Wait asynchronously for the animation to end
-         * @returns a promise which will be fullfilled when the animation ends
-         */
-        waitAsync(): Promise<Animatable>;
-        /** @hidden */
-        _animate(delay: number): boolean;
-    }
-        interface Scene {
-            /** @hidden */
-            _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void;
-            /** @hidden */
-            _processLateAnimationBindingsForMatrices(holder: {
-                totalWeight: number;
-                animations: RuntimeAnimation[];
-                originalValue: Matrix;
-            }): any;
-            /** @hidden */
-            _processLateAnimationBindingsForQuaternions(holder: {
-                totalWeight: number;
-                animations: RuntimeAnimation[];
-                originalValue: Quaternion;
-            }, refQuaternion: Quaternion): Quaternion;
-            /** @hidden */
-            _processLateAnimationBindings(): void;
-            /**
-             * Will start the animation sequence of a given target
-             * @param target defines the target
-             * @param from defines from which frame should animation start
-             * @param to defines until which frame should animation run.
-             * @param weight defines the weight to apply to the animation (1.0 by default)
-             * @param loop defines if the animation loops
-             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-             * @param onAnimationEnd defines the function to be executed when the animation ends
-             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the animatable object created for this animation
-             */
-            beginWeightedAnimation(target: any, from: number, to: number, weight: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
-            /**
-             * Will start the animation sequence of a given target
-             * @param target defines the target
-             * @param from defines from which frame should animation start
-             * @param to defines until which frame should animation run.
-             * @param loop defines if the animation loops
-             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-             * @param onAnimationEnd defines the function to be executed when the animation ends
-             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-             * @param stopCurrent defines if the current animations must be stopped first (true by default)
-             * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the animatable object created for this animation
-             */
-            beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
-            /**
-             * Will start the animation sequence of a given target and its hierarchy
-             * @param target defines the target
-             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
-             * @param from defines from which frame should animation start
-             * @param to defines until which frame should animation run.
-             * @param loop defines if the animation loops
-             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-             * @param onAnimationEnd defines the function to be executed when the animation ends
-             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-             * @param stopCurrent defines if the current animations must be stopped first (true by default)
-             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the list of created animatables
-             */
-            beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[];
-            /**
-             * Begin a new animation on a given node
-             * @param target defines the target where the animation will take place
-             * @param animations defines the list of animations to start
-             * @param from defines the initial value
-             * @param to defines the final value
-             * @param loop defines if you want animation to loop (off by default)
-             * @param speedRatio defines the speed ratio to apply to all animations
-             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the list of created animatables
-             */
-            beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable;
-            /**
-             * Begin a new animation on a given node and its hierarchy
-             * @param target defines the root node where the animation will take place
-             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
-             * @param animations defines the list of animations to start
-             * @param from defines the initial value
-             * @param to defines the final value
-             * @param loop defines if you want animation to loop (off by default)
-             * @param speedRatio defines the speed ratio to apply to all animations
-             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the list of animatables created for all nodes
-             */
-            beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[];
-            /**
-             * Gets the animatable associated with a specific target
-             * @param target defines the target of the animatable
-             * @returns the required animatable if found
-             */
-            getAnimatableByTarget(target: any): Nullable<Animatable>;
-            /**
-             * Gets all animatables associated with a given target
-             * @param target defines the target to look animatables for
-             * @returns an array of Animatables
-             */
-            getAllAnimatablesByTarget(target: any): Array<Animatable>;
-            /**
-            * Stops and removes all animations that have been applied to the scene
-            */
-            stopAllAnimations(): void;
-        }
-        interface Bone {
-            /**
-             * Copy an animation range from another bone
-             * @param source defines the source bone
-             * @param rangeName defines the range name to copy
-             * @param frameOffset defines the frame offset
-             * @param rescaleAsRequired defines if rescaling must be applied if required
-             * @param skelDimensionsRatio defines the scaling ratio
-             * @returns true if operation was successful
-             */
-            copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired: boolean, skelDimensionsRatio: Nullable<Vector3>): boolean;
-        }
 }
 declare module BABYLON {
     /**
@@ -15235,7 +15978,7 @@ declare module BABYLON {
          * Internal only
          * @hidden
          */
-        static _GetTargetProperty: (target: Scene | Node) => {
+        static _GetTargetProperty: (target: Node | Scene) => {
             name: string;
             targetType: string;
             value: string;
@@ -18781,6 +19524,80 @@ declare module BABYLON {
          * Disposes of the post process manager.
          */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** Interface used by value gradients (color, factor, ...) */
+    export interface IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number;
+    }
+    /** Class used to store color4 gradient */
+    export class ColorGradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number;
+        /**
+         * Gets or sets first associated color
+         */
+        color1: Color4;
+        /**
+         * Gets or sets second associated color
+         */
+        color2?: Color4;
+        /**
+         * Will get a color picked randomly between color1 and color2.
+         * If color2 is undefined then color1 will be used
+         * @param result defines the target Color4 to store the result in
+         */
+        getColorToRef(result: Color4): void;
+    }
+    /** Class used to store color 3 gradient */
+    export class Color3Gradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number;
+        /**
+         * Gets or sets the associated color
+         */
+        color: Color3;
+    }
+    /** Class used to store factor gradient */
+    export class FactorGradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number;
+        /**
+         * Gets or sets first associated factor
+         */
+        factor1: number;
+        /**
+         * Gets or sets second associated factor
+         */
+        factor2?: number;
+        /**
+         * Will get a number picked randomly between factor1 and factor2.
+         * If factor2 is undefined then factor1 will be used
+         * @returns the picked number
+         */
+        getFactor(): number;
+    }
+    /**
+     * Helper used to simplify some generic gradient tasks
+     */
+    export class GradientHelper {
+        /**
+         * Gets the current gradient from an array of IValueGradient
+         * @param ratio defines the current ratio to get
+         * @param gradients defines the array of IValueGradient
+         * @param updateFunc defines the callback function used to get the final value from the selected gradients
+         */
+        static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void): void;
     }
 }
 declare module BABYLON {
@@ -25832,445 +26649,730 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * @hidden
+     * This is the base class of all the camera used in the application.
+     * @see http://doc.babylonjs.com/features/cameras
      */
-    export class _IAnimationState {
-        key: number;
-        repeatCount: number;
-        workValue?: any;
-        loopMode?: number;
-        offsetValue?: any;
-        highLimitValue?: any;
-    }
-    /**
-     * Class used to store any kind of animation
-     */
-    export class Animation {
-        /**Name of the animation */
-        name: string;
-        /**Property to animate */
-        targetProperty: string;
-        /**The frames per second of the animation */
-        framePerSecond: number;
-        /**The data type of the animation */
-        dataType: number;
-        /**The loop mode of the animation */
-        loopMode?: number | undefined;
-        /**Specifies if blending should be enabled */
-        enableBlending?: boolean | undefined;
+    export class Camera extends Node {
+        /** @hidden */
+        static _createDefaultParsedCamera: (name: string, scene: Scene) => Camera;
         /**
-         * Use matrix interpolation instead of using direct key value when animating matrices
+         * This is the default projection mode used by the cameras.
+         * It helps recreating a feeling of perspective and better appreciate depth.
+         * This is the best way to simulate real life cameras.
          */
-        static AllowMatricesInterpolation: boolean;
+        static readonly PERSPECTIVE_CAMERA: number;
         /**
-         * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
+         * This helps creating camera with an orthographic mode.
+         * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
          */
-        static AllowMatrixDecomposeForInterpolation: boolean;
+        static readonly ORTHOGRAPHIC_CAMERA: number;
         /**
-         * Stores the key frames of the animation
+         * This is the default FOV mode for perspective cameras.
+         * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
          */
-        private _keys;
+        static readonly FOVMODE_VERTICAL_FIXED: number;
         /**
-         * Stores the easing function of the animation
+         * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
          */
-        private _easingFunction;
+        static readonly FOVMODE_HORIZONTAL_FIXED: number;
         /**
-         * @hidden Internal use only
+         * This specifies ther is no need for a camera rig.
+         * Basically only one eye is rendered corresponding to the camera.
          */
-        _runtimeAnimations: RuntimeAnimation[];
+        static readonly RIG_MODE_NONE: number;
         /**
-         * The set of event that will be linked to this animation
+         * Simulates a camera Rig with one blue eye and one red eye.
+         * This can be use with 3d blue and red glasses.
          */
-        private _events;
+        static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH: number;
         /**
-         * Stores an array of target property paths
+         * Defines that both eyes of the camera will be rendered side by side with a parallel target.
          */
-        targetPropertyPath: string[];
+        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL: number;
         /**
-         * Stores the blending speed of the animation
+         * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
          */
-        blendingSpeed: number;
+        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED: number;
         /**
-         * Stores the animation ranges for the animation
+         * Defines that both eyes of the camera will be rendered over under each other.
          */
-        private _ranges;
+        static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
         /**
-         * @hidden Internal use
+         * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
          */
-        static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Nullable<Animation>;
+        static readonly RIG_MODE_VR: number;
         /**
-         * Sets up an animation
-         * @param property The property to animate
-         * @param animationType The animation type to apply
-         * @param framePerSecond The frames per second of the animation
-         * @param easingFunction The easing function used in the animation
-         * @returns The created animation
+         * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
          */
-        static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation;
+        static readonly RIG_MODE_WEBVR: number;
         /**
-         * Create and start an animation on a node
-         * @param name defines the name of the global animation that will be run on all nodes
-         * @param node defines the root node where the animation will take place
-         * @param targetProperty defines property to animate
-         * @param framePerSecond defines the number of frame per second yo use
-         * @param totalFrame defines the number of frames in total
-         * @param from defines the initial value
-         * @param to defines the final value
-         * @param loopMode defines which loop mode you want to use (off by default)
-         * @param easingFunction defines the easing function to use (linear by default)
-         * @param onAnimationEnd defines the callback to call when animation end
-         * @returns the animatable created for this animation
+         * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
          */
-        static CreateAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
+        static readonly RIG_MODE_CUSTOM: number;
         /**
-         * Create and start an animation on a node and its descendants
-         * @param name defines the name of the global animation that will be run on all nodes
-         * @param node defines the root node where the animation will take place
-         * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used
-         * @param targetProperty defines property to animate
-         * @param framePerSecond defines the number of frame per second to use
-         * @param totalFrame defines the number of frames in total
-         * @param from defines the initial value
-         * @param to defines the final value
-         * @param loopMode defines which loop mode you want to use (off by default)
-         * @param easingFunction defines the easing function to use (linear by default)
-         * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-         * @returns the list of animatables created for all nodes
-         * @example https://www.babylonjs-playground.com/#MH0VLI
+         * Defines if by default attaching controls should prevent the default javascript event to continue.
          */
-        static CreateAndStartHierarchyAnimation(name: string, node: Node, directDescendantsOnly: boolean, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable[]>;
+        static ForceAttachControlToAlwaysPreventDefault: boolean;
         /**
-         * Creates a new animation, merges it with the existing animations and starts it
-         * @param name Name of the animation
-         * @param node Node which contains the scene that begins the animations
-         * @param targetProperty Specifies which property to animate
-         * @param framePerSecond The frames per second of the animation
-         * @param totalFrame The total number of frames
-         * @param from The frame at the beginning of the animation
-         * @param to The frame at the end of the animation
-         * @param loopMode Specifies the loop mode of the animation
-         * @param easingFunction (Optional) The easing function of the animation, which allow custom mathematical formulas for animations
-         * @param onAnimationEnd Callback to run once the animation is complete
-         * @returns Nullable animation
+         * Define the input manager associated with the camera.
          */
-        static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
+        inputs: CameraInputsManager<Camera>;
+        /** @hidden */
+        _position: Vector3;
         /**
-         * Transition property of an host to the target Value
-         * @param property The property to transition
-         * @param targetValue The target Value of the property
-         * @param host The object where the property to animate belongs
-         * @param scene Scene used to run the animation
-         * @param frameRate Framerate (in frame/s) to use
-         * @param transition The transition type we want to use
-         * @param duration The duration of the animation, in milliseconds
-         * @param onAnimationEnd Callback trigger at the end of the animation
-         * @returns Nullable animation
+         * Define the current local position of the camera in the scene
          */
-        static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number, onAnimationEnd?: Nullable<() => void>): Nullable<Animatable>;
+        position: Vector3;
         /**
-         * Return the array of runtime animations currently using this animation
+         * The vector the camera should consider as up.
+         * (default is Vector3(0, 1, 0) aka Vector3.Up())
          */
-        readonly runtimeAnimations: RuntimeAnimation[];
+        upVector: Vector3;
         /**
-         * Specifies if any of the runtime animations are currently running
+         * Define the current limit on the left side for an orthographic camera
+         * In scene unit
          */
-        readonly hasRunningRuntimeAnimations: boolean;
+        orthoLeft: Nullable<number>;
         /**
-         * Initializes the animation
-         * @param name Name of the animation
-         * @param targetProperty Property to animate
-         * @param framePerSecond The frames per second of the animation
-         * @param dataType The data type of the animation
-         * @param loopMode The loop mode of the animation
-         * @param enableBlending Specifies if blending should be enabled
+         * Define the current limit on the right side for an orthographic camera
+         * In scene unit
          */
-        constructor(
-        /**Name of the animation */
-        name: string, 
-        /**Property to animate */
-        targetProperty: string, 
-        /**The frames per second of the animation */
-        framePerSecond: number, 
-        /**The data type of the animation */
-        dataType: number, 
-        /**The loop mode of the animation */
-        loopMode?: number | undefined, 
-        /**Specifies if blending should be enabled */
-        enableBlending?: boolean | undefined);
+        orthoRight: Nullable<number>;
         /**
-         * Converts the animation to a string
-         * @param fullDetails support for multiple levels of logging within scene loading
-         * @returns String form of the animation
+         * Define the current limit on the bottom side for an orthographic camera
+         * In scene unit
+         */
+        orthoBottom: Nullable<number>;
+        /**
+         * Define the current limit on the top side for an orthographic camera
+         * In scene unit
+         */
+        orthoTop: Nullable<number>;
+        /**
+         * Field Of View is set in Radians. (default is 0.8)
+         */
+        fov: number;
+        /**
+         * Define the minimum distance the camera can see from.
+         * This is important to note that the depth buffer are not infinite and the closer it starts
+         * the more your scene might encounter depth fighting issue.
+         */
+        minZ: number;
+        /**
+         * Define the maximum distance the camera can see to.
+         * This is important to note that the depth buffer are not infinite and the further it end
+         * the more your scene might encounter depth fighting issue.
+         */
+        maxZ: number;
+        /**
+         * Define the default inertia of the camera.
+         * This helps giving a smooth feeling to the camera movement.
+         */
+        inertia: number;
+        /**
+         * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
+         */
+        mode: number;
+        /**
+         * Define wether the camera is intermediate.
+         * This is useful to not present the output directly to the screen in case of rig without post process for instance
+         */
+        isIntermediate: boolean;
+        /**
+         * Define the viewport of the camera.
+         * This correspond to the portion of the screen the camera will render to in normalized 0 to 1 unit.
+         */
+        viewport: Viewport;
+        /**
+         * Restricts the camera to viewing objects with the same layerMask.
+         * A camera with a layerMask of 1 will render mesh.layerMask & camera.layerMask!== 0
+         */
+        layerMask: number;
+        /**
+         * fovMode sets the camera frustum bounds to the viewport bounds. (default is FOVMODE_VERTICAL_FIXED)
+         */
+        fovMode: number;
+        /**
+         * Rig mode of the camera.
+         * This is useful to create the camera with two "eyes" instead of one to create VR or stereoscopic scenes.
+         * This is normally controlled byt the camera themselves as internal use.
+         */
+        cameraRigMode: number;
+        /**
+         * Defines the distance between both "eyes" in case of a RIG
+         */
+        interaxialDistance: number;
+        /**
+         * Defines if stereoscopic rendering is done side by side or over under.
+         */
+        isStereoscopicSideBySide: boolean;
+        /**
+         * Defines the list of custom render target which are rendered to and then used as the input to this camera's render. Eg. display another camera view on a TV in the main scene
+         * This is pretty helpfull if you wish to make a camera render to a texture you could reuse somewhere
+         * else in the scene. (Eg. security camera)
+         *
+         * To change the final output target of the camera, camera.outputRenderTarget should be used instead (eg. webXR renders to a render target corrisponding to an HMD)
+         */
+        customRenderTargets: RenderTargetTexture[];
+        /**
+         * When set, the camera will render to this render target instead of the default canvas
+         *
+         * If the desire is to use the output of a camera as a texture in the scene consider using camera.customRenderTargets instead
+         */
+        outputRenderTarget: Nullable<RenderTargetTexture>;
+        /**
+         * Observable triggered when the camera view matrix has changed.
+         */
+        onViewMatrixChangedObservable: Observable<Camera>;
+        /**
+         * Observable triggered when the camera Projection matrix has changed.
+         */
+        onProjectionMatrixChangedObservable: Observable<Camera>;
+        /**
+         * Observable triggered when the inputs have been processed.
+         */
+        onAfterCheckInputsObservable: Observable<Camera>;
+        /**
+         * Observable triggered when reset has been called and applied to the camera.
+         */
+        onRestoreStateObservable: Observable<Camera>;
+        /** @hidden */
+        _cameraRigParams: any;
+        /** @hidden */
+        _rigCameras: Camera[];
+        /** @hidden */
+        _rigPostProcess: Nullable<PostProcess>;
+        protected _webvrViewMatrix: Matrix;
+        /** @hidden */
+        _skipRendering: boolean;
+        /** @hidden */
+        _projectionMatrix: Matrix;
+        /** @hidden */
+        _postProcesses: Nullable<PostProcess>[];
+        /** @hidden */
+        _activeMeshes: SmartArray<AbstractMesh>;
+        protected _globalPosition: Vector3;
+        /** @hidden */
+        _computedViewMatrix: Matrix;
+        private _doNotComputeProjectionMatrix;
+        private _transformMatrix;
+        private _frustumPlanes;
+        private _refreshFrustumPlanes;
+        private _storedFov;
+        private _stateStored;
+        /**
+         * Instantiates a new camera object.
+         * This should not be used directly but through the inherited cameras: ArcRotate, Free...
+         * @see http://doc.babylonjs.com/features/cameras
+         * @param name Defines the name of the camera in the scene
+         * @param position Defines the position of the camera
+         * @param scene Defines the scene the camera belongs too
+         * @param setActiveOnSceneIfNoneActive Defines if the camera should be set as active after creation if no other camera have been defined in the scene
+         */
+        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
+        /**
+         * Store current camera state (fov, position, etc..)
+         * @returns the camera
+         */
+        storeState(): Camera;
+        /**
+         * Restores the camera state values if it has been stored. You must call storeState() first
+         */
+        protected _restoreStateValues(): boolean;
+        /**
+         * Restored camera state. You must call storeState() first.
+         * @returns true if restored and false otherwise
+         */
+        restoreState(): boolean;
+        /**
+         * Gets the class name of the camera.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /** @hidden */
+        readonly _isCamera: boolean;
+        /**
+         * Gets a string representation of the camera useful for debug purpose.
+         * @param fullDetails Defines that a more verboe level of logging is required
+         * @returns the string representation
          */
         toString(fullDetails?: boolean): string;
         /**
-         * Add an event to this animation
-         * @param event Event to add
+         * Gets the current world space position of the camera.
          */
-        addEvent(event: AnimationEvent): void;
+        readonly globalPosition: Vector3;
         /**
-         * Remove all events found at the given frame
-         * @param frame The frame to remove events from
+         * Gets the list of active meshes this frame (meshes no culled or excluded by lod s in the frame)
+         * @returns the active meshe list
          */
-        removeEvents(frame: number): void;
+        getActiveMeshes(): SmartArray<AbstractMesh>;
         /**
-         * Retrieves all the events from the animation
-         * @returns Events from the animation
+         * Check wether a mesh is part of the current active mesh list of the camera
+         * @param mesh Defines the mesh to check
+         * @returns true if active, false otherwise
          */
-        getEvents(): AnimationEvent[];
+        isActiveMesh(mesh: Mesh): boolean;
         /**
-         * Creates an animation range
-         * @param name Name of the animation range
-         * @param from Starting frame of the animation range
-         * @param to Ending frame of the animation
+         * Is this camera ready to be used/rendered
+         * @param completeCheck defines if a complete check (including post processes) has to be done (false by default)
+         * @return true if the camera is ready
          */
-        createRange(name: string, from: number, to: number): void;
+        isReady(completeCheck?: boolean): boolean;
+        /** @hidden */
+        _initCache(): void;
+        /** @hidden */
+        _updateCache(ignoreParentClass?: boolean): void;
+        /** @hidden */
+        _isSynchronized(): boolean;
+        /** @hidden */
+        _isSynchronizedViewMatrix(): boolean;
+        /** @hidden */
+        _isSynchronizedProjectionMatrix(): boolean;
         /**
-         * Deletes an animation range by name
-         * @param name Name of the animation range to delete
-         * @param deleteFrames Specifies if the key frames for the range should also be deleted (true) or not (false)
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
-        deleteRange(name: string, deleteFrames?: boolean): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
         /**
-         * Gets the animation range by name, or null if not defined
-         * @param name Name of the animation range
-         * @returns Nullable animation range
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
          */
-        getRange(name: string): Nullable<AnimationRange>;
+        detachControl(element: HTMLElement): void;
         /**
-         * Gets the key frames from the animation
-         * @returns The key frames of the animation
+         * Update the camera state according to the different inputs gathered during the frame.
          */
-        getKeys(): Array<IAnimationKey>;
+        update(): void;
+        /** @hidden */
+        _checkInputs(): void;
+        /** @hidden */
+        readonly rigCameras: Camera[];
         /**
-         * Gets the highest frame rate of the animation
-         * @returns Highest frame rate of the animation
+         * Gets the post process used by the rig cameras
          */
-        getHighestFrame(): number;
+        readonly rigPostProcess: Nullable<PostProcess>;
         /**
-         * Gets the easing function of the animation
-         * @returns Easing function of the animation
+         * Internal, gets the first post proces.
+         * @returns the first post process to be run on this camera.
          */
-        getEasingFunction(): IEasingFunction;
+        _getFirstPostProcess(): Nullable<PostProcess>;
+        private _cascadePostProcessesToRigCams;
         /**
-         * Sets the easing function of the animation
-         * @param easingFunction A custom mathematical formula for animation
+         * Attach a post process to the camera.
+         * @see http://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+         * @param postProcess The post process to attach to the camera
+         * @param insertAt The position of the post process in case several of them are in use in the scene
+         * @returns the position the post process has been inserted at
          */
-        setEasingFunction(easingFunction: EasingFunction): void;
+        attachPostProcess(postProcess: PostProcess, insertAt?: Nullable<number>): number;
         /**
-         * Interpolates a scalar linearly
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated scalar value
+         * Detach a post process to the camera.
+         * @see http://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+         * @param postProcess The post process to detach from the camera
          */
-        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
+        detachPostProcess(postProcess: PostProcess): void;
         /**
-         * Interpolates a scalar cubically
-         * @param startValue Start value of the animation curve
-         * @param outTangent End tangent of the animation
-         * @param endValue End value of the animation curve
-         * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated scalar value
+         * Gets the current world matrix of the camera
          */
-        floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number;
+        getWorldMatrix(): Matrix;
+        /** @hidden */
+        _getViewMatrix(): Matrix;
         /**
-         * Interpolates a quaternion using a spherical linear interpolation
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated quaternion value
+         * Gets the current view matrix of the camera.
+         * @param force forces the camera to recompute the matrix without looking at the cached state
+         * @returns the view matrix
          */
-        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
+        getViewMatrix(force?: boolean): Matrix;
         /**
-         * Interpolates a quaternion cubically
-         * @param startValue Start value of the animation curve
-         * @param outTangent End tangent of the animation curve
-         * @param endValue End value of the animation curve
-         * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated quaternion value
+         * Freeze the projection matrix.
+         * It will prevent the cache check of the camera projection compute and can speed up perf
+         * if no parameter of the camera are meant to change
+         * @param projection Defines manually a projection if necessary
          */
-        quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion;
+        freezeProjectionMatrix(projection?: Matrix): void;
         /**
-         * Interpolates a Vector3 linearl
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated scalar value
+         * Unfreeze the projection matrix if it has previously been freezed by freezeProjectionMatrix.
          */
-        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
+        unfreezeProjectionMatrix(): void;
         /**
-         * Interpolates a Vector3 cubically
-         * @param startValue Start value of the animation curve
-         * @param outTangent End tangent of the animation
-         * @param endValue End value of the animation curve
-         * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns InterpolatedVector3 value
+         * Gets the current projection matrix of the camera.
+         * @param force forces the camera to recompute the matrix without looking at the cached state
+         * @returns the projection matrix
          */
-        vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3;
+        getProjectionMatrix(force?: boolean): Matrix;
         /**
-         * Interpolates a Vector2 linearly
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated Vector2 value
+         * Gets the transformation matrix (ie. the multiplication of view by projection matrices)
+         * @returns a Matrix
          */
-        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
+        getTransformationMatrix(): Matrix;
+        private _updateFrustumPlanes;
         /**
-         * Interpolates a Vector2 cubically
-         * @param startValue Start value of the animation curve
-         * @param outTangent End tangent of the animation
-         * @param endValue End value of the animation curve
-         * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated Vector2 value
+         * Checks if a cullable object (mesh...) is in the camera frustum
+         * This checks the bounding box center. See isCompletelyInFrustum for a full bounding check
+         * @param target The object to check
+         * @param checkRigCameras If the rig cameras should be checked (eg. with webVR camera both eyes should be checked) (Default: false)
+         * @returns true if the object is in frustum otherwise false
          */
-        vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2;
+        isInFrustum(target: ICullable, checkRigCameras?: boolean): boolean;
         /**
-         * Interpolates a size linearly
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated Size value
+         * Checks if a cullable object (mesh...) is in the camera frustum
+         * Unlike isInFrustum this cheks the full bounding box
+         * @param target The object to check
+         * @returns true if the object is in frustum otherwise false
          */
-        sizeInterpolateFunction(startValue: Size, endValue: Size, gradient: number): Size;
+        isCompletelyInFrustum(target: ICullable): boolean;
         /**
-         * Interpolates a Color3 linearly
-         * @param startValue Start value of the animation curve
-         * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
-         * @returns Interpolated Color3 value
+         * Gets a ray in the forward direction from the camera.
+         * @param length Defines the length of the ray to create
+         * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+         * @param origin Defines the start point of the ray which defaults to the camera position
+         * @returns the forward ray
          */
-        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
+        getForwardRay(length?: number, transform?: Matrix, origin?: Vector3): Ray;
         /**
-         * @hidden Internal use only
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
-        _getKeyValue(value: any): any;
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+        /** @hidden */
+        _isLeftCamera: boolean;
         /**
-         * @hidden Internal use only
+         * Gets the left camera of a rig setup in case of Rigged Camera
          */
-        _interpolate(currentFrame: number, state: _IAnimationState): any;
+        readonly isLeftCamera: boolean;
+        /** @hidden */
+        _isRightCamera: boolean;
         /**
-         * Defines the function to use to interpolate matrices
-         * @param startValue defines the start matrix
-         * @param endValue defines the end matrix
-         * @param gradient defines the gradient between both matrices
-         * @param result defines an optional target matrix where to store the interpolation
-         * @returns the interpolated matrix
+         * Gets the right camera of a rig setup in case of Rigged Camera
          */
-        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number, result?: Matrix): Matrix;
+        readonly isRightCamera: boolean;
         /**
-         * Makes a copy of the animation
-         * @returns Cloned animation
+         * Gets the left camera of a rig setup in case of Rigged Camera
          */
-        clone(): Animation;
+        readonly leftCamera: Nullable<FreeCamera>;
         /**
-         * Sets the key frames of the animation
-         * @param values The animation key frames to set
+         * Gets the right camera of a rig setup in case of Rigged Camera
          */
-        setKeys(values: Array<IAnimationKey>): void;
+        readonly rightCamera: Nullable<FreeCamera>;
         /**
-         * Serializes the animation to an object
-         * @returns Serialized object
+         * Gets the left camera target of a rig setup in case of Rigged Camera
+         * @returns the target position
+         */
+        getLeftTarget(): Nullable<Vector3>;
+        /**
+         * Gets the right camera target of a rig setup in case of Rigged Camera
+         * @returns the target position
+         */
+        getRightTarget(): Nullable<Vector3>;
+        /**
+         * @hidden
+         */
+        setCameraRigMode(mode: number, rigParams: any): void;
+        /** @hidden */
+        static _setStereoscopicRigMode(camera: Camera): void;
+        /** @hidden */
+        static _setStereoscopicAnaglyphRigMode(camera: Camera): void;
+        /** @hidden */
+        static _setVRRigMode(camera: Camera, rigParams: any): void;
+        /** @hidden */
+        static _setWebVRRigMode(camera: Camera, rigParams: any): void;
+        /** @hidden */
+        _getVRProjectionMatrix(): Matrix;
+        protected _updateCameraRotationMatrix(): void;
+        protected _updateWebVRCameraRotationMatrix(): void;
+        /**
+         * This function MUST be overwritten by the different WebVR cameras available.
+         * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
+         * @hidden
+         */
+        _getWebVRProjectionMatrix(): Matrix;
+        /**
+         * This function MUST be overwritten by the different WebVR cameras available.
+         * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
+         * @hidden
+         */
+        _getWebVRViewMatrix(): Matrix;
+        /** @hidden */
+        setCameraRigParameter(name: string, value: any): void;
+        /**
+         * needs to be overridden by children so sub has required properties to be copied
+         * @hidden
+         */
+        createRigCamera(name: string, cameraIndex: number): Nullable<Camera>;
+        /**
+         * May need to be overridden by children
+         * @hidden
+         */
+        _updateRigCameras(): void;
+        /** @hidden */
+        _setupInputs(): void;
+        /**
+         * Serialiaze the camera setup to a json represention
+         * @returns the JSON representation
          */
         serialize(): any;
         /**
-         * Float animation type
+         * Clones the current camera.
+         * @param name The cloned camera name
+         * @returns the cloned camera
          */
-        private static _ANIMATIONTYPE_FLOAT;
+        clone(name: string): Camera;
         /**
-         * Vector3 animation type
+         * Gets the direction of the camera relative to a given local axis.
+         * @param localAxis Defines the reference axis to provide a relative direction.
+         * @return the direction
          */
-        private static _ANIMATIONTYPE_VECTOR3;
+        getDirection(localAxis: Vector3): Vector3;
         /**
-         * Quaternion animation type
+         * Gets the direction of the camera relative to a given local axis into a passed vector.
+         * @param localAxis Defines the reference axis to provide a relative direction.
+         * @param result Defines the vector to store the result in
          */
-        private static _ANIMATIONTYPE_QUATERNION;
+        getDirectionToRef(localAxis: Vector3, result: Vector3): void;
         /**
-         * Matrix animation type
+         * Gets a camera constructor for a given camera type
+         * @param type The type of the camera to construct (should be equal to one of the camera class name)
+         * @param name The name of the camera the result will be able to instantiate
+         * @param scene The scene the result will construct the camera in
+         * @param interaxial_distance In case of stereoscopic setup, the distance between both eyes
+         * @param isStereoscopicSideBySide In case of stereoscopic setup, should the sereo be side b side
+         * @returns a factory method to construc the camera
          */
-        private static _ANIMATIONTYPE_MATRIX;
+        static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance?: number, isStereoscopicSideBySide?: boolean): () => Camera;
         /**
-         * Color3 animation type
+         * Compute the world  matrix of the camera.
+         * @returns the camera workd matrix
          */
-        private static _ANIMATIONTYPE_COLOR3;
+        computeWorldMatrix(): Matrix;
         /**
-         * Vector2 animation type
+         * Parse a JSON and creates the camera from the parsed information
+         * @param parsedCamera The JSON to parse
+         * @param scene The scene to instantiate the camera in
+         * @returns the newly constructed camera
          */
-        private static _ANIMATIONTYPE_VECTOR2;
+        static Parse(parsedCamera: any, scene: Scene): Camera;
+    }
+}
+declare module BABYLON {
+    /**
+     * This represents all the required information to add a fresnel effect on a material:
+     * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     */
+    export class FresnelParameters {
+        private _isEnabled;
         /**
-         * Size animation type
+         * Define if the fresnel effect is enable or not.
          */
-        private static _ANIMATIONTYPE_SIZE;
+        isEnabled: boolean;
         /**
-         * Relative Loop Mode
+         * Define the color used on edges (grazing angle)
          */
-        private static _ANIMATIONLOOPMODE_RELATIVE;
+        leftColor: Color3;
         /**
-         * Cycle Loop Mode
+         * Define the color used on center
          */
-        private static _ANIMATIONLOOPMODE_CYCLE;
+        rightColor: Color3;
         /**
-         * Constant Loop Mode
+         * Define bias applied to computed fresnel term
          */
-        private static _ANIMATIONLOOPMODE_CONSTANT;
+        bias: number;
         /**
-         * Get the float animation type
+         * Defined the power exponent applied to fresnel term
          */
-        static readonly ANIMATIONTYPE_FLOAT: number;
+        power: number;
         /**
-         * Get the Vector3 animation type
+         * Clones the current fresnel and its valuues
+         * @returns a clone fresnel configuration
          */
-        static readonly ANIMATIONTYPE_VECTOR3: number;
+        clone(): FresnelParameters;
         /**
-         * Get the Vector2 animation type
+         * Serializes the current fresnel parameters to a JSON representation.
+         * @return the JSON serialization
          */
-        static readonly ANIMATIONTYPE_VECTOR2: number;
+        serialize(): any;
         /**
-         * Get the Size animation type
+         * Parse a JSON object and deserialize it to a new Fresnel parameter object.
+         * @param parsedFresnelParameters Define the JSON representation
+         * @returns the parsed parameters
          */
-        static readonly ANIMATIONTYPE_SIZE: number;
-        /**
-         * Get the Quaternion animation type
-         */
-        static readonly ANIMATIONTYPE_QUATERNION: number;
-        /**
-         * Get the Matrix animation type
-         */
-        static readonly ANIMATIONTYPE_MATRIX: number;
-        /**
-         * Get the Color3 animation type
-         */
-        static readonly ANIMATIONTYPE_COLOR3: number;
-        /**
-         * Get the Relative Loop Mode
-         */
-        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
-        /**
-         * Get the Cycle Loop Mode
-         */
-        static readonly ANIMATIONLOOPMODE_CYCLE: number;
-        /**
-         * Get the Constant Loop Mode
-         */
-        static readonly ANIMATIONLOOPMODE_CONSTANT: number;
+        static Parse(parsedFresnelParameters: any): FresnelParameters;
+    }
+}
+declare module BABYLON {
+    export function expandToProperty(callback: string, targetKey?: Nullable<string>): (target: any, propertyKey: string) => void;
+    export function serialize(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsTexture(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsColor3(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsFresnelParameters(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsVector2(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsVector3(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsMeshReference(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsColorCurves(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsColor4(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsImageProcessingConfiguration(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsQuaternion(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    export function serializeAsMatrix(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    /**
+     * Decorator used to define property that can be serialized as reference to a camera
+     * @param sourceName defines the name of the property to decorate
+     */
+    export function serializeAsCameraReference(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
+    /**
+     * Class used to help serialization objects
+     */
+    export class SerializationHelper {
         /** @hidden */
-        static _UniversalLerp(left: any, right: any, amount: number): any;
-        /**
-         * Parses an animation object and creates an animation
-         * @param parsedAnimation Parsed animation object
-         * @returns Animation object
-         */
-        static Parse(parsedAnimation: any): Animation;
+        static _ImageProcessingConfigurationParser: (sourceProperty: any) => ImageProcessingConfiguration;
+        /** @hidden */
+        static _FresnelParametersParser: (sourceProperty: any) => FresnelParameters;
+        /** @hidden */
+        static _ColorCurvesParser: (sourceProperty: any) => ColorCurves;
+        /** @hidden */
+        static _TextureParser: (sourceProperty: any, scene: Scene, rootUrl: string) => Nullable<BaseTexture>;
         /**
          * Appends the serialized animations from the source animations
          * @param source Source containing the animations
          * @param destination Target to store the animations
          */
         static AppendSerializedAnimations(source: IAnimatable, destination: any): void;
+        /**
+         * Static function used to serialized a specific entity
+         * @param entity defines the entity to serialize
+         * @param serializationObject defines the optional target obecjt where serialization data will be stored
+         * @returns a JSON compatible object representing the serialization of the entity
+         */
+        static Serialize<T>(entity: T, serializationObject?: any): any;
+        /**
+         * Creates a new entity from a serialization data object
+         * @param creationFunction defines a function used to instanciated the new entity
+         * @param source defines the source serialization data
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root url for resources
+         * @returns a new entity
+         */
+        static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl?: Nullable<string>): T;
+        /**
+         * Clones an object
+         * @param creationFunction defines the function used to instanciate the new object
+         * @param source defines the source object
+         * @returns the cloned object
+         */
+        static Clone<T>(creationFunction: () => T, source: T): T;
+        /**
+         * Instanciates a new object based on a source one (some data will be shared between both object)
+         * @param creationFunction defines the function used to instanciate the new object
+         * @param source defines the source object
+         * @returns the new object
+         */
+        static Instanciate<T>(creationFunction: () => T, source: T): T;
+    }
+}
+declare module BABYLON {
+    /**
+     * CubeMap information grouping all the data for each faces as well as the cubemap size.
+     */
+    export interface CubeMapInfo {
+        /**
+         * The pixel array for the front face.
+         * This is stored in format, left to right, up to down format.
+         */
+        front: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the back face.
+         * This is stored in format, left to right, up to down format.
+         */
+        back: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the left face.
+         * This is stored in format, left to right, up to down format.
+         */
+        left: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the right face.
+         * This is stored in format, left to right, up to down format.
+         */
+        right: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the up face.
+         * This is stored in format, left to right, up to down format.
+         */
+        up: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the down face.
+         * This is stored in format, left to right, up to down format.
+         */
+        down: Nullable<ArrayBufferView>;
+        /**
+         * The size of the cubemap stored.
+         *
+         * Each faces will be size * size pixels.
+         */
+        size: number;
+        /**
+         * The format of the texture.
+         *
+         * RGBA, RGB.
+         */
+        format: number;
+        /**
+         * The type of the texture data.
+         *
+         * UNSIGNED_INT, FLOAT.
+         */
+        type: number;
+        /**
+         * Specifies whether the texture is in gamma space.
+         */
+        gammaSpace: boolean;
+    }
+    /**
+     * Helper class useful to convert panorama picture to their cubemap representation in 6 faces.
+     */
+    export class PanoramaToCubeMapTools {
+        private static FACE_FRONT;
+        private static FACE_BACK;
+        private static FACE_RIGHT;
+        private static FACE_LEFT;
+        private static FACE_DOWN;
+        private static FACE_UP;
+        /**
+         * Converts a panorma stored in RGB right to left up to down format into a cubemap (6 faces).
+         *
+         * @param float32Array The source data.
+         * @param inputWidth The width of the input panorama.
+         * @param inputHeight The height of the input panorama.
+         * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
+         * @return The cubemap data
+         */
+        static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo;
+        private static CreateCubemapTexture;
+        private static CalcProjectionSpherical;
+    }
+}
+declare module BABYLON {
+    /**
+     * Helper class dealing with the extraction of spherical polynomial dataArray
+     * from a cube map.
+     */
+    export class CubeMapToSphericalPolynomialTools {
+        private static FileFaces;
+        /**
+         * Converts a texture to the according Spherical Polynomial data.
+         * This extracts the first 3 orders only as they are the only one used in the lighting.
+         *
+         * @param texture The texture to extract the information from.
+         * @return The Spherical Polynomial data.
+         */
+        static ConvertCubeMapTextureToSphericalPolynomial(texture: BaseTexture): Nullable<SphericalPolynomial>;
+        /**
+         * Converts a cubemap to the according Spherical Polynomial data.
+         * This extracts the first 3 orders only as they are the only one used in the lighting.
+         *
+         * @param cubeInfo The Cube map to extract the information from.
+         * @return The Spherical Polynomial data.
+         */
+        static ConvertCubeMapToSphericalPolynomial(cubeInfo: CubeMapInfo): SphericalPolynomial;
     }
 }
 declare module BABYLON {
@@ -26610,6 +27712,819 @@ declare module BABYLON {
          * @param callback Define the callback triggered once the entire list will be ready
          */
         static WhenAllReady(textures: BaseTexture[], callback: () => void): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store data associated with WebGL texture data for the engine
+     * This class should not be used directly
+     */
+    export class InternalTexture {
+        /** @hidden */
+        static _UpdateRGBDAsync: (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number) => Promise<void>;
+        /**
+         * The source of the texture data is unknown
+         */
+        static DATASOURCE_UNKNOWN: number;
+        /**
+         * Texture data comes from an URL
+         */
+        static DATASOURCE_URL: number;
+        /**
+         * Texture data is only used for temporary storage
+         */
+        static DATASOURCE_TEMP: number;
+        /**
+         * Texture data comes from raw data (ArrayBuffer)
+         */
+        static DATASOURCE_RAW: number;
+        /**
+         * Texture content is dynamic (video or dynamic texture)
+         */
+        static DATASOURCE_DYNAMIC: number;
+        /**
+         * Texture content is generated by rendering to it
+         */
+        static DATASOURCE_RENDERTARGET: number;
+        /**
+         * Texture content is part of a multi render target process
+         */
+        static DATASOURCE_MULTIRENDERTARGET: number;
+        /**
+         * Texture data comes from a cube data file
+         */
+        static DATASOURCE_CUBE: number;
+        /**
+         * Texture data comes from a raw cube data
+         */
+        static DATASOURCE_CUBERAW: number;
+        /**
+         * Texture data come from a prefiltered cube data file
+         */
+        static DATASOURCE_CUBEPREFILTERED: number;
+        /**
+         * Texture content is raw 3D data
+         */
+        static DATASOURCE_RAW3D: number;
+        /**
+         * Texture content is a depth texture
+         */
+        static DATASOURCE_DEPTHTEXTURE: number;
+        /**
+         * Texture data comes from a raw cube data encoded with RGBD
+         */
+        static DATASOURCE_CUBERAW_RGBD: number;
+        /**
+         * Defines if the texture is ready
+         */
+        isReady: boolean;
+        /**
+         * Defines if the texture is a cube texture
+         */
+        isCube: boolean;
+        /**
+         * Defines if the texture contains 3D data
+         */
+        is3D: boolean;
+        /**
+         * Defines if the texture contains multiview data
+         */
+        isMultiview: boolean;
+        /**
+         * Gets the URL used to load this texture
+         */
+        url: string;
+        /**
+         * Gets the sampling mode of the texture
+         */
+        samplingMode: number;
+        /**
+         * Gets a boolean indicating if the texture needs mipmaps generation
+         */
+        generateMipMaps: boolean;
+        /**
+         * Gets the number of samples used by the texture (WebGL2+ only)
+         */
+        samples: number;
+        /**
+         * Gets the type of the texture (int, float...)
+         */
+        type: number;
+        /**
+         * Gets the format of the texture (RGB, RGBA...)
+         */
+        format: number;
+        /**
+         * Observable called when the texture is loaded
+         */
+        onLoadedObservable: Observable<InternalTexture>;
+        /**
+         * Gets the width of the texture
+         */
+        width: number;
+        /**
+         * Gets the height of the texture
+         */
+        height: number;
+        /**
+         * Gets the depth of the texture
+         */
+        depth: number;
+        /**
+         * Gets the initial width of the texture (It could be rescaled if the current system does not support non power of two textures)
+         */
+        baseWidth: number;
+        /**
+         * Gets the initial height of the texture (It could be rescaled if the current system does not support non power of two textures)
+         */
+        baseHeight: number;
+        /**
+         * Gets the initial depth of the texture (It could be rescaled if the current system does not support non power of two textures)
+         */
+        baseDepth: number;
+        /**
+         * Gets a boolean indicating if the texture is inverted on Y axis
+         */
+        invertY: boolean;
+        /** @hidden */
+        _invertVScale: boolean;
+        /** @hidden */
+        _associatedChannel: number;
+        /** @hidden */
+        _dataSource: number;
+        /** @hidden */
+        _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
+        /** @hidden */
+        _bufferView: Nullable<ArrayBufferView>;
+        /** @hidden */
+        _bufferViewArray: Nullable<ArrayBufferView[]>;
+        /** @hidden */
+        _bufferViewArrayArray: Nullable<ArrayBufferView[][]>;
+        /** @hidden */
+        _size: number;
+        /** @hidden */
+        _extension: string;
+        /** @hidden */
+        _files: Nullable<string[]>;
+        /** @hidden */
+        _workingCanvas: Nullable<HTMLCanvasElement>;
+        /** @hidden */
+        _workingContext: Nullable<CanvasRenderingContext2D>;
+        /** @hidden */
+        _framebuffer: Nullable<WebGLFramebuffer>;
+        /** @hidden */
+        _depthStencilBuffer: Nullable<WebGLRenderbuffer>;
+        /** @hidden */
+        _MSAAFramebuffer: Nullable<WebGLFramebuffer>;
+        /** @hidden */
+        _MSAARenderBuffer: Nullable<WebGLRenderbuffer>;
+        /** @hidden */
+        _attachments: Nullable<number[]>;
+        /** @hidden */
+        _cachedCoordinatesMode: Nullable<number>;
+        /** @hidden */
+        _cachedWrapU: Nullable<number>;
+        /** @hidden */
+        _cachedWrapV: Nullable<number>;
+        /** @hidden */
+        _cachedWrapR: Nullable<number>;
+        /** @hidden */
+        _cachedAnisotropicFilteringLevel: Nullable<number>;
+        /** @hidden */
+        _isDisabled: boolean;
+        /** @hidden */
+        _compression: Nullable<string>;
+        /** @hidden */
+        _generateStencilBuffer: boolean;
+        /** @hidden */
+        _generateDepthBuffer: boolean;
+        /** @hidden */
+        _comparisonFunction: number;
+        /** @hidden */
+        _sphericalPolynomial: Nullable<SphericalPolynomial>;
+        /** @hidden */
+        _lodGenerationScale: number;
+        /** @hidden */
+        _lodGenerationOffset: number;
+        /** @hidden */
+        _colorTextureArray: Nullable<WebGLTexture>;
+        /** @hidden */
+        _depthStencilTextureArray: Nullable<WebGLTexture>;
+        /** @hidden */
+        _lodTextureHigh: Nullable<BaseTexture>;
+        /** @hidden */
+        _lodTextureMid: Nullable<BaseTexture>;
+        /** @hidden */
+        _lodTextureLow: Nullable<BaseTexture>;
+        /** @hidden */
+        _isRGBD: boolean;
+        /** @hidden */
+        _linearSpecularLOD: boolean;
+        /** @hidden */
+        _irradianceTexture: Nullable<BaseTexture>;
+        /** @hidden */
+        _webGLTexture: Nullable<WebGLTexture>;
+        /** @hidden */
+        _references: number;
+        private _engine;
+        /**
+         * Gets the Engine the texture belongs to.
+         * @returns The babylon engine
+         */
+        getEngine(): Engine;
+        /**
+         * Gets the data source type of the texture (can be one of the InternalTexture.DATASOURCE_XXXX)
+         */
+        readonly dataSource: number;
+        /**
+         * Creates a new InternalTexture
+         * @param engine defines the engine to use
+         * @param dataSource defines the type of data that will be used
+         * @param delayAllocation if the texture allocation should be delayed (default: false)
+         */
+        constructor(engine: Engine, dataSource: number, delayAllocation?: boolean);
+        /**
+         * Increments the number of references (ie. the number of Texture that point to it)
+         */
+        incrementReferences(): void;
+        /**
+         * Change the size of the texture (not the size of the content)
+         * @param width defines the new width
+         * @param height defines the new height
+         * @param depth defines the new depth (1 by default)
+         */
+        updateSize(width: int, height: int, depth?: int): void;
+        /** @hidden */
+        _rebuild(): void;
+        /** @hidden */
+        _swapAndDie(target: InternalTexture): void;
+        /**
+         * Dispose the current allocated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.
+     * (Eg. Start at high quality with reflection and fog, if fps is low, remove reflection, if still low remove fog)
+     */
+    export class EffectFallbacks {
+        private _defines;
+        private _currentRank;
+        private _maxRank;
+        private _mesh;
+        /**
+         * Removes the fallback from the bound mesh.
+         */
+        unBindMesh(): void;
+        /**
+         * Adds a fallback on the specified property.
+         * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
+         * @param define The name of the define in the shader
+         */
+        addFallback(rank: number, define: string): void;
+        /**
+         * Sets the mesh to use CPU skinning when needing to fallback.
+         * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
+         * @param mesh The mesh to use the fallbacks.
+         */
+        addCPUSkinningFallback(rank: number, mesh: AbstractMesh): void;
+        /**
+         * Checks to see if more fallbacks are still availible.
+         */
+        readonly isMoreFallbacks: boolean;
+        /**
+         * Removes the defines that should be removed when falling back.
+         * @param currentDefines defines the current define statements for the shader.
+         * @param effect defines the current effect we try to compile
+         * @returns The resulting defines with defines of the current rank removed.
+         */
+        reduce(currentDefines: string, effect: Effect): string;
+    }
+    /**
+     * Options to be used when creating an effect.
+     */
+    export class EffectCreationOptions {
+        /**
+         * Atrributes that will be used in the shader.
+         */
+        attributes: string[];
+        /**
+         * Uniform varible names that will be set in the shader.
+         */
+        uniformsNames: string[];
+        /**
+         * Uniform buffer varible names that will be set in the shader.
+         */
+        uniformBuffersNames: string[];
+        /**
+         * Sampler texture variable names that will be set in the shader.
+         */
+        samplers: string[];
+        /**
+         * Define statements that will be set in the shader.
+         */
+        defines: any;
+        /**
+         * Possible fallbacks for this effect to improve performance when needed.
+         */
+        fallbacks: Nullable<EffectFallbacks>;
+        /**
+         * Callback that will be called when the shader is compiled.
+         */
+        onCompiled: Nullable<(effect: Effect) => void>;
+        /**
+         * Callback that will be called if an error occurs during shader compilation.
+         */
+        onError: Nullable<(effect: Effect, errors: string) => void>;
+        /**
+         * Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
+         */
+        indexParameters: any;
+        /**
+         * Max number of lights that can be used in the shader.
+         */
+        maxSimultaneousLights: number;
+        /**
+         * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
+         */
+        transformFeedbackVaryings: Nullable<string[]>;
+    }
+    /**
+     * Effect containing vertex and fragment shader that can be executed on an object.
+     */
+    export class Effect implements IDisposable {
+        /**
+         * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
+         */
+        static ShadersRepository: string;
+        /**
+         * Name of the effect.
+         */
+        name: any;
+        /**
+         * String container all the define statements that should be set on the shader.
+         */
+        defines: string;
+        /**
+         * Callback that will be called when the shader is compiled.
+         */
+        onCompiled: Nullable<(effect: Effect) => void>;
+        /**
+         * Callback that will be called if an error occurs during shader compilation.
+         */
+        onError: Nullable<(effect: Effect, errors: string) => void>;
+        /**
+         * Callback that will be called when effect is bound.
+         */
+        onBind: Nullable<(effect: Effect) => void>;
+        /**
+         * Unique ID of the effect.
+         */
+        uniqueId: number;
+        /**
+         * Observable that will be called when the shader is compiled.
+         * It is recommended to use executeWhenCompile() or to make sure that scene.isReady() is called to get this observable raised.
+         */
+        onCompileObservable: Observable<Effect>;
+        /**
+         * Observable that will be called if an error occurs during shader compilation.
+         */
+        onErrorObservable: Observable<Effect>;
+        /** @hidden */
+        _onBindObservable: Nullable<Observable<Effect>>;
+        /**
+         * Observable that will be called when effect is bound.
+         */
+        readonly onBindObservable: Observable<Effect>;
+        /** @hidden */
+        _bonesComputationForcedToCPU: boolean;
+        private static _uniqueIdSeed;
+        private _engine;
+        private _uniformBuffersNames;
+        private _uniformsNames;
+        private _samplerList;
+        private _samplers;
+        private _isReady;
+        private _compilationError;
+        private _attributesNames;
+        private _attributes;
+        private _uniforms;
+        /**
+         * Key for the effect.
+         * @hidden
+         */
+        _key: string;
+        private _indexParameters;
+        private _fallbacks;
+        private _vertexSourceCode;
+        private _fragmentSourceCode;
+        private _vertexSourceCodeOverride;
+        private _fragmentSourceCodeOverride;
+        private _transformFeedbackVaryings;
+        /**
+         * Compiled shader to webGL program.
+         * @hidden
+         */
+        _pipelineContext: Nullable<IPipelineContext>;
+        private _valueCache;
+        private static _baseCache;
+        /**
+         * Instantiates an effect.
+         * An effect can be used to create/manage/execute vertex and fragment shaders.
+         * @param baseName Name of the effect.
+         * @param attributesNamesOrOptions List of attribute names that will be passed to the shader or set of all options to create the effect.
+         * @param uniformsNamesOrEngine List of uniform variable names that will be passed to the shader or the engine that will be used to render effect.
+         * @param samplers List of sampler variables that will be passed to the shader.
+         * @param engine Engine to be used to render the effect
+         * @param defines Define statements to be added to the shader.
+         * @param fallbacks Possible fallbacks for this effect to improve performance when needed.
+         * @param onCompiled Callback that will be called when the shader is compiled.
+         * @param onError Callback that will be called if an error occurs during shader compilation.
+         * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
+         */
+        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: Nullable<string[]>, engine?: Engine, defines?: Nullable<string>, fallbacks?: Nullable<EffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
+        private _useFinalCode;
+        /**
+         * Unique key for this effect
+         */
+        readonly key: string;
+        /**
+         * If the effect has been compiled and prepared.
+         * @returns if the effect is compiled and prepared.
+         */
+        isReady(): boolean;
+        /**
+         * The engine the effect was initialized with.
+         * @returns the engine.
+         */
+        getEngine(): Engine;
+        /**
+         * The pipeline context for this effect
+         * @returns the associated pipeline context
+         */
+        getPipelineContext(): Nullable<IPipelineContext>;
+        /**
+         * The set of names of attribute variables for the shader.
+         * @returns An array of attribute names.
+         */
+        getAttributesNames(): string[];
+        /**
+         * Returns the attribute at the given index.
+         * @param index The index of the attribute.
+         * @returns The location of the attribute.
+         */
+        getAttributeLocation(index: number): number;
+        /**
+         * Returns the attribute based on the name of the variable.
+         * @param name of the attribute to look up.
+         * @returns the attribute location.
+         */
+        getAttributeLocationByName(name: string): number;
+        /**
+         * The number of attributes.
+         * @returns the numnber of attributes.
+         */
+        getAttributesCount(): number;
+        /**
+         * Gets the index of a uniform variable.
+         * @param uniformName of the uniform to look up.
+         * @returns the index.
+         */
+        getUniformIndex(uniformName: string): number;
+        /**
+         * Returns the attribute based on the name of the variable.
+         * @param uniformName of the uniform to look up.
+         * @returns the location of the uniform.
+         */
+        getUniform(uniformName: string): Nullable<WebGLUniformLocation>;
+        /**
+         * Returns an array of sampler variable names
+         * @returns The array of sampler variable neames.
+         */
+        getSamplers(): string[];
+        /**
+         * The error from the last compilation.
+         * @returns the error string.
+         */
+        getCompilationError(): string;
+        /**
+         * Adds a callback to the onCompiled observable and call the callback imediatly if already ready.
+         * @param func The callback to be used.
+         */
+        executeWhenCompiled(func: (effect: Effect) => void): void;
+        private _checkIsReady;
+        /** @hidden */
+        _loadVertexShader(vertex: any, callback: (data: any) => void): void;
+        /** @hidden */
+        _loadFragmentShader(fragment: any, callback: (data: any) => void): void;
+        /** @hidden */
+        _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void;
+        /**
+         * Recompiles the webGL program
+         * @param vertexSourceCode The source code for the vertex shader.
+         * @param fragmentSourceCode The source code for the fragment shader.
+         * @param onCompiled Callback called when completed.
+         * @param onError Callback called on error.
+         * @hidden
+         */
+        _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void): void;
+        /**
+         * Prepares the effect
+         * @hidden
+         */
+        _prepareEffect(): void;
+        /**
+         * Checks if the effect is supported. (Must be called after compilation)
+         */
+        readonly isSupported: boolean;
+        /**
+         * Binds a texture to the engine to be used as output of the shader.
+         * @param channel Name of the output variable.
+         * @param texture Texture to bind.
+         * @hidden
+         */
+        _bindTexture(channel: string, texture: InternalTexture): void;
+        /**
+         * Sets a texture on the engine to be used in the shader.
+         * @param channel Name of the sampler variable.
+         * @param texture Texture to set.
+         */
+        setTexture(channel: string, texture: Nullable<BaseTexture>): void;
+        /**
+         * Sets a depth stencil texture from a render target on the engine to be used in the shader.
+         * @param channel Name of the sampler variable.
+         * @param texture Texture to set.
+         */
+        setDepthStencilTexture(channel: string, texture: Nullable<RenderTargetTexture>): void;
+        /**
+         * Sets an array of textures on the engine to be used in the shader.
+         * @param channel Name of the variable.
+         * @param textures Textures to set.
+         */
+        setTextureArray(channel: string, textures: BaseTexture[]): void;
+        /**
+         * Sets a texture to be the input of the specified post process. (To use the output, pass in the next post process in the pipeline)
+         * @param channel Name of the sampler variable.
+         * @param postProcess Post process to get the input texture from.
+         */
+        setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void;
+        /**
+         * (Warning! setTextureFromPostProcessOutput may be desired instead)
+         * Sets the input texture of the passed in post process to be input of this effect. (To use the output of the passed in post process use setTextureFromPostProcessOutput)
+         * @param channel Name of the sampler variable.
+         * @param postProcess Post process to get the output texture from.
+         */
+        setTextureFromPostProcessOutput(channel: string, postProcess: Nullable<PostProcess>): void;
+        /** @hidden */
+        _cacheMatrix(uniformName: string, matrix: Matrix): boolean;
+        /** @hidden */
+        _cacheFloat2(uniformName: string, x: number, y: number): boolean;
+        /** @hidden */
+        _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean;
+        /** @hidden */
+        _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean;
+        /**
+         * Binds a buffer to a uniform.
+         * @param buffer Buffer to bind.
+         * @param name Name of the uniform variable to bind to.
+         */
+        bindUniformBuffer(buffer: DataBuffer, name: string): void;
+        /**
+         * Binds block to a uniform.
+         * @param blockName Name of the block to bind.
+         * @param index Index to bind.
+         */
+        bindUniformBlock(blockName: string, index: number): void;
+        /**
+         * Sets an interger value on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value Value to be set.
+         * @returns this effect.
+         */
+        setInt(uniformName: string, value: number): Effect;
+        /**
+         * Sets an int array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setIntArray(uniformName: string, array: Int32Array): Effect;
+        /**
+         * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setIntArray2(uniformName: string, array: Int32Array): Effect;
+        /**
+         * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setIntArray3(uniformName: string, array: Int32Array): Effect;
+        /**
+         * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setIntArray4(uniformName: string, array: Int32Array): Effect;
+        /**
+         * Sets an float array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setFloatArray(uniformName: string, array: Float32Array): Effect;
+        /**
+         * Sets an float array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setFloatArray2(uniformName: string, array: Float32Array): Effect;
+        /**
+         * Sets an float array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setFloatArray3(uniformName: string, array: Float32Array): Effect;
+        /**
+         * Sets an float array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setFloatArray4(uniformName: string, array: Float32Array): Effect;
+        /**
+         * Sets an array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setArray(uniformName: string, array: number[]): Effect;
+        /**
+         * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setArray2(uniformName: string, array: number[]): Effect;
+        /**
+         * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setArray3(uniformName: string, array: number[]): Effect;
+        /**
+         * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setArray4(uniformName: string, array: number[]): Effect;
+        /**
+         * Sets matrices on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrices matrices to be set.
+         * @returns this effect.
+         */
+        setMatrices(uniformName: string, matrices: Float32Array): Effect;
+        /**
+         * Sets matrix on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         * @returns this effect.
+         */
+        setMatrix(uniformName: string, matrix: Matrix): Effect;
+        /**
+         * Sets a 3x3 matrix on a uniform variable. (Speicified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         * @returns this effect.
+         */
+        setMatrix3x3(uniformName: string, matrix: Float32Array): Effect;
+        /**
+         * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         * @returns this effect.
+         */
+        setMatrix2x2(uniformName: string, matrix: Float32Array): Effect;
+        /**
+         * Sets a float on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value value to be set.
+         * @returns this effect.
+         */
+        setFloat(uniformName: string, value: number): Effect;
+        /**
+         * Sets a boolean on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param bool value to be set.
+         * @returns this effect.
+         */
+        setBool(uniformName: string, bool: boolean): Effect;
+        /**
+         * Sets a Vector2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector2 vector2 to be set.
+         * @returns this effect.
+         */
+        setVector2(uniformName: string, vector2: Vector2): Effect;
+        /**
+         * Sets a float2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float2.
+         * @param y Second float in float2.
+         * @returns this effect.
+         */
+        setFloat2(uniformName: string, x: number, y: number): Effect;
+        /**
+         * Sets a Vector3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector3 Value to be set.
+         * @returns this effect.
+         */
+        setVector3(uniformName: string, vector3: Vector3): Effect;
+        /**
+         * Sets a float3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float3.
+         * @param y Second float in float3.
+         * @param z Third float in float3.
+         * @returns this effect.
+         */
+        setFloat3(uniformName: string, x: number, y: number, z: number): Effect;
+        /**
+         * Sets a Vector4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector4 Value to be set.
+         * @returns this effect.
+         */
+        setVector4(uniformName: string, vector4: Vector4): Effect;
+        /**
+         * Sets a float4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float4.
+         * @param y Second float in float4.
+         * @param z Third float in float4.
+         * @param w Fourth float in float4.
+         * @returns this effect.
+         */
+        setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect;
+        /**
+         * Sets a Color3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         * @returns this effect.
+         */
+        setColor3(uniformName: string, color3: Color3): Effect;
+        /**
+         * Sets a Color4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         * @param alpha Alpha value to be set.
+         * @returns this effect.
+         */
+        setColor4(uniformName: string, color3: Color3, alpha: number): Effect;
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniformName defines the name of the variable
+         * @param color4 defines the value to be set
+         * @returns this effect.
+         */
+        setDirectColor4(uniformName: string, color4: Color4): Effect;
+        /** Release all associated resources */
+        dispose(): void;
+        /**
+         * This function will add a new shader to the shader store
+         * @param name the name of the shader
+         * @param pixelShader optional pixel shader content
+         * @param vertexShader optional vertex shader content
+         */
+        static RegisterShader(name: string, pixelShader?: string, vertexShader?: string): void;
+        /**
+         * Store of each shader (The can be looked up using effect.key)
+         */
+        static ShadersStore: {
+            [key: string]: string;
+        };
+        /**
+         * Store of each included file for a shader (The can be looked up using effect.key)
+         */
+        static IncludesShadersStore: {
+            [key: string]: string;
+        };
+        /**
+         * Resets the cache of effects.
+         */
+        static ResetCache(): void;
     }
 }
 declare module BABYLON {
@@ -27230,6 +29145,107 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * This class is used to track a performance counter which is number based.
+     * The user has access to many properties which give statistics of different nature.
+     *
+     * The implementer can track two kinds of Performance Counter: time and count.
+     * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
+     * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
+     */
+    export class PerfCounter {
+        /**
+         * Gets or sets a global boolean to turn on and off all the counters
+         */
+        static Enabled: boolean;
+        /**
+         * Returns the smallest value ever
+         */
+        readonly min: number;
+        /**
+         * Returns the biggest value ever
+         */
+        readonly max: number;
+        /**
+         * Returns the average value since the performance counter is running
+         */
+        readonly average: number;
+        /**
+         * Returns the average value of the last second the counter was monitored
+         */
+        readonly lastSecAverage: number;
+        /**
+         * Returns the current value
+         */
+        readonly current: number;
+        /**
+         * Gets the accumulated total
+         */
+        readonly total: number;
+        /**
+         * Gets the total value count
+         */
+        readonly count: number;
+        /**
+         * Creates a new counter
+         */
+        constructor();
+        /**
+         * Call this method to start monitoring a new frame.
+         * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
+         */
+        fetchNewFrame(): void;
+        /**
+         * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
+         * @param newCount the count value to add to the monitored count
+         * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
+         */
+        addCount(newCount: number, fetchResult: boolean): void;
+        /**
+         * Start monitoring this performance counter
+         */
+        beginMonitoring(): void;
+        /**
+         * Compute the time lapsed since the previous beginMonitoring() call.
+         * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
+         */
+        endMonitoring(newFrame?: boolean): void;
+        private _fetchResult;
+        private _startMonitoringTime;
+        private _min;
+        private _max;
+        private _average;
+        private _current;
+        private _totalValueCount;
+        private _totalAccumulated;
+        private _lastSecAverage;
+        private _lastSecAccumulated;
+        private _lastSecTime;
+        private _lastSecValueCount;
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface for any object that can request an animation frame
+     */
+    export interface ICustomAnimationFrameRequester {
+        /**
+         * This function will be called when the render loop is ready. If this is not populated, the engine's renderloop function will be called
+         */
+        renderFunction?: Function;
+        /**
+         * Called to request the next frame to render to
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
+         */
+        requestAnimationFrame: Function;
+        /**
+         * You can pass this value to cancelAnimationFrame() to cancel the refresh callback request
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame#Return_value
+         */
+        requestID?: number;
+    }
+}
+declare module BABYLON {
+    /**
      * Settings for finer control over video usage
      */
     export interface VideoTextureSettings {
@@ -27355,6 +29371,33 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IColor4Like {
+        r: float;
+        g: float;
+        b: float;
+        a: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IViewportLike {
+        x: float;
+        y: float;
+        width: float;
+        height: float;
+    }
+    /**
+     * Defines the interface used by objects containing a viewport (like a camera)
+     */
+    interface IViewportOwnerLike {
+        /**
+         * Gets or sets the viewport
+         */
+        viewport: IViewportLike;
+    }
     /**
      * Interface for attribute information associated with buffer instanciation
      */
@@ -27999,7 +30042,7 @@ declare module BABYLON {
         private _compiledEffects;
         private _vertexAttribArraysEnabled;
         /** @hidden */
-        protected _cachedViewport: Nullable<Viewport>;
+        protected _cachedViewport: Nullable<IViewportLike>;
         private _cachedVertexArrayObject;
         /** @hidden */
         protected _cachedVertexBuffers: any;
@@ -28050,7 +30093,7 @@ declare module BABYLON {
         /**
          * Gets the current viewport
          */
-        readonly currentViewport: Nullable<Viewport>;
+        readonly currentViewport: Nullable<IViewportLike>;
         /**
          * Gets the default empty texture
          */
@@ -28152,11 +30195,11 @@ declare module BABYLON {
         };
         /**
          * Gets current aspect ratio
-         * @param camera defines the camera to use to get the aspect ratio
+         * @param viewportOwner defines the camera to use to get the aspect ratio
          * @param useScreen defines if screen size must be used (or the current render target if any)
          * @returns a number defining the aspect ratio
          */
-        getAspectRatio(camera: Camera, useScreen?: boolean): number;
+        getAspectRatio(viewportOwner: IViewportOwnerLike, useScreen?: boolean): number;
         /**
          * Gets current screen aspect ratio
          * @returns a number defining the aspect ratio
@@ -28380,7 +30423,7 @@ declare module BABYLON {
          * @param depth defines if the depth buffer must be cleared
          * @param stencil defines if the stencil buffer must be cleared
          */
-        clear(color: Nullable<Color4>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+        clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
         /**
          * Executes a scissor clear (ie. a clear on a specific portion of the screen)
          * @param x defines the x-coordinate of the top left corner of the clear rectangle
@@ -28389,7 +30432,7 @@ declare module BABYLON {
          * @param height defines the height of the clear rectangle
          * @param clearColor defines the clear color
          */
-        scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void;
+        scissorClear(x: number, y: number, width: number, height: number, clearColor: IColor4Like): void;
         /**
          * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
          * @param x defines the x-coordinate of the top left corner of the clear rectangle
@@ -28411,7 +30454,7 @@ declare module BABYLON {
          * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
          * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
          */
-        setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void;
+        setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void;
         /**
          * Directly set the WebGL Viewport
          * @param x defines the x coordinate of the viewport (in screen space)
@@ -28420,7 +30463,7 @@ declare module BABYLON {
          * @param height defines the height of the viewport (in screen space)
          * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
          */
-        setDirectViewport(x: number, y: number, width: number, height: number): Nullable<Viewport>;
+        setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike>;
         /**
          * Begin a new frame
          */
@@ -28826,12 +30869,6 @@ declare module BABYLON {
          */
         setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): void;
         /**
-         * Set the value of an uniform to a matrix
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param matrix defines the matrix to store
-         */
-        setMatrix(uniform: Nullable<WebGLUniformLocation>, matrix: Matrix): void;
-        /**
          * Set the value of an uniform to a matrix (3x3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 3x3 matrix to store
@@ -28886,24 +30923,11 @@ declare module BABYLON {
          */
         setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void;
         /**
-         * Set the value of an uniform to a Color3
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param color3 defines the color to store
-         */
-        setColor3(uniform: Nullable<WebGLUniformLocation>, color3: Color3): void;
-        /**
-         * Set the value of an uniform to a Color3 and an alpha value
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param color3 defines the color to store
-         * @param alpha defines the alpha component to store
-         */
-        setColor4(uniform: Nullable<WebGLUniformLocation>, color3: Color3, alpha: number): void;
-        /**
          * Sets a Color4 on a uniform variable
          * @param uniform defines the uniform location
          * @param color4 defines the value to be set
          */
-        setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void;
+        setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: IColor4Like): void;
         /**
          * Set various states to the webGL context
          * @param culling defines backface culling state
@@ -29354,1720 +31378,108 @@ declare module BABYLON {
          * @ignorenaming
          */
         static isSupported(): boolean;
+        /**
+         * Find the next highest power of two.
+         * @param x Number to start search from.
+         * @return Next highest power of two.
+         */
+        static CeilingPOT(x: number): number;
+        /**
+         * Find the next lowest power of two.
+         * @param x Number to start search from.
+         * @return Next lowest power of two.
+         */
+        static FloorPOT(x: number): number;
+        /**
+         * Find the nearest power of two.
+         * @param x Number to start search from.
+         * @return Next nearest power of two.
+         */
+        static NearestPOT(x: number): number;
+        /**
+         * Get the closest exponent of two
+         * @param value defines the value to approximate
+         * @param max defines the maximum value to return
+         * @param mode defines how to define the closest value
+         * @returns closest exponent of two of the given value
+         */
+        static GetExponentOfTwo(value: number, max: number, mode?: number): number;
+        /**
+         * Queue a new function into the requested animation frame pool (ie. this function will be executed byt the browser for the next frame)
+         * @param func - the function to be called
+         * @param requester - the object that will request the next frame. Falls back to window.
+         * @returns frame number
+         */
+        static QueueNewFrame(func: () => void, requester?: any): number;
+        /**
+         * Ask the browser to promote the current element to pointerlock mode
+         * @param element defines the DOM element to promote
+         */
+        static _RequestPointerlock(element: HTMLElement): void;
+        /**
+         * Asks the browser to exit pointerlock mode
+         */
+        static _ExitPointerlock(): void;
+        /**
+         * Ask the browser to promote the current element to fullscreen rendering mode
+         * @param element defines the DOM element to promote
+         */
+        static _RequestFullscreen(element: HTMLElement): void;
+        /**
+         * Asks the browser to exit fullscreen mode
+         */
+        static _ExitFullscreen(): void;
     }
 }
 declare module BABYLON {
     /**
-     * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.
-     * (Eg. Start at high quality with reflection and fog, if fps is low, remove reflection, if still low remove fog)
+     * The engine store class is responsible to hold all the instances of Engine and Scene created
+     * during the life time of the application.
      */
-    export class EffectFallbacks {
-        private _defines;
-        private _currentRank;
-        private _maxRank;
-        private _mesh;
-        /**
-         * Removes the fallback from the bound mesh.
-         */
-        unBindMesh(): void;
-        /**
-         * Adds a fallback on the specified property.
-         * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
-         * @param define The name of the define in the shader
-         */
-        addFallback(rank: number, define: string): void;
-        /**
-         * Sets the mesh to use CPU skinning when needing to fallback.
-         * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
-         * @param mesh The mesh to use the fallbacks.
-         */
-        addCPUSkinningFallback(rank: number, mesh: AbstractMesh): void;
-        /**
-         * Checks to see if more fallbacks are still availible.
-         */
-        readonly isMoreFallbacks: boolean;
-        /**
-         * Removes the defines that should be removed when falling back.
-         * @param currentDefines defines the current define statements for the shader.
-         * @param effect defines the current effect we try to compile
-         * @returns The resulting defines with defines of the current rank removed.
-         */
-        reduce(currentDefines: string, effect: Effect): string;
-    }
-    /**
-     * Options to be used when creating an effect.
-     */
-    export class EffectCreationOptions {
-        /**
-         * Atrributes that will be used in the shader.
-         */
-        attributes: string[];
-        /**
-         * Uniform varible names that will be set in the shader.
-         */
-        uniformsNames: string[];
-        /**
-         * Uniform buffer varible names that will be set in the shader.
-         */
-        uniformBuffersNames: string[];
-        /**
-         * Sampler texture variable names that will be set in the shader.
-         */
-        samplers: string[];
-        /**
-         * Define statements that will be set in the shader.
-         */
-        defines: any;
-        /**
-         * Possible fallbacks for this effect to improve performance when needed.
-         */
-        fallbacks: Nullable<EffectFallbacks>;
-        /**
-         * Callback that will be called when the shader is compiled.
-         */
-        onCompiled: Nullable<(effect: Effect) => void>;
-        /**
-         * Callback that will be called if an error occurs during shader compilation.
-         */
-        onError: Nullable<(effect: Effect, errors: string) => void>;
-        /**
-         * Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
-         */
-        indexParameters: any;
-        /**
-         * Max number of lights that can be used in the shader.
-         */
-        maxSimultaneousLights: number;
-        /**
-         * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
-         */
-        transformFeedbackVaryings: Nullable<string[]>;
-    }
-    /**
-     * Effect containing vertex and fragment shader that can be executed on an object.
-     */
-    export class Effect implements IDisposable {
-        /**
-         * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
-         */
-        static ShadersRepository: string;
-        /**
-         * Name of the effect.
-         */
-        name: any;
-        /**
-         * String container all the define statements that should be set on the shader.
-         */
-        defines: string;
-        /**
-         * Callback that will be called when the shader is compiled.
-         */
-        onCompiled: Nullable<(effect: Effect) => void>;
-        /**
-         * Callback that will be called if an error occurs during shader compilation.
-         */
-        onError: Nullable<(effect: Effect, errors: string) => void>;
-        /**
-         * Callback that will be called when effect is bound.
-         */
-        onBind: Nullable<(effect: Effect) => void>;
-        /**
-         * Unique ID of the effect.
-         */
-        uniqueId: number;
-        /**
-         * Observable that will be called when the shader is compiled.
-         * It is recommended to use executeWhenCompile() or to make sure that scene.isReady() is called to get this observable raised.
-         */
-        onCompileObservable: Observable<Effect>;
-        /**
-         * Observable that will be called if an error occurs during shader compilation.
-         */
-        onErrorObservable: Observable<Effect>;
+    export class EngineStore {
+        /** Gets the list of created engines */
+        static Instances: Engine[];
         /** @hidden */
-        _onBindObservable: Nullable<Observable<Effect>>;
+        static _LastCreatedScene: Nullable<Scene>;
         /**
-         * Observable that will be called when effect is bound.
+         * Gets the latest created engine
          */
-        readonly onBindObservable: Observable<Effect>;
-        /** @hidden */
-        _bonesComputationForcedToCPU: boolean;
-        private static _uniqueIdSeed;
-        private _engine;
-        private _uniformBuffersNames;
-        private _uniformsNames;
-        private _samplerList;
-        private _samplers;
-        private _isReady;
-        private _compilationError;
-        private _attributesNames;
-        private _attributes;
-        private _uniforms;
+        static readonly LastCreatedEngine: Nullable<Engine>;
         /**
-         * Key for the effect.
-         * @hidden
+         * Gets the latest created scene
          */
-        _key: string;
-        private _indexParameters;
-        private _fallbacks;
-        private _vertexSourceCode;
-        private _fragmentSourceCode;
-        private _vertexSourceCodeOverride;
-        private _fragmentSourceCodeOverride;
-        private _transformFeedbackVaryings;
+        static readonly LastCreatedScene: Nullable<Scene>;
         /**
-         * Compiled shader to webGL program.
-         * @hidden
+         * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
+         * @ignorenaming
          */
-        _pipelineContext: Nullable<IPipelineContext>;
-        private _valueCache;
-        private static _baseCache;
+        static UseFallbackTexture: boolean;
         /**
-         * Instantiates an effect.
-         * An effect can be used to create/manage/execute vertex and fragment shaders.
-         * @param baseName Name of the effect.
-         * @param attributesNamesOrOptions List of attribute names that will be passed to the shader or set of all options to create the effect.
-         * @param uniformsNamesOrEngine List of uniform variable names that will be passed to the shader or the engine that will be used to render effect.
-         * @param samplers List of sampler variables that will be passed to the shader.
-         * @param engine Engine to be used to render the effect
-         * @param defines Define statements to be added to the shader.
-         * @param fallbacks Possible fallbacks for this effect to improve performance when needed.
-         * @param onCompiled Callback that will be called when the shader is compiled.
-         * @param onError Callback that will be called if an error occurs during shader compilation.
-         * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
+         * Texture content used if a texture cannot loaded
+         * @ignorenaming
          */
-        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: Nullable<string[]>, engine?: Engine, defines?: Nullable<string>, fallbacks?: Nullable<EffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
-        private _useFinalCode;
-        /**
-         * Unique key for this effect
-         */
-        readonly key: string;
-        /**
-         * If the effect has been compiled and prepared.
-         * @returns if the effect is compiled and prepared.
-         */
-        isReady(): boolean;
-        /**
-         * The engine the effect was initialized with.
-         * @returns the engine.
-         */
-        getEngine(): Engine;
-        /**
-         * The pipeline context for this effect
-         * @returns the associated pipeline context
-         */
-        getPipelineContext(): Nullable<IPipelineContext>;
-        /**
-         * The set of names of attribute variables for the shader.
-         * @returns An array of attribute names.
-         */
-        getAttributesNames(): string[];
-        /**
-         * Returns the attribute at the given index.
-         * @param index The index of the attribute.
-         * @returns The location of the attribute.
-         */
-        getAttributeLocation(index: number): number;
-        /**
-         * Returns the attribute based on the name of the variable.
-         * @param name of the attribute to look up.
-         * @returns the attribute location.
-         */
-        getAttributeLocationByName(name: string): number;
-        /**
-         * The number of attributes.
-         * @returns the numnber of attributes.
-         */
-        getAttributesCount(): number;
-        /**
-         * Gets the index of a uniform variable.
-         * @param uniformName of the uniform to look up.
-         * @returns the index.
-         */
-        getUniformIndex(uniformName: string): number;
-        /**
-         * Returns the attribute based on the name of the variable.
-         * @param uniformName of the uniform to look up.
-         * @returns the location of the uniform.
-         */
-        getUniform(uniformName: string): Nullable<WebGLUniformLocation>;
-        /**
-         * Returns an array of sampler variable names
-         * @returns The array of sampler variable neames.
-         */
-        getSamplers(): string[];
-        /**
-         * The error from the last compilation.
-         * @returns the error string.
-         */
-        getCompilationError(): string;
-        /**
-         * Adds a callback to the onCompiled observable and call the callback imediatly if already ready.
-         * @param func The callback to be used.
-         */
-        executeWhenCompiled(func: (effect: Effect) => void): void;
-        private _checkIsReady;
-        /** @hidden */
-        _loadVertexShader(vertex: any, callback: (data: any) => void): void;
-        /** @hidden */
-        _loadFragmentShader(fragment: any, callback: (data: any) => void): void;
-        /** @hidden */
-        _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void;
-        /**
-         * Recompiles the webGL program
-         * @param vertexSourceCode The source code for the vertex shader.
-         * @param fragmentSourceCode The source code for the fragment shader.
-         * @param onCompiled Callback called when completed.
-         * @param onError Callback called on error.
-         * @hidden
-         */
-        _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void): void;
-        /**
-         * Prepares the effect
-         * @hidden
-         */
-        _prepareEffect(): void;
-        /**
-         * Checks if the effect is supported. (Must be called after compilation)
-         */
-        readonly isSupported: boolean;
-        /**
-         * Binds a texture to the engine to be used as output of the shader.
-         * @param channel Name of the output variable.
-         * @param texture Texture to bind.
-         * @hidden
-         */
-        _bindTexture(channel: string, texture: InternalTexture): void;
-        /**
-         * Sets a texture on the engine to be used in the shader.
-         * @param channel Name of the sampler variable.
-         * @param texture Texture to set.
-         */
-        setTexture(channel: string, texture: Nullable<BaseTexture>): void;
-        /**
-         * Sets a depth stencil texture from a render target on the engine to be used in the shader.
-         * @param channel Name of the sampler variable.
-         * @param texture Texture to set.
-         */
-        setDepthStencilTexture(channel: string, texture: Nullable<RenderTargetTexture>): void;
-        /**
-         * Sets an array of textures on the engine to be used in the shader.
-         * @param channel Name of the variable.
-         * @param textures Textures to set.
-         */
-        setTextureArray(channel: string, textures: BaseTexture[]): void;
-        /**
-         * Sets a texture to be the input of the specified post process. (To use the output, pass in the next post process in the pipeline)
-         * @param channel Name of the sampler variable.
-         * @param postProcess Post process to get the input texture from.
-         */
-        setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void;
-        /**
-         * (Warning! setTextureFromPostProcessOutput may be desired instead)
-         * Sets the input texture of the passed in post process to be input of this effect. (To use the output of the passed in post process use setTextureFromPostProcessOutput)
-         * @param channel Name of the sampler variable.
-         * @param postProcess Post process to get the output texture from.
-         */
-        setTextureFromPostProcessOutput(channel: string, postProcess: Nullable<PostProcess>): void;
-        /** @hidden */
-        _cacheMatrix(uniformName: string, matrix: Matrix): boolean;
-        /** @hidden */
-        _cacheFloat2(uniformName: string, x: number, y: number): boolean;
-        /** @hidden */
-        _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean;
-        /** @hidden */
-        _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean;
-        /**
-         * Binds a buffer to a uniform.
-         * @param buffer Buffer to bind.
-         * @param name Name of the uniform variable to bind to.
-         */
-        bindUniformBuffer(buffer: DataBuffer, name: string): void;
-        /**
-         * Binds block to a uniform.
-         * @param blockName Name of the block to bind.
-         * @param index Index to bind.
-         */
-        bindUniformBlock(blockName: string, index: number): void;
-        /**
-         * Sets an interger value on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param value Value to be set.
-         * @returns this effect.
-         */
-        setInt(uniformName: string, value: number): Effect;
-        /**
-         * Sets an int array on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setIntArray(uniformName: string, array: Int32Array): Effect;
-        /**
-         * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setIntArray2(uniformName: string, array: Int32Array): Effect;
-        /**
-         * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setIntArray3(uniformName: string, array: Int32Array): Effect;
-        /**
-         * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setIntArray4(uniformName: string, array: Int32Array): Effect;
-        /**
-         * Sets an float array on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setFloatArray(uniformName: string, array: Float32Array): Effect;
-        /**
-         * Sets an float array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setFloatArray2(uniformName: string, array: Float32Array): Effect;
-        /**
-         * Sets an float array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setFloatArray3(uniformName: string, array: Float32Array): Effect;
-        /**
-         * Sets an float array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setFloatArray4(uniformName: string, array: Float32Array): Effect;
-        /**
-         * Sets an array on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setArray(uniformName: string, array: number[]): Effect;
-        /**
-         * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setArray2(uniformName: string, array: number[]): Effect;
-        /**
-         * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setArray3(uniformName: string, array: number[]): Effect;
-        /**
-         * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-         * @param uniformName Name of the variable.
-         * @param array array to be set.
-         * @returns this effect.
-         */
-        setArray4(uniformName: string, array: number[]): Effect;
-        /**
-         * Sets matrices on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param matrices matrices to be set.
-         * @returns this effect.
-         */
-        setMatrices(uniformName: string, matrices: Float32Array): Effect;
-        /**
-         * Sets matrix on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param matrix matrix to be set.
-         * @returns this effect.
-         */
-        setMatrix(uniformName: string, matrix: Matrix): Effect;
-        /**
-         * Sets a 3x3 matrix on a uniform variable. (Speicified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
-         * @param uniformName Name of the variable.
-         * @param matrix matrix to be set.
-         * @returns this effect.
-         */
-        setMatrix3x3(uniformName: string, matrix: Float32Array): Effect;
-        /**
-         * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
-         * @param uniformName Name of the variable.
-         * @param matrix matrix to be set.
-         * @returns this effect.
-         */
-        setMatrix2x2(uniformName: string, matrix: Float32Array): Effect;
-        /**
-         * Sets a float on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param value value to be set.
-         * @returns this effect.
-         */
-        setFloat(uniformName: string, value: number): Effect;
-        /**
-         * Sets a boolean on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param bool value to be set.
-         * @returns this effect.
-         */
-        setBool(uniformName: string, bool: boolean): Effect;
-        /**
-         * Sets a Vector2 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param vector2 vector2 to be set.
-         * @returns this effect.
-         */
-        setVector2(uniformName: string, vector2: Vector2): Effect;
-        /**
-         * Sets a float2 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First float in float2.
-         * @param y Second float in float2.
-         * @returns this effect.
-         */
-        setFloat2(uniformName: string, x: number, y: number): Effect;
-        /**
-         * Sets a Vector3 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param vector3 Value to be set.
-         * @returns this effect.
-         */
-        setVector3(uniformName: string, vector3: Vector3): Effect;
-        /**
-         * Sets a float3 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First float in float3.
-         * @param y Second float in float3.
-         * @param z Third float in float3.
-         * @returns this effect.
-         */
-        setFloat3(uniformName: string, x: number, y: number, z: number): Effect;
-        /**
-         * Sets a Vector4 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param vector4 Value to be set.
-         * @returns this effect.
-         */
-        setVector4(uniformName: string, vector4: Vector4): Effect;
-        /**
-         * Sets a float4 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param x First float in float4.
-         * @param y Second float in float4.
-         * @param z Third float in float4.
-         * @param w Fourth float in float4.
-         * @returns this effect.
-         */
-        setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect;
-        /**
-         * Sets a Color3 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param color3 Value to be set.
-         * @returns this effect.
-         */
-        setColor3(uniformName: string, color3: Color3): Effect;
-        /**
-         * Sets a Color4 on a uniform variable.
-         * @param uniformName Name of the variable.
-         * @param color3 Value to be set.
-         * @param alpha Alpha value to be set.
-         * @returns this effect.
-         */
-        setColor4(uniformName: string, color3: Color3, alpha: number): Effect;
-        /**
-         * Sets a Color4 on a uniform variable
-         * @param uniformName defines the name of the variable
-         * @param color4 defines the value to be set
-         * @returns this effect.
-         */
-        setDirectColor4(uniformName: string, color4: Color4): Effect;
-        /** Release all associated resources */
-        dispose(): void;
-        /**
-         * This function will add a new shader to the shader store
-         * @param name the name of the shader
-         * @param pixelShader optional pixel shader content
-         * @param vertexShader optional vertex shader content
-         */
-        static RegisterShader(name: string, pixelShader?: string, vertexShader?: string): void;
-        /**
-         * Store of each shader (The can be looked up using effect.key)
-         */
-        static ShadersStore: {
-            [key: string]: string;
-        };
-        /**
-         * Store of each included file for a shader (The can be looked up using effect.key)
-         */
-        static IncludesShadersStore: {
-            [key: string]: string;
-        };
-        /**
-         * Resets the cache of effects.
-         */
-        static ResetCache(): void;
+        static FallbackTexture: string;
     }
 }
 declare module BABYLON {
     /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
-     * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-     * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-     * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+     * Helper class that provides a small promise polyfill
      */
-    export class ColorCurves {
-        private _dirty;
-        private _tempColor;
-        private _globalCurve;
-        private _highlightsCurve;
-        private _midtonesCurve;
-        private _shadowsCurve;
-        private _positiveCurve;
-        private _negativeCurve;
-        private _globalHue;
-        private _globalDensity;
-        private _globalSaturation;
-        private _globalExposure;
+    export class PromisePolyfill {
         /**
-         * Gets the global Hue value.
-         * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
+         * Static function used to check if the polyfill is required
+         * If this is the case then the function will inject the polyfill to window.Promise
+         * @param force defines a boolean used to force the injection (mostly for testing purposes)
          */
-        /**
-        * Sets the global Hue value.
-        * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-        */
-        globalHue: number;
-        /**
-         * Gets the global Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-         * Values less than zero provide a filter of opposite hue.
-         */
-        /**
-        * Sets the global Density value.
-        * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-        * Values less than zero provide a filter of opposite hue.
-        */
-        globalDensity: number;
-        /**
-         * Gets the global Saturation value.
-         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-         */
-        /**
-        * Sets the global Saturation value.
-        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-        */
-        globalSaturation: number;
-        /**
-         * Gets the global Exposure value.
-         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-         */
-        /**
-        * Sets the global Exposure value.
-        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-        */
-        globalExposure: number;
-        private _highlightsHue;
-        private _highlightsDensity;
-        private _highlightsSaturation;
-        private _highlightsExposure;
-        /**
-         * Gets the highlights Hue value.
-         * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-         */
-        /**
-        * Sets the highlights Hue value.
-        * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-        */
-        highlightsHue: number;
-        /**
-         * Gets the highlights Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-         * Values less than zero provide a filter of opposite hue.
-         */
-        /**
-        * Sets the highlights Density value.
-        * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-        * Values less than zero provide a filter of opposite hue.
-        */
-        highlightsDensity: number;
-        /**
-         * Gets the highlights Saturation value.
-         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-         */
-        /**
-        * Sets the highlights Saturation value.
-        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-        */
-        highlightsSaturation: number;
-        /**
-         * Gets the highlights Exposure value.
-         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-         */
-        /**
-        * Sets the highlights Exposure value.
-        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-        */
-        highlightsExposure: number;
-        private _midtonesHue;
-        private _midtonesDensity;
-        private _midtonesSaturation;
-        private _midtonesExposure;
-        /**
-         * Gets the midtones Hue value.
-         * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-         */
-        /**
-        * Sets the midtones Hue value.
-        * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-        */
-        midtonesHue: number;
-        /**
-         * Gets the midtones Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-         * Values less than zero provide a filter of opposite hue.
-         */
-        /**
-        * Sets the midtones Density value.
-        * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-        * Values less than zero provide a filter of opposite hue.
-        */
-        midtonesDensity: number;
-        /**
-         * Gets the midtones Saturation value.
-         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-         */
-        /**
-        * Sets the midtones Saturation value.
-        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-        */
-        midtonesSaturation: number;
-        /**
-         * Gets the midtones Exposure value.
-         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-         */
-        /**
-        * Sets the midtones Exposure value.
-        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-        */
-        midtonesExposure: number;
-        private _shadowsHue;
-        private _shadowsDensity;
-        private _shadowsSaturation;
-        private _shadowsExposure;
-        /**
-         * Gets the shadows Hue value.
-         * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-         */
-        /**
-        * Sets the shadows Hue value.
-        * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
-        */
-        shadowsHue: number;
-        /**
-         * Gets the shadows Density value.
-         * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-         * Values less than zero provide a filter of opposite hue.
-         */
-        /**
-        * Sets the shadows Density value.
-        * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
-        * Values less than zero provide a filter of opposite hue.
-        */
-        shadowsDensity: number;
-        /**
-         * Gets the shadows Saturation value.
-         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-         */
-        /**
-        * Sets the shadows Saturation value.
-        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
-        */
-        shadowsSaturation: number;
-        /**
-         * Gets the shadows Exposure value.
-         * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-         */
-        /**
-        * Sets the shadows Exposure value.
-        * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
-        */
-        shadowsExposure: number;
-        /**
-         * Returns the class name
-         * @returns The class name
-         */
-        getClassName(): string;
-        /**
-         * Binds the color curves to the shader.
-         * @param colorCurves The color curve to bind
-         * @param effect The effect to bind to
-         * @param positiveUniform The positive uniform shader parameter
-         * @param neutralUniform The neutral uniform shader parameter
-         * @param negativeUniform The negative uniform shader parameter
-         */
-        static Bind(colorCurves: ColorCurves, effect: Effect, positiveUniform?: string, neutralUniform?: string, negativeUniform?: string): void;
-        /**
-         * Prepare the list of uniforms associated with the ColorCurves effects.
-         * @param uniformsList The list of uniforms used in the effect
-         */
-        static PrepareUniforms(uniformsList: string[]): void;
-        /**
-         * Returns color grading data based on a hue, density, saturation and exposure value.
-         * @param filterHue The hue of the color filter.
-         * @param filterDensity The density of the color filter.
-         * @param saturation The saturation.
-         * @param exposure The exposure.
-         * @param result The result data container.
-         */
-        private getColorGradingDataToRef;
-        /**
-         * Takes an input slider value and returns an adjusted value that provides extra control near the centre.
-         * @param value The input slider value in range [-100,100].
-         * @returns Adjusted value.
-         */
-        private static applyColorGradingSliderNonlinear;
-        /**
-         * Returns an RGBA Color4 based on Hue, Saturation and Brightness (also referred to as value, HSV).
-         * @param hue The hue (H) input.
-         * @param saturation The saturation (S) input.
-         * @param brightness The brightness (B) input.
-         * @result An RGBA color represented as Vector4.
-         */
-        private static fromHSBToRef;
-        /**
-         * Returns a value clamped between min and max
-         * @param value The value to clamp
-         * @param min The minimum of value
-         * @param max The maximum of value
-         * @returns The clamped value.
-         */
-        private static clamp;
-        /**
-         * Clones the current color curve instance.
-         * @return The cloned curves
-         */
-        clone(): ColorCurves;
-        /**
-         * Serializes the current color curve instance to a json representation.
-         * @return a JSON representation
-         */
-        serialize(): any;
-        /**
-         * Parses the color curve from a json representation.
-         * @param source the JSON source to parse
-         * @return The parsed curves
-         */
-        static Parse(source: any): ColorCurves;
+        static Apply(force?: boolean): void;
     }
 }
 declare module BABYLON {
-    /**
-     * Interface to follow in your material defines to integrate easily the
-     * Image proccessing functions.
-     * @hidden
-     */
-    export interface IImageProcessingConfigurationDefines {
-        IMAGEPROCESSING: boolean;
-        VIGNETTE: boolean;
-        VIGNETTEBLENDMODEMULTIPLY: boolean;
-        VIGNETTEBLENDMODEOPAQUE: boolean;
-        TONEMAPPING: boolean;
-        TONEMAPPING_ACES: boolean;
-        CONTRAST: boolean;
-        EXPOSURE: boolean;
-        COLORCURVES: boolean;
-        COLORGRADING: boolean;
-        COLORGRADING3D: boolean;
-        SAMPLER3DGREENDEPTH: boolean;
-        SAMPLER3DBGRMAP: boolean;
-        IMAGEPROCESSINGPOSTPROCESS: boolean;
-    }
-    /**
-     * @hidden
-     */
-    export class ImageProcessingConfigurationDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
-        IMAGEPROCESSING: boolean;
-        VIGNETTE: boolean;
-        VIGNETTEBLENDMODEMULTIPLY: boolean;
-        VIGNETTEBLENDMODEOPAQUE: boolean;
-        TONEMAPPING: boolean;
-        TONEMAPPING_ACES: boolean;
-        CONTRAST: boolean;
-        COLORCURVES: boolean;
-        COLORGRADING: boolean;
-        COLORGRADING3D: boolean;
-        SAMPLER3DGREENDEPTH: boolean;
-        SAMPLER3DBGRMAP: boolean;
-        IMAGEPROCESSINGPOSTPROCESS: boolean;
-        EXPOSURE: boolean;
-        constructor();
-    }
-    /**
-     * This groups together the common properties used for image processing either in direct forward pass
-     * or through post processing effect depending on the use of the image processing pipeline in your scene
-     * or not.
-     */
-    export class ImageProcessingConfiguration {
-        /**
-         * Default tone mapping applied in BabylonJS.
-         */
-        static readonly TONEMAPPING_STANDARD: number;
-        /**
-         * ACES Tone mapping (used by default in unreal and unity). This can help getting closer
-         * to other engines rendering to increase portability.
-         */
-        static readonly TONEMAPPING_ACES: number;
-        /**
-         * Color curves setup used in the effect if colorCurvesEnabled is set to true
-         */
-        colorCurves: Nullable<ColorCurves>;
-        private _colorCurvesEnabled;
-        /**
-         * Gets wether the color curves effect is enabled.
-         */
-        /**
-        * Sets wether the color curves effect is enabled.
-        */
-        colorCurvesEnabled: boolean;
-        private _colorGradingTexture;
-        /**
-         * Color grading LUT texture used in the effect if colorGradingEnabled is set to true
-         */
-        /**
-        * Color grading LUT texture used in the effect if colorGradingEnabled is set to true
-        */
-        colorGradingTexture: Nullable<BaseTexture>;
-        private _colorGradingEnabled;
-        /**
-         * Gets wether the color grading effect is enabled.
-         */
-        /**
-        * Sets wether the color grading effect is enabled.
-        */
-        colorGradingEnabled: boolean;
-        private _colorGradingWithGreenDepth;
-        /**
-         * Gets wether the color grading effect is using a green depth for the 3d Texture.
-         */
-        /**
-        * Sets wether the color grading effect is using a green depth for the 3d Texture.
-        */
-        colorGradingWithGreenDepth: boolean;
-        private _colorGradingBGR;
-        /**
-         * Gets wether the color grading texture contains BGR values.
-         */
-        /**
-        * Sets wether the color grading texture contains BGR values.
-        */
-        colorGradingBGR: boolean;
-        /** @hidden */
-        _exposure: number;
-        /**
-         * Gets the Exposure used in the effect.
-         */
-        /**
-        * Sets the Exposure used in the effect.
-        */
-        exposure: number;
-        private _toneMappingEnabled;
-        /**
-         * Gets wether the tone mapping effect is enabled.
-         */
-        /**
-        * Sets wether the tone mapping effect is enabled.
-        */
-        toneMappingEnabled: boolean;
-        private _toneMappingType;
-        /**
-         * Gets the type of tone mapping effect.
-         */
-        /**
-        * Sets the type of tone mapping effect used in BabylonJS.
-        */
-        toneMappingType: number;
-        protected _contrast: number;
-        /**
-         * Gets the contrast used in the effect.
-         */
-        /**
-        * Sets the contrast used in the effect.
-        */
-        contrast: number;
-        /**
-         * Vignette stretch size.
-         */
-        vignetteStretch: number;
-        /**
-         * Vignette centre X Offset.
-         */
-        vignetteCentreX: number;
-        /**
-         * Vignette centre Y Offset.
-         */
-        vignetteCentreY: number;
-        /**
-         * Vignette weight or intensity of the vignette effect.
-         */
-        vignetteWeight: number;
-        /**
-         * Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
-         * if vignetteEnabled is set to true.
-         */
-        vignetteColor: Color4;
-        /**
-         * Camera field of view used by the Vignette effect.
-         */
-        vignetteCameraFov: number;
-        private _vignetteBlendMode;
-        /**
-         * Gets the vignette blend mode allowing different kind of effect.
-         */
-        /**
-        * Sets the vignette blend mode allowing different kind of effect.
-        */
-        vignetteBlendMode: number;
-        private _vignetteEnabled;
-        /**
-         * Gets wether the vignette effect is enabled.
-         */
-        /**
-        * Sets wether the vignette effect is enabled.
-        */
-        vignetteEnabled: boolean;
-        private _applyByPostProcess;
-        /**
-         * Gets wether the image processing is applied through a post process or not.
-         */
-        /**
-        * Sets wether the image processing is applied through a post process or not.
-        */
-        applyByPostProcess: boolean;
-        private _isEnabled;
-        /**
-         * Gets wether the image processing is enabled or not.
-         */
-        /**
-        * Sets wether the image processing is enabled or not.
-        */
-        isEnabled: boolean;
-        /**
-        * An event triggered when the configuration changes and requires Shader to Update some parameters.
-        */
-        onUpdateParameters: Observable<ImageProcessingConfiguration>;
-        /**
-         * Method called each time the image processing information changes requires to recompile the effect.
-         */
-        protected _updateParameters(): void;
-        /**
-         * Gets the current class name.
-         * @return "ImageProcessingConfiguration"
-         */
-        getClassName(): string;
-        /**
-         * Prepare the list of uniforms associated with the Image Processing effects.
-         * @param uniforms The list of uniforms used in the effect
-         * @param defines the list of defines currently in use
-         */
-        static PrepareUniforms(uniforms: string[], defines: IImageProcessingConfigurationDefines): void;
-        /**
-         * Prepare the list of samplers associated with the Image Processing effects.
-         * @param samplersList The list of uniforms used in the effect
-         * @param defines the list of defines currently in use
-         */
-        static PrepareSamplers(samplersList: string[], defines: IImageProcessingConfigurationDefines): void;
-        /**
-         * Prepare the list of defines associated to the shader.
-         * @param defines the list of defines to complete
-         * @param forPostProcess Define if we are currently in post process mode or not
-         */
-        prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess?: boolean): void;
-        /**
-         * Returns true if all the image processing information are ready.
-         * @returns True if ready, otherwise, false
-         */
-        isReady(): boolean;
-        /**
-         * Binds the image processing to the shader.
-         * @param effect The effect to bind to
-         * @param aspectRatio Define the current aspect ratio of the effect
-         */
-        bind(effect: Effect, aspectRatio?: number): void;
-        /**
-         * Clones the current image processing instance.
-         * @return The cloned image processing
-         */
-        clone(): ImageProcessingConfiguration;
-        /**
-         * Serializes the current image processing instance to a json representation.
-         * @return a JSON representation
-         */
-        serialize(): any;
-        /**
-         * Parses the image processing from a json representation.
-         * @param source the JSON source to parse
-         * @return The parsed image processing
-         */
-        static Parse(source: any): ImageProcessingConfiguration;
-        private static _VIGNETTEMODE_MULTIPLY;
-        private static _VIGNETTEMODE_OPAQUE;
-        /**
-         * Used to apply the vignette as a mix with the pixel color.
-         */
-        static readonly VIGNETTEMODE_MULTIPLY: number;
-        /**
-         * Used to apply the vignette as a replacement of the pixel color.
-         */
-        static readonly VIGNETTEMODE_OPAQUE: number;
-    }
-}
-declare module BABYLON {
-    /**
-     * This represents all the required information to add a fresnel effect on a material:
-     * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
-     */
-    export class FresnelParameters {
-        private _isEnabled;
-        /**
-         * Define if the fresnel effect is enable or not.
-         */
-        isEnabled: boolean;
-        /**
-         * Define the color used on edges (grazing angle)
-         */
-        leftColor: Color3;
-        /**
-         * Define the color used on center
-         */
-        rightColor: Color3;
-        /**
-         * Define bias applied to computed fresnel term
-         */
-        bias: number;
-        /**
-         * Defined the power exponent applied to fresnel term
-         */
-        power: number;
-        /**
-         * Clones the current fresnel and its valuues
-         * @returns a clone fresnel configuration
-         */
-        clone(): FresnelParameters;
-        /**
-         * Serializes the current fresnel parameters to a JSON representation.
-         * @return the JSON serialization
-         */
-        serialize(): any;
-        /**
-         * Parse a JSON object and deserialize it to a new Fresnel parameter object.
-         * @param parsedFresnelParameters Define the JSON representation
-         * @returns the parsed parameters
-         */
-        static Parse(parsedFresnelParameters: any): FresnelParameters;
-    }
-}
-declare module BABYLON {
-    export function expandToProperty(callback: string, targetKey?: Nullable<string>): (target: any, propertyKey: string) => void;
-    export function serialize(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    export function serializeAsTexture(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    export function serializeAsColor3(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    export function serializeAsFresnelParameters(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    export function serializeAsVector2(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    export function serializeAsVector3(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    export function serializeAsMeshReference(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    export function serializeAsColorCurves(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    export function serializeAsColor4(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    export function serializeAsImageProcessingConfiguration(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    export function serializeAsQuaternion(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    export function serializeAsMatrix(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    /**
-     * Decorator used to define property that can be serialized as reference to a camera
-     * @param sourceName defines the name of the property to decorate
-     */
-    export function serializeAsCameraReference(sourceName?: string): (target: any, propertyKey: string | symbol) => void;
-    /**
-     * Class used to help serialization objects
-     */
-    export class SerializationHelper {
-        /** @hidden */
-        static _ImageProcessingConfigurationParser: (sourceProperty: any) => ImageProcessingConfiguration;
-        /** @hidden */
-        static _FresnelParametersParser: (sourceProperty: any) => FresnelParameters;
-        /** @hidden */
-        static _ColorCurvesParser: (sourceProperty: any) => ColorCurves;
-        /** @hidden */
-        static _TextureParser: (sourceProperty: any, scene: Scene, rootUrl: string) => Nullable<BaseTexture>;
-        /**
-         * Appends the serialized animations from the source animations
-         * @param source Source containing the animations
-         * @param destination Target to store the animations
-         */
-        static AppendSerializedAnimations(source: IAnimatable, destination: any): void;
-        /**
-         * Static function used to serialized a specific entity
-         * @param entity defines the entity to serialize
-         * @param serializationObject defines the optional target obecjt where serialization data will be stored
-         * @returns a JSON compatible object representing the serialization of the entity
-         */
-        static Serialize<T>(entity: T, serializationObject?: any): any;
-        /**
-         * Creates a new entity from a serialization data object
-         * @param creationFunction defines a function used to instanciated the new entity
-         * @param source defines the source serialization data
-         * @param scene defines the hosting scene
-         * @param rootUrl defines the root url for resources
-         * @returns a new entity
-         */
-        static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl?: Nullable<string>): T;
-        /**
-         * Clones an object
-         * @param creationFunction defines the function used to instanciate the new object
-         * @param source defines the source object
-         * @returns the cloned object
-         */
-        static Clone<T>(creationFunction: () => T, source: T): T;
-        /**
-         * Instanciates a new object based on a source one (some data will be shared between both object)
-         * @param creationFunction defines the function used to instanciate the new object
-         * @param source defines the source object
-         * @returns the new object
-         */
-        static Instanciate<T>(creationFunction: () => T, source: T): T;
-    }
-}
-declare module BABYLON {
-    /**
-     * This is the base class of all the camera used in the application.
-     * @see http://doc.babylonjs.com/features/cameras
-     */
-    export class Camera extends Node {
-        /** @hidden */
-        static _createDefaultParsedCamera: (name: string, scene: Scene) => Camera;
-        /**
-         * This is the default projection mode used by the cameras.
-         * It helps recreating a feeling of perspective and better appreciate depth.
-         * This is the best way to simulate real life cameras.
-         */
-        static readonly PERSPECTIVE_CAMERA: number;
-        /**
-         * This helps creating camera with an orthographic mode.
-         * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
-         */
-        static readonly ORTHOGRAPHIC_CAMERA: number;
-        /**
-         * This is the default FOV mode for perspective cameras.
-         * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
-         */
-        static readonly FOVMODE_VERTICAL_FIXED: number;
-        /**
-         * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
-         */
-        static readonly FOVMODE_HORIZONTAL_FIXED: number;
-        /**
-         * This specifies ther is no need for a camera rig.
-         * Basically only one eye is rendered corresponding to the camera.
-         */
-        static readonly RIG_MODE_NONE: number;
-        /**
-         * Simulates a camera Rig with one blue eye and one red eye.
-         * This can be use with 3d blue and red glasses.
-         */
-        static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH: number;
-        /**
-         * Defines that both eyes of the camera will be rendered side by side with a parallel target.
-         */
-        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL: number;
-        /**
-         * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
-         */
-        static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED: number;
-        /**
-         * Defines that both eyes of the camera will be rendered over under each other.
-         */
-        static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
-        /**
-         * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
-         */
-        static readonly RIG_MODE_VR: number;
-        /**
-         * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
-         */
-        static readonly RIG_MODE_WEBVR: number;
-        /**
-         * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
-         */
-        static readonly RIG_MODE_CUSTOM: number;
-        /**
-         * Defines if by default attaching controls should prevent the default javascript event to continue.
-         */
-        static ForceAttachControlToAlwaysPreventDefault: boolean;
-        /**
-         * Define the input manager associated with the camera.
-         */
-        inputs: CameraInputsManager<Camera>;
-        /** @hidden */
-        _position: Vector3;
-        /**
-         * Define the current local position of the camera in the scene
-         */
-        position: Vector3;
-        /**
-         * The vector the camera should consider as up.
-         * (default is Vector3(0, 1, 0) aka Vector3.Up())
-         */
-        upVector: Vector3;
-        /**
-         * Define the current limit on the left side for an orthographic camera
-         * In scene unit
-         */
-        orthoLeft: Nullable<number>;
-        /**
-         * Define the current limit on the right side for an orthographic camera
-         * In scene unit
-         */
-        orthoRight: Nullable<number>;
-        /**
-         * Define the current limit on the bottom side for an orthographic camera
-         * In scene unit
-         */
-        orthoBottom: Nullable<number>;
-        /**
-         * Define the current limit on the top side for an orthographic camera
-         * In scene unit
-         */
-        orthoTop: Nullable<number>;
-        /**
-         * Field Of View is set in Radians. (default is 0.8)
-         */
-        fov: number;
-        /**
-         * Define the minimum distance the camera can see from.
-         * This is important to note that the depth buffer are not infinite and the closer it starts
-         * the more your scene might encounter depth fighting issue.
-         */
-        minZ: number;
-        /**
-         * Define the maximum distance the camera can see to.
-         * This is important to note that the depth buffer are not infinite and the further it end
-         * the more your scene might encounter depth fighting issue.
-         */
-        maxZ: number;
-        /**
-         * Define the default inertia of the camera.
-         * This helps giving a smooth feeling to the camera movement.
-         */
-        inertia: number;
-        /**
-         * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
-         */
-        mode: number;
-        /**
-         * Define wether the camera is intermediate.
-         * This is useful to not present the output directly to the screen in case of rig without post process for instance
-         */
-        isIntermediate: boolean;
-        /**
-         * Define the viewport of the camera.
-         * This correspond to the portion of the screen the camera will render to in normalized 0 to 1 unit.
-         */
-        viewport: Viewport;
-        /**
-         * Restricts the camera to viewing objects with the same layerMask.
-         * A camera with a layerMask of 1 will render mesh.layerMask & camera.layerMask!== 0
-         */
-        layerMask: number;
-        /**
-         * fovMode sets the camera frustum bounds to the viewport bounds. (default is FOVMODE_VERTICAL_FIXED)
-         */
-        fovMode: number;
-        /**
-         * Rig mode of the camera.
-         * This is useful to create the camera with two "eyes" instead of one to create VR or stereoscopic scenes.
-         * This is normally controlled byt the camera themselves as internal use.
-         */
-        cameraRigMode: number;
-        /**
-         * Defines the distance between both "eyes" in case of a RIG
-         */
-        interaxialDistance: number;
-        /**
-         * Defines if stereoscopic rendering is done side by side or over under.
-         */
-        isStereoscopicSideBySide: boolean;
-        /**
-         * Defines the list of custom render target which are rendered to and then used as the input to this camera's render. Eg. display another camera view on a TV in the main scene
-         * This is pretty helpfull if you wish to make a camera render to a texture you could reuse somewhere
-         * else in the scene.
-         */
-        customRenderTargets: RenderTargetTexture[];
-        /**
-         * When set, the camera will render to this render target instead of the default canvas
-         */
-        outputRenderTarget: Nullable<RenderTargetTexture>;
-        /**
-         * Observable triggered when the camera view matrix has changed.
-         */
-        onViewMatrixChangedObservable: Observable<Camera>;
-        /**
-         * Observable triggered when the camera Projection matrix has changed.
-         */
-        onProjectionMatrixChangedObservable: Observable<Camera>;
-        /**
-         * Observable triggered when the inputs have been processed.
-         */
-        onAfterCheckInputsObservable: Observable<Camera>;
-        /**
-         * Observable triggered when reset has been called and applied to the camera.
-         */
-        onRestoreStateObservable: Observable<Camera>;
-        /** @hidden */
-        _cameraRigParams: any;
-        /** @hidden */
-        _rigCameras: Camera[];
-        /** @hidden */
-        _rigPostProcess: Nullable<PostProcess>;
-        protected _webvrViewMatrix: Matrix;
-        /** @hidden */
-        _skipRendering: boolean;
-        /** @hidden */
-        _projectionMatrix: Matrix;
-        /** @hidden */
-        _postProcesses: Nullable<PostProcess>[];
-        /** @hidden */
-        _activeMeshes: SmartArray<AbstractMesh>;
-        protected _globalPosition: Vector3;
-        /** @hidden */
-        _computedViewMatrix: Matrix;
-        private _doNotComputeProjectionMatrix;
-        private _transformMatrix;
-        private _frustumPlanes;
-        private _refreshFrustumPlanes;
-        private _storedFov;
-        private _stateStored;
-        /**
-         * Instantiates a new camera object.
-         * This should not be used directly but through the inherited cameras: ArcRotate, Free...
-         * @see http://doc.babylonjs.com/features/cameras
-         * @param name Defines the name of the camera in the scene
-         * @param position Defines the position of the camera
-         * @param scene Defines the scene the camera belongs too
-         * @param setActiveOnSceneIfNoneActive Defines if the camera should be set as active after creation if no other camera have been defined in the scene
-         */
-        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
-        /**
-         * Store current camera state (fov, position, etc..)
-         * @returns the camera
-         */
-        storeState(): Camera;
-        /**
-         * Restores the camera state values if it has been stored. You must call storeState() first
-         */
-        protected _restoreStateValues(): boolean;
-        /**
-         * Restored camera state. You must call storeState() first.
-         * @returns true if restored and false otherwise
-         */
-        restoreState(): boolean;
-        /**
-         * Gets the class name of the camera.
-         * @returns the class name
-         */
-        getClassName(): string;
-        /** @hidden */
-        readonly _isCamera: boolean;
-        /**
-         * Gets a string representation of the camera useful for debug purpose.
-         * @param fullDetails Defines that a more verboe level of logging is required
-         * @returns the string representation
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-         * Gets the current world space position of the camera.
-         */
-        readonly globalPosition: Vector3;
-        /**
-         * Gets the list of active meshes this frame (meshes no culled or excluded by lod s in the frame)
-         * @returns the active meshe list
-         */
-        getActiveMeshes(): SmartArray<AbstractMesh>;
-        /**
-         * Check wether a mesh is part of the current active mesh list of the camera
-         * @param mesh Defines the mesh to check
-         * @returns true if active, false otherwise
-         */
-        isActiveMesh(mesh: Mesh): boolean;
-        /**
-         * Is this camera ready to be used/rendered
-         * @param completeCheck defines if a complete check (including post processes) has to be done (false by default)
-         * @return true if the camera is ready
-         */
-        isReady(completeCheck?: boolean): boolean;
-        /** @hidden */
-        _initCache(): void;
-        /** @hidden */
-        _updateCache(ignoreParentClass?: boolean): void;
-        /** @hidden */
-        _isSynchronized(): boolean;
-        /** @hidden */
-        _isSynchronizedViewMatrix(): boolean;
-        /** @hidden */
-        _isSynchronizedProjectionMatrix(): boolean;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: HTMLElement): void;
-        /**
-         * Update the camera state according to the different inputs gathered during the frame.
-         */
-        update(): void;
-        /** @hidden */
-        _checkInputs(): void;
-        /** @hidden */
-        readonly rigCameras: Camera[];
-        /**
-         * Gets the post process used by the rig cameras
-         */
-        readonly rigPostProcess: Nullable<PostProcess>;
-        /**
-         * Internal, gets the first post proces.
-         * @returns the first post process to be run on this camera.
-         */
-        _getFirstPostProcess(): Nullable<PostProcess>;
-        private _cascadePostProcessesToRigCams;
-        /**
-         * Attach a post process to the camera.
-         * @see http://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
-         * @param postProcess The post process to attach to the camera
-         * @param insertAt The position of the post process in case several of them are in use in the scene
-         * @returns the position the post process has been inserted at
-         */
-        attachPostProcess(postProcess: PostProcess, insertAt?: Nullable<number>): number;
-        /**
-         * Detach a post process to the camera.
-         * @see http://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
-         * @param postProcess The post process to detach from the camera
-         */
-        detachPostProcess(postProcess: PostProcess): void;
-        /**
-         * Gets the current world matrix of the camera
-         */
-        getWorldMatrix(): Matrix;
-        /** @hidden */
-        _getViewMatrix(): Matrix;
-        /**
-         * Gets the current view matrix of the camera.
-         * @param force forces the camera to recompute the matrix without looking at the cached state
-         * @returns the view matrix
-         */
-        getViewMatrix(force?: boolean): Matrix;
-        /**
-         * Freeze the projection matrix.
-         * It will prevent the cache check of the camera projection compute and can speed up perf
-         * if no parameter of the camera are meant to change
-         * @param projection Defines manually a projection if necessary
-         */
-        freezeProjectionMatrix(projection?: Matrix): void;
-        /**
-         * Unfreeze the projection matrix if it has previously been freezed by freezeProjectionMatrix.
-         */
-        unfreezeProjectionMatrix(): void;
-        /**
-         * Gets the current projection matrix of the camera.
-         * @param force forces the camera to recompute the matrix without looking at the cached state
-         * @returns the projection matrix
-         */
-        getProjectionMatrix(force?: boolean): Matrix;
-        /**
-         * Gets the transformation matrix (ie. the multiplication of view by projection matrices)
-         * @returns a Matrix
-         */
-        getTransformationMatrix(): Matrix;
-        private _updateFrustumPlanes;
-        /**
-         * Checks if a cullable object (mesh...) is in the camera frustum
-         * This checks the bounding box center. See isCompletelyInFrustum for a full bounding check
-         * @param target The object to check
-         * @param checkRigCameras If the rig cameras should be checked (eg. with webVR camera both eyes should be checked) (Default: false)
-         * @returns true if the object is in frustum otherwise false
-         */
-        isInFrustum(target: ICullable, checkRigCameras?: boolean): boolean;
-        /**
-         * Checks if a cullable object (mesh...) is in the camera frustum
-         * Unlike isInFrustum this cheks the full bounding box
-         * @param target The object to check
-         * @returns true if the object is in frustum otherwise false
-         */
-        isCompletelyInFrustum(target: ICullable): boolean;
-        /**
-         * Gets a ray in the forward direction from the camera.
-         * @param length Defines the length of the ray to create
-         * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
-         * @param origin Defines the start point of the ray which defaults to the camera position
-         * @returns the forward ray
-         */
-        getForwardRay(length?: number, transform?: Matrix, origin?: Vector3): Ray;
-        /**
-         * Releases resources associated with this node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
-        /** @hidden */
-        _isLeftCamera: boolean;
-        /**
-         * Gets the left camera of a rig setup in case of Rigged Camera
-         */
-        readonly isLeftCamera: boolean;
-        /** @hidden */
-        _isRightCamera: boolean;
-        /**
-         * Gets the right camera of a rig setup in case of Rigged Camera
-         */
-        readonly isRightCamera: boolean;
-        /**
-         * Gets the left camera of a rig setup in case of Rigged Camera
-         */
-        readonly leftCamera: Nullable<FreeCamera>;
-        /**
-         * Gets the right camera of a rig setup in case of Rigged Camera
-         */
-        readonly rightCamera: Nullable<FreeCamera>;
-        /**
-         * Gets the left camera target of a rig setup in case of Rigged Camera
-         * @returns the target position
-         */
-        getLeftTarget(): Nullable<Vector3>;
-        /**
-         * Gets the right camera target of a rig setup in case of Rigged Camera
-         * @returns the target position
-         */
-        getRightTarget(): Nullable<Vector3>;
-        /**
-         * @hidden
-         */
-        setCameraRigMode(mode: number, rigParams: any): void;
-        /** @hidden */
-        static _setStereoscopicRigMode(camera: Camera): void;
-        /** @hidden */
-        static _setStereoscopicAnaglyphRigMode(camera: Camera): void;
-        /** @hidden */
-        static _setVRRigMode(camera: Camera, rigParams: any): void;
-        /** @hidden */
-        static _setWebVRRigMode(camera: Camera, rigParams: any): void;
-        /** @hidden */
-        _getVRProjectionMatrix(): Matrix;
-        protected _updateCameraRotationMatrix(): void;
-        protected _updateWebVRCameraRotationMatrix(): void;
-        /**
-         * This function MUST be overwritten by the different WebVR cameras available.
-         * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-         * @hidden
-         */
-        _getWebVRProjectionMatrix(): Matrix;
-        /**
-         * This function MUST be overwritten by the different WebVR cameras available.
-         * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-         * @hidden
-         */
-        _getWebVRViewMatrix(): Matrix;
-        /** @hidden */
-        setCameraRigParameter(name: string, value: any): void;
-        /**
-         * needs to be overridden by children so sub has required properties to be copied
-         * @hidden
-         */
-        createRigCamera(name: string, cameraIndex: number): Nullable<Camera>;
-        /**
-         * May need to be overridden by children
-         * @hidden
-         */
-        _updateRigCameras(): void;
-        /** @hidden */
-        _setupInputs(): void;
-        /**
-         * Serialiaze the camera setup to a json represention
-         * @returns the JSON representation
-         */
-        serialize(): any;
-        /**
-         * Clones the current camera.
-         * @param name The cloned camera name
-         * @returns the cloned camera
-         */
-        clone(name: string): Camera;
-        /**
-         * Gets the direction of the camera relative to a given local axis.
-         * @param localAxis Defines the reference axis to provide a relative direction.
-         * @return the direction
-         */
-        getDirection(localAxis: Vector3): Vector3;
-        /**
-         * Gets the direction of the camera relative to a given local axis into a passed vector.
-         * @param localAxis Defines the reference axis to provide a relative direction.
-         * @param result Defines the vector to store the result in
-         */
-        getDirectionToRef(localAxis: Vector3, result: Vector3): void;
-        /**
-         * Gets a camera constructor for a given camera type
-         * @param type The type of the camera to construct (should be equal to one of the camera class name)
-         * @param name The name of the camera the result will be able to instantiate
-         * @param scene The scene the result will construct the camera in
-         * @param interaxial_distance In case of stereoscopic setup, the distance between both eyes
-         * @param isStereoscopicSideBySide In case of stereoscopic setup, should the sereo be side b side
-         * @returns a factory method to construc the camera
-         */
-        static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance?: number, isStereoscopicSideBySide?: boolean): () => Camera;
-        /**
-         * Compute the world  matrix of the camera.
-         * @returns the camera workd matrix
-         */
-        computeWorldMatrix(): Matrix;
-        /**
-         * Parse a JSON and creates the camera from the parsed information
-         * @param parsedCamera The JSON to parse
-         * @param scene The scene to instantiate the camera in
-         * @returns the newly constructed camera
-         */
-        static Parse(parsedCamera: any, scene: Scene): Camera;
-    }
-}
-declare module BABYLON {
-    /**
-     * Interface for any object that can request an animation frame
-     */
-    export interface ICustomAnimationFrameRequester {
-        /**
-         * This function will be called when the render loop is ready. If this is not populated, the engine's renderloop function will be called
-         */
-        renderFunction?: Function;
-        /**
-         * Called to request the next frame to render to
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
-         */
-        requestAnimationFrame: Function;
-        /**
-         * You can pass this value to cancelAnimationFrame() to cancel the refresh callback request
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame#Return_value
-         */
-        requestID?: number;
+    interface IColor4Like {
+        r: float;
+        g: float;
+        b: float;
+        a: float;
     }
     /**
      * Interface containing an array of animations
@@ -31077,108 +31489,6 @@ declare module BABYLON {
          * Array of animations
          */
         animations: Nullable<Array<Animation>>;
-    }
-    /** Interface used by value gradients (color, factor, ...) */
-    export interface IValueGradient {
-        /**
-         * Gets or sets the gradient value (between 0 and 1)
-         */
-        gradient: number;
-    }
-    /** Class used to store color4 gradient */
-    export class ColorGradient implements IValueGradient {
-        /**
-         * Gets or sets the gradient value (between 0 and 1)
-         */
-        gradient: number;
-        /**
-         * Gets or sets first associated color
-         */
-        color1: Color4;
-        /**
-         * Gets or sets second associated color
-         */
-        color2?: Color4;
-        /**
-         * Will get a color picked randomly between color1 and color2.
-         * If color2 is undefined then color1 will be used
-         * @param result defines the target Color4 to store the result in
-         */
-        getColorToRef(result: Color4): void;
-    }
-    /** Class used to store color 3 gradient */
-    export class Color3Gradient implements IValueGradient {
-        /**
-         * Gets or sets the gradient value (between 0 and 1)
-         */
-        gradient: number;
-        /**
-         * Gets or sets the associated color
-         */
-        color: Color3;
-    }
-    /** Class used to store factor gradient */
-    export class FactorGradient implements IValueGradient {
-        /**
-         * Gets or sets the gradient value (between 0 and 1)
-         */
-        gradient: number;
-        /**
-         * Gets or sets first associated factor
-         */
-        factor1: number;
-        /**
-         * Gets or sets second associated factor
-         */
-        factor2?: number;
-        /**
-         * Will get a number picked randomly between factor1 and factor2.
-         * If factor2 is undefined then factor1 will be used
-         * @returns the picked number
-         */
-        getFactor(): number;
-    }
-    /**
-     * @ignore
-     * Application error to support additional information when loading a file
-     */
-    export class LoadFileError extends Error {
-        /** defines the optional web request */
-        request?: WebRequest | undefined;
-        private static _setPrototypeOf;
-        /**
-         * Creates a new LoadFileError
-         * @param message defines the message of the error
-         * @param request defines the optional web request
-         */
-        constructor(message: string, 
-        /** defines the optional web request */
-        request?: WebRequest | undefined);
-    }
-    /**
-     * Class used to define a retry strategy when error happens while loading assets
-     */
-    export class RetryStrategy {
-        /**
-         * Function used to defines an exponential back off strategy
-         * @param maxRetries defines the maximum number of retries (3 by default)
-         * @param baseInterval defines the interval between retries
-         * @returns the strategy function to use
-         */
-        static ExponentialBackoff(maxRetries?: number, baseInterval?: number): (url: string, request: WebRequest, retryIndex: number) => number;
-    }
-    /**
-     * File request interface
-     */
-    export interface IFileRequest {
-        /**
-         * Raised when the request is complete (success or error).
-         */
-        onCompleteObservable: Observable<IFileRequest>;
-        /**
-         * Aborts the request for a file.
-         */
-        abort: () => void;
     }
     /**
      * Class containing a set of static utilities functions
@@ -31237,7 +31547,7 @@ declare module BABYLON {
          * @param pixels defines the source byte array
          * @param color defines the output color
          */
-        static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: Color4): void;
+        static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: IColor4Like): void;
         /**
          * Interpolates between a and b via alpha
          * @param a The lower value (returned when alpha = 0)
@@ -31280,32 +31590,6 @@ declare module BABYLON {
          */
         static FloatRound(value: number): number;
         /**
-         * Find the next highest power of two.
-         * @param x Number to start search from.
-         * @return Next highest power of two.
-         */
-        static CeilingPOT(x: number): number;
-        /**
-         * Find the next lowest power of two.
-         * @param x Number to start search from.
-         * @return Next lowest power of two.
-         */
-        static FloorPOT(x: number): number;
-        /**
-         * Find the nearest power of two.
-         * @param x Number to start search from.
-         * @return Next nearest power of two.
-         */
-        static NearestPOT(x: number): number;
-        /**
-         * Get the closest exponent of two
-         * @param value defines the value to approximate
-         * @param max defines the maximum value to return
-         * @param mode defines how to define the closest value
-         * @returns closest exponent of two of the given value
-         */
-        static GetExponentOfTwo(value: number, max: number, mode?: number): number;
-        /**
          * Extracts the filename from a path
          * @param path defines the path to use
          * @returns the filename
@@ -31342,32 +31626,6 @@ declare module BABYLON {
          */
         static EncodeArrayBufferTobase64(buffer: ArrayBuffer): string;
         /**
-         * Extracts minimum and maximum values from a list of indexed positions
-         * @param positions defines the positions to use
-         * @param indices defines the indices to the positions
-         * @param indexStart defines the start index
-         * @param indexCount defines the end index
-         * @param bias defines bias value to add to the result
-         * @return minimum and maximum values
-         */
-        static ExtractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, bias?: Nullable<Vector2>): {
-            minimum: Vector3;
-            maximum: Vector3;
-        };
-        /**
-         * Extracts minimum and maximum values from a list of positions
-         * @param positions defines the positions to use
-         * @param start defines the start index in the positions array
-         * @param count defines the number of positions to handle
-         * @param bias defines bias value to add to the result
-         * @param stride defines the stride size to use (distance between two positions in the positions array)
-         * @return minimum and maximum values
-         */
-        static ExtractMinAndMax(positions: FloatArray, start: number, count: number, bias?: Nullable<Vector2>, stride?: number): {
-            minimum: Vector3;
-            maximum: Vector3;
-        };
-        /**
          * Returns an array if obj is not an array
          * @param obj defines the object to evaluate as an array
          * @param allowsNullUndefined defines a boolean indicating if obj is allowed to be null or undefined
@@ -31379,31 +31637,6 @@ declare module BABYLON {
          * @returns "pointer" if touch is enabled. Else returns "mouse"
          */
         static GetPointerPrefix(): string;
-        /**
-         * Queue a new function into the requested animation frame pool (ie. this function will be executed byt the browser for the next frame)
-         * @param func - the function to be called
-         * @param requester - the object that will request the next frame. Falls back to window.
-         * @returns frame number
-         */
-        static QueueNewFrame(func: () => void, requester?: any): number;
-        /**
-         * Ask the browser to promote the current element to fullscreen rendering mode
-         * @param element defines the DOM element to promote
-         */
-        static RequestFullscreen(element: HTMLElement): void;
-        /**
-         * Asks the browser to exit fullscreen mode
-         */
-        static ExitFullscreen(): void;
-        /**
-         * Ask the browser to promote the current element to pointerlock mode
-         * @param element defines the DOM element to promote
-         */
-        static RequestPointerlock(element: HTMLElement): void;
-        /**
-         * Asks the browser to exit pointerlock mode
-         */
-        static ExitPointerlock(): void;
         /**
          * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
          * @param url define the url we are trying
@@ -31423,13 +31656,13 @@ declare module BABYLON {
          */
         static PreprocessUrl: (url: string) => string;
         /**
-         * Loads an image as an HTMLImageElement.
-         * @param input url string, ArrayBuffer, or Blob to load
-         * @param onLoad callback called when the image successfully loads
-         * @param onError callback called when the image fails to load
-         * @param offlineProvider offline provider for caching
-         * @returns the HTMLImageElement of the loaded image
-         */
+        * Loads an image as an HTMLImageElement.
+        * @param input url string, ArrayBuffer, or Blob to load
+        * @param onLoad callback called when the image successfully loads
+        * @param onError callback called when the image fails to load
+        * @param offlineProvider offline provider for caching
+        * @returns the HTMLImageElement of the loaded image
+        */
         static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
         /**
          * Loads a file
@@ -31496,13 +31729,6 @@ declare module BABYLON {
          */
         static Format(value: number, decimals?: number): string;
         /**
-         * Checks if a given vector is inside a specific range
-         * @param v defines the vector to test
-         * @param min defines the minimum range
-         * @param max defines the maximum range
-         */
-        static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void;
-        /**
          * Tries to copy an object by duplicating every property
          * @param source defines the source object
          * @param destination defines the target object
@@ -31516,20 +31742,6 @@ declare module BABYLON {
          * @returns true if object has no own property
          */
         static IsEmpty(obj: any): boolean;
-        /**
-         * Checks for a matching suffix at the end of a string (for ES5 and lower)
-         * @param str Source string
-         * @param suffix Suffix to search for in the source string
-         * @returns Boolean indicating whether the suffix was found (true) or not (false)
-         */
-        static EndsWith(str: string, suffix: string): boolean;
-        /**
-         * Checks for a matching suffix at the beginning of a string (for ES5 and lower)
-         * @param str Source string
-         * @param suffix Suffix to search for in the source string
-         * @returns Boolean indicating whether the suffix was found (true) or not (false)
-         */
-        static StartsWith(str: string, suffix: string): boolean;
         /**
          * Function used to register events at window level
          * @param events defines the events to register
@@ -31700,11 +31912,6 @@ declare module BABYLON {
          */
         static LogLevels: number;
         /**
-         * Checks if the loaded document was accessed via `file:`-Protocol.
-         * @returns boolean
-         */
-        static IsFileURL(): boolean;
-        /**
          * Checks if the window object exists
          * Back Compat only, please use DomManagement.IsWindowObjectExist instead.
          */
@@ -31774,91 +31981,6 @@ declare module BABYLON {
          * @returns Promise that resolves after the given amount of time
          */
         static DelayAsync(delay: number): Promise<void>;
-        /**
-         * Gets the current gradient from an array of IValueGradient
-         * @param ratio defines the current ratio to get
-         * @param gradients defines the array of IValueGradient
-         * @param updateFunc defines the callback function used to get the final value from the selected gradients
-         */
-        static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void): void;
-    }
-    /**
-     * This class is used to track a performance counter which is number based.
-     * The user has access to many properties which give statistics of different nature.
-     *
-     * The implementer can track two kinds of Performance Counter: time and count.
-     * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
-     * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
-     */
-    export class PerfCounter {
-        /**
-         * Gets or sets a global boolean to turn on and off all the counters
-         */
-        static Enabled: boolean;
-        /**
-         * Returns the smallest value ever
-         */
-        readonly min: number;
-        /**
-         * Returns the biggest value ever
-         */
-        readonly max: number;
-        /**
-         * Returns the average value since the performance counter is running
-         */
-        readonly average: number;
-        /**
-         * Returns the average value of the last second the counter was monitored
-         */
-        readonly lastSecAverage: number;
-        /**
-         * Returns the current value
-         */
-        readonly current: number;
-        /**
-         * Gets the accumulated total
-         */
-        readonly total: number;
-        /**
-         * Gets the total value count
-         */
-        readonly count: number;
-        /**
-         * Creates a new counter
-         */
-        constructor();
-        /**
-         * Call this method to start monitoring a new frame.
-         * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
-         */
-        fetchNewFrame(): void;
-        /**
-         * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
-         * @param newCount the count value to add to the monitored count
-         * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
-         */
-        addCount(newCount: number, fetchResult: boolean): void;
-        /**
-         * Start monitoring this performance counter
-         */
-        beginMonitoring(): void;
-        /**
-         * Compute the time lapsed since the previous beginMonitoring() call.
-         * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
-         */
-        endMonitoring(newFrame?: boolean): void;
-        private _fetchResult;
-        private _startMonitoringTime;
-        private _min;
-        private _max;
-        private _average;
-        private _current;
-        private _totalValueCount;
-        private _totalAccumulated;
-        private _lastSecAverage;
-        private _lastSecAccumulated;
-        private _lastSecTime;
-        private _lastSecValueCount;
     }
     /**
      * Use this className as a decorator on a given class definition to add it a name and optionally its module.
@@ -40550,7 +40672,7 @@ declare module BABYLON {
          * @param state state to set
          * @returns a promise that resolves once the render state has been updated
          */
-        updateRenderStateAsync(state: any): Promise<void>;
+        updateRenderStateAsync(state: XRRenderState): Promise<void>;
         /**
          * Starts rendering to the xr layer
          * @returns a promise that will resolve once rendering has started
@@ -41497,6 +41619,56 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Vive Controller
+     */
+    export class ViveController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static MODEL_FILENAME: string;
+        /**
+         * Creates a new ViveController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Fired when the left button on this controller is modified
+         */
+        readonly onLeftButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the right button on this controller is modified
+         */
+        readonly onRightButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the menu button on this controller is modified
+         */
+        readonly onMenuButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Called once for each button that changed state since the last frame
+         * Vive mapping:
+         * 0: touchpad
+         * 1: trigger
+         * 2: left AND right buttons
+         * 3: menu button
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Loads a controller model and adds it as a child of the WebXRControllers grip when the controller is created
      */
     export class WebXRControllerModelLoader {
@@ -41907,9 +42079,9 @@ declare module BABYLON {
          */
         updateGizmoPositionToMatchAttachedMesh: boolean;
         /**
-         * When set, the gizmo will always appear the same size no matter where the camera is (default: false)
+         * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
          */
-        protected _updateScale: boolean;
+        updateScale: boolean;
         protected _interactionsEnabled: boolean;
         protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
         private _beforeRenderObserver;
@@ -42700,10 +42872,10 @@ declare module BABYLON {
         constructor(options?: NullEngineOptions);
         createVertexBuffer(vertices: FloatArray): DataBuffer;
         createIndexBuffer(indices: IndicesArray): DataBuffer;
-        clear(color: Color4, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+        clear(color: IColor4Like, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
         getRenderWidth(useScreen?: boolean): number;
         getRenderHeight(useScreen?: boolean): number;
-        setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void;
+        setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void;
         createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram;
         getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[];
         getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[];
@@ -42723,7 +42895,6 @@ declare module BABYLON {
         setArray3(uniform: WebGLUniformLocation, array: number[]): void;
         setArray4(uniform: WebGLUniformLocation, array: number[]): void;
         setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
-        setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void;
         setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
         setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
         setFloat(uniform: WebGLUniformLocation, value: number): void;
@@ -42731,8 +42902,6 @@ declare module BABYLON {
         setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
         setBool(uniform: WebGLUniformLocation, bool: number): void;
         setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
-        setColor3(uniform: WebGLUniformLocation, color3: Color3): void;
-        setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void;
         setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
         bindBuffers(vertexBuffers: {
             [key: string]: VertexBuffer;
@@ -43217,56 +43386,6 @@ declare module BABYLON {
         initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
         /**
          * Called once for each button that changed state since the last frame
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Vive Controller
-     */
-    export class ViveController extends WebVRController {
-        /**
-         * Base Url for the controller model.
-         */
-        static MODEL_BASE_URL: string;
-        /**
-         * File name for the controller model.
-         */
-        static MODEL_FILENAME: string;
-        /**
-         * Creates a new ViveController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Fired when the left button on this controller is modified
-         */
-        readonly onLeftButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the right button on this controller is modified
-         */
-        readonly onRightButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the menu button on this controller is modified
-         */
-        readonly onMenuButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Called once for each button that changed state since the last frame
-         * Vive mapping:
-         * 0: touchpad
-         * 1: trigger
-         * 2: left AND right buttons
-         * 3: menu button
          * @param buttonIdx Which button index changed
          * @param state New state of the button
          * @param changes Which properties on the state changed since last frame
@@ -60204,10 +60323,10 @@ interface XRSpace extends EventTarget {
 }
 
 interface XRRenderState {
-    depthNear: number ;
-    depthFar: number ;
-    inlineVerticalFieldOfView: number | undefined;
-    baseLayer: XRWebGLLayer | undefined;
+    depthNear?: number;
+    depthFar?: number;
+    inlineVerticalFieldOfView?: number;
+    baseLayer?: XRWebGLLayer;
 }
 
 interface XRInputSource {
@@ -60222,7 +60341,7 @@ interface XRInputSource {
 interface XRSession {
     addEventListener: Function;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
-    updateRenderState(XRRenderStateInit: any): Promise<void>;
+    updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
     requestAnimationFrame: Function;
     end(): Promise<void>;
     renderState: XRRenderState;
