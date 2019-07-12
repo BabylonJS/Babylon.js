@@ -1,5 +1,5 @@
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Quaternion, Vector3 } from '../../Maths/math';
+import { Quaternion, Vector3 } from '../../Maths/math.vector';
 import { Mesh } from '../../Meshes/mesh';
 import { Ray } from '../../Culling/ray';
 import { StandardMaterial } from '../../Materials/standardMaterial';
@@ -94,7 +94,7 @@ export class WebXRControllerTeleportation {
                     }
                     teleportationTarget.isVisible = true;
                     (<Mesh>teleportationTarget.getChildren()[0]).isVisible = true;
-                }else {
+                } else {
                     teleportationTarget.isVisible = false;
                     (<Mesh>teleportationTarget.getChildren()[0]).isVisible = false;
                 }
@@ -104,7 +104,7 @@ export class WebXRControllerTeleportation {
                         // Forward teleportation
                         if (c.inputSource.gamepad.axes[1] < -0.7) {
                             forwardReadyToTeleport = true;
-                        }else {
+                        } else {
                             if (forwardReadyToTeleport) {
                                 // Teleport the users feet to where they targetted
                                 this._tmpVector.copyFrom(teleportationTarget.position);
@@ -117,7 +117,7 @@ export class WebXRControllerTeleportation {
                         // Backward teleportation
                         if (c.inputSource.gamepad.axes[1] > 0.7) {
                             backwardReadyToTeleport = true;
-                        }else {
+                        } else {
                             if (backwardReadyToTeleport) {
                                 // Cast a ray down from behind the user
                                 let camMat = input.baseExperience.camera.computeWorldMatrix();
@@ -148,7 +148,7 @@ export class WebXRControllerTeleportation {
                     if (c.inputSource.gamepad.axes[0] !== undefined) {
                         if (c.inputSource.gamepad.axes[0] < -0.7) {
                             leftReadyToTeleport = true;
-                        }else {
+                        } else {
                             if (leftReadyToTeleport) {
                                 input.baseExperience.rotateCameraByQuaternionUsingContainer(Quaternion.FromEulerAngles(0, -Math.PI / 4, 0));
                             }
@@ -156,7 +156,7 @@ export class WebXRControllerTeleportation {
                         }
                         if (c.inputSource.gamepad.axes[0] > 0.7) {
                             rightReadyToTeleport = true;
-                        }else {
+                        } else {
                             if (rightReadyToTeleport) {
                                 input.baseExperience.rotateCameraByQuaternionUsingContainer(Quaternion.FromEulerAngles(0, Math.PI / 4, 0));
                             }

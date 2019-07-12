@@ -5,7 +5,7 @@ import { IAnimatable } from '../Animations/animatable.interface';
 
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";

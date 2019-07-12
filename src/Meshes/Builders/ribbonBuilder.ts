@@ -1,6 +1,6 @@
 import { Nullable, FloatArray } from "../../types";
 import { Scene } from "../../scene";
-import { Vector3, Vector2, Tmp, Vector4 } from "../../Maths/math";
+import { Vector3, Vector2, TmpVectors, Vector4 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexBuffer } from "../buffer";
@@ -287,8 +287,8 @@ export class RibbonBuilder {
         if (instance) {   // existing ribbon instance update
             // positionFunction : ribbon case
             // only pathArray and sideOrientation parameters are taken into account for positions update
-            const minimum = Tmp.Vector3[0].setAll(Number.MAX_VALUE);
-            const maximum = Tmp.Vector3[1].setAll(-Number.MAX_VALUE);
+            const minimum = TmpVectors.Vector3[0].setAll(Number.MAX_VALUE);
+            const maximum = TmpVectors.Vector3[1].setAll(-Number.MAX_VALUE);
             var positionFunction = (positions: FloatArray) => {
                 var minlg = pathArray[0].length;
                 var mesh = (<Mesh>instance);

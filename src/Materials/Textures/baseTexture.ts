@@ -3,7 +3,7 @@ import { Observer, Observable } from "../../Misc/observable";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix } from "../../Maths/math";
+import { Matrix } from "../../Maths/math.vector";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";

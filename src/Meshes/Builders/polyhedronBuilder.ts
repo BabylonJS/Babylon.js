@@ -1,5 +1,5 @@
 import { Scene } from "../../scene";
-import { Vector4 } from "../../Maths/math";
+import { Vector4 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";

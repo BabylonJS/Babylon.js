@@ -2,7 +2,7 @@ import { serialize } from "../../../Misc/decorators";
 import { Observable } from "../../../Misc/observable";
 import { Nullable } from "../../../types";
 import { Scene } from "../../../scene";
-import { Matrix, Vector3, Vector2 } from "../../../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../../../Maths/math.vector";
 import { Color4, Color3 } from '../../../Maths/math.color';
 import { Engine } from "../../../Engines/engine";
 import { VertexBuffer } from "../../../Meshes/buffer";

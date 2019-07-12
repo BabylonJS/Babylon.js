@@ -1,5 +1,5 @@
 import { Observable } from "../Misc/observable";
-import { Vector2, Vector3 } from "../Maths/math";
+import { Vector2, Vector3 } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Condition } from "./condition";
 import { _TypeStore } from '../Misc/typeStore';

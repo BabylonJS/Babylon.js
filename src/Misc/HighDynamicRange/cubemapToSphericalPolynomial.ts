@@ -1,4 +1,4 @@
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { SphericalPolynomial, SphericalHarmonics } from "../../Maths/sphericalPolynomial";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";

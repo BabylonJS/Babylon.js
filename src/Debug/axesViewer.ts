@@ -1,4 +1,4 @@
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { TransformNode } from "../Meshes/transformNode";

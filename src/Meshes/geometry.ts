@@ -1,6 +1,6 @@
 import { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
 import { Scene } from "../scene";
-import { Vector3, Vector2 } from "../Maths/math";
+import { Vector3, Vector2 } from "../Maths/math.vector";
 import { Color4 } from '../Maths/math.color';
 import { Engine } from "../Engines/engine";
 import { IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";

@@ -63,3 +63,12 @@ export interface IViewportLike {
     width: float;
     height: float;
 }
+
+/**
+ * @hidden
+ */
+export interface IPlaneLike {
+    normal: IVector3Like;
+    d: float;
+    normalize(): void;
+}

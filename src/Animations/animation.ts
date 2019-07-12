@@ -1,5 +1,5 @@
 import { IEasingFunction, EasingFunction } from "./easing";
-import { Vector3, Quaternion, Vector2, Matrix } from "../Maths/math";
+import { Vector3, Quaternion, Vector2, Matrix } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 

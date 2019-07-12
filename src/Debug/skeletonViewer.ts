@@ -1,4 +1,4 @@
-import { Vector3, Matrix, Tmp } from "../Maths/math";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { Scene } from "../scene";
 import { Nullable } from "../types";
@@ -82,12 +82,12 @@ export class SkeletonViewer {
     }
 
     private _getBonePosition(position: Vector3, bone: Bone, meshMat: Matrix, x = 0, y = 0, z = 0): void {
-        var tmat = Tmp.Matrix[0];
+        var tmat = TmpVectors.Matrix[0];
         var parentBone = bone.getParent();
         tmat.copyFrom(bone.getLocalMatrix());
 
         if (x !== 0 || y !== 0 || z !== 0) {
-            var tmat2 = Tmp.Matrix[1];
+            var tmat2 = TmpVectors.Matrix[1];
             Matrix.IdentityToRef(tmat2);
             tmat2.setTranslationFromFloats(x, y, z);
             tmat2.multiplyToRef(tmat, tmat);

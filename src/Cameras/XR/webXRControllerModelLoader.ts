@@ -1,4 +1,4 @@
-import { Quaternion } from '../../Maths/math';
+import { Quaternion } from '../../Maths/math.vector';
 import { WindowsMotionController } from '../../Gamepads/Controllers/windowsMotionController';
 import { OculusTouchController } from '../../Gamepads/Controllers/oculusTouchController';
 import { WebXRInput } from './webXRInput';
@@ -36,7 +36,7 @@ export class WebXRControllerModelLoader {
                     controllerModel.mesh!.position.y = 0.034;
                     controllerModel.mesh!.position.z = 0.052;
                 });
-            }else if (c.inputSource.gamepad && c.inputSource.gamepad.id === "oculus-quest") {
+            } else if (c.inputSource.gamepad && c.inputSource.gamepad.id === "oculus-quest") {
                 OculusTouchController._IsQuest = true;
                 let controllerModel = new OculusTouchController(c.inputSource.gamepad);
                 controllerModel.hand = c.inputSource.handedness;
@@ -45,7 +45,7 @@ export class WebXRControllerModelLoader {
                     controllerModel.mesh!.parent = c.grip!;
                     controllerModel.mesh!.rotationQuaternion = Quaternion.FromEulerAngles(Math.PI / -4, Math.PI, 0);
                 });
-            }else {
+            } else {
                 let controllerModel = new WindowsMotionController(c.inputSource.gamepad);
                 controllerModel.hand = c.inputSource.handedness;
                 controllerModel.isXR = true;

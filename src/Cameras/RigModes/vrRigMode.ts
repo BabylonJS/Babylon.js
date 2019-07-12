@@ -1,5 +1,5 @@
 import { Camera } from "../camera";
-import { Matrix } from "../../Maths/math";
+import { Matrix } from "../../Maths/math.vector";
 import { VRDistortionCorrectionPostProcess } from "../../PostProcesses/vrDistortionCorrectionPostProcess";
 import { VRMultiviewToSingleviewPostProcess } from '../../PostProcesses/vrMultiviewToSingleviewPostProcess';
 import { VRCameraMetrics } from "../VR/vrCameraMetrics";

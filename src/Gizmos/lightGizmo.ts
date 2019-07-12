@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Vector3, Quaternion } from "../Maths/math";
+import { Vector3, Quaternion } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";

@@ -1,10 +1,11 @@
 import { Nullable } from "../../types";
-import { Vector3, Axis } from '../../Maths/math';
+import { Vector3 } from '../../Maths/math.vector';
 import { Mesh } from '../../Meshes/mesh';
 import { Ray } from '../../Culling/ray';
 import { StandardMaterial } from '../../Materials/standardMaterial';
 import { WebXRInput } from './webXRInput';
 import { Color3 } from '../../Maths/math.color';
+import { Axis } from '../../Maths/math.axis';
 
 /**
  * Handles pointer input automatically for the pointer of XR controllers

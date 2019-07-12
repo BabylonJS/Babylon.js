@@ -1033,20 +1033,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class containing a set of static utilities functions for arrays.
-     */
-    export class ArrayTools {
-        /**
-         * Returns an array of the given size filled with element built from the given constructor and the paramters
-         * @param size the number of element to construct and put in the array
-         * @param itemBuilder a callback responsible for creating new instance of item. Called once per array entry.
-         * @returns a new array filled with new objects
-         */
-        static BuildArray<T>(size: number, itemBuilder: () => T): Array<T>;
-    }
-}
-declare module BABYLON {
-    /**
      * Scalar computation library
      */
     export class Scalar {
@@ -1256,585 +1242,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to hold a RBG color
-     */
-    export class Color3 {
-        /**
-         * Defines the red component (between 0 and 1, default is 0)
-         */
-        r: number;
-        /**
-         * Defines the green component (between 0 and 1, default is 0)
-         */
-        g: number;
-        /**
-         * Defines the blue component (between 0 and 1, default is 0)
-         */
-        b: number;
-        /**
-         * Creates a new Color3 object from red, green, blue values, all between 0 and 1
-         * @param r defines the red component (between 0 and 1, default is 0)
-         * @param g defines the green component (between 0 and 1, default is 0)
-         * @param b defines the blue component (between 0 and 1, default is 0)
-         */
-        constructor(
-        /**
-         * Defines the red component (between 0 and 1, default is 0)
-         */
-        r?: number, 
-        /**
-         * Defines the green component (between 0 and 1, default is 0)
-         */
-        g?: number, 
-        /**
-         * Defines the blue component (between 0 and 1, default is 0)
-         */
-        b?: number);
-        /**
-         * Creates a string with the Color3 current values
-         * @returns the string representation of the Color3 object
-         */
-        toString(): string;
-        /**
-         * Returns the string "Color3"
-         * @returns "Color3"
-         */
-        getClassName(): string;
-        /**
-         * Compute the Color3 hash code
-         * @returns an unique number that can be used to hash Color3 objects
-         */
-        getHashCode(): number;
-        /**
-         * Stores in the given array from the given starting index the red, green, blue values as successive elements
-         * @param array defines the array where to store the r,g,b components
-         * @param index defines an optional index in the target array to define where to start storing values
-         * @returns the current Color3 object
-         */
-        toArray(array: FloatArray, index?: number): Color3;
-        /**
-         * Returns a new Color4 object from the current Color3 and the given alpha
-         * @param alpha defines the alpha component on the new Color4 object (default is 1)
-         * @returns a new Color4 object
-         */
-        toColor4(alpha?: number): Color4;
-        /**
-         * Returns a new array populated with 3 numeric elements : red, green and blue values
-         * @returns the new array
-         */
-        asArray(): number[];
-        /**
-         * Returns the luminance value
-         * @returns a float value
-         */
-        toLuminance(): number;
-        /**
-         * Multiply each Color3 rgb values by the given Color3 rgb values in a new Color3 object
-         * @param otherColor defines the second operand
-         * @returns the new Color3 object
-         */
-        multiply(otherColor: DeepImmutable<Color3>): Color3;
-        /**
-         * Multiply the rgb values of the Color3 and the given Color3 and stores the result in the object "result"
-         * @param otherColor defines the second operand
-         * @param result defines the Color3 object where to store the result
-         * @returns the current Color3
-         */
-        multiplyToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3;
-        /**
-         * Determines equality between Color3 objects
-         * @param otherColor defines the second operand
-         * @returns true if the rgb values are equal to the given ones
-         */
-        equals(otherColor: DeepImmutable<Color3>): boolean;
-        /**
-         * Determines equality between the current Color3 object and a set of r,b,g values
-         * @param r defines the red component to check
-         * @param g defines the green component to check
-         * @param b defines the blue component to check
-         * @returns true if the rgb values are equal to the given ones
-         */
-        equalsFloats(r: number, g: number, b: number): boolean;
-        /**
-         * Multiplies in place each rgb value by scale
-         * @param scale defines the scaling factor
-         * @returns the updated Color3
-         */
-        scale(scale: number): Color3;
-        /**
-         * Multiplies the rgb values by scale and stores the result into "result"
-         * @param scale defines the scaling factor
-         * @param result defines the Color3 object where to store the result
-         * @returns the unmodified current Color3
-         */
-        scaleToRef(scale: number, result: Color3): Color3;
-        /**
-         * Scale the current Color3 values by a factor and add the result to a given Color3
-         * @param scale defines the scale factor
-         * @param result defines color to store the result into
-         * @returns the unmodified current Color3
-         */
-        scaleAndAddToRef(scale: number, result: Color3): Color3;
-        /**
-         * Clamps the rgb values by the min and max values and stores the result into "result"
-         * @param min defines minimum clamping value (default is 0)
-         * @param max defines maximum clamping value (default is 1)
-         * @param result defines color to store the result into
-         * @returns the original Color3
-         */
-        clampToRef(min: number | undefined, max: number | undefined, result: Color3): Color3;
-        /**
-         * Creates a new Color3 set with the added values of the current Color3 and of the given one
-         * @param otherColor defines the second operand
-         * @returns the new Color3
-         */
-        add(otherColor: DeepImmutable<Color3>): Color3;
-        /**
-         * Stores the result of the addition of the current Color3 and given one rgb values into "result"
-         * @param otherColor defines the second operand
-         * @param result defines Color3 object to store the result into
-         * @returns the unmodified current Color3
-         */
-        addToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3;
-        /**
-         * Returns a new Color3 set with the subtracted values of the given one from the current Color3
-         * @param otherColor defines the second operand
-         * @returns the new Color3
-         */
-        subtract(otherColor: DeepImmutable<Color3>): Color3;
-        /**
-         * Stores the result of the subtraction of given one from the current Color3 rgb values into "result"
-         * @param otherColor defines the second operand
-         * @param result defines Color3 object to store the result into
-         * @returns the unmodified current Color3
-         */
-        subtractToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3;
-        /**
-         * Copy the current object
-         * @returns a new Color3 copied the current one
-         */
-        clone(): Color3;
-        /**
-         * Copies the rgb values from the source in the current Color3
-         * @param source defines the source Color3 object
-         * @returns the updated Color3 object
-         */
-        copyFrom(source: DeepImmutable<Color3>): Color3;
-        /**
-         * Updates the Color3 rgb values from the given floats
-         * @param r defines the red component to read from
-         * @param g defines the green component to read from
-         * @param b defines the blue component to read from
-         * @returns the current Color3 object
-         */
-        copyFromFloats(r: number, g: number, b: number): Color3;
-        /**
-         * Updates the Color3 rgb values from the given floats
-         * @param r defines the red component to read from
-         * @param g defines the green component to read from
-         * @param b defines the blue component to read from
-         * @returns the current Color3 object
-         */
-        set(r: number, g: number, b: number): Color3;
-        /**
-         * Compute the Color3 hexadecimal code as a string
-         * @returns a string containing the hexadecimal representation of the Color3 object
-         */
-        toHexString(): string;
-        /**
-         * Computes a new Color3 converted from the current one to linear space
-         * @returns a new Color3 object
-         */
-        toLinearSpace(): Color3;
-        /**
-         * Converts current color in rgb space to HSV values
-         * @returns a new color3 representing the HSV values
-         */
-        toHSV(): Color3;
-        /**
-         * Converts current color in rgb space to HSV values
-         * @param result defines the Color3 where to store the HSV values
-         */
-        toHSVToRef(result: Color3): void;
-        /**
-         * Converts the Color3 values to linear space and stores the result in "convertedColor"
-         * @param convertedColor defines the Color3 object where to store the linear space version
-         * @returns the unmodified Color3
-         */
-        toLinearSpaceToRef(convertedColor: Color3): Color3;
-        /**
-         * Computes a new Color3 converted from the current one to gamma space
-         * @returns a new Color3 object
-         */
-        toGammaSpace(): Color3;
-        /**
-         * Converts the Color3 values to gamma space and stores the result in "convertedColor"
-         * @param convertedColor defines the Color3 object where to store the gamma space version
-         * @returns the unmodified Color3
-         */
-        toGammaSpaceToRef(convertedColor: Color3): Color3;
-        private static _BlackReadOnly;
-        /**
-         * Convert Hue, saturation and value to a Color3 (RGB)
-         * @param hue defines the hue
-         * @param saturation defines the saturation
-         * @param value defines the value
-         * @param result defines the Color3 where to store the RGB values
-         */
-        static HSVtoRGBToRef(hue: number, saturation: number, value: number, result: Color3): void;
-        /**
-         * Creates a new Color3 from the string containing valid hexadecimal values
-         * @param hex defines a string containing valid hexadecimal values
-         * @returns a new Color3 object
-         */
-        static FromHexString(hex: string): Color3;
-        /**
-         * Creates a new Color3 from the starting index of the given array
-         * @param array defines the source array
-         * @param offset defines an offset in the source array
-         * @returns a new Color3 object
-         */
-        static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Color3;
-        /**
-         * Creates a new Color3 from integer values (< 256)
-         * @param r defines the red component to read from (value between 0 and 255)
-         * @param g defines the green component to read from (value between 0 and 255)
-         * @param b defines the blue component to read from (value between 0 and 255)
-         * @returns a new Color3 object
-         */
-        static FromInts(r: number, g: number, b: number): Color3;
-        /**
-         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3
-         * @param start defines the start Color3 value
-         * @param end defines the end Color3 value
-         * @param amount defines the gradient value between start and end
-         * @returns a new Color3 object
-         */
-        static Lerp(start: DeepImmutable<Color3>, end: DeepImmutable<Color3>, amount: number): Color3;
-        /**
-         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3
-         * @param left defines the start value
-         * @param right defines the end value
-         * @param amount defines the gradient factor
-         * @param result defines the Color3 object where to store the result
-         */
-        static LerpToRef(left: DeepImmutable<Color3>, right: DeepImmutable<Color3>, amount: number, result: Color3): void;
-        /**
-         * Returns a Color3 value containing a red color
-         * @returns a new Color3 object
-         */
-        static Red(): Color3;
-        /**
-         * Returns a Color3 value containing a green color
-         * @returns a new Color3 object
-         */
-        static Green(): Color3;
-        /**
-         * Returns a Color3 value containing a blue color
-         * @returns a new Color3 object
-         */
-        static Blue(): Color3;
-        /**
-         * Returns a Color3 value containing a black color
-         * @returns a new Color3 object
-         */
-        static Black(): Color3;
-        /**
-          * Gets a Color3 value containing a black color that must not be updated
-          */
-        static readonly BlackReadOnly: DeepImmutable<Color3>;
-        /**
-         * Returns a Color3 value containing a white color
-         * @returns a new Color3 object
-         */
-        static White(): Color3;
-        /**
-         * Returns a Color3 value containing a purple color
-         * @returns a new Color3 object
-         */
-        static Purple(): Color3;
-        /**
-         * Returns a Color3 value containing a magenta color
-         * @returns a new Color3 object
-         */
-        static Magenta(): Color3;
-        /**
-         * Returns a Color3 value containing a yellow color
-         * @returns a new Color3 object
-         */
-        static Yellow(): Color3;
-        /**
-         * Returns a Color3 value containing a gray color
-         * @returns a new Color3 object
-         */
-        static Gray(): Color3;
-        /**
-         * Returns a Color3 value containing a teal color
-         * @returns a new Color3 object
-         */
-        static Teal(): Color3;
-        /**
-         * Returns a Color3 value containing a random color
-         * @returns a new Color3 object
-         */
-        static Random(): Color3;
-    }
-    /**
-     * Class used to hold a RBGA color
-     */
-    export class Color4 {
-        /**
-         * Defines the red component (between 0 and 1, default is 0)
-         */
-        r: number;
-        /**
-         * Defines the green component (between 0 and 1, default is 0)
-         */
-        g: number;
-        /**
-         * Defines the blue component (between 0 and 1, default is 0)
-         */
-        b: number;
-        /**
-         * Defines the alpha component (between 0 and 1, default is 1)
-         */
-        a: number;
-        /**
-         * Creates a new Color4 object from red, green, blue values, all between 0 and 1
-         * @param r defines the red component (between 0 and 1, default is 0)
-         * @param g defines the green component (between 0 and 1, default is 0)
-         * @param b defines the blue component (between 0 and 1, default is 0)
-         * @param a defines the alpha component (between 0 and 1, default is 1)
-         */
-        constructor(
-        /**
-         * Defines the red component (between 0 and 1, default is 0)
-         */
-        r?: number, 
-        /**
-         * Defines the green component (between 0 and 1, default is 0)
-         */
-        g?: number, 
-        /**
-         * Defines the blue component (between 0 and 1, default is 0)
-         */
-        b?: number, 
-        /**
-         * Defines the alpha component (between 0 and 1, default is 1)
-         */
-        a?: number);
-        /**
-         * Adds in place the given Color4 values to the current Color4 object
-         * @param right defines the second operand
-         * @returns the current updated Color4 object
-         */
-        addInPlace(right: DeepImmutable<Color4>): Color4;
-        /**
-         * Creates a new array populated with 4 numeric elements : red, green, blue, alpha values
-         * @returns the new array
-         */
-        asArray(): number[];
-        /**
-         * Stores from the starting index in the given array the Color4 successive values
-         * @param array defines the array where to store the r,g,b components
-         * @param index defines an optional index in the target array to define where to start storing values
-         * @returns the current Color4 object
-         */
-        toArray(array: number[], index?: number): Color4;
-        /**
-         * Determines equality between Color4 objects
-         * @param otherColor defines the second operand
-         * @returns true if the rgba values are equal to the given ones
-         */
-        equals(otherColor: DeepImmutable<Color4>): boolean;
-        /**
-         * Creates a new Color4 set with the added values of the current Color4 and of the given one
-         * @param right defines the second operand
-         * @returns a new Color4 object
-         */
-        add(right: DeepImmutable<Color4>): Color4;
-        /**
-         * Creates a new Color4 set with the subtracted values of the given one from the current Color4
-         * @param right defines the second operand
-         * @returns a new Color4 object
-         */
-        subtract(right: DeepImmutable<Color4>): Color4;
-        /**
-         * Subtracts the given ones from the current Color4 values and stores the results in "result"
-         * @param right defines the second operand
-         * @param result defines the Color4 object where to store the result
-         * @returns the current Color4 object
-         */
-        subtractToRef(right: DeepImmutable<Color4>, result: Color4): Color4;
-        /**
-         * Creates a new Color4 with the current Color4 values multiplied by scale
-         * @param scale defines the scaling factor to apply
-         * @returns a new Color4 object
-         */
-        scale(scale: number): Color4;
-        /**
-         * Multiplies the current Color4 values by scale and stores the result in "result"
-         * @param scale defines the scaling factor to apply
-         * @param result defines the Color4 object where to store the result
-         * @returns the current unmodified Color4
-         */
-        scaleToRef(scale: number, result: Color4): Color4;
-        /**
-         * Scale the current Color4 values by a factor and add the result to a given Color4
-         * @param scale defines the scale factor
-         * @param result defines the Color4 object where to store the result
-         * @returns the unmodified current Color4
-         */
-        scaleAndAddToRef(scale: number, result: Color4): Color4;
-        /**
-         * Clamps the rgb values by the min and max values and stores the result into "result"
-         * @param min defines minimum clamping value (default is 0)
-         * @param max defines maximum clamping value (default is 1)
-         * @param result defines color to store the result into.
-         * @returns the cuurent Color4
-         */
-        clampToRef(min: number | undefined, max: number | undefined, result: Color4): Color4;
-        /**
-          * Multipy an Color4 value by another and return a new Color4 object
-          * @param color defines the Color4 value to multiply by
-          * @returns a new Color4 object
-          */
-        multiply(color: Color4): Color4;
-        /**
-         * Multipy a Color4 value by another and push the result in a reference value
-         * @param color defines the Color4 value to multiply by
-         * @param result defines the Color4 to fill the result in
-         * @returns the result Color4
-         */
-        multiplyToRef(color: Color4, result: Color4): Color4;
-        /**
-         * Creates a string with the Color4 current values
-         * @returns the string representation of the Color4 object
-         */
-        toString(): string;
-        /**
-         * Returns the string "Color4"
-         * @returns "Color4"
-         */
-        getClassName(): string;
-        /**
-         * Compute the Color4 hash code
-         * @returns an unique number that can be used to hash Color4 objects
-         */
-        getHashCode(): number;
-        /**
-         * Creates a new Color4 copied from the current one
-         * @returns a new Color4 object
-         */
-        clone(): Color4;
-        /**
-         * Copies the given Color4 values into the current one
-         * @param source defines the source Color4 object
-         * @returns the current updated Color4 object
-         */
-        copyFrom(source: Color4): Color4;
-        /**
-         * Copies the given float values into the current one
-         * @param r defines the red component to read from
-         * @param g defines the green component to read from
-         * @param b defines the blue component to read from
-         * @param a defines the alpha component to read from
-         * @returns the current updated Color4 object
-         */
-        copyFromFloats(r: number, g: number, b: number, a: number): Color4;
-        /**
-         * Copies the given float values into the current one
-         * @param r defines the red component to read from
-         * @param g defines the green component to read from
-         * @param b defines the blue component to read from
-         * @param a defines the alpha component to read from
-         * @returns the current updated Color4 object
-         */
-        set(r: number, g: number, b: number, a: number): Color4;
-        /**
-         * Compute the Color4 hexadecimal code as a string
-         * @returns a string containing the hexadecimal representation of the Color4 object
-         */
-        toHexString(): string;
-        /**
-         * Computes a new Color4 converted from the current one to linear space
-         * @returns a new Color4 object
-         */
-        toLinearSpace(): Color4;
-        /**
-         * Converts the Color4 values to linear space and stores the result in "convertedColor"
-         * @param convertedColor defines the Color4 object where to store the linear space version
-         * @returns the unmodified Color4
-         */
-        toLinearSpaceToRef(convertedColor: Color4): Color4;
-        /**
-         * Computes a new Color4 converted from the current one to gamma space
-         * @returns a new Color4 object
-         */
-        toGammaSpace(): Color4;
-        /**
-         * Converts the Color4 values to gamma space and stores the result in "convertedColor"
-         * @param convertedColor defines the Color4 object where to store the gamma space version
-         * @returns the unmodified Color4
-         */
-        toGammaSpaceToRef(convertedColor: Color4): Color4;
-        /**
-         * Creates a new Color4 from the string containing valid hexadecimal values
-         * @param hex defines a string containing valid hexadecimal values
-         * @returns a new Color4 object
-         */
-        static FromHexString(hex: string): Color4;
-        /**
-         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
-         * @param left defines the start value
-         * @param right defines the end value
-         * @param amount defines the gradient factor
-         * @returns a new Color4 object
-         */
-        static Lerp(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number): Color4;
-        /**
-         * Set the given "result" with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
-         * @param left defines the start value
-         * @param right defines the end value
-         * @param amount defines the gradient factor
-         * @param result defines the Color4 object where to store data
-         */
-        static LerpToRef(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number, result: Color4): void;
-        /**
-         * Creates a new Color4 from a Color3 and an alpha value
-         * @param color3 defines the source Color3 to read from
-         * @param alpha defines the alpha component (1.0 by default)
-         * @returns a new Color4 object
-         */
-        static FromColor3(color3: DeepImmutable<Color3>, alpha?: number): Color4;
-        /**
-         * Creates a new Color4 from the starting index element of the given array
-         * @param array defines the source array to read from
-         * @param offset defines the offset in the source array
-         * @returns a new Color4 object
-         */
-        static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Color4;
-        /**
-         * Creates a new Color3 from integer values (< 256)
-         * @param r defines the red component to read from (value between 0 and 255)
-         * @param g defines the green component to read from (value between 0 and 255)
-         * @param b defines the blue component to read from (value between 0 and 255)
-         * @param a defines the alpha component to read from (value between 0 and 255)
-         * @returns a new Color3 object
-         */
-        static FromInts(r: number, g: number, b: number, a: number): Color4;
-        /**
-         * Check the content of a given array and convert it to an array containing RGBA data
-         * If the original array was already containing count * 4 values then it is returned directly
-         * @param colors defines the array to check
-         * @param count defines the number of RGBA data to expect
-         * @returns an array containing count * 4 values (RGBA)
-         */
-        static CheckColors4(colors: number[], count: number): number[];
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to represent a viewport on screen
      */
     export class Viewport {
@@ -1886,117 +1293,83 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Interface for the size containing width and height
+     * Class containing a set of static utilities functions for arrays.
      */
-    export interface ISize {
+    export class ArrayTools {
         /**
-         * Width
+         * Returns an array of the given size filled with element built from the given constructor and the paramters
+         * @param size the number of element to construct and put in the array
+         * @param itemBuilder a callback responsible for creating new instance of item. Called once per array entry.
+         * @returns a new array filled with new objects
          */
-        width: number;
-        /**
-         * Heighht
-         */
-        height: number;
+        static BuildArray<T>(size: number, itemBuilder: () => T): Array<T>;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IColor4Like {
+        r: float;
+        g: float;
+        b: float;
+        a: float;
     }
     /**
-     * Size containing widht and height
+     * @hidden
      */
-    export class Size implements ISize {
-        /**
-         * Width
-         */
-        width: number;
-        /**
-         * Height
-         */
-        height: number;
-        /**
-         * Creates a Size object from the given width and height (floats).
-         * @param width width of the new size
-         * @param height height of the new size
-         */
-        constructor(width: number, height: number);
-        /**
-         * Returns a string with the Size width and height
-         * @returns a string with the Size width and height
-         */
-        toString(): string;
-        /**
-         * "Size"
-         * @returns the string "Size"
-         */
-        getClassName(): string;
-        /**
-         * Returns the Size hash code.
-         * @returns a hash code for a unique width and height
-         */
-        getHashCode(): number;
-        /**
-         * Updates the current size from the given one.
-         * @param src the given size
-         */
-        copyFrom(src: Size): void;
-        /**
-         * Updates in place the current Size from the given floats.
-         * @param width width of the new size
-         * @param height height of the new size
-         * @returns the updated Size.
-         */
-        copyFromFloats(width: number, height: number): Size;
-        /**
-         * Updates in place the current Size from the given floats.
-         * @param width width to set
-         * @param height height to set
-         * @returns the updated Size.
-         */
-        set(width: number, height: number): Size;
-        /**
-         * Multiplies the width and height by numbers
-         * @param w factor to multiple the width by
-         * @param h factor to multiple the height by
-         * @returns a new Size set with the multiplication result of the current Size and the given floats.
-         */
-        multiplyByFloats(w: number, h: number): Size;
-        /**
-         * Clones the size
-         * @returns a new Size copied from the given one.
-         */
-        clone(): Size;
-        /**
-         * True if the current Size and the given one width and height are strictly equal.
-         * @param other the other size to compare against
-         * @returns True if the current Size and the given one width and height are strictly equal.
-         */
-        equals(other: Size): boolean;
-        /**
-         * The surface of the Size : width * height (float).
-         */
-        readonly surface: number;
-        /**
-         * Create a new size of zero
-         * @returns a new Size set to (0.0, 0.0)
-         */
-        static Zero(): Size;
-        /**
-         * Sums the width and height of two sizes
-         * @param otherSize size to add to this size
-         * @returns a new Size set as the addition result of the current Size and the given one.
-         */
-        add(otherSize: Size): Size;
-        /**
-         * Subtracts the width and height of two
-         * @param otherSize size to subtract to this size
-         * @returns a new Size set as the subtraction result of  the given one from the current Size.
-         */
-        subtract(otherSize: Size): Size;
-        /**
-         * Creates a new Size set at the linear interpolation "amount" between "start" and "end"
-         * @param start starting size to lerp between
-         * @param end end size to lerp between
-         * @param amount amount to lerp between the start and end values
-         * @returns a new Size set at the linear interpolation "amount" between "start" and "end"
-         */
-        static Lerp(start: Size, end: Size, amount: number): Size;
+    export interface IColor3Like {
+        r: float;
+        g: float;
+        b: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IVector4Like {
+        x: float;
+        y: float;
+        z: float;
+        w: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IVector3Like {
+        x: float;
+        y: float;
+        z: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IVector2Like {
+        x: float;
+        y: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IMatrixLike {
+        toArray(): DeepImmutable<Float32Array>;
+        updateFlag: int;
+    }
+    /**
+     * @hidden
+     */
+    export interface IViewportLike {
+        x: float;
+        y: float;
+        width: float;
+        height: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IPlaneLike {
+        normal: IVector3Like;
+        d: float;
+        normalize(): void;
     }
 }
 declare module BABYLON {
@@ -4629,13 +4002,13 @@ declare module BABYLON {
          * @param plane defines the reflection plane
          * @returns a new matrix
          */
-        static Reflection(plane: DeepImmutable<Plane>): Matrix;
+        static Reflection(plane: DeepImmutable<IPlaneLike>): Matrix;
         /**
          * Computes a reflection matrix from a plane
          * @param plane defines the reflection plane
          * @param result defines the target matrix
          */
-        static ReflectionToRef(plane: DeepImmutable<Plane>, result: Matrix): void;
+        static ReflectionToRef(plane: DeepImmutable<IPlaneLike>, result: Matrix): void;
         /**
          * Sets the given matrix as a rotation matrix composed from the 3 left handed axes
          * @param xaxis defines the value of the 1st axis
@@ -4652,544 +4025,9 @@ declare module BABYLON {
         static FromQuaternionToRef(quat: DeepImmutable<Quaternion>, result: Matrix): void;
     }
     /**
-     * Represens a plane by the equation ax + by + cz + d = 0
-     */
-    export class Plane {
-        /**
-         * Normal of the plane (a,b,c)
-         */
-        normal: Vector3;
-        /**
-         * d component of the plane
-         */
-        d: number;
-        /**
-         * Creates a Plane object according to the given floats a, b, c, d and the plane equation : ax + by + cz + d = 0
-         * @param a a component of the plane
-         * @param b b component of the plane
-         * @param c c component of the plane
-         * @param d d component of the plane
-         */
-        constructor(a: number, b: number, c: number, d: number);
-        /**
-         * @returns the plane coordinates as a new array of 4 elements [a, b, c, d].
-         */
-        asArray(): number[];
-        /**
-         * @returns a new plane copied from the current Plane.
-         */
-        clone(): Plane;
-        /**
-         * @returns the string "Plane".
-         */
-        getClassName(): string;
-        /**
-         * @returns the Plane hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Normalize the current Plane in place.
-         * @returns the updated Plane.
-         */
-        normalize(): Plane;
-        /**
-         * Applies a transformation the plane and returns the result
-         * @param transformation the transformation matrix to be applied to the plane
-         * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.
-         */
-        transform(transformation: DeepImmutable<Matrix>): Plane;
-        /**
-         * Calcualtte the dot product between the point and the plane normal
-         * @param point point to calculate the dot product with
-         * @returns the dot product (float) of the point coordinates and the plane normal.
-         */
-        dotCoordinate(point: DeepImmutable<Vector3>): number;
-        /**
-         * Updates the current Plane from the plane defined by the three given points.
-         * @param point1 one of the points used to contruct the plane
-         * @param point2 one of the points used to contruct the plane
-         * @param point3 one of the points used to contruct the plane
-         * @returns the updated Plane.
-         */
-        copyFromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
-        /**
-         * Checks if the plane is facing a given direction
-         * @param direction the direction to check if the plane is facing
-         * @param epsilon value the dot product is compared against (returns true if dot <= epsilon)
-         * @returns True is the vector "direction"  is the same side than the plane normal.
-         */
-        isFrontFacingTo(direction: DeepImmutable<Vector3>, epsilon: number): boolean;
-        /**
-         * Calculates the distance to a point
-         * @param point point to calculate distance to
-         * @returns the signed distance (float) from the given point to the Plane.
-         */
-        signedDistanceTo(point: DeepImmutable<Vector3>): number;
-        /**
-         * Creates a plane from an  array
-         * @param array the array to create a plane from
-         * @returns a new Plane from the given array.
-         */
-        static FromArray(array: DeepImmutable<ArrayLike<number>>): Plane;
-        /**
-         * Creates a plane from three points
-         * @param point1 point used to create the plane
-         * @param point2 point used to create the plane
-         * @param point3 point used to create the plane
-         * @returns a new Plane defined by the three given points.
-         */
-        static FromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
-        /**
-         * Creates a plane from an origin point and a normal
-         * @param origin origin of the plane to be constructed
-         * @param normal normal of the plane to be constructed
-         * @returns a new Plane the normal vector to this plane at the given origin point.
-         * Note : the vector "normal" is updated because normalized.
-         */
-        static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Plane;
-        /**
-         * Calculates the distance from a plane and a point
-         * @param origin origin of the plane to be constructed
-         * @param normal normal of the plane to be constructed
-         * @param point point to calculate distance to
-         * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
-         */
-        static SignedDistanceToPlaneFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, point: DeepImmutable<Vector3>): number;
-    }
-    /**
-     * Reprasents a camera frustum
-     */
-    export class Frustum {
-        /**
-         * Gets the planes representing the frustum
-         * @param transform matrix to be applied to the returned planes
-         * @returns a new array of 6 Frustum planes computed by the given transformation matrix.
-         */
-        static GetPlanes(transform: DeepImmutable<Matrix>): Plane[];
-        /**
-         * Gets the near frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetNearPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Gets the far frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetFarPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Gets the left frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetLeftPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Gets the right frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetRightPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Gets the top frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetTopPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Gets the bottom frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetBottomPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Sets the given array "frustumPlanes" with the 6 Frustum planes computed by the given transformation matrix.
-         * @param transform transformation matrix to be applied to the resulting frustum planes
-         * @param frustumPlanes the resuling frustum planes
-         */
-        static GetPlanesToRef(transform: DeepImmutable<Matrix>, frustumPlanes: Plane[]): void;
-    }
-    /** Defines supported spaces */
-    export enum Space {
-        /** Local (object) space */
-        LOCAL = 0,
-        /** World space */
-        WORLD = 1,
-        /** Bone space */
-        BONE = 2
-    }
-    /** Defines the 3 main axes */
-    export class Axis {
-        /** X axis */
-        static X: Vector3;
-        /** Y axis */
-        static Y: Vector3;
-        /** Z axis */
-        static Z: Vector3;
-    }
-    /** Class used to represent a Bezier curve */
-    export class BezierCurve {
-        /**
-         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the given x1, y1, x2, y2 floats
-         * @param t defines the time
-         * @param x1 defines the left coordinate on X axis
-         * @param y1 defines the left coordinate on Y axis
-         * @param x2 defines the right coordinate on X axis
-         * @param y2 defines the right coordinate on Y axis
-         * @returns the interpolated value
-         */
-        static Interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
-    }
-    /**
-     * Defines potential orientation for back face culling
-     */
-    export enum Orientation {
-        /**
-         * Clockwise
-         */
-        CW = 0,
-        /** Counter clockwise */
-        CCW = 1
-    }
-    /**
-     * Defines angle representation
-     */
-    export class Angle {
-        private _radians;
-        /**
-         * Creates an Angle object of "radians" radians (float).
-         * @param radians the angle in radians
-         */
-        constructor(radians: number);
-        /**
-         * Get value in degrees
-         * @returns the Angle value in degrees (float)
-         */
-        degrees(): number;
-        /**
-         * Get value in radians
-         * @returns the Angle value in radians (float)
-         */
-        radians(): number;
-        /**
-         * Gets a new Angle object valued with the angle value in radians between the two given vectors
-         * @param a defines first vector
-         * @param b defines second vector
-         * @returns a new Angle
-         */
-        static BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle;
-        /**
-         * Gets a new Angle object from the given float in radians
-         * @param radians defines the angle value in radians
-         * @returns a new Angle
-         */
-        static FromRadians(radians: number): Angle;
-        /**
-         * Gets a new Angle object from the given float in degrees
-         * @param degrees defines the angle value in degrees
-         * @returns a new Angle
-         */
-        static FromDegrees(degrees: number): Angle;
-    }
-    /**
-     * This represents an arc in a 2d space.
-     */
-    export class Arc2 {
-        /** Defines the start point of the arc */
-        startPoint: Vector2;
-        /** Defines the mid point of the arc */
-        midPoint: Vector2;
-        /** Defines the end point of the arc */
-        endPoint: Vector2;
-        /**
-         * Defines the center point of the arc.
-         */
-        centerPoint: Vector2;
-        /**
-         * Defines the radius of the arc.
-         */
-        radius: number;
-        /**
-         * Defines the angle of the arc (from mid point to end point).
-         */
-        angle: Angle;
-        /**
-         * Defines the start angle of the arc (from start point to middle point).
-         */
-        startAngle: Angle;
-        /**
-         * Defines the orientation of the arc (clock wise/counter clock wise).
-         */
-        orientation: Orientation;
-        /**
-         * Creates an Arc object from the three given points : start, middle and end.
-         * @param startPoint Defines the start point of the arc
-         * @param midPoint Defines the midlle point of the arc
-         * @param endPoint Defines the end point of the arc
-         */
-        constructor(
-        /** Defines the start point of the arc */
-        startPoint: Vector2, 
-        /** Defines the mid point of the arc */
-        midPoint: Vector2, 
-        /** Defines the end point of the arc */
-        endPoint: Vector2);
-    }
-    /**
-     * Represents a 2D path made up of multiple 2D points
-     */
-    export class Path2 {
-        private _points;
-        private _length;
-        /**
-         * If the path start and end point are the same
-         */
-        closed: boolean;
-        /**
-         * Creates a Path2 object from the starting 2D coordinates x and y.
-         * @param x the starting points x value
-         * @param y the starting points y value
-         */
-        constructor(x: number, y: number);
-        /**
-         * Adds a new segment until the given coordinates (x, y) to the current Path2.
-         * @param x the added points x value
-         * @param y the added points y value
-         * @returns the updated Path2.
-         */
-        addLineTo(x: number, y: number): Path2;
-        /**
-         * Adds _numberOfSegments_ segments according to the arc definition (middle point coordinates, end point coordinates, the arc start point being the current Path2 last point) to the current Path2.
-         * @param midX middle point x value
-         * @param midY middle point y value
-         * @param endX end point x value
-         * @param endY end point y value
-         * @param numberOfSegments (default: 36)
-         * @returns the updated Path2.
-         */
-        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
-        /**
-         * Closes the Path2.
-         * @returns the Path2.
-         */
-        close(): Path2;
-        /**
-         * Gets the sum of the distance between each sequential point in the path
-         * @returns the Path2 total length (float).
-         */
-        length(): number;
-        /**
-         * Gets the points which construct the path
-         * @returns the Path2 internal array of points.
-         */
-        getPoints(): Vector2[];
-        /**
-         * Retreives the point at the distance aways from the starting point
-         * @param normalizedLengthPosition the length along the path to retreive the point from
-         * @returns a new Vector2 located at a percentage of the Path2 total length on this path.
-         */
-        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
-        /**
-         * Creates a new path starting from an x and y position
-         * @param x starting x value
-         * @param y starting y value
-         * @returns a new Path2 starting at the coordinates (x, y).
-         */
-        static StartingAt(x: number, y: number): Path2;
-    }
-    /**
-     * Represents a 3D path made up of multiple 3D points
-     */
-    export class Path3D {
-        /**
-         * an array of Vector3, the curve axis of the Path3D
-         */
-        path: Vector3[];
-        private _curve;
-        private _distances;
-        private _tangents;
-        private _normals;
-        private _binormals;
-        private _raw;
-        /**
-        * new Path3D(path, normal, raw)
-        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
-        * please read the description in the tutorial : https://doc.babylonjs.com/how_to/how_to_use_path3d
-        * @param path an array of Vector3, the curve axis of the Path3D
-        * @param firstNormal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
-        * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
-        */
-        constructor(
-        /**
-         * an array of Vector3, the curve axis of the Path3D
-         */
-        path: Vector3[], firstNormal?: Nullable<Vector3>, raw?: boolean);
-        /**
-         * Returns the Path3D array of successive Vector3 designing its curve.
-         * @returns the Path3D array of successive Vector3 designing its curve.
-         */
-        getCurve(): Vector3[];
-        /**
-         * Returns an array populated with tangent vectors on each Path3D curve point.
-         * @returns an array populated with tangent vectors on each Path3D curve point.
-         */
-        getTangents(): Vector3[];
-        /**
-         * Returns an array populated with normal vectors on each Path3D curve point.
-         * @returns an array populated with normal vectors on each Path3D curve point.
-         */
-        getNormals(): Vector3[];
-        /**
-         * Returns an array populated with binormal vectors on each Path3D curve point.
-         * @returns an array populated with binormal vectors on each Path3D curve point.
-         */
-        getBinormals(): Vector3[];
-        /**
-         * Returns an array populated with distances (float) of the i-th point from the first curve point.
-         * @returns an array populated with distances (float) of the i-th point from the first curve point.
-         */
-        getDistances(): number[];
-        /**
-         * Forces the Path3D tangent, normal, binormal and distance recomputation.
-         * @param path path which all values are copied into the curves points
-         * @param firstNormal which should be projected onto the curve
-         * @returns the same object updated.
-         */
-        update(path: Vector3[], firstNormal?: Nullable<Vector3>): Path3D;
-        private _compute;
-        private _getFirstNonNullVector;
-        private _getLastNonNullVector;
-        private _normalVector;
-    }
-    /**
-     * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
-     * A Curve3 is designed from a series of successive Vector3.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_curve3
-     */
-    export class Curve3 {
-        private _points;
-        private _length;
-        /**
-         * Returns a Curve3 object along a Quadratic Bezier curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#quadratic-bezier-curve
-         * @param v0 (Vector3) the origin point of the Quadratic Bezier
-         * @param v1 (Vector3) the control point
-         * @param v2 (Vector3) the end point of the Quadratic Bezier
-         * @param nbPoints (integer) the wanted number of points in the curve
-         * @returns the created Curve3
-         */
-        static CreateQuadraticBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a Cubic Bezier curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#cubic-bezier-curve
-         * @param v0 (Vector3) the origin point of the Cubic Bezier
-         * @param v1 (Vector3) the first control point
-         * @param v2 (Vector3) the second control point
-         * @param v3 (Vector3) the end point of the Cubic Bezier
-         * @param nbPoints (integer) the wanted number of points in the curve
-         * @returns the created Curve3
-         */
-        static CreateCubicBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, v3: DeepImmutable<Vector3>, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a Hermite Spline curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#hermite-spline
-         * @param p1 (Vector3) the origin point of the Hermite Spline
-         * @param t1 (Vector3) the tangent vector at the origin point
-         * @param p2 (Vector3) the end point of the Hermite Spline
-         * @param t2 (Vector3) the tangent vector at the end point
-         * @param nbPoints (integer) the wanted number of points in the curve
-         * @returns the created Curve3
-         */
-        static CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a CatmullRom Spline curve :
-         * @param points (array of Vector3) the points the spline must pass through. At least, four points required
-         * @param nbPoints (integer) the wanted number of points between each curve control points
-         * @param closed (boolean) optional with default false, when true forms a closed loop from the points
-         * @returns the created Curve3
-         */
-        static CreateCatmullRomSpline(points: DeepImmutable<Vector3[]>, nbPoints: number, closed?: boolean): Curve3;
-        /**
-         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
-         * A Curve3 is designed from a series of successive Vector3.
-         * Tuto : https://doc.babylonjs.com/how_to/how_to_use_curve3#curve3-object
-         * @param points points which make up the curve
-         */
-        constructor(points: Vector3[]);
-        /**
-         * @returns the Curve3 stored array of successive Vector3
-         */
-        getPoints(): Vector3[];
-        /**
-         * @returns the computed length (float) of the curve.
-         */
-        length(): number;
-        /**
-         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
-         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
-         * curveA and curveB keep unchanged.
-         * @param curve the curve to continue from this curve
-         * @returns the newly constructed curve
-         */
-        continue(curve: DeepImmutable<Curve3>): Curve3;
-        private _computeLength;
-    }
-    /**
-     * Contains position and normal vectors for a vertex
-     */
-    export class PositionNormalVertex {
-        /** the position of the vertex (defaut: 0,0,0) */
-        position: Vector3;
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal: Vector3;
-        /**
-         * Creates a PositionNormalVertex
-         * @param position the position of the vertex (defaut: 0,0,0)
-         * @param normal the normal of the vertex (defaut: 0,1,0)
-         */
-        constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
-        position?: Vector3, 
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal?: Vector3);
-        /**
-         * Clones the PositionNormalVertex
-         * @returns the cloned PositionNormalVertex
-         */
-        clone(): PositionNormalVertex;
-    }
-    /**
-     * Contains position, normal and uv vectors for a vertex
-     */
-    export class PositionNormalTextureVertex {
-        /** the position of the vertex (defaut: 0,0,0) */
-        position: Vector3;
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal: Vector3;
-        /** the uv of the vertex (default: 0,0) */
-        uv: Vector2;
-        /**
-         * Creates a PositionNormalTextureVertex
-         * @param position the position of the vertex (defaut: 0,0,0)
-         * @param normal the normal of the vertex (defaut: 0,1,0)
-         * @param uv the uv of the vertex (default: 0,0)
-         */
-        constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
-        position?: Vector3, 
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal?: Vector3, 
-        /** the uv of the vertex (default: 0,0) */
-        uv?: Vector2);
-        /**
-         * Clones the PositionNormalTextureVertex
-         * @returns the cloned PositionNormalTextureVertex
-         */
-        clone(): PositionNormalTextureVertex;
-    }
-    /**
      * @hidden
      */
-    export class Tmp {
-        static Color3: Color3[];
-        static Color4: Color4[];
+    export class TmpVectors {
         static Vector2: Vector2[];
         static Vector3: Vector3[];
         static Vector4: Vector4[];
@@ -5947,61 +4785,588 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * @hidden
+     * Class used to hold a RBG color
      */
-    export interface IColor4Like {
-        r: float;
-        g: float;
-        b: float;
-        a: float;
+    export class Color3 {
+        /**
+         * Defines the red component (between 0 and 1, default is 0)
+         */
+        r: number;
+        /**
+         * Defines the green component (between 0 and 1, default is 0)
+         */
+        g: number;
+        /**
+         * Defines the blue component (between 0 and 1, default is 0)
+         */
+        b: number;
+        /**
+         * Creates a new Color3 object from red, green, blue values, all between 0 and 1
+         * @param r defines the red component (between 0 and 1, default is 0)
+         * @param g defines the green component (between 0 and 1, default is 0)
+         * @param b defines the blue component (between 0 and 1, default is 0)
+         */
+        constructor(
+        /**
+         * Defines the red component (between 0 and 1, default is 0)
+         */
+        r?: number, 
+        /**
+         * Defines the green component (between 0 and 1, default is 0)
+         */
+        g?: number, 
+        /**
+         * Defines the blue component (between 0 and 1, default is 0)
+         */
+        b?: number);
+        /**
+         * Creates a string with the Color3 current values
+         * @returns the string representation of the Color3 object
+         */
+        toString(): string;
+        /**
+         * Returns the string "Color3"
+         * @returns "Color3"
+         */
+        getClassName(): string;
+        /**
+         * Compute the Color3 hash code
+         * @returns an unique number that can be used to hash Color3 objects
+         */
+        getHashCode(): number;
+        /**
+         * Stores in the given array from the given starting index the red, green, blue values as successive elements
+         * @param array defines the array where to store the r,g,b components
+         * @param index defines an optional index in the target array to define where to start storing values
+         * @returns the current Color3 object
+         */
+        toArray(array: FloatArray, index?: number): Color3;
+        /**
+         * Returns a new Color4 object from the current Color3 and the given alpha
+         * @param alpha defines the alpha component on the new Color4 object (default is 1)
+         * @returns a new Color4 object
+         */
+        toColor4(alpha?: number): Color4;
+        /**
+         * Returns a new array populated with 3 numeric elements : red, green and blue values
+         * @returns the new array
+         */
+        asArray(): number[];
+        /**
+         * Returns the luminance value
+         * @returns a float value
+         */
+        toLuminance(): number;
+        /**
+         * Multiply each Color3 rgb values by the given Color3 rgb values in a new Color3 object
+         * @param otherColor defines the second operand
+         * @returns the new Color3 object
+         */
+        multiply(otherColor: DeepImmutable<Color3>): Color3;
+        /**
+         * Multiply the rgb values of the Color3 and the given Color3 and stores the result in the object "result"
+         * @param otherColor defines the second operand
+         * @param result defines the Color3 object where to store the result
+         * @returns the current Color3
+         */
+        multiplyToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3;
+        /**
+         * Determines equality between Color3 objects
+         * @param otherColor defines the second operand
+         * @returns true if the rgb values are equal to the given ones
+         */
+        equals(otherColor: DeepImmutable<Color3>): boolean;
+        /**
+         * Determines equality between the current Color3 object and a set of r,b,g values
+         * @param r defines the red component to check
+         * @param g defines the green component to check
+         * @param b defines the blue component to check
+         * @returns true if the rgb values are equal to the given ones
+         */
+        equalsFloats(r: number, g: number, b: number): boolean;
+        /**
+         * Multiplies in place each rgb value by scale
+         * @param scale defines the scaling factor
+         * @returns the updated Color3
+         */
+        scale(scale: number): Color3;
+        /**
+         * Multiplies the rgb values by scale and stores the result into "result"
+         * @param scale defines the scaling factor
+         * @param result defines the Color3 object where to store the result
+         * @returns the unmodified current Color3
+         */
+        scaleToRef(scale: number, result: Color3): Color3;
+        /**
+         * Scale the current Color3 values by a factor and add the result to a given Color3
+         * @param scale defines the scale factor
+         * @param result defines color to store the result into
+         * @returns the unmodified current Color3
+         */
+        scaleAndAddToRef(scale: number, result: Color3): Color3;
+        /**
+         * Clamps the rgb values by the min and max values and stores the result into "result"
+         * @param min defines minimum clamping value (default is 0)
+         * @param max defines maximum clamping value (default is 1)
+         * @param result defines color to store the result into
+         * @returns the original Color3
+         */
+        clampToRef(min: number | undefined, max: number | undefined, result: Color3): Color3;
+        /**
+         * Creates a new Color3 set with the added values of the current Color3 and of the given one
+         * @param otherColor defines the second operand
+         * @returns the new Color3
+         */
+        add(otherColor: DeepImmutable<Color3>): Color3;
+        /**
+         * Stores the result of the addition of the current Color3 and given one rgb values into "result"
+         * @param otherColor defines the second operand
+         * @param result defines Color3 object to store the result into
+         * @returns the unmodified current Color3
+         */
+        addToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3;
+        /**
+         * Returns a new Color3 set with the subtracted values of the given one from the current Color3
+         * @param otherColor defines the second operand
+         * @returns the new Color3
+         */
+        subtract(otherColor: DeepImmutable<Color3>): Color3;
+        /**
+         * Stores the result of the subtraction of given one from the current Color3 rgb values into "result"
+         * @param otherColor defines the second operand
+         * @param result defines Color3 object to store the result into
+         * @returns the unmodified current Color3
+         */
+        subtractToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3;
+        /**
+         * Copy the current object
+         * @returns a new Color3 copied the current one
+         */
+        clone(): Color3;
+        /**
+         * Copies the rgb values from the source in the current Color3
+         * @param source defines the source Color3 object
+         * @returns the updated Color3 object
+         */
+        copyFrom(source: DeepImmutable<Color3>): Color3;
+        /**
+         * Updates the Color3 rgb values from the given floats
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @returns the current Color3 object
+         */
+        copyFromFloats(r: number, g: number, b: number): Color3;
+        /**
+         * Updates the Color3 rgb values from the given floats
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @returns the current Color3 object
+         */
+        set(r: number, g: number, b: number): Color3;
+        /**
+         * Compute the Color3 hexadecimal code as a string
+         * @returns a string containing the hexadecimal representation of the Color3 object
+         */
+        toHexString(): string;
+        /**
+         * Computes a new Color3 converted from the current one to linear space
+         * @returns a new Color3 object
+         */
+        toLinearSpace(): Color3;
+        /**
+         * Converts current color in rgb space to HSV values
+         * @returns a new color3 representing the HSV values
+         */
+        toHSV(): Color3;
+        /**
+         * Converts current color in rgb space to HSV values
+         * @param result defines the Color3 where to store the HSV values
+         */
+        toHSVToRef(result: Color3): void;
+        /**
+         * Converts the Color3 values to linear space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color3 object where to store the linear space version
+         * @returns the unmodified Color3
+         */
+        toLinearSpaceToRef(convertedColor: Color3): Color3;
+        /**
+         * Computes a new Color3 converted from the current one to gamma space
+         * @returns a new Color3 object
+         */
+        toGammaSpace(): Color3;
+        /**
+         * Converts the Color3 values to gamma space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color3 object where to store the gamma space version
+         * @returns the unmodified Color3
+         */
+        toGammaSpaceToRef(convertedColor: Color3): Color3;
+        private static _BlackReadOnly;
+        /**
+         * Convert Hue, saturation and value to a Color3 (RGB)
+         * @param hue defines the hue
+         * @param saturation defines the saturation
+         * @param value defines the value
+         * @param result defines the Color3 where to store the RGB values
+         */
+        static HSVtoRGBToRef(hue: number, saturation: number, value: number, result: Color3): void;
+        /**
+         * Creates a new Color3 from the string containing valid hexadecimal values
+         * @param hex defines a string containing valid hexadecimal values
+         * @returns a new Color3 object
+         */
+        static FromHexString(hex: string): Color3;
+        /**
+         * Creates a new Color3 from the starting index of the given array
+         * @param array defines the source array
+         * @param offset defines an offset in the source array
+         * @returns a new Color3 object
+         */
+        static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Color3;
+        /**
+         * Creates a new Color3 from integer values (< 256)
+         * @param r defines the red component to read from (value between 0 and 255)
+         * @param g defines the green component to read from (value between 0 and 255)
+         * @param b defines the blue component to read from (value between 0 and 255)
+         * @returns a new Color3 object
+         */
+        static FromInts(r: number, g: number, b: number): Color3;
+        /**
+         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3
+         * @param start defines the start Color3 value
+         * @param end defines the end Color3 value
+         * @param amount defines the gradient value between start and end
+         * @returns a new Color3 object
+         */
+        static Lerp(start: DeepImmutable<Color3>, end: DeepImmutable<Color3>, amount: number): Color3;
+        /**
+         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3
+         * @param left defines the start value
+         * @param right defines the end value
+         * @param amount defines the gradient factor
+         * @param result defines the Color3 object where to store the result
+         */
+        static LerpToRef(left: DeepImmutable<Color3>, right: DeepImmutable<Color3>, amount: number, result: Color3): void;
+        /**
+         * Returns a Color3 value containing a red color
+         * @returns a new Color3 object
+         */
+        static Red(): Color3;
+        /**
+         * Returns a Color3 value containing a green color
+         * @returns a new Color3 object
+         */
+        static Green(): Color3;
+        /**
+         * Returns a Color3 value containing a blue color
+         * @returns a new Color3 object
+         */
+        static Blue(): Color3;
+        /**
+         * Returns a Color3 value containing a black color
+         * @returns a new Color3 object
+         */
+        static Black(): Color3;
+        /**
+          * Gets a Color3 value containing a black color that must not be updated
+          */
+        static readonly BlackReadOnly: DeepImmutable<Color3>;
+        /**
+         * Returns a Color3 value containing a white color
+         * @returns a new Color3 object
+         */
+        static White(): Color3;
+        /**
+         * Returns a Color3 value containing a purple color
+         * @returns a new Color3 object
+         */
+        static Purple(): Color3;
+        /**
+         * Returns a Color3 value containing a magenta color
+         * @returns a new Color3 object
+         */
+        static Magenta(): Color3;
+        /**
+         * Returns a Color3 value containing a yellow color
+         * @returns a new Color3 object
+         */
+        static Yellow(): Color3;
+        /**
+         * Returns a Color3 value containing a gray color
+         * @returns a new Color3 object
+         */
+        static Gray(): Color3;
+        /**
+         * Returns a Color3 value containing a teal color
+         * @returns a new Color3 object
+         */
+        static Teal(): Color3;
+        /**
+         * Returns a Color3 value containing a random color
+         * @returns a new Color3 object
+         */
+        static Random(): Color3;
+    }
+    /**
+     * Class used to hold a RBGA color
+     */
+    export class Color4 {
+        /**
+         * Defines the red component (between 0 and 1, default is 0)
+         */
+        r: number;
+        /**
+         * Defines the green component (between 0 and 1, default is 0)
+         */
+        g: number;
+        /**
+         * Defines the blue component (between 0 and 1, default is 0)
+         */
+        b: number;
+        /**
+         * Defines the alpha component (between 0 and 1, default is 1)
+         */
+        a: number;
+        /**
+         * Creates a new Color4 object from red, green, blue values, all between 0 and 1
+         * @param r defines the red component (between 0 and 1, default is 0)
+         * @param g defines the green component (between 0 and 1, default is 0)
+         * @param b defines the blue component (between 0 and 1, default is 0)
+         * @param a defines the alpha component (between 0 and 1, default is 1)
+         */
+        constructor(
+        /**
+         * Defines the red component (between 0 and 1, default is 0)
+         */
+        r?: number, 
+        /**
+         * Defines the green component (between 0 and 1, default is 0)
+         */
+        g?: number, 
+        /**
+         * Defines the blue component (between 0 and 1, default is 0)
+         */
+        b?: number, 
+        /**
+         * Defines the alpha component (between 0 and 1, default is 1)
+         */
+        a?: number);
+        /**
+         * Adds in place the given Color4 values to the current Color4 object
+         * @param right defines the second operand
+         * @returns the current updated Color4 object
+         */
+        addInPlace(right: DeepImmutable<Color4>): Color4;
+        /**
+         * Creates a new array populated with 4 numeric elements : red, green, blue, alpha values
+         * @returns the new array
+         */
+        asArray(): number[];
+        /**
+         * Stores from the starting index in the given array the Color4 successive values
+         * @param array defines the array where to store the r,g,b components
+         * @param index defines an optional index in the target array to define where to start storing values
+         * @returns the current Color4 object
+         */
+        toArray(array: number[], index?: number): Color4;
+        /**
+         * Determines equality between Color4 objects
+         * @param otherColor defines the second operand
+         * @returns true if the rgba values are equal to the given ones
+         */
+        equals(otherColor: DeepImmutable<Color4>): boolean;
+        /**
+         * Creates a new Color4 set with the added values of the current Color4 and of the given one
+         * @param right defines the second operand
+         * @returns a new Color4 object
+         */
+        add(right: DeepImmutable<Color4>): Color4;
+        /**
+         * Creates a new Color4 set with the subtracted values of the given one from the current Color4
+         * @param right defines the second operand
+         * @returns a new Color4 object
+         */
+        subtract(right: DeepImmutable<Color4>): Color4;
+        /**
+         * Subtracts the given ones from the current Color4 values and stores the results in "result"
+         * @param right defines the second operand
+         * @param result defines the Color4 object where to store the result
+         * @returns the current Color4 object
+         */
+        subtractToRef(right: DeepImmutable<Color4>, result: Color4): Color4;
+        /**
+         * Creates a new Color4 with the current Color4 values multiplied by scale
+         * @param scale defines the scaling factor to apply
+         * @returns a new Color4 object
+         */
+        scale(scale: number): Color4;
+        /**
+         * Multiplies the current Color4 values by scale and stores the result in "result"
+         * @param scale defines the scaling factor to apply
+         * @param result defines the Color4 object where to store the result
+         * @returns the current unmodified Color4
+         */
+        scaleToRef(scale: number, result: Color4): Color4;
+        /**
+         * Scale the current Color4 values by a factor and add the result to a given Color4
+         * @param scale defines the scale factor
+         * @param result defines the Color4 object where to store the result
+         * @returns the unmodified current Color4
+         */
+        scaleAndAddToRef(scale: number, result: Color4): Color4;
+        /**
+         * Clamps the rgb values by the min and max values and stores the result into "result"
+         * @param min defines minimum clamping value (default is 0)
+         * @param max defines maximum clamping value (default is 1)
+         * @param result defines color to store the result into.
+         * @returns the cuurent Color4
+         */
+        clampToRef(min: number | undefined, max: number | undefined, result: Color4): Color4;
+        /**
+          * Multipy an Color4 value by another and return a new Color4 object
+          * @param color defines the Color4 value to multiply by
+          * @returns a new Color4 object
+          */
+        multiply(color: Color4): Color4;
+        /**
+         * Multipy a Color4 value by another and push the result in a reference value
+         * @param color defines the Color4 value to multiply by
+         * @param result defines the Color4 to fill the result in
+         * @returns the result Color4
+         */
+        multiplyToRef(color: Color4, result: Color4): Color4;
+        /**
+         * Creates a string with the Color4 current values
+         * @returns the string representation of the Color4 object
+         */
+        toString(): string;
+        /**
+         * Returns the string "Color4"
+         * @returns "Color4"
+         */
+        getClassName(): string;
+        /**
+         * Compute the Color4 hash code
+         * @returns an unique number that can be used to hash Color4 objects
+         */
+        getHashCode(): number;
+        /**
+         * Creates a new Color4 copied from the current one
+         * @returns a new Color4 object
+         */
+        clone(): Color4;
+        /**
+         * Copies the given Color4 values into the current one
+         * @param source defines the source Color4 object
+         * @returns the current updated Color4 object
+         */
+        copyFrom(source: Color4): Color4;
+        /**
+         * Copies the given float values into the current one
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @param a defines the alpha component to read from
+         * @returns the current updated Color4 object
+         */
+        copyFromFloats(r: number, g: number, b: number, a: number): Color4;
+        /**
+         * Copies the given float values into the current one
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @param a defines the alpha component to read from
+         * @returns the current updated Color4 object
+         */
+        set(r: number, g: number, b: number, a: number): Color4;
+        /**
+         * Compute the Color4 hexadecimal code as a string
+         * @returns a string containing the hexadecimal representation of the Color4 object
+         */
+        toHexString(): string;
+        /**
+         * Computes a new Color4 converted from the current one to linear space
+         * @returns a new Color4 object
+         */
+        toLinearSpace(): Color4;
+        /**
+         * Converts the Color4 values to linear space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color4 object where to store the linear space version
+         * @returns the unmodified Color4
+         */
+        toLinearSpaceToRef(convertedColor: Color4): Color4;
+        /**
+         * Computes a new Color4 converted from the current one to gamma space
+         * @returns a new Color4 object
+         */
+        toGammaSpace(): Color4;
+        /**
+         * Converts the Color4 values to gamma space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color4 object where to store the gamma space version
+         * @returns the unmodified Color4
+         */
+        toGammaSpaceToRef(convertedColor: Color4): Color4;
+        /**
+         * Creates a new Color4 from the string containing valid hexadecimal values
+         * @param hex defines a string containing valid hexadecimal values
+         * @returns a new Color4 object
+         */
+        static FromHexString(hex: string): Color4;
+        /**
+         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
+         * @param left defines the start value
+         * @param right defines the end value
+         * @param amount defines the gradient factor
+         * @returns a new Color4 object
+         */
+        static Lerp(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number): Color4;
+        /**
+         * Set the given "result" with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
+         * @param left defines the start value
+         * @param right defines the end value
+         * @param amount defines the gradient factor
+         * @param result defines the Color4 object where to store data
+         */
+        static LerpToRef(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number, result: Color4): void;
+        /**
+         * Creates a new Color4 from a Color3 and an alpha value
+         * @param color3 defines the source Color3 to read from
+         * @param alpha defines the alpha component (1.0 by default)
+         * @returns a new Color4 object
+         */
+        static FromColor3(color3: DeepImmutable<Color3>, alpha?: number): Color4;
+        /**
+         * Creates a new Color4 from the starting index element of the given array
+         * @param array defines the source array to read from
+         * @param offset defines the offset in the source array
+         * @returns a new Color4 object
+         */
+        static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Color4;
+        /**
+         * Creates a new Color3 from integer values (< 256)
+         * @param r defines the red component to read from (value between 0 and 255)
+         * @param g defines the green component to read from (value between 0 and 255)
+         * @param b defines the blue component to read from (value between 0 and 255)
+         * @param a defines the alpha component to read from (value between 0 and 255)
+         * @returns a new Color3 object
+         */
+        static FromInts(r: number, g: number, b: number, a: number): Color4;
+        /**
+         * Check the content of a given array and convert it to an array containing RGBA data
+         * If the original array was already containing count * 4 values then it is returned directly
+         * @param colors defines the array to check
+         * @param count defines the number of RGBA data to expect
+         * @returns an array containing count * 4 values (RGBA)
+         */
+        static CheckColors4(colors: number[], count: number): number[];
     }
     /**
      * @hidden
      */
-    export interface IColor3Like {
-        r: float;
-        g: float;
-        b: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IVector4Like {
-        x: float;
-        y: float;
-        z: float;
-        w: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IVector3Like {
-        x: float;
-        y: float;
-        z: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IVector2Like {
-        x: float;
-        y: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IMatrixLike {
-        toArray(): DeepImmutable<Float32Array>;
-        updateFlag: int;
-    }
-    /**
-     * @hidden
-     */
-    export interface IViewportLike {
-        x: float;
-        y: float;
-        width: float;
-        height: float;
+    export class TmpColors {
+        static Color3: Color3[];
+        static Color4: Color4[];
     }
 }
 declare module BABYLON {
@@ -6375,6 +5740,312 @@ declare module BABYLON {
          * @returns a boolean
          */
         static MatchesQuery(obj: any, tagsQuery: string): boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines potential orientation for back face culling
+     */
+    export enum Orientation {
+        /**
+         * Clockwise
+         */
+        CW = 0,
+        /** Counter clockwise */
+        CCW = 1
+    }
+    /** Class used to represent a Bezier curve */
+    export class BezierCurve {
+        /**
+         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the given x1, y1, x2, y2 floats
+         * @param t defines the time
+         * @param x1 defines the left coordinate on X axis
+         * @param y1 defines the left coordinate on Y axis
+         * @param x2 defines the right coordinate on X axis
+         * @param y2 defines the right coordinate on Y axis
+         * @returns the interpolated value
+         */
+        static Interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
+    }
+    /**
+     * Defines angle representation
+     */
+    export class Angle {
+        private _radians;
+        /**
+         * Creates an Angle object of "radians" radians (float).
+         * @param radians the angle in radians
+         */
+        constructor(radians: number);
+        /**
+         * Get value in degrees
+         * @returns the Angle value in degrees (float)
+         */
+        degrees(): number;
+        /**
+         * Get value in radians
+         * @returns the Angle value in radians (float)
+         */
+        radians(): number;
+        /**
+         * Gets a new Angle object valued with the angle value in radians between the two given vectors
+         * @param a defines first vector
+         * @param b defines second vector
+         * @returns a new Angle
+         */
+        static BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle;
+        /**
+         * Gets a new Angle object from the given float in radians
+         * @param radians defines the angle value in radians
+         * @returns a new Angle
+         */
+        static FromRadians(radians: number): Angle;
+        /**
+         * Gets a new Angle object from the given float in degrees
+         * @param degrees defines the angle value in degrees
+         * @returns a new Angle
+         */
+        static FromDegrees(degrees: number): Angle;
+    }
+    /**
+     * This represents an arc in a 2d space.
+     */
+    export class Arc2 {
+        /** Defines the start point of the arc */
+        startPoint: Vector2;
+        /** Defines the mid point of the arc */
+        midPoint: Vector2;
+        /** Defines the end point of the arc */
+        endPoint: Vector2;
+        /**
+         * Defines the center point of the arc.
+         */
+        centerPoint: Vector2;
+        /**
+         * Defines the radius of the arc.
+         */
+        radius: number;
+        /**
+         * Defines the angle of the arc (from mid point to end point).
+         */
+        angle: Angle;
+        /**
+         * Defines the start angle of the arc (from start point to middle point).
+         */
+        startAngle: Angle;
+        /**
+         * Defines the orientation of the arc (clock wise/counter clock wise).
+         */
+        orientation: Orientation;
+        /**
+         * Creates an Arc object from the three given points : start, middle and end.
+         * @param startPoint Defines the start point of the arc
+         * @param midPoint Defines the midlle point of the arc
+         * @param endPoint Defines the end point of the arc
+         */
+        constructor(
+        /** Defines the start point of the arc */
+        startPoint: Vector2, 
+        /** Defines the mid point of the arc */
+        midPoint: Vector2, 
+        /** Defines the end point of the arc */
+        endPoint: Vector2);
+    }
+    /**
+     * Represents a 2D path made up of multiple 2D points
+     */
+    export class Path2 {
+        private _points;
+        private _length;
+        /**
+         * If the path start and end point are the same
+         */
+        closed: boolean;
+        /**
+         * Creates a Path2 object from the starting 2D coordinates x and y.
+         * @param x the starting points x value
+         * @param y the starting points y value
+         */
+        constructor(x: number, y: number);
+        /**
+         * Adds a new segment until the given coordinates (x, y) to the current Path2.
+         * @param x the added points x value
+         * @param y the added points y value
+         * @returns the updated Path2.
+         */
+        addLineTo(x: number, y: number): Path2;
+        /**
+         * Adds _numberOfSegments_ segments according to the arc definition (middle point coordinates, end point coordinates, the arc start point being the current Path2 last point) to the current Path2.
+         * @param midX middle point x value
+         * @param midY middle point y value
+         * @param endX end point x value
+         * @param endY end point y value
+         * @param numberOfSegments (default: 36)
+         * @returns the updated Path2.
+         */
+        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
+        /**
+         * Closes the Path2.
+         * @returns the Path2.
+         */
+        close(): Path2;
+        /**
+         * Gets the sum of the distance between each sequential point in the path
+         * @returns the Path2 total length (float).
+         */
+        length(): number;
+        /**
+         * Gets the points which construct the path
+         * @returns the Path2 internal array of points.
+         */
+        getPoints(): Vector2[];
+        /**
+         * Retreives the point at the distance aways from the starting point
+         * @param normalizedLengthPosition the length along the path to retreive the point from
+         * @returns a new Vector2 located at a percentage of the Path2 total length on this path.
+         */
+        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
+        /**
+         * Creates a new path starting from an x and y position
+         * @param x starting x value
+         * @param y starting y value
+         * @returns a new Path2 starting at the coordinates (x, y).
+         */
+        static StartingAt(x: number, y: number): Path2;
+    }
+    /**
+     * Represents a 3D path made up of multiple 3D points
+     */
+    export class Path3D {
+        /**
+         * an array of Vector3, the curve axis of the Path3D
+         */
+        path: Vector3[];
+        private _curve;
+        private _distances;
+        private _tangents;
+        private _normals;
+        private _binormals;
+        private _raw;
+        /**
+        * new Path3D(path, normal, raw)
+        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
+        * please read the description in the tutorial : https://doc.babylonjs.com/how_to/how_to_use_path3d
+        * @param path an array of Vector3, the curve axis of the Path3D
+        * @param firstNormal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+        * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
+        */
+        constructor(
+        /**
+         * an array of Vector3, the curve axis of the Path3D
+         */
+        path: Vector3[], firstNormal?: Nullable<Vector3>, raw?: boolean);
+        /**
+         * Returns the Path3D array of successive Vector3 designing its curve.
+         * @returns the Path3D array of successive Vector3 designing its curve.
+         */
+        getCurve(): Vector3[];
+        /**
+         * Returns an array populated with tangent vectors on each Path3D curve point.
+         * @returns an array populated with tangent vectors on each Path3D curve point.
+         */
+        getTangents(): Vector3[];
+        /**
+         * Returns an array populated with normal vectors on each Path3D curve point.
+         * @returns an array populated with normal vectors on each Path3D curve point.
+         */
+        getNormals(): Vector3[];
+        /**
+         * Returns an array populated with binormal vectors on each Path3D curve point.
+         * @returns an array populated with binormal vectors on each Path3D curve point.
+         */
+        getBinormals(): Vector3[];
+        /**
+         * Returns an array populated with distances (float) of the i-th point from the first curve point.
+         * @returns an array populated with distances (float) of the i-th point from the first curve point.
+         */
+        getDistances(): number[];
+        /**
+         * Forces the Path3D tangent, normal, binormal and distance recomputation.
+         * @param path path which all values are copied into the curves points
+         * @param firstNormal which should be projected onto the curve
+         * @returns the same object updated.
+         */
+        update(path: Vector3[], firstNormal?: Nullable<Vector3>): Path3D;
+        private _compute;
+        private _getFirstNonNullVector;
+        private _getLastNonNullVector;
+        private _normalVector;
+    }
+    /**
+     * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
+     * A Curve3 is designed from a series of successive Vector3.
+     * @see https://doc.babylonjs.com/how_to/how_to_use_curve3
+     */
+    export class Curve3 {
+        private _points;
+        private _length;
+        /**
+         * Returns a Curve3 object along a Quadratic Bezier curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#quadratic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Quadratic Bezier
+         * @param v1 (Vector3) the control point
+         * @param v2 (Vector3) the end point of the Quadratic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         * @returns the created Curve3
+         */
+        static CreateQuadraticBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a Cubic Bezier curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#cubic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Cubic Bezier
+         * @param v1 (Vector3) the first control point
+         * @param v2 (Vector3) the second control point
+         * @param v3 (Vector3) the end point of the Cubic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         * @returns the created Curve3
+         */
+        static CreateCubicBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, v3: DeepImmutable<Vector3>, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a Hermite Spline curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#hermite-spline
+         * @param p1 (Vector3) the origin point of the Hermite Spline
+         * @param t1 (Vector3) the tangent vector at the origin point
+         * @param p2 (Vector3) the end point of the Hermite Spline
+         * @param t2 (Vector3) the tangent vector at the end point
+         * @param nbPoints (integer) the wanted number of points in the curve
+         * @returns the created Curve3
+         */
+        static CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a CatmullRom Spline curve :
+         * @param points (array of Vector3) the points the spline must pass through. At least, four points required
+         * @param nbPoints (integer) the wanted number of points between each curve control points
+         * @param closed (boolean) optional with default false, when true forms a closed loop from the points
+         * @returns the created Curve3
+         */
+        static CreateCatmullRomSpline(points: DeepImmutable<Vector3[]>, nbPoints: number, closed?: boolean): Curve3;
+        /**
+         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
+         * A Curve3 is designed from a series of successive Vector3.
+         * Tuto : https://doc.babylonjs.com/how_to/how_to_use_curve3#curve3-object
+         * @param points points which make up the curve
+         */
+        constructor(points: Vector3[]);
+        /**
+         * @returns the Curve3 stored array of successive Vector3
+         */
+        getPoints(): Vector3[];
+        /**
+         * @returns the computed length (float) of the curve.
+         */
+        length(): number;
+        /**
+         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
+         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
+         * curveA and curveB keep unchanged.
+         * @param curve the curve to continue from this curve
+         * @returns the newly constructed curve
+         */
+        continue(curve: DeepImmutable<Curve3>): Curve3;
+        private _computeLength;
     }
 }
 declare module BABYLON {
@@ -7038,6 +6709,114 @@ declare module BABYLON {
         faceId: number;
         subMeshId: number;
         constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
+    }
+}
+declare module BABYLON {
+    /**
+     * Represens a plane by the equation ax + by + cz + d = 0
+     */
+    export class Plane {
+        private static _TmpMatrix;
+        /**
+         * Normal of the plane (a,b,c)
+         */
+        normal: Vector3;
+        /**
+         * d component of the plane
+         */
+        d: number;
+        /**
+         * Creates a Plane object according to the given floats a, b, c, d and the plane equation : ax + by + cz + d = 0
+         * @param a a component of the plane
+         * @param b b component of the plane
+         * @param c c component of the plane
+         * @param d d component of the plane
+         */
+        constructor(a: number, b: number, c: number, d: number);
+        /**
+         * @returns the plane coordinates as a new array of 4 elements [a, b, c, d].
+         */
+        asArray(): number[];
+        /**
+         * @returns a new plane copied from the current Plane.
+         */
+        clone(): Plane;
+        /**
+         * @returns the string "Plane".
+         */
+        getClassName(): string;
+        /**
+         * @returns the Plane hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Normalize the current Plane in place.
+         * @returns the updated Plane.
+         */
+        normalize(): Plane;
+        /**
+         * Applies a transformation the plane and returns the result
+         * @param transformation the transformation matrix to be applied to the plane
+         * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.
+         */
+        transform(transformation: DeepImmutable<Matrix>): Plane;
+        /**
+         * Calcualtte the dot product between the point and the plane normal
+         * @param point point to calculate the dot product with
+         * @returns the dot product (float) of the point coordinates and the plane normal.
+         */
+        dotCoordinate(point: DeepImmutable<Vector3>): number;
+        /**
+         * Updates the current Plane from the plane defined by the three given points.
+         * @param point1 one of the points used to contruct the plane
+         * @param point2 one of the points used to contruct the plane
+         * @param point3 one of the points used to contruct the plane
+         * @returns the updated Plane.
+         */
+        copyFromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
+        /**
+         * Checks if the plane is facing a given direction
+         * @param direction the direction to check if the plane is facing
+         * @param epsilon value the dot product is compared against (returns true if dot <= epsilon)
+         * @returns True is the vector "direction"  is the same side than the plane normal.
+         */
+        isFrontFacingTo(direction: DeepImmutable<Vector3>, epsilon: number): boolean;
+        /**
+         * Calculates the distance to a point
+         * @param point point to calculate distance to
+         * @returns the signed distance (float) from the given point to the Plane.
+         */
+        signedDistanceTo(point: DeepImmutable<Vector3>): number;
+        /**
+         * Creates a plane from an  array
+         * @param array the array to create a plane from
+         * @returns a new Plane from the given array.
+         */
+        static FromArray(array: DeepImmutable<ArrayLike<number>>): Plane;
+        /**
+         * Creates a plane from three points
+         * @param point1 point used to create the plane
+         * @param point2 point used to create the plane
+         * @param point3 point used to create the plane
+         * @returns a new Plane defined by the three given points.
+         */
+        static FromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
+        /**
+         * Creates a plane from an origin point and a normal
+         * @param origin origin of the plane to be constructed
+         * @param normal normal of the plane to be constructed
+         * @returns a new Plane the normal vector to this plane at the given origin point.
+         * Note : the vector "normal" is updated because normalized.
+         */
+        static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Plane;
+        /**
+         * Calculates the distance from a plane and a point
+         * @param origin origin of the plane to be constructed
+         * @param normal normal of the plane to be constructed
+         * @param point point to calculate distance to
+         * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
+         */
+        static SignedDistanceToPlaneFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, point: DeepImmutable<Vector3>): number;
     }
 }
 declare module BABYLON {
@@ -8434,6 +8213,26 @@ declare module BABYLON {
         name: string;
         shader: string;
     };
+}
+declare module BABYLON {
+    /** Defines supported spaces */
+    export enum Space {
+        /** Local (object) space */
+        LOCAL = 0,
+        /** World space */
+        WORLD = 1,
+        /** Bone space */
+        BONE = 2
+    }
+    /** Defines the 3 main axes */
+    export class Axis {
+        /** X axis */
+        static X: Vector3;
+        /** Y axis */
+        static Y: Vector3;
+        /** Z axis */
+        static Z: Vector3;
+    }
 }
 declare module BABYLON {
     /**
@@ -12633,6 +12432,121 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Interface for the size containing width and height
+     */
+    export interface ISize {
+        /**
+         * Width
+         */
+        width: number;
+        /**
+         * Heighht
+         */
+        height: number;
+    }
+    /**
+     * Size containing widht and height
+     */
+    export class Size implements ISize {
+        /**
+         * Width
+         */
+        width: number;
+        /**
+         * Height
+         */
+        height: number;
+        /**
+         * Creates a Size object from the given width and height (floats).
+         * @param width width of the new size
+         * @param height height of the new size
+         */
+        constructor(width: number, height: number);
+        /**
+         * Returns a string with the Size width and height
+         * @returns a string with the Size width and height
+         */
+        toString(): string;
+        /**
+         * "Size"
+         * @returns the string "Size"
+         */
+        getClassName(): string;
+        /**
+         * Returns the Size hash code.
+         * @returns a hash code for a unique width and height
+         */
+        getHashCode(): number;
+        /**
+         * Updates the current size from the given one.
+         * @param src the given size
+         */
+        copyFrom(src: Size): void;
+        /**
+         * Updates in place the current Size from the given floats.
+         * @param width width of the new size
+         * @param height height of the new size
+         * @returns the updated Size.
+         */
+        copyFromFloats(width: number, height: number): Size;
+        /**
+         * Updates in place the current Size from the given floats.
+         * @param width width to set
+         * @param height height to set
+         * @returns the updated Size.
+         */
+        set(width: number, height: number): Size;
+        /**
+         * Multiplies the width and height by numbers
+         * @param w factor to multiple the width by
+         * @param h factor to multiple the height by
+         * @returns a new Size set with the multiplication result of the current Size and the given floats.
+         */
+        multiplyByFloats(w: number, h: number): Size;
+        /**
+         * Clones the size
+         * @returns a new Size copied from the given one.
+         */
+        clone(): Size;
+        /**
+         * True if the current Size and the given one width and height are strictly equal.
+         * @param other the other size to compare against
+         * @returns True if the current Size and the given one width and height are strictly equal.
+         */
+        equals(other: Size): boolean;
+        /**
+         * The surface of the Size : width * height (float).
+         */
+        readonly surface: number;
+        /**
+         * Create a new size of zero
+         * @returns a new Size set to (0.0, 0.0)
+         */
+        static Zero(): Size;
+        /**
+         * Sums the width and height of two sizes
+         * @param otherSize size to add to this size
+         * @returns a new Size set as the addition result of the current Size and the given one.
+         */
+        add(otherSize: Size): Size;
+        /**
+         * Subtracts the width and height of two
+         * @param otherSize size to subtract to this size
+         * @returns a new Size set as the subtraction result of  the given one from the current Size.
+         */
+        subtract(otherSize: Size): Size;
+        /**
+         * Creates a new Size set at the linear interpolation "amount" between "start" and "end"
+         * @param start starting size to lerp between
+         * @param end end size to lerp between
+         * @param amount amount to lerp between the start and end values
+         * @returns a new Size set at the linear interpolation "amount" between "start" and "end"
+         */
+        static Lerp(start: Size, end: Size, amount: number): Size;
+    }
+}
+declare module BABYLON {
+    /**
      * Defines a runtime animation
      */
     export class RuntimeAnimation {
@@ -14538,6 +14452,61 @@ declare module BABYLON {
          * @returns the view count
          */
         getViewCount(): number;
+    }
+}
+declare module BABYLON {
+    /**
+     * Reprasents a camera frustum
+     */
+    export class Frustum {
+        /**
+         * Gets the planes representing the frustum
+         * @param transform matrix to be applied to the returned planes
+         * @returns a new array of 6 Frustum planes computed by the given transformation matrix.
+         */
+        static GetPlanes(transform: DeepImmutable<Matrix>): Plane[];
+        /**
+         * Gets the near frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetNearPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Gets the far frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetFarPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Gets the left frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetLeftPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Gets the right frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetRightPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Gets the top frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetTopPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Gets the bottom frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetBottomPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Sets the given array "frustumPlanes" with the 6 Frustum planes computed by the given transformation matrix.
+         * @param transform transformation matrix to be applied to the resulting frustum planes
+         * @param frustumPlanes the resuling frustum planes
+         */
+        static GetPlanesToRef(transform: DeepImmutable<Matrix>, frustumPlanes: Plane[]): void;
     }
 }
 declare module BABYLON {
@@ -52793,6 +52762,61 @@ declare module BABYLON {
         * Disposes of the effect wrapper
         */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Contains position and normal vectors for a vertex
+     */
+    export class PositionNormalVertex {
+        /** the position of the vertex (defaut: 0,0,0) */
+        position: Vector3;
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal: Vector3;
+        /**
+         * Creates a PositionNormalVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         */
+        constructor(
+        /** the position of the vertex (defaut: 0,0,0) */
+        position?: Vector3, 
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal?: Vector3);
+        /**
+         * Clones the PositionNormalVertex
+         * @returns the cloned PositionNormalVertex
+         */
+        clone(): PositionNormalVertex;
+    }
+    /**
+     * Contains position, normal and uv vectors for a vertex
+     */
+    export class PositionNormalTextureVertex {
+        /** the position of the vertex (defaut: 0,0,0) */
+        position: Vector3;
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal: Vector3;
+        /** the uv of the vertex (default: 0,0) */
+        uv: Vector2;
+        /**
+         * Creates a PositionNormalTextureVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         * @param uv the uv of the vertex (default: 0,0)
+         */
+        constructor(
+        /** the position of the vertex (defaut: 0,0,0) */
+        position?: Vector3, 
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal?: Vector3, 
+        /** the uv of the vertex (default: 0,0) */
+        uv?: Vector2);
+        /**
+         * Clones the PositionNormalTextureVertex
+         * @returns the cloned PositionNormalTextureVertex
+         */
+        clone(): PositionNormalTextureVertex;
     }
 }
 declare module BABYLON {

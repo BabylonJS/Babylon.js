@@ -9,7 +9,7 @@ import { VRDeviceOrientationFreeCamera } from "../../Cameras/VR/vrDeviceOrientat
 import { WebVROptions, WebVRFreeCamera } from "../../Cameras/VR/webVRCamera";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Scene, IDisposable } from "../../scene";
-import { Quaternion, Matrix, Vector3, Axis } from "../../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../../Maths/math.vector";
 import { Color3, Color4 } from '../../Maths/math.color';
 import { Gamepad, StickValues } from "../../Gamepads/gamepad";
 import { PoseEnabledController, PoseEnabledControllerType } from "../../Gamepads/Controllers/poseEnabledController";
@@ -35,6 +35,7 @@ import "../../Meshes/Builders/cylinderBuilder";
 
 import "../../Gamepads/gamepadSceneComponent";
 import "../../Animations/animatable";
+import { Axis } from '../../Maths/math.axis';
 
 /**
  * Options to modify the vr teleportation behavior.

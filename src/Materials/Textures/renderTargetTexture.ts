@@ -4,7 +4,7 @@ import { SmartArray } from "../../Misc/smartArray";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
-import { Matrix, Vector3 } from "../../Maths/math";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
 import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
