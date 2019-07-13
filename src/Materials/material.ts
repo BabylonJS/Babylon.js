@@ -1,10 +1,11 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { Tools, IAnimatable } from "../Misc/tools";
+import { Tools } from "../Misc/tools";
+import { IAnimatable } from '../Animations/animatable.interface';
 import { SmartArray } from "../Misc/smartArray";
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Plane, Matrix } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { BaseSubMesh, SubMesh } from "../Meshes/subMesh";
 import { Geometry } from "../Meshes/geometry";
@@ -17,6 +18,7 @@ import { MaterialDefines } from "./materialDefines";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
+import { Plane } from '../Maths/math.plane';
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
@@ -1008,9 +1010,9 @@ export class Material implements IAnimatable {
         }
     }
 
-        /**
-     * Indicates that we need to re-calculated for all submeshes
-     */
+    /**
+ * Indicates that we need to re-calculated for all submeshes
+ */
     protected _markAllSubMeshesAsAllDirty() {
         this._markAllSubMeshesAsDirty(Material._AllDirtyCallBack);
     }

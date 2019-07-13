@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Matrix } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
 import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";

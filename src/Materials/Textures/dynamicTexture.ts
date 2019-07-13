@@ -1,7 +1,7 @@
 import { Logger } from "../../Misc/logger";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { ISize } from "../../Maths/math";
+import { ISize } from "../../Maths/math.size";
 import { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
 import { _TimeToken } from "../../Instrumentation/timeToken";

@@ -2,7 +2,9 @@ import { serialize, serializeAsVector3, serializeAsMeshReference } from "../Misc
 import { Nullable } from "../types";
 import { Camera } from "./camera";
 import { Scene } from "../scene";
-import { Quaternion, Matrix, Vector3, Vector2, Epsilon, Tmp, Axis } from "../Maths/math";
+import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
+import { Epsilon } from '../Maths/math.constants';
+import { Axis } from '../Maths/math.axis';
 /**
  * A target camera takes a mesh or position as a target and continues to look at it while it moves.
  * This is the base of the follow, arc rotate cameras and Free camera
@@ -278,9 +280,9 @@ export class TargetCamera extends Camera {
     /** @hidden */
     public _updatePosition(): void {
         if (this.parent) {
-            this.parent.getWorldMatrix().invertToRef(Tmp.Matrix[0]);
-            Vector3.TransformNormalToRef(this.cameraDirection, Tmp.Matrix[0], Tmp.Vector3[0]);
-            this.position.addInPlace(Tmp.Vector3[0]);
+            this.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
+            Vector3.TransformNormalToRef(this.cameraDirection, TmpVectors.Matrix[0], TmpVectors.Vector3[0]);
+            this.position.addInPlace(TmpVectors.Vector3[0]);
             return;
         }
         this.position.addInPlace(this.cameraDirection);

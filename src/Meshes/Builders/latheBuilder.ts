@@ -1,5 +1,5 @@
 import { Scene } from "../../scene";
-import { Vector3, Vector4 } from "../../Maths/math";
+import { Vector3, Vector4 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { RibbonBuilder } from "./ribbonBuilder";
 import { Nullable } from '../../types';

@@ -1319,7 +1319,6 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoaderExtension" {
 }
 declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
     import { Nullable } from "babylonjs/types";
-    import { IAnimatable } from "babylonjs/Misc/tools";
     import { Camera } from "babylonjs/Cameras/camera";
     import { AnimationGroup } from "babylonjs/Animations/animationGroup";
     import { Skeleton } from "babylonjs/Bones/skeleton";
@@ -1335,6 +1334,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
     import { IGLTF, INode, IScene, IMesh, ICamera, IAnimation, IAnimationChannel, IBufferView, IMaterial, ITextureInfo, IImage, IMeshPrimitive, IArrayItem as IArrItem } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData } from "babylonjs-loaders/glTF/glTFFileLoader";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     /**
      * Helper class for working with arrays when loading the glTF asset
      */

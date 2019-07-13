@@ -40973,9 +40973,9 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                     if (!_this.props.globalState.ignoreBackfacesForPicking) {
                         return true;
                     }
-                    var p0p1 = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Tmp"].Vector3[0];
-                    var p1p2 = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Tmp"].Vector3[1];
-                    var normal = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Tmp"].Vector3[2];
+                    var p0p1 = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[0];
+                    var p1p2 = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[1];
+                    var normal = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["TmpVectors"].Vector3[2];
                     p1.subtractToRef(p0, p0p1);
                     p2.subtractToRef(p1, p1p2);
                     normal = babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Cross(p0p1, p1p2);

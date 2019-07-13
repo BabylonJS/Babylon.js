@@ -12,26 +12,18 @@ import { EngineStore } from '../Engines/engineStore';
 import { FileTools } from './fileTools';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { PromisePolyfill } from './promise';
+import { TimingTools } from './timingTools';
+import { InstantiationTools } from './instantiationTools';
+import { GUID } from './guid';
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
-declare type Animation = import("../Animations/animation").Animation;
 
 interface IColor4Like {
     r: float;
     g: float;
     b: float;
     a: float;
-}
-
-/**
- * Interface containing an array of animations
- */
-export interface IAnimatable {
-    /**
-     * Array of animations
-     */
-    animations: Nullable<Array<Animation>>;
 }
 
 /**
@@ -96,7 +88,13 @@ export class Tools {
      * Use this object to register external classes like custom textures or material
      * to allow the laoders to instantiate them
      */
-    public static RegisteredExternalClasses: { [key: string]: Object } = {};
+    public static get RegisteredExternalClasses() {
+        return InstantiationTools.RegisteredExternalClasses;
+    }
+
+    public static set RegisteredExternalClasses(classes: { [key: string]: Object }) {
+        InstantiationTools.RegisteredExternalClasses = classes;
+    }
 
     /**
      * Texture content used if a texture cannot loaded
@@ -147,29 +145,7 @@ export class Tools {
      * @returns the new object or null if the system was not able to do the instantiation
      */
     public static Instantiate(className: string): any {
-        if (Tools.RegisteredExternalClasses && Tools.RegisteredExternalClasses[className]) {
-            return Tools.RegisteredExternalClasses[className];
-        }
-
-        const internalClass = _TypeStore.GetClass(className);
-        if (internalClass) {
-            return internalClass;
-        }
-
-        Logger.Warn(className + " not found, you may have missed an import.");
-
-        var arr = className.split(".");
-
-        var fn: any = (window || this);
-        for (var i = 0, len = arr.length; i < len; i++) {
-            fn = fn[arr[i]];
-        }
-
-        if (typeof fn !== "function") {
-            return null;
-        }
-
-        return fn;
+        return InstantiationTools.Instantiate(className);
     }
 
     /**
@@ -192,11 +168,7 @@ export class Tools {
      * @param action defines the action to execute after the current execution block
      */
     public static SetImmediate(action: () => void) {
-        if (DomManagement.IsWindowObjectExist() && window.setImmediate) {
-            window.setImmediate(action);
-        } else {
-            setTimeout(action, 1);
-        }
+        TimingTools.SetImmediate(action);
     }
 
     /**
@@ -816,10 +788,7 @@ export class Tools {
      * @returns a pseudo random id
      */
     public static RandomId(): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
+        return GUID.RandomId();
     }
 
     /**
