@@ -7,7 +7,7 @@ import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
 import { Observer } from "../../Misc/observable";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Vector3, Vector2 } from "../../Maths/math";
+import { Vector3, Vector2 } from "../../Maths/math.vector";
 import { Animatable } from "../../Animations/animatable";
 import { Animation } from "../../Animations/animation";
 
