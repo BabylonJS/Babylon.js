@@ -3,13 +3,13 @@ import { EffectFallbacks } from "../../Materials/effect";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { VertexBuffer } from "../../Meshes/buffer";
-import { Vector2 } from "../../Maths/math";
+import { Vector2 } from "../../Maths/math.vector";
 import { Scene } from "../../scene";
 import { MaterialFlags } from "../../Materials/materialFlags";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { IAnimatable } from "../../Misc/tools";
 import { Nullable } from "../../types";
+import { IAnimatable } from '../../Animations/animatable.interface';
 
 /**
  * @hidden

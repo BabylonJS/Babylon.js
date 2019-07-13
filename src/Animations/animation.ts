@@ -1,16 +1,18 @@
 import { IEasingFunction, EasingFunction } from "./easing";
-import { Vector3, Quaternion, Vector2, Color3, Size, Matrix } from "../Maths/math";
+import { Vector3, Quaternion, Vector2, Matrix } from "../Maths/math.vector";
+import { Color3 } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { IAnimatable } from "../Misc/tools";
 import { SerializationHelper } from "../Misc/decorators";
 import { _TypeStore } from '../Misc/typeStore';
 import { IAnimationKey, AnimationKeyInterpolation } from './animationKey';
 import { AnimationRange } from './animationRange';
 import { AnimationEvent } from './animationEvent';
 import { Node } from "../node";
+import { IAnimatable } from './animatable.interface';
+import { Size } from '../Maths/math.size';
 
 declare type Animatable = import("./animatable").Animatable;
 declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;

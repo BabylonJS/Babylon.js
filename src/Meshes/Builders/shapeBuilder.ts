@@ -1,8 +1,9 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Vector3, Tmp, Vector4, Path3D, Matrix } from "../../Maths/math";
+import { Vector3, TmpVectors, Vector4, Matrix } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { RibbonBuilder } from "./ribbonBuilder";
+import { Path3D } from '../../Maths/math.path';
 
 Mesh.ExtrudeShape = (name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
     var options = {
@@ -132,7 +133,7 @@ export class ShapeBuilder {
             var rotate: { (i: number, distance: number): number; } = custom && rotateFunction ? rotateFunction : returnRotation;
             var scl: { (i: number, distance: number): number; } = custom && scaleFunction ? scaleFunction : returnScale;
             var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 2;
-            var rotationMatrix: Matrix = Tmp.Matrix[0];
+            var rotationMatrix: Matrix = TmpVectors.Matrix[0];
 
             for (var i = 0; i < curve.length; i++) {
                 var shapePath = new Array<Vector3>();

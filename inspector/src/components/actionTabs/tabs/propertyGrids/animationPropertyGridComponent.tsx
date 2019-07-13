@@ -9,7 +9,6 @@ import { LineContainerComponent } from "../../lineContainerComponent";
 import { SliderLineComponent } from "../../lines/sliderLineComponent";
 import { LockObject } from "./lockObject";
 import { GlobalState } from '../../../globalState';
-import { IAnimatable } from 'babylonjs/Misc/tools';
 import { Animation } from 'babylonjs/Animations/animation';
 import { Animatable } from 'babylonjs/Animations/animatable';
 import { AnimationPropertiesOverride } from 'babylonjs/Animations/animationPropertiesOverride';
@@ -18,6 +17,7 @@ import { CheckBoxLineComponent } from '../../lines/checkBoxLineComponent';
 import { Nullable } from 'babylonjs/types';
 import { FloatLineComponent } from '../../lines/floatLineComponent';
 import { TextLineComponent } from '../../lines/textLineComponent';
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 interface IAnimationGridComponentProps {
     globalState: GlobalState;

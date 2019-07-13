@@ -2,7 +2,7 @@ import { SmartArray } from "../Misc/smartArray";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Nullable, DeepImmutable } from "../types";
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { IParticleSystem } from "../Particles/IParticleSystem";
 import { IEdgesRenderer } from "./edgesRenderer";
 import { ISpriteManager } from "../Sprites/spriteManager";
@@ -18,7 +18,7 @@ import { Camera } from "../Cameras/camera";
  * @hidden
  */
 export class RenderingGroup {
-    private static _zeroVector : DeepImmutable<Vector3> = Vector3.Zero();
+    private static _zeroVector: DeepImmutable<Vector3> = Vector3.Zero();
     private _scene: Scene;
     private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
     private _transparentSubMeshes = new SmartArray<SubMesh>(256);

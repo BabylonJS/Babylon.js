@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { Engine, IDisplayChangedEventArgs } from "../../Engines/engine";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { Size } from '../../Maths/math';
+import { Size } from '../../Maths/math.size';
 import { Observable } from '../../Misc/observable';
 import { Tools } from '../../Misc/tools';
 import { DomManagement } from '../../Misc/domManagement';

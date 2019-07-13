@@ -1,6 +1,6 @@
 import { Nullable } from "../types";
 import { serializeAsVector3, serialize } from "../Misc/decorators";
-import { Vector3, Vector2 } from "../Maths/math";
+import { Vector3, Vector2 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";

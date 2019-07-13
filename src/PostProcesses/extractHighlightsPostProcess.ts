@@ -3,7 +3,7 @@ import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
-import { ToGammaSpace } from "../Maths/math";
+import { ToGammaSpace } from "../Maths/math.constants";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/extractHighlights.fragment";

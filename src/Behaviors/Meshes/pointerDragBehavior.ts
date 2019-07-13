@@ -4,7 +4,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Observer, Observable } from "../../Misc/observable";
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Ray } from "../../Culling/ray";
 import { PivotTools } from '../../Misc/pivotTools';
@@ -152,7 +152,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             if (this._debugMode) {
                 PointerDragBehavior._planeScene = this._scene;
             } else {
-                PointerDragBehavior._planeScene = new Scene(this._scene.getEngine(), {virtual: true});
+                PointerDragBehavior._planeScene = new Scene(this._scene.getEngine(), { virtual: true });
                 PointerDragBehavior._planeScene.detachControl();
                 this._scene.onDisposeObservable.addOnce(() => {
                     PointerDragBehavior._planeScene.dispose();

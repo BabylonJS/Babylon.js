@@ -1,11 +1,12 @@
 import { Skeleton } from "./skeleton";
 
-import { Vector3, Quaternion, Matrix, Space } from "../Maths/math";
+import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
+import { Space } from '../Maths/math.axis';
 
 declare type Animation = import("../Animations/animation").Animation;
 declare type AnimationPropertiesOverride = import("../Animations/animationPropertiesOverride").AnimationPropertiesOverride;
