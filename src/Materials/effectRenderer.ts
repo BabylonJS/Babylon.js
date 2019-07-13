@@ -11,8 +11,17 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";
 
+/**
+ * Effect Render Options
+ */
 export interface IEffectRendererOptions {
+    /**
+     * Defines the vertices positions.
+     */
     positions?: number[];
+    /**
+     * Defines the indices.
+     */
     indices?: number[];
 }
 
