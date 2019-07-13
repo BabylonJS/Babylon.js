@@ -12,13 +12,30 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import "../Shaders/postprocess.vertex";
 
 /**
+ * Effect Render Options
+ */
+export interface IEffectRendererOptions {
+    /**
+     * Defines the vertices positions.
+     */
+    positions?: number[];
+    /**
+     * Defines the indices.
+     */
+    indices?: number[];
+}
+
+/**
  * Helper class to render one or more effects
  */
 export class EffectRenderer {
-    // Fullscreen quad buffers
-    private static _Vertices = [1, 1, -1, 1, -1, -1, 1, -1];
-    private static _Indices = [0, 1, 2, 0, 2, 3];
-    private _vertexBuffers: { [key: string]: VertexBuffer };
+    // Fullscreen quad buffers by default.
+    private static _DefaultOptions: IEffectRendererOptions = {
+        positions: [1, 1, -1, 1, -1, -1, 1, -1],
+        indices: [0, 1, 2, 0, 2, 3]
+    };
+
+    private _vertexBuffers: {[key: string]: VertexBuffer};
     private _indexBuffer: DataBuffer;
 
     private _ringBufferIndex = 0;
@@ -56,12 +73,18 @@ export class EffectRenderer {
     /**
      * Creates an effect renderer
      * @param engine the engine to use for rendering
+     * @param options defines the options of the effect renderer
      */
-    constructor(private engine: Engine) {
-        this._vertexBuffers = {
-            [VertexBuffer.PositionKind]: new VertexBuffer(engine, EffectRenderer._Vertices, VertexBuffer.PositionKind, false, false, 2),
+    constructor(private engine: Engine, options: IEffectRendererOptions = EffectRenderer._DefaultOptions) {
+        options = {
+            ...EffectRenderer._DefaultOptions,
+            ...options,
         };
-        this._indexBuffer = engine.createIndexBuffer(EffectRenderer._Indices);
+
+        this._vertexBuffers = {
+            [VertexBuffer.PositionKind]: new VertexBuffer(engine, options.positions!, VertexBuffer.PositionKind, false, false, 2),
+        };
+        this._indexBuffer = engine.createIndexBuffer(options.indices!);
 
         // No need here for full screen render.
         engine.setDepthBuffer(false);
