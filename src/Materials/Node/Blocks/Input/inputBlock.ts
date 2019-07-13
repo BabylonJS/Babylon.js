@@ -4,7 +4,7 @@ import { NodeMaterialBlockConnectionPointMode } from '../../NodeMaterialBlockCon
 import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
 import { Nullable } from '../../../../types';
 import { Effect } from '../../../../Materials/effect';
-import { Matrix, Vector2, Vector3 } from '../../../../Maths/math';
+import { Matrix, Vector2, Vector3 } from '../../../../Maths/math.vector';
 import { Scene } from '../../../../scene';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';

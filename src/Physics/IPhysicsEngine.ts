@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Vector3, Quaternion } from "../Maths/math";
+import { Vector3, Quaternion } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint, IMotorEnabledJoint } from "./physicsJoint";

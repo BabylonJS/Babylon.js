@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Matrix, Quaternion, Vector3 } from '../../Maths/math';
+import { Matrix, Quaternion, Vector3 } from '../../Maths/math.vector';
 import { Ray } from '../../Culling/ray';
 import { Scene } from '../../scene';
 /**
@@ -37,8 +37,7 @@ export class WebXRController {
         private scene: Scene,
         /** The underlying input source for the controller  */
         public inputSource: XRInputSource,
-        private parentContainer: Nullable<AbstractMesh> = null)
-    {
+        private parentContainer: Nullable<AbstractMesh> = null) {
         this.pointer = new AbstractMesh("controllerPointer", scene);
         if (parentContainer) {
             parentContainer.addChild(this.pointer);

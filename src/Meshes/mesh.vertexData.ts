@@ -1,7 +1,8 @@
 import { Nullable, FloatArray, IndicesArray } from "../types";
-import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math";
+import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { _DevTools } from '../Misc/devTools';
+import { Color4, Color3 } from '../Maths/math.color';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;

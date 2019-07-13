@@ -1,4 +1,5 @@
-import { Vector3, Color4 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
+import { Color4 } from '../../Maths/math.color';
 import { _CreationDataStorage, Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { FloatArray, Nullable } from "../../types";

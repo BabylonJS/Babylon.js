@@ -18,13 +18,15 @@ import { PolyhedronBuilder } from "./Builders/polyhedronBuilder";
 import { IcoSphereBuilder } from "./Builders/icoSphereBuilder";
 import { DecalBuilder } from "./Builders/decalBuilder";
 
-import { Vector4, Color4, Vector3, Vector2, Plane, Color3 } from "../Maths/math";
+import { Vector4, Vector3, Vector2 } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Mesh } from "./mesh";
 import { LinesMesh } from "./linesMesh";
 import { GroundMesh } from "./groundMesh";
 import { AbstractMesh } from "./abstractMesh";
+import { Color4, Color3 } from '../Maths/math.color';
+import { Plane } from '../Maths/math.plane';
 
 declare var earcut: any;
 
@@ -60,7 +62,7 @@ export class MeshBuilder {
      * @param scene defines the hosting scene
      * @returns the tiled box mesh
      */
-    public static CreateTiledBox(name: string, options: { pattern?: number, size?: number, width?: number, height?: number, depth: number, tileSize?: number, tileWidth?: number, tileHeight?: number, faceUV?: Vector4[], faceColors?: Color4[], alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, updatable?: boolean}, scene: Nullable<Scene> = null): Mesh {
+    public static CreateTiledBox(name: string, options: { pattern?: number, size?: number, width?: number, height?: number, depth: number, tileSize?: number, tileWidth?: number, tileHeight?: number, faceUV?: Vector4[], faceColors?: Color4[], alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         return TiledBoxBuilder.CreateTiledBox(name, options, scene);
     }
 
@@ -369,7 +371,7 @@ export class MeshBuilder {
      * @returns the plane mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#plane
      */
-    public static CreateTiledPlane(name: string, options: { pattern?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, size?: number, width?: number, height?: number, alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean}, scene: Nullable<Scene> = null): Mesh {
+    public static CreateTiledPlane(name: string, options: { pattern?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, size?: number, width?: number, height?: number, alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         return TiledPlaneBuilder.CreateTiledPlane(name, options, scene);
     }
 

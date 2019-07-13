@@ -1,9 +1,11 @@
 import { Nullable } from "../../types";
-import {  Vector3, Color3, Axis } from '../../Maths/math';
+import { Vector3 } from '../../Maths/math.vector';
 import { Mesh } from '../../Meshes/mesh';
 import { Ray } from '../../Culling/ray';
 import { StandardMaterial } from '../../Materials/standardMaterial';
 import { WebXRInput } from './webXRInput';
+import { Color3 } from '../../Maths/math.color';
+import { Axis } from '../../Maths/math.axis';
 
 /**
  * Handles pointer input automatically for the pointer of XR controllers
@@ -58,7 +60,7 @@ export class WebXRControllerPointerSelection {
                             scene.simulatePointerDown(pick, { pointerId: id });
                         }
                         triggerDown = true;
-                    }else {
+                    } else {
                         if (triggerDown) {
                             scene.simulatePointerUp(pick, { pointerId: id });
                         }
@@ -88,7 +90,7 @@ export class WebXRControllerPointerSelection {
                         cursorMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                     }
                     cursorMesh.isVisible = true;
-                }else {
+                } else {
                     cursorMesh.isVisible = false;
                 }
             });
