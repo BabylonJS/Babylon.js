@@ -100,6 +100,8 @@
 - Loading the same multi-material twice and disposing one should not impact the other ([TrevorDev](https://github.com/TrevorDev))
 - GLTF exporter should no longer duplicate exported texture data ([Drigax](https://github.com/Drigax))
 - Avoid exception when disposing of Ammo cloth physics ([TrevorDev](https://github.com/TrevorDev))
+- Make planeDragGizmo usable on its own ([TrevorDev](https://github.com/TrevorDev))
+- Fix useObjectOrienationForDragging for pointerDragBehavior when using a single axis drag ([TrevorDev](https://github.com/TrevorDev))
 
 ## Breaking changes
 - Setting mesh.scaling to a new vector will no longer automatically call forceUpdate (this should be done manually when needed) ([TrevorDev](https://github.com/TrevorDev))
