@@ -78,6 +78,9 @@
 ### Ray
 - Added `Ray.intersectsAxis` to translate screen to axis coordinates without checking collisions ([horusscope](https://github.com/horusscope))
 
+### GUI  
+- Added `disableMobilePrompt` option to InputText for OculusQuest(and other android base VR devices) ([shinyoshiaki](https://github.com/shinyoshiaki))
+
 ### Documentation
 - Added a note on shallow bounding of getBoundingInfo ([tibotiber](https://github.com/tibotiber))
 
