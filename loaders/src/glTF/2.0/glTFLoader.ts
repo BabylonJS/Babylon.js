@@ -1812,6 +1812,10 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context}`);
 
+        if (textureInfo.texCoord! >= 2) {
+            throw new Error(`${context}/texCoord: Invalid value (${textureInfo.texCoord})`);
+        }
+
         const texture = ArrayItem.Get(`${context}/index`, this._gltf.textures, textureInfo.index);
         const promise = this._loadTextureAsync(`/textures/${textureInfo.index}`, texture, (babylonTexture) => {
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
