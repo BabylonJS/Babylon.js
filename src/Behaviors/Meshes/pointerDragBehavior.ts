@@ -314,8 +314,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             var dragLength = 0;
             // depending on the drag mode option drag accordingly
             if (this._options.dragAxis) {
-                // Convert local drag axis to world
-                Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis);
+                // Convert local drag axis to world if useObjectOrienationForDragging
+                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis) : this._worldDragAxis.copyFrom(this._options.dragAxis);
 
                 // Project delta drag from the drag plane onto the drag axis
                 pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
