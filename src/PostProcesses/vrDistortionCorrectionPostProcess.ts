@@ -1,4 +1,4 @@
-import { Vector2 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 import { Camera } from "../Cameras/camera";
 import { VRCameraMetrics } from "../Cameras/VR/vrCameraMetrics";
 import { Effect } from "../Materials/effect";

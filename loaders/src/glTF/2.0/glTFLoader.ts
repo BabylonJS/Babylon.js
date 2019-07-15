@@ -1,7 +1,7 @@
 import { IndicesArray, Nullable } from "babylonjs/types";
 import { Deferred } from "babylonjs/Misc/deferred";
 import { Quaternion, Color3, Vector3, Matrix } from "babylonjs/Maths/math";
-import { IAnimatable, Tools } from "babylonjs/Misc/tools";
+import { Tools } from "babylonjs/Misc/tools";
 import { IFileRequest } from "babylonjs/Misc/fileRequest";
 import { LoadFileError } from "babylonjs/Misc/loadFileError";
 import { Camera } from "babylonjs/Cameras/camera";
@@ -29,6 +29,7 @@ import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh, IAccesso
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;

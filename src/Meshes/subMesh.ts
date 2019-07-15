@@ -1,5 +1,5 @@
 import { Nullable, IndicesArray, DeepImmutable, FloatArray } from "../types";
-import { Matrix, Vector3, Plane } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "./buffer";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
@@ -8,6 +8,7 @@ import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 import { DataBuffer } from './dataBuffer';
 import { extractMinAndMaxIndexed } from '../Maths/math.functions';
+import { Plane } from '../Maths/math.plane';
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;

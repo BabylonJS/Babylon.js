@@ -1505,7 +1505,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IAnimatable } from 'babylonjs/Misc/tools';
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     interface IAnimationGridComponentProps {
         globalState: GlobalState;
         animatable: IAnimatable;

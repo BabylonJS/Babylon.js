@@ -4,7 +4,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Vector3, Quaternion, Matrix } from "../../Maths/math";
+import { Vector3, Quaternion, Matrix } from "../../Maths/math.vector";
 import { Observer, Observable } from "../../Misc/observable";
 import { Camera } from "../../Cameras/camera";
 import { PivotTools } from "../../Misc/pivotTools";
@@ -79,7 +79,7 @@ export class SixDofDragBehavior implements Behavior<Mesh> {
     private get _pointerCamera() {
         if (this._scene.cameraToUseForPointers) {
             return this._scene.cameraToUseForPointers;
-        }else {
+        } else {
             return this._scene.activeCamera;
         }
     }

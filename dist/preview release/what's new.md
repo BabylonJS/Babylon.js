@@ -2,9 +2,11 @@
 
 ## Major updates
 - WIP: Node Material (NEED DOC OR SAMPLES) ([Deltakosh](https://github.com/deltakosh/))
-- WIP: Node material editor (NEED OR AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/)/[TrevorDev](https://github.com/TrevorDev))
-- WIP: WebGPU support (NEED DOC OR SAMPLES) ([Sebavan](https://github.com/sebavan/)
+- WIP: Node material editor (NEED OR AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/) / [TrevorDev](https://github.com/TrevorDev))
+- WIP: WebGPU support (NEED DOC OR SAMPLES) ([Sebavan](https://github.com/sebavan/))
 - .basis texture file format support [Doc](https://doc.babylonjs.com/resources/multi-platform_compressed_textures#basis-file-format) ([TrevorDev](https://github.com/TrevorDev))
+- Classes decoupling ending up with smaller bundle sizes [Blog](https://medium.com/@babylonjs/size-matters-e0e94dad01a7) ([Deltakosh](https://github.com/deltakosh/))
+- Babylon.js controls [Doc](https://doc.babylonjs.com/features/controls) ([Sebavan](https://github.com/sebavan/) / [Deltakosh](https://github.com/deltakosh/))
 
 ## Optimizations
 
@@ -76,6 +78,9 @@
 ### Ray
 - Added `Ray.intersectsAxis` to translate screen to axis coordinates without checking collisions ([horusscope](https://github.com/horusscope))
 
+### GUI  
+- Added `disableMobilePrompt` option to InputText for OculusQuest(and other android base VR devices) ([shinyoshiaki](https://github.com/shinyoshiaki))
+
 ### Documentation
 - Added a note on shallow bounding of getBoundingInfo ([tibotiber](https://github.com/tibotiber))
 
@@ -95,6 +100,8 @@
 - Loading the same multi-material twice and disposing one should not impact the other ([TrevorDev](https://github.com/TrevorDev))
 - GLTF exporter should no longer duplicate exported texture data ([Drigax](https://github.com/Drigax))
 - Avoid exception when disposing of Ammo cloth physics ([TrevorDev](https://github.com/TrevorDev))
+- Make planeDragGizmo usable on its own ([TrevorDev](https://github.com/TrevorDev))
+- Fix useObjectOrienationForDragging for pointerDragBehavior when using a single axis drag ([TrevorDev](https://github.com/TrevorDev))
 
 ## Breaking changes
 - Setting mesh.scaling to a new vector will no longer automatically call forceUpdate (this should be done manually when needed) ([TrevorDev](https://github.com/TrevorDev))

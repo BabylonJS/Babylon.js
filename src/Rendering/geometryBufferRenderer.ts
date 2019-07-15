@@ -1,4 +1,4 @@
-import { Matrix, Color4 } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -15,6 +15,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { _DevTools } from '../Misc/devTools';
+import { Color4 } from '../Maths/math.color';
 
 /** @hidden */
 interface ISavedTransformationMatrix {
@@ -259,7 +260,7 @@ export class GeometryBufferRenderer {
                 ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones", "morphTargetInfluences"],
                 ["diffuseSampler"], join,
                 undefined, undefined, undefined,
-                { buffersCount: this._enablePosition ? 3 : 2, maxSimultaneousMorphTargets: numMorphInfluencers});
+                { buffersCount: this._enablePosition ? 3 : 2, maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 
         return this._effect.isReady();

@@ -1,5 +1,5 @@
 import { DeepCopier } from "../Misc/deepCopier";
-import { Color3 } from "../Maths/math";
+import { Color3 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { SerializationHelper } from "../Misc/decorators";
 import { Constants } from "../Engines/constants";

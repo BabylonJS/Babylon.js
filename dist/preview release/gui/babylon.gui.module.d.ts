@@ -3472,7 +3472,7 @@ declare module "babylonjs-gui/3D/controls/button3D" {
     }
 }
 declare module "babylonjs-gui/3D/controls/volumeBasedPanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { int } from "babylonjs/types";
     import { Container3D } from "babylonjs-gui/3D/controls/container3D";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
@@ -3523,7 +3523,7 @@ declare module "babylonjs-gui/3D/controls/volumeBasedPanel" {
     }
 }
 declare module "babylonjs-gui/3D/controls/cylinderPanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { float } from "babylonjs/types";
     import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";

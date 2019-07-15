@@ -1,4 +1,4 @@
-import { BezierCurve } from "../Maths/math";
+import { BezierCurve } from "../Maths/math.path";
 
 /**
  * This represents the main contract an easing function should follow.

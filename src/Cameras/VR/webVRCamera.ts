@@ -4,7 +4,7 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { TargetCamera } from "../../Cameras/targetCamera";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
-import { Quaternion, Matrix, Vector3 } from "../../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../../Maths/math.vector";
 import { Gamepad } from "../../Gamepads/gamepad";
 import { PoseEnabledControllerType } from "../../Gamepads/Controllers/poseEnabledController";
 import { WebVRController } from "../../Gamepads/Controllers/webVRController";

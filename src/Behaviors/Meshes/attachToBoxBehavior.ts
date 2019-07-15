@@ -1,4 +1,4 @@
-import { Vector3, Matrix, Quaternion } from "../../Maths/math";
+import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Scene } from "../../scene";
