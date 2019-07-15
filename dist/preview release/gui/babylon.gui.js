@@ -7065,6 +7065,8 @@ var InputText = /** @class */ (function (_super) {
         _this._isPointerDown = false;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         _this.promptMessage = "Please enter text:";
+        /** Force disable prompt on mobile device */
+        _this.disableMobilePrompt = false;
         /** Observable raised when the text changes */
         _this.onTextChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /** Observable raised just before an entered character is to be added */
@@ -7396,7 +7398,7 @@ var InputText = /** @class */ (function (_super) {
         this._cursorOffset = 0;
         this._markAsDirty();
         this.onFocusObservable.notifyObservers(this);
-        if (navigator.userAgent.indexOf("Mobile") !== -1) {
+        if (navigator.userAgent.indexOf("Mobile") !== -1 && !this.disableMobilePrompt) {
             var value = prompt(this.promptMessage);
             if (value !== null) {
                 this.text = value;
