@@ -1,7 +1,7 @@
 import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Scene } from "../scene";
-import { Engine, EngineCapabilities, IViewportLike, IColor4Like } from "../Engines/engine";
+import { Engine, EngineCapabilities } from "../Engines/engine";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { VertexBuffer } from "../Meshes/buffer";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
@@ -11,6 +11,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { Constants } from "./constants";
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { IColor4Like, IViewportLike } from '../Maths/math.like';
 
 declare const global: any;
 

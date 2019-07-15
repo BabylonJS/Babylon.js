@@ -1,5 +1,5 @@
 import { Tools } from "babylonjs/Misc/tools";
-import { Matrix, Tmp, Vector3 } from "babylonjs/Maths/math";
+import { Matrix, Vector3, TmpVectors } from "babylonjs/Maths/math.vector";
 import { int } from "babylonjs/types";
 
 import { Container3D } from "./container3D";
@@ -118,8 +118,8 @@ export abstract class VolumeBasedPanel extends Container3D {
             //   child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
 
             let boundingBox = child.mesh.getHierarchyBoundingVectors();
-            let extendSize = Tmp.Vector3[0];
-            let diff = Tmp.Vector3[1];
+            let extendSize = TmpVectors.Vector3[0];
+            let diff = TmpVectors.Vector3[1];
 
             boundingBox.max.subtractToRef(boundingBox.min, diff);
 

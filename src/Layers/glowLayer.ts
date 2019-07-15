@@ -2,7 +2,7 @@ import { serialize, SerializationHelper } from "../Misc/decorators";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Vector2, Color4 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -18,6 +18,7 @@ import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { _TypeStore } from '../Misc/typeStore';
 import { Engine } from '../Engines/engine';
+import { Color4 } from '../Maths/math.color';
 
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";

@@ -1,7 +1,7 @@
 import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { Mesh } from "../Meshes/mesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";

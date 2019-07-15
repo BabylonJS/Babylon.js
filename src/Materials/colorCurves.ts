@@ -1,5 +1,5 @@
 import { SerializationHelper, serialize } from "../Misc/decorators";
-import { Color4 } from "../Maths/math";
+import { Color4 } from '../Maths/math.color';
 import { Effect } from "../Materials/effect";
 
 /**

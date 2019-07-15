@@ -2,24 +2,45 @@ import { Nullable } from '../types';
 import { Texture } from '../Materials/Textures/texture';
 import { Engine } from '../Engines/engine';
 import { VertexBuffer } from '../Meshes/buffer';
-import { Viewport } from '../Maths/math';
+import { Viewport } from '../Maths/math.viewport';
 import { Constants } from '../Engines/constants';
 import { Observable } from '../Misc/observable';
 import { Effect } from './effect';
 import { DataBuffer } from '../Meshes/dataBuffer';
 
+// Prevents ES6 Crash if not imported.
+import "../Shaders/postprocess.vertex";
+
+/**
+ * Effect Render Options
+ */
+export interface IEffectRendererOptions {
+    /**
+     * Defines the vertices positions.
+     */
+    positions?: number[];
+    /**
+     * Defines the indices.
+     */
+    indices?: number[];
+}
+
 /**
  * Helper class to render one or more effects
  */
 export class EffectRenderer {
-    // Fullscreen quad buffers
-    private static _Vertices = [1, 1, -1, 1, -1, -1, 1, -1];
-    private static _Indices = [0, 1, 2, 0, 2, 3];
+    // Fullscreen quad buffers by default.
+    private static _DefaultOptions: IEffectRendererOptions = {
+        positions: [1, 1, -1, 1, -1, -1, 1, -1],
+        indices: [0, 1, 2, 0, 2, 3]
+    };
+
     private _vertexBuffers: {[key: string]: VertexBuffer};
     private _indexBuffer: DataBuffer;
 
     private _ringBufferIndex = 0;
     private _ringScreenBuffer: Nullable<Array<Texture>> = null;
+    private _fullscreenViewport = new Viewport(0, 0, 1, 1);
 
     private _getNextFrameBuffer(incrementIndex = true) {
         if (!this._ringScreenBuffer) {
@@ -52,12 +73,49 @@ export class EffectRenderer {
     /**
      * Creates an effect renderer
      * @param engine the engine to use for rendering
+     * @param options defines the options of the effect renderer
      */
-    constructor(private engine: Engine) {
-        this._vertexBuffers = {
-            [VertexBuffer.PositionKind]: new VertexBuffer(engine, EffectRenderer._Vertices, VertexBuffer.PositionKind, false, false, 2),
+    constructor(private engine: Engine, options: IEffectRendererOptions = EffectRenderer._DefaultOptions) {
+        options = {
+            ...EffectRenderer._DefaultOptions,
+            ...options,
         };
-        this._indexBuffer = engine.createIndexBuffer(EffectRenderer._Indices);
+
+        this._vertexBuffers = {
+            [VertexBuffer.PositionKind]: new VertexBuffer(engine, options.positions!, VertexBuffer.PositionKind, false, false, 2),
+        };
+        this._indexBuffer = engine.createIndexBuffer(options.indices!);
+
+        // No need here for full screen render.
+        engine.setDepthBuffer(false);
+        engine.setStencilBuffer(false);
+    }
+
+    /**
+     * Sets the current viewport in normalized coordinates 0-1
+     * @param viewport Defines the viewport to set (defaults to 0 0 1 1)
+     */
+    public setViewport(viewport = this._fullscreenViewport): void {
+        this.engine.setViewport(viewport);
+    }
+
+    /**
+     * Sets the current effect wrapper to use during draw.
+     * The effect needs to be ready before calling this api.
+     * This also sets the default full screen position attribute.
+     * @param effectWrapper Defines the effect to draw with
+     */
+    public applyEffectWrapper(effectWrapper: EffectWrapper): void {
+        this.engine.enableEffect(effectWrapper.effect);
+        this.engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effectWrapper.effect);
+        effectWrapper.onApplyObservable.notifyObservers({});
+    }
+
+    /**
+     * Draws a full screen quad.
+     */
+    public draw(): void {
+        this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
     }
 
     /**
@@ -65,7 +123,7 @@ export class EffectRenderer {
      * @param effectWrappers list of effects to renderer
      * @param outputTexture texture to draw to, if null it will render to the screen
      */
-    render(effectWrappers: Array<EffectWrapper> | EffectWrapper, outputTexture: Nullable<Texture> = null) {
+    public render(effectWrappers: Array<EffectWrapper> | EffectWrapper, outputTexture: Nullable<Texture> = null) {
         if (!Array.isArray(effectWrappers)) {
             effectWrappers = [effectWrappers];
         }
@@ -90,23 +148,20 @@ export class EffectRenderer {
             // Set the output to the next screenbuffer
             if ((effectWrappers as Array<EffectWrapper>).length > 1 && i != (effectWrappers as Array<EffectWrapper>).length - 1) {
                 renderTo = this._getNextFrameBuffer();
-            }else {
+            } else {
                 renderTo = outputTexture;
             }
 
             // Reset state
-            this.engine.setViewport(new Viewport(0, 0, 1, 1));
-            this.engine.enableEffect(effectWrapper.effect);
+            this.setViewport();
+            this.applyEffectWrapper(effectWrapper);
 
-            // Bind buffers
             if (renderTo) {
                 this.engine.bindFramebuffer(renderTo.getInternalTexture()!);
             }
-            this.engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effectWrapper.effect);
-            effectWrapper.onApplyObservable.notifyObservers({});
 
-            // Render
-            this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
+            this.draw();
+
             if (renderTo) {
                 this.engine.unBindFramebuffer(renderTo.getInternalTexture()!);
             }
@@ -149,17 +204,25 @@ interface EffectWrapperCreationOptions {
      */
     fragmentShader: string;
     /**
+     * Vertex shader for the effect
+     */
+    vertexShader: string;
+    /**
      * Attributes to use in the shader
      */
-    attributeNames: Array<string>;
+    attributeNames?: Array<string>;
     /**
      * Uniforms to use in the shader
      */
-    uniformNames: Array<string>;
+    uniformNames?: Array<string>;
     /**
      * Texture sampler names to use in the shader
      */
-    samplerNames: Array<string>;
+    samplerNames?: Array<string>;
+    /**
+     * The friendly name of the effect displayed in Spector.
+     */
+    name?: string;
 }
 
 /**
@@ -180,12 +243,20 @@ export class EffectWrapper {
      * @param creationOptions options to create the effect
      */
     constructor(creationOptions: EffectWrapperCreationOptions) {
-        this.effect = new Effect({fragmentSource: creationOptions.fragmentShader, vertex: "postprocess"}, creationOptions.attributeNames, creationOptions.uniformNames, creationOptions.samplerNames, creationOptions.engine);
+        this.effect = new Effect({
+                fragmentSource: creationOptions.fragmentShader,
+                vertexSource: creationOptions.vertexShader || "postprocess",
+                spectorName: creationOptions.name || "effectWrapper"
+            },
+            creationOptions.attributeNames || ["position"],
+            creationOptions.uniformNames || ["scale"],
+            creationOptions.samplerNames,
+            creationOptions.engine);
     }
 
-     /**
-     * Disposes of the effect wrapper
-     */
+    /**
+    * Disposes of the effect wrapper
+    */
     public dispose() {
         this.effect.dispose();
     }

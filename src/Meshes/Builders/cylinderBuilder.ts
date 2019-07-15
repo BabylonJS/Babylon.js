@@ -1,8 +1,10 @@
-import { Color4, Vector4, Vector3, Axis, Vector2 } from "../../Maths/math";
+import { Vector4, Vector3, Vector2 } from "../../Maths/math.vector";
+import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
+import { Axis } from '../../Maths/math.axis';
 
 VertexData.CreateCylinder = function(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, cap?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var height: number = options.height || 2;

@@ -2,7 +2,7 @@ import { Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
 import { Scene, IDisposable } from "../scene";
-import { Quaternion, Vector3 } from "../Maths/math";
+import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -123,7 +123,7 @@ export class Gizmo implements IDisposable {
                 if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
                     this._rootMesh.scaling.y *= -1;
                 }
-            }else {
+            } else {
                 this._rootMesh.scaling.setAll(this.scaleRatio);
             }
         }

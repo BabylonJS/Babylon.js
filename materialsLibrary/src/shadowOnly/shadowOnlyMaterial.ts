@@ -1,6 +1,7 @@
 import { Nullable } from "babylonjs/types";
 import { SerializationHelper } from "babylonjs/Misc/decorators";
-import { Color3, Matrix } from "babylonjs/Maths/math";
+import { Matrix } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { IShadowLight } from "babylonjs/Lights/shadowLight";
 import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";

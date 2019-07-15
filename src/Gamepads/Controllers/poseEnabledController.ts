@@ -1,6 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
-import { Quaternion, Matrix, Vector3, Tmp } from "../../Maths/math";
+import { Quaternion, Matrix, Vector3, TmpVectors } from "../../Maths/math.vector";
 import { Node } from "../../node";
 import { TransformNode } from "../../Meshes/transformNode";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -256,10 +256,10 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
             this._deviceToWorld.setTranslation(camera.devicePosition);
             if (camera.deviceRotationQuaternion) {
                 var camera = camera;
-                camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(Tmp.Vector3[0]);
+                camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(TmpVectors.Vector3[0]);
 
                 // Find the radian distance away that the headset is from the controllers rotation
-                var distanceAway = Math.atan2(Math.sin(Tmp.Vector3[0].y - this._draggedRoomRotation), Math.cos(Tmp.Vector3[0].y - this._draggedRoomRotation));
+                var distanceAway = Math.atan2(Math.sin(TmpVectors.Vector3[0].y - this._draggedRoomRotation), Math.cos(TmpVectors.Vector3[0].y - this._draggedRoomRotation));
                 if (Math.abs(distanceAway) > this._maxRotationDistFromHeadset) {
                     // Only rotate enouph to be within the _maxRotationDistFromHeadset
                     var rotationAmount = distanceAway - (distanceAway < 0 ? -this._maxRotationDistFromHeadset : this._maxRotationDistFromHeadset);
