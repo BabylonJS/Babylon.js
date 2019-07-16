@@ -5,6 +5,7 @@ import { Nullable } from 'babylonjs/types';
 import { DefaultNodeModel } from '../../components/diagram/defaultNodeModel';
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
+import { StringTools } from '../../stringTools';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -60,6 +61,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <LineContainerComponent title="UI">
                         <ButtonLineComponent label="Zoom to fit" onClick={() => {
                             this.props.globalState.onZoomToFitRequiredObservable.notifyObservers();
+                        }} />
+                        <ButtonLineComponent label="Reorganize" onClick={() => {
+                            this.props.globalState.onReOrganizedRequiredObservable.notifyObservers();
+                        }} />
+                    </LineContainerComponent>
+                    <LineContainerComponent title="FILE">
+                        <ButtonLineComponent label="Export shaders" onClick={() => {
+                            StringTools.DownloadAsFile(this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
                         }} />
                     </LineContainerComponent>
                 </div>

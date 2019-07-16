@@ -7,7 +7,7 @@
     ],
     "name": "babylonjs",
     "description": "Babylon.js is a JavaScript 3D engine based on webgl.",
-    "version": "4.1.0-alpha.5",
+    "version": "4.1.0-alpha.8",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -35,7 +35,6 @@
     },
     "readme": "Babylon.js is a 3D engine based on webgl and javascript",
     "readmeFilename": "README.md",
-    "dependencies": {},
     "devDependencies": {
         "@fortawesome/fontawesome-svg-core": "~1.2.8",
         "@fortawesome/free-regular-svg-icons": "~5.4.1",
@@ -47,6 +46,7 @@
         "@types/react": "~16.7.3",
         "@types/react-dom": "~16.0.9",
         "@types/sinon": "^4.1.3",
+        "@types/dagre": "^0.7.42",
         "ajv": "^6.9.1",
         "awesome-typescript-loader": "^5.2.1",
         "base64-font-loader": "0.0.4",
@@ -87,10 +87,11 @@
         "react-contextmenu": "~2.10.0",
         "react-dom": "~16.6.3",
         "sass-loader": "^7.1.0",
-        "shelljs": "^0.7.8",
+        "shelljs": "^0.8.3",
         "sinon": "^6.1.4",
         "split.js": "^1.5.9",
         "storm-react-diagrams": "^5.2.1",
+        "dagre": "0.8.4",
         "style-loader": "^0.21.0",
         "through2": "~2.0.3",
         "ts-loader": "^5.2.1",

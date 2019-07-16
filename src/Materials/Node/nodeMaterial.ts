@@ -2,14 +2,13 @@ import { NodeMaterialBlock } from './nodeMaterialBlock';
 import { PushMaterial } from '../pushMaterial';
 import { Scene } from '../../scene';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { Matrix, Color4 } from '../../Maths/math';
+import { Matrix } from '../../Maths/math.vector';
+import { Color4 } from '../../Maths/math.color';
 import { Mesh } from '../../Meshes/mesh';
 import { Engine } from '../../Engines/engine';
 import { NodeMaterialBuildState } from './nodeMaterialBuildState';
 import { EffectCreationOptions, EffectFallbacks } from '../effect';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
-import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
 import { Observable, Observer } from '../../Misc/observable';
 import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
@@ -20,9 +19,10 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { Nullable } from '../../types';
 import { VertexBuffer } from '../../Meshes/buffer';
 import { Tools } from '../../Misc/tools';
-import { Vector4TransformBlock } from './Blocks/vector4TransformBlock';
+import { VectorTransformBlock } from './Blocks/vectorTransformBlock';
 import { VertexOutputBlock } from './Blocks/Vertex/vertexOutputBlock';
 import { FragmentOutputBlock } from './Blocks/Fragment/fragmentOutputBlock';
+import { InputBlock } from './Blocks/Input/inputBlock';
 
 // declare NODEEDITOR namespace for compilation issue
 declare var NODEEDITOR: any;
@@ -102,7 +102,6 @@ export class NodeMaterial extends PushMaterial {
     private _buildWasSuccessful = false;
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
-    private _textureConnectionPoints = new Array<NodeMaterialConnectionPoint>();
     private _optimizers = new Array<NodeMaterialOptimizer>();
 
     /** Define the URl to load node editor script */
@@ -375,18 +374,31 @@ export class NodeMaterial extends PushMaterial {
         return this._sharedData.hints.needAlphaTesting;
     }
 
-    private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState) {
+    private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[]) {
         node.initialize(state);
         node.autoConfigure();
 
-        for (var inputs of node.inputs) {
-            let connectedPoint = inputs.connectedPoint;
+        if (node.isInput) {
+            (node as InputBlock).associatedVariableName = "";
+        }
+
+        for (var input of node.inputs) {
+            input.associatedVariableName = "";
+
+            let connectedPoint = input.connectedPoint;
             if (connectedPoint) {
                 let block = connectedPoint.ownerBlock;
                 if (block !== node) {
-                    this._initializeBlock(block, state);
+                    if (block.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                        nodesToProcessForOtherBuildState.push(block);
+                    }
+                    this._initializeBlock(block, state, nodesToProcessForOtherBuildState);
                 }
             }
+        }
+
+        for (var output of node.outputs) {
+            output.associatedVariableName = "";
         }
     }
 
@@ -439,40 +451,41 @@ export class NodeMaterial extends PushMaterial {
         this._sharedData.verbose = verbose;
 
         // Initialize blocks
+        let vertexNodes: NodeMaterialBlock[] = [];
+        let fragmentNodes: NodeMaterialBlock[] = [];
+
         for (var vertexOutputNode of this._vertexOutputNodes) {
-            this._initializeBlock(vertexOutputNode, this._vertexCompilationState);
+            vertexNodes.push(vertexOutputNode);
+            this._initializeBlock(vertexOutputNode, this._vertexCompilationState, fragmentNodes);
         }
 
         for (var fragmentOutputNode of this._fragmentOutputNodes) {
-            this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState);
+            fragmentNodes.push(fragmentOutputNode);
+            this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState, vertexNodes);
         }
 
         // Optimize
         this.optimize();
 
         // Vertex
-        for (var vertexOutputNode of this._vertexOutputNodes) {
+        for (var vertexOutputNode of vertexNodes) {
             vertexOutputNode.build(this._vertexCompilationState);
         }
 
         // Fragment
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
 
-        for (var fragmentOutputNode of this._fragmentOutputNodes) {
+        for (var fragmentOutputNode of fragmentNodes) {
             this._resetDualBlocks(fragmentOutputNode, this._buildId - 1);
         }
 
-        for (var fragmentOutputNode of this._fragmentOutputNodes) {
+        for (var fragmentOutputNode of fragmentNodes) {
             fragmentOutputNode.build(this._fragmentCompilationState);
         }
 
         // Finalize
         this._vertexCompilationState.finalize(this._vertexCompilationState);
         this._fragmentCompilationState.finalize(this._fragmentCompilationState);
-
-        // Textures
-        this._textureConnectionPoints =
-            this._sharedData.uniformConnectionPoints.filter((u) => u.type === NodeMaterialBlockConnectionPointTypes.Texture || u.type === NodeMaterialBlockConnectionPointTypes.Texture3D);
 
         this._buildId++;
 
@@ -502,15 +515,15 @@ export class NodeMaterial extends PushMaterial {
     }
 
     private _prepareDefinesForAttributes(mesh: AbstractMesh, defines: NodeMaterialDefines) {
-        if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
+        if (!defines._areAttributesDirty) {
             return;
         }
 
-        defines._normals = defines._needNormals;
-        defines._uvs = defines._needUVs;
+        defines["NORMAL"] = mesh.isVerticesDataPresent(VertexBuffer.NormalKind);
 
-        defines.setValue("NORMAL", (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)));
-        defines.setValue("TANGENT", mesh.isVerticesDataPresent(VertexBuffer.TangentKind));
+        defines["TANGENT"] = mesh.isVerticesDataPresent(VertexBuffer.TangentKind);
+
+        defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
     }
 
     /**
@@ -555,6 +568,10 @@ export class NodeMaterial extends PushMaterial {
 
         // Shared defines
         this._sharedData.blocksWithDefines.forEach((b) => {
+            b.initializeDefines(mesh, this, defines, useInstances);
+        });
+
+        this._sharedData.blocksWithDefines.forEach((b) => {
             b.prepareDefines(mesh, this, defines, useInstances);
         });
 
@@ -571,6 +588,10 @@ export class NodeMaterial extends PushMaterial {
             });
 
             // Uniforms
+            this._sharedData.dynamicUniformBlocks.forEach((b) => {
+                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines);
+            });
+
             let mergedUniforms = this._vertexCompilationState.uniforms;
 
             this._fragmentCompilationState.uniforms.forEach((u) => {
@@ -652,6 +673,13 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Get a string representing the shaders built by the current node graph
+     */
+    public get compiledShaders() {
+        return `// Vertex shader\r\n${this._vertexCompilationState.compilationString}\r\n\r\n// Fragment shader\r\n${this._fragmentCompilationState.compilationString}`;
+    }
+
+    /**
      * Binds the world matrix to the material
      * @param world defines the world transformation matrix
      */
@@ -673,8 +701,8 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Connection points
-        for (var connectionPoint of this._sharedData.uniformConnectionPoints) {
-            connectionPoint.transmitWorld(this._activeEffect, world, this._cachedWorldViewMatrix, this._cachedWorldViewProjectionMatrix);
+        for (var inputBlock of this._sharedData.inputBlocks) {
+            inputBlock._transmitWorld(this._activeEffect, world, this._cachedWorldViewMatrix, this._cachedWorldViewProjectionMatrix);
         }
     }
 
@@ -706,8 +734,8 @@ export class NodeMaterial extends PushMaterial {
                 }
 
                 // Connection points
-                for (var connectionPoint of sharedData.uniformConnectionPoints) {
-                    connectionPoint.transmit(effect, scene);
+                for (var inputBlock of sharedData.inputBlocks) {
+                    inputBlock._transmit(effect, scene);
                 }
             }
         }
@@ -722,11 +750,7 @@ export class NodeMaterial extends PushMaterial {
     public getActiveTextures(): BaseTexture[] {
         var activeTextures = super.getActiveTextures();
 
-        for (var connectionPoint of this._textureConnectionPoints) {
-            if (connectionPoint.value) {
-                activeTextures.push(connectionPoint.value);
-            }
-        }
+        activeTextures.push(...this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture!));
 
         return activeTextures;
     }
@@ -741,8 +765,8 @@ export class NodeMaterial extends PushMaterial {
             return true;
         }
 
-        for (var connectionPoint of this._textureConnectionPoints) {
-            if (connectionPoint.value === texture) {
+        for (var t of this._sharedData.textureBlocks) {
+            if (t.texture === texture) {
                 return true;
             }
         }
@@ -759,14 +783,11 @@ export class NodeMaterial extends PushMaterial {
     public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
 
         if (forceDisposeTextures) {
-            for (var connectionPoint of this._textureConnectionPoints) {
-                if (connectionPoint.value) {
-                    (connectionPoint.value as BaseTexture).dispose();
-                }
+            for (var texture of this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture!)) {
+                texture.dispose();
             }
         }
 
-        this._textureConnectionPoints = [];
         this.onBuildObservable.clear();
 
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
@@ -818,20 +839,32 @@ export class NodeMaterial extends PushMaterial {
     public setToDefault() {
         this.clear();
 
-        var worldPos = new Vector4TransformBlock("worldPos");
-        worldPos.vector.setAsAttribute("position");
-        worldPos.transform.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.World);
+        var positionInput = new InputBlock("position");
+        positionInput.setAsAttribute("position");
 
-        var worldPosdMultipliedByViewProjection = new Vector4TransformBlock("worldPos * viewProjectionTransform");
+        var worldInput = new InputBlock("world");
+        worldInput.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.World);
+
+        var worldPos = new VectorTransformBlock("worldPos");
+        positionInput.connectTo(worldPos);
+        worldInput.connectTo(worldPos);
+
+        var viewProjectionInput = new InputBlock("viewProjection");
+        viewProjectionInput.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.ViewProjection);
+
+        var worldPosdMultipliedByViewProjection = new VectorTransformBlock("worldPos * viewProjectionTransform");
         worldPos.connectTo(worldPosdMultipliedByViewProjection);
-        worldPosdMultipliedByViewProjection.transform.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.ViewProjection);
+        viewProjectionInput.connectTo(worldPosdMultipliedByViewProjection);
 
         var vertexOutput = new VertexOutputBlock("vertexOutput");
         worldPosdMultipliedByViewProjection.connectTo(vertexOutput);
 
         // Pixel
+        var pixelColor = new InputBlock("color");
+        pixelColor.value = new Color4(0.8, 0.8, 0.8, 1);
+
         var pixelOutput = new FragmentOutputBlock("pixelOutput");
-        pixelOutput.color.value = new Color4(0.8, 0.8, 0.8, 1);
+        pixelColor.connectTo(pixelOutput);
 
         // Add to nodes
         this.addOutputNode(vertexOutput);

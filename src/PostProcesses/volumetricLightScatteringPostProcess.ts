@@ -1,7 +1,7 @@
 import { serializeAsVector3, serialize, serializeAsMeshReference } from "../Misc/decorators";
 import { SmartArray } from "../Misc/smartArray";
 import { Logger } from "../Misc/logger";
-import { Color4, Color3, Vector2, Vector3, Matrix, Viewport } from "../Maths/math";
+import { Vector2, Vector3, Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { SubMesh } from "../Meshes/subMesh";
@@ -22,6 +22,8 @@ import "../Meshes/Builders/planeBuilder";
 import "../Shaders/depth.vertex";
 import "../Shaders/volumetricLightScattering.fragment";
 import "../Shaders/volumetricLightScatteringPass.fragment";
+import { Color4, Color3 } from '../Maths/math.color';
+import { Viewport } from '../Maths/math.viewport';
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -213,7 +215,11 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                 { vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" },
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix"],
-                ["diffuseSampler"], join);
+                ["diffuseSampler"],
+                join,
+                undefined, undefined, undefined,
+                { maxSimultaneousMorphTargets: mesh.numBoneInfluencers }
+            );
         }
 
         return this._volumetricLightScatteringPass.isReady();

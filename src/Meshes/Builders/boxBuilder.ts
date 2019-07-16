@@ -1,6 +1,7 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Vector4, Color4 } from "../../Maths/math";
+import { Vector4 } from "../../Maths/math.vector";
+import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
@@ -25,7 +26,7 @@ VertexData.CreateBox = function(options: { size?: number, width?: number, height
     var basePositions = [1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1];
     if (wrap) {
         indices = [2, 3, 0, 2, 0, 1, 4, 5, 6, 4, 6, 7, 9, 10, 11, 9, 11, 8, 12, 14, 15, 12, 13, 14];
-        basePositions = [-1, 1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1,  -1, -1, -1,  1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1];
+        basePositions = [-1, 1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1];
         var topFaceBase: any = [[1, 1, 1], [-1, 1, 1], [-1, 1, -1], [1, 1, -1]];
         var bottomFaceBase: any = [[-1, -1, 1], [1, -1, 1], [1, -1, -1], [-1, -1, -1]];
         var topFaceOrder: any = [17, 18, 19, 16];
@@ -129,7 +130,7 @@ export class BoxBuilder {
      * @param scene defines the hosting scene
      * @returns the box mesh
      */
-    public static CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean, topBaseAt?: number, bottomBaseAt?: number , updatable?: boolean}, scene: Nullable<Scene> = null): Mesh {
+    public static CreateBox(name: string, options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean, topBaseAt?: number, bottomBaseAt?: number, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         var box = new Mesh(name, scene);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

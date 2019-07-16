@@ -1,6 +1,6 @@
 import { serializeAsMeshReference, serializeAsVector3, SerializationHelper } from "../Misc/decorators";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Matrix, Vector3 } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Nullable } from "../types";
 import { AbstractScene } from "../abstractScene";

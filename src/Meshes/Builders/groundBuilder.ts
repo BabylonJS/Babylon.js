@@ -1,11 +1,13 @@
 import { Scene } from "../../scene";
-import { Color3, Vector3, Epsilon } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
+import { Color3 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { GroundMesh } from "../groundMesh";
 import { Tools } from "../../Misc/tools";
 import { Nullable } from '../../types';
 import { EngineStore } from '../../Engines/engineStore';
+import { Epsilon } from '../../Maths/math.constants';
 
 VertexData.CreateGround = function(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
     var indices = [];

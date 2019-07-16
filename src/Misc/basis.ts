@@ -159,8 +159,8 @@ export class BasisTools {
             this._CreateWorkerAsync().then(() => {
                 var actionId = this._actionId++;
                 var messageHandler = (msg: any) => {
-                    this._Worker!.removeEventListener("message", messageHandler);
                     if (msg.data.action === "transcode" && msg.data.id === actionId) {
+                        this._Worker!.removeEventListener("message", messageHandler);
                         if (!msg.data.success) {
                             rej("Transcode is not supported on this device");
                         }else {
@@ -180,7 +180,6 @@ export class BasisTools {
      * @param transcodeResult the result of transcoding the basis file to load from
      */
     public static LoadTextureFromTranscodeResult(texture: InternalTexture, transcodeResult: TranscodeResult) {
-        texture._invertVScale = texture.invertY;
         for (var i = 0; i < transcodeResult.fileInfo.images.length; i++) {
             var rootImage = transcodeResult.fileInfo.images[i].levels[0];
             texture._invertVScale = texture.invertY;
@@ -189,10 +188,11 @@ export class BasisTools {
                 texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
                 texture.format = Engine.TEXTUREFORMAT_RGB;
 
-                if (texture.getEngine().webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
+                if (texture.getEngine().webGLVersion < 2 && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
                     // Create non power of two texture
                     let source = new InternalTexture(texture.getEngine(), InternalTexture.DATASOURCE_TEMP);
 
+                    texture._invertVScale = texture.invertY;
                     source.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
                     source.format = Engine.TEXTUREFORMAT_RGB;
                     // Fallback requires aligned width/height
@@ -207,6 +207,9 @@ export class BasisTools {
                         source.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, texture, true);
                     });
                 }else {
+                    // Fallback is already inverted
+                    texture._invertVScale = !texture.invertY;
+
                     // Upload directly
                     texture.width = (rootImage.width + 3) & ~3;
                     texture.height = (rootImage.height + 3) & ~3;
@@ -377,7 +380,7 @@ function workerFunc(): void {
         return info;
     }
 
-    function TranscodeLevel(loadedFile: any, imageIndex: number, levelIndex: number, format: number, convertToRgb565: boolean) {
+    function TranscodeLevel(loadedFile: any, imageIndex: number, levelIndex: number, format: number, convertToRgb565: boolean): Nullable<Uint16Array> {
         var dstSize = loadedFile.getImageTranscodedSizeInBytes(imageIndex, levelIndex, format);
         var dst = new Uint8Array(dstSize);
         if (!loadedFile.transcodeImage(dst, imageIndex, levelIndex, format, 1, 0)) {
@@ -403,7 +406,7 @@ function workerFunc(): void {
      * @param  height aligned height of the image
      * @return the converted pixels
      */
-    function ConvertDxtToRgb565(src: Uint16Array, srcByteOffset: number, width: number, height: number): Uint16Array {
+    function ConvertDxtToRgb565(src: Uint8Array, srcByteOffset: number, width: number, height: number): Uint16Array {
         var c = new Uint16Array(4);
         var dst = new Uint16Array(width * height);
 

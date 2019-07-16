@@ -1,5 +1,5 @@
 import { Nullable } from "../../types";
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { Constants } from "../../Engines/constants";
 
 /**

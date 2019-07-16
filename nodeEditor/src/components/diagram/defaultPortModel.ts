@@ -26,6 +26,14 @@ export class DefaultPortModel extends PortModel {
         DefaultPortModel.idCounter++;
     }
 
+    canLinkToPort(port: DefaultPortModel): boolean {
+        if (!this.connection || !port.connection) {
+            return true;
+        }
+
+        return this.connection.canConnectTo(port.connection);
+    }
+
     syncWithNodeMaterialConnectionPoint(connection: NodeMaterialConnectionPoint) {
         this.connection = connection;
         this.name = connection.name;

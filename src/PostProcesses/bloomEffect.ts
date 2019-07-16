@@ -3,7 +3,7 @@ import { PostProcess } from "./postProcess";
 import { ExtractHighlightsPostProcess } from "./extractHighlightsPostProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import { BloomMergePostProcess } from "./bloomMergePostProcess";
-import { Vector2 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 import { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { Scene } from "../scene";

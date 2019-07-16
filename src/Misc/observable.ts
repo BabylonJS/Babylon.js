@@ -154,6 +154,13 @@ export class Observable<T> {
     private _onObserverAdded: Nullable<(observer: Observer<T>) => void>;
 
     /**
+     * Gets the list of observers
+     */
+    public get observers(): Array<Observer<T>> {
+        return this._observers;
+    }
+
+    /**
      * Creates a new observable
      * @param onObserverAdded defines a callback to call when a new observer is added
      */
@@ -276,8 +283,8 @@ export class Observable<T> {
      * @param observer the observer to move
      */
     public makeObserverTopPriority(observer: Observer<T>) {
-           this._remove(observer);
-           this._observers.unshift(observer);
+        this._remove(observer);
+        this._observers.unshift(observer);
     }
 
     /**

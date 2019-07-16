@@ -1,11 +1,12 @@
 import { Nullable } from "./types";
-import { IAnimatable, IFileRequest, Tools, PerfCounter } from "./Misc/tools";
+import { Tools } from "./Misc/tools";
+import { IAnimatable } from './Animations/animatable.interface';
 import { PrecisionDate } from "./Misc/precisionDate";
 import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { Color4, Color3, Plane, Vector2, Vector3, Matrix, Frustum } from "./Maths/math";
+import { Vector2, Vector3, Matrix } from "./Maths/math.vector";
 import { Geometry } from "./Meshes/geometry";
 import { TransformNode } from "./Meshes/transformNode";
 import { SubMesh } from "./Meshes/subMesh";
@@ -47,6 +48,11 @@ import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
 import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
+import { PerfCounter } from './Misc/perfCounter';
+import { IFileRequest } from './Misc/fileRequest';
+import { Color4, Color3 } from './Maths/math.color';
+import { Plane } from './Maths/math.plane';
+import { Frustum } from './Maths/math.frustum';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -2449,6 +2455,21 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
+     * Gets a the last added material using a given id
+     * @param id defines the material's ID
+     * @return the last material with the given id or null if none found.
+     */
+    public getLastMaterialByID(id: string): Nullable<Material> {
+        for (var index = this.materials.length - 1; index >= 0; index--) {
+            if (this.materials[index].id === id) {
+                return this.materials[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Gets a material using its name
      * @param name defines the material's name
      * @return the material or null if none found.
@@ -3508,10 +3529,16 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             this._intermediateRendering = false;
 
+            // Need to bind if sub-camera has an outputRenderTarget eg. for webXR
+            if (this.activeCamera && this.activeCamera.outputRenderTarget) {
+                needRebind = true;
+            }
+
             // Restore framebuffer after rendering to targets
             if (needRebind) {
                 this._bindFrameBuffer();
             }
+
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4135,8 +4162,8 @@ export class Scene extends AbstractScene implements IAnimatable {
             var minBox = boundingInfo.boundingBox.minimumWorld;
             var maxBox = boundingInfo.boundingBox.maximumWorld;
 
-            Tools.CheckExtends(minBox, min, max);
-            Tools.CheckExtends(maxBox, min, max);
+            Vector3.CheckExtends(minBox, min, max);
+            Vector3.CheckExtends(maxBox, min, max);
         });
 
         return {

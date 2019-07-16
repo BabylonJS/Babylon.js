@@ -2,8 +2,9 @@ import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 /**
- * Block used to multiply 2 vector4
+ * Block used to multiply 2 values
  */
 export class MultiplyBlock extends NodeMaterialBlock {
     /**
@@ -11,7 +12,7 @@ export class MultiplyBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("left", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);

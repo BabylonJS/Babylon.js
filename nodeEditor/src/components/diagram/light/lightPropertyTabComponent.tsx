@@ -20,6 +20,8 @@ export class LightPropertyTabComponent extends React.Component<ILightPropertyTab
             return { label: l.name, value: l.name }
         });
 
+        lightOptions.splice(0, 0, { label: "All", value: "" })
+
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
@@ -28,8 +30,12 @@ export class LightPropertyTabComponent extends React.Component<ILightPropertyTab
                 </LineContainerComponent>
 
                 <LineContainerComponent title="PROPERTIES">
-                    <OptionsLineComponent label="Light" noDirectUpdate={true} valuesAreStrings={true} options={lightOptions} target={this.props.node.light} propertyName="name" onSelect={(name: any) => {
-                        this.props.node.light = scene.getLightByName(name);
+                    <OptionsLineComponent label="Light" defaultIfNull={0} noDirectUpdate={true} valuesAreStrings={true} options={lightOptions} target={this.props.node.light} propertyName="name" onSelect={(name: any) => {
+                        if (name === "") {
+                            this.props.node.light = null;
+                        } else {
+                            this.props.node.light = scene.getLightByName(name);
+                        }
                         this.forceUpdate();
                         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                     }} />

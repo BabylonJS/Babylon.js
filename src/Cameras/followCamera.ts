@@ -3,7 +3,7 @@ import { serialize, serializeAsMeshReference } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
 import { TargetCamera } from "./targetCamera";
 import { Scene } from "../scene";
-import { Matrix, Vector3 } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { FollowCameraInputsManager } from './followCameraInputsManager';
