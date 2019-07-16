@@ -5,6 +5,4 @@ export * from "./Input/index";
 export * from "./multiplyBlock";
 export * from "./addBlock";
 export * from "./clampBlock";
-export * from "./vector2TransformBlock";
-export * from "./vector3TransformBlock";
-export * from "./vector4TransformBlock";
+export * from "./vectorTransformBlock";

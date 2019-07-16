@@ -217,9 +217,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         let position = this.position;
         let normal = this.normal;
         let tangent = this.tangent;
+        let uv = this.uv;
         let positionOutput = this.positionOutput;
         let normalOutput = this.normalOutput;
         let tangentOutput = this.tangentOutput;
+        let uvOutput = this.uvOutput;
         let comments = `//${this.name}`;
 
         state.uniforms.push("morphTargetInfluences");
@@ -235,6 +237,9 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef TANGENT\r\n`;
         state.compilationString += `${this._declareOutput(tangentOutput, state)} = ${tangent.associatedVariableName};\r\n`;
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef UV1\r\n`;
+        state.compilationString += `${this._declareOutput(uvOutput, state)} = ${uv.associatedVariableName};\r\n`;
         state.compilationString += `#endif\r\n`;
 
         // Repeatable content
