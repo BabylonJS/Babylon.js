@@ -1,10 +1,5 @@
-import { FloatArray, IndicesArray, Nullable } from "../types";
-import { Color4, Color3, Vector2, Vector3 } from "../Maths/math";
-import { Scalar } from "../Maths/math.scalar";
-import { IOfflineProvider } from "../Offline/IOfflineProvider";
+import { Nullable, float } from "../types";
 import { Observable } from "./observable";
-import { FilesInputStore } from "./filesInputStore";
-import { Constants } from "../Engines/constants";
 import { DomManagement } from "./domManagement";
 import { Logger } from "./logger";
 import { _TypeStore } from "./typeStore";
@@ -12,183 +7,23 @@ import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from './precisionDate';
 import { _DevTools } from './devTools';
 import { WebRequest } from './webRequest';
+import { IFileRequest } from './fileRequest';
+import { EngineStore } from '../Engines/engineStore';
+import { FileTools } from './fileTools';
+import { IOfflineProvider } from '../Offline/IOfflineProvider';
+import { PromisePolyfill } from './promise';
+import { TimingTools } from './timingTools';
+import { InstantiationTools } from './instantiationTools';
+import { GUID } from './guid';
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
-declare type Animation = import("../Animations/animation").Animation;
 
-/**
- * Interface for any object that can request an animation frame
- */
-export interface ICustomAnimationFrameRequester {
-    /**
-     * This function will be called when the render loop is ready. If this is not populated, the engine's renderloop function will be called
-     */
-    renderFunction?: Function;
-    /**
-     * Called to request the next frame to render to
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
-     */
-    requestAnimationFrame: Function;
-    /**
-     * You can pass this value to cancelAnimationFrame() to cancel the refresh callback request
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame#Return_value
-     */
-    requestID?: number;
-}
-
-/**
- * Interface containing an array of animations
- */
-export interface IAnimatable {
-    /**
-     * Array of animations
-     */
-    animations: Nullable<Array<Animation>>;
-}
-
-/** Interface used by value gradients (color, factor, ...) */
-export interface IValueGradient {
-    /**
-     * Gets or sets the gradient value (between 0 and 1)
-     */
-    gradient: number;
-}
-
-/** Class used to store color4 gradient */
-export class ColorGradient implements IValueGradient {
-    /**
-     * Gets or sets the gradient value (between 0 and 1)
-     */
-    public gradient: number;
-    /**
-     * Gets or sets first associated color
-     */
-    public color1: Color4;
-    /**
-     * Gets or sets second associated color
-     */
-    public color2?: Color4;
-
-    /**
-     * Will get a color picked randomly between color1 and color2.
-     * If color2 is undefined then color1 will be used
-     * @param result defines the target Color4 to store the result in
-     */
-    public getColorToRef(result: Color4) {
-        if (!this.color2) {
-            result.copyFrom(this.color1);
-            return;
-        }
-
-        Color4.LerpToRef(this.color1, this.color2, Math.random(), result);
-    }
-}
-
-/** Class used to store color 3 gradient */
-export class Color3Gradient implements IValueGradient {
-    /**
-     * Gets or sets the gradient value (between 0 and 1)
-     */
-    public gradient: number;
-    /**
-     * Gets or sets the associated color
-     */
-    public color: Color3;
-}
-
-/** Class used to store factor gradient */
-export class FactorGradient implements IValueGradient {
-    /**
-     * Gets or sets the gradient value (between 0 and 1)
-     */
-    public gradient: number;
-    /**
-     * Gets or sets first associated factor
-     */
-    public factor1: number;
-    /**
-     * Gets or sets second associated factor
-     */
-    public factor2?: number;
-
-    /**
-     * Will get a number picked randomly between factor1 and factor2.
-     * If factor2 is undefined then factor1 will be used
-     * @returns the picked number
-     */
-    public getFactor(): number {
-        if (this.factor2 === undefined) {
-            return this.factor1;
-        }
-
-        return Scalar.Lerp(this.factor1, this.factor2, Math.random());
-    }
-}
-
-/**
- * @ignore
- * Application error to support additional information when loading a file
- */
-export class LoadFileError extends Error {
-    // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
-    // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
-
-    // Polyfill for Object.setPrototypeOf if necessary.
-    private static _setPrototypeOf: (o: any, proto: object | null) => any =
-        (Object as any).setPrototypeOf || ((o, proto) => { o.__proto__ = proto; return o; });
-
-    /**
-     * Creates a new LoadFileError
-     * @param message defines the message of the error
-     * @param request defines the optional web request
-     */
-    constructor(
-        message: string,
-        /** defines the optional web request */
-        public request?: WebRequest
-    ) {
-        super(message);
-        this.name = "LoadFileError";
-
-        LoadFileError._setPrototypeOf(this, LoadFileError.prototype);
-    }
-}
-
-/**
- * Class used to define a retry strategy when error happens while loading assets
- */
-export class RetryStrategy {
-    /**
-     * Function used to defines an exponential back off strategy
-     * @param maxRetries defines the maximum number of retries (3 by default)
-     * @param baseInterval defines the interval between retries
-     * @returns the strategy function to use
-     */
-    public static ExponentialBackoff(maxRetries = 3, baseInterval = 500) {
-        return (url: string, request: WebRequest, retryIndex: number): number => {
-            if (request.status !== 0 || retryIndex >= maxRetries || url.indexOf("file:") !== -1) {
-                return -1;
-            }
-
-            return Math.pow(2, retryIndex) * baseInterval;
-        };
-    }
-}
-
-/**
- * File request interface
- */
-export interface IFileRequest {
-    /**
-     * Raised when the request is complete (success or error).
-     */
-    onCompleteObservable: Observable<IFileRequest>;
-
-    /**
-     * Aborts the request for a file.
-     */
-    abort: () => void;
+interface IColor4Like {
+    r: float;
+    g: float;
+    b: float;
+    a: float;
 }
 
 /**
@@ -198,7 +33,13 @@ export class Tools {
     /**
      * Gets or sets the base URL to use to load assets
      */
-    public static BaseUrl = "";
+    public static get BaseUrl() {
+        return FileTools.BaseUrl;
+    }
+
+    public static set BaseUrl(value: string) {
+        FileTools.BaseUrl = value;
+    }
 
     /**
      * Enable/Disable Custom HTTP Request Headers globally.
@@ -216,7 +57,13 @@ export class Tools {
     /**
      * Gets or sets the retry strategy to apply when an error happens while loading an asset
      */
-    public static DefaultRetryStrategy = RetryStrategy.ExponentialBackoff();
+    public static get DefaultRetryStrategy() {
+        return FileTools.DefaultRetryStrategy;
+    }
+
+    public static set DefaultRetryStrategy(strategy: (url: string, request: WebRequest, retryIndex: number) => number) {
+        FileTools.DefaultRetryStrategy = strategy;
+    }
 
     /**
      * Default behaviour for cors in the application.
@@ -229,19 +76,37 @@ export class Tools {
      * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
      * @ignorenaming
      */
-    public static UseFallbackTexture = true;
+    public static get UseFallbackTexture() {
+        return EngineStore.UseFallbackTexture;
+    }
+
+    public static set UseFallbackTexture(value: boolean) {
+        EngineStore.UseFallbackTexture = value;
+    }
 
     /**
      * Use this object to register external classes like custom textures or material
      * to allow the laoders to instantiate them
      */
-    public static RegisteredExternalClasses: { [key: string]: Object } = {};
+    public static get RegisteredExternalClasses() {
+        return InstantiationTools.RegisteredExternalClasses;
+    }
+
+    public static set RegisteredExternalClasses(classes: { [key: string]: Object }) {
+        InstantiationTools.RegisteredExternalClasses = classes;
+    }
 
     /**
      * Texture content used if a texture cannot loaded
      * @ignorenaming
      */
-    public static fallbackTexture = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
+    public static get fallbackTexture() {
+        return EngineStore.FallbackTexture;
+    }
+
+    public static set fallbackTexture(value: string) {
+        EngineStore.FallbackTexture = value;
+    }
 
     /**
      * Read the content of a byte array at a specified coordinates (taking in account wrapping)
@@ -252,7 +117,7 @@ export class Tools {
      * @param pixels defines the source byte array
      * @param color defines the output color
      */
-    public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: Color4): void {
+    public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: IColor4Like): void {
         let wrappedU = ((Math.abs(u) * width) % width) | 0;
         let wrappedV = ((Math.abs(v) * height) % height) | 0;
 
@@ -280,29 +145,7 @@ export class Tools {
      * @returns the new object or null if the system was not able to do the instantiation
      */
     public static Instantiate(className: string): any {
-        if (Tools.RegisteredExternalClasses && Tools.RegisteredExternalClasses[className]) {
-            return Tools.RegisteredExternalClasses[className];
-        }
-
-        const internalClass = _TypeStore.GetClass(className);
-        if (internalClass) {
-            return internalClass;
-        }
-
-        Logger.Warn(className + " not found, you may have missed an import.");
-
-        var arr = className.split(".");
-
-        var fn: any = (window || this);
-        for (var i = 0, len = arr.length; i < len; i++) {
-            fn = fn[arr[i]];
-        }
-
-        if (typeof fn !== "function") {
-            return null;
-        }
-
-        return fn;
+        return InstantiationTools.Instantiate(className);
     }
 
     /**
@@ -325,11 +168,7 @@ export class Tools {
      * @param action defines the action to execute after the current execution block
      */
     public static SetImmediate(action: () => void) {
-        if (DomManagement.IsWindowObjectExist() && window.setImmediate) {
-            window.setImmediate(action);
-        } else {
-            setTimeout(action, 1);
-        }
+        TimingTools.SetImmediate(action);
     }
 
     /**
@@ -361,73 +200,6 @@ export class Tools {
         }
 
         return (Tools._tmpFloatArray[0] = value);
-    }
-
-    /**
-     * Find the next highest power of two.
-     * @param x Number to start search from.
-     * @return Next highest power of two.
-     */
-    public static CeilingPOT(x: number): number {
-        x--;
-        x |= x >> 1;
-        x |= x >> 2;
-        x |= x >> 4;
-        x |= x >> 8;
-        x |= x >> 16;
-        x++;
-        return x;
-    }
-
-    /**
-     * Find the next lowest power of two.
-     * @param x Number to start search from.
-     * @return Next lowest power of two.
-     */
-    public static FloorPOT(x: number): number {
-        x = x | (x >> 1);
-        x = x | (x >> 2);
-        x = x | (x >> 4);
-        x = x | (x >> 8);
-        x = x | (x >> 16);
-        return x - (x >> 1);
-    }
-
-    /**
-     * Find the nearest power of two.
-     * @param x Number to start search from.
-     * @return Next nearest power of two.
-     */
-    public static NearestPOT(x: number): number {
-        var c = Tools.CeilingPOT(x);
-        var f = Tools.FloorPOT(x);
-        return (c - x) > (x - f) ? f : c;
-    }
-
-    /**
-     * Get the closest exponent of two
-     * @param value defines the value to approximate
-     * @param max defines the maximum value to return
-     * @param mode defines how to define the closest value
-     * @returns closest exponent of two of the given value
-     */
-    public static GetExponentOfTwo(value: number, max: number, mode = Constants.SCALEMODE_NEAREST): number {
-        let pot;
-
-        switch (mode) {
-            case Constants.SCALEMODE_FLOOR:
-                pot = Tools.FloorPOT(value);
-                break;
-            case Constants.SCALEMODE_NEAREST:
-                pot = Tools.NearestPOT(value);
-                break;
-            case Constants.SCALEMODE_CEILING:
-            default:
-                pot = Tools.CeilingPOT(value);
-                break;
-        }
-
-        return Math.min(pot, max);
     }
 
     /**
@@ -521,83 +293,6 @@ export class Tools {
     }
 
     /**
-     * Extracts minimum and maximum values from a list of indexed positions
-     * @param positions defines the positions to use
-     * @param indices defines the indices to the positions
-     * @param indexStart defines the start index
-     * @param indexCount defines the end index
-     * @param bias defines bias value to add to the result
-     * @return minimum and maximum values
-     */
-    public static ExtractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, bias: Nullable<Vector2> = null): { minimum: Vector3; maximum: Vector3 } {
-        var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-
-        for (var index = indexStart; index < indexStart + indexCount; index++) {
-            const offset = indices[index] * 3;
-            const x = positions[offset];
-            const y = positions[offset + 1];
-            const z = positions[offset + 2];
-            minimum.minimizeInPlaceFromFloats(x, y, z);
-            maximum.maximizeInPlaceFromFloats(x, y, z);
-        }
-
-        if (bias) {
-            minimum.x -= minimum.x * bias.x + bias.y;
-            minimum.y -= minimum.y * bias.x + bias.y;
-            minimum.z -= minimum.z * bias.x + bias.y;
-            maximum.x += maximum.x * bias.x + bias.y;
-            maximum.y += maximum.y * bias.x + bias.y;
-            maximum.z += maximum.z * bias.x + bias.y;
-        }
-
-        return {
-            minimum: minimum,
-            maximum: maximum
-        };
-    }
-
-    /**
-     * Extracts minimum and maximum values from a list of positions
-     * @param positions defines the positions to use
-     * @param start defines the start index in the positions array
-     * @param count defines the number of positions to handle
-     * @param bias defines bias value to add to the result
-     * @param stride defines the stride size to use (distance between two positions in the positions array)
-     * @return minimum and maximum values
-     */
-    public static ExtractMinAndMax(positions: FloatArray, start: number, count: number, bias: Nullable<Vector2> = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
-        var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-
-        if (!stride) {
-            stride = 3;
-        }
-
-        for (var index = start, offset = start * stride; index < start + count; index++ , offset += stride) {
-            const x = positions[offset];
-            const y = positions[offset + 1];
-            const z = positions[offset + 2];
-            minimum.minimizeInPlaceFromFloats(x, y, z);
-            maximum.maximizeInPlaceFromFloats(x, y, z);
-        }
-
-        if (bias) {
-            minimum.x -= minimum.x * bias.x + bias.y;
-            minimum.y -= minimum.y * bias.x + bias.y;
-            minimum.z -= minimum.z * bias.x + bias.y;
-            maximum.x += maximum.x * bias.x + bias.y;
-            maximum.y += maximum.y * bias.x + bias.y;
-            maximum.z += maximum.z * bias.x + bias.y;
-        }
-
-        return {
-            minimum: minimum,
-            maximum: maximum
-        };
-    }
-
-    /**
      * Returns an array if obj is not an array
      * @param obj defines the object to evaluate as an array
      * @param allowsNullUndefined defines a boolean indicating if obj is allowed to be null or undefined
@@ -627,114 +322,12 @@ export class Tools {
     }
 
     /**
-     * Queue a new function into the requested animation frame pool (ie. this function will be executed byt the browser for the next frame)
-     * @param func - the function to be called
-     * @param requester - the object that will request the next frame. Falls back to window.
-     * @returns frame number
-     */
-    public static QueueNewFrame(func: () => void, requester?: any): number {
-        if (!DomManagement.IsWindowObjectExist()) {
-            return setTimeout(func, 16);
-        }
-
-        if (!requester) {
-            requester = window;
-        }
-
-        if (requester.requestAnimationFrame) {
-            return requester.requestAnimationFrame(func);
-        }
-        else if (requester.msRequestAnimationFrame) {
-            return requester.msRequestAnimationFrame(func);
-        }
-        else if (requester.webkitRequestAnimationFrame) {
-            return requester.webkitRequestAnimationFrame(func);
-        }
-        else if (requester.mozRequestAnimationFrame) {
-            return requester.mozRequestAnimationFrame(func);
-        }
-        else if (requester.oRequestAnimationFrame) {
-            return requester.oRequestAnimationFrame(func);
-        }
-        else {
-            return window.setTimeout(func, 16);
-        }
-    }
-
-    /**
-     * Ask the browser to promote the current element to fullscreen rendering mode
-     * @param element defines the DOM element to promote
-     */
-    public static RequestFullscreen(element: HTMLElement): void {
-        var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || (<any>element).webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
-        if (!requestFunction) { return; }
-        requestFunction.call(element);
-    }
-
-    /**
-     * Asks the browser to exit fullscreen mode
-     */
-    public static ExitFullscreen(): void {
-        let anyDoc = document as any;
-
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        }
-        else if (anyDoc.mozCancelFullScreen) {
-            anyDoc.mozCancelFullScreen();
-        }
-        else if (anyDoc.webkitCancelFullScreen) {
-            anyDoc.webkitCancelFullScreen();
-        }
-        else if (anyDoc.msCancelFullScreen) {
-            anyDoc.msCancelFullScreen();
-        }
-    }
-
-    /**
-     * Ask the browser to promote the current element to pointerlock mode
-     * @param element defines the DOM element to promote
-     */
-    public static RequestPointerlock(element: HTMLElement): void {
-        element.requestPointerLock = element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
-        if (element.requestPointerLock) {
-            element.requestPointerLock();
-        }
-    }
-
-    /**
-     * Asks the browser to exit pointerlock mode
-     */
-    public static ExitPointerlock(): void {
-        let anyDoc = document as any;
-        document.exitPointerLock = document.exitPointerLock || anyDoc.msExitPointerLock || anyDoc.mozExitPointerLock || anyDoc.webkitExitPointerLock;
-
-        if (document.exitPointerLock) {
-            document.exitPointerLock();
-        }
-    }
-
-    /**
      * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
      * @param url define the url we are trying
      * @param element define the dom element where to configure the cors policy
      */
     public static SetCorsBehavior(url: string | string[], element: { crossOrigin: string | null }): void {
-        if (url && url.indexOf("data:") === 0) {
-            return;
-        }
-
-        if (Tools.CorsBehavior) {
-            if (typeof (Tools.CorsBehavior) === 'string' || Tools.CorsBehavior instanceof String) {
-                element.crossOrigin = <string>Tools.CorsBehavior;
-            }
-            else {
-                var result = Tools.CorsBehavior(url);
-                if (result) {
-                    element.crossOrigin = result;
-                }
-            }
-        }
+        FileTools.SetCorsBehavior(url, element);
     }
 
     // External files
@@ -752,109 +345,24 @@ export class Tools {
     /**
      * Gets or sets a function used to pre-process url before using them to load assets
      */
-    public static PreprocessUrl = (url: string) => {
-        return url;
+    public static get PreprocessUrl() {
+        return FileTools.PreprocessUrl;
+    }
+
+    public static set PreprocessUrl(processor: (url: string) => string) {
+        FileTools.PreprocessUrl = processor;
     }
 
     /**
-     * Loads an image as an HTMLImageElement.
-     * @param input url string, ArrayBuffer, or Blob to load
-     * @param onLoad callback called when the image successfully loads
-     * @param onError callback called when the image fails to load
-     * @param offlineProvider offline provider for caching
-     * @returns the HTMLImageElement of the loaded image
-     */
+    * Loads an image as an HTMLImageElement.
+    * @param input url string, ArrayBuffer, or Blob to load
+    * @param onLoad callback called when the image successfully loads
+    * @param onError callback called when the image fails to load
+    * @param offlineProvider offline provider for caching
+    * @returns the HTMLImageElement of the loaded image
+    */
     public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement {
-        let url: string;
-        let usingObjectURL = false;
-
-        if (input instanceof ArrayBuffer) {
-            url = URL.createObjectURL(new Blob([input]));
-            usingObjectURL = true;
-        }
-        else if (input instanceof Blob) {
-            url = URL.createObjectURL(input);
-            usingObjectURL = true;
-        }
-        else {
-            url = Tools.CleanUrl(input);
-            url = Tools.PreprocessUrl(input);
-        }
-
-        var img = new Image();
-        Tools.SetCorsBehavior(url, img);
-
-        const loadHandler = () => {
-            img.removeEventListener("load", loadHandler);
-            img.removeEventListener("error", errorHandler);
-
-            onLoad(img);
-
-            // Must revoke the URL after calling onLoad to avoid security exceptions in
-            // certain scenarios (e.g. when hosted in vscode).
-            if (usingObjectURL && img.src) {
-                URL.revokeObjectURL(img.src);
-            }
-        };
-
-        const errorHandler = (err: any) => {
-            img.removeEventListener("load", loadHandler);
-            img.removeEventListener("error", errorHandler);
-
-            Logger.Error("Error while trying to load image: " + input);
-
-            if (onError) {
-                onError("Error while trying to load image: " + input, err);
-            }
-
-            if (usingObjectURL && img.src) {
-                URL.revokeObjectURL(img.src);
-            }
-        };
-
-        img.addEventListener("load", loadHandler);
-        img.addEventListener("error", errorHandler);
-
-        var noOfflineSupport = () => {
-            img.src = url;
-        };
-
-        var loadFromOfflineSupport = () => {
-            if (offlineProvider) {
-                offlineProvider.loadImage(url, img);
-            }
-        };
-
-        if (url.substr(0, 5) !== "data:" && offlineProvider && offlineProvider.enableTexturesOffline) {
-            offlineProvider.open(loadFromOfflineSupport, noOfflineSupport);
-        }
-        else {
-            if (url.indexOf("file:") !== -1) {
-                var textureName = decodeURIComponent(url.substring(5).toLowerCase());
-                if (FilesInputStore.FilesToLoad[textureName]) {
-                    try {
-                        var blobURL;
-                        try {
-                            blobURL = URL.createObjectURL(FilesInputStore.FilesToLoad[textureName]);
-                        }
-                        catch (ex) {
-                            // Chrome doesn't support oneTimeOnly parameter
-                            blobURL = URL.createObjectURL(FilesInputStore.FilesToLoad[textureName]);
-                        }
-                        img.src = blobURL;
-                        usingObjectURL = true;
-                    }
-                    catch (e) {
-                        img.src = "";
-                    }
-                    return img;
-                }
-            }
-
-            noOfflineSupport();
-        }
-
-        return img;
+        return FileTools.LoadImage(input, onLoad, onError, offlineProvider);
     }
 
     /**
@@ -868,148 +376,7 @@ export class Tools {
      * @returns a file request object
      */
     public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
-        url = Tools.CleanUrl(url);
-
-        url = Tools.PreprocessUrl(url);
-
-        // If file and file input are set
-        if (url.indexOf("file:") !== -1) {
-            const fileName = decodeURIComponent(url.substring(5).toLowerCase());
-            if (FilesInputStore.FilesToLoad[fileName]) {
-                return Tools.ReadFile(FilesInputStore.FilesToLoad[fileName], onSuccess, onProgress, useArrayBuffer);
-            }
-        }
-
-        const loadUrl = Tools.BaseUrl + url;
-
-        let aborted = false;
-        const fileRequest: IFileRequest = {
-            onCompleteObservable: new Observable<IFileRequest>(),
-            abort: () => aborted = true,
-        };
-
-        const requestFile = () => {
-            let request = new WebRequest();
-            let retryHandle: Nullable<number> = null;
-
-            fileRequest.abort = () => {
-                aborted = true;
-
-                if (request.readyState !== (XMLHttpRequest.DONE || 4)) {
-                    request.abort();
-                }
-
-                if (retryHandle !== null) {
-                    clearTimeout(retryHandle);
-                    retryHandle = null;
-                }
-            };
-
-            const retryLoop = (retryIndex: number) => {
-                request.open('GET', loadUrl);
-
-                if (useArrayBuffer) {
-                    request.responseType = "arraybuffer";
-                }
-
-                if (onProgress) {
-                    request.addEventListener("progress", onProgress);
-                }
-
-                const onLoadEnd = () => {
-                    request.removeEventListener("loadend", onLoadEnd);
-                    fileRequest.onCompleteObservable.notifyObservers(fileRequest);
-                    fileRequest.onCompleteObservable.clear();
-                };
-
-                request.addEventListener("loadend", onLoadEnd);
-
-                const onReadyStateChange = () => {
-                    if (aborted) {
-                        return;
-                    }
-
-                    // In case of undefined state in some browsers.
-                    if (request.readyState === (XMLHttpRequest.DONE || 4)) {
-                        // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
-                        request.removeEventListener("readystatechange", onReadyStateChange);
-
-                        if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!DomManagement.IsWindowObjectExist() || Tools.IsFileURL()))) {
-                            onSuccess(!useArrayBuffer ? request.responseText : <ArrayBuffer>request.response, request.responseURL);
-                            return;
-                        }
-
-                        let retryStrategy = Tools.DefaultRetryStrategy;
-                        if (retryStrategy) {
-                            let waitTime = retryStrategy(loadUrl, request, retryIndex);
-                            if (waitTime !== -1) {
-                                // Prevent the request from completing for retry.
-                                request.removeEventListener("loadend", onLoadEnd);
-                                request = new WebRequest();
-                                retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
-                                return;
-                            }
-                        }
-
-                        let e = new LoadFileError("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl, request);
-                        if (onError) {
-                            onError(request, e);
-                        } else {
-                            throw e;
-                        }
-                    }
-                };
-
-                request.addEventListener("readystatechange", onReadyStateChange);
-
-                request.send();
-            };
-
-            retryLoop(0);
-        };
-
-        // Caching all files
-        if (offlineProvider && offlineProvider.enableSceneOffline) {
-            const noOfflineSupport = (request?: any) => {
-                if (request && request.status > 400) {
-                    if (onError) {
-                        onError(request);
-                    }
-                } else {
-                    if (!aborted) {
-                        requestFile();
-                    }
-                }
-            };
-
-            const loadFromOfflineSupport = () => {
-                // TODO: database needs to support aborting and should return a IFileRequest
-                if (aborted) {
-                    return;
-                }
-
-                if (offlineProvider) {
-                    offlineProvider.loadFile(url, (data) => {
-                        if (!aborted) {
-                            onSuccess(data);
-                        }
-
-                        fileRequest.onCompleteObservable.notifyObservers(fileRequest);
-                    }, onProgress ? (event) => {
-                        if (!aborted) {
-                            onProgress(event);
-                        }
-                    } : undefined, noOfflineSupport, useArrayBuffer);
-                }
-            };
-
-            offlineProvider.open(loadFromOfflineSupport, noOfflineSupport);
-        }
-        else {
-            requestFile();
-        }
-
-        return fileRequest;
+        return FileTools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
     }
 
     /**
@@ -1019,7 +386,7 @@ export class Tools {
      */
     public static LoadFileAsync(url: string): Promise<ArrayBuffer> {
         return new Promise((resolve, reject) => {
-            Tools.LoadFile(url, (data) => {
+            FileTools.LoadFile(url, (data) => {
                 resolve(data as ArrayBuffer);
             }, undefined, undefined, true, (request, exception) => {
                 reject(exception);
@@ -1135,33 +502,7 @@ export class Tools {
      * @returns a file request object
      */
     public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
-        let reader = new FileReader();
-        let request: IFileRequest = {
-            onCompleteObservable: new Observable<IFileRequest>(),
-            abort: () => reader.abort(),
-        };
-
-        reader.onloadend = (e) => request.onCompleteObservable.notifyObservers(request);
-        reader.onerror = (e) => {
-            Logger.Log("Error while reading file: " + fileToLoad.name);
-            callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
-        };
-        reader.onload = (e) => {
-            //target doesn't have result from ts 1.3
-            callback((<any>e.target)['result']);
-        };
-        if (progressCallBack) {
-            reader.onprogress = progressCallBack;
-        }
-        if (!useArrayBuffer) {
-            // Asynchronous read
-            reader.readAsText(fileToLoad);
-        }
-        else {
-            reader.readAsArrayBuffer(fileToLoad);
-        }
-
-        return request;
+        return FileTools.ReadFile(fileToLoad, callback, progressCallBack, useArrayBuffer);
     }
 
     /**
@@ -1187,17 +528,6 @@ export class Tools {
     }
 
     /**
-     * Checks if a given vector is inside a specific range
-     * @param v defines the vector to test
-     * @param min defines the minimum range
-     * @param max defines the maximum range
-     */
-    public static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void {
-        min.minimizeInPlace(v);
-        max.maximizeInPlace(v);
-    }
-
-    /**
      * Tries to copy an object by duplicating every property
      * @param source defines the source object
      * @param destination defines the target object
@@ -1220,26 +550,6 @@ export class Tools {
             }
         }
         return true;
-    }
-
-    /**
-     * Checks for a matching suffix at the end of a string (for ES5 and lower)
-     * @param str Source string
-     * @param suffix Suffix to search for in the source string
-     * @returns Boolean indicating whether the suffix was found (true) or not (false)
-     */
-    public static EndsWith(str: string, suffix: string): boolean {
-        return str.indexOf(suffix, str.length - suffix.length) !== -1;
-    }
-
-    /**
-     * Checks for a matching suffix at the beginning of a string (for ES5 and lower)
-     * @param str Source string
-     * @param suffix Suffix to search for in the source string
-     * @returns Boolean indicating whether the suffix was found (true) or not (false)
-     */
-    public static StartsWith(str: string, suffix: string): boolean {
-        return str.indexOf(suffix) === 0;
     }
 
     /**
@@ -1478,10 +788,7 @@ export class Tools {
      * @returns a pseudo random id
      */
     public static RandomId(): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
+        return GUID.RandomId();
     }
 
     /**
@@ -1599,14 +906,6 @@ export class Tools {
      */
     public static set LogLevels(level: number) {
         Logger.LogLevels = level;
-    }
-
-    /**
-     * Checks if the loaded document was accessed via `file:`-Protocol.
-     * @returns boolean
-     */
-    public static IsFileURL(): boolean {
-        return location.protocol === "file:";
     }
 
     /**
@@ -1805,197 +1104,6 @@ export class Tools {
             }, delay);
         });
     }
-
-    /**
-     * Gets the current gradient from an array of IValueGradient
-     * @param ratio defines the current ratio to get
-     * @param gradients defines the array of IValueGradient
-     * @param updateFunc defines the callback function used to get the final value from the selected gradients
-     */
-    public static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void) {
-        for (var gradientIndex = 0; gradientIndex < gradients.length - 1; gradientIndex++) {
-            let currentGradient = gradients[gradientIndex];
-            let nextGradient = gradients[gradientIndex + 1];
-
-            if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
-                let scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
-                updateFunc(currentGradient, nextGradient, scale);
-                return;
-            }
-        }
-
-        // Use last index if over
-        const lastIndex = gradients.length - 1;
-        updateFunc(gradients[lastIndex], gradients[lastIndex], 1.0);
-    }
-}
-
-/**
- * This class is used to track a performance counter which is number based.
- * The user has access to many properties which give statistics of different nature.
- *
- * The implementer can track two kinds of Performance Counter: time and count.
- * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
- * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
- */
-export class PerfCounter {
-    /**
-     * Gets or sets a global boolean to turn on and off all the counters
-     */
-    public static Enabled = true;
-
-    /**
-     * Returns the smallest value ever
-     */
-    public get min(): number {
-        return this._min;
-    }
-
-    /**
-     * Returns the biggest value ever
-     */
-    public get max(): number {
-        return this._max;
-    }
-
-    /**
-     * Returns the average value since the performance counter is running
-     */
-    public get average(): number {
-        return this._average;
-    }
-
-    /**
-     * Returns the average value of the last second the counter was monitored
-     */
-    public get lastSecAverage(): number {
-        return this._lastSecAverage;
-    }
-
-    /**
-     * Returns the current value
-     */
-    public get current(): number {
-        return this._current;
-    }
-
-    /**
-     * Gets the accumulated total
-     */
-    public get total(): number {
-        return this._totalAccumulated;
-    }
-
-    /**
-     * Gets the total value count
-     */
-    public get count(): number {
-        return this._totalValueCount;
-    }
-
-    /**
-     * Creates a new counter
-     */
-    constructor() {
-        this._startMonitoringTime = 0;
-        this._min = 0;
-        this._max = 0;
-        this._average = 0;
-        this._lastSecAverage = 0;
-        this._current = 0;
-        this._totalValueCount = 0;
-        this._totalAccumulated = 0;
-        this._lastSecAccumulated = 0;
-        this._lastSecTime = 0;
-        this._lastSecValueCount = 0;
-    }
-
-    /**
-     * Call this method to start monitoring a new frame.
-     * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
-     */
-    public fetchNewFrame() {
-        this._totalValueCount++;
-        this._current = 0;
-        this._lastSecValueCount++;
-    }
-
-    /**
-     * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
-     * @param newCount the count value to add to the monitored count
-     * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
-     */
-    public addCount(newCount: number, fetchResult: boolean) {
-        if (!PerfCounter.Enabled) {
-            return;
-        }
-        this._current += newCount;
-        if (fetchResult) {
-            this._fetchResult();
-        }
-    }
-
-    /**
-     * Start monitoring this performance counter
-     */
-    public beginMonitoring() {
-        if (!PerfCounter.Enabled) {
-            return;
-        }
-        this._startMonitoringTime = PrecisionDate.Now;
-    }
-
-    /**
-     * Compute the time lapsed since the previous beginMonitoring() call.
-     * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
-     */
-    public endMonitoring(newFrame: boolean = true) {
-        if (!PerfCounter.Enabled) {
-            return;
-        }
-
-        if (newFrame) {
-            this.fetchNewFrame();
-        }
-
-        let currentTime = PrecisionDate.Now;
-        this._current = currentTime - this._startMonitoringTime;
-
-        if (newFrame) {
-            this._fetchResult();
-        }
-    }
-
-    private _fetchResult() {
-        this._totalAccumulated += this._current;
-        this._lastSecAccumulated += this._current;
-
-        // Min/Max update
-        this._min = Math.min(this._min, this._current);
-        this._max = Math.max(this._max, this._current);
-        this._average = this._totalAccumulated / this._totalValueCount;
-
-        // Reset last sec?
-        let now = PrecisionDate.Now;
-        if ((now - this._lastSecTime) > 1000) {
-            this._lastSecAverage = this._lastSecAccumulated / this._lastSecValueCount;
-            this._lastSecTime = now;
-            this._lastSecAccumulated = 0;
-            this._lastSecValueCount = 0;
-        }
-    }
-
-    private _startMonitoringTime: number;
-    private _min: number;
-    private _max: number;
-    private _average: number;
-    private _current: number;
-    private _totalValueCount: number;
-    private _totalAccumulated: number;
-    private _lastSecAverage: number;
-    private _lastSecAccumulated: number;
-    private _lastSecTime: number;
-    private _lastSecValueCount: number;
 }
 
 /**
@@ -2114,3 +1222,9 @@ export class AsyncLoop {
         }, callback);
     }
 }
+
+// Will only be define if Tools is imported freeing up some space when only engine is required
+EngineStore.FallbackTexture = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
+
+// Register promise fallback for IE
+PromisePolyfill.Apply();

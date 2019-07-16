@@ -1,5 +1,5 @@
 import { Nullable, FloatArray } from "../types";
-import { Vector3, Vector2, Tmp } from "../Maths/math";
+import { Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Sprite } from "../Sprites/sprite";
@@ -97,13 +97,13 @@ export class PickingInfo {
             let wm = this.pickedMesh.getWorldMatrix();
 
             if (this.pickedMesh.nonUniformScaling) {
-                Tmp.Matrix[0].copyFrom(wm);
-                wm = Tmp.Matrix[0];
+                TmpVectors.Matrix[0].copyFrom(wm);
+                wm = TmpVectors.Matrix[0];
                 wm.setTranslationFromFloats(0, 0, 0);
                 wm.invert();
-                wm.transposeToRef(Tmp.Matrix[1]);
+                wm.transposeToRef(TmpVectors.Matrix[1]);
 
-                wm = Tmp.Matrix[1];
+                wm = TmpVectors.Matrix[1];
             }
 
             result = Vector3.TransformNormal(result, wm);

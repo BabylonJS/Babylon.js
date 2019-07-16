@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Vector2 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";

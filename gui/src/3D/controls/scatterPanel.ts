@@ -1,5 +1,5 @@
 import { Tools } from "babylonjs/Misc/tools";
-import { Tmp, Vector3 } from "babylonjs/Maths/math";
+import { TmpVectors, Vector3 } from "babylonjs/Maths/math";
 import { float } from "babylonjs/types";
 
 import { VolumeBasedPanel } from "./volumeBasedPanel";
@@ -86,8 +86,8 @@ export class ScatterPanel extends VolumeBasedPanel {
 
             let radiusPaddingSquared = Math.pow(this.margin, 2.0);
             let cellSize = Math.max(this._cellWidth, this._cellHeight);
-            let difference2D = Tmp.Vector2[0];
-            let difference = Tmp.Vector3[0];
+            let difference2D = TmpVectors.Vector2[0];
+            let difference = TmpVectors.Vector3[0];
 
             for (let i = 0; i < meshes.length - 1; i++) {
                 for (let j = i + 1; j < meshes.length; j++) {

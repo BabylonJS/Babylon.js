@@ -3,7 +3,7 @@ import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
 import { Scene } from "../scene";
-import { Quaternion, Matrix, Vector3, Color3, Epsilon } from "../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
@@ -16,9 +16,11 @@ import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PivotTools } from "../Misc/pivotTools";
+import { Color3 } from '../Maths/math.color';
 
 import "../Meshes/Builders/boxBuilder";
 import { LinesMesh } from '../Meshes/linesMesh';
+import { Epsilon } from '../Maths/math.constants';
 
 /**
  * Bounding box gizmo
@@ -122,7 +124,7 @@ export class BoundingBoxGizmo extends Gizmo {
         super(gizmoLayer);
 
         // Do not update the gizmo's scale so it has a fixed size to the object its attached to
-        this._updateScale = false;
+        this.updateScale = false;
 
         this._anchorMesh = new AbstractMesh("anchor", gizmoLayer.utilityLayerScene);
         // Create Materials

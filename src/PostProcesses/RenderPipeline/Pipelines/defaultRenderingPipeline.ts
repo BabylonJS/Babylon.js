@@ -1,7 +1,7 @@
 import { Nullable } from "../../../types";
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
 import { Observer } from "../../../Misc/observable";
-import { IAnimatable } from "../../../Misc/tools";
+import { IAnimatable } from '../../../Animations/animatable.interface';
 import { Logger } from "../../../Misc/logger";
 import { Camera } from "../../../Cameras/camera";
 import { ImageProcessingConfiguration } from "../../../Materials/imageProcessingConfiguration";

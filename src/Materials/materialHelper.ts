@@ -2,7 +2,6 @@ import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Tmp, Color3 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -15,6 +14,7 @@ import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
+import { Color3, TmpColors } from '../Maths/math.color';
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for
@@ -593,7 +593,7 @@ export class MaterialHelper {
                 }
 
                 if (uv) {
-                    attribs.push(VertexBuffer.UVKind + index);
+                    attribs.push(VertexBuffer.UVKind + "_" + index);
                 }
 
                 if (attribs.length > maxAttributesCount) {
@@ -690,11 +690,11 @@ export class MaterialHelper {
 
         MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
-        light.diffuse.scaleToRef(scaledIntensity, Tmp.Color3[0]);
-        light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
+        light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
+        light._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
         if (useSpecular) {
-            light.specular.scaleToRef(scaledIntensity, Tmp.Color3[1]);
-            light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], iAsString);
+            light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
+            light._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
         }
 
         // Shadows
@@ -719,7 +719,7 @@ export class MaterialHelper {
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, mesh, effect, defines, usePhysicalLightFalloff);
+            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff);
         }
     }
 
@@ -762,7 +762,7 @@ export class MaterialHelper {
             const skeleton = mesh.skeleton;
 
             if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
-                const boneTexture = skeleton.getTransformMatrixTexture();
+                const boneTexture = skeleton.getTransformMatrixTexture(mesh);
                 effect.setTexture("boneSampler", boneTexture);
                 effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
             } else {

@@ -9,6 +9,7 @@ import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { MaterialHelper } from '../../../materialHelper';
 import { VertexBuffer } from '../../../../Meshes/buffer';
+import { InputBlock } from '../Input/inputBlock';
 
 /**
  * Block used to add morph targets support to vertex shader
@@ -103,16 +104,25 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     public autoConfigure() {
-        if (this.position.isUndefined) {
-            this.position.setAsAttribute();
+        if (!this.position.isConnected) {
+            let positionInput = new InputBlock("position");
+            positionInput.setAsAttribute("position");
+            positionInput.output.connectTo(this.position);
         }
-        if (this.normal.isUndefined) {
-            this.normal.setAsAttribute();
-            this.normal.define = "NORMAL";
+        if (!this.normal.isConnected) {
+            let normalInput = new InputBlock("normal");
+            normalInput.setAsAttribute("normal");
+            normalInput.output.connectTo(this.normal);
         }
-        if (this.tangent.isUndefined) {
-            this.tangent.setAsAttribute();
-            this.tangent.define = "TANGENT";
+        if (!this.tangent.isConnected) {
+            let tangentInput = new InputBlock("tangent");
+            tangentInput.setAsAttribute("tangent");
+            tangentInput.output.connectTo(this.tangent);
+        }
+        if (!this.uv.isConnected) {
+            let uvInput = new InputBlock("uv");
+            uvInput.setAsAttribute("uv");
+            uvInput.output.connectTo(this.uv);
         }
     }
 
@@ -207,9 +217,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         let position = this.position;
         let normal = this.normal;
         let tangent = this.tangent;
+        let uv = this.uv;
         let positionOutput = this.positionOutput;
         let normalOutput = this.normalOutput;
         let tangentOutput = this.tangentOutput;
+        let uvOutput = this.uvOutput;
         let comments = `//${this.name}`;
 
         state.uniforms.push("morphTargetInfluences");
@@ -225,6 +237,9 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef TANGENT\r\n`;
         state.compilationString += `${this._declareOutput(tangentOutput, state)} = ${tangent.associatedVariableName};\r\n`;
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef UV1\r\n`;
+        state.compilationString += `${this._declareOutput(uvOutput, state)} = ${uv.associatedVariableName};\r\n`;
         state.compilationString += `#endif\r\n`;
 
         // Repeatable content

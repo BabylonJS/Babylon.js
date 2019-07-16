@@ -1,7 +1,6 @@
 import { NodeModel, DiagramModel } from "storm-react-diagrams";
 import { Nullable } from 'babylonjs/types';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { GraphEditor, NodeCreationOptions } from '../../graphEditor';
 import { GlobalState } from '../../globalState';
 import { DefaultPortModel } from './defaultPortModel';
@@ -52,7 +51,7 @@ export class DefaultNodeModel extends NodeModel {
                 var connectedNode;
                 var existingNodes = nodes.filter((n) => { return n.block === (connection as any)._connectedPoint._ownerBlock });
                 if (existingNodes.length == 0) {
-                    connectedNode = graphEditor.createNodeFromObject({ column: options.column + 1, nodeMaterialBlock: connection.connectedPoint._ownerBlock });
+                    connectedNode = graphEditor.createNodeFromObject({ nodeMaterialBlock: connection.connectedPoint._ownerBlock });
                 } else {
                     connectedNode = existingNodes[0];
                 }
@@ -62,37 +61,6 @@ export class DefaultNodeModel extends NodeModel {
                     graphEditor._toAdd.push(link);
                 } else {
                     model.addAll(link);
-                }
-            } else {
-                // Create value node for the connection
-                var type = ""
-                if (connection.type == NodeMaterialBlockConnectionPointTypes.Texture) {
-                    type = "Texture"
-                } else if (connection.type == NodeMaterialBlockConnectionPointTypes.Matrix) {
-                    type = "Matrix"
-                } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector3OrColor3) {
-                    type = "Vector3"
-                } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector2) {
-                    type = "Vector2"
-                } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4) {
-                    type = "Vector4"
-                }
-                else if (connection.type & NodeMaterialBlockConnectionPointTypes.Float) {
-                    type = "Float"
-                }
-
-                // Create links
-                var localNode = graphEditor.addValueNode(type, options.column + 1, connection);
-                if (localNode) {
-                    var ports = localNode.getPorts()
-                    for (var key in ports) {
-                        let link = (ports[key] as DefaultPortModel).link(inputPort);
-                        if (graphEditor._toAdd) {
-                            graphEditor._toAdd.push(link);
-                        } else {
-                            model.addAll(link);
-                        }
-                    }
                 }
             }
         });

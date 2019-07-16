@@ -2,7 +2,7 @@ import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Vector2, Epsilon } from "../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -15,6 +15,7 @@ import { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraP
 import { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
 import { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
 import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
+import { Epsilon } from '../Maths/math.constants';
 
 declare type Collider = import("../Collisions/collider").Collider;
 

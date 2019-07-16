@@ -1,5 +1,5 @@
 import { Tools } from "babylonjs/Misc/tools";
-import { Space, Axis, Matrix, Tmp, Vector3 } from "babylonjs/Maths/math";
+import { Space, Axis, Matrix, TmpVectors, Vector3 } from "babylonjs/Maths/math";
 import { float } from "babylonjs/types";
 
 import { VolumeBasedPanel } from "./volumeBasedPanel";
@@ -62,8 +62,8 @@ export class SpherePanel extends VolumeBasedPanel {
         let xAngle = (source.y / this._radius);
         let yAngle = -(source.x / this._radius);
 
-        Matrix.RotationYawPitchRollToRef(yAngle, xAngle, 0, Tmp.Matrix[0]);
+        Matrix.RotationYawPitchRollToRef(yAngle, xAngle, 0, TmpVectors.Matrix[0]);
 
-        return Vector3.TransformNormal(newPos, Tmp.Matrix[0]);
+        return Vector3.TransformNormal(newPos, TmpVectors.Matrix[0]);
     }
 }

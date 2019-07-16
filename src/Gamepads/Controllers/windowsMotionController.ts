@@ -2,7 +2,7 @@ import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Quaternion, Vector3 } from "../../Maths/math";
+import { Quaternion, Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
 import { Mesh } from "../../Meshes/mesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";

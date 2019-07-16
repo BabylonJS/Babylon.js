@@ -2,7 +2,7 @@ import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, se
 import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Color3 } from "../../Maths/math";
+import { Color3 } from "../../Maths/math.color";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
@@ -250,10 +250,10 @@ export class PBRMaterial extends PBRBaseMaterial {
      * source material index of refraction (IOR)' / 'destination material IOR.
      */
     public get indexOfRefraction(): number {
-        return  1 / this.subSurface.indexOfRefraction;
+        return 1 / this.subSurface.indexOfRefraction;
     }
     public set indexOfRefraction(value: number) {
-        this.subSurface.indexOfRefraction =  1 / value;
+        this.subSurface.indexOfRefraction = 1 / value;
     }
 
     /**
@@ -519,9 +519,9 @@ export class PBRMaterial extends PBRBaseMaterial {
     /**
      * Let user defines the brdf lookup texture used for IBL.
      * A default 8bit version is embedded but you could point at :
-     * * Default texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.png
+     * * Default texture: https://assets.babylonjs.com/environments/correlatedMSBRDF_RGBD.png
      * * Default 16bit pixel depth texture: https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
-     * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF.png
+     * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF_RGBD.png
      * * LEGACY Default None correlated 16bit pixel depth https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
      */
     @serializeAsTexture()

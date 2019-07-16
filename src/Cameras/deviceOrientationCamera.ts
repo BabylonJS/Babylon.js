@@ -1,9 +1,10 @@
 import { FreeCamera } from "./freeCamera";
 import { Scene } from "../scene";
-import { Quaternion, Vector3, Axis } from "../Maths/math";
+import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 
 import "./Inputs/freeCameraDeviceOrientationInput";
+import { Axis } from '../Maths/math.axis';
 
 Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
     return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);
@@ -63,7 +64,7 @@ export class DeviceOrientationCamera extends FreeCamera {
      * Enabled turning on the y axis when the orientation sensor is active
      * @param dragFactor the factor that controls the turn speed (default: 1/300)
      */
-    public enableHorizontalDragging(dragFactor= 1 / 300) {
+    public enableHorizontalDragging(dragFactor = 1 / 300) {
         this._dragFactor = dragFactor;
     }
 

@@ -1,4 +1,4 @@
-import { Quaternion, Vector3, Matrix } from "../../Maths/math";
+import { Quaternion, Vector3, Matrix } from "../../Maths/math.vector";
 import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysicsEngine";
 import { Logger } from "../../Misc/logger";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImpostor";
@@ -260,10 +260,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         var object = impostor.object;
         var shape = impostor.getParam("shape");
         if (impostor._isFromLine) {
-            impostor.object = LinesBuilder.CreateLines("lines", {points: path, instance: <LinesMesh>object});
+            impostor.object = LinesBuilder.CreateLines("lines", { points: path, instance: <LinesMesh>object });
         }
         else {
-            impostor.object = ShapeBuilder.ExtrudeShape("ext", {shape: shape, path: path, instance: <Mesh>object});
+            impostor.object = ShapeBuilder.ExtrudeShape("ext", { shape: shape, path: path, instance: <Mesh>object });
         }
 
     }
@@ -462,12 +462,17 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      */
     public removePhysicsBody(impostor: PhysicsImpostor) {
         if (this.world) {
-            this.world.removeRigidBody(impostor.physicsBody);
+            if (impostor.soft) {
+                this.world.removeSoftBody(impostor.physicsBody);
+            } else {
+                this.world.removeRigidBody(impostor.physicsBody);
+            }
 
             if (impostor._pluginData) {
                 impostor._pluginData.toDispose.forEach((d: any) => {
                     this.bjsAMMO.destroy(d);
                 });
+                impostor._pluginData.toDispose = [];
             }
         }
     }
@@ -586,7 +591,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * The object's position and rotation is set to zero and so its vertices are also then set in world space
      * @param impostor to create the softbody for
      */
-    private _softVertexData(impostor: PhysicsImpostor) : VertexData {
+    private _softVertexData(impostor: PhysicsImpostor): VertexData {
         var object = impostor.object;
         if (object && object.getIndices && object.getWorldMatrix && object.getChildMeshes) {
             var indices = object.getIndices();
@@ -605,12 +610,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             var newPoints = [];
             var newNorms = [];
             for (var i = 0; i < vertexPositions.length; i += 3) {
-                    var v = new Vector3(vertexPositions[i], vertexPositions[i + 1], vertexPositions[i + 2]);
-                    var n = new Vector3(vertexNormals[i], vertexNormals[i + 1], vertexNormals[i + 2]);
-                    v = Vector3.TransformCoordinates(v, object.getWorldMatrix());
-                    n = Vector3.TransformNormal(n, object.getWorldMatrix());
-                    newPoints.push(v.x, v.y, v.z);
-                    newNorms.push(n.x, n.y, n.z);
+                var v = new Vector3(vertexPositions[i], vertexPositions[i + 1], vertexPositions[i + 2]);
+                var n = new Vector3(vertexNormals[i], vertexNormals[i + 1], vertexNormals[i + 2]);
+                v = Vector3.TransformCoordinates(v, object.getWorldMatrix());
+                n = Vector3.TransformNormal(n, object.getWorldMatrix());
+                newPoints.push(v.x, v.y, v.z);
+                newNorms.push(n.x, n.y, n.z);
             }
 
             var vertex_data = new VertexData();
@@ -651,7 +656,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             var vertexPositions = vertex_data.positions;
             var vertexNormals = vertex_data.normals;
 
-            if (vertexPositions === null  || vertexNormals === null) {
+            if (vertexPositions === null || vertexNormals === null) {
                 return new Ammo.btCompoundShape();
             }
             else {
@@ -703,7 +708,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             var vertexPositions = vertex_data.positions;
             var vertexNormals = vertex_data.normals;
 
-            if (vertexPositions === null  || vertexNormals === null) {
+            if (vertexPositions === null || vertexNormals === null) {
                 return new Ammo.btCompoundShape();
             }
             else {
@@ -758,10 +763,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         var reduced: number = vertexSquared.reduce(reducer);
 
         if (reduced === 0) { // line mesh
-                len = vertexPositions.length;
-                segments = len / 3 - 1;
-                this._tmpAmmoVectorA.setValue(vertexPositions[0], vertexPositions[1], vertexPositions[2]);
-                this._tmpAmmoVectorB.setValue(vertexPositions[len - 3], vertexPositions[len - 2], vertexPositions[len - 1]);
+            len = vertexPositions.length;
+            segments = len / 3 - 1;
+            this._tmpAmmoVectorA.setValue(vertexPositions[0], vertexPositions[1], vertexPositions[2]);
+            this._tmpAmmoVectorB.setValue(vertexPositions[len - 3], vertexPositions[len - 2], vertexPositions[len - 1]);
         }
         else { //extruded mesh
             impostor._isFromLine = false;
@@ -938,7 +943,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     }
                     break;
                 }
-                // Otherwise create convexHullImpostor
+            // Otherwise create convexHullImpostor
             case PhysicsImpostor.ConvexHullImpostor:
                 var convexMesh = new Ammo.btConvexHullShape();
                 var triangeCount = this._addHullVerts(convexMesh, object, object);
@@ -1298,15 +1303,15 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         }
     }
 
-     /**
-     * Append an anchor to a cloth object
-     * @param impostor is the cloth impostor to add anchor to
-     * @param otherImpostor is the rigid impostor to anchor to
-     * @param width ratio across width from 0 to 1
-     * @param height ratio up height from 0 to 1
-     * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
-     * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
-     */
+    /**
+    * Append an anchor to a cloth object
+    * @param impostor is the cloth impostor to add anchor to
+    * @param otherImpostor is the rigid impostor to anchor to
+    * @param width ratio across width from 0 to 1
+    * @param height ratio up height from 0 to 1
+    * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
+    * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+    */
     public appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
         var segs = impostor.segments;
         var nbAcross = Math.round((segs - 1) * width);
