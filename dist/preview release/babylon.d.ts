@@ -52689,22 +52689,52 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Effect Render Options
+     */
+    export interface IEffectRendererOptions {
+        /**
+         * Defines the vertices positions.
+         */
+        positions?: number[];
+        /**
+         * Defines the indices.
+         */
+        indices?: number[];
+    }
+    /**
      * Helper class to render one or more effects
      */
     export class EffectRenderer {
         private engine;
-        private static _Vertices;
-        private static _Indices;
+        private static _DefaultOptions;
         private _vertexBuffers;
         private _indexBuffer;
         private _ringBufferIndex;
         private _ringScreenBuffer;
+        private _fullscreenViewport;
         private _getNextFrameBuffer;
         /**
          * Creates an effect renderer
          * @param engine the engine to use for rendering
+         * @param options defines the options of the effect renderer
          */
-        constructor(engine: Engine);
+        constructor(engine: Engine, options?: IEffectRendererOptions);
+        /**
+         * Sets the current viewport in normalized coordinates 0-1
+         * @param viewport Defines the viewport to set (defaults to 0 0 1 1)
+         */
+        setViewport(viewport?: Viewport): void;
+        /**
+         * Sets the current effect wrapper to use during draw.
+         * The effect needs to be ready before calling this api.
+         * This also sets the default full screen position attribute.
+         * @param effectWrapper Defines the effect to draw with
+         */
+        applyEffectWrapper(effectWrapper: EffectWrapper): void;
+        /**
+         * Draws a full screen quad.
+         */
+        draw(): void;
         /**
          * renders one or more effects to a specified texture
          * @param effectWrappers list of effects to renderer
@@ -52729,17 +52759,25 @@ declare module BABYLON {
          */
         fragmentShader: string;
         /**
+         * Vertex shader for the effect
+         */
+        vertexShader: string;
+        /**
          * Attributes to use in the shader
          */
-        attributeNames: Array<string>;
+        attributeNames?: Array<string>;
         /**
          * Uniforms to use in the shader
          */
-        uniformNames: Array<string>;
+        uniformNames?: Array<string>;
         /**
          * Texture sampler names to use in the shader
          */
-        samplerNames: Array<string>;
+        samplerNames?: Array<string>;
+        /**
+         * The friendly name of the effect displayed in Spector.
+         */
+        name?: string;
     }
     /**
      * Wraps an effect to be used for rendering

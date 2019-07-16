@@ -1898,6 +1898,8 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
+        /** Force disable prompt on mobile device */
+        disableMobilePrompt: boolean;
         /** Observable raised when the text changes */
         onTextChangedObservable: Observable<InputText>;
         /** Observable raised just before an entered character is to be added */
@@ -5688,6 +5690,8 @@ declare module BABYLON.GUI {
         _connectedVirtualKeyboard: BABYLON.Nullable<VirtualKeyboard>;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
+        /** Force disable prompt on mobile device */
+        disableMobilePrompt: boolean;
         /** BABYLON.Observable raised when the text changes */
         onTextChangedObservable: BABYLON.Observable<InputText>;
         /** BABYLON.Observable raised just before an entered character is to be added */
