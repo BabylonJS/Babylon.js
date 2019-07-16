@@ -672,6 +672,9 @@ export class NodeMaterial extends PushMaterial {
         return true;
     }
 
+    /**
+     * Get a string representing the shaders built by the current node graph
+     */
     public get compiledShaders() {
         return `// Vertex shader\r\n${this._vertexCompilationState.compilationString}\r\n\r\n// Fragment shader\r\n${this._fragmentCompilationState.compilationString}`;
     }

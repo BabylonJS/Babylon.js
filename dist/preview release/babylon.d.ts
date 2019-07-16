@@ -51150,15 +51150,19 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to transform a vector4 with a matrix
+     * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
      */
-    export class Vector4TransformBlock extends NodeMaterialBlock {
+    export class VectorTransformBlock extends NodeMaterialBlock {
         /**
-         * Defines the value to use to complement Vector3 to transform it to a Vector4
+         * Defines the value to use to complement W value to transform it to a Vector4
          */
         complementW: number;
         /**
-         * Creates a new Vector4TransformBlock
+         * Defines the value to use to complement z value to transform it to a Vector4
+         */
+        complementZ: number;
+        /**
+         * Creates a new VectorTransformBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -51407,6 +51411,10 @@ declare module BABYLON {
           */
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         /**
+         * Get a string representing the shaders built by the current node graph
+         */
+        readonly compiledShaders: string;
+        /**
          * Binds the world matrix to the material
          * @param world defines the world transformation matrix
          */
@@ -51494,6 +51502,7 @@ declare module BABYLON {
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private _injectVertexCode;
+        private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
@@ -52612,78 +52621,6 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to transform a vector2 with a matrix
-     */
-    export class Vector2TransformBlock extends NodeMaterialBlock {
-        /**
-         * Defines the value to use to complement Vector2 to transform it to a Vector4
-         */
-        complementZ: number;
-        /**
-         * Defines the value to use to complement Vector2 to transform it to a Vector4
-         */
-        complementW: number;
-        /**
-         * Creates a new Vector2TransformBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the vector input
-         */
-        readonly vector: NodeMaterialConnectionPoint;
-        /**
-         * Gets the matrix transform input
-         */
-        readonly transform: NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        readonly output: NodeMaterialConnectionPoint;
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to transform a vector3 with a matrix
-     */
-    export class Vector3TransformBlock extends NodeMaterialBlock {
-        /**
-         * Defines the value to use to complement Vector3 to transform it to a Vector4
-         */
-        complement: number;
-        /**
-         * Creates a new Vector3TransformBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the vector input
-         */
-        readonly vector: NodeMaterialConnectionPoint;
-        /**
-         * Gets the matrix transform input
-         */
-        readonly transform: NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        readonly output: NodeMaterialConnectionPoint;
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
