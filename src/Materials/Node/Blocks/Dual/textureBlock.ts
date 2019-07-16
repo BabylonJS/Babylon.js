@@ -10,6 +10,7 @@ import { InputBlock } from '../Input/inputBlock';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Nullable } from '../../../../types';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to read a texture from a sampler
@@ -192,3 +193,5 @@ export class TextureBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.TextureBlock"] = TextureBlock;

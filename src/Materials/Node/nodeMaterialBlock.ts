@@ -8,6 +8,7 @@ import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
 import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
 import { InputBlock } from './Blocks/Input/inputBlock';
+import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
 
 /**
  * Defines a block that can be used inside a node based material
@@ -28,6 +29,11 @@ export class NodeMaterialBlock {
      * Gets or sets the name of the block
      */
     public name: string;
+
+    /**
+     * Gets or sets the unique id of the node
+     */
+    public uniqueId: number;
 
     /**
      * Gets a boolean indicating that this block is an end block (e.g. it is generating a system value)
@@ -124,6 +130,7 @@ export class NodeMaterialBlock {
 
         this._isFinalMerger = isFinalMerger;
         this._isInput = isInput;
+        this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
     /**
@@ -464,5 +471,23 @@ export class NodeMaterialBlock {
             }
         }
         return false;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        let serializationObject: any = {};
+        serializationObject.customType = "BABYLON." + this.getClassName();
+        serializationObject.id = this.uniqueId;
+
+        serializationObject.inputs = [];
+
+        for (var input of this.inputs) {
+            serializationObject.inputs.push(input.serialize());
+        }
+
+        return serializationObject;
     }
 }

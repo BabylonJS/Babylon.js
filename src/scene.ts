@@ -53,6 +53,7 @@ import { IFileRequest } from './Misc/fileRequest';
 import { Color4, Color3 } from './Maths/math.color';
 import { Plane } from './Maths/math.plane';
 import { Frustum } from './Maths/math.frustum';
+import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -101,9 +102,6 @@ export interface SceneOptions {
  * @see http://doc.babylonjs.com/features/scene
  */
 export class Scene extends AbstractScene implements IAnimatable {
-    // Statics
-    private static _uniqueIdCounter = 0;
-
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = 0;
     /** The fog density is following an exponential function */
@@ -1956,9 +1954,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns an unique number for the scene
      */
     public getUniqueId() {
-        var result = Scene._uniqueIdCounter;
-        Scene._uniqueIdCounter++;
-        return result;
+        return UniqueIdGenerator.UniqueId;
     }
 
     /**
