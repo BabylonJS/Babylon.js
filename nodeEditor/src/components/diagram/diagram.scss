@@ -87,8 +87,9 @@
 
     .preview {
         border-bottom-left-radius: 16px;
-        border-bottom-right-radius: 16px;
-        padding-top: 2px;
+        border: black 4px solid;
+        border-left: 0px;
+        border-bottom: 0px;
     }
 
     .inputs {
@@ -144,6 +145,33 @@
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;   
+            }
+        }
+    }
+
+    &.texture-block {
+        display: grid;
+        grid-template-rows: 30px auto 1fr;
+        grid-template-columns: calc(100% - 60px) 60px;
+
+        .inputs {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .outputs {
+            grid-column: 2;
+            grid-row: 2 / span 2;            
+        }
+
+        .textureLine {
+            height: 140px;
+            grid-column: 1;
+            grid-row: 3;     
+
+            canvas {
+                width: 100%;
+                height: 100%;
             }
         }
     }

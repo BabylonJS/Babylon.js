@@ -37,7 +37,12 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.Vertex);
 
-        this.registerOutput("color", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
     }
 
     /**
@@ -138,13 +143,21 @@ export class TextureBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._textureTransformName, "mat4", this._defineName);
 
-        if (state.sharedData.emitComments) {
-            state.compilationString += `\r\n//${this.name}\r\n`;
-        }
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}, 1.0, 0.0));\r\n`;
         state.compilationString += `#else\r\n`;
         state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName};\r\n`;
+        state.compilationString += `#endif\r\n`;
+    }
+
+    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string) {
+        let uvInput = this.uv;
+        const complement = ` * ${this._textureInfoName}`;
+
+        state.compilationString += `#ifdef ${this._defineName}\r\n`;
+        state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._transformedUVName}).${swizzle}${complement};\r\n`;
+        state.compilationString += `#else\r\n`;
+        state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${"vMain" + uvInput.associatedVariableName}).${swizzle}${complement};\r\n`;
         state.compilationString += `#endif\r\n`;
     }
 
@@ -170,15 +183,11 @@ export class TextureBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._textureInfoName, "float");
 
-        let uvInput = this.uv;
-        let output = this._outputs[0];
-        const complement = ` * ${this._textureInfoName}`;
-
-        state.compilationString += `#ifdef ${this._defineName}\r\n`;
-        state.compilationString += `vec4 ${output.associatedVariableName} = texture2D(${this._samplerName}, ${this._transformedUVName})${complement};\r\n`;
-        state.compilationString += `#else\r\n`;
-        state.compilationString += `vec4 ${output.associatedVariableName} = texture2D(${this._samplerName}, ${"vMain" + uvInput.associatedVariableName})${complement};\r\n`;
-        state.compilationString += `#endif\r\n`;
+        for (var output of this._outputs) {
+            if (output.connectedBlocks.length) {
+                this._writeOutput(state, output, output.name);
+            }
+        }
 
         return this;
     }

@@ -4,7 +4,7 @@ import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 /**
- * Block used to add 2 vector4
+ * Block used to add 2 vectors
  */
 export class AddBlock extends NodeMaterialBlock {
     /**

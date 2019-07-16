@@ -41,7 +41,7 @@ export class TextureNodeWidget extends React.Component<ITextureNodeWidgetProps> 
         var inputPorts = PortHelper.GenerateInputPorts(this.props.node, ["uv"]);
 
         return (
-            <div className={"diagramBlock"}>
+            <div className={"diagramBlock texture-block"}>
                 <div className="header">
                     {this.props.node!.block!.name}
                 </div>
@@ -53,7 +53,7 @@ export class TextureNodeWidget extends React.Component<ITextureNodeWidgetProps> 
                 </div>
                 {
                     this.props.node && this.props.node.texture &&
-                    <TextureLineComponent ref="textureView" width={200} height={180} texture={this.props.node.texture} hideChannelSelect={true} />
+                    <TextureLineComponent ref="textureView" width={136} height={136} texture={this.props.node.texture} hideChannelSelect={true} />
                 }
             </div>
         );
