@@ -56,5 +56,6 @@
         "assets": true
     },
     "editor.tabSize": 4,
-    "typescript.tsdk": "node_modules\\typescript\\lib"
+    "typescript.tsdk": "node_modules\\typescript\\lib",
+    "typescript.preferences.importModuleSpecifier": "relative"
 }

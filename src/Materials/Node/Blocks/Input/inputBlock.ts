@@ -9,6 +9,7 @@ import { Scene } from '../../../../scene';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to expose an input value
@@ -424,3 +425,5 @@ export class InputBlock extends NodeMaterialBlock {
         this._emit(state);
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.InputBlock"] = InputBlock;

@@ -3,6 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConne
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { _TypeStore } from '../../../Misc/typeStore';
 /**
  * Block used to apply a cross product between 2 vectors
  */
@@ -60,3 +61,5 @@ export class CrossBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.CrossBlock"] = CrossBlock;
