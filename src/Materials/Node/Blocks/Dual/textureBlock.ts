@@ -143,9 +143,6 @@ export class TextureBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._textureTransformName, "mat4", this._defineName);
 
-        if (state.sharedData.emitComments) {
-            state.compilationString += `\r\n//${this.name}\r\n`;
-        }
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}, 1.0, 0.0));\r\n`;
         state.compilationString += `#else\r\n`;

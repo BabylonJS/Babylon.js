@@ -19,7 +19,7 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { Nullable } from '../../types';
 import { VertexBuffer } from '../../Meshes/buffer';
 import { Tools } from '../../Misc/tools';
-import { Vector4TransformBlock } from './Blocks/vector4TransformBlock';
+import { VectorTransformBlock } from './Blocks/vectorTransformBlock';
 import { VertexOutputBlock } from './Blocks/Vertex/vertexOutputBlock';
 import { FragmentOutputBlock } from './Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
@@ -515,15 +515,15 @@ export class NodeMaterial extends PushMaterial {
     }
 
     private _prepareDefinesForAttributes(mesh: AbstractMesh, defines: NodeMaterialDefines) {
-        if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
+        if (!defines._areAttributesDirty) {
             return;
         }
 
-        defines._normals = defines._needNormals;
-        defines._uvs = defines._needUVs;
+        defines["NORMAL"] = mesh.isVerticesDataPresent(VertexBuffer.NormalKind);
 
-        defines.setValue("NORMAL", (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)));
-        defines.setValue("TANGENT", mesh.isVerticesDataPresent(VertexBuffer.TangentKind));
+        defines["TANGENT"] = mesh.isVerticesDataPresent(VertexBuffer.TangentKind);
+
+        defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
     }
 
     /**
@@ -670,6 +670,10 @@ export class NodeMaterial extends PushMaterial {
         this._wasPreviouslyReady = true;
 
         return true;
+    }
+
+    public get compiledShaders() {
+        return `// Vertex shader\r\n${this._vertexCompilationState.compilationString}\r\n\r\n// Fragment shader\r\n${this._fragmentCompilationState.compilationString}`;
     }
 
     /**
@@ -838,14 +842,14 @@ export class NodeMaterial extends PushMaterial {
         var worldInput = new InputBlock("world");
         worldInput.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.World);
 
-        var worldPos = new Vector4TransformBlock("worldPos");
+        var worldPos = new VectorTransformBlock("worldPos");
         positionInput.connectTo(worldPos);
         worldInput.connectTo(worldPos);
 
         var viewProjectionInput = new InputBlock("viewProjection");
         viewProjectionInput.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.ViewProjection);
 
-        var worldPosdMultipliedByViewProjection = new Vector4TransformBlock("worldPos * viewProjectionTransform");
+        var worldPosdMultipliedByViewProjection = new VectorTransformBlock("worldPos * viewProjectionTransform");
         worldPos.connectTo(worldPosdMultipliedByViewProjection);
         viewProjectionInput.connectTo(worldPosdMultipliedByViewProjection);
 
