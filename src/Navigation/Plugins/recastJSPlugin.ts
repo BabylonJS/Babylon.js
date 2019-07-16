@@ -56,6 +56,8 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         const rc = new this.bjsRECAST.rcConfig();
         rc.cs = parameters.cs;
         rc.ch = parameters.ch;
+        rc.borderSize = 0;
+        rc.tileSize = 0;
         rc.walkableSlopeAngle = parameters.walkableSlopeAngle;
         rc.walkableHeight = parameters.walkableHeight;
         rc.walkableClimb = parameters.walkableClimb;
