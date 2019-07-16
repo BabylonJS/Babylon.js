@@ -4,11 +4,11 @@ import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 /**
- * Block used to add 2 vectors
+ * Block used to apply a dot product between 2 vectors
  */
-export class AddBlock extends NodeMaterialBlock {
+export class DotBlock extends NodeMaterialBlock {
     /**
-     * Creates a new AddBlock
+     * Creates a new DotBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -16,9 +16,7 @@ export class AddBlock extends NodeMaterialBlock {
 
         this.registerInput("left", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
-
-        this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -26,7 +24,7 @@ export class AddBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "AddBlock";
+        return "DotBlock";
     }
 
     /**
@@ -55,7 +53,7 @@ export class AddBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${this.left.associatedVariableName} + ${this.right.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = dot(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\r\n`;
 
         return this;
     }

@@ -43,6 +43,8 @@ import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertex
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
+import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
+import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
 import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
 import { VectorTransformBlock } from 'babylonjs/Materials/Node/Blocks/vectorTransformBlock';
 
@@ -464,7 +466,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     block = new TextureBlock("Texture");
                     break;
                 case "LightBlock":
-                    block = new LightBlock("Light");
+                    block = new LightBlock("Lights");
                     break;
                 case "FogBlock":
                     block = new FogBlock("Fog");
@@ -480,6 +482,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     break;
                 case "ClampBlock":
                     block = new ClampBlock("Clamp");
+                    break;
+                case "CrossBlock":
+                    block = new CrossBlock("Dot");
+                    break;
+                case "DotBlock":
+                    block = new DotBlock("Dot");
                     break;
                 case "MultiplyBlock":
                     block = new MultiplyBlock("Multiply");
