@@ -554,6 +554,7 @@ export class VertexBuffer {
             case VertexBuffer.UNSIGNED_SHORT:
                 return 2;
             case VertexBuffer.INT:
+            case VertexBuffer.UNSIGNED_INT:
             case VertexBuffer.FLOAT:
                 return 4;
             default:
@@ -627,6 +628,12 @@ export class VertexBuffer {
                     value = value / 65535;
                 }
                 return value;
+            }
+            case VertexBuffer.INT: {
+                return dataView.getInt32(byteOffset, true);
+            }
+            case VertexBuffer.UNSIGNED_INT: {
+                return dataView.getUint32(byteOffset, true);
             }
             case VertexBuffer.FLOAT: {
                 return dataView.getFloat32(byteOffset, true);
