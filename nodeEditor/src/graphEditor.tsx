@@ -43,10 +43,10 @@ import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertex
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
+import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
+import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
 import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
-import { Vector2TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector2TransformBlock';
-import { Vector3TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector3TransformBlock';
-import { Vector4TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector4TransformBlock';
+import { VectorTransformBlock } from 'babylonjs/Materials/Node/Blocks/vectorTransformBlock';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -433,9 +433,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
         var data = event.dataTransfer.getData("babylonjs-material-node") as string;
+        let nodeModel: Nullable<DefaultNodeModel> = null;
 
         if (data.indexOf("Block") === -1) {
-            this.addValueNode(data);
+            nodeModel = this.addValueNode(data);
         } else {
             let block: Nullable<NodeMaterialBlock> = null;
 
@@ -465,7 +466,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     block = new TextureBlock("Texture");
                     break;
                 case "LightBlock":
-                    block = new LightBlock("Light");
+                    block = new LightBlock("Lights");
                     break;
                 case "FogBlock":
                     block = new FogBlock("Fog");
@@ -482,29 +483,32 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 case "ClampBlock":
                     block = new ClampBlock("Clamp");
                     break;
+                case "CrossBlock":
+                    block = new CrossBlock("Dot");
+                    break;
+                case "DotBlock":
+                    block = new DotBlock("Dot");
+                    break;
                 case "MultiplyBlock":
                     block = new MultiplyBlock("Multiply");
                     break;
-                case "Vector2TransformBlock":
-                    block = new Vector2TransformBlock("Vector2Transform");
-                    break;
-                case "Vector3TransformBlock":
-                    block = new Vector3TransformBlock("Vector3Transform");
-                    break;
-                case "Vector4TransformBlock":
-                    block = new Vector4TransformBlock("Vector4Transform");
+                case "VectorTransformBlock":
+                    block = new VectorTransformBlock("VectorTransform");
                     break;
             }
 
             if (block) {
-                let nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
-                const zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
-
-                let x = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX()) / zoomLevel;
-                let y = (event.clientY - event.currentTarget.offsetTop - this._engine.diagramModel.getOffsetY()) / zoomLevel;
-                nodeModel.setPosition(x, y);
+                nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
             }
         };
+
+        if (nodeModel) {
+            const zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
+
+            let x = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX() - 100) / zoomLevel;
+            let y = (event.clientY - event.currentTarget.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
+            nodeModel.setPosition(x, y);
+        }
 
         this.forceUpdate();
     }

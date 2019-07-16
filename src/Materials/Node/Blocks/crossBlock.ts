@@ -4,11 +4,11 @@ import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 /**
- * Block used to add 2 vectors
+ * Block used to apply a cross product between 2 vectors
  */
-export class AddBlock extends NodeMaterialBlock {
+export class CrossBlock extends NodeMaterialBlock {
     /**
-     * Creates a new AddBlock
+     * Creates a new CrossBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -26,7 +26,7 @@ export class AddBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "AddBlock";
+        return "CrossBlock";
     }
 
     /**
@@ -55,7 +55,7 @@ export class AddBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${this.left.associatedVariableName} + ${this.right.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = cross(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\r\n`;
 
         return this;
     }
