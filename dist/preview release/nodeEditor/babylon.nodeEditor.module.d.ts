@@ -249,6 +249,19 @@ declare module "babylonjs-node-editor/stringTools" {
         static DownloadAsFile(content: string, filename: string): void;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" {
+    import * as React from "react";
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -262,6 +275,7 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
     }> {
         constructor(props: IPropertyTabComponentProps);
         componentWillMount(): void;
+        load(file: File): void;
         render(): JSX.Element;
     }
 }
@@ -273,19 +287,6 @@ declare module "babylonjs-node-editor/portal" {
     }
     export class Portal extends React.Component<IPortalProps> {
         render(): React.ReactPortal;
-    }
-}
-declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" {
-    import * as React from "react";
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
-        render(): JSX.Element;
     }
 }
 declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
@@ -908,7 +909,7 @@ declare module "babylonjs-node-editor/graphEditor" {
             to: import("storm-react-diagrams").NodeModel;
         }[];
         buildMaterial(): void;
-        build(): void;
+        build(needToWait?: boolean): void;
         reOrganize(): void;
         addValueNode(type: string): DefaultNodeModel;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -1221,26 +1222,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    interface IPropertyTabComponentProps {
-        globalState: GlobalState;
-    }
-    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
-        currentNode: BABYLON.Nullable<DefaultNodeModel>;
-    }> {
-        constructor(props: IPropertyTabComponentProps);
-        componentWillMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface IPortalProps {
-        globalState: GlobalState;
-    }
-    export class Portal extends React.Component<IPortalProps> {
-        render(): React.ReactPortal;
-    }
-}
-declare module NODEEDITOR {
     interface IFileButtonLineComponentProps {
         label: string;
         onClick: (file: File) => void;
@@ -1250,6 +1231,27 @@ declare module NODEEDITOR {
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IPropertyTabComponentProps {
+        globalState: GlobalState;
+    }
+    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
+        currentNode: BABYLON.Nullable<DefaultNodeModel>;
+    }> {
+        constructor(props: IPropertyTabComponentProps);
+        componentWillMount(): void;
+        load(file: File): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IPortalProps {
+        globalState: GlobalState;
+    }
+    export class Portal extends React.Component<IPortalProps> {
+        render(): React.ReactPortal;
     }
 }
 declare module NODEEDITOR {
@@ -1782,7 +1784,7 @@ declare module NODEEDITOR {
             to: import("storm-react-diagrams").NodeModel;
         }[];
         buildMaterial(): void;
-        build(): void;
+        build(needToWait?: boolean): void;
         reOrganize(): void;
         addValueNode(type: string): DefaultNodeModel;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
