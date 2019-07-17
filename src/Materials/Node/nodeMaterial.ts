@@ -873,7 +873,7 @@ export class NodeMaterial extends PushMaterial {
         this.addOutputNode(pixelOutput);
     }
 
-    _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]) {
+    private _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]) {
         if (list.indexOf(rootNode) !== -1) {
             return;
         }
@@ -939,7 +939,7 @@ export class NodeMaterial extends PushMaterial {
         for (var parsedBlock of source.blocks) {
             let blockType = _TypeStore.GetClass(parsedBlock.customType);
             if (blockType) {
-                let block: NodeMaterialBlock = new blockType;
+                let block: NodeMaterialBlock = new blockType();
 
                 map[parsedBlock.id] = block;
             }
