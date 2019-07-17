@@ -143,6 +143,7 @@ declare module "babylonjs-node-editor/components/diagram/portHelper" {
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     import { Nullable } from 'babylonjs/types';
     export class PortHelper {
+        private static _GetPortTypeIndicator;
         static GenerateOutputPorts(node: Nullable<DefaultNodeModel>, ignoreLabel: boolean): JSX.Element[];
         static GenerateInputPorts(node: Nullable<DefaultNodeModel>, includeOnly?: string[]): JSX.Element[];
     }
@@ -1127,6 +1128,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class PortHelper {
+        private static _GetPortTypeIndicator;
         static GenerateOutputPorts(node: BABYLON.Nullable<DefaultNodeModel>, ignoreLabel: boolean): JSX.Element[];
         static GenerateInputPorts(node: BABYLON.Nullable<DefaultNodeModel>, includeOnly?: string[]): JSX.Element[];
     }

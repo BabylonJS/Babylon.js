@@ -126,6 +126,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class PortHelper {
+        private static _GetPortTypeIndicator;
         static GenerateOutputPorts(node: BABYLON.Nullable<DefaultNodeModel>, ignoreLabel: boolean): JSX.Element[];
         static GenerateInputPorts(node: BABYLON.Nullable<DefaultNodeModel>, includeOnly?: string[]): JSX.Element[];
     }
