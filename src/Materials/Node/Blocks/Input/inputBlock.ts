@@ -266,7 +266,7 @@ export class InputBlock extends NodeMaterialBlock {
                 break;
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 this.value = new Color4(1, 1, 1, 1);
-                break;                
+                break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 this.value = Matrix.Identity();
                 break;
