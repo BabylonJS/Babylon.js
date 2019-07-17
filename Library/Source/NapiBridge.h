@@ -19,16 +19,16 @@ namespace babylon
             Definition& operator=(const Definition&) = delete;
 
             template<void(ImplT::*method)(const Napi::CallbackInfo& info)>
-            Definition& AddVoidReturningMethod(const std::string& name)
+            Definition& AddVoidReturningMethod(const char* name)
             {
-                m_propertyDescriptors.push_back(InstanceMethod(name.c_str(), &NapiBridge<ImplT>::InstanceMethodImpl<method>, napi_default, m_impl));
+                m_propertyDescriptors.push_back(InstanceMethod(name, &NapiBridge<ImplT>::InstanceMethodImpl<method>, napi_default, m_impl));
                 return *this;
             }
 
             template<Napi::Value(ImplT::*method)(const Napi::CallbackInfo& info)>
-            Definition& AddValueReturningMethod(const std::string& name)
+            Definition& AddValueReturningMethod(const char* name)
             {
-                m_propertyDescriptors.push_back(InstanceMethod(name.c_str(), &NapiBridge<ImplT>::InstanceMethodImpl<method>, napi_default, m_impl));
+                m_propertyDescriptors.push_back(InstanceMethod(name, &NapiBridge<ImplT>::InstanceMethodImpl<method>, napi_default, m_impl));
                 return *this;
             }
 
@@ -46,7 +46,7 @@ namespace babylon
             }
 
             const std::string m_name{};
-            Napi::Env& m_env{};
+            Napi::Env& m_env;
             ImplT* m_impl{};
             std::vector<Napi::ClassPropertyDescriptor<NapiBridge<ImplT>>> m_propertyDescriptors{};
         };
@@ -82,61 +82,61 @@ namespace babylon
         {
             Napi::HandleScope scope{ env };
             auto func = NapiBridge<NativeEngineT>::Define("NativeEngine", env, impl)
-                .AddVoidReturningMethod<&NativeEngineT::RequestAnimationFrame>("requestAnimationFrame")
-                .AddValueReturningMethod<&NativeEngineT::CreateVertexArray>("createVertexArray")
-                .AddVoidReturningMethod<&NativeEngineT::DeleteVertexArray>("deleteVertexArray")
-                .AddVoidReturningMethod<&NativeEngineT::BindVertexArray>("bindVertexArray")
-                .AddValueReturningMethod<&NativeEngineT::CreateIndexBuffer>("createIndexBuffer")
-                .AddVoidReturningMethod<&NativeEngineT::DeleteIndexBuffer>("deleteIndexBuffer")
-                .AddVoidReturningMethod<&NativeEngineT::RecordIndexBuffer>("recordIndexBuffer")
-                .AddValueReturningMethod<&NativeEngineT::CreateVertexBuffer>("createVertexBuffer")
-                .AddVoidReturningMethod<&NativeEngineT::DeleteVertexBuffer>("deleteVertexBuffer")
-                .AddVoidReturningMethod<&NativeEngineT::RecordVertexBuffer>("recordVertexBuffer")
-                .AddValueReturningMethod<&NativeEngineT::CreateProgram>("createProgram")
-                .AddValueReturningMethod<&NativeEngineT::GetUniforms>("getUniforms")
-                .AddValueReturningMethod<&NativeEngineT::GetAttributes>("getAttributes")
-                .AddVoidReturningMethod<&NativeEngineT::SetProgram>("setProgram")
-                .AddVoidReturningMethod<&NativeEngineT::SetState>("setState")
-                .AddVoidReturningMethod<&NativeEngineT::SetZOffset>("setZOffset")
-                .AddValueReturningMethod<&NativeEngineT::GetZOffset>("getZOffset")
-                .AddVoidReturningMethod<&NativeEngineT::SetDepthTest>("setDepthTest")
-                .AddValueReturningMethod<&NativeEngineT::GetDepthWrite>("getDepthWrite")
-                .AddVoidReturningMethod<&NativeEngineT::SetDepthWrite>("setDepthWrite")
-                .AddVoidReturningMethod<&NativeEngineT::SetColorWrite>("setColorWrite")
-                .AddVoidReturningMethod<&NativeEngineT::SetBlendMode>("setBlendMode")
-                .AddVoidReturningMethod<&NativeEngineT::SetMatrix>("setMatrix")
-                .AddVoidReturningMethod<&NativeEngineT::SetIntArray>("setIntArray")
-                .AddVoidReturningMethod<&NativeEngineT::SetIntArray2>("setIntArray2")
-                .AddVoidReturningMethod<&NativeEngineT::SetIntArray3>("setIntArray3")
-                .AddVoidReturningMethod<&NativeEngineT::SetIntArray4>("setIntArray4")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloatArray>("setFloatArray")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloatArray2>("setFloatArray2")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloatArray3>("setFloatArray3")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloatArray4>("setFloatArray4")
-                .AddVoidReturningMethod<&NativeEngineT::SetMatrices>("setMatrices")
-                .AddVoidReturningMethod<&NativeEngineT::SetMatrix3x3>("setMatrix3x3")
-                .AddVoidReturningMethod<&NativeEngineT::SetMatrix2x2>("setMatrix2x2")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloat>("setFloat")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloat2>("setFloat2")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloat3>("setFloat3")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloat4>("setFloat4")
-                .AddVoidReturningMethod<&NativeEngineT::SetBool>("setBool")
-                .AddValueReturningMethod<&NativeEngineT::CreateTexture>("createTexture")
-                .AddVoidReturningMethod<&NativeEngineT::LoadTexture>("loadTexture")
-                .AddVoidReturningMethod<&NativeEngineT::LoadCubeTexture>("loadCubeTexture")
-                .AddValueReturningMethod<&NativeEngineT::GetTextureWidth>("getTextureWidth")
-                .AddValueReturningMethod<&NativeEngineT::GetTextureHeight>("getTextureHeight")
-                .AddVoidReturningMethod<&NativeEngineT::SetTextureSampling>("setTextureSampling")
-                .AddVoidReturningMethod<&NativeEngineT::SetTextureWrapMode>("setTextureWrapMode")
-                .AddVoidReturningMethod<&NativeEngineT::SetTextureAnisotropicLevel>("setTextureAnisotropicLevel")
-                .AddVoidReturningMethod<&NativeEngineT::SetTexture>("setTexture")
-                .AddVoidReturningMethod<&NativeEngineT::DeleteTexture>("deleteTexture")
-                .AddVoidReturningMethod<&NativeEngineT::DrawIndexed>("drawIndexed")
-                .AddVoidReturningMethod<&NativeEngineT::Draw>("draw")
-                .AddVoidReturningMethod<&NativeEngineT::Clear>("clear")
-                .AddValueReturningMethod<&NativeEngineT::GetRenderWidth>("getRenderWidth")
-                .AddValueReturningMethod<&NativeEngineT::GetRenderHeight>("getRenderHeight")
-                .Finalize();
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::RequestAnimationFrame>("requestAnimationFrame")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::CreateVertexArray>("createVertexArray")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::DeleteVertexArray>("deleteVertexArray")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::BindVertexArray>("bindVertexArray")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::CreateIndexBuffer>("createIndexBuffer")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::DeleteIndexBuffer>("deleteIndexBuffer")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::RecordIndexBuffer>("recordIndexBuffer")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::CreateVertexBuffer>("createVertexBuffer")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::DeleteVertexBuffer>("deleteVertexBuffer")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::RecordVertexBuffer>("recordVertexBuffer")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::CreateProgram>("createProgram")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::GetUniforms>("getUniforms")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::GetAttributes>("getAttributes")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetProgram>("setProgram")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetState>("setState")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetZOffset>("setZOffset")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::GetZOffset>("getZOffset")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetDepthTest>("setDepthTest")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::GetDepthWrite>("getDepthWrite")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetDepthWrite>("setDepthWrite")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetColorWrite>("setColorWrite")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetBlendMode>("setBlendMode")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetMatrix>("setMatrix")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetIntArray>("setIntArray")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetIntArray2>("setIntArray2")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetIntArray3>("setIntArray3")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetIntArray4>("setIntArray4")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetFloatArray>("setFloatArray")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetFloatArray2>("setFloatArray2")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetFloatArray3>("setFloatArray3")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetFloatArray4>("setFloatArray4")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetMatrices>("setMatrices")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetMatrix3x3>("setMatrix3x3")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetMatrix2x2>("setMatrix2x2")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetFloat>("setFloat")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetFloat2>("setFloat2")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetFloat3>("setFloat3")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetFloat4>("setFloat4")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetBool>("setBool")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::CreateTexture>("createTexture")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::LoadTexture>("loadTexture")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::LoadCubeTexture>("loadCubeTexture")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::GetTextureWidth>("getTextureWidth")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::GetTextureHeight>("getTextureHeight")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetTextureSampling>("setTextureSampling")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetTextureWrapMode>("setTextureWrapMode")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetTextureAnisotropicLevel>("setTextureAnisotropicLevel")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::SetTexture>("setTexture")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::DeleteTexture>("deleteTexture")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::DrawIndexed>("drawIndexed")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::Draw>("draw")
+                .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::Clear>("clear")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::GetRenderWidth>("getRenderWidth")
+                .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::GetRenderHeight>("getRenderHeight")
+                .NapiBridge<NativeEngineT>::Finalize();
 
             env.Global().Set("nativeEngine", func.New({}));
         }

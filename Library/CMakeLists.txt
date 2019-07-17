@@ -1,4 +1,6 @@
 set(NAPI_JAVASCRIPT_ENGINE "Chakra" CACHE STRING "JavaScript engine for N-API.")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(Dependencies/napi EXCLUDE_FROM_ALL)
 set_property(TARGET napi PROPERTY FOLDER Dependencies/napi)
 set(BABYLON_NATIVE_DEPENDENCIES ${NAPI_DEPENDENCIES} PARENT_SCOPE)
@@ -37,8 +39,8 @@ set_property(TARGET bimg PROPERTY FOLDER Dependencies/bgfx)
 set_property(TARGET bx PROPERTY FOLDER Dependencies/bgfx)
 
 set(CMAKE_USE_WINSSL ON CACHE BOOL "Set cURL to use WinSSL by default.")
-add_subdirectory(Dependencies/curl EXCLUDE_FROM_ALL)
-set_property(TARGET libcurl PROPERTY FOLDER Dependencies/curl)
+#add_subdirectory(Dependencies/curl EXCLUDE_FROM_ALL)
+#set_property(TARGET libcurl PROPERTY FOLDER Dependencies/curl)
 
 set(SOURCES
     "Include/Babylon/Runtime.h"
@@ -90,7 +92,7 @@ target_link_libraries(Library
     PRIVATE bx
     PRIVATE bimg
     PRIVATE bgfx
-    PRIVATE libcurl
+    #PRIVATE libcurl
     PRIVATE glslang
     PRIVATE SPIRV
     PRIVATE spirv-cross-hlsl)

@@ -4,9 +4,12 @@
 #include <napi/napi.h>
 #include <arcana/threading/task.h>
 #include <arcana/type_traits.h>
+#include <unordered_map>
 
 // Should only be in cpp implementation for UWP version
+#ifdef WIN32
 #include <winrt/Windows.Web.Http.h>
+#endif
 
 namespace babylon
 {
@@ -59,7 +62,7 @@ namespace babylon
         void Send(const Napi::CallbackInfo& info);
 
         arcana::task<void, std::exception_ptr> SendAsync();
-        arcana::task<void, std::exception_ptr> SendAsyncImpl(); // TODO: Eliminate this function once the UWP file access bug is fixed.
+        arcana::task<void, std::exception_ptr> SendAsyncImpl(); // TODO: Eliminate this function once the UWP file access bug is fixed. 
         void SetReadyState(ReadyState readyState);
 
         RuntimeImpl& m_runtimeImpl;
@@ -68,7 +71,8 @@ namespace babylon
         Napi::Reference<Napi::ArrayBuffer> m_response;
         std::string m_responseText;
         std::string m_responseType;
-        winrt::Windows::Web::Http::HttpStatusCode m_status{ winrt::Windows::Web::Http::HttpStatusCode::None };
+        //winrt::Windows::Web::Http::HttpStatusCode m_status{ winrt::Windows::Web::Http::HttpStatusCode::None };
+        int m_status = 0;
         std::string m_responseURL;
         std::unordered_map<std::string, std::vector<Napi::FunctionReference>> m_eventHandlerRefs;
 

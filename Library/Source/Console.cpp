@@ -1,5 +1,7 @@
 #include "Console.h"
+#ifdef WIN32
 #include <Windows.h>
+#endif
 
 namespace babylon
 {
@@ -28,7 +30,7 @@ namespace babylon
     {
         // TODO: Log output to ETW/telemetry rather than debugger output.
         // TODO: Handle version of this method that takes a format string as the first parameter.
-
+#ifdef WIN32
         for (unsigned int index = 0; index < info.Length(); index++)
         {
             if (index > 0)
@@ -38,6 +40,7 @@ namespace babylon
             OutputDebugStringA(info[index].ToString().Utf8Value().c_str());
         }
         OutputDebugStringA("\r\n");
+#endif
     }
 
     void Console::Warn(const Napi::CallbackInfo& info)

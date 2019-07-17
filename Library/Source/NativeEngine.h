@@ -1,4 +1,4 @@
-#include <Napi/napi.h>
+#include <napi/napi.h>
 
 #include <memory>
 

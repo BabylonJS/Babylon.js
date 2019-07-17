@@ -102,6 +102,7 @@ namespace Napi {
   /// In the V8 JavaScript engine, a N-API environment approximately corresponds to an Isolate.
   class Env {
   public:
+    Env() = default;
     Env(napi_env env);
 
     operator napi_env() const;
