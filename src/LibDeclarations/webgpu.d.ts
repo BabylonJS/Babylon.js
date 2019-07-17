@@ -435,6 +435,7 @@ interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase, GPURend
   primitiveTopology?: GPUPrimitiveTopology;
   rasterizationState?: GPURasterizationStateDescriptor;
   sampleCount?: number;
+  sampleMask?:number;
 }
 
 interface GPUSamplerDescriptor {
