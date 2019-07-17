@@ -1,12 +1,12 @@
 import { Nullable } from "../../types";
-import { IAnimatable } from "../../Misc/tools";
 import { SerializationHelper, serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
-import { Color3 } from "../../Maths/math";
+import { Color3 } from '../../Maths/math.color';
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { EffectFallbacks } from "../../Materials/effect";
 import { MaterialFlags } from "../materialFlags";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { MaterialHelper } from "../../Materials/materialHelper";
+import { IAnimatable } from '../../Animations/animatable.interface';
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
@@ -269,7 +269,7 @@ export class PBRClearCoatConfiguration {
             const b = 1 + this._indexOfRefraction;
             const f0 = Math.pow((-a / b), 2); // Schlicks approx: (ior1 - ior2) / (ior1 + ior2) where ior2 for air is close to vacuum = 1.
             const eta = 1 / this._indexOfRefraction;
-            uniformBuffer.updateFloat4("vClearCoatRefractionParams", f0, eta, a,  b);
+            uniformBuffer.updateFloat4("vClearCoatRefractionParams", f0, eta, a, b);
 
             if (this._isTintEnabled) {
                 uniformBuffer.updateFloat4("vClearCoatTintParams",

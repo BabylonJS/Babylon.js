@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { Engine, IDisplayChangedEventArgs } from "../../Engines/engine";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { Size } from '../../Maths/math';
+import { Size } from '../../Maths/math.size';
 import { Observable } from '../../Misc/observable';
 import { Tools } from '../../Misc/tools';
 import { DomManagement } from '../../Misc/domManagement';
@@ -133,7 +133,7 @@ Engine.prototype.initWebVRAsync = function(): Promise<IDisplayChangedEventArgs> 
         this._onVrDisplayDisconnect = () => {
             this._vrDisplay.cancelAnimationFrame(this._frameHandler);
             this._vrDisplay = undefined;
-            this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
+            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
             notifyObservers();
         };
         this._onVrDisplayPresentChange = () => {
@@ -266,5 +266,5 @@ Engine.prototype.isVRPresenting = function() {
 };
 
 Engine.prototype._requestVRFrame = function() {
-    this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
+    this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
 };

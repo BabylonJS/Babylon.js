@@ -6,6 +6,8 @@ import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { InputBlock } from '../Input/inputBlock';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to add support for instances
@@ -80,19 +82,29 @@ export class InstancesBlock extends NodeMaterialBlock {
 
     public autoConfigure() {
         if (!this.world0.connectedPoint) {
-            this.world0.setAsAttribute();
+            let world0Input = new InputBlock("world0");
+            world0Input.setAsAttribute("world0");
+            world0Input.output.connectTo(this.world0);
         }
         if (!this.world1.connectedPoint) {
-            this.world1.setAsAttribute();
+            let world1Input = new InputBlock("world1");
+            world1Input.setAsAttribute("world1");
+            world1Input.output.connectTo(this.world1);
         }
         if (!this.world2.connectedPoint) {
-            this.world2.setAsAttribute();
+            let world2Input = new InputBlock("world2");
+            world2Input.setAsAttribute("world2");
+            world2Input.output.connectTo(this.world2);
         }
         if (!this.world3.connectedPoint) {
-            this.world3.setAsAttribute();
+            let world3Input = new InputBlock("world3");
+            world3Input.setAsAttribute("world3");
+            world3Input.output.connectTo(this.world3);
         }
         if (!this.world.connectedPoint) {
-            this.world.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+            let worldInput = new InputBlock("world");
+            worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+            worldInput.output.connectTo(this.world);
         }
 
         this.world.define = "!INSTANCES";
@@ -131,3 +143,5 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.InstancesBlock"] = InstancesBlock;

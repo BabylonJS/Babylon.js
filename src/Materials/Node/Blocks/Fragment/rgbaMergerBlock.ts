@@ -3,6 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockCo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to create a Color4 out of 4 inputs (one for each component)
@@ -93,3 +94,5 @@ export class RGBAMergerBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.RGBAMergerBlock"] = RGBAMergerBlock;

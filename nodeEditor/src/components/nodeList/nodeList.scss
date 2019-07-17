@@ -22,6 +22,24 @@
         .underline {
             border-bottom: 0.5px solid rgba(255, 255, 255, 0.5);
         }
+
+        .draggableLine {
+            height: 30px;
+            display: grid;
+            align-items: center;
+            justify-items: stretch;
+            background: #222222;
+            border: 1px solid rgb(51, 122, 183) !important;
+            text-align: center;
+            margin: 4px 20px;
+            box-sizing: border-box;
+            border-radius: 10px;
+
+            &:hover {
+                background: rgb(51, 122, 183);
+                color: white;
+            }
+        }
     
         .buttonLine {
             height: 30px;

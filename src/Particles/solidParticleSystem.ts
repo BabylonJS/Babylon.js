@@ -1,5 +1,6 @@
 import { Nullable, IndicesArray, FloatArray } from "../types";
-import { Color4, Vector3, Matrix, Tmp, Quaternion, Axis } from "../Maths/math";
+import { Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
+import { Color4 } from '../Maths/math.color';
 import { VertexBuffer } from "../Meshes/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
@@ -9,6 +10,7 @@ import { Scene, IDisposable } from "../scene";
 import { DepthSortedParticle, SolidParticle, ModelShape } from "./solidParticle";
 import { TargetCamera } from "../Cameras/targetCamera";
 import { BoundingInfo } from "../Culling/boundingInfo";
+import { Axis } from '../Maths/math.axis';
 
 const depthSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => p2.sqDistance - p1.sqDistance;
 
@@ -312,9 +314,9 @@ export class SolidParticleSystem implements IDisposable {
     private _unrotateFixedNormals() {
         var index = 0;
         var idx = 0;
-        const tmpNormal = Tmp.Vector3[0];
-        const quaternion = Tmp.Quaternion[0];
-        const invertedRotMatrix = Tmp.Matrix[0];
+        const tmpNormal = TmpVectors.Vector3[0];
+        const quaternion = TmpVectors.Quaternion[0];
+        const invertedRotMatrix = TmpVectors.Matrix[0];
         for (var p = 0; p < this.particles.length; p++) {
             const particle = this.particles[p];
             const shape = particle._model._shape;
@@ -366,11 +368,11 @@ export class SolidParticleSystem implements IDisposable {
             this._mustUnrotateFixedNormals = true;
         }
 
-        const rotMatrix = Tmp.Matrix[0];
-        const tmpVertex = Tmp.Vector3[0];
-        const tmpRotated = Tmp.Vector3[1];
-        const pivotBackTranslation = Tmp.Vector3[2];
-        const scaledPivot = Tmp.Vector3[3];
+        const rotMatrix = TmpVectors.Matrix[0];
+        const tmpVertex = TmpVectors.Vector3[0];
+        const tmpRotated = TmpVectors.Vector3[1];
+        const pivotBackTranslation = TmpVectors.Vector3[2];
+        const scaledPivot = TmpVectors.Vector3[3];
         copy.getRotationMatrix(rotMatrix);
 
         copy.pivot.multiplyToRef(copy.scaling, scaledPivot);
@@ -542,11 +544,11 @@ export class SolidParticleSystem implements IDisposable {
             particle._model._positionFunction(copy, particle.idx, particle.idxInShape);
         }
 
-        const rotMatrix = Tmp.Matrix[0];
-        const tmpVertex = Tmp.Vector3[0];
-        const tmpRotated = Tmp.Vector3[1];
-        const pivotBackTranslation = Tmp.Vector3[2];
-        const scaledPivot = Tmp.Vector3[3];
+        const rotMatrix = TmpVectors.Matrix[0];
+        const tmpVertex = TmpVectors.Vector3[0];
+        const tmpRotated = TmpVectors.Vector3[1];
+        const pivotBackTranslation = TmpVectors.Vector3[2];
+        const scaledPivot = TmpVectors.Vector3[3];
 
         copy.getRotationMatrix(rotMatrix);
 
@@ -610,8 +612,8 @@ export class SolidParticleSystem implements IDisposable {
         // custom beforeUpdate
         this.beforeUpdateParticles(start, end, update);
 
-        const rotMatrix = Tmp.Matrix[0];
-        const invertedMatrix = Tmp.Matrix[1];
+        const rotMatrix = TmpVectors.Matrix[0];
+        const invertedMatrix = TmpVectors.Matrix[1];
         const mesh = this.mesh;
         const colors32 = this._colors32;
         const positions32 = this._positions32;
@@ -621,7 +623,7 @@ export class SolidParticleSystem implements IDisposable {
         const indices = this._indices;
         const fixedNormal32 = this._fixedNormal32;
 
-        const tempVectors = Tmp.Vector3;
+        const tempVectors = TmpVectors.Vector3;
         const camAxisX = tempVectors[5].copyFromFloats(1.0, 0.0, 0.0);
         const camAxisY = tempVectors[6].copyFromFloats(0.0, 1.0, 0.0);
         const camAxisZ = tempVectors[7].copyFromFloats(0.0, 0.0, 1.0);

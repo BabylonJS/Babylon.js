@@ -2,7 +2,8 @@ import { Logger } from "../../Misc/logger";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
-import { Vector3, Color3, Color4 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
+import { Color3, Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Geometry } from "../../Meshes/geometry";
@@ -29,6 +30,7 @@ import { AmmoJSPlugin } from "../../Physics/Plugins/ammoJSPlugin";
 import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { _TypeStore } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
+import { StringTools } from '../../Misc/stringTools';
 
 /** @hidden */
 export var _BabylonLoaderRegistered = true;
@@ -125,7 +127,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 }
                 scene.environmentTexture = hdrTexture;
             } else {
-                if (Tools.EndsWith(parsedData.environmentTexture, ".env")) {
+                if (StringTools.EndsWith(parsedData.environmentTexture, ".env")) {
                     var compressedTexture = new CubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
                     if (parsedData.environmentTextureRotationY) {
                         compressedTexture.rotationY = parsedData.environmentTextureRotationY;
@@ -744,7 +746,7 @@ SceneLoader.RegisterPlugin({
                     }
                     scene.environmentTexture = hdrTexture;
                 } else {
-                    if (Tools.EndsWith(parsedData.environmentTexture, ".env")) {
+                    if (StringTools.EndsWith(parsedData.environmentTexture, ".env")) {
                         var compressedTexture = new CubeTexture(rootUrl + parsedData.environmentTexture, scene);
                         if (parsedData.environmentTextureRotationY) {
                             compressedTexture.rotationY = parsedData.environmentTextureRotationY;

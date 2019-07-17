@@ -2,7 +2,7 @@ import { VirtualJoystick, JoystickAxis } from "../../Misc/virtualJoystick";
 import { Nullable } from "../../types";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { FreeCamera } from "../../Cameras/freeCamera";
-import { Matrix, Vector3 } from "../../Maths/math";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
 
 // Module augmentation to abstract virtual joystick from camera.
@@ -21,8 +21,8 @@ declare module "../../Cameras/freeCameraInputsManager" {
 * @returns the current input manager
 */
 FreeCameraInputsManager.prototype.addVirtualJoystick = function(): FreeCameraInputsManager {
-   this.add(new FreeCameraVirtualJoystickInput());
-   return this;
+    this.add(new FreeCameraVirtualJoystickInput());
+    return this;
 };
 
 /**

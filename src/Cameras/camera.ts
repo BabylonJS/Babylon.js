@@ -5,7 +5,7 @@ import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { CameraInputsManager } from "./cameraInputsManager";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Viewport, Plane, Frustum } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -14,6 +14,9 @@ import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
 import { UniformBuffer } from "../Materials/uniformBuffer";
+import { Viewport } from '../Maths/math.viewport';
+import { Frustum } from '../Maths/math.frustum';
+import { Plane } from '../Maths/math.plane';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -232,11 +235,15 @@ export class Camera extends Node {
     /**
      * Defines the list of custom render target which are rendered to and then used as the input to this camera's render. Eg. display another camera view on a TV in the main scene
      * This is pretty helpfull if you wish to make a camera render to a texture you could reuse somewhere
-     * else in the scene.
+     * else in the scene. (Eg. security camera)
+     *
+     * To change the final output target of the camera, camera.outputRenderTarget should be used instead (eg. webXR renders to a render target corrisponding to an HMD)
      */
     public customRenderTargets = new Array<RenderTargetTexture>();
     /**
      * When set, the camera will render to this render target instead of the default canvas
+     *
+     * If the desire is to use the output of a camera as a texture in the scene consider using camera.customRenderTargets instead
      */
     public outputRenderTarget: Nullable<RenderTargetTexture> = null;
 
@@ -949,7 +956,7 @@ export class Camera extends Node {
     }
 
     /** @hidden */
-    public _isRightCamera = true;
+    public _isRightCamera = false;
     /**
      * Gets the right camera of a rig setup in case of Rigged Camera
      */

@@ -1,13 +1,12 @@
 import { serialize, serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
 import { Observer } from "../../Misc/observable";
-import { IAnimatable } from "../../Misc/tools";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
-import { Matrix, Color3, Vector4, Tmp } from "../../Maths/math";
+import { Matrix, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Meshes/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -19,6 +18,7 @@ import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrA
 import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { IMaterialSheenDefines, PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
+import { Color3, TmpColors } from '../../Maths/math.color';
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
@@ -34,6 +34,7 @@ import { CubeTexture } from "../../Materials/Textures/cubeTexture";
 
 import { MaterialFlags } from "../materialFlags";
 import { Constants } from "../../Engines/constants";
+import { IAnimatable } from '../../Animations/animatable.interface';
 
 import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
@@ -1802,9 +1803,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 // Colors
                 if (defines.METALLICWORKFLOW) {
-                    Tmp.Color3[0].r = (this._metallic === undefined || this._metallic === null) ? 1 : this._metallic;
-                    Tmp.Color3[0].g = (this._roughness === undefined || this._roughness === null) ? 1 : this._roughness;
-                    ubo.updateColor4("vReflectivityColor", Tmp.Color3[0], 0);
+                    TmpColors.Color3[0].r = (this._metallic === undefined || this._metallic === null) ? 1 : this._metallic;
+                    TmpColors.Color3[0].g = (this._roughness === undefined || this._roughness === null) ? 1 : this._roughness;
+                    ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 0);
                 }
                 else {
                     ubo.updateColor4("vReflectivityColor", this._reflectivityColor, this._microSurface);
@@ -1812,7 +1813,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor3("vReflectionColor", this._reflectionColor);
-                ubo.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
+                if (!defines.SS_REFRACTION && this.subSurface.linkRefractionWithTransparency) {
+                    ubo.updateColor4("vAlbedoColor", this._albedoColor, 1);
+                }
+                else {
+                    ubo.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
+                }
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;

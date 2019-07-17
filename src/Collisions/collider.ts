@@ -1,6 +1,7 @@
 import { Nullable, IndicesArray } from "../types";
-import { Vector3, Plane } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Plane } from '../Maths/math.plane';
 
 var intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
     if (boxMin.x > sphereCenter.x + sphereRadius) {
@@ -187,7 +188,7 @@ export class Collider {
     }
 
     /** @hidden */
-    public _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void {
+    public _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean, hostMesh: AbstractMesh): void {
         var t0;
         var embeddedInPlane = false;
 
@@ -371,18 +372,19 @@ export class Collider {
                 }
                 this._nearestDistance = distToCollision;
                 this.collisionFound = true;
+                this.collidedMesh = hostMesh;
             }
         }
     }
 
     /** @hidden */
-    public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void {
+    public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh): void {
         for (var i = indexStart; i < indexEnd; i += 3) {
             var p1 = pts[indices[i] - decal];
             var p2 = pts[indices[i + 1] - decal];
             var p3 = pts[indices[i + 2] - decal];
 
-            this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial);
+            this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial, hostMesh);
         }
     }
 
