@@ -8,7 +8,7 @@ import { _TypeStore } from '../../../Misc/typeStore';
 /**
  * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
  */
-export class VectorTransformBlock extends NodeMaterialBlock {
+export class TransformBlock extends NodeMaterialBlock {
     /**
      * Defines the value to use to complement W value to transform it to a Vector4
      */
@@ -20,7 +20,7 @@ export class VectorTransformBlock extends NodeMaterialBlock {
     public complementZ = 0;
 
     /**
-     * Creates a new VectorTransformBlock
+     * Creates a new TransformBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -36,7 +36,7 @@ export class VectorTransformBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "VectorTransformBlock";
+        return "TransformBlock";
     }
 
     /**
@@ -84,4 +84,4 @@ export class VectorTransformBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.VectorTransformBlock"] = VectorTransformBlock;
+_TypeStore.RegisteredTypes["BABYLON.TransformBlock"] = TransformBlock;
