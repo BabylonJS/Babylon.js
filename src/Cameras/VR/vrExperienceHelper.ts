@@ -616,6 +616,13 @@ export class VRExperienceHelper {
         return this._vrDeviceOrientationCamera;
     }
 
+    /**
+     * The html button that is used to trigger entering into VR.
+     */
+    public get vrButton(): HTMLButtonElement | undefined {
+        return this._btnVR;
+    }
+
     private get _teleportationRequestInitiated(): boolean {
         var result = this._cameraGazer._teleportationRequestInitiated
             || (this._leftController !== null && this._leftController._teleportationRequestInitiated)
@@ -922,8 +929,9 @@ export class VRExperienceHelper {
 
     private moveButtonToBottomRight() {
         if (this._canvas && !this._useCustomVRButton) {
-            this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
-            this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+            const rect: ClientRect = this._canvas.getBoundingClientRect();
+            this._btnVR.style.top = rect.top + rect.height - 70 + "px";
+            this._btnVR.style.left = rect.left + rect.width - 100 + "px";
         }
     }
 
