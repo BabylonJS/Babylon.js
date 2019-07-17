@@ -1,6 +1,6 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Color3, Color4 } from "../Maths/math";
+import { Color3, Color4 } from "../Maths/math.color";
 import { Node } from "../node";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
@@ -37,7 +37,7 @@ export class LinesMesh extends Mesh {
 
     private _colorShader: ShaderMaterial;
 
-    private color4 : Color4;
+    private color4: Color4;
 
     /**
      * Creates a new LinesMesh

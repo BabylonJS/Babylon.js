@@ -5,7 +5,7 @@ import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManage
 import { FreeCamera } from "../../Cameras/freeCamera";
 import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Scene } from "../../scene";
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { Engine } from "../../Engines/engine";
 /**
  * Manage the keyboard inputs to control the movement of a free camera.

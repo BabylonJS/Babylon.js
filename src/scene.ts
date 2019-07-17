@@ -1,11 +1,12 @@
 import { Nullable } from "./types";
-import { IAnimatable, IFileRequest, Tools, PerfCounter } from "./Misc/tools";
+import { Tools } from "./Misc/tools";
+import { IAnimatable } from './Animations/animatable.interface';
 import { PrecisionDate } from "./Misc/precisionDate";
 import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { Color4, Color3, Plane, Vector2, Vector3, Matrix, Frustum } from "./Maths/math";
+import { Vector2, Vector3, Matrix } from "./Maths/math.vector";
 import { Geometry } from "./Meshes/geometry";
 import { TransformNode } from "./Meshes/transformNode";
 import { SubMesh } from "./Meshes/subMesh";
@@ -47,6 +48,12 @@ import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
 import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
+import { PerfCounter } from './Misc/perfCounter';
+import { IFileRequest } from './Misc/fileRequest';
+import { Color4, Color3 } from './Maths/math.color';
+import { Plane } from './Maths/math.plane';
+import { Frustum } from './Maths/math.frustum';
+import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -95,9 +102,6 @@ export interface SceneOptions {
  * @see http://doc.babylonjs.com/features/scene
  */
 export class Scene extends AbstractScene implements IAnimatable {
-    // Statics
-    private static _uniqueIdCounter = 0;
-
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = 0;
     /** The fog density is following an exponential function */
@@ -1950,9 +1954,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns an unique number for the scene
      */
     public getUniqueId() {
-        var result = Scene._uniqueIdCounter;
-        Scene._uniqueIdCounter++;
-        return result;
+        return UniqueIdGenerator.UniqueId;
     }
 
     /**
@@ -3523,10 +3525,16 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             this._intermediateRendering = false;
 
+            // Need to bind if sub-camera has an outputRenderTarget eg. for webXR
+            if (this.activeCamera && this.activeCamera.outputRenderTarget) {
+                needRebind = true;
+            }
+
             // Restore framebuffer after rendering to targets
             if (needRebind) {
                 this._bindFrameBuffer();
             }
+
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4166,8 +4174,8 @@ export class Scene extends AbstractScene implements IAnimatable {
             var minBox = boundingInfo.boundingBox.minimumWorld;
             var maxBox = boundingInfo.boundingBox.maximumWorld;
 
-            Tools.CheckExtends(minBox, min, max);
-            Tools.CheckExtends(maxBox, min, max);
+            Vector3.CheckExtends(minBox, min, max);
+            Vector3.CheckExtends(maxBox, min, max);
         });
 
         return {

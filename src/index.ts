@@ -23,6 +23,7 @@ export * from "./Materials/index";
 export * from "./Maths/index";
 export * from "./Meshes/index";
 export * from "./Morph/index";
+export * from "./Navigation/index";
 export * from "./node";
 export * from "./Offline/index";
 export * from "./Particles/index";

@@ -1,7 +1,8 @@
 import { SmartArrayNoDuplicate } from "../../Misc/smartArray";
-import { Vector3, Plane } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { Ray } from "../../Culling/ray";
 import { BoundingBox } from "../../Culling/boundingBox";
+import { Plane } from '../../Maths/math.plane';
 
 /**
  * Contains an array of blocks representing the octree

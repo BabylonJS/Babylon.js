@@ -2,11 +2,11 @@ import {
     DiagramEngine,
     DiagramModel,
     DiagramWidget,
-    MoveCanvasAction,
     LinkModel
 } from "storm-react-diagrams";
 
 import * as React from "react";
+import * as dagre from "dagre";
 import { GlobalState } from './globalState';
 
 import { GenericNodeFactory } from './components/diagram/generic/genericNodeFactory';
@@ -22,13 +22,31 @@ import { TextureNodeModel } from './components/diagram/texture/textureNodeModel'
 import { DefaultPortModel } from './components/diagram/defaultPortModel';
 import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
 import { InputNodeModel } from './components/diagram/input/inputNodeModel';
-import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
-import { Vector2, Vector3, Vector4, Matrix, Color3, Color4 } from 'babylonjs/Maths/math';
+import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
 import { LogComponent, LogEntry } from './components/log/logComponent';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { LightNodeModel } from './components/diagram/light/lightNodeModel';
 import { LightNodeFactory } from './components/diagram/light/lightNodeFactory';
 import { DataStorage } from './dataStorage';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+import { Nullable } from 'babylonjs/types';
+import { BonesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/bonesBlock';
+import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
+import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
+import { AlphaTestBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock';
+import { ImageProcessingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/imageProcessingBlock';
+import { RGBAMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaMergerBlock';
+import { RGBASplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaSplitterBlock';
+import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
+import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertexOutputBlock';
+import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
+import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
+import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
+import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
+import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
+import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
+import { VectorTransformBlock } from 'babylonjs/Materials/Node/Blocks/vectorTransformBlock';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -53,8 +71,7 @@ interface IGraphEditorProps {
 }
 
 export class NodeCreationOptions {
-    column: number;
-    nodeMaterialBlock?: NodeMaterialBlock;
+    nodeMaterialBlock: NodeMaterialBlock;
     type?: string;
     connection?: NodeMaterialConnectionPoint;
 }
@@ -69,49 +86,33 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     public _toAdd: LinkModel[] | null = [];
 
     /**
-     * Current row/column position used when adding new nodes
-     */
-    private _rowPos = new Array<number>();
-
-    /**
      * Creates a node and recursivly creates its parent nodes from it's input
      * @param nodeMaterialBlock 
      */
     public createNodeFromObject(options: NodeCreationOptions) {
-        // Update rows/columns
-        if (this._rowPos[options.column] == undefined) {
-            this._rowPos[options.column] = 0;
-        } else {
-            this._rowPos[options.column]++;
-        }
-
         // Create new node in the graph
         var newNode: DefaultNodeModel;
         var filterInputs = [];
 
-        if (options.nodeMaterialBlock) {
-            if (options.nodeMaterialBlock instanceof TextureBlock) {
-                newNode = new TextureNodeModel();
-                filterInputs.push("uv");
-            } else if (options.nodeMaterialBlock instanceof LightBlock) {
-                newNode = new LightNodeModel();
-                filterInputs.push("worldPosition");
-                filterInputs.push("worldNormal");
-                filterInputs.push("cameraPosition");
-            } else {
-                newNode = new GenericNodeModel();
-            }
-
-            if (options.nodeMaterialBlock.isFinalMerger) {
-                this.props.globalState.nodeMaterial!.addOutputNode(options.nodeMaterialBlock);
-            }
-
-        } else {
+        if (options.nodeMaterialBlock instanceof TextureBlock) {
+            newNode = new TextureNodeModel();
+            filterInputs.push("uv");
+        } else if (options.nodeMaterialBlock instanceof LightBlock) {
+            newNode = new LightNodeModel();
+            filterInputs.push("worldPosition");
+            filterInputs.push("worldNormal");
+            filterInputs.push("cameraPosition");
+        } else if (options.nodeMaterialBlock instanceof InputBlock) {
             newNode = new InputNodeModel();
-            (newNode as InputNodeModel).connection = options.connection;
+        } else {
+            newNode = new GenericNodeModel();
         }
+
+        if (options.nodeMaterialBlock.isFinalMerger) {
+            this.props.globalState.nodeMaterial!.addOutputNode(options.nodeMaterialBlock);
+        }
+
         this._nodes.push(newNode)
-        newNode.setPosition(1600 - (300 * options.column), 210 * this._rowPos[options.column])
         this._model.addAll(newNode);
 
         if (options.nodeMaterialBlock) {
@@ -155,7 +156,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         });
 
         this.props.globalState.onResetRequiredObservable.add(() => {
-            this._rowPos = [];
             this.build();
             if (this.props.globalState.nodeMaterial) {
                 this.buildMaterial();
@@ -170,7 +170,65 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this._engine.zoomToFit();
         });
 
+        this.props.globalState.onReOrganizedRequiredObservable.add(() => {
+            this.reOrganize();
+        })
+
         this.build();
+    }
+
+    distributeGraph() {
+        let nodes = this.mapElements();
+        let edges = this.mapEdges();
+        let graph = new dagre.graphlib.Graph();
+        graph.setGraph({});
+        graph.setDefaultEdgeLabel(() => ({}));
+        graph.graph().rankdir = "LR";
+        //add elements to dagre graph
+        nodes.forEach(node => {
+            graph.setNode(node.id, node.metadata);
+        });
+        edges.forEach(edge => {
+            if (edge.from && edge.to) {
+                graph.setEdge(edge.from.id, edge.to.id);
+            }
+        });
+        //auto-distribute
+        dagre.layout(graph);
+        return graph.nodes().map(node => graph.node(node));
+    }
+
+    mapElements() {
+        let output = [];
+
+        // dagre compatible format
+        for (var nodeName in this._model.nodes) {
+            let node = this._model.nodes[nodeName];
+            let size = {
+                width: node.width,
+                height: node.height
+            };
+            output.push({ id: node.id, metadata: { ...size, id: node.id } });
+        }
+
+        return output;
+    }
+
+    mapEdges() {
+        // returns links which connects nodes
+        // we check are there both from and to nodes in the model. Sometimes links can be detached
+        let output = [];
+
+        for (var linkName in this._model.links) {
+            let link = this._model.links[linkName];
+
+            output.push({
+                from: link.sourcePort!.parent,
+                to: link.targetPort!.parent
+            });
+        }
+
+        return output;
     }
 
     buildMaterial() {
@@ -201,6 +259,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     if (targetBlock && targetBlock.isFinalMerger) {
                         this.props.globalState.nodeMaterial!.removeOutputNode(targetBlock);
                     }
+
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 }
             },
             linksUpdated: (e) => {
@@ -215,16 +275,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                 link.output.connection.disconnectFrom(link.input.connection)
                                 link.input.syncWithNodeMaterialConnectionPoint(link.input.connection)
                                 link.output.syncWithNodeMaterialConnectionPoint(link.output.connection)
-                            } else if (link.input.connection.value) {
-                                link.input.connection.value = null;
                             }
                         }
                     }
+                    this.forceUpdate();
+                    return;
                 }
 
                 e.link.addListener({
                     sourcePortChanged: () => {
-                        console.log("port change")
                     },
                     targetPortChanged: () => {
                         // Link is created with a target port
@@ -232,15 +291,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
                         if (link) {
                             if (link.output.connection && link.input.connection) {
-                                link.output.connection.connectTo(link.input.connection)
-                            } else if (link.input.connection) {
-                                if (!link.output.connection) { // Input Node
-                                    let name = link.output.name;
-                                    link.output.syncWithNodeMaterialConnectionPoint(link.input.connection);
-                                    link.output.name = name;
-                                    (link.output.getNode() as InputNodeModel).connection = link.output.connection!;
-                                    link.input.connection.value = link.output.defaultValue;
+                                // Disconnect previous connection
+                                for (var key in link.input.links) {
+                                    let other = link.input.links[key];
+
+                                    if (other.getSourcePort() !== link.output) {
+                                        other.remove();
+                                    }
                                 }
+
+                                link.output.connection.connectTo(link.input.connection);
+
+                                this.forceUpdate();
                             }
                             if (this.props.globalState.nodeMaterial) {
                                 this.buildMaterial();
@@ -255,10 +317,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (this.props.globalState.nodeMaterial) {
             var material: any = this.props.globalState.nodeMaterial;
             material._vertexOutputNodes.forEach((n: any) => {
-                this.createNodeFromObject({ column: 0, nodeMaterialBlock: n });
+                this.createNodeFromObject({ nodeMaterialBlock: n });
             })
             material._fragmentOutputNodes.forEach((n: any) => {
-                this.createNodeFromObject({ column: 0, nodeMaterialBlock: n });
+                this.createNodeFromObject({ nodeMaterialBlock: n });
             })
         }
 
@@ -269,54 +331,57 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
             this._toAdd = null;
             this._engine.setDiagramModel(this._model);
+
             this.forceUpdate();
-        }, 550);
-    }
 
-    addNodeFromClass(ObjectClass: typeof NodeMaterialBlock) {
-        var block = new ObjectClass(ObjectClass.prototype.getClassName())
-        var localNode = this.createNodeFromObject({ column: 0, nodeMaterialBlock: block })
-        var widget = (this.refs["test"] as DiagramWidget);
-
-        this.forceUpdate();
-
-        // This is needed to fix link offsets when created, (eg. create a fog block)
-        // Todo figure out how to correct this without this
-        setTimeout(() => {
-            widget.startFiringAction(new MoveCanvasAction(1, 0, this._model));
+            this.reOrganize();
         }, 500);
-
-        return localNode;
     }
 
-    addValueNode(type: string, column = 0, connection?: NodeMaterialConnectionPoint) {
-        var localNode = this.createNodeFromObject({ column: column, type: type, connection: connection })
-        var outPort = new DefaultPortModel(type, "output");
+    reOrganize() {
+        let nodes = this.distributeGraph();
+        nodes.forEach(node => {
+            for (var nodeName in this._model.nodes) {
+                let modelNode = this._model.nodes[nodeName];
 
-        localNode.addPort(outPort);
-
-        if (!connection) {
-            switch (type) {
-                case "Vector2":
-                    outPort.defaultValue = Vector2.Zero();
-                    break;
-                case "Vector3":
-                    outPort.defaultValue = Vector3.Zero();
-                    break;
-                case "Vector4":
-                    outPort.defaultValue = Vector4.Zero();
-                    break;
-                case "Matrix":
-                    outPort.defaultValue = Matrix.Identity();
-                    break;
-                case "Color3":
-                    outPort.defaultValue = Color3.White();
-                    break;
-                case "Color4":
-                    outPort.defaultValue = new Color4(1, 1, 1, 1);
-                    break;
+                if (modelNode.id === node.id) {
+                    modelNode.setPosition(node.x - node.width / 2, node.y - node.height / 2);
+                    return;
+                }
             }
+        });
+        this.forceUpdate();
+    }
+
+    addValueNode(type: string) {
+        let nodeType: NodeMaterialBlockConnectionPointTypes = NodeMaterialBlockConnectionPointTypes.Vector3;
+        switch (type) {
+            case "Float":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Float;
+                break;
+            case "Vector2":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Vector2;
+                break;
+            case "Vector3":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Vector3;
+                break;
+            case "Vector4":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Vector4;
+                break;
+            case "Matrix":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Matrix;
+                break;
+            case "Color3":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Color3;
+                break;
+            case "Color4":
+                nodeType = NodeMaterialBlockConnectionPointTypes.Color4;
+                break;
         }
+
+        let newInputBlock = new InputBlock(type, undefined, nodeType);
+        newInputBlock.setDefaultValue();
+        var localNode = this.createNodeFromObject({ type: type, nodeMaterialBlock: newInputBlock })
 
         return localNode;
     }
@@ -366,6 +431,88 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         return `${this._leftWidth}px 4px calc(100% - ${this._leftWidth + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
     }
 
+    emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
+        var data = event.dataTransfer.getData("babylonjs-material-node") as string;
+        let nodeModel: Nullable<DefaultNodeModel> = null;
+
+        if (data.indexOf("Block") === -1) {
+            nodeModel = this.addValueNode(data);
+        } else {
+            let block: Nullable<NodeMaterialBlock> = null;
+
+            switch (data) {
+                case "BonesBlock":
+                    block = new BonesBlock("Bones");
+                    break;
+                case "InstancesBlock":
+                    block = new InstancesBlock("Instances");
+                    break;
+                case "MorphTargetsBlock":
+                    block = new MorphTargetsBlock("MorphTargets");
+                    break;
+                case "AlphaTestBlock":
+                    block = new AlphaTestBlock("AlphaTest");
+                    break;
+                case "ImageProcessingBlock":
+                    block = new ImageProcessingBlock("ImageProcessing");
+                    break;
+                case "RGBAMergerBlock":
+                    block = new RGBAMergerBlock("RGBAMerger");
+                    break;
+                case "RGBASplitterBlock":
+                    block = new RGBASplitterBlock("RGBASplitter");
+                    break;
+                case "TextureBlock":
+                    block = new TextureBlock("Texture");
+                    break;
+                case "LightBlock":
+                    block = new LightBlock("Lights");
+                    break;
+                case "FogBlock":
+                    block = new FogBlock("Fog");
+                    break;
+                case "VertexOutputBlock":
+                    block = new VertexOutputBlock("VertexOutput");
+                    break;
+                case "FragmentOutputBlock":
+                    block = new FragmentOutputBlock("FragmentOutput");
+                    break;
+                case "AddBlock":
+                    block = new AddBlock("Add");
+                    break;
+                case "ClampBlock":
+                    block = new ClampBlock("Clamp");
+                    break;
+                case "CrossBlock":
+                    block = new CrossBlock("Dot");
+                    break;
+                case "DotBlock":
+                    block = new DotBlock("Dot");
+                    break;
+                case "MultiplyBlock":
+                    block = new MultiplyBlock("Multiply");
+                    break;
+                case "VectorTransformBlock":
+                    block = new VectorTransformBlock("VectorTransform");
+                    break;
+            }
+
+            if (block) {
+                nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
+            }
+        };
+
+        if (nodeModel) {
+            const zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
+
+            let x = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX() - 100) / zoomLevel;
+            let y = (event.clientY - event.currentTarget.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
+            nodeModel.setPosition(x, y);
+        }
+
+        this.forceUpdate();
+    }
+
     render() {
         return (
             <Portal globalState={this.props.globalState}>
@@ -375,7 +522,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     }
                 }>
                     {/* Node creation menu */}
-                    <NodeListComponent globalState={this.props.globalState} onAddValueNode={b => this.addValueNode(b)} onAddNodeFromClass={b => this.addNodeFromClass(b)} />
+                    <NodeListComponent globalState={this.props.globalState} />
 
                     <div id="leftGrab"
                         onPointerDown={evt => this.onPointerDown(evt)}
@@ -384,7 +531,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     ></div>
 
                     {/* The node graph diagram */}
-                    <DiagramWidget deleteKeys={[46]} ref={"test"} inverseZoom={true} className="diagram-container" diagramEngine={this._engine} maxNumberPointsPerLink={0} />
+                    <div className="diagram-container"
+                        onDrop={event => {
+                            this.emitNewBlock(event);
+                        }}
+                        onDragOver={event => {
+                            event.preventDefault();
+                        }}
+                    >
+                        <DiagramWidget className="diagram" deleteKeys={[46]} ref={"test"} inverseZoom={true} diagramEngine={this._engine} maxNumberPointsPerLink={0} />
+                    </div>
 
                     <div id="rightGrab"
                         onPointerDown={evt => this.onPointerDown(evt)}

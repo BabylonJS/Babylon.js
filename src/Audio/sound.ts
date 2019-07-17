@@ -1,6 +1,6 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { Vector3, Tmp } from "../Maths/math";
+import { Vector3, TmpVectors } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
@@ -936,8 +936,8 @@ export class Sound {
         }
         let mesh = node as AbstractMesh;
         if (this._positionInEmitterSpace) {
-            mesh.worldMatrixFromCache.invertToRef(Tmp.Matrix[0]);
-            this.setPosition(Tmp.Matrix[0].getTranslation());
+            mesh.worldMatrixFromCache.invertToRef(TmpVectors.Matrix[0]);
+            this.setPosition(TmpVectors.Matrix[0].getTranslation());
         }
         else {
             let boundingInfo = mesh.getBoundingInfo();

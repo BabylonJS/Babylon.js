@@ -3,7 +3,7 @@ import { SoundTrack } from "./soundTrack";
 import { Engine } from "../Engines/engine";
 import { Camera } from "../Cameras/camera";
 import { Nullable } from "../types";
-import { Matrix, Vector3 } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { SceneComponentConstants, ISceneSerializableComponent } from "../sceneComponent";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
@@ -398,7 +398,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         }
 
         if (listeningCamera && audioEngine.audioContext) {
-            audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
+            audioEngine.audioContext.listener.setPosition(listeningCamera.globalPosition.x, listeningCamera.globalPosition.y, listeningCamera.globalPosition.z);
             // for VR cameras
             if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
                 listeningCamera = listeningCamera.rigCameras[0];

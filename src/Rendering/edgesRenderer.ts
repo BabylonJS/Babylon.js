@@ -2,7 +2,7 @@ import { Nullable } from "../types";
 import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh";
-import { Vector3, Tmp } from "../Maths/math";
+import { Vector3, TmpVectors } from "../Maths/math.vector";
 import { IDisposable } from "../scene";
 import { Observer } from "../Misc/observable";
 import { Effect } from "../Materials/effect";
@@ -515,8 +515,8 @@ export class LineEdgesRenderer extends EdgesRenderer {
             return;
         }
 
-        const p0 = Tmp.Vector3[0];
-        const p1 = Tmp.Vector3[1];
+        const p0 = TmpVectors.Vector3[0];
+        const p1 = TmpVectors.Vector3[1];
         const len = indices.length - 1;
         for (let i = 0, offset = 0; i < len; i += 2, offset += 4) {
             Vector3.FromArrayToRef(positions, 3 * indices[i], p0);

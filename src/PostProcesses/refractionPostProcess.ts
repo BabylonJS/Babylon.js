@@ -1,4 +1,4 @@
-import { Color3 } from "../Maths/math";
+import { Color3 } from "../Maths/math.color";
 import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
