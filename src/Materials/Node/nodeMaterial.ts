@@ -23,6 +23,8 @@ import { VectorTransformBlock } from './Blocks/vectorTransformBlock';
 import { VertexOutputBlock } from './Blocks/Vertex/vertexOutputBlock';
 import { FragmentOutputBlock } from './Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
+import { _TypeStore } from '../../Misc/typeStore';
+import { SerializationHelper } from '../../Misc/decorators';
 
 // declare NODEEDITOR namespace for compilation issue
 declare var NODEEDITOR: any;
@@ -870,4 +872,95 @@ export class NodeMaterial extends PushMaterial {
         this.addOutputNode(vertexOutput);
         this.addOutputNode(pixelOutput);
     }
+
+    private _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]) {
+        if (list.indexOf(rootNode) !== -1) {
+            return;
+        }
+        list.push(rootNode);
+
+        for (var inputs of rootNode.inputs) {
+            let connectedPoint = inputs.connectedPoint;
+            if (connectedPoint) {
+                let block = connectedPoint.ownerBlock;
+                if (block !== rootNode) {
+                    this._gatherBlocks(block, list);
+                }
+            }
+        }
+    }
+
+    /**
+     * Serializes this material in a JSON representation
+     * @returns the serialized material object
+     */
+    public serialize(): any {
+        var serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.customType = "BABYLON.NodeMaterial";
+
+        serializationObject.outputNodes = [];
+
+        let blocks: NodeMaterialBlock[] = [];
+
+        // Outputs
+        for (var outputNode of this._vertexOutputNodes) {
+            this._gatherBlocks(outputNode, blocks);
+            serializationObject.outputNodes.push(outputNode.uniqueId);
+        }
+
+        for (var outputNode of this._fragmentOutputNodes) {
+            this._gatherBlocks(outputNode, blocks);
+            serializationObject.outputNodes.push(outputNode.uniqueId);
+        }
+
+        // Blocks
+        serializationObject.blocks = [];
+
+        for (var block of blocks) {
+            serializationObject.blocks.push(block.serialize());
+        }
+
+        return serializationObject;
+    }
+
+    /**
+     * Creates a node material from parsed material data
+     * @param source defines the JSON representation of the material
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a new node material
+     */
+    public static Parse(source: any, scene: Scene, rootUrl: string): NodeMaterial {
+        let nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene), source, scene, rootUrl);
+
+        let map: {[key: number]: NodeMaterialBlock} = {};
+
+        // Create blocks
+        for (var parsedBlock of source.blocks) {
+            let blockType = _TypeStore.GetClass(parsedBlock.customType);
+            if (blockType) {
+                let block: NodeMaterialBlock = new blockType();
+
+                map[parsedBlock.id] = block;
+            }
+        }
+
+        // Connections
+        // for (var parsedBlock of source.blocks) {
+        //     let block = map[parsedBlock.id];
+
+        //     for (var input of parsedBlock.inputs) {
+
+        //     }
+        // }
+
+        // Outputs
+        for (var outputNodeId of source.outputNodes) {
+            nodeMaterial.addOutputNode(map[outputNodeId]);
+        }
+
+        return nodeMaterial;
+    }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.NodeMaterial"] = NodeMaterial;

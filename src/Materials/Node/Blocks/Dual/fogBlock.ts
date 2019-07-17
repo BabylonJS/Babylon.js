@@ -10,6 +10,7 @@ import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { MaterialHelper } from '../../../materialHelper';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { InputBlock } from '../Input/inputBlock';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to add support for scene fog
@@ -145,3 +146,5 @@ export class FogBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.FogBlock"] = FogBlock;

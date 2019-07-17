@@ -12,6 +12,7 @@ import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
 import { InputBlock } from '../Input/inputBlock';
 import { Light } from '../../../../Lights/light';
 import { Nullable } from '../../../../types';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to add light in the fragment shader
@@ -231,3 +232,5 @@ export class LightBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.LightBlock"] = LightBlock;

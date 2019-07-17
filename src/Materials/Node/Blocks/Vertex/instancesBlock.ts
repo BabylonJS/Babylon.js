@@ -7,6 +7,7 @@ import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
 import { InputBlock } from '../Input/inputBlock';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to add support for instances
@@ -142,3 +143,5 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.InstancesBlock"] = InstancesBlock;

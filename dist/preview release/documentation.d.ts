@@ -32259,6 +32259,19 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Helper class used to generate session unique ID
+     */
+    export class UniqueIdGenerator {
+        private static _UniqueIdCounter;
+        /**
+         * Gets an unique (relatively to the current scene) Id
+         * @returns an unique number for the scene
+         */
+        static readonly UniqueId: number;
+    }
+}
+declare module BABYLON {
+    /**
      * This class defines the direct association between an animation and a target
      */
     export class TargetedAnimation {
@@ -32503,7 +32516,6 @@ declare module BABYLON {
      * @see http://doc.babylonjs.com/features/scene
      */
     export class Scene extends AbstractScene implements IAnimatable {
-        private static _uniqueIdCounter;
         /** The fog is deactivated */
         static readonly FOGMODE_NONE: number;
         /** The fog density is following an exponential function */
@@ -51460,6 +51472,20 @@ declare module BABYLON {
          * Clear the current material and set it to a default state
          */
         setToDefault(): void;
+        _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]): void;
+        /**
+         * Serializes this material in a JSON representation
+         * @returns the serialized material object
+         */
+        serialize(): any;
+        /**
+         * Creates a node material from parsed material data
+         * @param source defines the JSON representation of the material
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a new node material
+         */
+        static Parse(source: any, scene: Scene, rootUrl: string): NodeMaterial;
     }
 }
 declare module BABYLON {
@@ -51714,6 +51740,10 @@ declare module BABYLON {
          */
         name: string;
         /**
+         * Gets or sets the unique id of the node
+         */
+        uniqueId: number;
+        /**
          * Gets a boolean indicating that this block is an end block (e.g. it is generating a system value)
          */
         readonly isFinalMerger: boolean;
@@ -51874,6 +51904,11 @@ declare module BABYLON {
          * @returns true if already built
          */
         build(state: NodeMaterialBuildState, contextSwitched?: boolean): boolean;
+        /**
+         * Serializes this block in a JSON representation
+         * @returns the serialized block object
+         */
+        serialize(): any;
     }
 }
 declare module BABYLON {
@@ -52089,7 +52124,6 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
-        private _getTypeLength;
         /**
          * Gets an boolean indicating if the current point can be connected to another point
          * @param connectionPoint defines the other connection point
@@ -52108,6 +52142,12 @@ declare module BABYLON {
          * @returns the current connection point
          */
         disconnectFrom(endpoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint;
+        /**
+         * Serializes this point in a JSON representation
+         * @returns the serialized point object
+         */
+        serialize(): any;
+        private static _GetTypeLength;
     }
 }
 declare module BABYLON {

@@ -3,6 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockCo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to expand a Color4 or a Vector4 into 4 outputs (one for each component)
@@ -63,3 +64,5 @@ export class RGBASplitterBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.RGBASplitterBlock"] = RGBASplitterBlock;
