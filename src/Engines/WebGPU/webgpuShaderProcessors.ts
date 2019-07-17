@@ -17,10 +17,36 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
     public attributeProcessor(attribute: string) {
         return attribute.replace("attribute", "in");
+        // const inOut = isFragment ? "in" : "out";
+        // const attribRegex = new RegExp(/\s+attribute\s+(\w+)\s+/gm);
+
+        // let location = 0;
+        // let match = attribRegex.exec(code);
+        // while (match != null) {
+        //     if (match[1]) {
+        //         code = code.replace(match[0], ` layout(location = ${location}) ${inOut} ${match[1]} `);
+        //         location++;
+        //     }
+        //     match = attribRegex.exec(code);
+        // }
+        // return code;
     }
 
     public varyingProcessor(varying: string, isFragment: boolean) {
         return varying.replace("varying", isFragment ? "in" : "out");
+        // const inOut = isFragment ? "in" : "out";
+        // const attribRegex = new RegExp(/\s+varying\s+(\w+)\s+/gm);
+
+        // let location = 0;
+        // let match = attribRegex.exec(code);
+        // while (match != null) {
+        //     if (match[1]) {
+        //         code = code.replace(match[0], ` layout(location = ${location}) ${inOut} ${match[1]} `);
+        //         location++;
+        //     }
+        //     match = attribRegex.exec(code);
+        // }
+        // return code;
     }
 
     public postProcessor(code: string, defines: string[], isFragment: boolean) {
@@ -45,6 +71,13 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             if (hasMultiviewExtension) {
                 return "#extension GL_OVR_multiview2 : require\nlayout (num_views = 2) in;\n" + code;
             }
+        }
+
+        // Flip Y.
+        if (!isFragment) {
+            const lastClosingCurly = code.lastIndexOf("}");
+            code = code.substring(0, lastClosingCurly);
+            code += "gl_Position.y *= -1.; }";
         }
 
         return code;
