@@ -879,6 +879,10 @@ declare module "babylonjs-node-editor/graphEditor" {
     export class GraphEditor extends React.Component<IGraphEditorProps> {
         private _engine;
         private _model;
+        private _startX;
+        private _moveInProgress;
+        private _leftWidth;
+        private _rightWidth;
         private _nodes;
         /** @hidden */
         _toAdd: LinkModel[] | null;
@@ -907,10 +911,6 @@ declare module "babylonjs-node-editor/graphEditor" {
         build(): void;
         reOrganize(): void;
         addValueNode(type: string): DefaultNodeModel;
-        private _startX;
-        private _moveInProgress;
-        private _leftWidth;
-        private _rightWidth;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -1753,6 +1753,10 @@ declare module NODEEDITOR {
     export class GraphEditor extends React.Component<IGraphEditorProps> {
         private _engine;
         private _model;
+        private _startX;
+        private _moveInProgress;
+        private _leftWidth;
+        private _rightWidth;
         private _nodes;
         /** @hidden */
         _toAdd: LinkModel[] | null;
@@ -1781,10 +1785,6 @@ declare module NODEEDITOR {
         build(): void;
         reOrganize(): void;
         addValueNode(type: string): DefaultNodeModel;
-        private _startX;
-        private _moveInProgress;
-        private _leftWidth;
-        private _rightWidth;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;

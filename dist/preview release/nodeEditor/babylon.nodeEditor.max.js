@@ -63996,11 +63996,11 @@ var GraphEditor = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GraphEditor, _super);
     function GraphEditor(props) {
         var _this = _super.call(this, props) || this;
+        _this._leftWidth = _dataStorage__WEBPACK_IMPORTED_MODULE_18__["DataStorage"].ReadNumber("LeftWidth", 200);
+        _this._rightWidth = _dataStorage__WEBPACK_IMPORTED_MODULE_18__["DataStorage"].ReadNumber("RightWidth", 300);
         _this._nodes = new Array();
         /** @hidden */
         _this._toAdd = [];
-        _this._leftWidth = _dataStorage__WEBPACK_IMPORTED_MODULE_18__["DataStorage"].ReadNumber("LeftWidth", 200);
-        _this._rightWidth = _dataStorage__WEBPACK_IMPORTED_MODULE_18__["DataStorage"].ReadNumber("RightWidth", 300);
         // setup the diagram engine
         _this._engine = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramEngine"]();
         _this._engine.installDefaultFactories();

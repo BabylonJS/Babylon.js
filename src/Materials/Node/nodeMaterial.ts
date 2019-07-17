@@ -947,8 +947,8 @@ export class NodeMaterial extends PushMaterial {
 
         // Connections
 
-        // Play them in reverse to make sure types are defined            
-        for (var blockIndex = source.blocks.length - 1; blockIndex >=0; blockIndex--) {       
+        // Play them in reverse to make sure types are defined
+        for (var blockIndex = source.blocks.length - 1; blockIndex >= 0; blockIndex--) {
             let parsedBlock = source.blocks[blockIndex];
             let block = map[parsedBlock.id];
 
