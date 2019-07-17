@@ -29,7 +29,8 @@ namespace bgfx
 #include <regex>
 #include <sstream>
 
-using namespace babylon;
+namespace babylon
+{
 
 namespace
 {
@@ -1176,4 +1177,5 @@ void NativeEngine::UpdateRenderTarget()
 void NativeEngine::Suspend()
 {
     m_impl->Suspend();
+}
 }

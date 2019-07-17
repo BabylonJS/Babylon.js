@@ -7,7 +7,8 @@
 #include <napi/env.h>
 #include <sstream>
 
-using namespace babylon;
+namespace babylon
+{
 
 RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl)
     : m_engine{ std::make_unique<NativeEngine>(nativeWindowPtr, *this) }
@@ -194,3 +195,4 @@ void RuntimeImpl::BaseThreadProcedure()
     }
 }
 
+}
