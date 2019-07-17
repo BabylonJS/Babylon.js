@@ -11,10 +11,6 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     // preProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
     // postProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
 
-    // public preProcessor(preparedSourceCode: string, defines: string[], isFragment: boolean): string {
-    //     return "#define WEBGPU \n" + preparedSourceCode;
-    // }
-
     public attributeProcessor(attribute: string) {
         return attribute.replace("attribute", "in");
         // const inOut = isFragment ? "in" : "out";
