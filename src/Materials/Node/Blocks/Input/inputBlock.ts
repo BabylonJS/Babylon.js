@@ -424,6 +424,48 @@ export class InputBlock extends NodeMaterialBlock {
 
         this._emit(state);
     }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.type = this.type;
+        serializationObject.mode = this._mode;
+        serializationObject.wellKnownValue = this._wellKnownValue;
+
+        if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
+            if (this._storedValue.asArray) {
+                serializationObject.valueType = "BABYLON." + this._storedValue.getClassName();
+                serializationObject.value = this._storedValue.asArray();
+            } else {
+                serializationObject.valueType = "number";
+                serializationObject.value = this._storedValue;
+            }
+        }
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this._type = serializationObject.type;
+        this._mode = serializationObject.mode;
+        this._wellKnownValue = serializationObject.wellKnownValue;
+
+        if (!serializationObject.valueType) {
+            return;
+        }
+
+        if (serializationObject.valueType === "number") {
+            this._storedValue = serializationObject.value;
+        } else {
+            let valueType = _TypeStore.GetClass(serializationObject.valueType);
+
+            if (valueType) {
+                this._storedValue = valueType.FromArray(serializationObject.value);
+            }
+        }
+    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.InputBlock"] = InputBlock;

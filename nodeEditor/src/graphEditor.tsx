@@ -80,6 +80,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _engine: DiagramEngine;
     private _model: DiagramModel;
 
+    private _startX: number;
+    private _moveInProgress: boolean;
+
+    private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
+    private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
+
     private _nodes = new Array<DefaultNodeModel>();
 
     /** @hidden */
@@ -385,12 +391,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         return localNode;
     }
-
-    private _startX: number;
-    private _moveInProgress: boolean;
-
-    private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
-    private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
         this._startX = evt.clientX;

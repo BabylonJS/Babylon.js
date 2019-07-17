@@ -51484,7 +51484,7 @@ declare module BABYLON {
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
          * @returns a new node material
          */
-        static Parse(source: any, scene: Scene, rootUrl: string): NodeMaterial;
+        static Parse(source: any, scene: Scene, rootUrl?: string): NodeMaterial;
     }
 }
 declare module BABYLON {
@@ -51529,6 +51529,8 @@ declare module BABYLON {
         private _injectVertexCode;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -51908,6 +51910,8 @@ declare module BABYLON {
          * @returns the serialized block object
          */
         serialize(): any;
+        /** @hidden */
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -52046,6 +52050,8 @@ declare module BABYLON {
         /** @hidden */
         _transmit(effect: Effect, scene: Scene): void;
         protected _buildBlock(state: NodeMaterialBuildState): void;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -52571,6 +52577,8 @@ declare module BABYLON {
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private _injectVertexCode;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
