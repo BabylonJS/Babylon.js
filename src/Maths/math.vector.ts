@@ -4,6 +4,7 @@ import { Viewport } from './math.viewport';
 import { DeepImmutable, Nullable, FloatArray, float } from "../types";
 import { ArrayTools } from '../Misc/arrayTools';
 import { IPlaneLike } from './math.like';
+import { _TypeStore } from '../Misc/typeStore';
 
 /**
  * Class representing a vector containing 2 coordinates
@@ -5257,3 +5258,8 @@ export class TmpVectors {
     public static Quaternion: Quaternion[] = ArrayTools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
     public static Matrix: Matrix[] = ArrayTools.BuildArray(8, Matrix.Identity); // 8 temp Matrices at once should be enough
 }
+
+_TypeStore.RegisteredTypes["BABYLON.Vector2"] = Vector2;
+_TypeStore.RegisteredTypes["BABYLON.Vector3"] = Vector3;
+_TypeStore.RegisteredTypes["BABYLON.Vector4"] = Vector4;
+_TypeStore.RegisteredTypes["BABYLON.Matrix"] = Matrix;
