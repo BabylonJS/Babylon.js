@@ -168,23 +168,6 @@ export class NodeMaterialConnectionPoint {
         return "NodeMaterialConnectionPoint";
     }
 
-    private _getTypeLength(type: NodeMaterialBlockConnectionPointTypes) {
-        switch (type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
-                return 1;
-            case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return 2;
-            case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-                return 3;
-            case NodeMaterialBlockConnectionPointTypes.Vector4:
-            case NodeMaterialBlockConnectionPointTypes.Color4:
-                return 3;
-        }
-
-        return -1;
-    }
-
     /**
      * Gets an boolean indicating if the current point can be connected to another point
      * @param connectionPoint defines the other connection point
@@ -196,7 +179,7 @@ export class NodeMaterialConnectionPoint {
             // Check swizzle
             if (this.swizzle) {
                 let swizzleLength = this.swizzle.length;
-                let connectionLength = this._getTypeLength(connectionPoint.type);
+                let connectionLength = NodeMaterialConnectionPoint._GetTypeLength(connectionPoint.type);
 
                 if (swizzleLength === connectionLength) {
                     fail = false;
@@ -242,5 +225,40 @@ export class NodeMaterialConnectionPoint {
         endpoint._connectedPoint = null;
         this._enforceAssociatedVariableName = false;
         return this;
+    }
+
+    /**
+     * Serializes this point in a JSON representation
+     * @returns the serialized point object
+     */
+    public serialize(): any {
+        let serializationObject: any = {};
+
+        serializationObject.name = this.name;
+        serializationObject.swizzle = this.swizzle;
+
+        if (this.connectedPoint) {
+            serializationObject.connectedPointPath = this.name + ">" + this.connectedPoint.ownerBlock.uniqueId + "." + this.connectedPoint.name;
+        }
+
+        return serializationObject;
+    }
+
+    // Statics
+    private static _GetTypeLength(type: NodeMaterialBlockConnectionPointTypes) {
+        switch (type) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                return 1;
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                return 2;
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                return 3;
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                return 3;
+        }
+
+        return -1;
     }
 }
