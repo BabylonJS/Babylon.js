@@ -47,6 +47,7 @@ import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
 import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
 import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
 import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
+import { MessageDialogComponent } from './sharedComponents/messageDialog';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -312,6 +313,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                 catch (err) {
                                     link.output.remove();
                                     this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
+                                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(err);
                                 }
 
                                 this.forceUpdate();
@@ -558,7 +560,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     <PropertyTabComponent globalState={this.props.globalState} />
 
                     <LogComponent globalState={this.props.globalState} />
-                </div>
+                </div>                
+                <MessageDialogComponent globalState={this.props.globalState} />
             </Portal>
         );
 

@@ -25,8 +25,8 @@ export class BonesBlock extends NodeMaterialBlock {
 
         this.registerInput("matricesIndices", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerInput("matricesWeights", NodeMaterialBlockConnectionPointTypes.Vector4);
-        this.registerInput("matricesIndicesExtra", NodeMaterialBlockConnectionPointTypes.Vector4);
-        this.registerInput("matricesWeightsExtra", NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.registerInput("matricesIndicesExtra", NodeMaterialBlockConnectionPointTypes.Vector4, true);
+        this.registerInput("matricesWeightsExtra", NodeMaterialBlockConnectionPointTypes.Vector4, true);
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Matrix);
@@ -103,16 +103,6 @@ export class BonesBlock extends NodeMaterialBlock {
             let matricesWeightsInput = new InputBlock("matricesWeights", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
             matricesWeightsInput.setAsAttribute("matricesWeights");
             matricesWeightsInput.output.connectTo(this.matricesWeights);
-        }
-        if (!this.matricesIndicesExtra.isConnected) {
-            let matricesIndicesExtraInput = new InputBlock("matricesIndicesExtra", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
-            matricesIndicesExtraInput.setAsAttribute("matricesIndicesExtra");
-            matricesIndicesExtraInput.output.connectTo(this.matricesIndicesExtra);
-        }
-        if (!this.matricesWeightsExtra.isConnected) {
-            let matricesWeightsExtraInput = new InputBlock("matricesWeightsExtra", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
-            matricesWeightsExtraInput.setAsAttribute("matricesWeightsExtra");
-            matricesWeightsExtraInput.output.connectTo(this.matricesWeightsExtra);
         }
         if (!this.world.isConnected) {
             let worldInput = new InputBlock("world", undefined, NodeMaterialBlockConnectionPointTypes.Matrix);
