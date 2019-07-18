@@ -744,6 +744,18 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IMessageDialogComponentProps {
+        globalState: GlobalState;
+    }
+    export class MessageDialogComponent extends React.Component<IMessageDialogComponentProps, {
+        message: string;
+        isError: boolean;
+    }> {
+        constructor(props: IMessageDialogComponentProps);
+        render(): JSX.Element | null;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -827,6 +839,7 @@ declare module NODEEDITOR {
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
+        onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
     }
 }
 declare module NODEEDITOR {

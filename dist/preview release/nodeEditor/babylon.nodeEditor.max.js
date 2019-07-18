@@ -5601,7 +5601,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #222222;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n#propertyTab {\n  grid-row: 1 / span 2;\n  grid-column: 5; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #222222;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n#propertyTab {\n  grid-row: 1 / span 2;\n  grid-column: 5; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.3);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 
 // exports
 
@@ -63947,6 +63947,7 @@ var GlobalState = /** @class */ (function () {
         this.onZoomToFitRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onReOrganizedRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onErrorMessageDialogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
     }
     return GlobalState;
 }());
@@ -63989,6 +63990,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_diagram_light_lightNodeModel__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./components/diagram/light/lightNodeModel */ "./components/diagram/light/lightNodeModel.tsx");
 /* harmony import */ var _components_diagram_light_lightNodeFactory__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./components/diagram/light/lightNodeFactory */ "./components/diagram/light/lightNodeFactory.tsx");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
+/* harmony import */ var _sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./sharedComponents/messageDialog */ "./sharedComponents/messageDialog.tsx");
+
 
 
 
@@ -64237,6 +64240,7 @@ var GraphEditor = /** @class */ (function (_super) {
                                 catch (err) {
                                     link.output.remove();
                                     _this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_15__["LogEntry"](err, true));
+                                    _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(err);
                                 }
                                 _this.forceUpdate();
                             }
@@ -64439,7 +64443,8 @@ var GraphEditor = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_2__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramWidget"], { className: "diagram", deleteKeys: [46], ref: "test", inverseZoom: true, diagramEngine: this._engine, maxNumberPointsPerLink: 0 })),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_7__["PropertyTabComponent"], { globalState: this.props.globalState }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_log_logComponent__WEBPACK_IMPORTED_MODULE_15__["LogComponent"], { globalState: this.props.globalState }))));
+                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_log_logComponent__WEBPACK_IMPORTED_MODULE_15__["LogComponent"], { globalState: this.props.globalState })),
+            react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_19__["MessageDialogComponent"], { globalState: this.props.globalState })));
     };
     return GraphEditor;
 }(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
@@ -65080,6 +65085,49 @@ var LineContainerComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneList" }, this.props.children))));
     };
     return LineContainerComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedComponents/messageDialog.tsx":
+/*!********************************************!*\
+  !*** ./sharedComponents/messageDialog.tsx ***!
+  \********************************************/
+/*! exports provided: MessageDialogComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MessageDialogComponent", function() { return MessageDialogComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var MessageDialogComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MessageDialogComponent, _super);
+    function MessageDialogComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { message: "", isError: false };
+        _this.props.globalState.onErrorMessageDialogRequiredObservable.add(function (message) {
+            _this.setState({ message: message, isError: true });
+        });
+        return _this;
+    }
+    MessageDialogComponent.prototype.render = function () {
+        var _this = this;
+        if (!this.state.message) {
+            return null;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "dialog-container" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "dialog" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "dialog-message" }, this.state.message),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "dialog-buttons" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "dialog-button-ok" + (this.state.isError ? " error" : ""), onClick: function () { return _this.setState({ message: "" }); } }, "OK")))));
+    };
+    return MessageDialogComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
