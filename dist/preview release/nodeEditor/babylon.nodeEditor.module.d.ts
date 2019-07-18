@@ -862,6 +862,20 @@ declare module "babylonjs-node-editor/components/diagram/light/lightNodeFactory"
         getNewInstance(): LightNodeModel;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/messageDialog" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    interface IMessageDialogComponentProps {
+        globalState: GlobalState;
+    }
+    export class MessageDialogComponent extends React.Component<IMessageDialogComponentProps, {
+        message: string;
+        isError: boolean;
+    }> {
+        constructor(props: IMessageDialogComponentProps);
+        render(): JSX.Element | null;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
@@ -964,6 +978,7 @@ declare module "babylonjs-node-editor/globalState" {
         onZoomToFitRequiredObservable: Observable<void>;
         onReOrganizedRequiredObservable: Observable<void>;
         onLogRequiredObservable: Observable<LogEntry>;
+        onErrorMessageDialogRequiredObservable: Observable<string>;
     }
 }
 declare module "babylonjs-node-editor/sharedComponents/popup" {
@@ -1746,6 +1761,18 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IMessageDialogComponentProps {
+        globalState: GlobalState;
+    }
+    export class MessageDialogComponent extends React.Component<IMessageDialogComponentProps, {
+        message: string;
+        isError: boolean;
+    }> {
+        constructor(props: IMessageDialogComponentProps);
+        render(): JSX.Element | null;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1829,6 +1856,7 @@ declare module NODEEDITOR {
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
+        onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
     }
 }
 declare module NODEEDITOR {
