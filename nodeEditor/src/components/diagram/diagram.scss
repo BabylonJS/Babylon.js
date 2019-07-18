@@ -17,6 +17,10 @@
     &.connected {
         background: #CAB422;
     }
+
+    &:hover {
+        background: greenyellow !important;
+    }
 }
 
 .diagramBlock {
