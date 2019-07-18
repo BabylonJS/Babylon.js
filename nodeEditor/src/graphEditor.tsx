@@ -31,25 +31,8 @@ import { DataStorage } from './dataStorage';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Nullable } from 'babylonjs/types';
-import { BonesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/bonesBlock';
-import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
-import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
-import { AlphaTestBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock';
-import { ImageProcessingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/imageProcessingBlock';
-import { RGBAMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaMergerBlock';
-import { RGBASplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaSplitterBlock';
-import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
-import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertexOutputBlock';
-import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
-import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
-import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
-import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
-import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
-import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
-import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
 import { MessageDialogComponent } from './sharedComponents/messageDialog';
-import { RGBMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbMergerBlock';
-import { RGBSplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbSplitterBlock';
+import { BlockTools } from './blockTools';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -255,27 +238,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
     }
 
-    getStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes) {
-        switch (type){
-            case NodeMaterialBlockConnectionPointTypes.Float:
-                return "Float";
-            case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return "Vector2";
-            case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return "Vector3";
-            case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return "Vector4";
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-                return "Color3";
-            case NodeMaterialBlockConnectionPointTypes.Color4:
-                return "Color4";
-            case NodeMaterialBlockConnectionPointTypes.Matrix:
-                return "Matrix";
-        }
-
-        return "";
-    }
-
     build(needToWait = false) {
         // setup the diagram model
         this._model = new DiagramModel();
@@ -314,7 +276,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                         if (!e.link.targetPort && e.link.sourcePort) {
                             // Drag from input port, we are going to build an input for it                            
                             let input = e.link.sourcePort as DefaultPortModel;
-                            let nodeModel = this.addValueNode(this.getStringFromConnectionNodeType(input.connection!.type));
+                            let nodeModel = this.addValueNode(BlockTools.GetStringFromConnectionNodeType(input.connection!.type));
                             let link = nodeModel.ports.output.link(input);
 
                             nodeModel.x = e.link.points[1].x - this.NodeWidth;
@@ -417,30 +379,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     }
 
     addValueNode(type: string) {
-        let nodeType: NodeMaterialBlockConnectionPointTypes = NodeMaterialBlockConnectionPointTypes.Vector3;
-        switch (type) {
-            case "Float":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Float;
-                break;
-            case "Vector2":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Vector2;
-                break;
-            case "Vector3":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Vector3;
-                break;
-            case "Vector4":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Vector4;
-                break;
-            case "Matrix":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Matrix;
-                break;
-            case "Color3":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Color3;
-                break;
-            case "Color4":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Color4;
-                break;
-        }
+        let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
         let newInputBlock = new InputBlock(type, undefined, nodeType);
         newInputBlock.setDefaultValue();
@@ -495,70 +434,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (data.indexOf("Block") === -1) {
             nodeModel = this.addValueNode(data);
         } else {
-            let block: Nullable<NodeMaterialBlock> = null;
-
-            switch (data) {
-                case "BonesBlock":
-                    block = new BonesBlock("Bones");
-                    break;
-                case "InstancesBlock":
-                    block = new InstancesBlock("Instances");
-                    break;
-                case "MorphTargetsBlock":
-                    block = new MorphTargetsBlock("MorphTargets");
-                    break;
-                case "AlphaTestBlock":
-                    block = new AlphaTestBlock("AlphaTest");
-                    break;
-                case "ImageProcessingBlock":
-                    block = new ImageProcessingBlock("ImageProcessing");
-                    break;
-                case "RGBAMergerBlock":
-                    block = new RGBAMergerBlock("RGBAMerger");
-                    break;
-                case "RGBASplitterBlock":
-                    block = new RGBASplitterBlock("RGBASplitter");
-                    break;
-                case "RGBMergerBlock":
-                    block = new RGBMergerBlock("RGBMerger");
-                    break;
-                case "RGBSplitterBlock":
-                    block = new RGBSplitterBlock("RGBSplitter");
-                    break;                    
-                case "TextureBlock":
-                    block = new TextureBlock("Texture");
-                    break;
-                case "LightBlock":
-                    block = new LightBlock("Lights");
-                    break;
-                case "FogBlock":
-                    block = new FogBlock("Fog");
-                    break;
-                case "VertexOutputBlock":
-                    block = new VertexOutputBlock("VertexOutput");
-                    break;
-                case "FragmentOutputBlock":
-                    block = new FragmentOutputBlock("FragmentOutput");
-                    break;
-                case "AddBlock":
-                    block = new AddBlock("Add");
-                    break;
-                case "ClampBlock":
-                    block = new ClampBlock("Clamp");
-                    break;
-                case "CrossBlock":
-                    block = new CrossBlock("Dot");
-                    break;
-                case "DotBlock":
-                    block = new DotBlock("Dot");
-                    break;
-                case "MultiplyBlock":
-                    block = new MultiplyBlock("Multiply");
-                    break;
-                case "TransformBlock":
-                    block = new TransformBlock("Transform");
-                    break;
-            }
+            let block = BlockTools.GetBlockFromString(data);          
 
             if (block) {
                 nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
