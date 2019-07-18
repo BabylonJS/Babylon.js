@@ -52,7 +52,7 @@ export class RGBASplitterBlock extends NodeMaterialBlock {
 
         if (rgbOutput.connectedBlocks.length > 0) {
             state.compilationString += this._declareOutput(rgbOutput, state) + ` = ${input.associatedVariableName}.rgb;\r\n`;
-        }        
+        }
         if (rOutput.connectedBlocks.length > 0) {
             state.compilationString += this._declareOutput(rOutput, state) + ` = ${input.associatedVariableName}.r;\r\n`;
         }

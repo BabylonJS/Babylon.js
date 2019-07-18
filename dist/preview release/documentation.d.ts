@@ -40579,6 +40579,10 @@ declare module BABYLON {
          * The deviceOrientationCamera that is used as a fallback when vr device is not connected.
          */
         readonly vrDeviceOrientationCamera: Nullable<VRDeviceOrientationFreeCamera>;
+        /**
+         * The html button that is used to trigger entering into VR.
+         */
+        readonly vrButton: Nullable<HTMLButtonElement>;
         private readonly _teleportationRequestInitiated;
         /**
          * Defines wether or not Pointer lock should be requested when switching to

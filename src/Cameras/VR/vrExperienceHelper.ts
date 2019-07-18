@@ -889,7 +889,7 @@ export class VRExperienceHelper {
         }
         if (!this._fullscreenVRpresenting && this._canvas) {
             this.exitVR();
-            if (!this._useCustomVRButton) {
+            if (!this._useCustomVRButton && this._btnVR) {
                 this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
                 this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
             }
@@ -928,7 +928,7 @@ export class VRExperienceHelper {
     }
 
     private moveButtonToBottomRight() {
-        if (this._canvas && !this._useCustomVRButton) {
+        if (this._canvas && !this._useCustomVRButton && this._btnVR) {
             const rect: ClientRect = this._canvas.getBoundingClientRect();
             this._btnVR.style.top = rect.top + rect.height - 70 + "px";
             this._btnVR.style.left = rect.left + rect.width - 100 + "px";
@@ -936,7 +936,7 @@ export class VRExperienceHelper {
     }
 
     private displayVRButton() {
-        if (!this._useCustomVRButton && !this._btnVRDisplayed) {
+        if (!this._useCustomVRButton && !this._btnVRDisplayed && this._btnVR) {
             document.body.appendChild(this._btnVR);
             this._btnVRDisplayed = true;
         }
@@ -2037,7 +2037,7 @@ export class VRExperienceHelper {
         if (this._vrDeviceOrientationCamera) {
             this._vrDeviceOrientationCamera.dispose();
         }
-        if (!this._useCustomVRButton && this._btnVR.parentNode) {
+        if (!this._useCustomVRButton  && this._btnVR && this._btnVR.parentNode) {
             document.body.removeChild(this._btnVR);
         }
 
