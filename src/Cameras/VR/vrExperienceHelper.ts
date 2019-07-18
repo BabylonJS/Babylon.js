@@ -298,7 +298,7 @@ export class OnAfterEnteringVRObservableEvent {
 export class VRExperienceHelper {
     private _scene: Scene;
     private _position: Vector3;
-    private _btnVR: HTMLButtonElement;
+    private _btnVR: Nullable<HTMLButtonElement>;
     private _btnVRDisplayed: boolean;
 
     // Can the system support WebVR, even if a headset isn't plugged in?
@@ -619,7 +619,7 @@ export class VRExperienceHelper {
     /**
      * The html button that is used to trigger entering into VR.
      */
-    public get vrButton(): HTMLButtonElement | undefined {
+    public get vrButton(): Nullable<HTMLButtonElement> {
         return this._btnVR;
     }
 
