@@ -4,12 +4,13 @@ import { NodeMaterialBlockConnectionPointMode } from '../../NodeMaterialBlockCon
 import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
 import { Nullable } from '../../../../types';
 import { Effect } from '../../../../Materials/effect';
-import { Matrix, Vector2, Vector3 } from '../../../../Maths/math.vector';
+import { Matrix, Vector2, Vector3, Vector4 } from '../../../../Maths/math.vector';
 import { Scene } from '../../../../scene';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../../Misc/typeStore';
+import { Color3, Color4 } from '../../../../Maths/math';
 
 /**
  * Block used to expose an input value
@@ -255,9 +256,16 @@ export class InputBlock extends NodeMaterialBlock {
                 this.value = Vector2.Zero();
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
                 this.value = Vector3.Zero();
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                this.value = Vector4.Zero();
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                this.value = Color3.White();
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                this.value = new Color4(1, 1, 1, 1);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 this.value = Matrix.Identity();
@@ -423,6 +431,48 @@ export class InputBlock extends NodeMaterialBlock {
         }
 
         this._emit(state);
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.type = this.type;
+        serializationObject.mode = this._mode;
+        serializationObject.wellKnownValue = this._wellKnownValue;
+
+        if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
+            if (this._storedValue.asArray) {
+                serializationObject.valueType = "BABYLON." + this._storedValue.getClassName();
+                serializationObject.value = this._storedValue.asArray();
+            } else {
+                serializationObject.valueType = "number";
+                serializationObject.value = this._storedValue;
+            }
+        }
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this._type = serializationObject.type;
+        this._mode = serializationObject.mode;
+        this._wellKnownValue = serializationObject.wellKnownValue;
+
+        if (!serializationObject.valueType) {
+            return;
+        }
+
+        if (serializationObject.valueType === "number") {
+            this._storedValue = serializationObject.value;
+        } else {
+            let valueType = _TypeStore.GetClass(serializationObject.valueType);
+
+            if (valueType) {
+                this._storedValue = valueType.FromArray(serializationObject.value);
+            }
+        }
     }
 }
 

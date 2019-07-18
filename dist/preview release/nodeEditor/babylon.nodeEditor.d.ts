@@ -126,6 +126,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class PortHelper {
+        private static _GetPortTypeIndicator;
         static GenerateOutputPorts(node: BABYLON.Nullable<DefaultNodeModel>, ignoreLabel: boolean): JSX.Element[];
         static GenerateInputPorts(node: BABYLON.Nullable<DefaultNodeModel>, includeOnly?: string[]): JSX.Element[];
     }
@@ -221,26 +222,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    interface IPropertyTabComponentProps {
-        globalState: GlobalState;
-    }
-    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
-        currentNode: BABYLON.Nullable<DefaultNodeModel>;
-    }> {
-        constructor(props: IPropertyTabComponentProps);
-        componentWillMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface IPortalProps {
-        globalState: GlobalState;
-    }
-    export class Portal extends React.Component<IPortalProps> {
-        render(): React.ReactPortal;
-    }
-}
-declare module NODEEDITOR {
     interface IFileButtonLineComponentProps {
         label: string;
         onClick: (file: File) => void;
@@ -250,6 +231,27 @@ declare module NODEEDITOR {
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IPropertyTabComponentProps {
+        globalState: GlobalState;
+    }
+    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
+        currentNode: BABYLON.Nullable<DefaultNodeModel>;
+    }> {
+        constructor(props: IPropertyTabComponentProps);
+        componentWillMount(): void;
+        load(file: File): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IPortalProps {
+        globalState: GlobalState;
+    }
+    export class Portal extends React.Component<IPortalProps> {
+        render(): React.ReactPortal;
     }
 }
 declare module NODEEDITOR {
@@ -753,6 +755,10 @@ declare module NODEEDITOR {
     export class GraphEditor extends React.Component<IGraphEditorProps> {
         private _engine;
         private _model;
+        private _startX;
+        private _moveInProgress;
+        private _leftWidth;
+        private _rightWidth;
         private _nodes;
         /** @hidden */
         _toAdd: LinkModel[] | null;
@@ -778,13 +784,9 @@ declare module NODEEDITOR {
             to: import("storm-react-diagrams").NodeModel;
         }[];
         buildMaterial(): void;
-        build(): void;
+        build(needToWait?: boolean): void;
         reOrganize(): void;
         addValueNode(type: string): DefaultNodeModel;
-        private _startX;
-        private _moveInProgress;
-        private _leftWidth;
-        private _rightWidth;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;

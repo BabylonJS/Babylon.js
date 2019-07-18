@@ -32265,7 +32265,6 @@ declare module BABYLON {
         private static _UniqueIdCounter;
         /**
          * Gets an unique (relatively to the current scene) Id
-         * @returns an unique number for the scene
          */
         static readonly UniqueId: number;
     }
@@ -51164,7 +51163,7 @@ declare module BABYLON {
     /**
      * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
      */
-    export class VectorTransformBlock extends NodeMaterialBlock {
+    export class TransformBlock extends NodeMaterialBlock {
         /**
          * Defines the value to use to complement W value to transform it to a Vector4
          */
@@ -51174,7 +51173,7 @@ declare module BABYLON {
          */
         complementZ: number;
         /**
-         * Creates a new VectorTransformBlock
+         * Creates a new TransformBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -51472,12 +51471,18 @@ declare module BABYLON {
          * Clear the current material and set it to a default state
          */
         setToDefault(): void;
-        _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]): void;
+        private _gatherBlocks;
         /**
          * Serializes this material in a JSON representation
          * @returns the serialized material object
          */
         serialize(): any;
+        /**
+         * Clear the current graph and load a new one from a serialization object
+         * @param source defines the JSON representation of the material
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         */
+        loadFromSerialization(source: any, rootUrl?: string): void;
         /**
          * Creates a node material from parsed material data
          * @param source defines the JSON representation of the material
@@ -51485,7 +51490,7 @@ declare module BABYLON {
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
          * @returns a new node material
          */
-        static Parse(source: any, scene: Scene, rootUrl: string): NodeMaterial;
+        static Parse(source: any, scene: Scene, rootUrl?: string): NodeMaterial;
     }
 }
 declare module BABYLON {
@@ -51530,6 +51535,8 @@ declare module BABYLON {
         private _injectVertexCode;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -51909,6 +51916,8 @@ declare module BABYLON {
          * @returns the serialized block object
          */
         serialize(): any;
+        /** @hidden */
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -51947,6 +51956,61 @@ declare module BABYLON {
         CameraPosition = 7,
         /** Fog Color */
         FogColor = 8
+    }
+}
+declare module BABYLON {
+    /**
+     * Contains position and normal vectors for a vertex
+     */
+    export class PositionNormalVertex {
+        /** the position of the vertex (defaut: 0,0,0) */
+        position: Vector3;
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal: Vector3;
+        /**
+         * Creates a PositionNormalVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         */
+        constructor(
+        /** the position of the vertex (defaut: 0,0,0) */
+        position?: Vector3, 
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal?: Vector3);
+        /**
+         * Clones the PositionNormalVertex
+         * @returns the cloned PositionNormalVertex
+         */
+        clone(): PositionNormalVertex;
+    }
+    /**
+     * Contains position, normal and uv vectors for a vertex
+     */
+    export class PositionNormalTextureVertex {
+        /** the position of the vertex (defaut: 0,0,0) */
+        position: Vector3;
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal: Vector3;
+        /** the uv of the vertex (default: 0,0) */
+        uv: Vector2;
+        /**
+         * Creates a PositionNormalTextureVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         * @param uv the uv of the vertex (default: 0,0)
+         */
+        constructor(
+        /** the position of the vertex (defaut: 0,0,0) */
+        position?: Vector3, 
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal?: Vector3, 
+        /** the uv of the vertex (default: 0,0) */
+        uv?: Vector2);
+        /**
+         * Clones the PositionNormalTextureVertex
+         * @returns the cloned PositionNormalTextureVertex
+         */
+        clone(): PositionNormalTextureVertex;
     }
 }
 declare module BABYLON {
@@ -52047,6 +52111,8 @@ declare module BABYLON {
         /** @hidden */
         _transmit(effect: Effect, scene: Scene): void;
         protected _buildBlock(state: NodeMaterialBuildState): void;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -52572,6 +52638,8 @@ declare module BABYLON {
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private _injectVertexCode;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -52837,61 +52905,6 @@ declare module BABYLON {
         * Disposes of the effect wrapper
         */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Contains position and normal vectors for a vertex
-     */
-    export class PositionNormalVertex {
-        /** the position of the vertex (defaut: 0,0,0) */
-        position: Vector3;
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal: Vector3;
-        /**
-         * Creates a PositionNormalVertex
-         * @param position the position of the vertex (defaut: 0,0,0)
-         * @param normal the normal of the vertex (defaut: 0,1,0)
-         */
-        constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
-        position?: Vector3, 
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal?: Vector3);
-        /**
-         * Clones the PositionNormalVertex
-         * @returns the cloned PositionNormalVertex
-         */
-        clone(): PositionNormalVertex;
-    }
-    /**
-     * Contains position, normal and uv vectors for a vertex
-     */
-    export class PositionNormalTextureVertex {
-        /** the position of the vertex (defaut: 0,0,0) */
-        position: Vector3;
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal: Vector3;
-        /** the uv of the vertex (default: 0,0) */
-        uv: Vector2;
-        /**
-         * Creates a PositionNormalTextureVertex
-         * @param position the position of the vertex (defaut: 0,0,0)
-         * @param normal the normal of the vertex (defaut: 0,1,0)
-         * @param uv the uv of the vertex (default: 0,0)
-         */
-        constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
-        position?: Vector3, 
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal?: Vector3, 
-        /** the uv of the vertex (default: 0,0) */
-        uv?: Vector2);
-        /**
-         * Clones the PositionNormalTextureVertex
-         * @returns the cloned PositionNormalTextureVertex
-         */
-        clone(): PositionNormalTextureVertex;
     }
 }
 declare module BABYLON {

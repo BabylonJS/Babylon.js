@@ -9,6 +9,7 @@ import { Mesh } from '../../Meshes/mesh';
 import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
+import { Scene } from '../../scene';
 
 /**
  * Defines a block that can be used inside a node based material
@@ -481,6 +482,7 @@ export class NodeMaterialBlock {
         let serializationObject: any = {};
         serializationObject.customType = "BABYLON." + this.getClassName();
         serializationObject.id = this.uniqueId;
+        serializationObject.name = this.name;
 
         serializationObject.inputs = [];
 
@@ -489,5 +491,10 @@ export class NodeMaterialBlock {
         }
 
         return serializationObject;
+    }
+
+    /** @hidden */
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        this.name = serializationObject.name ;
     }
 }
