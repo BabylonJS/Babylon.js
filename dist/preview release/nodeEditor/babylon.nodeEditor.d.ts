@@ -1,5 +1,12 @@
 /// <reference types="react" />
 declare module NODEEDITOR {
+    export class BlockTools {
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.RGBAMergerBlock | BABYLON.RGBASplitterBlock | BABYLON.RGBMergerBlock | BABYLON.RGBSplitterBlock | BABYLON.TextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | null;
+        static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
+        static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
+    }
+}
+declare module NODEEDITOR {
     export class DataStorage {
         private static _InMemoryStorage;
         static ReadBoolean(key: string, defaultValue: boolean): boolean;
@@ -765,6 +772,7 @@ declare module NODEEDITOR {
         connection?: BABYLON.NodeMaterialConnectionPoint;
     }
     export class GraphEditor extends React.Component<IGraphEditorProps> {
+        private readonly NodeWidth;
         private _engine;
         private _model;
         private _startX;

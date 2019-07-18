@@ -31,23 +31,8 @@ import { DataStorage } from './dataStorage';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Nullable } from 'babylonjs/types';
-import { BonesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/bonesBlock';
-import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
-import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
-import { AlphaTestBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock';
-import { ImageProcessingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/imageProcessingBlock';
-import { RGBAMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaMergerBlock';
-import { RGBASplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaSplitterBlock';
-import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
-import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertexOutputBlock';
-import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
-import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
-import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
-import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
-import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
-import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
-import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
 import { MessageDialogComponent } from './sharedComponents/messageDialog';
+import { BlockTools } from './blockTools';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -78,6 +63,7 @@ export class NodeCreationOptions {
 }
 
 export class GraphEditor extends React.Component<IGraphEditorProps> {
+    private readonly NodeWidth = 100;
     private _engine: DiagramEngine;
     private _model: DiagramModel;
 
@@ -212,8 +198,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         for (var nodeName in this._model.nodes) {
             let node = this._model.nodes[nodeName];
             let size = {
-                width: node.width,
-                height: node.height
+                width: node.width | 200,
+                height: node.height | 100
             };
             output.push({ id: node.id, metadata: { ...size, id: node.id } });
         }
@@ -258,7 +244,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         // Listen to events
         this._model.addListener({
-            nodesUpdated: (e) => {
+            nodesUpdated: (e) => {                
                 if (!e.isCreated) {
                     // Block is deleted
                     let targetBlock = (e.node as GenericNodeModel).block;
@@ -274,15 +260,38 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 if (!e.isCreated) {
                     // Link is deleted
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    var link = DefaultPortModel.SortInputOutput(e.link.sourcePort as DefaultPortModel, e.link.targetPort as DefaultPortModel);
+                    let sourcePort = e.link.sourcePort as DefaultPortModel;
+
+                    var link = DefaultPortModel.SortInputOutput(sourcePort, e.link.targetPort as DefaultPortModel);
                     if (link) {
-                        if (link.input.connection) {
-                            if (link.output.connection) {
+                        if (link.input.connection && link.output.connection) {
+                            if (link.input.connection.connectedPoint && link.input.connection.connectedPoint.ownerBlock !== link.output.connection.ownerBlock) {
                                 // Disconnect standard nodes
-                                link.output.connection.disconnectFrom(link.input.connection)
-                                link.input.syncWithNodeMaterialConnectionPoint(link.input.connection)
-                                link.output.syncWithNodeMaterialConnectionPoint(link.output.connection)
+                                link.output.connection.disconnectFrom(link.input.connection);
+                                link.input.syncWithNodeMaterialConnectionPoint(link.input.connection);
+                                link.output.syncWithNodeMaterialConnectionPoint(link.output.connection);
                             }
+                        }
+                    } else {
+                        if (!e.link.targetPort && e.link.sourcePort) {
+                            // Drag from input port, we are going to build an input for it                            
+                            let input = e.link.sourcePort as DefaultPortModel;
+                            let nodeModel = this.addValueNode(BlockTools.GetStringFromConnectionNodeType(input.connection!.type));
+                            let link = nodeModel.ports.output.link(input);
+
+                            nodeModel.x = e.link.points[1].x - this.NodeWidth;
+                            nodeModel.y = e.link.points[1].y;
+
+                            setTimeout(() => {
+                                this._model.addLink(link);
+                                input.syncWithNodeMaterialConnectionPoint(input.connection!);
+                                nodeModel.ports.output.syncWithNodeMaterialConnectionPoint(nodeModel.ports.output.connection!);                                 
+
+                                this.forceUpdate();
+                            }, 1);
+                           
+                            nodeModel.ports.output.connection!.connectTo(input.connection!);
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }
                     }
                     this.forceUpdate();
@@ -302,7 +311,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                 for (var key in link.input.links) {
                                     let other = link.input.links[key];
 
-                                    if (other.getSourcePort() !== link.output) {
+                                    if ((other.getSourcePort() as DefaultPortModel).connection  !== (link.output as DefaultPortModel).connection && 
+                                        (other.getTargetPort() as DefaultPortModel).connection  !== (link.output as DefaultPortModel).connection
+                                    ) {
                                         other.remove();
                                     }
                                 }
@@ -368,30 +379,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     }
 
     addValueNode(type: string) {
-        let nodeType: NodeMaterialBlockConnectionPointTypes = NodeMaterialBlockConnectionPointTypes.Vector3;
-        switch (type) {
-            case "Float":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Float;
-                break;
-            case "Vector2":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Vector2;
-                break;
-            case "Vector3":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Vector3;
-                break;
-            case "Vector4":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Vector4;
-                break;
-            case "Matrix":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Matrix;
-                break;
-            case "Color3":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Color3;
-                break;
-            case "Color4":
-                nodeType = NodeMaterialBlockConnectionPointTypes.Color4;
-                break;
-        }
+        let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
         let newInputBlock = new InputBlock(type, undefined, nodeType);
         newInputBlock.setDefaultValue();
@@ -446,64 +434,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (data.indexOf("Block") === -1) {
             nodeModel = this.addValueNode(data);
         } else {
-            let block: Nullable<NodeMaterialBlock> = null;
-
-            switch (data) {
-                case "BonesBlock":
-                    block = new BonesBlock("Bones");
-                    break;
-                case "InstancesBlock":
-                    block = new InstancesBlock("Instances");
-                    break;
-                case "MorphTargetsBlock":
-                    block = new MorphTargetsBlock("MorphTargets");
-                    break;
-                case "AlphaTestBlock":
-                    block = new AlphaTestBlock("AlphaTest");
-                    break;
-                case "ImageProcessingBlock":
-                    block = new ImageProcessingBlock("ImageProcessing");
-                    break;
-                case "RGBAMergerBlock":
-                    block = new RGBAMergerBlock("RGBAMerger");
-                    break;
-                case "RGBASplitterBlock":
-                    block = new RGBASplitterBlock("RGBASplitter");
-                    break;
-                case "TextureBlock":
-                    block = new TextureBlock("Texture");
-                    break;
-                case "LightBlock":
-                    block = new LightBlock("Lights");
-                    break;
-                case "FogBlock":
-                    block = new FogBlock("Fog");
-                    break;
-                case "VertexOutputBlock":
-                    block = new VertexOutputBlock("VertexOutput");
-                    break;
-                case "FragmentOutputBlock":
-                    block = new FragmentOutputBlock("FragmentOutput");
-                    break;
-                case "AddBlock":
-                    block = new AddBlock("Add");
-                    break;
-                case "ClampBlock":
-                    block = new ClampBlock("Clamp");
-                    break;
-                case "CrossBlock":
-                    block = new CrossBlock("Dot");
-                    break;
-                case "DotBlock":
-                    block = new DotBlock("Dot");
-                    break;
-                case "MultiplyBlock":
-                    block = new MultiplyBlock("Multiply");
-                    break;
-                case "TransformBlock":
-                    block = new TransformBlock("Transform");
-                    break;
-            }
+            let block = BlockTools.GetBlockFromString(data);          
 
             if (block) {
                 nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
@@ -513,7 +444,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (nodeModel) {
             const zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
 
-            let x = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX() - 100) / zoomLevel;
+            let x = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
             let y = (event.clientY - event.currentTarget.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
             nodeModel.setPosition(x, y);
         }
@@ -547,7 +478,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                             event.preventDefault();
                         }}
                     >
-                        <DiagramWidget className="diagram" deleteKeys={[46]} ref={"test"} inverseZoom={true} diagramEngine={this._engine} maxNumberPointsPerLink={0} />
+                        <DiagramWidget className="diagram" deleteKeys={[46]} ref={"test"} 
+                        allowLooseLinks={false}
+                        inverseZoom={true} diagramEngine={this._engine} maxNumberPointsPerLink={0} />
                     </div>
 
                     <div id="rightGrab"

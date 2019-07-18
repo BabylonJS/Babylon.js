@@ -1,4 +1,32 @@
 /// <reference types="react" />
+declare module "babylonjs-node-editor/blockTools" {
+    import { AlphaTestBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock';
+    import { BonesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/bonesBlock';
+    import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
+    import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
+    import { ImageProcessingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/imageProcessingBlock';
+    import { RGBAMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaMergerBlock';
+    import { RGBASplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaSplitterBlock';
+    import { RGBMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbMergerBlock';
+    import { RGBSplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbSplitterBlock';
+    import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
+    import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
+    import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
+    import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertexOutputBlock';
+    import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
+    import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
+    import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
+    import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
+    import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
+    import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
+    import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
+    import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+    export class BlockTools {
+        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | RGBAMergerBlock | RGBASplitterBlock | RGBMergerBlock | RGBSplitterBlock | TextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | null;
+        static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
+        static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
+    }
+}
 declare module "babylonjs-node-editor/dataStorage" {
     export class DataStorage {
         private static _InMemoryStorage;
@@ -893,6 +921,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         connection?: NodeMaterialConnectionPoint;
     }
     export class GraphEditor extends React.Component<IGraphEditorProps> {
+        private readonly NodeWidth;
         private _engine;
         private _model;
         private _startX;
@@ -1016,6 +1045,13 @@ declare module "babylonjs-node-editor" {
     export * from "babylonjs-node-editor/legacy/legacy";
 }
 /// <reference types="react" />
+declare module NODEEDITOR {
+    export class BlockTools {
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.RGBAMergerBlock | BABYLON.RGBASplitterBlock | BABYLON.RGBMergerBlock | BABYLON.RGBSplitterBlock | BABYLON.TextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | null;
+        static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
+        static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
+    }
+}
 declare module NODEEDITOR {
     export class DataStorage {
         private static _InMemoryStorage;
@@ -1782,6 +1818,7 @@ declare module NODEEDITOR {
         connection?: BABYLON.NodeMaterialConnectionPoint;
     }
     export class GraphEditor extends React.Component<IGraphEditorProps> {
+        private readonly NodeWidth;
         private _engine;
         private _model;
         private _startX;
