@@ -238,7 +238,9 @@ export class NodeMaterialConnectionPoint {
         serializationObject.swizzle = this.swizzle;
 
         if (this.connectedPoint) {
-            serializationObject.connectedPointPath = this.name + ">" + this.connectedPoint.ownerBlock.uniqueId + "." + this.connectedPoint.name;
+            serializationObject.inputName = this.name;
+            serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
+            serializationObject.targetConnectionName = this.connectedPoint.name;
         }
 
         return serializationObject;

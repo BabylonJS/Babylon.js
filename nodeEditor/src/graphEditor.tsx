@@ -46,7 +46,7 @@ import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
 import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
 import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
 import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
-import { VectorTransformBlock } from 'babylonjs/Materials/Node/Blocks/vectorTransformBlock';
+import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -79,6 +79,12 @@ export class NodeCreationOptions {
 export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _engine: DiagramEngine;
     private _model: DiagramModel;
+
+    private _startX: number;
+    private _moveInProgress: boolean;
+
+    private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
+    private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
     private _nodes = new Array<DefaultNodeModel>();
 
@@ -174,7 +180,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this.reOrganize();
         })
 
-        this.build();
+        this.build(true);
     }
 
     distributeGraph() {
@@ -245,7 +251,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
     }
 
-    build() {
+    build(needToWait = false) {
         // setup the diagram model
         this._model = new DiagramModel();
 
@@ -300,7 +306,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                     }
                                 }
 
-                                link.output.connection.connectTo(link.input.connection);
+                                try {
+                                    link.output.connection.connectTo(link.input.connection);
+                                }        
+                                catch (err) {
+                                    link.output.remove();
+                                    this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
+                                }
 
                                 this.forceUpdate();
                             }
@@ -335,7 +347,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this.forceUpdate();
 
             this.reOrganize();
-        }, 500);
+        }, needToWait ? 500 : 1);
     }
 
     reOrganize() {
@@ -385,12 +397,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         return localNode;
     }
-
-    private _startX: number;
-    private _moveInProgress: boolean;
-
-    private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
-    private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
         this._startX = evt.clientX;
@@ -492,8 +498,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 case "MultiplyBlock":
                     block = new MultiplyBlock("Multiply");
                     break;
-                case "VectorTransformBlock":
-                    block = new VectorTransformBlock("VectorTransform");
+                case "TransformBlock":
+                    block = new TransformBlock("Transform");
                     break;
             }
 
