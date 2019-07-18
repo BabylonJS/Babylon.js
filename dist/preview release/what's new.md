@@ -77,7 +77,7 @@
 ### Ray
 - Added `Ray.intersectsAxis` to translate screen to axis coordinates without checking collisions ([horusscope](https://github.com/horusscope))
 
-### GUI  
+### GUI
 - Added `disableMobilePrompt` option to InputText for OculusQuest(and other android base VR devices) ([shinyoshiaki](https://github.com/shinyoshiaki))
 
 ### Documentation
@@ -101,6 +101,7 @@
 - Avoid exception when disposing of Ammo cloth physics ([TrevorDev](https://github.com/TrevorDev))
 - Make planeDragGizmo usable on its own ([TrevorDev](https://github.com/TrevorDev))
 - Fix useObjectOrienationForDragging for pointerDragBehavior when using a single axis drag ([TrevorDev](https://github.com/TrevorDev))
+- Fix VR button not positioning correctly in canvas ([haroldma](https://github.com/haroldma))
 
 ## Breaking changes
 - Setting mesh.scaling to a new vector will no longer automatically call forceUpdate (this should be done manually when needed) ([TrevorDev](https://github.com/TrevorDev))
