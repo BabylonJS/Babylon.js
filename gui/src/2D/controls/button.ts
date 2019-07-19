@@ -27,6 +27,11 @@ export class Button extends Rectangle {
      */
     public pointerUpAnimation: () => void;
 
+    /**
+     * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+     */
+    public delegatePickingToChildren = false;
+
     private _image: Nullable<Image>;
     /**
      * Returns the image part of the button (if any)
@@ -83,7 +88,7 @@ export class Button extends Rectangle {
 
     // While being a container, the button behaves like a control.
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
+    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {     
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -91,8 +96,22 @@ export class Button extends Rectangle {
         if (!super.contains(x, y)) {
             return false;
         }
-
-        this._processObservables(type, x, y, pointerId, buttonIndex);
+        
+        let processObservables = true;
+        if (this.delegatePickingToChildren) {
+            processObservables = false;
+            for (var index = this._children.length - 1; index >= 0; index--) {
+                var child = this._children[index];
+                if (child.isEnabled && child.isHitTestVisible && child.isVisible && !child.notRenderable && child.contains(x, y)) {
+                    processObservables = true;
+                    break;
+                }
+            }
+        }
+        
+        if (processObservables) {
+            this._processObservables(type, x, y, pointerId, buttonIndex);
+        }
 
         return true;
     }
