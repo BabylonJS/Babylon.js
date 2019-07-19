@@ -3,6 +3,7 @@ import { Nullable } from '../../types';
 import { WebGPUEngine } from '../webgpuEngine';
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Effect } from '../../Materials/effect';
+import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 
 /** @hidden */
 export interface IWebGPUPipelineContextSamplerCache {
@@ -58,6 +59,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
         }
 
         return false;
+    }
+
+    constructor(shaderProcessingContext: WebGPUShaderProcessingContext) {
+        this.availableAttributes = shaderProcessingContext.availableAttributes;
     }
 
     public _handlesSpectorRebuildCallback(onCompiled: (program: any) => void): void {

@@ -5,73 +5,34 @@
 #define CUSTOM_VERTEX_BEGIN
 
 // Attributes
-#ifdef WEBGPU
-    layout(location = 0) in vec3 position;
-#else
-    attribute vec3 position;
-#endif
+attribute vec3 position;
+// #endif
 
 #ifdef NORMAL
-    #ifdef WEBGPU
-        layout(location = 1) in vec3 normal;
-    #else
-        attribute vec3 normal;
-    #endif
+    attribute vec3 normal;
 #endif
 
 #ifdef TANGENT
-    #ifdef WEBGPU
-        layout(location = 2) in vec4 tangent;
-    #else
-        attribute vec4 tangent;
-    #endif
+    attribute vec4 tangent;
 #endif
 
 #ifdef UV1
-    #ifdef WEBGPU
-        layout(location = 3) in vec2 uv;
-    #else
-        attribute vec2 uv;
-    #endif
+    attribute vec2 uv;
 #endif
 
 #ifdef UV2
-    #ifdef WEBGPU
-        layout(location = 4) in vec2 uv2;
-    #else
-        attribute vec2 uv2;
-    #endif
+    attribute vec2 uv2;
 #endif
 
 #ifdef VERTEXCOLOR
-    #ifdef WEBGPU
-        layout(location = 5) in vec4 color;
-    #else
-        attribute vec4 color;
-    #endif
+    attribute vec4 color;
 #endif
 
 #ifdef INSTANCES
-    #ifdef WEBGPU
-        layout(location = 6) in vec4 world0;
-    #else
-        attribute vec4 world0;
-    #endif
-    #ifdef WEBGPU
-        layout(location = 7) in vec4 world1;
-    #else
-        attribute vec4 world1;
-    #endif
-    #ifdef WEBGPU
-        layout(location = 8) in vec4 world2;
-    #else
-        attribute vec4 world2;
-    #endif
-    #ifdef WEBGPU
-        layout(location = 9) in vec4 world3;
-    #else
-        attribute vec4 world3;
-    #endif
+    attribute vec4 world0;
+    attribute vec4 world1;
+    attribute vec4 world2;
+    attribute vec4 world3;
 #endif
 
 #include<helperFunctions>

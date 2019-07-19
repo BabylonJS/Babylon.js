@@ -26,6 +26,7 @@ import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { IShaderProcessor } from './Processors/iShaderProcessor';
+import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 import { PerfCounter } from '../Misc/perfCounter';
 import { IFileRequest } from '../Misc/fileRequest';
@@ -1312,6 +1313,11 @@ export class Engine {
         if (this.webGLVersion > 1) {
             return new WebGL2ShaderProcessor();
         }
+        return null;
+    }
+
+    /** @hidden */
+    public _getShaderProcessingContext(): Nullable<ShaderProcessingContext> {
         return null;
     }
 
@@ -3325,9 +3331,10 @@ export class Engine {
 
     /**
      * Creates a new pipeline context
+     * @param shaderProcessingContext defines the shader processing context used during the processing if available
      * @returns the new pipeline
      */
-    public createPipelineContext(): IPipelineContext {
+    public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
         var pipelineContext = new WebGLPipelineContext();
         pipelineContext.engine = this;
 

@@ -1,6 +1,9 @@
+import { Nullable } from "../../types";
+import { ShaderProcessingContext } from "./shaderProcessingOptions";
+
 /** @hidden */
 export interface IShaderProcessor {
-    attributeProcessor?: (attribute: string) => string;
+    attributeProcessor?: (attribute: string, processingContext: Nullable<ShaderProcessingContext>) => string;
     varyingProcessor?: (varying: string, isFragment: boolean) => string;
     uniformProcessor?: (uniform: string, isFragment: boolean) => string;
     uniformBufferProcessor?: (uniformBuffer: string, isFragment: boolean) => string;
