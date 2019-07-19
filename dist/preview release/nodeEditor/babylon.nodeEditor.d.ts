@@ -1,5 +1,12 @@
 /// <reference types="react" />
 declare module NODEEDITOR {
+    export class BlockTools {
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.RGBAMergerBlock | BABYLON.RGBASplitterBlock | BABYLON.RGBMergerBlock | BABYLON.RGBSplitterBlock | BABYLON.TextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | null;
+        static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
+        static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
+    }
+}
+declare module NODEEDITOR {
     export class DataStorage {
         private static _InMemoryStorage;
         static ReadBoolean(key: string, defaultValue: boolean): boolean;
@@ -126,6 +133,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class PortHelper {
+        private static _GetPortTypeIndicator;
         static GenerateOutputPorts(node: BABYLON.Nullable<DefaultNodeModel>, ignoreLabel: boolean): JSX.Element[];
         static GenerateInputPorts(node: BABYLON.Nullable<DefaultNodeModel>, includeOnly?: string[]): JSX.Element[];
     }
@@ -221,26 +229,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    interface IPropertyTabComponentProps {
-        globalState: GlobalState;
-    }
-    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
-        currentNode: BABYLON.Nullable<DefaultNodeModel>;
-    }> {
-        constructor(props: IPropertyTabComponentProps);
-        componentWillMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface IPortalProps {
-        globalState: GlobalState;
-    }
-    export class Portal extends React.Component<IPortalProps> {
-        render(): React.ReactPortal;
-    }
-}
-declare module NODEEDITOR {
     interface IFileButtonLineComponentProps {
         label: string;
         onClick: (file: File) => void;
@@ -250,6 +238,27 @@ declare module NODEEDITOR {
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IPropertyTabComponentProps {
+        globalState: GlobalState;
+    }
+    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
+        currentNode: BABYLON.Nullable<DefaultNodeModel>;
+    }> {
+        constructor(props: IPropertyTabComponentProps);
+        componentWillMount(): void;
+        load(file: File): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IPortalProps {
+        globalState: GlobalState;
+    }
+    export class Portal extends React.Component<IPortalProps> {
+        render(): React.ReactPortal;
     }
 }
 declare module NODEEDITOR {
@@ -742,6 +751,18 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IMessageDialogComponentProps {
+        globalState: GlobalState;
+    }
+    export class MessageDialogComponent extends React.Component<IMessageDialogComponentProps, {
+        message: string;
+        isError: boolean;
+    }> {
+        constructor(props: IMessageDialogComponentProps);
+        render(): JSX.Element | null;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -751,6 +772,7 @@ declare module NODEEDITOR {
         connection?: BABYLON.NodeMaterialConnectionPoint;
     }
     export class GraphEditor extends React.Component<IGraphEditorProps> {
+        private readonly NodeWidth;
         private _engine;
         private _model;
         private _startX;
@@ -782,7 +804,7 @@ declare module NODEEDITOR {
             to: import("storm-react-diagrams").NodeModel;
         }[];
         buildMaterial(): void;
-        build(): void;
+        build(needToWait?: boolean): void;
         reOrganize(): void;
         addValueNode(type: string): DefaultNodeModel;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -825,6 +847,7 @@ declare module NODEEDITOR {
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
+        onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
     }
 }
 declare module NODEEDITOR {

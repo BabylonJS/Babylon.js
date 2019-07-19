@@ -1,4 +1,32 @@
 /// <reference types="react" />
+declare module "babylonjs-node-editor/blockTools" {
+    import { AlphaTestBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock';
+    import { BonesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/bonesBlock';
+    import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
+    import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
+    import { ImageProcessingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/imageProcessingBlock';
+    import { RGBAMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaMergerBlock';
+    import { RGBASplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaSplitterBlock';
+    import { RGBMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbMergerBlock';
+    import { RGBSplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbSplitterBlock';
+    import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
+    import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
+    import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
+    import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertexOutputBlock';
+    import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
+    import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
+    import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
+    import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
+    import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
+    import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
+    import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
+    import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+    export class BlockTools {
+        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | RGBAMergerBlock | RGBASplitterBlock | RGBMergerBlock | RGBSplitterBlock | TextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | null;
+        static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
+        static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
+    }
+}
 declare module "babylonjs-node-editor/dataStorage" {
     export class DataStorage {
         private static _InMemoryStorage;
@@ -143,6 +171,7 @@ declare module "babylonjs-node-editor/components/diagram/portHelper" {
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     import { Nullable } from 'babylonjs/types';
     export class PortHelper {
+        private static _GetPortTypeIndicator;
         static GenerateOutputPorts(node: Nullable<DefaultNodeModel>, ignoreLabel: boolean): JSX.Element[];
         static GenerateInputPorts(node: Nullable<DefaultNodeModel>, includeOnly?: string[]): JSX.Element[];
     }
@@ -249,6 +278,19 @@ declare module "babylonjs-node-editor/stringTools" {
         static DownloadAsFile(content: string, filename: string): void;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" {
+    import * as React from "react";
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -262,6 +304,7 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
     }> {
         constructor(props: IPropertyTabComponentProps);
         componentWillMount(): void;
+        load(file: File): void;
         render(): JSX.Element;
     }
 }
@@ -273,19 +316,6 @@ declare module "babylonjs-node-editor/portal" {
     }
     export class Portal extends React.Component<IPortalProps> {
         render(): React.ReactPortal;
-    }
-}
-declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" {
-    import * as React from "react";
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
-        render(): JSX.Element;
     }
 }
 declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
@@ -860,6 +890,20 @@ declare module "babylonjs-node-editor/components/diagram/light/lightNodeFactory"
         getNewInstance(): LightNodeModel;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/messageDialog" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    interface IMessageDialogComponentProps {
+        globalState: GlobalState;
+    }
+    export class MessageDialogComponent extends React.Component<IMessageDialogComponentProps, {
+        message: string;
+        isError: boolean;
+    }> {
+        constructor(props: IMessageDialogComponentProps);
+        render(): JSX.Element | null;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
@@ -877,6 +921,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         connection?: NodeMaterialConnectionPoint;
     }
     export class GraphEditor extends React.Component<IGraphEditorProps> {
+        private readonly NodeWidth;
         private _engine;
         private _model;
         private _startX;
@@ -908,7 +953,7 @@ declare module "babylonjs-node-editor/graphEditor" {
             to: import("storm-react-diagrams").NodeModel;
         }[];
         buildMaterial(): void;
-        build(): void;
+        build(needToWait?: boolean): void;
         reOrganize(): void;
         addValueNode(type: string): DefaultNodeModel;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -962,6 +1007,7 @@ declare module "babylonjs-node-editor/globalState" {
         onZoomToFitRequiredObservable: Observable<void>;
         onReOrganizedRequiredObservable: Observable<void>;
         onLogRequiredObservable: Observable<LogEntry>;
+        onErrorMessageDialogRequiredObservable: Observable<string>;
     }
 }
 declare module "babylonjs-node-editor/sharedComponents/popup" {
@@ -999,6 +1045,13 @@ declare module "babylonjs-node-editor" {
     export * from "babylonjs-node-editor/legacy/legacy";
 }
 /// <reference types="react" />
+declare module NODEEDITOR {
+    export class BlockTools {
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.RGBAMergerBlock | BABYLON.RGBASplitterBlock | BABYLON.RGBMergerBlock | BABYLON.RGBSplitterBlock | BABYLON.TextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | null;
+        static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
+        static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
+    }
+}
 declare module NODEEDITOR {
     export class DataStorage {
         private static _InMemoryStorage;
@@ -1126,6 +1179,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class PortHelper {
+        private static _GetPortTypeIndicator;
         static GenerateOutputPorts(node: BABYLON.Nullable<DefaultNodeModel>, ignoreLabel: boolean): JSX.Element[];
         static GenerateInputPorts(node: BABYLON.Nullable<DefaultNodeModel>, includeOnly?: string[]): JSX.Element[];
     }
@@ -1221,26 +1275,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    interface IPropertyTabComponentProps {
-        globalState: GlobalState;
-    }
-    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
-        currentNode: BABYLON.Nullable<DefaultNodeModel>;
-    }> {
-        constructor(props: IPropertyTabComponentProps);
-        componentWillMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface IPortalProps {
-        globalState: GlobalState;
-    }
-    export class Portal extends React.Component<IPortalProps> {
-        render(): React.ReactPortal;
-    }
-}
-declare module NODEEDITOR {
     interface IFileButtonLineComponentProps {
         label: string;
         onClick: (file: File) => void;
@@ -1250,6 +1284,27 @@ declare module NODEEDITOR {
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IPropertyTabComponentProps {
+        globalState: GlobalState;
+    }
+    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
+        currentNode: BABYLON.Nullable<DefaultNodeModel>;
+    }> {
+        constructor(props: IPropertyTabComponentProps);
+        componentWillMount(): void;
+        load(file: File): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IPortalProps {
+        globalState: GlobalState;
+    }
+    export class Portal extends React.Component<IPortalProps> {
+        render(): React.ReactPortal;
     }
 }
 declare module NODEEDITOR {
@@ -1742,6 +1797,18 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IMessageDialogComponentProps {
+        globalState: GlobalState;
+    }
+    export class MessageDialogComponent extends React.Component<IMessageDialogComponentProps, {
+        message: string;
+        isError: boolean;
+    }> {
+        constructor(props: IMessageDialogComponentProps);
+        render(): JSX.Element | null;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1751,6 +1818,7 @@ declare module NODEEDITOR {
         connection?: BABYLON.NodeMaterialConnectionPoint;
     }
     export class GraphEditor extends React.Component<IGraphEditorProps> {
+        private readonly NodeWidth;
         private _engine;
         private _model;
         private _startX;
@@ -1782,7 +1850,7 @@ declare module NODEEDITOR {
             to: import("storm-react-diagrams").NodeModel;
         }[];
         buildMaterial(): void;
-        build(): void;
+        build(needToWait?: boolean): void;
         reOrganize(): void;
         addValueNode(type: string): DefaultNodeModel;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -1825,6 +1893,7 @@ declare module NODEEDITOR {
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
+        onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
     }
 }
 declare module NODEEDITOR {

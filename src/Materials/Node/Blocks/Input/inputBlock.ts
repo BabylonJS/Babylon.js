@@ -4,12 +4,13 @@ import { NodeMaterialBlockConnectionPointMode } from '../../NodeMaterialBlockCon
 import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
 import { Nullable } from '../../../../types';
 import { Effect } from '../../../../Materials/effect';
-import { Matrix, Vector2, Vector3 } from '../../../../Maths/math.vector';
+import { Matrix, Vector2, Vector3, Vector4 } from '../../../../Maths/math.vector';
 import { Scene } from '../../../../scene';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../../Misc/typeStore';
+import { Color3, Color4 } from '../../../../Maths/math';
 
 /**
  * Block used to expose an input value
@@ -255,9 +256,16 @@ export class InputBlock extends NodeMaterialBlock {
                 this.value = Vector2.Zero();
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
                 this.value = Vector3.Zero();
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                this.value = Vector4.Zero();
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                this.value = Color3.White();
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                this.value = new Color4(1, 1, 1, 1);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 this.value = Matrix.Identity();
