@@ -106,7 +106,7 @@
     .inputs {
         grid-row: 2;
         grid-column: 1;
-        padding-bottom: 5px;
+        padding-bottom: 8px;
 
         .input-port {
             display: grid;
@@ -120,6 +120,16 @@
                 align-content: center;
                 margin-left: -8px;
                 position: relative;
+
+                .input-port-connection {
+                    pointer-events: none;
+                    grid-column: 1;
+                    grid-row: 1;
+                    z-index: 10;
+                    background: black;
+                    border-radius: 10px;
+                    z-index: 9;
+                }
 
                 .input-port-type {
                     width: 15px;
@@ -167,7 +177,7 @@
     .outputs {
         grid-row: 2;
         grid-column: 2;
-        padding-bottom: 5px;
+        padding-bottom: 8px;
 
         .output-port {
             display: grid;
@@ -181,6 +191,16 @@
                 align-content: center;
                 position: relative;    
                 margin-left: 3px;
+
+                .output-port-connection {
+                    pointer-events: none;
+                    grid-column: 1;
+                    grid-row: 1;
+                    z-index: 10;
+                    background: black;
+                    border-radius: 10px;
+                    z-index: 9;
+                }
 
                 .output-port-type {
                     pointer-events: none;
@@ -208,7 +228,7 @@
                     position: absolute;
                     border-bottom-right-radius: 10px;
                     border-top-right-radius: 10px;
-                    top: -4px;
+                    top: -3.5px;
                     left: 7px;      
                     z-index: 1;      
                 }

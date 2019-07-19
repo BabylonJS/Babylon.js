@@ -19,7 +19,7 @@ import { Portal } from './portal';
 import { TextureNodeFactory } from './components/diagram/texture/textureNodeFactory';
 import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
 import { TextureNodeModel } from './components/diagram/texture/textureNodeModel';
-import { DefaultPortModel } from './components/diagram/defaultPortModel';
+import { DefaultPortModel } from './components/diagram/port/defaultPortModel';
 import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
 import { InputNodeModel } from './components/diagram/input/inputNodeModel';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
@@ -33,6 +33,7 @@ import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Nullable } from 'babylonjs/types';
 import { MessageDialogComponent } from './sharedComponents/messageDialog';
 import { BlockTools } from './blockTools';
+import { AdvancedLinkFactory } from './components/diagram/link/advancedLinkFactory';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -140,6 +141,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine.registerNodeFactory(new TextureNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new LightNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new InputNodeFactory(this.props.globalState));
+        this._engine.registerLinkFactory(new AdvancedLinkFactory());
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
             if (this.props.globalState.nodeMaterial) {
@@ -273,7 +275,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                             }
                         }
                     } else {
-                        if (!e.link.targetPort && e.link.sourcePort) {
+                        if (!e.link.targetPort && e.link.sourcePort && (e.link.sourcePort as DefaultPortModel).position === "input") {
                             // Drag from input port, we are going to build an input for it                            
                             let input = e.link.sourcePort as DefaultPortModel;
                             let nodeModel = this.addValueNode(BlockTools.GetStringFromConnectionNodeType(input.connection!.type));
