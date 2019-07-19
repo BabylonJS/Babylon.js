@@ -72,7 +72,7 @@ export class BlockTools {
         let color = "Red";
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
-				color = "AntiqueWhite";
+				color = "DimGrey";
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:                
 				color = "Chocolate";

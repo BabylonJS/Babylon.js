@@ -11,13 +11,16 @@
         border-color: rgb(0, 192, 255) !important;
     }    
 }
+
+.srd-default-link--path-selected {
+    animation: 0s !important;
+}
       
 .srd-port {
     grid-column: 1;
     grid-row: 1;
     background: #2796B2;
     border-radius: 10px;
-    z-index: 5;
 
     &.connected {
         background: #CAB422;
@@ -121,14 +124,18 @@
                 margin-left: -8px;
                 position: relative;
 
+                &:hover {           
+                    .input-port-connection {
+                        background: greenyellow !important;
+                    }
+                }
+
                 .input-port-connection {
                     pointer-events: none;
                     grid-column: 1;
                     grid-row: 1;
-                    z-index: 10;
-                    background: black;
+                    background: #2796B2;
                     border-radius: 10px;
-                    z-index: 9;
                 }
 
                 .input-port-type {
@@ -138,8 +145,7 @@
                     grid-row: 1;
                     display: grid;
                     align-items: center;
-                    justify-items: center;                        
-                    z-index: 10; 
+                    justify-items: center;     
 
                     img {
                         width: 12px;
@@ -159,7 +165,6 @@
                     border-top-left-radius: 10px;
                     top: -3.5px;
                     right: 10px;      
-                    z-index: 1;      
                 }
             }
 
@@ -192,14 +197,18 @@
                 position: relative;    
                 margin-left: 3px;
 
+                &:hover {           
+                    .output-port-connection {
+                        background: greenyellow !important;
+                    }
+                }
+
                 .output-port-connection {
                     pointer-events: none;
                     grid-column: 1;
                     grid-row: 1;
-                    z-index: 10;
-                    background: black;
+                    background: #2796B2;
                     border-radius: 10px;
-                    z-index: 9;
                 }
 
                 .output-port-type {
@@ -209,7 +218,6 @@
                     display: grid;
                     align-items: center;
                     justify-items: center;
-                    z-index: 10;
 
                     img {
                         width: 12px;
@@ -229,8 +237,7 @@
                     border-bottom-right-radius: 10px;
                     border-top-right-radius: 10px;
                     top: -3.5px;
-                    left: 7px;      
-                    z-index: 1;      
+                    left: 7px;       
                 }
             }
 
