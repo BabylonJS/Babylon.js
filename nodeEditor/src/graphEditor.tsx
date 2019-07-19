@@ -265,7 +265,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     var link = DefaultPortModel.SortInputOutput(sourcePort, e.link.targetPort as DefaultPortModel);
                     if (link) {
                         if (link.input.connection && link.output.connection) {
-                            if (link.input.connection.connectedPoint && link.input.connection.connectedPoint.ownerBlock !== link.output.connection.ownerBlock) {
+                            if (link.input.connection.connectedPoint) {
                                 // Disconnect standard nodes
                                 link.output.connection.disconnectFrom(link.input.connection);
                                 link.input.syncWithNodeMaterialConnectionPoint(link.input.connection);
