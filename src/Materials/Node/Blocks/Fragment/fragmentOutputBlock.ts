@@ -63,7 +63,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         state.sharedData.hints.needAlphaBlending = this.alphaBlendingEnabled;
 
         if (rgba.connectedPoint) {
-            state.compilationString += `gl_FragColor = ${rgba.associatedVariableName};\r\n`;            
+            state.compilationString += `gl_FragColor = ${rgba.associatedVariableName};\r\n`;
         } else if (rgb.connectedPoint) {
             if (a.connectedPoint) {
                 state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${a.associatedVariableName});\r\n`;

@@ -51247,9 +51247,17 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the color input component
+         * Gets the rgba input component
          */
-        readonly color: NodeMaterialConnectionPoint;
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb input component
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        /**
+         * Gets the a input component
+         */
+        readonly a: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
