@@ -1,10 +1,11 @@
 import * as React from "react";
-import { PortWidget } from "storm-react-diagrams";
 import { DefaultNodeModel } from './defaultNodeModel';
-import { DefaultPortModel } from './defaultPortModel';
+import { DefaultPortModel } from './port/defaultPortModel';
 import { Nullable } from 'babylonjs/types';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { DefaultPortWidget } from './port/defaultPortWidget';
+import { BlockTools } from '../../blockTools';
 
 
 export class PortHelper {
@@ -28,6 +29,12 @@ export class PortHelper {
         return null;
     }
 
+    static _GetPortStyle(type: NodeMaterialBlockConnectionPointTypes) {
+        return {
+            background: BlockTools.GetColorFromConnectionNodeType(type)
+        };
+    }
+
     public static GenerateOutputPorts(node: Nullable<DefaultNodeModel>, ignoreLabel: boolean) {
         if (!node) {
             return new Array<JSX.Element>();
@@ -38,6 +45,10 @@ export class PortHelper {
             if (port.position === "output") {
                 let typeIndicator = this._GetPortTypeIndicator(port.connection!);
 
+                let style = this._GetPortStyle(port.connection!.type);
+
+                let isConnected = port.connection && port.connection.endpoints.length > 0;
+
                 outputPorts.push(
                     <div key={key} className="output-port">
                         {
@@ -47,7 +58,12 @@ export class PortHelper {
                             </div>
                         }
                         <div className="output-port-plug">
-                            <PortWidget key={key} name={port.name} node={node} className={port.connection && port.connection.endpoints.length > 0 ? "connected" : ""} />
+                            <DefaultPortWidget key={key} name={port.name} node={node} style={style} />
+                            {
+                                !isConnected &&
+                                <div className="output-port-connection">                             
+                                </div>                            
+                            }
                             <div className="output-port-type"> 
                                 {
                                     typeIndicator
@@ -73,12 +89,19 @@ export class PortHelper {
             let port = node.ports[key] as DefaultPortModel;
             if (port.position === "input") {                
                 let typeIndicator = this._GetPortTypeIndicator(port.connection!);
+                let style = this._GetPortStyle(port.connection!.type);
 
+                let isConnected = port.connection && port.connection.endpoints.length > 0;
                 if (!includeOnly || includeOnly.indexOf(port.name) !== -1) {
                     inputPorts.push(
                         <div key={key} className="input-port">
                             <div className="input-port-plug">
-                                <PortWidget key={key} name={port.name} node={node} className={port.connection && port.connection.connectedPoint ? "connected" : ""} />
+                                <DefaultPortWidget key={key} name={port.name} node={node} style={style}/>
+                                {
+                                    !isConnected &&
+                                    <div className="output-port-connection">                             
+                                    </div>                            
+                                }                                
                                 <div className="input-port-type"> 
                                     {
                                         typeIndicator
