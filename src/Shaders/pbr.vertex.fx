@@ -39,68 +39,36 @@ attribute vec3 position;
 #include<bonesDeclaration>
 
 // Output
-#ifdef WEBGPU
-    layout(location = 0) out vec3 vPositionW;
-#else
-    varying vec3 vPositionW;
-#endif
+varying vec3 vPositionW;
 
 #ifdef NORMAL
-    #ifdef WEBGPU
-        layout(location = 1) out vec3 vNormalW;
-    #else
-        varying vec3 vNormalW;
-    #endif
+    varying vec3 vNormalW;
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        #ifdef WEBGPU
-            layout(location = 2) out vec3 vEnvironmentIrradiance;
-        #else
-            varying vec3 vEnvironmentIrradiance;
-        #endif
+        varying vec3 vEnvironmentIrradiance;
         
         #include<harmonicsFunctions>
     #endif
 #endif
 
 #ifdef VERTEXCOLOR
-    #ifdef WEBGPU
-        layout(location = 3) out vec4 vColor;
-    #else
-        varying vec4 vColor;
-    #endif
+    varying vec4 vColor;
 #endif
 
 #ifdef REFLECTIONMAP_SKYBOX
-    #ifdef WEBGPU
-        layout(location = 4) out vec3 vPositionUVW;
-    #else
-        varying vec3 vPositionUVW;
-    #endif
+    varying vec3 vPositionUVW;
 #endif
 
 #if DEBUGMODE > 0
-    #ifdef WEBGPU
-        layout(location = 5) out vec4 vClipSpacePosition;
-    #else
-        varying vec4 vClipSpacePosition;
-    #endif
+    varying vec4 vClipSpacePosition;
 #endif
 
 #ifdef MAINUV1
-    #ifdef WEBGPU
-        layout(location = 6) out vec2 vMainUV1;
-    #else
-        varying vec2 vMainUV1;
-    #endif
+    varying vec2 vMainUV1;
 #endif
 
 #ifdef MAINUV2
-    #ifdef WEBGPU
-        layout(location = 7) out vec2 vMainUV2;
-    #else
-        varying vec2 vMainUV2;
-    #endif
+    varying vec2 vMainUV2;
 #endif
 
 #if defined(ALBEDO) && ALBEDODIRECTUV == 0

@@ -77,7 +77,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
             uniforms[uniformsNames[index]] = uniform;
         });
 
-        // TODO. Cleanup SEB.
+        // TODO WEBGPU. Cleanup SEB.
         // Prevent Memory Leak by reducing the number of string, refer to the string instead of copy.
         effect._fragmentSourceCode = "";
         effect._vertexSourceCode = "";
