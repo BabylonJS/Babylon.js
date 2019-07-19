@@ -49,11 +49,7 @@
     #endif
 
     #ifdef REFLECTIONMAP_SKYBOX
-        #ifdef WEBGPU
-            layout(location = 4) in vec3 vPositionUVW;
-        #else
-            varying vec3 vPositionUVW;
-        #endif
+        varying vec3 vPositionUVW;
     #else
         #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
             varying vec3 vDirectionW;

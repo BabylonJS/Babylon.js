@@ -4,7 +4,7 @@ import { ShaderProcessingContext } from "./shaderProcessingOptions";
 /** @hidden */
 export interface IShaderProcessor {
     attributeProcessor?: (attribute: string, processingContext: Nullable<ShaderProcessingContext>) => string;
-    varyingProcessor?: (varying: string, isFragment: boolean) => string;
+    varyingProcessor?: (varying: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
     uniformProcessor?: (uniform: string, isFragment: boolean) => string;
     uniformBufferProcessor?: (uniformBuffer: string, isFragment: boolean) => string;
     endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean) => string;
