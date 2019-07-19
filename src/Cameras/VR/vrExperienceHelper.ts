@@ -328,6 +328,11 @@ export class VRExperienceHelper {
     private _onVRRequestPresentComplete: (success: boolean) => void;
 
     /**
+     * Gets or sets a boolean indicating that the VREXperienceHelper will exit VR if double tap is detected
+     */
+    public exitVROnDoubleTap = true;
+
+    /**
      * Observable raised right before entering VR.
      */
     public onEnteringVRObservable = new Observable<VRExperienceHelper>();
@@ -789,7 +794,7 @@ export class VRExperienceHelper {
 
         // Exiting VR mode double tapping the touch screen
         this._scene.onPrePointerObservable.add(() => {
-            if (this.isInVRMode) {
+            if (this.isInVRMode && this.exitVROnDoubleTap) {
                 this.exitVR();
                 if (this._fullscreenVRpresenting) {
                     this._scene.getEngine().exitFullscreen();

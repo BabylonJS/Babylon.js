@@ -40433,6 +40433,10 @@ declare module BABYLON {
         private _onVRRequestPresentStart;
         private _onVRRequestPresentComplete;
         /**
+         * Gets or sets a boolean indicating that the VREXperienceHelper will exit VR if double tap is detected
+         */
+        exitVROnDoubleTap: boolean;
+        /**
          * Observable raised right before entering VR.
          */
         onEnteringVRObservable: Observable<VRExperienceHelper>;
@@ -51243,9 +51247,17 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the color input component
+         * Gets the rgba input component
          */
-        readonly color: NodeMaterialConnectionPoint;
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb input component
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        /**
+         * Gets the a input component
+         */
+        readonly a: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }

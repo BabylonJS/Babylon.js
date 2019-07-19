@@ -8,6 +8,9 @@
 - WIP: Recast navigation mesh and crowd of moving agents [Demo](https://www.babylonjs-playground.com/#AJTRIL) ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Classes decoupling ending up with smaller bundle sizes [Blog](https://medium.com/@babylonjs/size-matters-e0e94dad01a7) ([Deltakosh](https://github.com/deltakosh/))
 - Babylon.js controls [Doc](https://doc.babylonjs.com/features/controls) ([Sebavan](https://github.com/sebavan/) / [Deltakosh](https://github.com/deltakosh/))
+- WebXR updates:
+  - WebXR updated to spec as of July 10th ([TrevorDev](https://github.com/TrevorDev))
+  - WebXR webVR parity helpers (Vive, WMR, Oculus Rift) ([TrevorDev](https://github.com/TrevorDev))
 
 ## Updates
 
@@ -25,8 +28,7 @@
 - Added startAndReleaseDragOnPointerEvents property to pointerDragBehavior which can be set to false for custom drag triggering ([TrevorDev](https://github.com/TrevorDev))
 - Effect renderer to render one or multiple shader effects to a texture ([TrevorDev](https://github.com/TrevorDev))
 - Added url parameters to web request modifiers ([PierreLeBlond](https://github.com/PierreLeBlond))
-- WebXR updated to spec as of July 10th ([TrevorDev](https://github.com/TrevorDev))
-- WebXR webVR parity helpers (Vive, WMR, Oculus Rift) ([TrevorDev](https://github.com/TrevorDev))
+- Added `VRExperienceHelper.exitVROnDoubleTap` ([Deltakosh](https://github.com/deltakosh/))
 
 ### Engine
 - Morph targets now can morph UV channel as well ([Deltakosh](https://github.com/deltakosh/))
@@ -79,6 +81,7 @@
 
 ### GUI
 - Added `disableMobilePrompt` option to InputText for OculusQuest(and other android base VR devices) ([shinyoshiaki](https://github.com/shinyoshiaki))
+- Added `Button.delegatePickingToChildren` to let buttons delegate hit testing to embedded controls ([Deltakosh](https://github.com/deltakosh/))
 
 ### Documentation
 - Added a note on shallow bounding of getBoundingInfo ([tibotiber](https://github.com/tibotiber))

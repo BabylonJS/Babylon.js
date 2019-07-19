@@ -23,6 +23,7 @@ declare module "babylonjs-node-editor/blockTools" {
     import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
     export class BlockTools {
         static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | RGBAMergerBlock | RGBASplitterBlock | RGBMergerBlock | RGBSplitterBlock | TextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | null;
+        static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
     }
@@ -136,7 +137,13 @@ declare module "babylonjs-node-editor/components/diagram/generic/genericNodeMode
         renderProperties(globalState: GlobalState): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/components/diagram/defaultPortModel" {
+declare module "babylonjs-node-editor/components/diagram/link/advancedLinkModel" {
+    import { DefaultLinkModel } from 'storm-react-diagrams';
+    export class AdvancedLinkModel extends DefaultLinkModel {
+        constructor();
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/port/defaultPortModel" {
     import { LinkModel, PortModel } from "storm-react-diagrams";
     import { Nullable } from 'babylonjs/types';
     import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
@@ -167,11 +174,28 @@ declare module "babylonjs-node-editor/components/diagram/defaultPortModel" {
         } | null;
     }
 }
+declare module "babylonjs-node-editor/components/diagram/port/defaultPortWidget" {
+    import { BaseWidget, PortState, NodeModel, BaseWidgetProps } from 'storm-react-diagrams';
+    export interface IDefaultPortWidgetProps extends BaseWidgetProps {
+        name: string;
+        node: NodeModel;
+        style: any;
+    }
+    export class DefaultPortWidget extends BaseWidget<IDefaultPortWidgetProps, PortState> {
+        constructor(props: IDefaultPortWidgetProps);
+        getClassName(): string;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/diagram/portHelper" {
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     import { Nullable } from 'babylonjs/types';
+    import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
     export class PortHelper {
         private static _GetPortTypeIndicator;
+        static _GetPortStyle(type: NodeMaterialBlockConnectionPointTypes): {
+            background: string;
+        };
         static GenerateOutputPorts(node: Nullable<DefaultNodeModel>, ignoreLabel: boolean): JSX.Element[];
         static GenerateInputPorts(node: Nullable<DefaultNodeModel>, includeOnly?: string[]): JSX.Element[];
     }
@@ -904,6 +928,15 @@ declare module "babylonjs-node-editor/sharedComponents/messageDialog" {
         render(): JSX.Element | null;
     }
 }
+declare module "babylonjs-node-editor/components/diagram/link/advancedLinkFactory" {
+    import { DefaultLinkFactory, DefaultLinkWidget } from 'storm-react-diagrams';
+    import { AdvancedLinkModel } from "babylonjs-node-editor/components/diagram/link/advancedLinkModel";
+    export class AdvancedLinkFactory extends DefaultLinkFactory {
+        constructor();
+        getNewInstance(initialConfig?: any): AdvancedLinkModel;
+        generateLinkSegment(model: AdvancedLinkModel, widget: DefaultLinkWidget, selected: boolean, path: string): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
@@ -970,7 +1003,7 @@ declare module "babylonjs-node-editor/components/diagram/defaultNodeModel" {
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     import { GraphEditor, NodeCreationOptions } from "babylonjs-node-editor/graphEditor";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { DefaultPortModel } from "babylonjs-node-editor/components/diagram/defaultPortModel";
+    import { DefaultPortModel } from "babylonjs-node-editor/components/diagram/port/defaultPortModel";
     /**
      * Generic node model which stores information about a node editor block
      */
@@ -1048,6 +1081,7 @@ declare module "babylonjs-node-editor" {
 declare module NODEEDITOR {
     export class BlockTools {
         static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.RGBAMergerBlock | BABYLON.RGBASplitterBlock | BABYLON.RGBMergerBlock | BABYLON.RGBSplitterBlock | BABYLON.TextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | null;
+        static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
     }
@@ -1151,6 +1185,11 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class AdvancedLinkModel extends DefaultLinkModel {
+        constructor();
+    }
+}
+declare module NODEEDITOR {
     /**
      * Port model
      */
@@ -1178,8 +1217,23 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IDefaultPortWidgetProps extends BaseWidgetProps {
+        name: string;
+        node: NodeModel;
+        style: any;
+    }
+    export class DefaultPortWidget extends BaseWidget<IDefaultPortWidgetProps, PortState> {
+        constructor(props: IDefaultPortWidgetProps);
+        getClassName(): string;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     export class PortHelper {
         private static _GetPortTypeIndicator;
+        static _GetPortStyle(type: BABYLON.NodeMaterialBlockConnectionPointTypes): {
+            background: string;
+        };
         static GenerateOutputPorts(node: BABYLON.Nullable<DefaultNodeModel>, ignoreLabel: boolean): JSX.Element[];
         static GenerateInputPorts(node: BABYLON.Nullable<DefaultNodeModel>, includeOnly?: string[]): JSX.Element[];
     }
@@ -1806,6 +1860,13 @@ declare module NODEEDITOR {
     }> {
         constructor(props: IMessageDialogComponentProps);
         render(): JSX.Element | null;
+    }
+}
+declare module NODEEDITOR {
+    export class AdvancedLinkFactory extends DefaultLinkFactory {
+        constructor();
+        getNewInstance(initialConfig?: any): AdvancedLinkModel;
+        generateLinkSegment(model: AdvancedLinkModel, widget: DefaultLinkWidget, selected: boolean, path: string): JSX.Element;
     }
 }
 declare module NODEEDITOR {
