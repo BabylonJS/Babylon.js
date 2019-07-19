@@ -53,6 +53,8 @@ export class PortHelper {
                                     typeIndicator
                                 }                                
                             </div>
+                            <div className="output-port-border">                                
+                            </div>
                         </div>
                     </div>
                 );
@@ -81,11 +83,13 @@ export class PortHelper {
                                     {
                                         typeIndicator
                                     }                                
+                                </div>                         
+                                <div className="input-port-border">                                
                                 </div>
                             </div>
                             <div className="input-port-label">
                                 {port.name}
-                            </div>
+                            </div>   
                         </div>
                     );
                 }
