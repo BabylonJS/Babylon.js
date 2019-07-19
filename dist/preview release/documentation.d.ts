@@ -40433,6 +40433,10 @@ declare module BABYLON {
         private _onVRRequestPresentStart;
         private _onVRRequestPresentComplete;
         /**
+         * Gets or sets a boolean indicating that the VREXperienceHelper will exit VR if double tap is detected
+         */
+        exitVROnDoubleTap: boolean;
+        /**
          * Observable raised right before entering VR.
          */
         onEnteringVRObservable: Observable<VRExperienceHelper>;
@@ -62543,6 +62547,10 @@ declare module BABYLON.GUI {
          * Function called to generate a pointer up animation
          */
         pointerUpAnimation: () => void;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
         private _image;
         /**
          * Returns the image part of the button (if any)

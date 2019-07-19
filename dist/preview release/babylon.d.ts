@@ -40433,6 +40433,10 @@ declare module BABYLON {
         private _onVRRequestPresentStart;
         private _onVRRequestPresentComplete;
         /**
+         * Gets or sets a boolean indicating that the VREXperienceHelper will exit VR if double tap is detected
+         */
+        exitVROnDoubleTap: boolean;
+        /**
          * Observable raised right before entering VR.
          */
         onEnteringVRObservable: Observable<VRExperienceHelper>;
