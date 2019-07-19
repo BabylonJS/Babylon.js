@@ -8,12 +8,18 @@
 }
           
 .srd-port {
+    grid-column: 1;
+    grid-row: 1;
     background: rgb(0, 192, 255);
     border-radius: 10px;
     border: black 4px solid;
 
     &.connected {
         background: #CAB422;
+    }
+
+    &:hover {
+        background: greenyellow !important;
     }
 }
 
@@ -107,6 +113,18 @@
                 align-content: center;
                 margin-left: -11px;
 
+                .input-port-type {
+                    pointer-events: none;
+                    grid-column: 1;
+                    grid-row: 1;
+                    display: grid;
+                    align-items: center;
+                    justify-items: center;
+
+                    img {
+                        width: 12px;
+                    }
+                }
             }
 
             .input-port-label {
@@ -134,6 +152,19 @@
                 grid-row: 1;
                 display: grid;
                 align-content: center;
+
+                .output-port-type {
+                    pointer-events: none;
+                    grid-column: 1;
+                    grid-row: 1;
+                    display: grid;
+                    align-items: center;
+                    justify-items: center;
+
+                    img {
+                        width: 12px;
+                    }
+                }
             }
 
             .output-port-label {

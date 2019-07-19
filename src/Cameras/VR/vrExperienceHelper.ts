@@ -298,7 +298,7 @@ export class OnAfterEnteringVRObservableEvent {
 export class VRExperienceHelper {
     private _scene: Scene;
     private _position: Vector3;
-    private _btnVR: HTMLButtonElement;
+    private _btnVR: Nullable<HTMLButtonElement>;
     private _btnVRDisplayed: boolean;
 
     // Can the system support WebVR, even if a headset isn't plugged in?
@@ -616,6 +616,13 @@ export class VRExperienceHelper {
         return this._vrDeviceOrientationCamera;
     }
 
+    /**
+     * The html button that is used to trigger entering into VR.
+     */
+    public get vrButton(): Nullable<HTMLButtonElement> {
+        return this._btnVR;
+    }
+
     private get _teleportationRequestInitiated(): boolean {
         var result = this._cameraGazer._teleportationRequestInitiated
             || (this._leftController !== null && this._leftController._teleportationRequestInitiated)
@@ -882,7 +889,7 @@ export class VRExperienceHelper {
         }
         if (!this._fullscreenVRpresenting && this._canvas) {
             this.exitVR();
-            if (!this._useCustomVRButton) {
+            if (!this._useCustomVRButton && this._btnVR) {
                 this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
                 this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
             }
@@ -921,14 +928,15 @@ export class VRExperienceHelper {
     }
 
     private moveButtonToBottomRight() {
-        if (this._canvas && !this._useCustomVRButton) {
-            this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
-            this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+        if (this._canvas && !this._useCustomVRButton && this._btnVR) {
+            const rect: ClientRect = this._canvas.getBoundingClientRect();
+            this._btnVR.style.top = rect.top + rect.height - 70 + "px";
+            this._btnVR.style.left = rect.left + rect.width - 100 + "px";
         }
     }
 
     private displayVRButton() {
-        if (!this._useCustomVRButton && !this._btnVRDisplayed) {
+        if (!this._useCustomVRButton && !this._btnVRDisplayed && this._btnVR) {
             document.body.appendChild(this._btnVR);
             this._btnVRDisplayed = true;
         }
@@ -2029,7 +2037,7 @@ export class VRExperienceHelper {
         if (this._vrDeviceOrientationCamera) {
             this._vrDeviceOrientationCamera.dispose();
         }
-        if (!this._useCustomVRButton && this._btnVR.parentNode) {
+        if (!this._useCustomVRButton  && this._btnVR && this._btnVR.parentNode) {
             document.body.removeChild(this._btnVR);
         }
 
