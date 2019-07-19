@@ -72,6 +72,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         }
 
         // Flip Y.
+        // TODO WEBGPU. Triple check this part and wait on Google News for this issue.
         if (!isFragment) {
             const lastClosingCurly = code.lastIndexOf("}");
             code = code.substring(0, lastClosingCurly);
