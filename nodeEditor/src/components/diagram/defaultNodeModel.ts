@@ -3,7 +3,7 @@ import { Nullable } from 'babylonjs/types';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { GraphEditor, NodeCreationOptions } from '../../graphEditor';
 import { GlobalState } from '../../globalState';
-import { DefaultPortModel } from './defaultPortModel';
+import { DefaultPortModel } from './port/defaultPortModel';
 
 /**
  * Generic node model which stores information about a node editor block
