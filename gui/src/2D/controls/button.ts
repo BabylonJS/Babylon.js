@@ -88,7 +88,7 @@ export class Button extends Rectangle {
 
     // While being a container, the button behaves like a control.
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {     
+    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -96,7 +96,7 @@ export class Button extends Rectangle {
         if (!super.contains(x, y)) {
             return false;
         }
-        
+
         let processObservables = true;
         if (this.delegatePickingToChildren) {
             processObservables = false;
@@ -108,7 +108,7 @@ export class Button extends Rectangle {
                 }
             }
         }
-        
+
         if (processObservables) {
             this._processObservables(type, x, y, pointerId, buttonIndex);
         }
