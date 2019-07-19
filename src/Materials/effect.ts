@@ -7,7 +7,7 @@ import { IDisposable } from '../scene';
 import { IPipelineContext } from '../Engines/IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
-import { ProcessingOptions } from '../Engines/Processors/shaderProcessingOptions';
+import { ProcessingOptions, ShaderProcessingContext } from '../Engines/Processors/shaderProcessingOptions';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
 
 declare type Engine = import("../Engines/engine").Engine;
@@ -280,6 +280,8 @@ export class Effect implements IDisposable {
     private _valueCache: { [key: string]: any } = {};
     private static _baseCache: { [key: number]: DataBuffer } = {};
 
+    private _processingContext: Nullable<ShaderProcessingContext>;
+
     /**
      * Instantiates an effect.
      * An effect can be used to create/manage/execute vertex and fragment shaders.
@@ -374,7 +376,9 @@ export class Effect implements IDisposable {
             fragmentSource = baseName.fragment || baseName;
         }
 
-        let processorOptions: ProcessingOptions = {
+        this._processingContext = engine!._getShaderProcessingContext();
+
+        const processorOptions: ProcessingOptions = {
             defines: this.defines.split("\n"),
             indexParameters: this._indexParameters,
             isFragment: false,
@@ -384,7 +388,8 @@ export class Effect implements IDisposable {
             shadersRepository: Effect.ShadersRepository,
             includesShadersStore: Effect.IncludesShadersStore,
             version: (this._engine.webGLVersion * 100).toString(),
-            platformName: this._engine.shaderPlatformName
+            platformName: this._engine.shaderPlatformName,
+            processingContext: this._processingContext
         };
 
         this._loadVertexShader(vertexSource, (vertexCode) => {
@@ -714,7 +719,7 @@ export class Effect implements IDisposable {
         try {
             let engine = this._engine;
 
-            this._pipelineContext = engine.createPipelineContext();
+            this._pipelineContext = engine.createPipelineContext(this._processingContext);
 
             let rebuildRebind = this._rebuildProgram.bind(this);
             if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {

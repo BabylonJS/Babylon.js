@@ -19,7 +19,7 @@ export class ShaderCodeNode {
             let processor = options.processor;
             if (processor) {
                 if (processor.attributeProcessor && StringTools.StartsWith(this.line, "attribute")) {
-                    value = processor.attributeProcessor(this.line);
+                    value = processor.attributeProcessor(this.line, options.processingContext);
                 } else if (processor.varyingProcessor && StringTools.StartsWith(this.line, "varying")) {
                     value = processor.varyingProcessor(this.line, options.isFragment);
                 } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StringTools.StartsWith(this.line, "uniform")) {

@@ -2,6 +2,9 @@ import { IShaderProcessor } from './iShaderProcessor';
 import { Nullable } from '../../types';
 
 /** @hidden */
+export interface ShaderProcessingContext { }
+
+/** @hidden */
 export interface ProcessingOptions {
     defines: string[];
     indexParameters: any;
@@ -14,4 +17,5 @@ export interface ProcessingOptions {
     version: string;
     platformName: string;
     lookForClosingBracketForUniformBuffer?: boolean;
+    processingContext: Nullable<ShaderProcessingContext>;
 }

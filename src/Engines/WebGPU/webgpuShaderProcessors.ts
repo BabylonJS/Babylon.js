@@ -1,8 +1,10 @@
+import { Nullable } from '../../types';
 import { IShaderProcessor } from '../Processors/iShaderProcessor';
+import { ShaderProcessingContext } from "../processors/shaderProcessingOptions";
+import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 
 /** @hidden */
 export class WebGPUShaderProcessor implements IShaderProcessor {
-    // attributeProcessor?: (attribute: string) => string;
     // varyingProcessor?: (varying: string, isFragment: boolean) => string;
     // uniformProcessor?: (uniform: string, isFragment: boolean) => string;
     // uniformBufferProcessor?: (uniformBuffer: string, isFragment: boolean) => string;
@@ -11,21 +13,21 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     // preProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
     // postProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
 
-    public attributeProcessor(attribute: string) {
-        return attribute.replace("attribute", "in");
-        // const inOut = isFragment ? "in" : "out";
-        // const attribRegex = new RegExp(/\s+attribute\s+(\w+)\s+/gm);
+    public attributeProcessor(attribute: string, processingContext: Nullable<ShaderProcessingContext>) {
+        const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
-        // let location = 0;
-        // let match = attribRegex.exec(code);
-        // while (match != null) {
-        //     if (match[1]) {
-        //         code = code.replace(match[0], ` layout(location = ${location}) ${inOut} ${match[1]} `);
-        //         location++;
-        //     }
-        //     match = attribRegex.exec(code);
-        // }
-        // return code;
+        // return attribute.replace("attribute", "in");
+        const attribRegex = new RegExp(/\s*attribute\s+(\S+)\s+(\S+)\s*;/gm);
+
+        const match = attribRegex.exec(attribute);
+        const location = webgpuProcessingContext.attributeNextLocation++;
+        if (match != null) {
+            const name = match[2];
+
+            webgpuProcessingContext.availableAttributes[name] = location;
+            attribute = attribute.replace(match[0], `layout(location = ${location}) in ${match[1]} ${name};`);
+        }
+        return attribute;
     }
 
     public varyingProcessor(varying: string, isFragment: boolean) {

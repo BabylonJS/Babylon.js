@@ -20,6 +20,8 @@ import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoa
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { IShaderProcessor } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
+import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 
 /**
  * Options to create the WebGPU engine
@@ -343,6 +345,11 @@ export class WebGPUEngine extends Engine {
      */
     protected _getShaderProcessor(): Nullable<IShaderProcessor> {
         return new WebGPUShaderProcessor();
+    }
+
+    /** @hidden */
+    public _getShaderProcessingContext(): Nullable<ShaderProcessingContext> {
+        return new WebGPUShaderProcessingContext();
     }
 
     //------------------------------------------------------------------------------
@@ -773,8 +780,8 @@ export class WebGPUEngine extends Engine {
         throw "Not available on WebGPU";
     }
 
-    public createPipelineContext(): IPipelineContext {
-        var pipelineContext = new WebGPUPipelineContext();
+    public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
+        var pipelineContext = new WebGPUPipelineContext(shaderProcessingContext! as WebGPUShaderProcessingContext);
         pipelineContext.engine = this;
         return pipelineContext;
     }
@@ -802,7 +809,6 @@ export class WebGPUEngine extends Engine {
                 webGpuContext.stages = this._compilePipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, defines);
             }
 
-            this._findAttributes(webGpuContext, vertexSourceCode);
             this._findUBOs(webGpuContext, fragmentSourceCode);
 
             this._compiledShaders[key] = {
@@ -815,25 +821,6 @@ export class WebGPUEngine extends Engine {
                 }
             };
         }
-    }
-
-    private _findAttributes(pipelineContext: WebGPUPipelineContext, vertexSourceCode: string): void {
-        // TODO.
-        // Hard coded for WebGPU until an introspection lib is available.
-
-        const results: { [key: string]: number } = { };
-
-        const vertexShaderCode = vertexSourceCode;
-        const attributesRegex = /layout\(location\s*=\s*([0-9]*)\)\s*in\s*\S*\s*(\S*);/gm;
-        let matches: RegExpExecArray | null;
-        while (matches = attributesRegex.exec(vertexShaderCode)) {
-            const location = matches[1];
-            const name = matches[2];
-
-            results[name] = +location;
-        }
-
-        pipelineContext.availableAttributes = results;
     }
 
     private _findUBOs(pipelineContext: WebGPUPipelineContext, fragmentSourceCode: string): void {
