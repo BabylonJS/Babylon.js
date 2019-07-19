@@ -58,6 +58,8 @@ export class PortHelper {
                             </div>
                         }
                         <div className="output-port-plug">
+                            <div className="output-port-border">                                
+                            </div>
                             <DefaultPortWidget key={key} name={port.name} node={node} style={style} />
                             {
                                 !isConnected &&
@@ -68,8 +70,6 @@ export class PortHelper {
                                 {
                                     typeIndicator
                                 }                                
-                            </div>
-                            <div className="output-port-border">                                
                             </div>
                         </div>
                     </div>
@@ -96,6 +96,8 @@ export class PortHelper {
                     inputPorts.push(
                         <div key={key} className="input-port">
                             <div className="input-port-plug">
+                                <div className="input-port-border">                                
+                                </div>
                                 <DefaultPortWidget key={key} name={port.name} node={node} style={style}/>
                                 {
                                     !isConnected &&
@@ -107,8 +109,6 @@ export class PortHelper {
                                         typeIndicator
                                     }                                
                                 </div>                         
-                                <div className="input-port-border">                                
-                                </div>
                             </div>
                             <div className="input-port-label">
                                 {port.name}
