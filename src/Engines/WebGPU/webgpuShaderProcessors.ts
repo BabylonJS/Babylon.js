@@ -4,10 +4,14 @@ import { ShaderProcessingContext } from "../processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 
 /** @hidden */
+const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
+    "Scene": { setIndex: 0, bindingIndex: 0 },
+    "Material": { setIndex: 1, bindingIndex: 0 },
+    "Mesh": { setIndex: 2, bindingIndex: 0 },
+};
+
+/** @hidden */
 export class WebGPUShaderProcessor implements IShaderProcessor {
-    // uniformProcessor?: (uniform: string, isFragment: boolean) => string;
-    // uniformBufferProcessor?: (uniformBuffer: string, isFragment: boolean) => string;
-    // endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean) => string;
     // lineProcessor?: (line: string, isFragment: boolean) => string;
     // preProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
     // postProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
@@ -46,11 +50,56 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 webgpuProcessingContext.availableVaryings[name] = location;
             }
 
-            webgpuProcessingContext.availableAttributes[name] = location;
             varying = varying.replace(match[0], `layout(location = ${location}) ${isFragment ? "in" : "out"} ${match[1]} ${name};`);
         }
         return varying;
     }
+
+    // public uniformProcessor(uniform: string, isFragment: boolean): string {
+    //     console.log("uniform ", uniform);
+    //     return uniform;
+    // }
+
+    public uniformBufferProcessor(uniformBuffer: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string {
+        const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
+        const uboRegex = new RegExp(/uniform\s+(\w+)/gm);
+
+        const match = uboRegex.exec(uniformBuffer);
+        if (match != null) {
+            const name = match[1];
+            let setIndex: number;
+            let bindingIndex: number;
+            const knownUBO = _knownUBOs[name];
+            if (knownUBO) {
+                setIndex = knownUBO.setIndex;
+                bindingIndex = knownUBO.bindingIndex;
+            }
+            else {
+                setIndex = 3;
+                if (isFragment) {
+                    const availableUBO = webgpuProcessingContext.availableUBOs[name];
+                    if (availableUBO) {
+                        bindingIndex = availableUBO.bindingIndex;
+                    }
+                    else {
+                        bindingIndex = webgpuProcessingContext.uboNextBindingIndex++;
+                    }
+                }
+                else {
+                    bindingIndex = webgpuProcessingContext.uboNextBindingIndex++;
+                }
+            }
+            webgpuProcessingContext.availableUBOs[name] = { setIndex, bindingIndex };
+
+            uniformBuffer = uniformBuffer.replace("uniform", `layout(set = ${setIndex}, binding = ${bindingIndex}) uniform`);
+        }
+        return uniformBuffer;
+    }
+
+    // public endOfUniformBufferProcessor(closingBracketLine: string, isFragment: boolean): string {
+    //     console.log("uniformBuffer closingBracketLine ", closingBracketLine);
+    //     return closingBracketLine;
+    // }
 
     public postProcessor(code: string, defines: string[], isFragment: boolean) {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;

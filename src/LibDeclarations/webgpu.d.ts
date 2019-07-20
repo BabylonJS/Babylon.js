@@ -1,3 +1,5 @@
+// TODO WEBGPU. Replace with Kai Typings and update to latest.
+
 /* tslint:disable */
 // https://github.com/gpuweb/gpuweb/blob/9d7622bf366be74e0599122d8c4d0fd1128ae484/design/sketch.webidl
 
