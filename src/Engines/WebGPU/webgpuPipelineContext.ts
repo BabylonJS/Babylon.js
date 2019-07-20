@@ -29,7 +29,8 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public engine: WebGPUEngine;
 
     public availableAttributes: { [key: string]: number };
-    public availableUBOs: { [key: string]: number };
+    public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number} };
+    public availableSamplers: { [key: string]: number };
     public sources: {
         vertex: string
         fragment: string,
@@ -63,6 +64,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
     constructor(shaderProcessingContext: WebGPUShaderProcessingContext) {
         this.availableAttributes = shaderProcessingContext.availableAttributes;
+        this.availableUBOs = shaderProcessingContext.availableUBOs;
     }
 
     public _handlesSpectorRebuildCallback(onCompiled: (program: any) => void): void {
@@ -72,19 +74,19 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public _fillEffectInformation(effect: Effect, uniformBuffersNames: { [key: string]: number }, uniformsNames: string[], uniforms: { [key: string]: Nullable<WebGLUniformLocation> }, samplerList: string[], samplers: { [key: string]: number }, attributesNames: string[], attributes: number[]) {
         const engine = this.engine;
 
+        // TODO WEBGPU. Cleanup SEB on this entire function.
         let effectAvailableUniforms = engine.getUniforms(this, uniformsNames);
         effectAvailableUniforms.forEach((uniform, index) => {
             uniforms[uniformsNames[index]] = uniform;
         });
 
-        // TODO WEBGPU. Cleanup SEB.
         // Prevent Memory Leak by reducing the number of string, refer to the string instead of copy.
         effect._fragmentSourceCode = "";
         effect._vertexSourceCode = "";
         // this._fragmentSourceCodeOverride = "";
         // this._vertexSourceCodeOverride = "";
 
-        const foundSamplers = this.availableUBOs;
+        const foundSamplers = this.availableSamplers;
         let index: number;
         for (index = 0; index < samplerList.length; index++) {
             const name = samplerList[index];
