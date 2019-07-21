@@ -92,6 +92,33 @@ export class ScreenshotTools {
     }
 
     /**
+     * Captures a screenshot of the current rendering
+     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @param engine defines the rendering engine
+     * @param camera defines the source camera
+     * @param size This parameter can be set to a single number or to an object with the
+     * following (optional) properties: precision, width, height. If a single number is passed,
+     * it will be used for both width and height. If an object is passed, the screenshot size
+     * will be derived from the parameters. The precision property is a multiplier allowing
+     * rendering at a higher or lower resolution
+     * @param mimeType defines the MIME type of the screenshot image (default: image/png).
+     * Check your browser for supported MIME types
+     * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+     * to the src parameter of an <img> to display it
+     */
+    public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType: string = "image/png"): Promise<string> {
+        return new Promise((resolve, reject) => {
+            this.CreateScreenshot(engine, camera, size, (data) => {
+                if (typeof(data) !== "undefined") {
+                    resolve(data);
+                } else {
+                    reject(data);
+                }
+            }, mimeType);
+        });
+    }
+
+    /**
      * Generates an image screenshot from the specified camera.
      * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine The engine to use for rendering
@@ -189,4 +216,5 @@ export class ScreenshotTools {
 }
 
 Tools.CreateScreenshot = ScreenshotTools.CreateScreenshot;
+Tools.CreateScreenshotAsync = ScreenshotTools.CreateScreenshotAsync;
 Tools.CreateScreenshotUsingRenderTarget = ScreenshotTools.CreateScreenshotUsingRenderTarget;
