@@ -112,7 +112,7 @@ export class ScreenshotTools {
                 if (typeof(data) !== "undefined") {
                     resolve(data);
                 } else {
-                    reject(data);
+                    reject(new Error("Data is undefined"));
                 }
             }, mimeType);
         });
@@ -238,7 +238,7 @@ export class ScreenshotTools {
                 if (typeof(data) !== "undefined") {
                     resolve(data);
                 } else {
-                    reject(data);
+                    reject(new Error("Data is undefined"));
                 }
             }, mimeType, samples, antialiasing, fileName);
         });
