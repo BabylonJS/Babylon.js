@@ -25,17 +25,25 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/src/")
 
 add_library(BabylonNativeJNI SHARED
             src/main/cpp/BabylonNativeJNI.cpp
-            )
+            ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/napi/source/js_native_api_v8.cc
+            ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/napi/source/env_v8.cc
+         )
+
+target_compile_definitions(BabylonNativeJNI PUBLIC NODE_ADDON_API_DISABLE_DEPRECATED)
 
 target_include_directories(BabylonNativeJNI
-        PRIVATE 
+        PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Include
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/napi/include
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/include
         )
 
-find_package(BABYLONNATIVE)
+#find_package(BABYLONNATIVE)
 
 target_link_libraries(BabylonNativeJNI
         ${OPENGL_LIB}
@@ -43,4 +51,29 @@ target_link_libraries(BabylonNativeJNI
         EGL
         log
         -lz
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/libLibrary.a # BabylonNative
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_base.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_init.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_initializers.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_libbase.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_libplatform.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_libsampler.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_nosnapshot.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_snapshot.a
+
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libastc.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libastc-codec.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libbgfx.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libbimg.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libbx.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libedtaa3.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libetc1.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libetc2.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libiqa.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libnvtt.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libpvrtc.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libsquish.a
+
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/SPIRV-Cross/libspirv-cross-core.a
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/SPIRV-Cross/libspirv-cross-glsl.a
         m)

@@ -70,6 +70,11 @@ if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL 
         "Source/ShaderCompilerD3D.cpp")
 endif()
 
+if(BABYLON_NATIVE_PLATFORM STREQUAL "Android")
+    set(SOURCES ${SOURCES}
+        "Source/ShaderCompilerOpenGL.cpp")
+endif()
+
 add_library(Library ${SOURCES})
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})

@@ -3,9 +3,11 @@
 #include <string.h>
 #include <signal.h>
 #include <time.h>
+#include <memory>
 #include <android/native_window.h> // requires ndk r5 or newer
 #include <android/native_window_jni.h> // requires ndk r5 or newer
 #include <android/log.h>
+#include <Babylon/RuntimeAndroid.h>
 
 extern "C" {
     JNIEXPORT void JNICALL Java_com_android_appviewer_AndroidViewAppActivity_initEngine(JNIEnv* env, jobject obj, jobject assetMgr);
@@ -19,10 +21,23 @@ extern "C" {
     JNIEXPORT void JNICALL Java_com_android_appviewer_AndroidViewAppActivity_step(JNIEnv* env, jobject obj);
 };
 
+std::unique_ptr<babylon::RuntimeAndroid> runtime{};
+
 JNIEXPORT void JNICALL
 Java_com_android_appviewer_AndroidViewAppActivity_initEngine(JNIEnv* env, jobject obj,
                                                        jobject assetMgr)
 {
+    auto rootUrl = ".";
+
+    runtime = std::make_unique<babylon::RuntimeAndroid>(nullptr, rootUrl);
+
+    //inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
+    //InputManager::Initialize(*runtime, *inputBuffer);
+
+    runtime->LoadScript("Scripts/babylon.max.js");
+    runtime->LoadScript("Scripts/babylon.glTF2FileLoader.js");
+
+    runtime->LoadScript("Scripts/experience.js");
 }
 
 JNIEXPORT void JNICALL

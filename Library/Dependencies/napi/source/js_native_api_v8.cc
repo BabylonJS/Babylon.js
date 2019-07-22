@@ -2143,7 +2143,8 @@ napi_status napi_coerce_to_bool(napi_env env,
   v8::Local<v8::Context> context = env->context();
   v8::Local<v8::Boolean> b;
 
-  CHECK_TO_BOOL(env, context, b, value);
+  // todo
+  //CHECK_TO_BOOL(env, context, b, value);
 
   *result = v8impl::JsValueFromV8LocalValue(b);
   return GET_RETURN_STATUS(env);

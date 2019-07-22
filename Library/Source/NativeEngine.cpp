@@ -402,7 +402,7 @@ namespace babylon
 
     void NativeEngine::Impl::Initialize(Napi::Env& env)
     {
-        //EngineDefiner::Define(env, this); todo
+        EngineDefiner::Define(env, this);
     }
 
     void NativeEngine::Impl::UpdateSize(float width, float height)
