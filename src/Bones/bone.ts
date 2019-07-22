@@ -246,6 +246,14 @@ export class Bone extends Node {
 
     // Properties (matches AbstractMesh properties)
 
+    /**
+     * Gets the node used to drive the bone's transformation
+     * @returns a transform node or null 
+     */
+    public getTransformNode() {
+        return this._linkedTransformNode;
+    }
+
     /** Gets or sets current position (in local space) */
     public get position(): Vector3 {
         this._decompose();
