@@ -9,6 +9,8 @@ import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { MaterialHelper } from '../../../materialHelper';
 import { VertexBuffer } from '../../../../Meshes/buffer';
+import { InputBlock } from '../Input/inputBlock';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to add morph targets support to vertex shader
@@ -27,9 +29,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("tangent", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerOutput("positionOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("normalOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("tangentOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerOutput("uvOutput", NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
     /**
@@ -62,6 +66,13 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the tangent input component
+     */
+    public get uv(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
+    }
+
+    /**
      * Gets the position output component
      */
     public get positionOutput(): NodeMaterialConnectionPoint {
@@ -82,21 +93,37 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
+    /**
+     * Gets the tangent output component
+     */
+    public get uvOutput(): NodeMaterialConnectionPoint {
+        return this._outputs[3];
+    }
+
     public initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("morphTargetInfluences");
     }
 
     public autoConfigure() {
-        if (this.position.isUndefined) {
-            this.position.setAsAttribute();
+        if (!this.position.isConnected) {
+            let positionInput = new InputBlock("position");
+            positionInput.setAsAttribute("position");
+            positionInput.output.connectTo(this.position);
         }
-        if (this.normal.isUndefined) {
-            this.normal.setAsAttribute();
-            this.normal.define = "NORMAL";
+        if (!this.normal.isConnected) {
+            let normalInput = new InputBlock("normal");
+            normalInput.setAsAttribute("normal");
+            normalInput.output.connectTo(this.normal);
         }
-        if (this.tangent.isUndefined) {
-            this.tangent.setAsAttribute();
-            this.tangent.define = "TANGENT";
+        if (!this.tangent.isConnected) {
+            let tangentInput = new InputBlock("tangent");
+            tangentInput.setAsAttribute("tangent");
+            tangentInput.output.connectTo(this.tangent);
+        }
+        if (!this.uv.isConnected) {
+            let uvInput = new InputBlock("uv");
+            uvInput.setAsAttribute("uv");
+            uvInput.output.connectTo(this.uv);
         }
     }
 
@@ -117,9 +144,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         let position = this.position;
         let normal = this.normal;
         let tangent = this.tangent;
+        let uv = this.uv;
         let positionOutput = this.positionOutput;
         let normalOutput = this.normalOutput;
         let tangentOutput = this.tangentOutput;
+        let uvOutput = this.uvOutput;
         let state = vertexShaderState;
         let repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
         this._repeatebleContentGenerated = repeatCount;
@@ -127,6 +156,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         var manager = (<Mesh>mesh).morphTargetManager;
         var hasNormals = manager && manager.supportsNormals && defines["NORMAL"];
         var hasTangents = manager && manager.supportsTangents && defines["TANGENT"];
+        var hasUVs = manager && manager.supportsUVs && defines["UV1"];
 
         let injectionCode = "";
 
@@ -143,6 +173,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             if (hasTangents) {
                 injectionCode += `#ifdef MORPHTARGETS_TANGENT\r\n`;
                 injectionCode += `${tangentOutput.associatedVariableName}.xyz += (tangent${index} - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
+                injectionCode += `#endif\r\n`;
+            }
+
+            if (hasUVs) {
+                injectionCode += `#ifdef MORPHTARGETS_UV\r\n`;
+                injectionCode += `${uvOutput.associatedVariableName}.xyz += (uv_${index} - ${uv.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
                 injectionCode += `#endif\r\n`;
             }
 
@@ -182,9 +218,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         let position = this.position;
         let normal = this.normal;
         let tangent = this.tangent;
+        let uv = this.uv;
         let positionOutput = this.positionOutput;
         let normalOutput = this.normalOutput;
         let tangentOutput = this.tangentOutput;
+        let uvOutput = this.uvOutput;
         let comments = `//${this.name}`;
 
         state.uniforms.push("morphTargetInfluences");
@@ -201,6 +239,9 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef TANGENT\r\n`;
         state.compilationString += `${this._declareOutput(tangentOutput, state)} = ${tangent.associatedVariableName};\r\n`;
         state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef UV1\r\n`;
+        state.compilationString += `${this._declareOutput(uvOutput, state)} = ${uv.associatedVariableName};\r\n`;
+        state.compilationString += `#endif\r\n`;
 
         // Repeatable content
         this._repeatableContentAnchor = state._repeatableContentAnchor;
@@ -209,3 +250,5 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.MorphTargetsBlock"] = MorphTargetsBlock;

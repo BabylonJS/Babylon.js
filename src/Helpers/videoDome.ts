@@ -9,7 +9,7 @@ import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import "../Meshes/Builders/sphereBuilder";
 import { Nullable } from "../types";
 import { Observer } from "../Misc/observable";
-import { Vector3 } from '../Maths/math';
+import { Vector3 } from '../Maths/math.vector';
 
 declare type Camera = import("../Cameras/camera").Camera;
 

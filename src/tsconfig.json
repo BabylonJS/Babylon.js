@@ -1,8 +1,8 @@
 {
-  "extends": "../tsconfigRules",
-  "compilerOptions": {
-      "types" : [],
-      "baseUrl": "./",
-      "rootDir": "./"
-  }
+    "extends": "../tsconfigRules",
+    "compilerOptions": {
+        "types": [],
+        "baseUrl": "./",
+        "rootDir": "./"
+    }
 }

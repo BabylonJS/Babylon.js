@@ -59,8 +59,15 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
 
         var wireframeOver = mesh.clone();
         wireframeOver.reservedDataStore = { hidden: true };
+
+        // Sets up the mesh to be attached to the parent.
+        // So all neutral in local space.
+        wireframeOver.parent = mesh;
         wireframeOver.position = Vector3.Zero();
-        wireframeOver.setParent(mesh);
+        wireframeOver.scaling = new Vector3(1, 1, 1);
+        wireframeOver.rotation = Vector3.Zero();
+        wireframeOver.rotationQuaternion = null;
+
         var material = new StandardMaterial("wireframeOver", scene);
         material.reservedDataStore = { hidden: true };
         wireframeOver.material = material;
@@ -234,6 +241,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={mesh}
+                    lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={mesh.id} />

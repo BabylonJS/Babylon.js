@@ -2,7 +2,7 @@ import { serialize, serializeAsMatrix, SerializationHelper } from "../../Misc/de
 import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3 } from "../../Maths/math";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { _TimeToken } from "../../Instrumentation/timeToken";

@@ -4,7 +4,8 @@ import { SmartArray } from "../../Misc/smartArray";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Color4 } from "../../Maths/math";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Color4 } from '../../Maths/math.color';
 import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { SubMesh } from "../../Meshes/subMesh";
@@ -17,8 +18,7 @@ import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.renderTarget";
 import { InstancedMesh } from '../../Meshes/instancedMesh';
-
-declare type Engine = import("../../Engines/engine").Engine;
+import { Engine } from '../../Engines/engine';
 
 /**
  * This Helps creating a texture that will be created from a camera in your scene.
@@ -734,10 +734,10 @@ export class RenderTargetTexture extends Texture {
     private _bestReflectionRenderTargetDimension(renderDimension: number, scale: number): number {
         let minimum = 128;
         let x = renderDimension * scale;
-        let curved = Tools.NearestPOT(x + (minimum * minimum / (minimum + x)));
+        let curved = Engine.NearestPOT(x + (minimum * minimum / (minimum + x)));
 
         // Ensure we don't exceed the render dimension (while staying POT)
-        return Math.min(Tools.FloorPOT(renderDimension), curved);
+        return Math.min(Engine.FloorPOT(renderDimension), curved);
     }
 
     /**

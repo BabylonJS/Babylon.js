@@ -1,7 +1,6 @@
 import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Color3, Color4, Viewport } from "../Maths/math";
 import { Engine, EngineCapabilities } from "../Engines/engine";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -12,6 +11,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { Constants } from "./constants";
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { IColor4Like, IViewportLike } from '../Maths/math.like';
 
 declare const global: any;
 
@@ -158,7 +158,7 @@ export class NullEngine extends Engine {
         return buffer;
     }
 
-    public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: IColor4Like, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
     }
 
     public getRenderWidth(useScreen = false): number {
@@ -177,7 +177,7 @@ export class NullEngine extends Engine {
         return this._options.renderHeight;
     }
 
-    public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
+    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
     }
 
@@ -252,9 +252,6 @@ export class NullEngine extends Engine {
     public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
     }
 
-    public setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void {
-    }
-
     public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
     }
 
@@ -274,12 +271,6 @@ export class NullEngine extends Engine {
     }
 
     public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
-    }
-
-    public setColor3(uniform: WebGLUniformLocation, color3: Color3): void {
-    }
-
-    public setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void {
     }
 
     public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {

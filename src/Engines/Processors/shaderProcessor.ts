@@ -1,4 +1,3 @@
-import { Tools } from '../../Misc/tools';
 import { ShaderCodeNode } from './shaderCodeNode';
 import { ShaderCodeCursor } from './shaderCodeCursor';
 import { ShaderCodeConditionNode } from './shaderCodeConditionNode';
@@ -9,6 +8,7 @@ import { ShaderDefineAndOperator } from './Expressions/Operators/shaderDefineAnd
 import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
 import { ProcessingOptions } from './shaderProcessingOptions';
+import { FileTools } from '../../Misc/fileTools';
 
 /** @hidden */
 export class ShaderProcessor {
@@ -331,7 +331,7 @@ export class ShaderProcessor {
             } else {
                 var includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
-                Tools.LoadFile(includeShaderUrl, (fileContent) => {
+                FileTools.LoadFile(includeShaderUrl, (fileContent) => {
                     options.includesShadersStore[includeFile] = fileContent as string;
                     this._ProcessIncludes(<string>returnValue, options, callback);
                 });

@@ -1,12 +1,12 @@
 import { Nullable } from "../../types";
-import { IAnimatable } from "../../Misc/tools";
 import { SerializationHelper, serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
-import { Color3 } from "../../Maths/math";
+import { Color3 } from '../../Maths/math.color';
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { EffectFallbacks } from "../../Materials/effect";
 import { MaterialFlags } from "../materialFlags";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { MaterialHelper } from "../../Materials/materialHelper";
+import { IAnimatable } from '../../Animations/animatable.interface';
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
@@ -40,11 +40,11 @@ export class PBRClearCoatConfiguration {
      */
     private static readonly _DefaultIndexOfRefraction = 1.5;
 
-    @serialize()
     private _isEnabled = false;
     /**
      * Defines if the clear coat is enabled in the material.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
@@ -60,7 +60,6 @@ export class PBRClearCoatConfiguration {
     @serialize()
     public roughness: number = 0;
 
-    @serialize()
     private _indexOfRefraction = PBRClearCoatConfiguration._DefaultIndexOfRefraction;
     /**
      * Defines the index of refraction of the clear coat.
@@ -68,30 +67,31 @@ export class PBRClearCoatConfiguration {
      * The default fits with a polyurethane material.
      * Changing the default value is more performance intensive.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public indexOfRefraction = PBRClearCoatConfiguration._DefaultIndexOfRefraction;
 
-    @serializeAsTexture()
     private _texture: Nullable<BaseTexture> = null;
     /**
      * Stores the clear coat values in a texture.
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
 
-    @serializeAsTexture()
     private _bumpTexture: Nullable<BaseTexture> = null;
     /**
      * Define the clear coat specific bump texture.
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public bumpTexture: Nullable<BaseTexture> = null;
 
-    @serialize()
     private _isTintEnabled = false;
     /**
      * Defines if the clear coat tint is enabled in the material.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isTintEnabled = false;
 
@@ -117,13 +117,13 @@ export class PBRClearCoatConfiguration {
     @serialize()
     public tintThickness: number = 1;
 
-    @serializeAsTexture()
     private _tintTexture: Nullable<BaseTexture> = null;
     /**
      * Stores the clear tint values in a texture.
      * rgb is tint
      * a is a thickness factor
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public tintTexture: Nullable<BaseTexture> = null;
 
@@ -269,7 +269,7 @@ export class PBRClearCoatConfiguration {
             const b = 1 + this._indexOfRefraction;
             const f0 = Math.pow((-a / b), 2); // Schlicks approx: (ior1 - ior2) / (ior1 + ior2) where ior2 for air is close to vacuum = 1.
             const eta = 1 / this._indexOfRefraction;
-            uniformBuffer.updateFloat4("vClearCoatRefractionParams", f0, eta, a,  b);
+            uniformBuffer.updateFloat4("vClearCoatRefractionParams", f0, eta, a, b);
 
             if (this._isTintEnabled) {
                 uniformBuffer.updateFloat4("vClearCoatTintParams",
@@ -456,10 +456,12 @@ export class PBRClearCoatConfiguration {
     }
 
     /**
-     * Parses a Clear Coat Configuration from a serialized object.
+     * Parses a anisotropy Configuration from a serialized object.
      * @param source - Serialized object.
+     * @param scene Defines the scene we are parsing for
+     * @param rootUrl Defines the rootUrl to load from
      */
-    public parse(source: any): void {
-        SerializationHelper.Parse(() => this, source, null);
+    public parse(source: any, scene: Scene, rootUrl: string): void {
+        SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }

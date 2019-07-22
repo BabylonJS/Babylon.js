@@ -3,6 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockCo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to create a Color4 out of 4 inputs (one for each component)
@@ -15,10 +16,10 @@ export class RGBAMergerBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
+        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4, true);
         this.registerInput("r", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("g", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("b", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color4);
@@ -36,28 +37,28 @@ export class RGBAMergerBlock extends NodeMaterialBlock {
      * Gets the R input component
      */
     public get r(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
+        return this._inputs[1];
     }
 
     /**
      * Gets the G input component
      */
     public get g(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
+        return this._inputs[2];
     }
 
     /**
      * Gets the B input component
      */
     public get b(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[3];
     }
 
     /**
      * Gets the RGB input component
      */
     public get rgb(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[0];
     }
 
     /**
@@ -87,9 +88,12 @@ export class RGBAMergerBlock extends NodeMaterialBlock {
             let rInput = this._inputs[0];
             let gInput = this._inputs[1];
             let bInput = this._inputs[2];
+
             state.compilationString += this._declareOutput(output, state) + ` = vec4(${this._writeVariable(rInput)}, ${this._writeVariable(gInput)}, ${this._writeVariable(bInput)}, ${this._writeVariable(aInput)});\r\n`;
         }
 
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.RGBAMergerBlock"] = RGBAMergerBlock;

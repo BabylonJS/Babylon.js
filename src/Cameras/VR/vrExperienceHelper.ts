@@ -9,7 +9,8 @@ import { VRDeviceOrientationFreeCamera } from "../../Cameras/VR/vrDeviceOrientat
 import { WebVROptions, WebVRFreeCamera } from "../../Cameras/VR/webVRCamera";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Scene, IDisposable } from "../../scene";
-import { Quaternion, Matrix, Vector3, Color3, Color4, Axis } from "../../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../../Maths/math.vector";
+import { Color3, Color4 } from '../../Maths/math.color';
 import { Gamepad, StickValues } from "../../Gamepads/gamepad";
 import { PoseEnabledController, PoseEnabledControllerType } from "../../Gamepads/Controllers/poseEnabledController";
 import { WebVRController } from "../../Gamepads/Controllers/webVRController";
@@ -34,6 +35,7 @@ import "../../Meshes/Builders/cylinderBuilder";
 
 import "../../Gamepads/gamepadSceneComponent";
 import "../../Animations/animatable";
+import { Axis } from '../../Maths/math.axis';
 
 /**
  * Options to modify the vr teleportation behavior.
@@ -296,7 +298,7 @@ export class OnAfterEnteringVRObservableEvent {
 export class VRExperienceHelper {
     private _scene: Scene;
     private _position: Vector3;
-    private _btnVR: HTMLButtonElement;
+    private _btnVR: Nullable<HTMLButtonElement>;
     private _btnVRDisplayed: boolean;
 
     // Can the system support WebVR, even if a headset isn't plugged in?
@@ -324,6 +326,11 @@ export class VRExperienceHelper {
     private _onVRDisplayChanged: (eventArgs: IDisplayChangedEventArgs) => void;
     private _onVRRequestPresentStart: () => void;
     private _onVRRequestPresentComplete: (success: boolean) => void;
+
+    /**
+     * Gets or sets a boolean indicating that the VREXperienceHelper will exit VR if double tap is detected
+     */
+    public exitVROnDoubleTap = true;
 
     /**
      * Observable raised right before entering VR.
@@ -614,6 +621,13 @@ export class VRExperienceHelper {
         return this._vrDeviceOrientationCamera;
     }
 
+    /**
+     * The html button that is used to trigger entering into VR.
+     */
+    public get vrButton(): Nullable<HTMLButtonElement> {
+        return this._btnVR;
+    }
+
     private get _teleportationRequestInitiated(): boolean {
         var result = this._cameraGazer._teleportationRequestInitiated
             || (this._leftController !== null && this._leftController._teleportationRequestInitiated)
@@ -780,7 +794,7 @@ export class VRExperienceHelper {
 
         // Exiting VR mode double tapping the touch screen
         this._scene.onPrePointerObservable.add(() => {
-            if (this.isInVRMode) {
+            if (this.isInVRMode && this.exitVROnDoubleTap) {
                 this.exitVR();
                 if (this._fullscreenVRpresenting) {
                     this._scene.getEngine().exitFullscreen();
@@ -825,7 +839,7 @@ export class VRExperienceHelper {
                 if (scene.activeCamera === this.vrDeviceOrientationCamera && (e.event as PointerEvent).pointerType === "mouse") {
                     if (e.type === PointerEventTypes.POINTERDOWN) {
                         this._cameraGazer._selectionPointerDown();
-                    }else if (e.type === PointerEventTypes.POINTERUP) {
+                    } else if (e.type === PointerEventTypes.POINTERUP) {
                         this._cameraGazer._selectionPointerUp();
                     }
                 }
@@ -880,7 +894,7 @@ export class VRExperienceHelper {
         }
         if (!this._fullscreenVRpresenting && this._canvas) {
             this.exitVR();
-            if (!this._useCustomVRButton) {
+            if (!this._useCustomVRButton && this._btnVR) {
                 this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
                 this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
             }
@@ -919,14 +933,15 @@ export class VRExperienceHelper {
     }
 
     private moveButtonToBottomRight() {
-        if (this._canvas && !this._useCustomVRButton) {
-            this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
-            this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+        if (this._canvas && !this._useCustomVRButton && this._btnVR) {
+            const rect: ClientRect = this._canvas.getBoundingClientRect();
+            this._btnVR.style.top = rect.top + rect.height - 70 + "px";
+            this._btnVR.style.left = rect.left + rect.width - 100 + "px";
         }
     }
 
     private displayVRButton() {
-        if (!this._useCustomVRButton && !this._btnVRDisplayed) {
+        if (!this._useCustomVRButton && !this._btnVRDisplayed && this._btnVR) {
             document.body.appendChild(this._btnVR);
             this._btnVRDisplayed = true;
         }
@@ -1002,7 +1017,7 @@ export class VRExperienceHelper {
         if (this._webVRready) {
             if (!this._webVRpresenting) {
                 this._scene.getEngine().onVRRequestPresentComplete.addOnce((result) => {
-                    this.onAfterEnteringVRObservable.notifyObservers({success: result});
+                    this.onAfterEnteringVRObservable.notifyObservers({ success: result });
                 });
                 this._webVRCamera.position = this._position;
                 this._scene.activeCamera = this._webVRCamera;
@@ -1017,7 +1032,7 @@ export class VRExperienceHelper {
             this._scene.getEngine().enterFullscreen(this.requestPointerLockOnFullScreen);
             this.updateButtonVisibility();
             this._vrDeviceOrientationCamera.onViewMatrixChangedObservable.addOnce(() => {
-                this.onAfterEnteringVRObservable.notifyObservers({success: true});
+                this.onAfterEnteringVRObservable.notifyObservers({ success: true });
             });
         }
 
@@ -2027,7 +2042,7 @@ export class VRExperienceHelper {
         if (this._vrDeviceOrientationCamera) {
             this._vrDeviceOrientationCamera.dispose();
         }
-        if (!this._useCustomVRButton && this._btnVR.parentNode) {
+        if (!this._useCustomVRButton  && this._btnVR && this._btnVR.parentNode) {
             document.body.removeChild(this._btnVR);
         }
 

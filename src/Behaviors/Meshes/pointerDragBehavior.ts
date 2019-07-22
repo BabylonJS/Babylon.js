@@ -4,7 +4,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Observer, Observable } from "../../Misc/observable";
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Ray } from "../../Culling/ray";
 import { PivotTools } from '../../Misc/pivotTools';
@@ -82,6 +82,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      *  If the drag behavior will react to drag events (Default: true)
      */
     public enabled = true;
+
+    /**
+     * If pointer events should start and release the drag (Default: true)
+     */
+    public startAndReleaseDragOnPointerEvents = true;
     /**
      * If camera controls should be detached during the drag
      */
@@ -147,7 +152,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             if (this._debugMode) {
                 PointerDragBehavior._planeScene = this._scene;
             } else {
-                PointerDragBehavior._planeScene = new Scene(this._scene.getEngine(), {virtual: true});
+                PointerDragBehavior._planeScene = new Scene(this._scene.getEngine(), { virtual: true });
                 PointerDragBehavior._planeScene.detachControl();
                 this._scene.onDisposeObservable.addOnce(() => {
                     PointerDragBehavior._planeScene.dispose();
@@ -171,11 +176,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
 
-                if (!this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.pickedPoint && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)) {
+                if (this.startAndReleaseDragOnPointerEvents && !this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.pickedPoint && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)) {
                     this._startDrag((<PointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
-                if (this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
+                if (this.startAndReleaseDragOnPointerEvents && this.currentDraggingPointerID == (<PointerEvent>pointerInfo.event).pointerId) {
                     this.releaseDrag();
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
@@ -309,8 +314,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             var dragLength = 0;
             // depending on the drag mode option drag accordingly
             if (this._options.dragAxis) {
-                // Convert local drag axis to world
-                Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis);
+                // Convert local drag axis to world if useObjectOrienationForDragging
+                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis) : this._worldDragAxis.copyFrom(this._options.dragAxis);
 
                 // Project delta drag from the drag plane onto the drag axis
                 pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);

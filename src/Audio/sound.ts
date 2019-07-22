@@ -1,6 +1,6 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { Vector3, Tmp } from "../Maths/math";
+import { Vector3, TmpVectors } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
@@ -8,6 +8,71 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TransformNode } from "../Meshes/transformNode";
 import { Logger } from "../Misc/logger";
 import { _DevTools } from '../Misc/devTools';
+
+/**
+ * Interface used to define options for Sound class
+ */
+export interface ISoundOptions {
+    /**
+    * Does the sound autoplay once loaded.
+    */
+    autoplay?: boolean;
+    /**
+     * Does the sound loop after it finishes playing once.
+     */
+    loop?: boolean;
+    /**
+     * Sound's volume
+     */
+    volume?: number;
+    /**
+     * Is it a spatial sound?
+     */
+    spatialSound?: boolean;
+    /**
+     * Maximum distance to hear that sound
+     */
+    maxDistance?: number;
+    /**
+     * Uses user defined attenuation function
+     */
+    useCustomAttenuation?: boolean;
+    /**
+    * Define the roll off factor of spatial sounds.
+    * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+    */
+    rolloffFactor?: number;
+    /**
+     * Define the reference distance the sound should be heard perfectly.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     */
+    refDistance?: number;
+    /**
+     * Define the distance attenuation model the sound will follow.
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     */
+    distanceModel?: string;
+    /**
+     * Defines the playback speed (1 by default)
+     */
+    playbackRate?: number;
+    /**
+     * Defines if the sound is from a streaming source
+     */
+    streaming?: boolean;
+    /**
+     * Defines an optional length (in seconds) inside the sound file
+     */
+    length?: number;
+    /**
+     * Defines an optional offset (in seconds) inside the sound file
+     */
+    offset?: number;
+    /**
+     * If true, URLs will not be required to state the audio file codec to use.
+     */
+    skipCodecCheck?: boolean;
+}
 
 /**
  * Defines a sound that can be played in the application.
@@ -113,6 +178,8 @@ export class Sound {
     private _isOutputConnected = false;
     private _htmlAudioElement: HTMLAudioElement;
     private _urlType: 'Unknown' | 'String' | 'Array' | 'ArrayBuffer' | 'MediaStream' = "Unknown";
+    private _length?: number;
+    private _offset?: number;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -127,7 +194,7 @@ export class Sound {
     * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
     * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
     */
-    constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback: Nullable<() => void> = null, options?: any) {
+    constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback: Nullable<() => void> = null, options?: ISoundOptions) {
         this.name = name;
         this._scene = scene;
         Sound._SceneComponentInitialization(scene);
@@ -157,6 +224,8 @@ export class Sound {
             this.distanceModel = options.distanceModel || "linear";
             this._playbackRate = options.playbackRate || 1;
             this._streaming = options.streaming || false;
+            this._length = options.length;
+            this._offset = options.offset;
         }
 
         if (Engine.audioEngine.canUseWebAudio && Engine.audioEngine.audioContext) {
@@ -193,7 +262,7 @@ export class Sound {
                             this._streamingSource = Engine.audioEngine.audioContext.createMediaStreamSource(urlOrArrayBuffer);
 
                             if (this.autoplay) {
-                                this.play();
+                                this.play(0, this._offset, this._length);
                             }
 
                             if (this._readyToPlayCallback) {
@@ -213,18 +282,11 @@ export class Sound {
                             // If we found a supported format, we load it immediately and stop the loop
                             for (var i = 0; i < urls.length; i++) {
                                 var url = urls[i];
-                                if (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) {
-                                    codecSupportedFound = true;
-                                }
-                                if (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) {
-                                    codecSupportedFound = true;
-                                }
-                                if (url.indexOf(".wav", url.length - 4) !== -1) {
-                                    codecSupportedFound = true;
-                                }
-                                if (url.indexOf("blob:") !== -1) {
-                                    codecSupportedFound = true;
-                                }
+                                codecSupportedFound = (options && options.skipCodecCheck) ||
+                                    (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) ||
+                                    (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) ||
+                                    (url.indexOf(".wav", url.length - 4) !== -1) ||
+                                    (url.indexOf("blob:") !== -1);
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
                                     if (!this._streaming) {
@@ -248,7 +310,7 @@ export class Sound {
                                         this._htmlAudioElement.addEventListener("canplaythrough", () => {
                                             this._isReadyToPlay = true;
                                             if (this.autoplay) {
-                                                this.play();
+                                                this.play(0, this._offset, this._length);
                                             }
                                             if (this._readyToPlayCallback) {
                                                 this._readyToPlayCallback();
@@ -368,7 +430,7 @@ export class Sound {
         Engine.audioEngine.audioContext.decodeAudioData(audioData, (buffer) => {
             this._audioBuffer = buffer;
             this._isReadyToPlay = true;
-            if (this.autoplay) { this.play(); }
+            if (this.autoplay) { this.play(0, this._offset, this._length); }
             if (this._readyToPlayCallback) { this._readyToPlayCallback(); }
         }, (err: any) => { Logger.Error("Error while decoding audio data for: " + this.name + " / Error: " + err); });
     }
@@ -388,7 +450,7 @@ export class Sound {
      * Updates the current sounds options such as maxdistance, loop...
      * @param options A JSON object containing values named as the object properties
      */
-    public updateOptions(options: any): void {
+    public updateOptions(options: ISoundOptions): void {
         if (options) {
             this.loop = options.loop || this.loop;
             this.maxDistance = options.maxDistance || this.maxDistance;
@@ -397,6 +459,8 @@ export class Sound {
             this.refDistance = options.refDistance || this.refDistance;
             this.distanceModel = options.distanceModel || this.distanceModel;
             this._playbackRate = options.playbackRate || this._playbackRate;
+            this._length = options.length ? options.length / 1000 : undefined;
+            this._offset = options.offset ? options.offset / 1000 : undefined;
             this._updateSpatialParameters();
             if (this.isPlaying) {
                 if (this._streaming && this._htmlAudioElement) {
@@ -501,7 +565,7 @@ export class Sound {
 
         if (this.isPlaying && this.loop) {
             this.stop();
-            this.play();
+            this.play(0, this._offset, this._length);
         }
     }
 
@@ -608,9 +672,10 @@ export class Sound {
     /**
     * Play the sound
     * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-    * @param offset (optional) Start the sound setting it at a specific time
+    * @param offset (optional) Start the sound at a specific time in seconds
+    * @param length (optional) Sound duration (in seconds)
     */
-    public play(time?: number, offset?: number): void {
+    public play(time?: number, offset?: number, length?: number): void {
         if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine.audioContext) {
             try {
                 if (this._startOffset < 0) {
@@ -678,14 +743,24 @@ export class Sound {
                 else {
                     var tryToPlay = () => {
                         if (Engine.audioEngine.audioContext) {
+                            length = length || this._length;
+                            offset = offset || this._offset;
+
                             this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
                             this._soundSource.buffer = this._audioBuffer;
                             this._soundSource.connect(this._inputAudioNode);
                             this._soundSource.loop = this.loop;
+                            if (offset !== undefined) {
+                                this._soundSource.loopStart = offset;
+                            }
+                            if (length !== undefined) {
+                                this._soundSource.loopEnd = (offset! | 0) + length!;
+                            }
                             this._soundSource.playbackRate.value = this._playbackRate;
                             this._soundSource.onended = () => { this._onended(); };
                             startTime = time ? Engine.audioEngine.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
-                            this._soundSource!.start(startTime, this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0);
+                            const actualOffset = this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0;
+                            this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                         }
                     };
 
@@ -835,7 +910,7 @@ export class Sound {
             this._createSpatialParameters();
             if (this.isPlaying && this.loop) {
                 this.stop();
-                this.play();
+                this.play(0, this._offset, this._length);
             }
         }
         this._onRegisterAfterWorldMatrixUpdate(this._connectedTransformNode);
@@ -861,8 +936,8 @@ export class Sound {
         }
         let mesh = node as AbstractMesh;
         if (this._positionInEmitterSpace) {
-            mesh.worldMatrixFromCache.invertToRef(Tmp.Matrix[0]);
-            this.setPosition(Tmp.Matrix[0].getTranslation());
+            mesh.worldMatrixFromCache.invertToRef(TmpVectors.Matrix[0]);
+            this.setPosition(TmpVectors.Matrix[0].getTranslation());
         }
         else {
             let boundingInfo = mesh.getBoundingInfo();
@@ -883,7 +958,7 @@ export class Sound {
                 if (this._isReadyToPlay) {
                     clonedSound._audioBuffer = this.getAudioBuffer();
                     clonedSound._isReadyToPlay = true;
-                    if (clonedSound.autoplay) { clonedSound.play(); }
+                    if (clonedSound.autoplay) { clonedSound.play(0, this._offset, this._length); }
                 }
                 else {
                     window.setTimeout(setBufferAndRun, 300);
@@ -1000,7 +1075,7 @@ export class Sound {
                 if (sourceSound._isReadyToPlay) {
                     newSound._audioBuffer = sourceSound.getAudioBuffer();
                     newSound._isReadyToPlay = true;
-                    if (newSound.autoplay) { newSound.play(); }
+                    if (newSound.autoplay) { newSound.play(0, newSound._offset, newSound._length); }
                 }
                 else {
                     window.setTimeout(setBufferAndRun, 300);

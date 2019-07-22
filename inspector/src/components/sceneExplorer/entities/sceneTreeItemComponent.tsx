@@ -14,7 +14,7 @@ import { GlobalState } from "../../globalState";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { PropertyChangedEvent } from '../../../components/propertyChangedEvent';
 import { LightGizmo } from 'babylonjs/Gizmos/lightGizmo';
-import { Tmp, Vector3 } from 'babylonjs/Maths/math';
+import { TmpVectors, Vector3 } from 'babylonjs/Maths/math';
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
@@ -140,9 +140,9 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                             return true;
                         }
 
-                        let p0p1 = Tmp.Vector3[0];
-                        let p1p2 = Tmp.Vector3[1];
-                        let normal = Tmp.Vector3[2];
+                        let p0p1 = TmpVectors.Vector3[0];
+                        let p1p2 = TmpVectors.Vector3[1];
+                        let normal = TmpVectors.Vector3[2];
 
                         p1.subtractToRef(p0, p0p1);
                         p2.subtractToRef(p1, p1p2);

@@ -1,4 +1,4 @@
-import { IAnimatable } from "../Misc/tools";
+import { IAnimatable } from '../Animations/animatable.interface';
 import { Observable } from "../Misc/observable";
 import { Nullable, FloatArray } from "../types";
 import { Scene } from "../scene";
@@ -25,6 +25,7 @@ export class MorphTarget implements IAnimatable {
     private _positions: Nullable<FloatArray> = null;
     private _normals: Nullable<FloatArray> = null;
     private _tangents: Nullable<FloatArray> = null;
+    private _uvs: Nullable<FloatArray> = null;
     private _influence: number;
 
     /**
@@ -112,6 +113,13 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
+     * Gets a boolean defining if the target contains texture coordinates data
+     */
+    public get hasUVs(): boolean {
+        return !!this._uvs;
+    }
+
+    /**
      * Affects position data to this target
      * @param data defines the position data to use
      */
@@ -178,6 +186,28 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
+     * Affects texture coordinates data to this target
+     * @param data defines the texture coordinates data to use
+     */
+    public setUVs(data: Nullable<FloatArray>) {
+        const hadUVs = this.hasUVs;
+
+        this._uvs = data;
+
+        if (hadUVs !== this.hasUVs) {
+            this._onDataLayoutChanged.notifyObservers(undefined);
+        }
+    }
+
+    /**
+     * Gets the texture coordinates data stored in this target
+     * @returns a FloatArray containing the texture coordinates data (or null if not present)
+     */
+    public getUVs(): Nullable<FloatArray> {
+        return this._uvs;
+    }
+
+    /**
      * Serializes the current target into a Serialization object
      * @returns the serialized object
      */
@@ -196,6 +226,9 @@ export class MorphTarget implements IAnimatable {
         }
         if (this.hasTangents) {
             serializationObject.tangents = Array.prototype.slice.call(this.getTangents());
+        }
+        if (this.hasUVs) {
+            serializationObject.uvs = Array.prototype.slice.call(this.getUVs());
         }
 
         // Animations
@@ -233,6 +266,9 @@ export class MorphTarget implements IAnimatable {
         if (serializationObject.tangents) {
             result.setTangents(serializationObject.tangents);
         }
+        if (serializationObject.uvs) {
+            result.setUVs(serializationObject.uvs);
+        }
 
         // Animations
         if (serializationObject.animations) {
@@ -269,6 +305,9 @@ export class MorphTarget implements IAnimatable {
         }
         if (mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
             result.setTangents(<FloatArray>mesh.getVerticesData(VertexBuffer.TangentKind));
+        }
+        if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+            result.setUVs(<FloatArray>mesh.getVerticesData(VertexBuffer.UVKind));
         }
 
         return result;

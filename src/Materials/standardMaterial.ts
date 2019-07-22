@@ -1,11 +1,12 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
 import { Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
-import { IAnimatable } from "../Misc/tools";
+import { IAnimatable } from '../Animations/animatable.interface';
 
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Color3 } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
+import { Color3 } from '../Maths/math.color';
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -107,6 +108,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public MORPHTARGETS = false;
     public MORPHTARGETS_NORMAL = false;
     public MORPHTARGETS_TANGENT = false;
+    public MORPHTARGETS_UV = false;
     public NUM_MORPH_INFLUENCERS = 0;
     public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
     public PREMULTIPLYALPHA = false; // https://playground.babylonjs.com#LNVJJ7

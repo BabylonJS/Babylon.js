@@ -7,6 +7,7 @@ import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to add image processing support to fragment shader
@@ -139,3 +140,5 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ImageProcessingBlock"] = ImageProcessingBlock;

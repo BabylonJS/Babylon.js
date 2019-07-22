@@ -2,11 +2,11 @@ import {
     DiagramEngine,
     DiagramModel,
     DiagramWidget,
-    MoveCanvasAction,
     LinkModel
 } from "storm-react-diagrams";
 
 import * as React from "react";
+import * as dagre from "dagre";
 import { GlobalState } from './globalState';
 
 import { GenericNodeFactory } from './components/diagram/generic/genericNodeFactory';
@@ -19,15 +19,21 @@ import { Portal } from './portal';
 import { TextureNodeFactory } from './components/diagram/texture/textureNodeFactory';
 import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
 import { TextureNodeModel } from './components/diagram/texture/textureNodeModel';
-import { DefaultPortModel } from './components/diagram/defaultPortModel';
+import { DefaultPortModel } from './components/diagram/port/defaultPortModel';
 import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
 import { InputNodeModel } from './components/diagram/input/inputNodeModel';
-import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
-import { Vector2, Vector3, Vector4, Matrix, Color3, Color4 } from 'babylonjs/Maths/math';
-import { LogComponent } from './components/log/logComponent';
+import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
+import { LogComponent, LogEntry } from './components/log/logComponent';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { LightNodeModel } from './components/diagram/light/lightNodeModel';
 import { LightNodeFactory } from './components/diagram/light/lightNodeFactory';
+import { DataStorage } from './dataStorage';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+import { Nullable } from 'babylonjs/types';
+import { MessageDialogComponent } from './sharedComponents/messageDialog';
+import { BlockTools } from './blockTools';
+import { AdvancedLinkFactory } from './components/diagram/link/advancedLinkFactory';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -52,15 +58,21 @@ interface IGraphEditorProps {
 }
 
 export class NodeCreationOptions {
-    column: number;
-    nodeMaterialBlock?: NodeMaterialBlock;
+    nodeMaterialBlock: NodeMaterialBlock;
     type?: string;
     connection?: NodeMaterialConnectionPoint;
 }
 
 export class GraphEditor extends React.Component<IGraphEditorProps> {
+    private readonly NodeWidth = 100;
     private _engine: DiagramEngine;
     private _model: DiagramModel;
+
+    private _startX: number;
+    private _moveInProgress: boolean;
+
+    private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
+    private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
     private _nodes = new Array<DefaultNodeModel>();
 
@@ -68,49 +80,33 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     public _toAdd: LinkModel[] | null = [];
 
     /**
-     * Current row/column position used when adding new nodes
-     */
-    private _rowPos = new Array<number>();
-
-    /**
      * Creates a node and recursivly creates its parent nodes from it's input
      * @param nodeMaterialBlock 
      */
     public createNodeFromObject(options: NodeCreationOptions) {
-        // Update rows/columns
-        if (this._rowPos[options.column] == undefined) {
-            this._rowPos[options.column] = 0;
-        } else {
-            this._rowPos[options.column]++;
-        }
-
         // Create new node in the graph
         var newNode: DefaultNodeModel;
         var filterInputs = [];
 
-        if (options.nodeMaterialBlock) {
-            if (options.nodeMaterialBlock instanceof TextureBlock) {
-                newNode = new TextureNodeModel();
-                filterInputs.push("uv");
-            } else if (options.nodeMaterialBlock instanceof LightBlock) {
-                newNode = new LightNodeModel();
-                filterInputs.push("worldPosition");
-                filterInputs.push("worldNormal");
-                filterInputs.push("cameraPosition");
-            } else {
-                newNode = new GenericNodeModel();
-            }
-
-            if (options.nodeMaterialBlock.isFinalMerger) {
-                this.props.globalState.nodeMaterial!.addOutputNode(options.nodeMaterialBlock);
-            }
-
-        } else {
+        if (options.nodeMaterialBlock instanceof TextureBlock) {
+            newNode = new TextureNodeModel();
+            filterInputs.push("uv");
+        } else if (options.nodeMaterialBlock instanceof LightBlock) {
+            newNode = new LightNodeModel();
+            filterInputs.push("worldPosition");
+            filterInputs.push("worldNormal");
+            filterInputs.push("cameraPosition");
+        } else if (options.nodeMaterialBlock instanceof InputBlock) {
             newNode = new InputNodeModel();
-            (newNode as InputNodeModel).connection = options.connection;
+        } else {
+            newNode = new GenericNodeModel();
         }
+
+        if (options.nodeMaterialBlock.isFinalMerger) {
+            this.props.globalState.nodeMaterial!.addOutputNode(options.nodeMaterialBlock);
+        }
+
         this._nodes.push(newNode)
-        newNode.setPosition(1600 - (300 * options.column), 210 * this._rowPos[options.column])
         this._model.addAll(newNode);
 
         if (options.nodeMaterialBlock) {
@@ -145,6 +141,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine.registerNodeFactory(new TextureNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new LightNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new InputNodeFactory(this.props.globalState));
+        this._engine.registerLinkFactory(new AdvancedLinkFactory());
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
             if (this.props.globalState.nodeMaterial) {
@@ -154,7 +151,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         });
 
         this.props.globalState.onResetRequiredObservable.add(() => {
-            this._rowPos = [];
             this.build();
             if (this.props.globalState.nodeMaterial) {
                 this.buildMaterial();
@@ -169,7 +165,65 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this._engine.zoomToFit();
         });
 
-        this.build();
+        this.props.globalState.onReOrganizedRequiredObservable.add(() => {
+            this.reOrganize();
+        })
+
+        this.build(true);
+    }
+
+    distributeGraph() {
+        let nodes = this.mapElements();
+        let edges = this.mapEdges();
+        let graph = new dagre.graphlib.Graph();
+        graph.setGraph({});
+        graph.setDefaultEdgeLabel(() => ({}));
+        graph.graph().rankdir = "LR";
+        //add elements to dagre graph
+        nodes.forEach(node => {
+            graph.setNode(node.id, node.metadata);
+        });
+        edges.forEach(edge => {
+            if (edge.from && edge.to) {
+                graph.setEdge(edge.from.id, edge.to.id);
+            }
+        });
+        //auto-distribute
+        dagre.layout(graph);
+        return graph.nodes().map(node => graph.node(node));
+    }
+
+    mapElements() {
+        let output = [];
+
+        // dagre compatible format
+        for (var nodeName in this._model.nodes) {
+            let node = this._model.nodes[nodeName];
+            let size = {
+                width: node.width | 200,
+                height: node.height | 100
+            };
+            output.push({ id: node.id, metadata: { ...size, id: node.id } });
+        }
+
+        return output;
+    }
+
+    mapEdges() {
+        // returns links which connects nodes
+        // we check are there both from and to nodes in the model. Sometimes links can be detached
+        let output = [];
+
+        for (var linkName in this._model.links) {
+            let link = this._model.links[linkName];
+
+            output.push({
+                from: link.sourcePort!.parent,
+                to: link.targetPort!.parent
+            });
+        }
+
+        return output;
     }
 
     buildMaterial() {
@@ -179,20 +233,20 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         try {
             this.props.globalState.nodeMaterial.build(true);
-            this.props.globalState.onLogRequiredObservable.notifyObservers("Node material build successful");
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
         }
         catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(err);
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
     }
 
-    build() {
+    build(needToWait = false) {
         // setup the diagram model
         this._model = new DiagramModel();
 
         // Listen to events
         this._model.addListener({
-            nodesUpdated: (e) => {
+            nodesUpdated: (e) => {                
                 if (!e.isCreated) {
                     // Block is deleted
                     let targetBlock = (e.node as GenericNodeModel).block;
@@ -200,30 +254,54 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     if (targetBlock && targetBlock.isFinalMerger) {
                         this.props.globalState.nodeMaterial!.removeOutputNode(targetBlock);
                     }
+
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 }
             },
             linksUpdated: (e) => {
                 if (!e.isCreated) {
                     // Link is deleted
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    var link = DefaultPortModel.SortInputOutput(e.link.sourcePort as DefaultPortModel, e.link.targetPort as DefaultPortModel);
+                    let sourcePort = e.link.sourcePort as DefaultPortModel;
+
+                    var link = DefaultPortModel.SortInputOutput(sourcePort, e.link.targetPort as DefaultPortModel);
                     if (link) {
-                        if (link.input.connection) {
-                            if (link.output.connection) {
+                        if (link.input.connection && link.output.connection) {
+                            if (link.input.connection.connectedPoint) {
                                 // Disconnect standard nodes
-                                link.output.connection.disconnectFrom(link.input.connection)
-                                link.input.syncWithNodeMaterialConnectionPoint(link.input.connection)
-                                link.output.syncWithNodeMaterialConnectionPoint(link.output.connection)
-                            } else if (link.input.connection.value) {
-                                link.input.connection.value = null;
+                                link.output.connection.disconnectFrom(link.input.connection);
+                                link.input.syncWithNodeMaterialConnectionPoint(link.input.connection);
+                                link.output.syncWithNodeMaterialConnectionPoint(link.output.connection);
                             }
                         }
+                    } else {
+                        if (!e.link.targetPort && e.link.sourcePort && (e.link.sourcePort as DefaultPortModel).position === "input") {
+                            // Drag from input port, we are going to build an input for it                            
+                            let input = e.link.sourcePort as DefaultPortModel;
+                            let nodeModel = this.addValueNode(BlockTools.GetStringFromConnectionNodeType(input.connection!.type));
+                            let link = nodeModel.ports.output.link(input);
+
+                            nodeModel.x = e.link.points[1].x - this.NodeWidth;
+                            nodeModel.y = e.link.points[1].y;
+
+                            setTimeout(() => {
+                                this._model.addLink(link);
+                                input.syncWithNodeMaterialConnectionPoint(input.connection!);
+                                nodeModel.ports.output.syncWithNodeMaterialConnectionPoint(nodeModel.ports.output.connection!);                                 
+
+                                this.forceUpdate();
+                            }, 1);
+                           
+                            nodeModel.ports.output.connection!.connectTo(input.connection!);
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        }
                     }
+                    this.forceUpdate();
+                    return;
                 }
 
                 e.link.addListener({
                     sourcePortChanged: () => {
-                        console.log("port change")
                     },
                     targetPortChanged: () => {
                         // Link is created with a target port
@@ -231,15 +309,27 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
                         if (link) {
                             if (link.output.connection && link.input.connection) {
-                                link.output.connection.connectTo(link.input.connection)
-                            } else if (link.input.connection) {
-                                if (!link.output.connection) { // Input Node
-                                    let name = link.output.name;
-                                    link.output.syncWithNodeMaterialConnectionPoint(link.input.connection);
-                                    link.output.name = name;
-                                    (link.output.getNode() as InputNodeModel).connection = link.output.connection!;
-                                    link.input.connection.value = link.output.defaultValue;
+                                // Disconnect previous connection
+                                for (var key in link.input.links) {
+                                    let other = link.input.links[key];
+
+                                    if ((other.getSourcePort() as DefaultPortModel).connection  !== (link.output as DefaultPortModel).connection && 
+                                        (other.getTargetPort() as DefaultPortModel).connection  !== (link.output as DefaultPortModel).connection
+                                    ) {
+                                        other.remove();
+                                    }
                                 }
+
+                                try {
+                                    link.output.connection.connectTo(link.input.connection);
+                                }        
+                                catch (err) {
+                                    link.output.remove();
+                                    this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
+                                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(err);
+                                }
+
+                                this.forceUpdate();
                             }
                             if (this.props.globalState.nodeMaterial) {
                                 this.buildMaterial();
@@ -254,10 +344,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (this.props.globalState.nodeMaterial) {
             var material: any = this.props.globalState.nodeMaterial;
             material._vertexOutputNodes.forEach((n: any) => {
-                this.createNodeFromObject({ column: 0, nodeMaterialBlock: n });
+                this.createNodeFromObject({ nodeMaterialBlock: n });
             })
             material._fragmentOutputNodes.forEach((n: any) => {
-                this.createNodeFromObject({ column: 0, nodeMaterialBlock: n });
+                this.createNodeFromObject({ nodeMaterialBlock: n });
             })
         }
 
@@ -268,73 +358,145 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
             this._toAdd = null;
             this._engine.setDiagramModel(this._model);
+
             this.forceUpdate();
-        }, 550);
+
+            this.reOrganize();
+        }, needToWait ? 500 : 1);
     }
 
-    addNodeFromClass(ObjectClass: typeof NodeMaterialBlock) {
-        var block = new ObjectClass(ObjectClass.prototype.getClassName())
-        var localNode = this.createNodeFromObject({ column: 0, nodeMaterialBlock: block })
-        var widget = (this.refs["test"] as DiagramWidget);
+    reOrganize() {
+        let nodes = this.distributeGraph();
+        nodes.forEach(node => {
+            for (var nodeName in this._model.nodes) {
+                let modelNode = this._model.nodes[nodeName];
 
+                if (modelNode.id === node.id) {
+                    modelNode.setPosition(node.x - node.width / 2, node.y - node.height / 2);
+                    return;
+                }
+            }
+        });
         this.forceUpdate();
+    }
 
-        // This is needed to fix link offsets when created, (eg. create a fog block)
-        // Todo figure out how to correct this without this
-        setTimeout(() => {
-            widget.startFiringAction(new MoveCanvasAction(1, 0, this._model));
-        }, 500);
+    addValueNode(type: string) {
+        let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
+
+        let newInputBlock = new InputBlock(type, undefined, nodeType);
+        newInputBlock.setDefaultValue();
+        var localNode = this.createNodeFromObject({ type: type, nodeMaterialBlock: newInputBlock })
 
         return localNode;
     }
 
-    addValueNode(type: string, column = 0, connection?: NodeMaterialConnectionPoint) {
-        var localNode = this.createNodeFromObject({ column: column, type: type, connection: connection })
-        var outPort = new DefaultPortModel(type, "output");
+    onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
+        this._startX = evt.clientX;
+        this._moveInProgress = true;
+        evt.currentTarget.setPointerCapture(evt.pointerId);
+    }
 
-        localNode.addPort(outPort);
+    onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
+        this._moveInProgress = false;
+        evt.currentTarget.releasePointerCapture(evt.pointerId);
+    }
 
-        if (!connection) {
-            switch (type) {
-                case "Vector2":
-                    outPort.defaultValue = Vector2.Zero();
-                    break;
-                case "Vector3":
-                    outPort.defaultValue = Vector3.Zero();
-                    break;
-                case "Vector4":
-                    outPort.defaultValue = Vector4.Zero();
-                    break;
-                case "Matrix":
-                    outPort.defaultValue = Matrix.Identity();
-                    break;
-                case "Color3":
-                    outPort.defaultValue = Color3.White();
-                    break;
-                case "Color4":
-                    outPort.defaultValue = new Color4(1, 1, 1, 1);
-                    break;
-            }
+    resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft = true) {
+
+        if (!this._moveInProgress) {
+            return;
         }
 
-        return localNode;
+        const deltaX = evt.clientX - this._startX;
+        const rootElement = evt.currentTarget.ownerDocument!.getElementById("node-editor-graph-root") as HTMLDivElement;
+
+        if (forLeft) {
+            this._leftWidth += deltaX;
+            this._leftWidth = Math.max(150, Math.min(400, this._leftWidth));
+            DataStorage.StoreNumber("LeftWidth", this._leftWidth);
+        } else {
+            this._rightWidth -= deltaX;
+            this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
+            DataStorage.StoreNumber("RightWidth", this._rightWidth);
+        }
+
+        rootElement.style.gridTemplateColumns = this.buildColumnLayout();
+
+        this._startX = evt.clientX;
+    }
+
+    buildColumnLayout() {
+        return `${this._leftWidth}px 4px calc(100% - ${this._leftWidth + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
+    }
+
+    emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
+        var data = event.dataTransfer.getData("babylonjs-material-node") as string;
+        let nodeModel: Nullable<DefaultNodeModel> = null;
+
+        if (data.indexOf("Block") === -1) {
+            nodeModel = this.addValueNode(data);
+        } else {
+            let block = BlockTools.GetBlockFromString(data);          
+
+            if (block) {
+                nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
+            }
+        };
+
+        if (nodeModel) {
+            const zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
+
+            let x = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
+            let y = (event.clientY - event.currentTarget.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
+            nodeModel.setPosition(x, y);
+        }
+
+        this.forceUpdate();
     }
 
     render() {
         return (
             <Portal globalState={this.props.globalState}>
-                <div id="node-editor-graph-root">
+                <div id="node-editor-graph-root" style={
+                    {
+                        gridTemplateColumns: this.buildColumnLayout()
+                    }
+                }>
                     {/* Node creation menu */}
-                    <NodeListComponent globalState={this.props.globalState} onAddValueNode={b => this.addValueNode(b)} onAddNodeFromClass={b => this.addNodeFromClass(b)} />
+                    <NodeListComponent globalState={this.props.globalState} />
+
+                    <div id="leftGrab"
+                        onPointerDown={evt => this.onPointerDown(evt)}
+                        onPointerUp={evt => this.onPointerUp(evt)}
+                        onPointerMove={evt => this.resizeColumns(evt)}
+                    ></div>
 
                     {/* The node graph diagram */}
-                    <DiagramWidget deleteKeys={[46]} ref={"test"} inverseZoom={true} className="diagram-container" diagramEngine={this._engine} maxNumberPointsPerLink={0} />
+                    <div className="diagram-container"
+                        onDrop={event => {
+                            this.emitNewBlock(event);
+                        }}
+                        onDragOver={event => {
+                            event.preventDefault();
+                        }}
+                    >
+                        <DiagramWidget className="diagram" deleteKeys={[46]} ref={"test"} 
+                        allowLooseLinks={false}
+                        inverseZoom={true} diagramEngine={this._engine} maxNumberPointsPerLink={0} />
+                    </div>
+
+                    <div id="rightGrab"
+                        onPointerDown={evt => this.onPointerDown(evt)}
+                        onPointerUp={evt => this.onPointerUp(evt)}
+                        onPointerMove={evt => this.resizeColumns(evt, false)}
+                    ></div>
 
                     {/* Property tab */}
                     <PropertyTabComponent globalState={this.props.globalState} />
 
                     <LogComponent globalState={this.props.globalState} />
-                </div>
+                </div>                
+                <MessageDialogComponent globalState={this.props.globalState} />
             </Portal>
         );
 

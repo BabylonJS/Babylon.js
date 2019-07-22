@@ -3,6 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockCo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to expand a Color4 or a Vector4 into 4 outputs (one for each component)
@@ -16,7 +17,8 @@ export class RGBASplitterBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.Vector4OrColor4);
+        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.Color4);
+        this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3);
         this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float);
@@ -42,11 +44,15 @@ export class RGBASplitterBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         let input = this.input;
-        let rOutput = this._outputs[0];
-        let gOutput = this._outputs[1];
-        let bOutput = this._outputs[2];
-        let aOutput = this._outputs[3];
+        let rgbOutput = this._outputs[0];
+        let rOutput = this._outputs[1];
+        let gOutput = this._outputs[2];
+        let bOutput = this._outputs[3];
+        let aOutput = this._outputs[4];
 
+        if (rgbOutput.connectedBlocks.length > 0) {
+            state.compilationString += this._declareOutput(rgbOutput, state) + ` = ${input.associatedVariableName}.rgb;\r\n`;
+        }
         if (rOutput.connectedBlocks.length > 0) {
             state.compilationString += this._declareOutput(rOutput, state) + ` = ${input.associatedVariableName}.r;\r\n`;
         }
@@ -63,3 +69,5 @@ export class RGBASplitterBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.RGBASplitterBlock"] = RGBASplitterBlock;

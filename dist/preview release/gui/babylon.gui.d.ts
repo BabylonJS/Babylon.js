@@ -1565,6 +1565,10 @@ declare module BABYLON.GUI {
          * Function called to generate a pointer up animation
          */
         pointerUpAnimation: () => void;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
         private _image;
         /**
          * Returns the image part of the button (if any)
@@ -1833,6 +1837,8 @@ declare module BABYLON.GUI {
         _connectedVirtualKeyboard: BABYLON.Nullable<VirtualKeyboard>;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
+        /** Force disable prompt on mobile device */
+        disableMobilePrompt: boolean;
         /** BABYLON.Observable raised when the text changes */
         onTextChangedObservable: BABYLON.Observable<InputText>;
         /** BABYLON.Observable raised just before an entered character is to be added */

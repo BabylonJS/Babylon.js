@@ -9,11 +9,16 @@ import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPo
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { MaterialHelper } from '../../../materialHelper';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
+import { InputBlock } from '../Input/inputBlock';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to add support for scene fog
  */
 export class FogBlock extends NodeMaterialBlock {
+    private _fogDistanceName: string;
+    private _fogParameters: string;
+
     /**
      * Create a new FogBlock
      * @param name defines the block name
@@ -25,12 +30,9 @@ export class FogBlock extends NodeMaterialBlock {
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
 
-        this.registerOutput("vFogDistance", NodeMaterialBlockConnectionPointTypes.Vector3, NodeMaterialBlockTargets.Vertex);
-
         // Fragment
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3OrColor4, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("fogColor", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("fogParameters", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
     }
@@ -72,13 +74,6 @@ export class FogBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the for parameter input component
-     */
-    public get fogParameters(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
-    }
-
-    /**
      * Gets the output component
      */
     public get output(): NodeMaterialConnectionPoint {
@@ -86,16 +81,16 @@ export class FogBlock extends NodeMaterialBlock {
     }
 
     public autoConfigure() {
-        if (this.view.isUndefined) {
-            this.view.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+        if (!this.view.isConnected) {
+            let viewInput = new InputBlock("view");
+            viewInput.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+            viewInput.output.connectTo(this.view);
         }
-        if (this.fogColor.isUndefined) {
-            this.fogColor.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
+        if (!this.fogColor.isConnected) {
+            let fogColorInput = new InputBlock("fogColor", undefined, NodeMaterialBlockConnectionPointTypes.Color3);
+            fogColorInput.setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
+            fogColorInput.output.connectTo(this.fogColor);
         }
-        if (this.fogParameters.isUndefined) {
-            this.fogParameters.setAsWellKnownValue(NodeMaterialWellKnownValues.Automatic);
-        }
-        this._outputs[0].isVarying = true;
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -109,8 +104,7 @@ export class FogBlock extends NodeMaterialBlock {
         }
 
         const scene = mesh.getScene();
-        effect.setColor3("u_fogColor", scene.fogColor);
-        effect.setFloat4("u_fogParameters", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+        effect.setFloat4(this._fogParameters, scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -131,22 +125,26 @@ export class FogBlock extends NodeMaterialBlock {
             let tempFogVariablename = state._getFreeVariableName("fog");
             let color = this.color;
             let fogColor = this.fogColor;
-            let fogParameters = this.fogParameters;
-            let output = this._outputs[1];
-            let vFogDistance = this._outputs[0];
+            this._fogParameters = state._getFreeVariableName("fogParameters");
+            let output = this._outputs[0];
+
+            state._emitUniformFromString(this._fogParameters, "vec4");
 
             state.compilationString += `#ifdef FOG\r\n`;
-            state.compilationString += `float ${tempFogVariablename} = CalcFogFactor(${vFogDistance.associatedVariableName}, ${fogParameters.associatedVariableName});\r\n`;
-            state.compilationString += this._declareOutput(output, state) + ` = ${tempFogVariablename} * ${color.associatedVariableName}.rgb + (1.0 - ${tempFogVariablename}) * ${fogColor.associatedVariableName};\r\n`;
-            state.compilationString += `#else\r\n${this._declareOutput(output, state)} =  ${color.associatedVariableName}.rgb;\r\n`;
+            state.compilationString += `float ${tempFogVariablename} = CalcFogFactor(${this._fogDistanceName}, ${this._fogParameters});\r\n`;
+            state.compilationString += this._declareOutput(output, state) + ` = ${tempFogVariablename} * ${color.associatedVariableName} + (1.0 - ${tempFogVariablename}) * ${fogColor.associatedVariableName};\r\n`;
+            state.compilationString += `#else\r\n${this._declareOutput(output, state)} =  ${color.associatedVariableName};\r\n`;
             state.compilationString += `#endif\r\n`;
         } else {
             let worldPos = this.worldPosition;
             let view = this.view;
-            let vFogDistance = this._outputs[0];
-            state.compilationString += this._declareOutput(vFogDistance, state) + ` = (${view.associatedVariableName} * ${worldPos.associatedVariableName}).xyz;\r\n`;
+            this._fogDistanceName = state._getFreeVariableName("vFogDistance");
+            state._emitVaryingFromString(this._fogDistanceName, "vec3");
+            state.compilationString += `${this._fogDistanceName} = (${view.associatedVariableName} * ${worldPos.associatedVariableName}).xyz;\r\n`;
         }
 
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.FogBlock"] = FogBlock;
