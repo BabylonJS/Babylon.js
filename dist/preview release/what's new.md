@@ -106,6 +106,7 @@
 - Make planeDragGizmo usable on its own ([TrevorDev](https://github.com/TrevorDev))
 - Fix useObjectOrienationForDragging for pointerDragBehavior when using a single axis drag ([TrevorDev](https://github.com/TrevorDev))
 - Fix VR button not positioning correctly in canvas ([haroldma](https://github.com/haroldma))
+- Fix check for material needing alpha blending in OutlineRenderer ([mkmc](https://github.com/mkmc))
 
 ## Breaking changes
 - Setting mesh.scaling to a new vector will no longer automatically call forceUpdate (this should be done manually when needed) ([TrevorDev](https://github.com/TrevorDev))
