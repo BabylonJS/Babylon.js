@@ -248,7 +248,7 @@ export class Bone extends Node {
 
     /**
      * Gets the node used to drive the bone's transformation
-     * @returns a transform node or null 
+     * @returns a transform node or null
      */
     public getTransformNode() {
         return this._linkedTransformNode;
