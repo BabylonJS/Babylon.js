@@ -77,7 +77,13 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 return;
             }
 
-            return this._textureTransformTextureAsync(babylonTexture, scene);
+            return this._textureTransformTextureAsync(babylonTexture, scene)
+                .then((proceduralTexture) => {
+                    resolve(proceduralTexture);
+                })
+                .catch((e) => {
+                    reject(e);
+                });
         });
     }
 
