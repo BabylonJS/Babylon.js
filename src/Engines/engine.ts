@@ -2257,6 +2257,9 @@ export class Engine {
             return;
         }
 
+        width = width | 0;
+        height = height | 0;
+
         if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
             return;
         }
