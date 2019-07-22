@@ -1614,6 +1614,10 @@ declare module "babylonjs-gui/2D/controls/button" {
          * Function called to generate a pointer up animation
          */
         pointerUpAnimation: () => void;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
         private _image;
         /**
          * Returns the image part of the button (if any)
@@ -5422,6 +5426,10 @@ declare module BABYLON.GUI {
          * Function called to generate a pointer up animation
          */
         pointerUpAnimation: () => void;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
         private _image;
         /**
          * Returns the image part of the button (if any)
