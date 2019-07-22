@@ -759,6 +759,25 @@ export class Tools {
     }
 
     /**
+     * Captures a screenshot of the current rendering
+     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @param engine defines the rendering engine
+     * @param camera defines the source camera
+     * @param size This parameter can be set to a single number or to an object with the
+     * following (optional) properties: precision, width, height. If a single number is passed,
+     * it will be used for both width and height. If an object is passed, the screenshot size
+     * will be derived from the parameters. The precision property is a multiplier allowing
+     * rendering at a higher or lower resolution
+     * @param mimeType defines the MIME type of the screenshot image (default: image/png).
+     * Check your browser for supported MIME types
+     * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+     * to the src parameter of an <img> to display it
+     */
+    public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType: string = "image/png"): Promise<string> {
+        throw _DevTools.WarnImport("ScreenshotTools");
+    }
+
+    /**
      * Generates an image screenshot from the specified camera.
      * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine The engine to use for rendering
@@ -778,6 +797,28 @@ export class Tools {
      * @param fileName A name for for the downloaded file.
      */
     public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
+        throw _DevTools.WarnImport("ScreenshotTools");
+    }
+
+    /**
+     * Generates an image screenshot from the specified camera.
+     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @param engine The engine to use for rendering
+     * @param camera The camera to use for rendering
+     * @param size This parameter can be set to a single number or to an object with the
+     * following (optional) properties: precision, width, height. If a single number is passed,
+     * it will be used for both width and height. If an object is passed, the screenshot size
+     * will be derived from the parameters. The precision property is a multiplier allowing
+     * rendering at a higher or lower resolution
+     * @param mimeType The MIME type of the screenshot image (default: image/png).
+     * Check your browser for supported MIME types
+     * @param samples Texture samples (default: 1)
+     * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+     * @param fileName A name for for the downloaded file.
+     * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+     * to the src parameter of an <img> to display it
+     */
+    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): Promise<string> {
         throw _DevTools.WarnImport("ScreenshotTools");
     }
 
