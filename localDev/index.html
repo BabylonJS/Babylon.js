@@ -9,9 +9,9 @@
     <script src="../dist/preview%20release/cannon.js"></script>
     <script src="../dist/preview%20release/Oimo.js"></script>
     <script src="../dist/preview%20release/ammo.js"></script>
+    <script src="../dist/preview%20release/recast.js"></script>
     <script src="../dist/preview%20release/gltf_validator.js"></script>
     <script src="../Tools/DevLoader/BabylonLoader.js"></script>
-    <script src="src/webgl-debug.js"></script>
 
     <style>
         html,
@@ -45,10 +45,9 @@
 
         @font-face {
             font-family: BabylonJSglyphs;
-           /* src: url("http://www.killer-squid.com/fonts/BabylonJSglyphs.otf"); */
+            /* src: url("http://www.killer-squid.com/fonts/BabylonJSglyphs.otf"); */
             src: local("BabylonJSglyphs");
         }
-        
     </style>
 </head>
 
@@ -90,7 +89,7 @@
                     if (typeof createEngine !== "undefined") {
                         engine = createEngine();
                     } else {
-                        engine = new BABYLON.Engine(canvas, true, {  premultipliedAlpha: false, stencil: true, disableWebGL2Support: false, preserveDrawingBuffer: true });
+                        engine = new BABYLON.Engine(canvas, true, { premultipliedAlpha: false, stencil: true, disableWebGL2Support: false, preserveDrawingBuffer: true });
                     }
 
                     BABYLONDEVTOOLS.Loader.debugShortcut(engine);

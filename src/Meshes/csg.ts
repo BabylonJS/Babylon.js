@@ -1,6 +1,6 @@
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Scene } from "../scene";
-import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math";
+import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { SubMesh } from "../Meshes/subMesh";

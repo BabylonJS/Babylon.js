@@ -1,6 +1,6 @@
 import { Scene } from "./scene";
 import { Nullable } from "./types";
-import { Matrix, Vector3 } from "./Maths/math";
+import { Matrix, Vector3 } from "./Maths/math.vector";
 import { Engine } from "./Engines/engine";
 import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
@@ -9,7 +9,6 @@ import { EngineStore } from "./Engines/engineStore";
 import { _DevTools } from './Misc/devTools';
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { IInspectable } from './Misc/iInspectable';
-import { Tools } from './Misc/tools';
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -781,12 +780,12 @@ export class Node implements IBehaviorAware<Node> {
             }
         }
     }
-        /**
-     * Return the minimum and maximum world vectors of the entire hierarchy under current node
-     * @param includeDescendants Include bounding info from descendants as well (true by default)
-     * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
-     * @returns the new bounding vectors
-     */
+    /**
+ * Return the minimum and maximum world vectors of the entire hierarchy under current node
+ * @param includeDescendants Include bounding info from descendants as well (true by default)
+ * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
+ * @returns the new bounding vectors
+ */
     public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Vector3, max: Vector3 } {
         // Ensures that all world matrix will be recomputed.
         this.getScene().incrementRenderId();
@@ -800,8 +799,8 @@ export class Node implements IBehaviorAware<Node> {
         if (thisAbstractMesh.getBoundingInfo && thisAbstractMesh.subMeshes) {
             // If this is an abstract mesh get its bounding info
             let boundingInfo = thisAbstractMesh.getBoundingInfo();
-            min = boundingInfo.boundingBox.minimumWorld;
-            max = boundingInfo.boundingBox.maximumWorld;
+            min = boundingInfo.boundingBox.minimumWorld.clone();
+            max = boundingInfo.boundingBox.maximumWorld.clone();
         } else {
             min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
@@ -830,8 +829,8 @@ export class Node implements IBehaviorAware<Node> {
                 var minBox = boundingBox.minimumWorld;
                 var maxBox = boundingBox.maximumWorld;
 
-                Tools.CheckExtends(minBox, min, max);
-                Tools.CheckExtends(maxBox, min, max);
+                Vector3.CheckExtends(minBox, min, max);
+                Vector3.CheckExtends(maxBox, min, max);
             }
         }
 

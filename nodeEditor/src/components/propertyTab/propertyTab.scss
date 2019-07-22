@@ -11,7 +11,7 @@
         grid-row: 1;
         text-align: center;
         display: grid;
-        grid-template-columns: 30px 1fr 50px;        
+        grid-template-columns: 30px 1fr 20px;        
         -webkit-user-select: none; 
         -moz-user-select: none;   
         -ms-user-select: none;    
@@ -230,6 +230,7 @@
         display: grid;
         align-items: center;
         justify-items: stretch;
+        padding-bottom: 5px;
 
         input[type="file"] {
             display: none;
@@ -241,6 +242,7 @@
             margin: 5px 10px;
             color:white;
             padding: 4px 5px;
+            padding-top: 0px;
             opacity: 0.9;
             cursor: pointer;
             text-align: center;

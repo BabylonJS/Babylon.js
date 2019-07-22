@@ -1,10 +1,12 @@
-import { Vector3, ToLinearSpace, Color3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { SphericalPolynomial, SphericalHarmonics } from "../../Maths/sphericalPolynomial";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Nullable } from "../../types";
 import { Constants } from "../../Engines/constants";
 import { CubeMapInfo } from "./panoramaToCubemap";
+import { ToLinearSpace } from '../../Maths/math.constants';
+import { Color3 } from '../../Maths/math.color';
 
 class FileFaceOrientation {
     public name: string;

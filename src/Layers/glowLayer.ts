@@ -1,9 +1,8 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { Tools } from "../Misc/tools";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Vector2, Color4 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -18,6 +17,8 @@ import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { _TypeStore } from '../Misc/typeStore';
+import { Engine } from '../Engines/engine';
+import { Color4 } from '../Maths/math.color';
 
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
@@ -222,8 +223,8 @@ export class GlowLayer extends EffectLayer {
     protected _createTextureAndPostProcesses(): void {
         var blurTextureWidth = this._mainTextureDesiredSize.width;
         var blurTextureHeight = this._mainTextureDesiredSize.height;
-        blurTextureWidth = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
-        blurTextureHeight = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
+        blurTextureWidth = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
+        blurTextureHeight = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
         var textureType = 0;
         if (this._engine.getCaps().textureHalfFloatRender) {

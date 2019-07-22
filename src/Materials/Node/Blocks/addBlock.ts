@@ -2,8 +2,10 @@ import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to add 2 vector4
+ * Block used to add 2 vectors
  */
 export class AddBlock extends NodeMaterialBlock {
     /**
@@ -11,7 +13,7 @@ export class AddBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("left", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);
@@ -59,3 +61,5 @@ export class AddBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.AddBlock"] = AddBlock;

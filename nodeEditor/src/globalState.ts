@@ -2,6 +2,7 @@ import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Nullable } from "babylonjs/types"
 import { Observable } from 'babylonjs/Misc/observable';
 import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
+import { LogEntry } from './components/log/logComponent';
 
 export class GlobalState {
     nodeMaterial?: NodeMaterial;
@@ -12,5 +13,7 @@ export class GlobalState {
     onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
     onZoomToFitRequiredObservable = new Observable<void>();
-    onLogRequiredObservable = new Observable<string>();
+    onReOrganizedRequiredObservable = new Observable<void>();
+    onLogRequiredObservable = new Observable<LogEntry>();
+    onErrorMessageDialogRequiredObservable = new Observable<string>();
 }

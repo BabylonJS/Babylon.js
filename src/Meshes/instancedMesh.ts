@@ -1,5 +1,5 @@
 import { Nullable, FloatArray, IndicesArray } from "../types";
-import { Vector3, Matrix, Tmp } from "../Maths/math";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Logger } from "../Misc/logger";
 import { Camera } from "../Cameras/camera";
 import { Node } from "../node";
@@ -47,6 +47,9 @@ export class InstancedMesh extends AbstractMesh {
         this.setPivotMatrix(source.getPivotMatrix());
 
         this.refreshBoundingInfo();
+        if (!this._sourceMesh.subMeshes) {
+            Logger.Warn("Instances should only be created for meshes with Geometry.");
+        }
         this._syncSubMeshes();
     }
 
@@ -310,9 +313,9 @@ export class InstancedMesh extends AbstractMesh {
         if (this._currentLOD && this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE && this._currentLOD._masterMesh !== this) {
             let tempMaster = this._currentLOD._masterMesh;
             this._currentLOD._masterMesh = this;
-            Tmp.Matrix[0].copyFrom(this._currentLOD.computeWorldMatrix(true));
+            TmpVectors.Matrix[0].copyFrom(this._currentLOD.computeWorldMatrix(true));
             this._currentLOD._masterMesh = tempMaster;
-            return Tmp.Matrix[0];
+            return TmpVectors.Matrix[0];
         }
 
         return super.getWorldMatrix();

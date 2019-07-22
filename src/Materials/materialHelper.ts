@@ -2,7 +2,6 @@ import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Tmp, Color3 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -15,6 +14,7 @@ import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
+import { Color3, TmpColors } from '../Maths/math.color';
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for
@@ -196,11 +196,13 @@ export class MaterialHelper {
     public static PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) {
         var manager = (<Mesh>mesh).morphTargetManager;
         if (manager) {
+            defines["MORPHTARGETS_UV"] = manager.supportsUVs && defines["UV1"];
             defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
             defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
             defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
             defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
         } else {
+            defines["MORPHTARGETS_UV"] = false;
             defines["MORPHTARGETS_TANGENT"] = false;
             defines["MORPHTARGETS_NORMAL"] = false;
             defines["MORPHTARGETS"] = false;
@@ -552,6 +554,18 @@ export class MaterialHelper {
         return lightFallbackRank++;
     }
 
+    private static _TmpMorphInfluencers = { "NUM_MORPH_INFLUENCERS": 0 };
+    /**
+     * Prepares the list of attributes required for morph targets according to the effect defines.
+     * @param attribs The current list of supported attribs
+     * @param mesh The mesh to prepare the morph targets attributes for
+     * @param influencers The number of influencers
+     */
+    public static PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void {
+        this._TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
+        this.PrepareAttributesForMorphTargets(attribs, mesh, this._TmpMorphInfluencers);
+    }
+
     /**
      * Prepares the list of attributes required for morph targets according to the effect defines.
      * @param attribs The current list of supported attribs
@@ -566,6 +580,7 @@ export class MaterialHelper {
             var manager = (<Mesh>mesh).morphTargetManager;
             var normal = manager && manager.supportsNormals && defines["NORMAL"];
             var tangent = manager && manager.supportsTangents && defines["TANGENT"];
+            var uv = manager && manager.supportsUVs && defines["UV1"];
             for (var index = 0; index < influencers; index++) {
                 attribs.push(VertexBuffer.PositionKind + index);
 
@@ -575,6 +590,10 @@ export class MaterialHelper {
 
                 if (tangent) {
                     attribs.push(VertexBuffer.TangentKind + index);
+                }
+
+                if (uv) {
+                    attribs.push(VertexBuffer.UVKind + "_" + index);
                 }
 
                 if (attribs.length > maxAttributesCount) {
@@ -671,11 +690,11 @@ export class MaterialHelper {
 
         MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
-        light.diffuse.scaleToRef(scaledIntensity, Tmp.Color3[0]);
-        light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
+        light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
+        light._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
         if (useSpecular) {
-            light.specular.scaleToRef(scaledIntensity, Tmp.Color3[1]);
-            light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], iAsString);
+            light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
+            light._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
         }
 
         // Shadows
@@ -700,7 +719,7 @@ export class MaterialHelper {
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, mesh, effect, defines, usePhysicalLightFalloff);
+            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff);
         }
     }
 
@@ -743,7 +762,7 @@ export class MaterialHelper {
             const skeleton = mesh.skeleton;
 
             if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
-                const boneTexture = skeleton.getTransformMatrixTexture();
+                const boneTexture = skeleton.getTransformMatrixTexture(mesh);
                 effect.setTexture("boneSampler", boneTexture);
                 effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
             } else {

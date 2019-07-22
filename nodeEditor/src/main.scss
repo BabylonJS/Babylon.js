@@ -1,7 +1,6 @@
 #node-editor-graph-root {
     display: grid;
     grid-template-rows: calc(100% - 120px) 120px;
-    grid-template-columns: 200px calc(100% - 500px) 300px;
     height: 100%;
     width: 100%;
     background: #464646;
@@ -13,18 +12,99 @@
     grid-column: 1;
 }
 
+#leftGrab {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    cursor: ew-resize;
+}
+
+#rightGrab {
+    grid-row: 1 / span 2;
+    grid-column: 4;
+    cursor: ew-resize;
+}
+
 .diagram-container {
     grid-row: 1;
-    grid-column: 2;
+    grid-column: 3;
     background: #222222;
+    width: 100%;
+    height: 100%;
+
+    .diagram {
+        width: 100%;
+        height: 100%;
+    }
 }
 
 #propertyTab {
     grid-row: 1 / span 2;
-    grid-column: 3;
+    grid-column: 5;
 }
 
 #log-console {
     grid-row: 2;
-    grid-column: 2;
+    grid-column: 3;
+}
+
+.dialog-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0.1, 0.1, 0.1, 0.3);
+    display: grid;
+    font-family: "acumin-pro";
+    top:0;
+
+    .dialog {
+        align-self: center;
+        justify-self: center;
+        min-height: 140px;
+        max-width: 400px;
+        border-radius: 10px;
+        background: white;
+
+        display: grid;
+        grid-template-columns: 100%;
+        grid-template-rows: calc(100% - 50px) 50px;
+
+        .dialog-message {
+            grid-row: 1;
+            grid-column: 1;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 18px;
+            color: black;
+        }
+
+        .dialog-buttons {
+            grid-row: 2;
+            grid-column: 1;
+            display: grid;
+            grid-template-rows: 100%;
+            grid-template-columns: 100%;
+            color: white;
+
+            .dialog-button-ok {
+                cursor: pointer;
+                justify-self: center;
+                background:green;
+                min-width: 80px;
+                justify-content: center;
+                display: grid;
+                align-content: center;
+                align-self: center;
+                height: 35px;      
+                border-radius: 10px;
+
+                &:hover {
+                    opacity: 0.8;
+                }
+
+                &.error {
+                    background: red;
+                }
+            }
+        }
+    }
 }

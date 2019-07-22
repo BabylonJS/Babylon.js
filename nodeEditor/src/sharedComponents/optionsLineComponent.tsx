@@ -17,15 +17,20 @@ interface IOptionsLineComponentProps {
     onSelect?: (value: number | string) => void,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
     valuesAreStrings?: boolean
+    defaultIfNull?: number
 }
 
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string }> {
     private _localChange = false;
 
+    private _getValue(props: IOptionsLineComponentProps) {
+        return props.target ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
+    }
+
     constructor(props: IOptionsLineComponentProps) {
         super(props);
 
-        this.state = { value: props.target[props.propertyName] };
+        this.state = { value: this._getValue(props) };
     }
 
     shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
@@ -34,7 +39,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             return true;
         }
 
-        const newValue = nextProps.target[nextProps.propertyName];
+        const newValue = this._getValue(nextProps);
         if (newValue != null && newValue !== nextState.value) {
             nextState.value = newValue;
             return true;

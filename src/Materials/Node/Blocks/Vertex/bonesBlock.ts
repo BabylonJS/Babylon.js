@@ -9,6 +9,8 @@ import { Effect, EffectFallbacks } from '../../../effect';
 import { MaterialHelper } from '../../../materialHelper';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
+import { InputBlock } from '../Input/inputBlock';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to add support for vertex skinning (bones)
@@ -23,8 +25,8 @@ export class BonesBlock extends NodeMaterialBlock {
 
         this.registerInput("matricesIndices", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerInput("matricesWeights", NodeMaterialBlockConnectionPointTypes.Vector4);
-        this.registerInput("matricesIndicesExtra", NodeMaterialBlockConnectionPointTypes.Vector4);
-        this.registerInput("matricesWeightsExtra", NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.registerInput("matricesIndicesExtra", NodeMaterialBlockConnectionPointTypes.Vector4, true);
+        this.registerInput("matricesWeightsExtra", NodeMaterialBlockConnectionPointTypes.Vector4, true);
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Matrix);
@@ -92,20 +94,20 @@ export class BonesBlock extends NodeMaterialBlock {
     }
 
     public autoConfigure() {
-        if (this.matricesIndices.isUndefined) {
-            this.matricesIndices.setAsAttribute();
+        if (!this.matricesIndices.isConnected) {
+            let matricesIndicesInput = new InputBlock("matricesIndices", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
+            matricesIndicesInput.setAsAttribute("matricesIndices");
+            matricesIndicesInput.output.connectTo(this.matricesIndices);
         }
-        if (this.matricesWeights.isUndefined) {
-            this.matricesWeights.setAsAttribute();
+        if (!this.matricesWeights.isConnected) {
+            let matricesWeightsInput = new InputBlock("matricesWeights", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
+            matricesWeightsInput.setAsAttribute("matricesWeights");
+            matricesWeightsInput.output.connectTo(this.matricesWeights);
         }
-        if (this.matricesIndicesExtra.isUndefined) {
-            this.matricesIndicesExtra.setAsAttribute();
-        }
-        if (this.matricesWeightsExtra.isUndefined) {
-            this.matricesWeightsExtra.setAsAttribute();
-        }
-        if (this.world.isUndefined) {
-            this.world.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+        if (!this.world.isConnected) {
+            let worldInput = new InputBlock("world", undefined, NodeMaterialBlockConnectionPointTypes.Matrix);
+            worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+            worldInput.output.connectTo(this.world);
         }
     }
 
@@ -171,7 +173,14 @@ export class BonesBlock extends NodeMaterialBlock {
         let output = this._outputs[0];
         let worldInput = this.world;
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${worldInput.associatedVariableName} * ${influenceVariablename};`;
+        state.compilationString += `#if NUM_BONE_INFLUENCERS>0\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${worldInput.associatedVariableName} * ${influenceVariablename};\r\n`;
+        state.compilationString += `#else\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${worldInput.associatedVariableName};\r\n`;
+        state.compilationString += `#endif\r\n`;
+
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.BonesBlock"] = BonesBlock;

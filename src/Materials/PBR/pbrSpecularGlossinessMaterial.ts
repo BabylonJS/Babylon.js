@@ -1,6 +1,6 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import { Scene } from "../../scene";
-import { Color3 } from "../../Maths/math";
+import { Color3 } from "../../Maths/math.color";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -109,19 +109,19 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial {
         const material = SerializationHelper.Parse(() => new PBRSpecularGlossinessMaterial(source.name, scene), source, scene, rootUrl);
         if (source.clearCoat) {
-            material.clearCoat.parse(source.clearCoat);
+            material.clearCoat.parse(source.clearCoat, scene, rootUrl);
         }
         if (source.anisotropy) {
-            material.anisotropy.parse(source.anisotropy);
+            material.anisotropy.parse(source.anisotropy, scene, rootUrl);
         }
         if (source.brdf) {
-            material.brdf.parse(source.brdf);
+            material.brdf.parse(source.brdf, scene, rootUrl);
         }
         if (source.sheen) {
-            material.sheen.parse(source.sheen);
+            material.sheen.parse(source.sheen, scene, rootUrl);
         }
         if (source.subSurface) {
-            material.subSurface.parse(source.subSurface);
+            material.subSurface.parse(source.subSurface, scene, rootUrl);
         }
         return material;
     }

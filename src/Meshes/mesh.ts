@@ -1,11 +1,13 @@
 import { Observer, Observable } from "../Misc/observable";
-import { Tools, IAnimatable, AsyncLoop } from "../Misc/tools";
+import { Tools, AsyncLoop } from "../Misc/tools";
+import { IAnimatable } from '../Animations/animatable.interface';
 import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Quaternion, Matrix, Vector3, Vector2, Color3, Color4, Plane, Vector4, Path3D } from "../Maths/math";
+import { Quaternion, Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
+import { Color3, Color4 } from '../Maths/math.color';
 import { Engine } from "../Engines/engine";
 import { Node } from "../node";
 import { VertexBuffer } from "./buffer";
@@ -29,6 +31,8 @@ import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
 import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from './meshLODLevel';
+import { Path3D } from '../Maths/math.path';
+import { Plane } from '../Maths/math.plane';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -2686,7 +2690,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 vertex_data.uvs = uvs;
             }
             if (currentColors !== null && currentColors !== void 0) {
-             vertex_data.colors = colors;
+                vertex_data.colors = colors;
             }
 
             vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
@@ -2970,6 +2974,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (tangents) {
                     this.geometry.setVerticesData(VertexBuffer.TangentKind + index, tangents, false, 3);
                 }
+
+                const uvs = morphTarget.getUVs();
+                if (uvs) {
+                    this.geometry.setVerticesData(VertexBuffer.UVKind + "_" + index, uvs, false, 2);
+                }
             }
         } else {
             var index = 0;
@@ -2983,6 +2992,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 if (this.geometry.isVerticesDataPresent(VertexBuffer.TangentKind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.TangentKind + index);
+                }
+                if (this.geometry.isVerticesDataPresent(VertexBuffer.UVKind + index)) {
+                    this.geometry.removeVerticesData(VertexBuffer.UVKind + "_" + index);
                 }
                 index++;
             }

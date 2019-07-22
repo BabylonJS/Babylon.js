@@ -1,5 +1,7 @@
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlock } from './nodeMaterialBlock';
+import { InputBlock } from './Blocks/Input/inputBlock';
+import { TextureBlock } from './Blocks/Dual/textureBlock';
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -16,9 +18,14 @@ export class NodeMaterialBuildStateSharedData {
     public varyingDeclaration = "";
 
     /**
-     * Uniform connection points
+     * Input blocks
      */
-    public uniformConnectionPoints = new Array<NodeMaterialConnectionPoint>();
+    public inputBlocks = new Array<InputBlock>();
+
+    /**
+     * Input blocks
+     */
+    public textureBlocks = new Array<TextureBlock>();
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)
@@ -39,6 +46,11 @@ export class NodeMaterialBuildStateSharedData {
     * List of blocks that can provide a repeatable content
     */
     public repeatableContentBlocks = new Array<NodeMaterialBlock>();
+
+    /**
+    * List of blocks that can provide a dynamic list of uniforms
+    */
+    public dynamicUniformBlocks = new Array<NodeMaterialBlock>();
 
     /**
      * List of blocks that can block the isReady function for the material
@@ -99,6 +111,8 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["matricesWeights"] = 0;
         this.variableNames["matricesIndicesExtra"] = 0;
         this.variableNames["matricesWeightsExtra"] = 0;
+        this.variableNames["diffuseBase"] = 0;
+        this.variableNames["specularBase"] = 0;
 
         // Exclude defines
         this.defineNames["MAINUV0"] = 0;
