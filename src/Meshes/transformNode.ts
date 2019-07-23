@@ -364,8 +364,8 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Returns the current mesh absolute scaling.
-     * Returns a Vector3.
+     * Returns the current mesh absolute rotation.
+     * Returns a Quaternion.
      */
     public get absoluteRotationQuaternion(): Quaternion {
         return this._absoluteRotationQuaternion;
