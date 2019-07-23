@@ -4082,6 +4082,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Post-processes
         this.postProcessManager.dispose();
 
+        // Clear timer that may not have finished if the scene was never ready
+        this._executeWhenReadyTimeoutId = -1;
+
         // Remove from engine
         index = this._engine.scenes.indexOf(this);
 
