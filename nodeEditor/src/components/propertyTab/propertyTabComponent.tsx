@@ -63,8 +63,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </div>
                 </div>
                 <div>
-                    <LineContainerComponent title="PROPERTIES">
-                    </LineContainerComponent>
                     <LineContainerComponent title="GENERAL">
                         <ButtonLineComponent label="Reset to default" onClick={() => {
                             this.props.globalState.nodeMaterial!.setToDefault();
