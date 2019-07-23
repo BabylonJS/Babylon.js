@@ -353,7 +353,6 @@ export class TransformNode extends Node {
      * Returns a Vector3.
      */
     public get absolutePosition(): Vector3 {
-        this._syncAbsoluteScalingAndRotation();
         return this._absolutePosition;
     }
 
@@ -371,6 +370,7 @@ export class TransformNode extends Node {
      * Returns a Quaternion.
      */
     public get absoluteRotationQuaternion(): Quaternion {
+        this._syncAbsoluteScalingAndRotation();
         return this._absoluteRotationQuaternion;
     }
 
