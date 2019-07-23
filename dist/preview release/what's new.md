@@ -55,6 +55,7 @@
 
 ### Meshes
 - Added new CreateTiledPlane and CreateTiledBox ([JohnK](https://github.com/BabylonJSGuide/))
+- Added absolute scaling and rotation getters ([haroldma](https://github.com/haroldma))
 
 ### Physics
 - Update Ammo.js library to support global collision contact callbacks ([MackeyK24](https://github.com/MackeyK24/))
