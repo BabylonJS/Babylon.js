@@ -1860,6 +1860,12 @@ export class Scene extends AbstractScene implements IAnimatable {
             return;
         }
 
+        if (this._isDisposed) {
+            this.onReadyObservable.clear();
+            this._executeWhenReadyTimeoutId = -1;
+            return;
+        }
+
         this._executeWhenReadyTimeoutId = setTimeout(() => {
             this._checkIsReady();
         }, 150);
