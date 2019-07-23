@@ -34,7 +34,7 @@ namespace babylon
 
             Napi::Function Finalize()
             {
-                return DefineClass(m_env, m_name.c_str(), m_propertyDescriptors, m_impl);
+                return NapiBridge<ImplT>::DefineClass(m_env, m_name.c_str(), m_propertyDescriptors, m_impl);
             }
 
         private:
@@ -51,7 +51,7 @@ namespace babylon
             std::vector<Napi::ClassPropertyDescriptor<NapiBridge<ImplT>>> m_propertyDescriptors{};
         };
 
-        static Definition Define(const std::string& name, Napi::Env& env, ImplT* impl)
+        static NapiBridge<ImplT>::Definition Define(const std::string& name, Napi::Env& env, ImplT* impl)
         {
             return{ name, env, impl };
         }
