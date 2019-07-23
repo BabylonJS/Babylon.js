@@ -145,6 +145,8 @@ export class TransformNode extends Node {
 
     private _usePivotMatrix = false;
     private _absolutePosition = Vector3.Zero();
+    private _absoluteScaling = Vector3.Zero();
+    private _absoluteRotationQuaternion = Quaternion.Identity();
     private _pivotMatrix = Matrix.Identity();
     private _pivotMatrixInverse: Matrix;
     protected _postMultiplyPivotMatrix = false;
@@ -351,6 +353,22 @@ export class TransformNode extends Node {
      */
     public get absolutePosition(): Vector3 {
         return this._absolutePosition;
+    }
+
+    /**
+     * Returns the current mesh absolute scaling.
+     * Returns a Vector3.
+     */
+    public get absoluteScaling(): Vector3 {
+        return this._absoluteScaling;
+    }
+
+    /**
+     * Returns the current mesh absolute scaling.
+     * Returns a Vector3.
+     */
+    public get absoluteRotationQuaternion(): Quaternion {
+        return this._absoluteRotationQuaternion;
     }
 
     /**
@@ -1078,8 +1096,8 @@ export class TransformNode extends Node {
 
         this._afterComputeWorldMatrix();
 
-        // Absolute position
-        this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
+        // Update absolute transform values
+        this._worldMatrix.decompose(this._absoluteScaling, this._absoluteRotationQuaternion, this._absolutePosition);
 
         // Callbacks
         this.onAfterWorldMatrixUpdateObservable.notifyObservers(this);
