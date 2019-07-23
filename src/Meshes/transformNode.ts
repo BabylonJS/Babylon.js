@@ -57,6 +57,7 @@ export class TransformNode extends Node {
     protected _scaling = Vector3.One();
     protected _isDirty = false;
     private _transformToBoneReferal: Nullable<TransformNode> = null;
+    private _isAbsoluteSynced = false;
 
     @serialize("billboardMode")
     private _billboardMode = TransformNode.BILLBOARDMODE_NONE;
@@ -352,6 +353,7 @@ export class TransformNode extends Node {
      * Returns a Vector3.
      */
     public get absolutePosition(): Vector3 {
+        this._syncAbsoluteScalingAndRotation();
         return this._absolutePosition;
     }
 
@@ -360,6 +362,7 @@ export class TransformNode extends Node {
      * Returns a Vector3.
      */
     public get absoluteScaling(): Vector3 {
+        this._syncAbsoluteScalingAndRotation();
         return this._absoluteScaling;
     }
 
@@ -1096,8 +1099,9 @@ export class TransformNode extends Node {
 
         this._afterComputeWorldMatrix();
 
-        // Update absolute transform values
-        this._worldMatrix.decompose(this._absoluteScaling, this._absoluteRotationQuaternion, this._absolutePosition);
+        // Absolute position
+        this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
+        this._isAbsoluteSynced = false;
 
         // Callbacks
         this.onAfterWorldMatrixUpdateObservable.notifyObservers(this);
@@ -1327,5 +1331,12 @@ export class TransformNode extends Node {
         }
 
         return this;
+    }
+
+    private _syncAbsoluteScalingAndRotation(): void {
+        if (!this._isAbsoluteSynced) {
+            this._worldMatrix.decompose(this._absoluteScaling, this._absoluteRotationQuaternion);
+            this._isAbsoluteSynced = true;
+        }
     }
 }
