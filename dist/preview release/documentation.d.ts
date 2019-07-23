@@ -13383,6 +13383,11 @@ declare module BABYLON {
          * @param transformNode defines the transform node to link to
          */
         linkTransformNode(transformNode: Nullable<TransformNode>): void;
+        /**
+         * Gets the node used to drive the bone's transformation
+         * @returns a transform node or null
+         */
+        getTransformNode(): Nullable<TransformNode>;
         /** Gets or sets current position (in local space) */
         position: Vector3;
         /** Gets or sets current rotation (in local space) */
@@ -24885,7 +24890,7 @@ declare module BABYLON {
      * The SPS is also a particle system. It provides some methods to manage the particles.
      * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
      *
-     * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
+     * Full documentation here : http://doc.babylonjs.com/how_to/Solid_Particle_System
      */
     export class SolidParticleSystem implements IDisposable {
         /**
@@ -24919,7 +24924,7 @@ declare module BABYLON {
         mesh: Mesh;
         /**
          * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
-         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#garbage-collector-concerns
+         * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#garbage-collector-concerns
          */
         vars: any;
         /**
@@ -24928,7 +24933,7 @@ declare module BABYLON {
          * Each element of this array is an object `{idx: int, faceId: int}`.
          * `idx` is the picked particle index in the `SPS.particles` array
          * `faceId` is the picked face index counted within this particle.
-         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#pickable-particles
+         * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
          */
         pickedParticles: {
             idx: number;
@@ -25030,7 +25035,7 @@ declare module BABYLON {
         private _addParticle;
         /**
          * Adds some particles to the SPS from the model shape. Returns the shape id.
-         * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
+         * Please read the doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#create-an-immutable-sps
          * @param mesh is any Mesh object that will be used as a model for the solid particles.
          * @param nb (positive integer) the number of particles to be created from this model
          * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
@@ -25063,7 +25068,7 @@ declare module BABYLON {
         dispose(): void;
         /**
          * Visibilty helper : Recomputes the visible size according to the mesh bounding box
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
          * @returns the SPS.
          */
         refreshVisibleSize(): SolidParticleSystem;
@@ -25071,25 +25076,25 @@ declare module BABYLON {
          * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
          * @param size the size (float) of the visibility box
          * note : this doesn't lock the SPS mesh bounding box.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
          */
         setVisibilityBox(size: number): void;
         /**
          * Gets whether the SPS as always visible or not
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
          */
         /**
         * Sets the SPS as always visible or not
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
         */
         isAlwaysVisible: boolean;
         /**
          * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
          */
         /**
         * Gets if the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
         */
         isVisibilityBoxLocked: boolean;
         /**
@@ -25152,13 +25157,13 @@ declare module BABYLON {
         /**
          * This function does nothing. It may be overwritten to set all the particle first values.
          * The SPS doesn't call this function, you may have to call it by your own.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
          */
         initParticles(): void;
         /**
          * This function does nothing. It may be overwritten to recycle a particle.
          * The SPS doesn't call this function, you may have to call it by your own.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
          * @param particle The particle to recycle
          * @returns the recycled particle
          */
@@ -25166,7 +25171,7 @@ declare module BABYLON {
         /**
          * Updates a particle : this function should  be overwritten by the user.
          * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
          * @example : just set a particle position or velocity and recycle conditions
          * @param particle The particle to update
          * @returns the updated particle
@@ -25178,7 +25183,7 @@ declare module BABYLON {
          * @param particle the current particle
          * @param vertex the current index of the current particle
          * @param pt the index of the current vertex in the particle shape
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#update-each-particle-shape
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#update-each-particle-shape
          * @example : just set a vertex particle position
          * @returns the updated vertex
          */
@@ -31877,6 +31882,22 @@ declare module BABYLON {
          */
         static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string): void;
         /**
+         * Captures a screenshot of the current rendering
+         * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine defines the rendering engine
+         * @param camera defines the source camera
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution
+         * @param mimeType defines the MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+         * to the src parameter of an <img> to display it
+         */
+        static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType?: string): Promise<string>;
+        /**
          * Generates an image screenshot from the specified camera.
          * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
          * @param engine The engine to use for rendering
@@ -31896,6 +31917,25 @@ declare module BABYLON {
          * @param fileName A name for for the downloaded file.
          */
         static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): void;
+        /**
+         * Generates an image screenshot from the specified camera.
+         * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine The engine to use for rendering
+         * @param camera The camera to use for rendering
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution
+         * @param mimeType The MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         * @param samples Texture samples (default: 1)
+         * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+         * @param fileName A name for for the downloaded file.
+         * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+         * to the src parameter of an <img> to display it
+         */
+        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): Promise<string>;
         /**
          * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
          * Be aware Math.random() could cause collisions, but:
@@ -40432,6 +40472,10 @@ declare module BABYLON {
         private _onVRDisplayChanged;
         private _onVRRequestPresentStart;
         private _onVRRequestPresentComplete;
+        /**
+         * Gets or sets a boolean indicating that gaze can be enabled even if pointer lock is not engage (useful on iOS where fullscreen mode and pointer lock are not supported)
+         */
+        enableGazeEvenWhenNoPointerLock: boolean;
         /**
          * Gets or sets a boolean indicating that the VREXperienceHelper will exit VR if double tap is detected
          */
@@ -60280,6 +60324,22 @@ declare module BABYLON {
          */
         static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string): void;
         /**
+         * Captures a screenshot of the current rendering
+         * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine defines the rendering engine
+         * @param camera defines the source camera
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution
+         * @param mimeType defines the MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+         * to the src parameter of an <img> to display it
+         */
+        static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType?: string): Promise<string>;
+        /**
          * Generates an image screenshot from the specified camera.
          * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
          * @param engine The engine to use for rendering
@@ -60299,6 +60359,25 @@ declare module BABYLON {
          * @param fileName A name for for the downloaded file.
          */
         static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): void;
+        /**
+         * Generates an image screenshot from the specified camera.
+         * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine The engine to use for rendering
+         * @param camera The camera to use for rendering
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution
+         * @param mimeType The MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         * @param samples Texture samples (default: 1)
+         * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+         * @param fileName A name for for the downloaded file.
+         * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+         * to the src parameter of an <img> to display it
+         */
+        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): Promise<string>;
     }
 }
 declare module BABYLON {
