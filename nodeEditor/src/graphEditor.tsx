@@ -162,7 +162,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         });
 
         this.props.globalState.onZoomToFitRequiredObservable.add(() => {
-            this._engine.zoomToFit();
+            setTimeout(() => {
+                this._engine.zoomToFit();
+            });
         });
 
         this.props.globalState.onReOrganizedRequiredObservable.add(() => {
