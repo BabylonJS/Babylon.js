@@ -54,7 +54,7 @@ export class PortHelper {
                         {
                             !ignoreLabel &&
                             <div className="output-port-label">
-                                {port.name}
+                                {port.connection!.name}
                             </div>
                         }
                         <div className="output-port-plug">
@@ -111,7 +111,7 @@ export class PortHelper {
                                 </div>                         
                             </div>
                             <div className="input-port-label">
-                                {port.name}
+                                {port.connection!.name}
                             </div>   
                         </div>
                     );
