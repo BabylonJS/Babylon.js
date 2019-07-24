@@ -57,6 +57,7 @@ export class TransformNode extends Node {
     protected _scaling = Vector3.One();
     protected _isDirty = false;
     private _transformToBoneReferal: Nullable<TransformNode> = null;
+    private _isAbsoluteSynced = false;
 
     @serialize("billboardMode")
     private _billboardMode = TransformNode.BILLBOARDMODE_NONE;
@@ -145,6 +146,8 @@ export class TransformNode extends Node {
 
     private _usePivotMatrix = false;
     private _absolutePosition = Vector3.Zero();
+    private _absoluteScaling = Vector3.Zero();
+    private _absoluteRotationQuaternion = Quaternion.Identity();
     private _pivotMatrix = Matrix.Identity();
     private _pivotMatrixInverse: Matrix;
     protected _postMultiplyPivotMatrix = false;
@@ -351,6 +354,24 @@ export class TransformNode extends Node {
      */
     public get absolutePosition(): Vector3 {
         return this._absolutePosition;
+    }
+
+    /**
+     * Returns the current mesh absolute scaling.
+     * Returns a Vector3.
+     */
+    public get absoluteScaling(): Vector3 {
+        this._syncAbsoluteScalingAndRotation();
+        return this._absoluteScaling;
+    }
+
+    /**
+     * Returns the current mesh absolute rotation.
+     * Returns a Quaternion.
+     */
+    public get absoluteRotationQuaternion(): Quaternion {
+        this._syncAbsoluteScalingAndRotation();
+        return this._absoluteRotationQuaternion;
     }
 
     /**
@@ -1080,6 +1101,7 @@ export class TransformNode extends Node {
 
         // Absolute position
         this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
+        this._isAbsoluteSynced = false;
 
         // Callbacks
         this.onAfterWorldMatrixUpdateObservable.notifyObservers(this);
@@ -1309,5 +1331,12 @@ export class TransformNode extends Node {
         }
 
         return this;
+    }
+
+    private _syncAbsoluteScalingAndRotation(): void {
+        if (!this._isAbsoluteSynced) {
+            this._worldMatrix.decompose(this._absoluteScaling, this._absoluteRotationQuaternion);
+            this._isAbsoluteSynced = true;
+        }
     }
 }

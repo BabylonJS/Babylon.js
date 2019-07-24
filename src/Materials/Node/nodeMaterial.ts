@@ -127,6 +127,11 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
+     */
+    public ignoreAlpha = false;
+
+    /**
     * Defines the maximum number of lights that can be used in the material
     */
     public maxSimultaneousLights = 4;
@@ -365,6 +370,9 @@ export class NodeMaterial extends PushMaterial {
      * @returns a boolean specifying if alpha blending is needed
      */
     public needAlphaBlending(): boolean {
+        if (this.ignoreAlpha) {
+            return false;
+        }
         return (this.alpha < 1.0) || this._sharedData.hints.needAlphaBlending;
     }
 
