@@ -75,6 +75,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
     private _nodes = new Array<DefaultNodeModel>();
+    private _blocks = new Array<NodeMaterialBlock>();
 
     /** @hidden */
     public _toAdd: LinkModel[] | null = [];
@@ -84,10 +85,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
      * @param nodeMaterialBlock 
      */
     public createNodeFromObject(options: NodeCreationOptions) {
+        if (this._blocks.indexOf(options.nodeMaterialBlock) !== -1) {        
+            return this._nodes.filter(n => n.block === options.nodeMaterialBlock)[0];
+        }
+
+        this._blocks.push(options.nodeMaterialBlock);
+
         // Create new node in the graph
         var newNode: DefaultNodeModel;
         var filterInputs = [];
-
+       
         if (options.nodeMaterialBlock instanceof TextureBlock) {
             newNode = new TextureNodeModel();
             filterInputs.push("uv");
@@ -269,9 +276,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     // Block is deleted
                     let targetBlock = (e.node as GenericNodeModel).block;
 
-                    if (targetBlock && targetBlock.isFinalMerger) {
-                        this.props.globalState.nodeMaterial!.removeOutputNode(targetBlock);
-                    }
+                    if (targetBlock) {
+                        if (targetBlock.isFinalMerger) {
+                            this.props.globalState.nodeMaterial!.removeOutputNode(targetBlock);
+                        }
+                        let blockIndex = this._blocks.indexOf(targetBlock);
+
+                        if (blockIndex > -1) {
+                            this._blocks.splice(blockIndex, 1);
+                        }
+                    }                  
 
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 }
