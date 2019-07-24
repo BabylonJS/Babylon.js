@@ -17,8 +17,8 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
-        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, true);
+        this.registerInput("rgba-in", NodeMaterialBlockConnectionPointTypes.Color4, true);
+        this.registerInput("rgb-in", NodeMaterialBlockConnectionPointTypes.Color3, true);
 
         this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3);
         this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float);
