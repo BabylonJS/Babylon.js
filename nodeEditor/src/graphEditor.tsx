@@ -93,16 +93,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         // Create new node in the graph
         var newNode: DefaultNodeModel;
-        var filterInputs = [];
        
         if (options.nodeMaterialBlock instanceof TextureBlock) {
             newNode = new TextureNodeModel();
-            filterInputs.push("uv");
         } else if (options.nodeMaterialBlock instanceof LightBlock) {
             newNode = new LightNodeModel();
-            filterInputs.push("worldPosition");
-            filterInputs.push("worldNormal");
-            filterInputs.push("cameraPosition");
         } else if (options.nodeMaterialBlock instanceof InputBlock) {
             newNode = new InputNodeModel();
         } else {
@@ -117,7 +112,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._model.addAll(newNode);
 
         if (options.nodeMaterialBlock) {
-            newNode.prepare(options, this._nodes, this._model, this, filterInputs);
+            newNode.prepare(options, this._nodes, this._model, this);
         }
 
         return newNode;
