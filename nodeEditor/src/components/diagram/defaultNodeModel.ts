@@ -31,7 +31,7 @@ export class DefaultNodeModel extends NodeModel {
         }
         // Create output ports
         options.nodeMaterialBlock._outputs.forEach((connection: any) => {
-            var outputPort = new DefaultPortModel(connection.name, "output");
+            var outputPort = new DefaultPortModel(connection.name + "-output", "output");
             outputPort.syncWithNodeMaterialConnectionPoint(connection);
             this.addPort(outputPort)
         })
@@ -42,7 +42,7 @@ export class DefaultNodeModel extends NodeModel {
                 return;
             }
 
-            var inputPort = new DefaultPortModel(connection.name, "input");
+            var inputPort = new DefaultPortModel(connection.name + "-input", "input");
             inputPort.connection = connection;
             this.addPort(inputPort)
 
@@ -56,7 +56,7 @@ export class DefaultNodeModel extends NodeModel {
                     connectedNode = existingNodes[0];
                 }
 
-                let link = connectedNode.ports[connection.connectedPoint.name].link(inputPort);
+                let link = connectedNode.ports[connection.connectedPoint.name + "-output"].link(inputPort);
                 if (graphEditor._toAdd) {
                     graphEditor._toAdd.push(link);
                 } else {
