@@ -13516,6 +13516,7 @@ declare module BABYLON {
         protected _scaling: Vector3;
         protected _isDirty: boolean;
         private _transformToBoneReferal;
+        private _isAbsoluteSynced;
         private _billboardMode;
         /**
         * Gets or sets the billboard mode. Default is 0.
@@ -13558,6 +13559,8 @@ declare module BABYLON {
         /** @hidden */private _localMatrix: Matrix;
         private _usePivotMatrix;
         private _absolutePosition;
+        private _absoluteScaling;
+        private _absoluteRotationQuaternion;
         private _pivotMatrix;
         private _pivotMatrixInverse;
         protected _postMultiplyPivotMatrix: boolean;
@@ -13627,6 +13630,16 @@ declare module BABYLON {
          * Returns a Vector3.
          */
         readonly absolutePosition: Vector3;
+        /**
+         * Returns the current mesh absolute scaling.
+         * Returns a Vector3.
+         */
+        readonly absoluteScaling: Vector3;
+        /**
+         * Returns the current mesh absolute rotation.
+         * Returns a Quaternion.
+         */
+        readonly absoluteRotationQuaternion: Quaternion;
         /**
          * Sets a new matrix to apply before all other transformation
          * @param matrix defines the transform matrix
@@ -13908,6 +13921,7 @@ declare module BABYLON {
          * @returns the current mesh
          */
         normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean, predicate?: Nullable<(node: AbstractMesh) => boolean>): TransformNode;
+        private _syncAbsoluteScalingAndRotation;
     }
 }
 declare module BABYLON {
@@ -50498,10 +50512,6 @@ declare module BABYLON {
      */
     export class FragmentOutputBlock extends NodeMaterialBlock {
         /**
-         * Gets or sets a boolean indicating if this block will output an alpha value
-         */
-        alphaBlendingEnabled: boolean;
-        /**
          * Create a new FragmentOutputBlock
          * @param name defines the block name
          */
@@ -50591,6 +50601,10 @@ declare module BABYLON {
         private BJSNODEMATERIALEDITOR;
         /** Get the inspector from bundle or global */
         private _getGlobalNodeMaterialEditor;
+        /**
+         * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
+         */
+        ignoreAlpha: boolean;
         /**
         * Defines the maximum number of lights that can be used in the material
         */
