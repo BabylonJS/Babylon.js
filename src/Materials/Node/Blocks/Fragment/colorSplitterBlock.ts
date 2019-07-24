@@ -6,21 +6,25 @@ import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPo
 import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
- * Block used to expand a Color3 or a Vector3 into 3 outputs (one for each component)
+ * Block used to expand a Color3/4 into 4 outputs (one for each component)
  */
-export class RGBSplitterBlock extends NodeMaterialBlock {
+export class ColorSplitterBlock extends NodeMaterialBlock {
 
     /**
-     * Create a new RGBSplitterBlock
+     * Create a new ColorSplitterBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.Vector3OrColor3);
+        this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
+        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, true);
+
+        this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3);
         this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -28,24 +32,37 @@ export class RGBSplitterBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "RGBSplitterBlock";
+        return "ColorSplitterBlock";
     }
 
     /**
-     * Gets the input component
+     * Gets the rgba input component
      */
-    public get input(): NodeMaterialConnectionPoint {
+    public get rgba(): NodeMaterialConnectionPoint {
         return this._inputs[0];
+    }
+
+    /**
+     * Gets the rgb input component
+     */
+    public get rgb(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this.input;
-        let rOutput = this._outputs[0];
-        let gOutput = this._outputs[1];
-        let bOutput = this._outputs[2];
+        let input = this.rgba.isConnected ? this.rgba : this.rgb;
 
+        let rgbOutput = this._outputs[0];
+        let rOutput = this._outputs[1];
+        let gOutput = this._outputs[2];
+        let bOutput = this._outputs[3];
+        let aOutput = this._outputs[4];
+
+        if (rgbOutput.connectedBlocks.length > 0) {
+            state.compilationString += this._declareOutput(rgbOutput, state) + ` = ${input.associatedVariableName}.rgb;\r\n`;
+        }
         if (rOutput.connectedBlocks.length > 0) {
             state.compilationString += this._declareOutput(rOutput, state) + ` = ${input.associatedVariableName}.r;\r\n`;
         }
@@ -55,8 +72,12 @@ export class RGBSplitterBlock extends NodeMaterialBlock {
         if (bOutput.connectedBlocks.length > 0) {
             state.compilationString += this._declareOutput(bOutput, state) + ` = ${input.associatedVariableName}.b;\r\n`;
         }
+        if (aOutput.connectedBlocks.length > 0) {
+            state.compilationString += this._declareOutput(aOutput, state) + ` = ${input.associatedVariableName}.a;\r\n`;
+        }
+
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.RGBSplitterBlock"] = RGBSplitterBlock;
+_TypeStore.RegisteredTypes["BABYLON.ColorSplitterBlock"] = ColorSplitterBlock;

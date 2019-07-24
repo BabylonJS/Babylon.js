@@ -3,10 +3,10 @@ import { BonesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/bonesBlock';
 import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
 import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
 import { ImageProcessingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/imageProcessingBlock';
-import { RGBAMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaMergerBlock';
-import { RGBASplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaSplitterBlock';
-import { RGBMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbMergerBlock';
-import { RGBSplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbSplitterBlock';
+import { ColorMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/colorMergerBlock';
+import { VectorMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/vectorMergerBlock';
+import { ColorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/colorSplitterBlock';
+import { VectorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/vectorSplitterBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
@@ -33,14 +33,14 @@ export class BlockTools {
                 return new AlphaTestBlock("AlphaTest");
             case "ImageProcessingBlock":
                 return new ImageProcessingBlock("ImageProcessing");
-            case "RGBAMergerBlock":
-                return new RGBAMergerBlock("RGBAMerger");
-            case "RGBASplitterBlock":
-                return new RGBASplitterBlock("RGBASplitter");
-            case "RGBMergerBlock":
-                return new RGBMergerBlock("RGBMerger");
-            case "RGBSplitterBlock":
-                return new RGBSplitterBlock("RGBSplitter");
+            case "ColorMergerBlock":
+                return new ColorMergerBlock("ColorMerger");
+            case "VectorMergerBlock":
+                return new VectorMergerBlock("VectorMerger");                
+            case "ColorSplitterBlock":
+                return new ColorSplitterBlock("ColorSplitter");
+            case "VectorSplitterBlock":
+                return new VectorSplitterBlock("VectorSplitter");
             case "TextureBlock":
                 return new TextureBlock("Texture");
             case "LightBlock":
