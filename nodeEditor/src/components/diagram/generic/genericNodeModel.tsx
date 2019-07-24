@@ -37,8 +37,8 @@ export class GenericNodeModel extends DefaultNodeModel {
         super("generic");
     }
 
-    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
-        super.prepare(options, nodes, model, graphEditor, filterInputs);
+    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {
+        super.prepare(options, nodes, model, graphEditor);
     }
 
     renderProperties(globalState: GlobalState) {

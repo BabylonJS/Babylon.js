@@ -373,7 +373,7 @@ export class NodeMaterial extends PushMaterial {
         if (this.ignoreAlpha) {
             return false;
         }
-        return (this.alpha < 1.0) || this._sharedData.hints.needAlphaBlending;
+        return (this.alpha < 1.0) || (this._sharedData && this._sharedData.hints.needAlphaBlending);
     }
 
     /**
