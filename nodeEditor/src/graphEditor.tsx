@@ -162,9 +162,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         });
 
         this.props.globalState.onZoomToFitRequiredObservable.add(() => {
-            setTimeout(() => {
-                this._engine.zoomToFit();
-            });
+            this.zoomToFit();
         });
 
         this.props.globalState.onReOrganizedRequiredObservable.add(() => {
@@ -172,6 +170,24 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         })
 
         this.build(true);
+    }
+
+    zoomToFit(retry = 0) {
+        const xFactor = this._engine.canvas.clientWidth / this._engine.canvas.scrollWidth;
+        const yFactor = this._engine.canvas.clientHeight / this._engine.canvas.scrollHeight;
+        const zoomFactor = xFactor < yFactor ? xFactor : yFactor;
+
+        if (zoomFactor === 1) {
+            return;
+        }
+
+        this._engine.diagramModel.setZoomLevel(this._engine.diagramModel.getZoomLevel() * zoomFactor);
+        this._engine.diagramModel.setOffset(0, 0);
+        this._engine.repaintCanvas();
+        retry++;
+        if (retry < 4) {
+            setTimeout(() => this.zoomToFit(retry), 1);
+        }
     }
 
     distributeGraph() {

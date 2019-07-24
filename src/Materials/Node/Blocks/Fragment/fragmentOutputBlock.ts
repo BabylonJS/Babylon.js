@@ -10,10 +10,6 @@ import { _TypeStore } from '../../../../Misc/typeStore';
  */
 export class FragmentOutputBlock extends NodeMaterialBlock {
     /**
-     * Gets or sets a boolean indicating if this block will output an alpha value
-     */
-    public alphaBlendingEnabled = false;
-    /**
      * Create a new FragmentOutputBlock
      * @param name defines the block name
      */
@@ -60,7 +56,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         let rgba = this.rgba;
         let rgb = this.rgb;
         let a = this.a;
-        state.sharedData.hints.needAlphaBlending = this.alphaBlendingEnabled;
+        state.sharedData.hints.needAlphaBlending = rgba.isConnected || a.isConnected;
 
         if (rgba.connectedPoint) {
             state.compilationString += `gl_FragColor = ${rgba.associatedVariableName};\r\n`;
