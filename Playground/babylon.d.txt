@@ -51662,11 +51662,11 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to create a Color4 out of 4 inputs (one for each component)
+     * Block used to create a Color3/4 out of individual inputs (one for each component)
      */
-    export class RGBAMergerBlock extends NodeMaterialBlock {
+    export class ColorMergerBlock extends NodeMaterialBlock {
         /**
-         * Create a new RGBAMergerBlock
+         * Create a new ColorMergerBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -51676,39 +51676,31 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the R input component
+         * Gets the r component input
          */
         readonly r: NodeMaterialConnectionPoint;
         /**
-         * Gets the G input component
+         * Gets the g component input
          */
         readonly g: NodeMaterialConnectionPoint;
         /**
-         * Gets the B input component
+         * Gets the b component input
          */
         readonly b: NodeMaterialConnectionPoint;
         /**
-         * Gets the RGB input component
-         */
-        readonly rgb: NodeMaterialConnectionPoint;
-        /**
-         * Gets the R input component
+         * Gets the a component input
          */
         readonly a: NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {
     /**
-     * Block used to create a Color3 out of 3 inputs (one for each component)
+     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
      */
-    export class RGBMergerBlock extends NodeMaterialBlock {
+    export class VectorMergerBlock extends NodeMaterialBlock {
         /**
-         * Create a new RGBMergerBlock
+         * Create a new VectorMergerBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -51718,31 +51710,31 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the R component input
+         * Gets the x component input
          */
-        readonly r: NodeMaterialConnectionPoint;
+        readonly x: NodeMaterialConnectionPoint;
         /**
-         * Gets the G component input
+         * Gets the y component input
          */
-        readonly g: NodeMaterialConnectionPoint;
+        readonly y: NodeMaterialConnectionPoint;
         /**
-         * Gets the B component input
+         * Gets the z component input
          */
-        readonly b: NodeMaterialConnectionPoint;
+        readonly z: NodeMaterialConnectionPoint;
         /**
-         * Gets the output component
+         * Gets the w component input
          */
-        readonly output: NodeMaterialConnectionPoint;
+        readonly w: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {
     /**
-     * Block used to expand a Color4 or a Vector4 into 4 outputs (one for each component)
+     * Block used to expand a Color3/4 into 4 outputs (one for each component)
      */
-    export class RGBASplitterBlock extends NodeMaterialBlock {
+    export class ColorSplitterBlock extends NodeMaterialBlock {
         /**
-         * Create a new RGBASplitterBlock
+         * Create a new ColorSplitterBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -51752,19 +51744,23 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the input component
+         * Gets the rgba input component
          */
-        readonly input: NodeMaterialConnectionPoint;
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb input component
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {
     /**
-     * Block used to expand a Color3 or a Vector3 into 3 outputs (one for each component)
+     * Block used to expand a Vector3/4 into 4 outputs (one for each component)
      */
-    export class RGBSplitterBlock extends NodeMaterialBlock {
+    export class VectorSplitterBlock extends NodeMaterialBlock {
         /**
-         * Create a new RGBSplitterBlock
+         * Create a new VectorSplitterBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -51774,9 +51770,13 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the input component
+         * Gets the rgba input component
          */
-        readonly input: NodeMaterialConnectionPoint;
+        readonly xyzw: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb input component
+         */
+        readonly xyz: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
