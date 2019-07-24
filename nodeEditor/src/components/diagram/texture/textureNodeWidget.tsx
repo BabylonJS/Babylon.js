@@ -53,7 +53,7 @@ export class TextureNodeWidget extends React.Component<ITextureNodeWidgetProps> 
                 </div>
                 {
                     this.props.node && this.props.node.texture &&
-                    <TextureLineComponent ref="textureView" width={136} height={136} texture={this.props.node.texture} hideChannelSelect={true} />
+                    <TextureLineComponent ref="textureView" width={140} height={140} texture={this.props.node.texture} hideChannelSelect={true} />
                 }
             </div>
         );

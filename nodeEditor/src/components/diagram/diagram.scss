@@ -100,13 +100,6 @@
         }
     }
 
-    .preview {
-        border-bottom-left-radius: 16px;
-        border: black 4px solid;
-        border-left: 0px;
-        border-bottom: 0px;
-    }
-
     .inputs {
         grid-row: 2;
         grid-column: 1;
@@ -271,6 +264,11 @@
             height: 140px;
             grid-column: 1;
             grid-row: 3;     
+            overflow: hidden;
+            border-bottom-left-radius: 16px;
+            border: black 4px solid;
+            border-left: 0px;
+            border-bottom: 0px;
 
             canvas {
                 width: 100%;
