@@ -818,6 +818,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
+        zoomToFit(retry?: number): void;
         distributeGraph(): dagre.Node[];
         mapElements(): {
             id: string;
