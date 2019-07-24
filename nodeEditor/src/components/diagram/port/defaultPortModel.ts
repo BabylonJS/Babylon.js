@@ -37,7 +37,7 @@ export class DefaultPortModel extends PortModel {
 
     syncWithNodeMaterialConnectionPoint(connection: NodeMaterialConnectionPoint) {
         this.connection = connection;
-        this.name = connection.name + "-" + this.position;
+        this.name = connection.name;
     }
 
     getNodeModel() {
