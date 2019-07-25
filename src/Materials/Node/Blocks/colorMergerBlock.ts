@@ -34,31 +34,45 @@ export class ColorMergerBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the r component input
+     * Gets the r component (input)
      */
     public get r(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the g component input
+     * Gets the g component (input)
      */
     public get g(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the b component input
+     * Gets the b component (input)
      */
     public get b(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the a component input
+     * Gets the a component (input)
      */
     public get a(): NodeMaterialConnectionPoint {
         return this._inputs[3];
+    }
+
+    /**
+     * Gets the rgba component (output)
+     */
+    public get rgba(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
+    /**
+     * Gets the rgb component (output)
+     */
+    public get rgb(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {

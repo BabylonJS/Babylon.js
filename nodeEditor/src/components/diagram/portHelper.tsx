@@ -80,7 +80,7 @@ export class PortHelper {
         return outputPorts;
     }
 
-    public static GenerateInputPorts(node: Nullable<DefaultNodeModel>, includeOnly?: string[]) {
+    public static GenerateInputPorts(node: Nullable<DefaultNodeModel>, includeOnly?: string[], ignoreLabel: boolean = false) {
         if (!node) {
             return new Array<JSX.Element>();
         }
@@ -104,9 +104,12 @@ export class PortHelper {
                                     }                                
                                 </div>                         
                             </div>
-                            <div className="input-port-label">
-                                {port.connection!.name}
-                            </div>   
+                            {
+                                !ignoreLabel &&
+                                <div className="input-port-label">
+                                    {port.connection!.name}
+                                </div>   
+                            }
                         </div>
                     );
                 }
