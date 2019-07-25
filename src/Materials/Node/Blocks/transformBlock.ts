@@ -4,6 +4,7 @@ import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../Misc/typeStore';
+import { Scene } from '../../../scene';
 
 /**
  * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
@@ -81,6 +82,22 @@ export class TransformBlock extends NodeMaterialBlock {
         }
 
         return this;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.complementZ = this.complementZ;
+        serializationObject.complementW = this.complementW;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.complementZ = serializationObject.complementZ !== undefined ? serializationObject.complementZ : 0.0;
+        this.complementW = serializationObject.complementZ !== undefined ? serializationObject.complementW : 1.0;
     }
 }
 

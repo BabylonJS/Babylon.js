@@ -35,31 +35,52 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the x component input
+     * Gets the x component (input)
      */
     public get x(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the y component input
+     * Gets the y component (input)
      */
     public get y(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the z component input
+     * Gets the z component (input)
      */
     public get z(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the w component input
+     * Gets the w component (input)
      */
     public get w(): NodeMaterialConnectionPoint {
         return this._inputs[3];
+    }
+
+    /**
+     * Gets the xyzw component (output)
+     */
+    public get xyzw(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
+    /**
+     * Gets the xyz component (output)
+     */
+    public get xyz(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
+     * Gets the xy component (output)
+     */
+    public get xy(): NodeMaterialConnectionPoint {
+        return this._outputs[2];
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {

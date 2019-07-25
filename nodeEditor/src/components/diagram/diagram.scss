@@ -54,6 +54,19 @@
         }
     }
 
+     &.remap {
+        color:white;
+        background: #4086BB;
+
+        .value {
+            grid-row: 2;
+        }
+
+        .outputs, .inputs {
+            transform: translateY(5px);
+        }        
+    }
+
     &.attribute {
         background: #40866E;
     }
@@ -122,14 +135,6 @@
                     .input-port-connection {
                         background: greenyellow !important;
                     }
-                }
-
-                .input-port-connection {
-                    pointer-events: none;
-                    grid-column: 1;
-                    grid-row: 1;
-                    background: #2796B2;
-                    border-radius: 10px;
                 }
 
                 .input-port-type {
@@ -202,7 +207,8 @@
                     grid-column: 1;
                     grid-row: 1;
                     background: #2796B2;
-                    border-radius: 10px;
+                    border-radius: 10px;   
+                    transform: scale(1);
                 }
 
                 .output-port-type {

@@ -18,9 +18,10 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment);
 
         this.registerInput("xyzw", NodeMaterialBlockConnectionPointTypes.Vector4, true);
-        this.registerInput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("xyz ", NodeMaterialBlockConnectionPointTypes.Vector3, true);
 
         this.registerOutput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerOutput("xy", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerOutput("x", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("y", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("z", NodeMaterialBlockConnectionPointTypes.Float);
@@ -36,32 +37,77 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the rgba input component
+     * Gets the xyzw component (input)
      */
     public get xyzw(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the rgb input component
+     * Gets the xyz component (input)
      */
-    public get xyz(): NodeMaterialConnectionPoint {
+    public get xyzIn(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
+    /**
+     * Gets the xyz component (output)
+     */
+    public get xyzOut(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
+    /**
+     * Gets the xy component (output)
+     */
+    public get xy(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
+     * Gets the x component (output)
+     */
+    public get x(): NodeMaterialConnectionPoint {
+        return this._outputs[2];
+    }
+
+    /**
+     * Gets the y component (output)
+     */
+    public get y(): NodeMaterialConnectionPoint {
+        return this._outputs[3];
+    }
+
+    /**
+     * Gets the z component (output)
+     */
+    public get z(): NodeMaterialConnectionPoint {
+        return this._outputs[4];
+    }
+
+    /**
+     * Gets the w component (output)
+     */
+    public get w(): NodeMaterialConnectionPoint {
+        return this._outputs[5];
+    }
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this.xyzw.isConnected ? this.xyzw : this.xyz;
+        let input = this.xyzw.isConnected ? this.xyzw : this.xyzIn;
 
         let xyzOutput = this._outputs[0];
-        let xOutput = this._outputs[1];
-        let yOutput = this._outputs[2];
-        let zOutput = this._outputs[3];
-        let wOutput = this._outputs[4];
+        let xyOutput = this._outputs[1];
+        let xOutput = this._outputs[2];
+        let yOutput = this._outputs[3];
+        let zOutput = this._outputs[4];
+        let wOutput = this._outputs[5];
 
         if (xyzOutput.connectedBlocks.length > 0) {
             state.compilationString += this._declareOutput(xyzOutput, state) + ` = ${input.associatedVariableName}.xyz;\r\n`;
+        }
+        if (xyOutput.connectedBlocks.length > 0) {
+            state.compilationString += this._declareOutput(xyOutput, state) + ` = ${input.associatedVariableName}.xy;\r\n`;
         }
         if (xOutput.connectedBlocks.length > 0) {
             state.compilationString += this._declareOutput(xOutput, state) + ` = ${input.associatedVariableName}.x;\r\n`;
