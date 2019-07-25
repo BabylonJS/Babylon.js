@@ -51416,6 +51416,10 @@ declare module BABYLON {
         */
         imageProcessingConfiguration: ImageProcessingConfiguration;
         /**
+         * Gets an array of blocks that needs to be serialized even if they are not yet connected
+         */
+        attachedBlocks: NodeMaterialBlock[];
+        /**
          * Create a new node based material
          * @param name defines the material name
          * @param scene defines the hosting scene

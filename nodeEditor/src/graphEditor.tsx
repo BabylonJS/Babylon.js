@@ -90,19 +90,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         this._blocks.push(options.nodeMaterialBlock);
+        this.props.globalState.nodeMaterial!.attachedBlocks.push(options.nodeMaterialBlock);
 
         // Create new node in the graph
         var newNode: DefaultNodeModel;
-        var filterInputs = [];
        
         if (options.nodeMaterialBlock instanceof TextureBlock) {
             newNode = new TextureNodeModel();
-            filterInputs.push("uv");
         } else if (options.nodeMaterialBlock instanceof LightBlock) {
             newNode = new LightNodeModel();
-            filterInputs.push("worldPosition");
-            filterInputs.push("worldNormal");
-            filterInputs.push("cameraPosition");
         } else if (options.nodeMaterialBlock instanceof InputBlock) {
             newNode = new InputNodeModel();
         } else {
@@ -117,7 +113,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._model.addAll(newNode);
 
         if (options.nodeMaterialBlock) {
-            newNode.prepare(options, this._nodes, this._model, this, filterInputs);
+            newNode.prepare(options, this._nodes, this._model, this);
         }
 
         return newNode;
@@ -277,6 +273,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     let targetBlock = (e.node as GenericNodeModel).block;
 
                     if (targetBlock) {
+                        let attachedBlockIndex = this.props.globalState.nodeMaterial!.attachedBlocks.indexOf(targetBlock);
+                        if (attachedBlockIndex > -1) {
+                            this.props.globalState.nodeMaterial!.attachedBlocks.splice(attachedBlockIndex, 1);
+                        }
+
                         if (targetBlock.isFinalMerger) {
                             this.props.globalState.nodeMaterial!.removeOutputNode(targetBlock);
                         }

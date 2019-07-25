@@ -38,10 +38,10 @@ export class LightNodeModel extends DefaultNodeModel {
         );
     }
 
-    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
+    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {
         this._block = options.nodeMaterialBlock as LightBlock;
 
-        super.prepare(options, nodes, model, graphEditor, filterInputs);
+        super.prepare(options, nodes, model, graphEditor);
     }
 
 }

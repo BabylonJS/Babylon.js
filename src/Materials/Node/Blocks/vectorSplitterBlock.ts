@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { NodeMaterialBlock } from '../nodeMaterialBlock';
+import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
+import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
+import { _TypeStore } from '../../../Misc/typeStore';
 
 /**
  * Block used to expand a Vector3/4 into 4 outputs (one for each component)

@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { NodeMaterialBlock } from '../nodeMaterialBlock';
+import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
+import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
+import { _TypeStore } from '../../../Misc/typeStore';
 
 /**
  * Block used to expand a Color3/4 into 4 outputs (one for each component)
@@ -18,7 +18,7 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment);
 
         this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
-        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, true);
+        this.registerInput("rgb ", NodeMaterialBlockConnectionPointTypes.Color3, true);
 
         this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3);
         this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float);
