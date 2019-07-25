@@ -7,11 +7,13 @@ import { ColorMergerBlock } from 'babylonjs/Materials/Node/Blocks/colorMergerBlo
 import { VectorMergerBlock } from 'babylonjs/Materials/Node/Blocks/vectorMergerBlock';
 import { ColorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/colorSplitterBlock';
 import { VectorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/vectorSplitterBlock';
+import { RemapBlock } from 'babylonjs/Materials/Node/Blocks/remapBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
 import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertexOutputBlock';
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
+import { NormalizeBlock } from 'babylonjs/Materials/Node/Blocks/normalizeBlock';
 import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
 import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
@@ -63,6 +65,10 @@ export class BlockTools {
                 return new MultiplyBlock("Multiply");
             case "TransformBlock":
                 return new TransformBlock("Transform");
+            case "RemapBlock":
+                return new RemapBlock("Remap");
+            case "NormalizeBlock":
+                return new NormalizeBlock("Normalize");
         }
 
         return null;

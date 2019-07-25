@@ -36,23 +36,56 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the rgba input component
+     * Gets the rgba component (input)
      */
     public get rgba(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the rgb input component
+     * Gets the rgb component (input)
      */
-    public get rgb(): NodeMaterialConnectionPoint {
+    public get rgbIn(): NodeMaterialConnectionPoint {
         return this._inputs[1];
+    }
+
+    /**
+     * Gets the rgb component (output)
+     */
+    public get rgbOut(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
+    /**
+     * Gets the r component (output)
+     */
+    public get r(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
+     * Gets the g component (output)
+     */
+    public get g(): NodeMaterialConnectionPoint {
+        return this._outputs[2];
+    }
+    /**
+     * Gets the b component (output)
+     */
+    public get b(): NodeMaterialConnectionPoint {
+        return this._outputs[3];
+    }
+    /**
+     * Gets the a component (output)
+     */
+    public get a(): NodeMaterialConnectionPoint {
+        return this._outputs[4];
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this.rgba.isConnected ? this.rgba : this.rgb;
+        let input = this.rgba.isConnected ? this.rgba : this.rgbIn;
 
         let rgbOutput = this._outputs[0];
         let rOutput = this._outputs[1];
