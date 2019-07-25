@@ -328,6 +328,11 @@ export class VRExperienceHelper {
     private _onVRRequestPresentComplete: (success: boolean) => void;
 
     /**
+     * Gets or sets a boolean indicating that gaze can be enabled even if pointer lock is not engage (useful on iOS where fullscreen mode and pointer lock are not supported)
+     */
+    public enableGazeEvenWhenNoPointerLock = false;
+
+    /**
      * Gets or sets a boolean indicating that the VREXperienceHelper will exit VR if double tap is detected
      */
     public exitVROnDoubleTap = true;
@@ -1218,7 +1223,7 @@ export class VRExperienceHelper {
             this._castRayAndSelectObject(this._rightController);
         }
 
-        if (this._noControllerIsActive && this._scene.getEngine().isPointerLock) {
+        if (this._noControllerIsActive && (this._scene.getEngine().isPointerLock || this.enableGazeEvenWhenNoPointerLock)) {
             this._castRayAndSelectObject(this._cameraGazer);
         } else {
             this._cameraGazer._gazeTracker.isVisible = false;
@@ -1865,7 +1870,7 @@ export class VRExperienceHelper {
         var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
 
         if (hit) {
-            // Populate the contrllers mesh that can be used for drag/drop
+            // Populate the controllers mesh that can be used for drag/drop
             if ((<any>gazer)._laserPointer) {
                 hit.originMesh = (<any>gazer)._laserPointer.parent;
             }

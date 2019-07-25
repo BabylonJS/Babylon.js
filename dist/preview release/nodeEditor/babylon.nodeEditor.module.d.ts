@@ -5,10 +5,10 @@ declare module "babylonjs-node-editor/blockTools" {
     import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
     import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
     import { ImageProcessingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/imageProcessingBlock';
-    import { RGBAMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaMergerBlock';
-    import { RGBASplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaSplitterBlock';
-    import { RGBMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbMergerBlock';
-    import { RGBSplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbSplitterBlock';
+    import { ColorMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/colorMergerBlock';
+    import { VectorMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/vectorMergerBlock';
+    import { ColorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/colorSplitterBlock';
+    import { VectorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/vectorSplitterBlock';
     import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
     import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
     import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
@@ -22,7 +22,7 @@ declare module "babylonjs-node-editor/blockTools" {
     import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
     import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
     export class BlockTools {
-        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | RGBAMergerBlock | RGBASplitterBlock | RGBMergerBlock | RGBSplitterBlock | TextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | null;
+        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -962,6 +962,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _leftWidth;
         private _rightWidth;
         private _nodes;
+        private _blocks;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -972,6 +973,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
+        zoomToFit(retry?: number): void;
         distributeGraph(): dagre.Node[];
         mapElements(): {
             id: string;
@@ -1080,7 +1082,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.RGBAMergerBlock | BABYLON.RGBASplitterBlock | BABYLON.RGBMergerBlock | BABYLON.RGBSplitterBlock | BABYLON.TextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | null;
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -1887,6 +1889,7 @@ declare module NODEEDITOR {
         private _leftWidth;
         private _rightWidth;
         private _nodes;
+        private _blocks;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -1897,6 +1900,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
+        zoomToFit(retry?: number): void;
         distributeGraph(): dagre.Node[];
         mapElements(): {
             id: string;

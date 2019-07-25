@@ -1494,20 +1494,20 @@ var Button = /** @class */ (function (_super) {
         if (!_super.prototype.contains.call(this, x, y)) {
             return false;
         }
-        var processObservables = true;
         if (this.delegatePickingToChildren) {
-            processObservables = false;
+            var contains = false;
             for (var index = this._children.length - 1; index >= 0; index--) {
                 var child = this._children[index];
                 if (child.isEnabled && child.isHitTestVisible && child.isVisible && !child.notRenderable && child.contains(x, y)) {
-                    processObservables = true;
+                    contains = true;
                     break;
                 }
             }
+            if (!contains) {
+                return false;
+            }
         }
-        if (processObservables) {
-            this._processObservables(type, x, y, pointerId, buttonIndex);
-        }
+        this._processObservables(type, x, y, pointerId, buttonIndex);
         return true;
     };
     /** @hidden */

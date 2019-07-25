@@ -23,7 +23,7 @@ export class DefaultNodeModel extends NodeModel {
         super(key);
     }
 
-    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
+    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {
         this.block = options.nodeMaterialBlock || null;
 
         if (!options.nodeMaterialBlock) {
@@ -38,9 +38,6 @@ export class DefaultNodeModel extends NodeModel {
 
         // Create input ports and nodes if they exist
         options.nodeMaterialBlock._inputs.forEach((connection) => {
-            if (filterInputs.length > 0 && filterInputs.indexOf(connection.name) === -1) {
-                return;
-            }
 
             var inputPort = new DefaultPortModel(connection.name, "input");
             inputPort.connection = connection;

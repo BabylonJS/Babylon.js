@@ -16,7 +16,7 @@ export class DraggableLineComponent extends React.Component<IButtonLineComponent
                 onDragStart={event => {
                     event.dataTransfer.setData("babylonjs-material-node", this.props.data);
                 }}>
-                {this.props.data}
+                {this.props.data.replace("Block", "")}
             </div>
         );
     }
