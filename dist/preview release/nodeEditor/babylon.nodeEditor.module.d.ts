@@ -5,10 +5,10 @@ declare module "babylonjs-node-editor/blockTools" {
     import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
     import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
     import { ImageProcessingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/imageProcessingBlock';
-    import { ColorMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/colorMergerBlock';
-    import { VectorMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/vectorMergerBlock';
-    import { ColorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/colorSplitterBlock';
-    import { VectorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/vectorSplitterBlock';
+    import { ColorMergerBlock } from 'babylonjs/Materials/Node/Blocks/colorMergerBlock';
+    import { VectorMergerBlock } from 'babylonjs/Materials/Node/Blocks/vectorMergerBlock';
+    import { ColorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/colorSplitterBlock';
+    import { VectorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/vectorSplitterBlock';
     import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
     import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
     import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
@@ -133,7 +133,7 @@ declare module "babylonjs-node-editor/components/diagram/generic/genericNodeMode
          * Constructs the node model
          */
         constructor();
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
         renderProperties(globalState: GlobalState): JSX.Element;
     }
 }
@@ -407,7 +407,7 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureNodeMode
          */
         constructor();
         renderProperties(globalState: GlobalState): JSX.Element;
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
     }
 }
 declare module "babylonjs-node-editor/sharedComponents/textureLineComponent" {
@@ -860,7 +860,7 @@ declare module "babylonjs-node-editor/components/diagram/light/lightNodeModel" {
          */
         constructor();
         renderProperties(globalState: GlobalState): JSX.Element;
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
     }
 }
 declare module "babylonjs-node-editor/components/diagram/light/lightNodeWidget" {
@@ -1021,7 +1021,7 @@ declare module "babylonjs-node-editor/components/diagram/defaultNodeModel" {
          * Constructs the node model
          */
         constructor(key: string);
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
         renderProperties(globalState: GlobalState): JSX.Element | null;
     }
 }
@@ -1182,7 +1182,7 @@ declare module NODEEDITOR {
          * Constructs the node model
          */
         constructor();
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
         renderProperties(globalState: GlobalState): JSX.Element;
     }
 }
@@ -1416,7 +1416,7 @@ declare module NODEEDITOR {
          */
         constructor();
         renderProperties(globalState: GlobalState): JSX.Element;
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
     }
 }
 declare module NODEEDITOR {
@@ -1805,7 +1805,7 @@ declare module NODEEDITOR {
          */
         constructor();
         renderProperties(globalState: GlobalState): JSX.Element;
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
     }
 }
 declare module NODEEDITOR {
@@ -1942,7 +1942,7 @@ declare module NODEEDITOR {
          * Constructs the node model
          */
         constructor(key: string);
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
         renderProperties(globalState: GlobalState): JSX.Element | null;
     }
 }
