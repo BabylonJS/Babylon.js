@@ -23,7 +23,7 @@ export class DefaultNodeModel extends NodeModel {
         super(key);
     }
 
-    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
+    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {
         this.block = options.nodeMaterialBlock || null;
 
         if (!options.nodeMaterialBlock) {
@@ -31,18 +31,15 @@ export class DefaultNodeModel extends NodeModel {
         }
         // Create output ports
         options.nodeMaterialBlock._outputs.forEach((connection: any) => {
-            var outputPort = new DefaultPortModel(connection.name + "-output", "output");
+            var outputPort = new DefaultPortModel(connection.name, "output");
             outputPort.syncWithNodeMaterialConnectionPoint(connection);
             this.addPort(outputPort)
         })
 
         // Create input ports and nodes if they exist
         options.nodeMaterialBlock._inputs.forEach((connection) => {
-            if (filterInputs.length > 0 && filterInputs.indexOf(connection.name) === -1) {
-                return;
-            }
 
-            var inputPort = new DefaultPortModel(connection.name + "-input", "input");
+            var inputPort = new DefaultPortModel(connection.name, "input");
             inputPort.connection = connection;
             this.addPort(inputPort)
 
@@ -56,7 +53,7 @@ export class DefaultNodeModel extends NodeModel {
                     connectedNode = existingNodes[0];
                 }
 
-                let link = connectedNode.ports[connection.connectedPoint.name + "-output"].link(inputPort);
+                let link = connectedNode.ports[connection.connectedPoint.name].link(inputPort);
                 if (graphEditor._toAdd) {
                     graphEditor._toAdd.push(link);
                 } else {
