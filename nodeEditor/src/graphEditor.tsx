@@ -375,13 +375,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         // Load graph of nodes from the material
         if (this.props.globalState.nodeMaterial) {
-            var material: any = this.props.globalState.nodeMaterial;
+            var material = this.props.globalState.nodeMaterial;
             material._vertexOutputNodes.forEach((n: any) => {
                 this.createNodeFromObject({ nodeMaterialBlock: n });
-            })
+            });
             material._fragmentOutputNodes.forEach((n: any) => {
                 this.createNodeFromObject({ nodeMaterialBlock: n });
-            })
+            });
+
+            material.attachedBlocks.forEach((n: any) => {
+                this.createNodeFromObject({ nodeMaterialBlock: n });
+            });
         }
 
         // load model into engine
@@ -417,7 +421,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
         let newInputBlock = new InputBlock(type, undefined, nodeType);
-        newInputBlock.setDefaultValue();
         var localNode = this.createNodeFromObject({ type: type, nodeMaterialBlock: newInputBlock })
 
         return localNode;

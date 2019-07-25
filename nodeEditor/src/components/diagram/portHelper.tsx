@@ -91,7 +91,6 @@ export class PortHelper {
                 let typeIndicator = this._GetPortTypeIndicator(port.connection!);
                 let style = this._GetPortStyle(port.connection!.type);
 
-                let isConnected = port.connection && port.connection.endpoints.length > 0;
                 if (!includeOnly || includeOnly.indexOf(port.name) !== -1) {
                     inputPorts.push(
                         <div key={key} className="input-port">
@@ -99,11 +98,6 @@ export class PortHelper {
                                 <div className="input-port-border">                                
                                 </div>
                                 <DefaultPortWidget key={key} name={port.name} node={node} style={style}/>
-                                {
-                                    !isConnected &&
-                                    <div className="output-port-connection">                             
-                                    </div>                            
-                                }                                
                                 <div className="input-port-type"> 
                                     {
                                         typeIndicator
