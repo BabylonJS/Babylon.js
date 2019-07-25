@@ -414,6 +414,13 @@ body {
 .navbar .select {
     position: relative;
 }
+.navbar .select span {
+    width: 100%;
+    height: 55px;
+    line-height: 55px;
+    font-family: "acumin-pro-extra-condensed";
+    font-size: 20px;
+}
 
 .navbar .select .subSelect {
     position: relative; 
@@ -428,6 +435,10 @@ body {
     display: none;
     text-transform: uppercase;
     background-color: #201936;
+}
+.navbar .select .toDisplay.currentVersionDisplay {
+    width: 100%;
+    display: none;
 }
 .navbar .select .toDisplay .option {
     font-size: 20px;
@@ -453,9 +464,6 @@ body {
 }
 .navbar .select .toDisplay.languageTS .option:hover {
     background-color: #ff7656;
-}
-.navbar .select .toDisplay.currentVersionDisplay {
-    width: auto;
 }
 
 .navbar .select .subSelect .toDisplaySub {
@@ -491,7 +499,17 @@ body {
     color: white;
     background-color: #ff7656;
 }
-
+.navbar .select .subSelect .qrCodeImage div {
+    width: 256px;
+    height: 256px;
+    padding: 2px;
+}
+.navbar .select .subSelect .qrCodeImage.languageJS div {
+    background-color: #9379e6;
+}
+.navbar .select .subSelect .qrCodeImage.languageTS div {
+    background-color: #e0684b;
+}
 
 .navbar .select .toDisplayBig.dark {
     background-color: #333;    
@@ -558,11 +576,6 @@ body {
 .navbar .check.uncheck:after {
     font-family: 'FontAwesome', sans-serif;
     content: "\00a0 \00a0 \00a0 \f096";
-}
-
-#qrCodeImage div {
-    width: 256px;
-    height: 256px;
 }
 
 #errorZone {
@@ -686,12 +699,6 @@ body {
     .navBar1024 { display: none; }
     .navBarMobile { display: none; }
 
-    #qrCodeImage {
-        height:auto;
-        padding: 20px;
-        padding-bottom: 10px;
-    }
-
     .navbar .select .toDisplayBig ul {
         column-count: 3;
     }
@@ -700,12 +707,6 @@ body {
     .navBar1280 { display: none; }
     .navBar1024 { display: block; }
     .navBarMobile { display: none; }
-
-    #qrCodeImage {
-        height:auto;
-        padding: 20px;
-        padding-bottom: 10px;
-    }
 
     .navbar .categoryTitle {
         width: 315px;

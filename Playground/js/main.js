@@ -125,7 +125,6 @@ class Main {
         this.parent.utils.setToMultipleID("editorFullscreenButton", "click", this.parent.menuPG.editorGoFullscreen.bind(this.parent.menuPG));
         // Format
         this.parent.utils.setToMultipleID("formatButton", "click", this.parent.monacoCreator.formatCode.bind(this.parent.monacoCreator));
-        this.parent.utils.setToMultipleID("qrCodeHover", "over", this.parent.menuPG.showQRCode.bind(this.parent.menuPG));
         // Minimap
         this.parent.utils.setToMultipleID("minimapToggle", "click", this.parent.monacoCreator.toggleMinimap.bind(this.parent.monacoCreator));
         // Debug
@@ -137,6 +136,8 @@ class Main {
 
         // Restore theme
         this.parent.settingsPG.restoreTheme();
+        // Restore font size
+        this.parent.settingsPG.restoreFont();
         // Restore language
         this.parent.settingsPG.setScriptLanguage();
         // Check if it's mobile mode. If true, switch to full canvas by default
@@ -298,7 +299,6 @@ class Main {
                             var query = queryString.replace("?", "");
                             index = parseInt(query);
                             if (!isNaN(index)) {
-                                // TO DO - Should we remove this deprecated code ?
                                 var newPG = "";
                                 switch (index) {
                                     case 1: newPG = "#TAZ2CB#0"; break; // Basic scene
@@ -507,10 +507,7 @@ class Main {
          */
     compileAndRun() {
         try {
-            var waitRing = document.getElementById("waitDiv");
-            if (waitRing) {
-                waitRing.style.display = "none";
-            }
+            this.parent.menuPG.hideWaitDiv();
 
             if (!BABYLON.Engine.isSupported()) {
                 this.parent.utils.showError("Your browser does not support WebGL. Please, try to update it, or install a compatible one.", null);
