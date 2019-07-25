@@ -8,8 +8,6 @@ class SettingsPG {
     constructor(parent) {
         this.parent = parent;
 
-        // TO DO - Set the fond in the localStorage (same as theme and language)
-
         // The elements that will color with languages
         this.elementForscriptLanguage = [
             '#exampleList #exampleBanner',
@@ -27,20 +25,23 @@ class SettingsPG {
             '.wrapper .gutter'
         ];
         // Editor font size
-        this.fontSize = 14;
+        this.fontSize = localStorage.getItem("bjs-playground-font") || 14;
         // Editor theme
         this.vsTheme = localStorage.getItem("bjs-playground-theme") || 'light';
         // Editor language
         this.scriptLanguage = localStorage.getItem("bjs-playground-scriptLanguage") || 'JS';
         this.defaultScene = "scripts/basic scene.js";
-        if(this.scriptLanguage == "JS") {
+        if (this.scriptLanguage == "JS") {
             this.defaultScene = "scripts/basic scene.js";
             this.parent.monacoCreator.monacoMode = "javascript";
         }
-        else if(this.scriptLanguage == "TS") {
+        else if (this.scriptLanguage == "TS") {
             this.defaultScene = "scripts/basic scene.txt";
             this.parent.monacoCreator.monacoMode = "typescript";
         }
+
+        // Last BJS version
+        this.lastBJSversionURL = "";
     }
 
     get ScriptLanguage() {
@@ -59,6 +60,7 @@ class SettingsPG {
      * Change font size
      */
     setFontSize(size) {
+        localStorage.setItem("bjs-playground-font", size);
         this.fontSize = size;
         this.parent.monacoCreator.jsEditor.updateOptions({ fontSize: size });
         var array = document.getElementsByClassName("displayFontSize");
@@ -71,6 +73,10 @@ class SettingsPG {
             }
         }
     };
+    restoreFont() {
+        this.setFontSize(this.fontSize);
+    };
+
     /**
      * Toggle Typescript / Javascript language
      */
@@ -92,6 +98,7 @@ class SettingsPG {
             this.parent.utils.setToMultipleID("toJSbutton", "addClass", "floatLeft");
         }
     };
+
     /**
      * Set the theme (dark / light)
      */
@@ -127,5 +134,22 @@ class SettingsPG {
     };
     restoreTheme() {
         this.setTheme(this.vsTheme, this.parent.monacoCreator);
+    };
+
+    /**
+     * Set a different BJS version
+     */
+    setBJSversion(evt) {
+        // if(this.lastBJSversionURL != '') unload(this.lastBJSversionURL);
+        BABYLON = null;
+
+        var newScript = document.createElement('script');
+        this.lastBJSversionURL = evt.target.value;
+        newScript.src = this.lastBJSversionURL;
+        newScript.onload = function () {
+            this.parent.menuPG.displayVersionNumber(BABYLON.Engine.Version);
+        }.bind(this);
+
+        document.head.appendChild(newScript);
     };
 };
