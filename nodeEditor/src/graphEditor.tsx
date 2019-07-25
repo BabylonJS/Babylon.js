@@ -90,6 +90,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         this._blocks.push(options.nodeMaterialBlock);
+        this.props.globalState.nodeMaterial!.attachedBlocks.push(options.nodeMaterialBlock);
 
         // Create new node in the graph
         var newNode: DefaultNodeModel;
@@ -272,6 +273,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     let targetBlock = (e.node as GenericNodeModel).block;
 
                     if (targetBlock) {
+                        let attachedBlockIndex = this.props.globalState.nodeMaterial!.attachedBlocks.indexOf(targetBlock);
+                        if (attachedBlockIndex > -1) {
+                            this.props.globalState.nodeMaterial!.attachedBlocks.splice(attachedBlockIndex, 1);
+                        }
+
                         if (targetBlock.isFinalMerger) {
                             this.props.globalState.nodeMaterial!.removeOutputNode(targetBlock);
                         }
