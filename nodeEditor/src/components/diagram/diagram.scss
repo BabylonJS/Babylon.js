@@ -124,14 +124,6 @@
                     }
                 }
 
-                .input-port-connection {
-                    pointer-events: none;
-                    grid-column: 1;
-                    grid-row: 1;
-                    background: #2796B2;
-                    border-radius: 10px;
-                }
-
                 .input-port-type {
                     width: 15px;
                     pointer-events: none;
@@ -202,7 +194,8 @@
                     grid-column: 1;
                     grid-row: 1;
                     background: #2796B2;
-                    border-radius: 10px;
+                    border-radius: 10px;   
+                    transform: scale(1);
                 }
 
                 .output-port-type {

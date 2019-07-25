@@ -32,20 +32,26 @@ export class InputBlock extends NodeMaterialBlock {
         if (this._type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
             if (this.isUniform && this.value != null) {
                 if (!isNaN(this.value)) {
-                    return NodeMaterialBlockConnectionPointTypes.Float;
+                    this._type = NodeMaterialBlockConnectionPointTypes.Float;
+                    return this._type;
                 }
 
                 switch (this.value.getClassName()) {
                     case "Vector2":
-                        return NodeMaterialBlockConnectionPointTypes.Vector2;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
+                        return this._type;
                     case "Vector3":
-                        return NodeMaterialBlockConnectionPointTypes.Vector3;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
+                        return this._type;
                     case "Vector4":
-                        return NodeMaterialBlockConnectionPointTypes.Vector4;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
+                        return this._type;
                     case "Color3":
-                        return NodeMaterialBlockConnectionPointTypes.Color3;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Color3;
+                        return this._type;
                     case "Color4":
-                        return NodeMaterialBlockConnectionPointTypes.Color4;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Color4;
+                        return this._type;
                 }
             }
 
@@ -54,10 +60,12 @@ export class InputBlock extends NodeMaterialBlock {
                     case "position":
                     case "normal":
                     case "tangent":
-                        return NodeMaterialBlockConnectionPointTypes.Vector3;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
+                        return this._type;
                     case "uv":
                     case "uv2":
-                        return NodeMaterialBlockConnectionPointTypes.Vector2;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
+                        return this._type;
                 }
             }
 
@@ -69,9 +77,11 @@ export class InputBlock extends NodeMaterialBlock {
                     case NodeMaterialWellKnownValues.View:
                     case NodeMaterialWellKnownValues.ViewProjection:
                     case NodeMaterialWellKnownValues.Projection:
-                        return NodeMaterialBlockConnectionPointTypes.Matrix;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Matrix;
+                        return this._type;
                     case NodeMaterialWellKnownValues.CameraPosition:
-                        return NodeMaterialBlockConnectionPointTypes.Vector3;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
+                        return this._type;
                 }
             }
         }
@@ -89,6 +99,8 @@ export class InputBlock extends NodeMaterialBlock {
         super(name, target, false, true);
 
         this._type = type;
+
+        this.setDefaultValue();
 
         this.registerOutput("output", type);
     }
