@@ -101,8 +101,8 @@
                     </div>
                     <div class="option subSelect" id="qrCodeHover1280">QR Code Link <i
                             class="fa fa-chevron-right" aria-hidden="true"></i>
-                        <div class="toDisplaySub">
-                            <div class="option" id="qrCodeImage1280">QR Code Image</div>
+                        <div class="toDisplaySub qrCodeImage">
+                            <div class="option" id="qrCodeImage1280">[QR Code Image]</div>
                         </div>
                     </div>
                     <div class="option uncheck noSubSelect" id="debugButton1280">Inspector</div>
@@ -112,11 +112,9 @@
         </div>
 
         <div class="category right">
-            <div class="button select" style="display: none;">
-                <span id="currentVersion1280">v.</span>
-                <div class="toDisplay currentVersionDisplay">
-                    <div class="option">4.0</div>
-                </div>
+            <div class="button select">
+                <span id="currentVersion1280"></span>
+                <div class="toDisplay currentVersionDisplay" style="display: none"></div>
             </div>
             <div class="button select"><img class="examplesButton" src="css/img/examplesButton.svg"></div>
         </div>
@@ -172,8 +170,8 @@
                     </div>
                     <div class="option subSelect" id="qrCodeHover1024">QR Code Link <i
                             class="fa fa-chevron-right" aria-hidden="true"></i>
-                        <div class="toDisplaySub">
-                            <div class="option" id="qrCodeImage1024">QR Code Image</div>
+                        <div class="toDisplaySub qrCodeImage">
+                            <div class="option" id="qrCodeImage1024">[QR Code Image]</div>
                         </div>
                     </div>
                     <div class="option uncheck noSubSelect" id="debugButton1024">Inspector</div>
@@ -183,10 +181,9 @@
         </div>
 
         <div class="category right">
-            <div class="button select" style="display: none;">
-                <span id="currentVersion1024">v.</span>
-                <div class="toDisplay currentVersionDisplay">
-                    <div class="option">4.0</div>
+            <div class="button select">
+                <span id="currentVersion1024"></span>
+                <div class="toDisplay currentVersionDisplay" style="display: none">
                 </div>
             </div>
             <div class="button select"><img class="examplesButton" src="css/img/examplesButton.svg"></div>
@@ -207,6 +204,12 @@
                     <div class="option noSubSelect" id="newButtonMobile"><img src="css/img/newButton.svg">New</div>
                     <div class="option noSubSelect" id="clearButtonMobile"><img src="css/img/clearButton.svg">Clear</div>
                     <div class="option noSubSelect" id="debugButtonMobile"><img src="css/img/inspectorButton.svg">Inspector</div>
+                    <div class="option subSelect">
+                        <img src="css/img/optionsButton.svg">
+                        Version<div id="currentVersionMobile" style="display: none"></div>
+                        <div class="toDisplaySub currentVersionDisplay">
+                        </div>
+                    </div>
                     <div class="option subSelect"><img src="css/img/optionsButton.svg">Theme
                         <div class="toDisplaySub">
                             <div class="option selected" id="darkThemeMobile">Dark</div>
@@ -238,11 +241,11 @@
                     <div style="display: none;" class="option nosubselect" id="minimapToggleMobile">Minimap
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option subSelect" id="qrCodeHoverMobile"><img src="css/img/optionsButton.svg">QR Code Link
-                        <div class="toDisplaySub">
-                            <div class="option" id="qrCodeImage">QR Code Image</div>
+                    <!-- <div class="option subSelect" id="qrCodeHoverMobile"><img src="css/img/optionsButton.svg">QR Code Link
+                        <div class="toDisplaySub qrCodeImage">
+                            <div class="option" id="qrCodeImageMobile">[QR Code Image]</div>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="option nosubselect" id="metadataButtonMobile"><img
                             src="css/img/metadataButton.svg">Metadata</div>
                     <div class="option nosubselect"><img class="examplesButton"
@@ -271,15 +274,6 @@
             <div class="categoryTitle">
                 <img class="logo" src="css/img/logo_v4.svg">
                 <div class="version"><span class="versionSub" id="mainTitleMobile"></span></div>
-            </div>
-        </div>
-
-        <div class="category right">
-            <div class="button select" style="display: none;">
-                <span id="currentVersionMobile">v.</span>
-                <div class="toDisplay currentVersionDisplay">
-                    <div class="option">4.0</div>
-                </div>
             </div>
         </div>
 
@@ -372,6 +366,7 @@
     <script src="js/qrcode.js"></script>
 
     <!-- Main scripts -->
+    <script src="js/config_versions.js"></script>
     <script src="js/pbt.js"></script>
     <script src="js/libs/typescript.js"></script>
     <script src="js/examples.js"></script>

@@ -8,7 +8,9 @@ class Utils {
         this.multipleSize = [1280, 1024, 'Mobile'];
     }
 
-    // TO DO - Comment this correctly
+    /**
+     * When something is written in the editor, it reset the safe mode
+     */
     markDirty() {
         if (this.parent.monacoCreator.BlockEditorChange) return;
 

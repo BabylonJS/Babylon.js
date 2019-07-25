@@ -40,7 +40,6 @@ class MenuPG {
         document.getElementById('runButtonMobile').addEventListener('click', this.resizeBigCanvas.bind(this));
 
         // Code editor by default.
-        // TO DO - Check why it doesn't work.
         if (this.navBarMobile.offsetHeight > 0) this.resizeBigJsEditor();
 
         // Handle click on select elements
@@ -88,8 +87,61 @@ class MenuPG {
         window.addEventListener('click', function () {
             this.removeAllOptions();
         }.bind(this));
+
+        // Version selection
+        for (var i = 0; i < this.parent.utils.multipleSize.length; i++) {
+            var versionButtons = document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement;
+            versionButtons.addEventListener("click", function (evt) {
+                this.displayVersionsMenu(evt);
+            }.bind(this));
+
+            for (var j = 0; j < CONFIG_last_versions.length; j++) {
+                var newButton = document.createElement("div");
+                newButton.classList.add("option");
+                // newButton.classList.add("noSubSelect");
+                newButton.innerText = CONFIG_last_versions[j][0];
+                newButton.value = CONFIG_last_versions[j][1];
+
+                newButton.addEventListener("click", function (evt) {
+                    this.parent.settingsPG.setBJSversion(evt);
+                    this.displayWaitDiv();
+                }.bind(this));
+
+                versionButtons.lastElementChild.appendChild(newButton);
+            }
+        }
+
+        this.showQRCodes();
     }
 
+    /**
+     * The logo displayed while loading the page
+     */
+    displayWaitDiv() {
+        document.getElementById("waitDiv").style.display = "flex";
+    };
+    hideWaitDiv() {
+        document.getElementById("waitDiv").style.display = "none";
+    };
+
+    displayVersionNumber(version) {
+        this.hideWaitDiv();
+        for (var i = 0; i < this.parent.utils.multipleSize.length; i++) {
+            document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement.firstElementChild.innerText = "v." + version;
+        }
+    };
+
+    /**
+     * Display children menu of the version button
+     */
+    displayVersionsMenu(evt) {
+        if (evt.target.classList.contains("option")) return;
+
+        var toggle = evt.target.lastElementChild;
+        if (toggle == null) toggle = evt.target.parentElement.lastElementChild;
+        if (toggle.style.display == "none") toggle.style.display = "block";
+        else toggle.style.display = "none";
+    };
     /**
      * Display children menu of the caller
      */
@@ -312,18 +364,18 @@ class MenuPG {
     };
 
     // TO DO - Make it work with all sizes
-    showQRCode() {
-        console.log("Plop");
-        $("#qrCodeImage1280").empty();
-        var playgroundCode = window.location.href.split("#");
-        playgroundCode.shift();
-        $("#qrCodeImage1280").qrcode({ text: "https://playground.babylonjs.com/frame.html#" + (playgroundCode.join("#")) });
+    showQRCodes() {
+        for (var i = 0; i < this.parent.utils.multipleSize.length; i++) {
+            $("#qrCodeImage" + this.parent.utils.multipleSize[i]).empty();
+            var playgroundCode = window.location.href.split("#");
+            playgroundCode.shift();
+            $("#qrCodeImage" + this.parent.utils.multipleSize[i]).qrcode({ text: "https://playground.babylonjs.com/frame.html#" + (playgroundCode.join("#")) });
+        }
     };
 
     /**
-     * Comes from "pbt.js"
+     * When running code, display the loader
      */
-    // TO DO - Comment this correctly
     showBJSPGMenu() {
         var headings = document.getElementsByClassName('category');
         for (var i = 0; i < headings.length; i++) {

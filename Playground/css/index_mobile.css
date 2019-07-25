@@ -179,7 +179,8 @@
         filter: none;
     }
 
-    .navbar .select .subSelect .toDisplaySub {
+    .navbar .select .subSelect .toDisplaySub,
+    .navbar .select .subSelect .currentVersionDisplay {
         position: fixed;
         top: 40px;
         left: 180px;
@@ -207,6 +208,15 @@
     .navbar .select .subSelect .toDisplaySub.languageTS .option {
         background-color: #e0684b;
         color: white;
+    }
+    .navbar .select .subSelect .qrCodeImage div {
+        width: 180px;
+        height: 180px;
+        padding: 2px;
+    }
+    .navbar .select .subSelect .qrCodeImage div canvas {
+        width: 180px;
+        height: 180px;
     }
 
     .save-layer .save-form {
