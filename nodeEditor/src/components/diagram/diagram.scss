@@ -21,6 +21,7 @@
     grid-row: 1;
     background: #2796B2;
     border-radius: 10px;
+    transform: scale(1);
 
     &.connected {
         background: #CAB422;
@@ -99,13 +100,6 @@
         }
     }
 
-    .preview {
-        border-bottom-left-radius: 16px;
-        border: black 4px solid;
-        border-left: 0px;
-        border-bottom: 0px;
-    }
-
     .inputs {
         grid-row: 2;
         grid-column: 1;
@@ -146,6 +140,7 @@
                     display: grid;
                     align-items: center;
                     justify-items: center;     
+                    transform: scale(1);
 
                     img {
                         width: 12px;
@@ -157,14 +152,13 @@
                     grid-column: 1;
                     grid-row: 1;     
                     border: 4px solid black;
-                    width: 7px;
-                    height: 14px;
+                    width: 4px;
+                    height: 7px;
                     border-right: 0;
                     position: absolute;
                     border-bottom-left-radius: 10px;
-                    border-top-left-radius: 10px;
-                    top: -3.5px;
-                    right: 10px;      
+                    border-top-left-radius: 10px;      
+                    transform: translateX(-2px) scale(1.2);
                 }
             }
 
@@ -218,6 +212,7 @@
                     display: grid;
                     align-items: center;
                     justify-items: center;
+                    transform: scale(1);
 
                     img {
                         width: 12px;
@@ -229,15 +224,12 @@
                     grid-column: 1;
                     grid-row: 1;     
                     border: 4px solid black;
-                    width: 7px;
-                    height: 14px;
+                    width: 4px;
                     border-left: 0;
                     border-left: 0;
-                    position: absolute;
+                    transform: translateX(9px) scale(1.2);
                     border-bottom-right-radius: 10px;
                     border-top-right-radius: 10px;
-                    top: -3.5px;
-                    left: 7px;       
                 }
             }
 
@@ -272,6 +264,11 @@
             height: 140px;
             grid-column: 1;
             grid-row: 3;     
+            overflow: hidden;
+            border-bottom-left-radius: 16px;
+            border: black 4px solid;
+            border-left: 0px;
+            border-bottom: 0px;
 
             canvas {
                 width: 100%;

@@ -6,11 +6,11 @@ import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPo
 import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
- * Block used to create a Color3 out of 3 inputs (one for each component)
+ * Block used to create a Color3/4 out of individual inputs (one for each component)
  */
-export class RGBMergerBlock extends NodeMaterialBlock {
+export class ColorMergerBlock extends NodeMaterialBlock {
     /**
-     * Create a new RGBMergerBlock
+     * Create a new ColorMergerBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -19,8 +19,10 @@ export class RGBMergerBlock extends NodeMaterialBlock {
         this.registerInput("r", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerInput("g", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerInput("b", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
 
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color3);
+        this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4);
+        this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3);
     }
 
     /**
@@ -28,35 +30,35 @@ export class RGBMergerBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "RGBMergerBlock";
+        return "ColorMergerBlock";
     }
 
     /**
-     * Gets the R component input
+     * Gets the r component input
      */
     public get r(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the G component input
+     * Gets the g component input
      */
     public get g(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the B component input
+     * Gets the b component input
      */
     public get b(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the output component
+     * Gets the a component input
      */
-    public get output(): NodeMaterialConnectionPoint {
-        return this._outputs[0];
+    public get a(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -65,13 +67,19 @@ export class RGBMergerBlock extends NodeMaterialBlock {
         let rInput = this.r;
         let gInput = this.g;
         let bInput = this.b;
+        let aInput = this.a;
 
-        let output = this._outputs[0];
+        let color4Output = this._outputs[0];
+        let color3Output = this._outputs[1];
 
-        state.compilationString += this._declareOutput(output, state) + ` = vec3(${this._writeVariable(rInput)}, ${this._writeVariable(gInput)}, ${this._writeVariable(bInput)});\r\n`;
+        if (color4Output.endpoints.length) {
+            state.compilationString += this._declareOutput(color4Output, state) + ` = vec4(${this._writeVariable(rInput)}, ${this._writeVariable(gInput)}, ${this._writeVariable(bInput)}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"});\r\n`;
+        } else if (color3Output.endpoints.length) {
+            state.compilationString += this._declareOutput(color3Output, state) + ` = vec3(${this._writeVariable(rInput)}, ${this._writeVariable(gInput)}, ${this._writeVariable(bInput)});\r\n`;
+        }
 
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.RGBMergerBlock"] = RGBMergerBlock;
+_TypeStore.RegisteredTypes["BABYLON.ColorMergerBlock"] = ColorMergerBlock;

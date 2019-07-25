@@ -9,6 +9,7 @@ import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGri
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
 
 interface INodeMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -33,7 +34,8 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         return (
             <div className="pane">
                 <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="EDITOR">
+                <LineContainerComponent globalState={this.props.globalState} title="NODES">
+                    <CheckBoxLineComponent label="Ignore alpha" target={material} propertyName="ignoreAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <ButtonLineComponent label="Edit" onClick={() => this.edit()} />
                 </LineContainerComponent>
             </div>

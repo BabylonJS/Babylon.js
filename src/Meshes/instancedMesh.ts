@@ -47,9 +47,6 @@ export class InstancedMesh extends AbstractMesh {
         this.setPivotMatrix(source.getPivotMatrix());
 
         this.refreshBoundingInfo();
-        if (!this._sourceMesh.subMeshes) {
-            Logger.Warn("Instances should only be created for meshes with Geometry.");
-        }
         this._syncSubMeshes();
     }
 
@@ -284,6 +281,10 @@ export class InstancedMesh extends AbstractMesh {
 
     /** @hidden */
     public _activate(renderId: number, intermediateRendering: boolean): boolean {
+        if (!this._sourceMesh.subMeshes) {
+            Logger.Warn("Instances should only be created for meshes with geometry.");
+        }
+
         if (this._currentLOD) {
             this._currentLOD._registerInstanceForRenderId(this, renderId);
 
