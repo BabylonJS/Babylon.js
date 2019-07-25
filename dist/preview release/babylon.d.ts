@@ -51261,6 +51261,8 @@ declare module BABYLON {
          */
         readonly transform: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -52489,21 +52491,29 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the r component input
+         * Gets the r component (input)
          */
         readonly r: NodeMaterialConnectionPoint;
         /**
-         * Gets the g component input
+         * Gets the g component (input)
          */
         readonly g: NodeMaterialConnectionPoint;
         /**
-         * Gets the b component input
+         * Gets the b component (input)
          */
         readonly b: NodeMaterialConnectionPoint;
         /**
-         * Gets the a component input
+         * Gets the a component (input)
          */
         readonly a: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgba component (output)
+         */
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -52523,21 +52533,33 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the x component input
+         * Gets the x component (input)
          */
         readonly x: NodeMaterialConnectionPoint;
         /**
-         * Gets the y component input
+         * Gets the y component (input)
          */
         readonly y: NodeMaterialConnectionPoint;
         /**
-         * Gets the z component input
+         * Gets the z component (input)
          */
         readonly z: NodeMaterialConnectionPoint;
         /**
-         * Gets the w component input
+         * Gets the w component (input)
          */
         readonly w: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component (output)
+         */
+        readonly xyzw: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         */
+        readonly xyz: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         */
+        readonly xy: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -52557,13 +52579,33 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the rgba input component
+         * Gets the rgba component (input)
          */
         readonly rgba: NodeMaterialConnectionPoint;
         /**
-         * Gets the rgb input component
+         * Gets the rgb component (input)
          */
-        readonly rgb: NodeMaterialConnectionPoint;
+        readonly rgbIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         */
+        readonly rgbOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the r component (output)
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g component (output)
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b component (output)
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        /**
+         * Gets the a component (output)
+         */
+        readonly a: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -52583,13 +52625,37 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the rgba input component
+         * Gets the xyzw component (input)
          */
         readonly xyzw: NodeMaterialConnectionPoint;
         /**
-         * Gets the rgb input component
+         * Gets the xyz component (input)
          */
-        readonly xyz: NodeMaterialConnectionPoint;
+        readonly xyzIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         */
+        readonly xyzOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         */
+        readonly xy: NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component (output)
+         */
+        readonly x: NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component (output)
+         */
+        readonly y: NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component (output)
+         */
+        readonly z: NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component (output)
+         */
+        readonly w: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -52863,6 +52929,66 @@ declare module BABYLON {
          * Gets the right operand input component
          */
         readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to remap a float from a range to a new one
+     */
+    export class RemapBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the source range
+         */
+        sourceRange: Vector2;
+        /**
+         * Gets or sets the target range
+         */
+        targetRange: Vector2;
+        /**
+         * Creates a new RemapBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to normalize a vector
+     */
+    export class NormalizeBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new NormalizeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */
