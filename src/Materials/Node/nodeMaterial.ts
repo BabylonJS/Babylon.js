@@ -185,6 +185,11 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Gets an array of blocks that needs to be serialized even if they are not yet connected
+     */
+    public attachedBlocks = new Array<NodeMaterialBlock>();
+
+    /**
      * Create a new node based material
      * @param name defines the material name
      * @param scene defines the hosting scene
@@ -388,12 +393,10 @@ export class NodeMaterial extends PushMaterial {
         node.initialize(state);
         node.autoConfigure();
 
-        if (node.isInput) {
-            (node as InputBlock).associatedVariableName = "";
-        }
-
         for (var input of node.inputs) {
-            input.associatedVariableName = "";
+            if (!node.isInput) {
+                input.associatedVariableName = "";
+            }
 
             let connectedPoint = input.connectedPoint;
             if (connectedPoint) {
@@ -841,6 +844,7 @@ export class NodeMaterial extends PushMaterial {
     public clear() {
         this._vertexOutputNodes = [];
         this._fragmentOutputNodes = [];
+        this.attachedBlocks = [];
     }
 
     /**
@@ -928,6 +932,13 @@ export class NodeMaterial extends PushMaterial {
             serializationObject.blocks.push(block.serialize());
         }
 
+        for (var block of this.attachedBlocks) {
+            if (blocks.indexOf(block) !== -1) {
+                continue;
+            }
+            serializationObject.blocks.push(block.serialize());
+        }
+
         return serializationObject;
     }
 
@@ -948,6 +959,8 @@ export class NodeMaterial extends PushMaterial {
                 let block: NodeMaterialBlock = new blockType();
                 block._deserialize(parsedBlock, this.getScene(), rootUrl);
                 map[parsedBlock.id] = block;
+
+                this.attachedBlocks.push(block);
             }
         }
 

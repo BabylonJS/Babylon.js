@@ -4,7 +4,7 @@ import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
 import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
-import { Color3 } from 'babylonjs/Maths/math';
+import { Color3, Vector2, Vector3, Vector4 } from 'babylonjs/Maths/math';
 import { StringTools } from '../../../stringTools';
 import { PortHelper } from '../portHelper';
 
@@ -94,10 +94,26 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                 }
 
                 switch (inputBlock.type) {
+                    case NodeMaterialBlockConnectionPointTypes.Float:
+                        value = inputBlock.value;
+                        break;
+                    case NodeMaterialBlockConnectionPointTypes.Vector2:
+                        let vec2Value = inputBlock.value as Vector2
+                        value = `(${vec2Value.x}, ${vec2Value.y})`;
+                        break;
+                    case NodeMaterialBlockConnectionPointTypes.Vector3:
+                        let vec3Value = inputBlock.value as Vector3
+                        value = `(${vec3Value.x}, ${vec3Value.y}, ${vec3Value.z})`;
+                        break;
+                    case NodeMaterialBlockConnectionPointTypes.Vector4:
+                        let vec4Value = inputBlock.value as Vector4
+                        value = `(${vec4Value.x}, ${vec4Value.y}, ${vec4Value.z}, ${vec4Value.w})`;
+                        break;                        
                     case NodeMaterialBlockConnectionPointTypes.Color3:
                     case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
                     case NodeMaterialBlockConnectionPointTypes.Color4: {
                         color = (inputBlock.value as Color3).toHexString();
+                        break;
                     }
                 }
             }

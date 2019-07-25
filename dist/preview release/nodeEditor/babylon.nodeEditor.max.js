@@ -62289,7 +62289,7 @@ var DefaultNodeModel = /** @class */ (function (_super) {
         _this.block = null;
         return _this;
     }
-    DefaultNodeModel.prototype.prepare = function (options, nodes, model, graphEditor, filterInputs) {
+    DefaultNodeModel.prototype.prepare = function (options, nodes, model, graphEditor) {
         var _this = this;
         this.block = options.nodeMaterialBlock || null;
         if (!options.nodeMaterialBlock) {
@@ -62297,16 +62297,13 @@ var DefaultNodeModel = /** @class */ (function (_super) {
         }
         // Create output ports
         options.nodeMaterialBlock._outputs.forEach(function (connection) {
-            var outputPort = new _port_defaultPortModel__WEBPACK_IMPORTED_MODULE_2__["DefaultPortModel"](connection.name + "-output", "output");
+            var outputPort = new _port_defaultPortModel__WEBPACK_IMPORTED_MODULE_2__["DefaultPortModel"](connection.name, "output");
             outputPort.syncWithNodeMaterialConnectionPoint(connection);
             _this.addPort(outputPort);
         });
         // Create input ports and nodes if they exist
         options.nodeMaterialBlock._inputs.forEach(function (connection) {
-            if (filterInputs.length > 0 && filterInputs.indexOf(connection.name) === -1) {
-                return;
-            }
-            var inputPort = new _port_defaultPortModel__WEBPACK_IMPORTED_MODULE_2__["DefaultPortModel"](connection.name + "-input", "input");
+            var inputPort = new _port_defaultPortModel__WEBPACK_IMPORTED_MODULE_2__["DefaultPortModel"](connection.name, "input");
             inputPort.connection = connection;
             _this.addPort(inputPort);
             if (connection.connectedPoint) {
@@ -62319,7 +62316,7 @@ var DefaultNodeModel = /** @class */ (function (_super) {
                 else {
                     connectedNode = existingNodes[0];
                 }
-                var link = connectedNode.ports[connection.connectedPoint.name + "-output"].link(inputPort);
+                var link = connectedNode.ports[connection.connectedPoint.name].link(inputPort);
                 if (graphEditor._toAdd) {
                     graphEditor._toAdd.push(link);
                 }
@@ -62478,8 +62475,8 @@ var GenericNodeModel = /** @class */ (function (_super) {
         _this.matrix = null;
         return _this;
     }
-    GenericNodeModel.prototype.prepare = function (options, nodes, model, graphEditor, filterInputs) {
-        _super.prototype.prepare.call(this, options, nodes, model, graphEditor, filterInputs);
+    GenericNodeModel.prototype.prepare = function (options, nodes, model, graphEditor) {
+        _super.prototype.prepare.call(this, options, nodes, model, graphEditor);
     };
     GenericNodeModel.prototype.renderProperties = function (globalState) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "GENERAL" },
@@ -62885,10 +62882,26 @@ var InputNodeWidget = /** @class */ (function (_super) {
                     return null;
                 }
                 switch (inputBlock.type) {
+                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Float:
+                        value = inputBlock.value;
+                        break;
+                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+                        var vec2Value = inputBlock.value;
+                        value = "(" + vec2Value.x + ", " + vec2Value.y + ")";
+                        break;
+                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+                        var vec3Value = inputBlock.value;
+                        value = "(" + vec3Value.x + ", " + vec3Value.y + ", " + vec3Value.z + ")";
+                        break;
+                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+                        var vec4Value = inputBlock.value;
+                        value = "(" + vec4Value.x + ", " + vec4Value.y + ", " + vec4Value.z + ", " + vec4Value.w + ")";
+                        break;
                     case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color3:
                     case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color3OrColor4:
                     case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color4: {
                         color = inputBlock.value.toHexString();
+                        break;
                     }
                 }
             }
@@ -63014,9 +63027,9 @@ var LightNodeModel = /** @class */ (function (_super) {
     LightNodeModel.prototype.renderProperties = function (globalState) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lightPropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["LightPropertyTabComponent"], { globalState: globalState, node: this }));
     };
-    LightNodeModel.prototype.prepare = function (options, nodes, model, graphEditor, filterInputs) {
+    LightNodeModel.prototype.prepare = function (options, nodes, model, graphEditor) {
         this._block = options.nodeMaterialBlock;
-        _super.prototype.prepare.call(this, options, nodes, model, graphEditor, filterInputs);
+        _super.prototype.prepare.call(this, options, nodes, model, graphEditor);
     };
     return LightNodeModel;
 }(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
@@ -63252,7 +63265,7 @@ var DefaultPortModel = /** @class */ (function (_super) {
     };
     DefaultPortModel.prototype.syncWithNodeMaterialConnectionPoint = function (connection) {
         this.connection = connection;
-        this.name = connection.name + "-" + this.position;
+        this.name = connection.name;
     };
     DefaultPortModel.prototype.getNodeModel = function () {
         return this.parent;
@@ -63545,9 +63558,9 @@ var TextureNodeModel = /** @class */ (function (_super) {
     TextureNodeModel.prototype.renderProperties = function (globalState) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["TexturePropertyTabComponent"], { globalState: globalState, node: this }));
     };
-    TextureNodeModel.prototype.prepare = function (options, nodes, model, graphEditor, filterInputs) {
+    TextureNodeModel.prototype.prepare = function (options, nodes, model, graphEditor) {
         this._block = options.nodeMaterialBlock;
-        _super.prototype.prepare.call(this, options, nodes, model, graphEditor, filterInputs);
+        _super.prototype.prepare.call(this, options, nodes, model, graphEditor);
     };
     return TextureNodeModel;
 }(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
@@ -64366,18 +64379,14 @@ var GraphEditor = /** @class */ (function (_super) {
             return this._nodes.filter(function (n) { return n.block === options.nodeMaterialBlock; })[0];
         }
         this._blocks.push(options.nodeMaterialBlock);
+        this.props.globalState.nodeMaterial.attachedBlocks.push(options.nodeMaterialBlock);
         // Create new node in the graph
         var newNode;
-        var filterInputs = [];
         if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_14__["TextureBlock"]) {
             newNode = new _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_10__["TextureNodeModel"]();
-            filterInputs.push("uv");
         }
         else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_14__["LightBlock"]) {
             newNode = new _components_diagram_light_lightNodeModel__WEBPACK_IMPORTED_MODULE_16__["LightNodeModel"]();
-            filterInputs.push("worldPosition");
-            filterInputs.push("worldNormal");
-            filterInputs.push("cameraPosition");
         }
         else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_14__["InputBlock"]) {
             newNode = new _components_diagram_input_inputNodeModel__WEBPACK_IMPORTED_MODULE_13__["InputNodeModel"]();
@@ -64391,7 +64400,7 @@ var GraphEditor = /** @class */ (function (_super) {
         this._nodes.push(newNode);
         this._model.addAll(newNode);
         if (options.nodeMaterialBlock) {
-            newNode.prepare(options, this._nodes, this._model, this, filterInputs);
+            newNode.prepare(options, this._nodes, this._model, this);
         }
         return newNode;
     };
@@ -64495,6 +64504,10 @@ var GraphEditor = /** @class */ (function (_super) {
                     // Block is deleted
                     var targetBlock = e.node.block;
                     if (targetBlock) {
+                        var attachedBlockIndex = _this.props.globalState.nodeMaterial.attachedBlocks.indexOf(targetBlock);
+                        if (attachedBlockIndex > -1) {
+                            _this.props.globalState.nodeMaterial.attachedBlocks.splice(attachedBlockIndex, 1);
+                        }
                         if (targetBlock.isFinalMerger) {
                             _this.props.globalState.nodeMaterial.removeOutputNode(targetBlock);
                         }

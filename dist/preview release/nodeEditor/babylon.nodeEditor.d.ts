@@ -101,7 +101,7 @@ declare module NODEEDITOR {
          * Constructs the node model
          */
         constructor();
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
         renderProperties(globalState: GlobalState): JSX.Element;
     }
 }
@@ -335,7 +335,7 @@ declare module NODEEDITOR {
          */
         constructor();
         renderProperties(globalState: GlobalState): JSX.Element;
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
     }
 }
 declare module NODEEDITOR {
@@ -724,7 +724,7 @@ declare module NODEEDITOR {
          */
         constructor();
         renderProperties(globalState: GlobalState): JSX.Element;
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
     }
 }
 declare module NODEEDITOR {
@@ -861,7 +861,7 @@ declare module NODEEDITOR {
          * Constructs the node model
          */
         constructor(key: string);
-        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]): void;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
         renderProperties(globalState: GlobalState): JSX.Element | null;
     }
 }
