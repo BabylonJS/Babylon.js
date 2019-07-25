@@ -581,6 +581,10 @@ export class Texture extends BaseTexture {
     public serialize(): any {
         var serializationObject = super.serialize();
 
+        if (!serializationObject) {
+            return null;
+        }
+
         if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
             serializationObject.base64String = this._buffer;
             serializationObject.name = serializationObject.name.replace("data:", "");

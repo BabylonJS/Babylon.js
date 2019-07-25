@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { NodeMaterialBlock } from '../nodeMaterialBlock';
+import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
+import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
+import { _TypeStore } from '../../../Misc/typeStore';
 
 /**
  * Block used to expand a Vector3/4 into 4 outputs (one for each component)
@@ -17,8 +17,8 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this.registerInput("xyzw-in", NodeMaterialBlockConnectionPointTypes.Vector4, true);
-        this.registerInput("xyz-in", NodeMaterialBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("xyzw", NodeMaterialBlockConnectionPointTypes.Vector4, true);
+        this.registerInput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3, true);
 
         this.registerOutput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("x", NodeMaterialBlockConnectionPointTypes.Float);
