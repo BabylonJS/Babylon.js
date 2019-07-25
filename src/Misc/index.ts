@@ -19,6 +19,7 @@ export * from "./tags";
 export * from "./textureTools";
 export * from "./tga";
 export * from "./tools";
+export * from "./uvMapper";
 export * from "./videoRecorder";
 export * from "./virtualJoystick";
 export * from "./workerPool";

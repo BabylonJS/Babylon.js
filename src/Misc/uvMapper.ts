@@ -190,7 +190,7 @@ function projectMat(vector: Vector3) {
 // TODO
 const USER_FILL_HOLES = 0;
 const USER_FILL_HOLES_QUALITY = 1;
-const USER_ISLAND_MARGIN = 1;
+const USER_ISLAND_MARGIN = 0;
 const SMALL_NUM = 1e-12;
 
 // Porting smart uv project code from blender
@@ -1018,13 +1018,13 @@ export class UvMapper {
 		}
 	}
 
-	main(obList: Mesh[],
+	map(obList: Mesh[],
 		island_margin: number = 0, 
 		projection_limit: number = 89,
 		user_area_weight: number = 0,
 		use_aspect: boolean = false,
 		strech_to_bounds: boolean = false,
-		remove_doubles: boolean = true) {
+		remove_doubles: boolean = true) : number {
 		const USER_PROJECTION_LIMIT_CONVERTED = Math.cos(projection_limit * Math.PI / 180);
 		const USER_PROJECTION_LIMIT_HALF_CONVERTED = Math.cos(projection_limit / 2 * Math.PI / 180);
 		const USER_SHARE_SPACE = true;
@@ -1032,6 +1032,8 @@ export class UvMapper {
 		let collected_islandList: Island[] = [];
 		let deletedFaces: Face[] = [];
 		let equivalencies = [];
+		let worldToTexelRatio = 0;
+
 		if (USER_SHARE_SPACE) {
 			// Sort by name so we get consistent results
 			obList.sort((a: Mesh, b: Mesh) => a.name.localeCompare(b.name));
@@ -1198,12 +1200,12 @@ export class UvMapper {
 				collected_islandList = collected_islandList.concat(islandList);
 			} else {
 				collected_islandList = this.getUvIslands(faceProjectionGroupList, deletedFaces);
-				this.packIslands(collected_islandList);
+				worldToTexelRatio = this.packIslands(collected_islandList);
 			}
 		}
 
 		if (USER_SHARE_SPACE) {
-			this.packIslands(collected_islandList);
+			worldToTexelRatio = this.packIslands(collected_islandList);
 		}
 
 		// Aspect TODO... not necessary
@@ -1325,13 +1327,14 @@ export class UvMapper {
 				obList[meshIndex].setVerticesData(VertexBuffer.NormalKind, normals[meshIndex]);
 			}
 			obList[meshIndex].setIndices(indices[meshIndex]);
-			obList[meshIndex].setVerticesData(VertexBuffer.UVKind, newUvs[meshIndex]);
+			obList[meshIndex].setVerticesData(VertexBuffer.UV2Kind, newUvs[meshIndex]);
 		}
 
-		this.debugUvs(newUvs, indices);
+		// this.debugUvs(newUvs, indices);
+		return worldToTexelRatio;
 	}
 
-	packIslands(islandList: Island[]) {
+	packIslands(islandList: Island[]) : number{
 		if (USER_FILL_HOLES) {
 			this.mergeUvIslands(islandList);
 		}
@@ -1402,16 +1405,17 @@ export class UvMapper {
 			}
 
 		}
+
+		return xFactor;
 	}
 
-	constructor(scene: Scene) {
+	constructor() {
 		// this.debPointInTri2D();
 		// this.debugFitAABB();
 		// let sphere = MeshBuilder.CreateSphere("aa", { diameter: 1, segments: 30 }, scene);
 		// let cylinder = MeshBuilder.CreateCylinder("aa", { diameter: 1 }, scene);
 		// cylinder.position.addInPlace(new Vector3(0, 5, 1));
 		// cylinder.scaling.scaleInPlace(5);
-		this.main(scene.meshes as Mesh[]);
 		// let mat = new StandardMaterial("test", scene);
 		// sphere.material = mat;
 		// mat.emissiveTexture = new Texture("./LogoPBT.png", scene);

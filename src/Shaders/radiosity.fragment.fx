@@ -45,11 +45,11 @@ vec3 visible()
   float farMinusNear = nearFar.y - nearFar.x;
 
   // TODO : there is a more efficient way to project depth without this costly operation for each fragment
-  depthProj = (depthProj * (nearFar.y + nearFar.x) - 2.0 * nearFar.y * nearFar.x) / farMinusNear;
+  depthProj = ((nearFar.y + nearFar.x) - 2.0 * nearFar.y * nearFar.x / depthProj) / farMinusNear;
   // depthProj = depthProj * 0.5 + 0.5;
 
   float depth = texture(itemBuffer, proj).r;
-  return vec3(depthProj - depth <= 1e-6);
+  return vec3(depthProj - depth <= 1e-3);
   #else
   return vec3(texture(itemBuffer, proj).xyz == id);
   #endif
