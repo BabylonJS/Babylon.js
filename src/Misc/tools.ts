@@ -15,6 +15,7 @@ import { PromisePolyfill } from './promise';
 import { TimingTools } from './timingTools';
 import { InstantiationTools } from './instantiationTools';
 import { GUID } from './guid';
+import { IScreenshotSize } from './screenshotTools';
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
@@ -24,29 +25,6 @@ interface IColor4Like {
     g: float;
     b: float;
     a: float;
-}
-
-/**
- * This interface describe parameter that can be set to an object
- *
- * with the following (optional) properties: precision, width, height. If a single number is passed, it will be used for both width and height. If an object is passed, the screenshot size will be derived from the parameters. The precision property is a multiplier allowing rendering at a higher or lower resolution
- */
-export interface IScreenshotSize {
-    /**
-     * number in pixels for canvas height
-     */
-    height?: number;
-
-    /**
-     * multiplier allowing render at a higher or lower resolution
-     * If value is defined then height and width will be ignored and taken from camera
-     */
-    precision?: number;
-
-    /**
-     * number in pixels for canvas width
-     */
-    width?: number;
 }
 
 /**
