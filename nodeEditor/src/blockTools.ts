@@ -84,7 +84,7 @@ export class BlockTools {
 				color = "Chocolate";
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector3:                
-				color = "Crimson";
+				color = "Azure";
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector4:                
 				color = "DarkMagenta";

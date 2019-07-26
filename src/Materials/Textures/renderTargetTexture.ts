@@ -199,6 +199,11 @@ export class RenderTargetTexture extends Texture {
     }
 
     /**
+     * An event triggered when the texture is resized.
+     */
+    public onResizeObservable = new Observable<RenderTargetTexture>();
+
+    /**
      * Define the clear color of the Render Target if it should be different from the scene.
      */
     public clearColor: Color4;
@@ -575,6 +580,10 @@ export class RenderTargetTexture extends Texture {
         } else {
             this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
         }
+
+        if (this.onResizeObservable.hasObservers()) {
+            this.onResizeObservable.notifyObservers(this);
+        }
     }
 
     /**
@@ -945,6 +954,13 @@ export class RenderTargetTexture extends Texture {
      * Dispose the texture and release its associated resources.
      */
     public dispose(): void {
+        this.onResizeObservable.clear();
+        this.onClearObservable.clear();
+        this.onAfterRenderObservable.clear();
+        this.onAfterUnbindObservable.clear();
+        this.onBeforeBindObservable.clear();
+        this.onBeforeRenderObservable.clear();
+
         if (this._postProcessManager) {
             this._postProcessManager.dispose();
             this._postProcessManager = null;

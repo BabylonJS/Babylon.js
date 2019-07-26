@@ -422,10 +422,6 @@ export class InputBlock extends NodeMaterialBlock {
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 effect.setVector3(variableName, value);
                 break;
-            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
-                effect.setFloat4(variableName, value.r, value.g, value.b, value.a || 1.0);
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 effect.setVector4(variableName, value);
                 break;
