@@ -75,6 +75,9 @@
 - Added `ShaderMaterial.setColor4Array` ([JonathanTron](https://github.com/JonathanTron/))
 - Added `ShaderMaterial.setArray4` ([JonathanTron](https://github.com/JonathanTron/))
 
+### ScreenshotTools
+- Added interface for argument `size` of screenshot methods ([Dok11](https://github.com/Dok11/))
+
 ### Sounds
 - Added `ISoundOptions.skipCodecCheck` to make `Sound` more flexible with URLs ([nbduke](https://github.com/nbduke))
 
