@@ -46,6 +46,11 @@ export class TextureBlock extends NodeMaterialBlock {
         this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
+
+        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
+        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color3);
+        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color4);
     }
 
     /**
@@ -147,9 +152,9 @@ export class TextureBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._textureTransformName, "mat4", this._defineName);
 
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
-        state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}, 1.0, 0.0));\r\n`;
+        state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\r\n`;
         state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName};\r\n`;
+        state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\r\n`;
         state.compilationString += `#endif\r\n`;
     }
 

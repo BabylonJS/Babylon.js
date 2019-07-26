@@ -155,11 +155,9 @@ export class NodeMaterialBuildState {
                 return "vec2";
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
                 return "vec3";
             case NodeMaterialBlockConnectionPointTypes.Color4:
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-            case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
                 return "vec4";
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 return "mat4";

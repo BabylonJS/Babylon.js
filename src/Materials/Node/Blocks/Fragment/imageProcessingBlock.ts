@@ -20,8 +20,10 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3OrColor4);
+        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color4);
+
+        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color3);
     }
 
     /**
