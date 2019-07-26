@@ -39,7 +39,7 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
     }
 
     renderValue(value: string) {
-        if (value) {
+        if (value !== "") {
             return (
                 <div className="value-text">
                     {value}

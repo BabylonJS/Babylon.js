@@ -60,25 +60,53 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
     render() {
         let inputBlock = this.props.inputNode.inputBlock;
 
-        var wellKnownOptions = [
-            { label: "World", value: NodeMaterialWellKnownValues.World },
-            { label: "WorldxView", value: NodeMaterialWellKnownValues.WorldView },
-            { label: "WorldxViewxProjection", value: NodeMaterialWellKnownValues.WorldViewProjection },
-            { label: "View", value: NodeMaterialWellKnownValues.View },
-            { label: "ViewxProjection", value: NodeMaterialWellKnownValues.ViewProjection },
-            { label: "Projection", value: NodeMaterialWellKnownValues.Projection },
-            { label: "Camera position", value: NodeMaterialWellKnownValues.CameraPosition },
-            { label: "Fog color", value: NodeMaterialWellKnownValues.FogColor },
-        ];
+        var wellKnownOptions: {label: string, value: NodeMaterialWellKnownValues}[] = [];
+        var attributeOptions: {label: string, value: string}[] = [];
 
-        var attributeOptions = [
-            { label: "position", value: "position" },
-            { label: "normal", value: "normal" },
-            { label: "tangent", value: "tangent" },
-            { label: "color", value: "color" },
-            { label: "uv", value: "uv" },
-            { label: "uv2", value: "uv2" },
-        ];
+        switch(inputBlock.type) {            
+            case NodeMaterialBlockConnectionPointTypes.Matrix:
+                wellKnownOptions = [
+                    { label: "World", value: NodeMaterialWellKnownValues.World },
+                    { label: "WorldxView", value: NodeMaterialWellKnownValues.WorldView },
+                    { label: "WorldxViewxProjection", value: NodeMaterialWellKnownValues.WorldViewProjection },
+                    { label: "View", value: NodeMaterialWellKnownValues.View },
+                    { label: "ViewxProjection", value: NodeMaterialWellKnownValues.ViewProjection },
+                    { label: "Projection", value: NodeMaterialWellKnownValues.Projection }
+                ];
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                wellKnownOptions = [
+                    { label: "Fog color", value: NodeMaterialWellKnownValues.FogColor }
+                ];
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                attributeOptions = [
+                    { label: "color", value: "color" }
+                ];
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                attributeOptions = [
+                    { label: "uv", value: "uv" },
+                    { label: "uv2", value: "uv2" },
+                ];
+                break;                
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+                wellKnownOptions = [
+                    { label: "Camera position", value: NodeMaterialWellKnownValues.CameraPosition }
+                ];
+                attributeOptions = [
+                    { label: "position", value: "position" },
+                    { label: "normal", value: "normal" },
+                    { label: "tangent", value: "tangent" },        
+                ];
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                    attributeOptions = [
+                        { label: "matricesIndices", value: "matricesIndices" },
+                        { label: "matricesWeights", value: "matricesWeights" }
+                    ];
+                    break;                
+        }
 
         return (
             <div>
@@ -86,16 +114,19 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     <TextLineComponent label="Type" value={StringTools.GetBaseType(inputBlock.type)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
-                    <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {
-                        if (!value) {
-                            inputBlock.isUniform = true;
-                            this.setDefaultValue();
-                        } else {
-                            inputBlock.isAttribute = true;
-                        }
-                        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-                        this.forceUpdate();
-                    }} isSelected={() => inputBlock.isAttribute} />
+                    {
+                        attributeOptions.length > 0 &&
+                        <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {
+                            if (!value) {
+                                inputBlock.isUniform = true;
+                                this.setDefaultValue();
+                            } else {
+                                inputBlock.setAsAttribute(attributeOptions[0].value);
+                            }
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            this.forceUpdate();
+                        }} isSelected={() => inputBlock.isAttribute} />
+                    }
                     {
                         inputBlock.isAttribute &&
                         <OptionsLineComponent label="Attribute" valuesAreStrings={true} options={attributeOptions} target={inputBlock} propertyName="name" onSelect={(value: any) => {
@@ -105,10 +136,10 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                         }} />
                     }
                     {
-                        inputBlock.isUniform &&
+                        inputBlock.isUniform && wellKnownOptions.length > 0 &&
                         <CheckBoxLineComponent label="Is well known value" onSelect={value => {
                             if (value) {
-                                inputBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+                                inputBlock.setAsWellKnownValue(wellKnownOptions[0].value);
                             } else {
                                 inputBlock.setAsWellKnownValue(null);
                                 this.setDefaultValue();

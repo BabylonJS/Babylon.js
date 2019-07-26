@@ -977,10 +977,12 @@ export class NodeMaterial extends PushMaterial {
                 }
                 let inputPoint = block.getInputByName(input.inputName);
                 let targetBlock = map[input.targetBlockId];
-                let outputPoint = targetBlock.getOutputByName(input.targetConnectionName);
+                if (targetBlock) {
+                    let outputPoint = targetBlock.getOutputByName(input.targetConnectionName);
 
-                if (inputPoint && outputPoint) {
-                    outputPoint.connectTo(inputPoint);
+                    if (inputPoint && outputPoint) {
+                        outputPoint.connectTo(inputPoint);
+                    }
                 }
             }
         }
