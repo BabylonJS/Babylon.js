@@ -860,6 +860,13 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class GraphHelper {
+        static DistributeGraph(model: DiagramModel): dagre.Node[];
+        private static _MapElements;
+        private static _MapEdges;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -885,27 +892,14 @@ declare module NODEEDITOR {
          * @param nodeMaterialBlock
          */
         createNodeFromObject(options: NodeCreationOptions): DefaultNodeModel;
+        addValueNode(type: string): DefaultNodeModel;
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         zoomToFit(retry?: number): void;
-        distributeGraph(): dagre.Node[];
-        mapElements(): {
-            id: string;
-            metadata: {
-                id: string;
-                width: number;
-                height: number;
-            };
-        }[];
-        mapEdges(): {
-            from: import("storm-react-diagrams").NodeModel;
-            to: import("storm-react-diagrams").NodeModel;
-        }[];
         buildMaterial(): void;
         build(needToWait?: boolean): void;
         reOrganize(): void;
-        addValueNode(type: string): DefaultNodeModel;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
