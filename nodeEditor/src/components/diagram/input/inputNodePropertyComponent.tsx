@@ -37,13 +37,11 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     <Vector2PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
             case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
                     <Color3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
                 return (
                     <Vector3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
