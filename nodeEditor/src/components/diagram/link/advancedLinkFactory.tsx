@@ -15,7 +15,7 @@ export class AdvancedLinkFactory extends DefaultLinkFactory {
 	}
 
 	generateLinkSegment(model: AdvancedLinkModel, widget: DefaultLinkWidget, selected: boolean, path: string) {
-        const portModel = (model.getSourcePort() || model.getTargetPort()) as DefaultPortModel;
+        const portModel = (model.getTargetPort() || model.getSourcePort()) as DefaultPortModel;
         const type = portModel.connection!.type;
 		let color = BlockTools.GetColorFromConnectionNodeType(type);
 		let width = 3;
