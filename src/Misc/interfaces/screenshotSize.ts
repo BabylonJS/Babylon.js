@@ -1,3 +1,7 @@
+/**
+ * Interface for screenshot methods with describe argument called `size` as object with options
+ * @link https://doc.babylonjs.com/api/classes/babylon.screenshottools
+ */
 export interface IScreenshotSize {
   /**
    * number in pixels for canvas height
