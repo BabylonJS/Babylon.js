@@ -28,7 +28,7 @@ export class PreviewManager {
 
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
-        this._camera = new ArcRotateCamera("Camera", 0, 0.8, 100, Vector3.Zero(), this._scene);
+        this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
         this._light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
 
         this._dummySphere = MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, this._scene);
@@ -47,6 +47,7 @@ export class PreviewManager {
     public dispose() {
         this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
 
+        this._dummySphere.dispose();
         this._light.dispose();
         this._engine.dispose();
     }
