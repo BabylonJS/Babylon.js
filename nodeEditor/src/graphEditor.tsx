@@ -34,6 +34,9 @@ import { Nullable } from 'babylonjs/types';
 import { MessageDialogComponent } from './sharedComponents/messageDialog';
 import { BlockTools } from './blockTools';
 import { AdvancedLinkFactory } from './components/diagram/link/advancedLinkFactory';
+import { RemapNodeFactory } from './components/diagram/remap/remapNodeFactory';
+import { RemapNodeModel } from './components/diagram/remap/remapNodeModel';
+import { RemapBlock } from 'babylonjs/Materials/Node/Blocks/remapBlock';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -90,7 +93,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         this._blocks.push(options.nodeMaterialBlock);
-        this.props.globalState.nodeMaterial!.attachedBlocks.push(options.nodeMaterialBlock);
+
+        if (this.props.globalState.nodeMaterial!.attachedBlocks.indexOf(options.nodeMaterialBlock) === -1) {
+            this.props.globalState.nodeMaterial!.attachedBlocks.push(options.nodeMaterialBlock);
+        }
 
         // Create new node in the graph
         var newNode: DefaultNodeModel;
@@ -100,7 +106,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         } else if (options.nodeMaterialBlock instanceof LightBlock) {
             newNode = new LightNodeModel();
         } else if (options.nodeMaterialBlock instanceof InputBlock) {
-            newNode = new InputNodeModel();
+            newNode = new InputNodeModel();        
+        } else if (options.nodeMaterialBlock instanceof RemapBlock) {
+            newNode = new RemapNodeModel();
         } else {
             newNode = new GenericNodeModel();
         }
@@ -144,6 +152,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine.registerNodeFactory(new TextureNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new LightNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new InputNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new RemapNodeFactory(this.props.globalState));
         this._engine.registerLinkFactory(new AdvancedLinkFactory());
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
@@ -375,13 +384,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         // Load graph of nodes from the material
         if (this.props.globalState.nodeMaterial) {
-            var material: any = this.props.globalState.nodeMaterial;
+            var material = this.props.globalState.nodeMaterial;
             material._vertexOutputNodes.forEach((n: any) => {
                 this.createNodeFromObject({ nodeMaterialBlock: n });
-            })
+            });
             material._fragmentOutputNodes.forEach((n: any) => {
                 this.createNodeFromObject({ nodeMaterialBlock: n });
-            })
+            });
+
+            material.attachedBlocks.forEach((n: any) => {
+                this.createNodeFromObject({ nodeMaterialBlock: n });
+            });
         }
 
         // load model into engine
@@ -417,7 +430,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
         let newInputBlock = new InputBlock(type, undefined, nodeType);
-        newInputBlock.setDefaultValue();
         var localNode = this.createNodeFromObject({ type: type, nodeMaterialBlock: newInputBlock })
 
         return localNode;

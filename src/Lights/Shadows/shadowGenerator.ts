@@ -875,6 +875,12 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.clear(clearOne, true, true, false);
             }
         });
+
+        this._shadowMap.onResizeObservable.add((RTT) => {
+            this._mapSize = RTT.getRenderSize();
+            this._light._markMeshesAsLightDirty();
+            this.recreateShadowMap();
+        });
     }
 
     private _initializeBlurRTTAndPostProcesses(): void {

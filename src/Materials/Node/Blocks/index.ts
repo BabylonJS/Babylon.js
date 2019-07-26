@@ -8,3 +8,5 @@ export * from "./clampBlock";
 export * from "./crossBlock";
 export * from "./dotBlock";
 export * from "./transformBlock";
+export * from "./remapBlock";
+export * from "./normalizeBlock";
