@@ -160,7 +160,7 @@ export class NodeMaterialBlock {
         let connectionPoint = currentPoint.connectedPoint;
 
         if (connectionPoint) {
-            return `${currentPoint.associatedVariableName}${connectionPoint.swizzle ? "." + connectionPoint.swizzle : ""}`;
+            return `${currentPoint.associatedVariableName}`;
         }
 
         return `0.`;
@@ -231,7 +231,7 @@ export class NodeMaterialBlock {
     public getFirstAvailableInput(forOutput: Nullable<NodeMaterialConnectionPoint> = null) {
         for (var input of this._inputs) {
             if (!input.connectedPoint) {
-                if (!forOutput || (forOutput.type & input.type) !== 0 || input.type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+                if (!forOutput || (forOutput.type === input.type) || (input.type === NodeMaterialBlockConnectionPointTypes.AutoDetect)) {
                     return input;
                 }
             }
@@ -274,7 +274,6 @@ export class NodeMaterialBlock {
         let input = options && options.input ? other.getInputByName(options.input) : other.getFirstAvailableInput(output);
 
         if (output && input) {
-            output.swizzle = options ? options.outputSwizzle || "" : "";
             output.connectTo(input);
         } else {
             throw "Unable to find a compatible match";

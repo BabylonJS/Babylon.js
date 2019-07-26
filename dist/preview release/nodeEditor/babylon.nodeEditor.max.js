@@ -62200,7 +62200,7 @@ var BlockTools = /** @class */ (function () {
                 color = "Chocolate";
                 break;
             case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-                color = "Crimson";
+                color = "Azure";
                 break;
             case babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4:
                 color = "DarkMagenta";
@@ -62727,11 +62727,9 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__["Vector2PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color3:
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color3OrColor4:
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color4:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_color3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["Color3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["Vector3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
         }
         return null;
@@ -62949,7 +62947,6 @@ var InputNodeWidget = /** @class */ (function (_super) {
                         value = "(" + vec4Value.x + ", " + vec4Value.y + ", " + vec4Value.z + ", " + vec4Value.w + ")";
                         break;
                     case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color3OrColor4:
                     case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color4: {
                         color = inputBlock.value.toHexString();
                         break;
@@ -66412,21 +66409,7 @@ var StringTools = /** @class */ (function () {
      * @param type Type to parse.
      */
     StringTools.GetBaseType = function (type) {
-        switch (type) {
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3:
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4OrColor4:
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3OrVector4:
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3OrColor3OrVector4OrColor4:
-                return "Vector";
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3:
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3OrColor4:
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4: {
-                return "Color";
-            }
-            default: {
-                return babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"][type];
-            }
-        }
+        return babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"][type];
     };
     /**
      * Download a string into a file that will be saved locally by the browser

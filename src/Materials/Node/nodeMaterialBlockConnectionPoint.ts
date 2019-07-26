@@ -26,6 +26,11 @@ export class NodeMaterialConnectionPoint {
     public _enforceAssociatedVariableName = false;
 
     /**
+     * Gets or sets the additional types supported byt this connection point
+     */
+    public acceptedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
+
+    /**
      * Gets or sets the associated variable name in the shader
      */
     public get associatedVariableName(): string {
@@ -73,11 +78,6 @@ export class NodeMaterialConnectionPoint {
      * Gets or sets the connection point name
      */
     public name: string;
-
-    /**
-     * Gets or sets the swizzle to apply to this connection point when reading or writing
-     */
-    public swizzle: string;
 
     /**
      * Gets or sets a boolean indicating that this connection point can be omitted
@@ -174,19 +174,8 @@ export class NodeMaterialConnectionPoint {
      * @returns true if the connection is possible
      */
     public canConnectTo(connectionPoint: NodeMaterialConnectionPoint) {
-        if ((this.type & connectionPoint.type) === 0 && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
-            let fail = true;
-            // Check swizzle
-            if (this.swizzle) {
-                let swizzleLength = this.swizzle.length;
-                let connectionLength = NodeMaterialConnectionPoint._GetTypeLength(connectionPoint.type);
-
-                if (swizzleLength === connectionLength) {
-                    fail = false;
-                }
-            }
-
-            return !fail;
+        if (this.type !== connectionPoint.type && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+            return (connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1);
         }
 
         return true;
@@ -235,7 +224,6 @@ export class NodeMaterialConnectionPoint {
         let serializationObject: any = {};
 
         serializationObject.name = this.name;
-        serializationObject.swizzle = this.swizzle;
 
         if (this.connectedPoint) {
             serializationObject.inputName = this.name;
@@ -244,23 +232,5 @@ export class NodeMaterialConnectionPoint {
         }
 
         return serializationObject;
-    }
-
-    // Statics
-    private static _GetTypeLength(type: NodeMaterialBlockConnectionPointTypes) {
-        switch (type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
-                return 1;
-            case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return 2;
-            case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-                return 3;
-            case NodeMaterialBlockConnectionPointTypes.Vector4:
-            case NodeMaterialBlockConnectionPointTypes.Color4:
-                return 3;
-        }
-
-        return -1;
     }
 }
