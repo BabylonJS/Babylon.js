@@ -15,7 +15,7 @@ import { PromisePolyfill } from './promise';
 import { TimingTools } from './timingTools';
 import { InstantiationTools } from './instantiationTools';
 import { GUID } from './guid';
-import { IScreenshotSize } from './screenshotTools';
+import { IScreenshotSize } from './interfaces/screenshotSize';
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
