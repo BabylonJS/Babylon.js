@@ -4,11 +4,12 @@ import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../Misc/typeStore';
+import { Scene } from '../../../scene';
 
 /**
  * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
  */
-export class VectorTransformBlock extends NodeMaterialBlock {
+export class TransformBlock extends NodeMaterialBlock {
     /**
      * Defines the value to use to complement W value to transform it to a Vector4
      */
@@ -20,7 +21,7 @@ export class VectorTransformBlock extends NodeMaterialBlock {
     public complementZ = 0;
 
     /**
-     * Creates a new VectorTransformBlock
+     * Creates a new TransformBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -36,7 +37,7 @@ export class VectorTransformBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "VectorTransformBlock";
+        return "TransformBlock";
     }
 
     /**
@@ -82,6 +83,22 @@ export class VectorTransformBlock extends NodeMaterialBlock {
 
         return this;
     }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.complementZ = this.complementZ;
+        serializationObject.complementW = this.complementW;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.complementZ = serializationObject.complementZ !== undefined ? serializationObject.complementZ : 0.0;
+        this.complementW = serializationObject.complementZ !== undefined ? serializationObject.complementW : 1.0;
+    }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.VectorTransformBlock"] = VectorTransformBlock;
+_TypeStore.RegisteredTypes["BABYLON.TransformBlock"] = TransformBlock;

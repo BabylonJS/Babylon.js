@@ -21,7 +21,7 @@ const depthSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => 
  * The SPS is also a particle system. It provides some methods to manage the particles.
  * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
  *
- * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
+ * Full documentation here : http://doc.babylonjs.com/how_to/Solid_Particle_System
  */
 export class SolidParticleSystem implements IDisposable {
     /**
@@ -55,7 +55,7 @@ export class SolidParticleSystem implements IDisposable {
     public mesh: Mesh;
     /**
      * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
-     * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#garbage-collector-concerns
+     * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#garbage-collector-concerns
      */
     public vars: any = {};
     /**
@@ -64,7 +64,7 @@ export class SolidParticleSystem implements IDisposable {
      * Each element of this array is an object `{idx: int, faceId: int}`.
      * `idx` is the picked particle index in the `SPS.particles` array
      * `faceId` is the picked face index counted within this particle.
-     * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#pickable-particles
+     * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
      */
     public pickedParticles: { idx: number; faceId: number }[];
     /**
@@ -481,7 +481,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Adds some particles to the SPS from the model shape. Returns the shape id.
-     * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
+     * Please read the doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#create-an-immutable-sps
      * @param mesh is any Mesh object that will be used as a model for the solid particles.
      * @param nb (positive integer) the number of particles to be created from this model
      * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
@@ -998,7 +998,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Visibilty helper : Recomputes the visible size according to the mesh bounding box
-     * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      * @returns the SPS.
      */
     public refreshVisibleSize(): SolidParticleSystem {
@@ -1012,7 +1012,7 @@ export class SolidParticleSystem implements IDisposable {
      * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
      * @param size the size (float) of the visibility box
      * note : this doesn't lock the SPS mesh bounding box.
-     * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      */
     public setVisibilityBox(size: number): void {
         var vis = size / 2;
@@ -1021,7 +1021,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Gets whether the SPS as always visible or not
-     * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      */
     public get isAlwaysVisible(): boolean {
         return this._alwaysVisible;
@@ -1029,7 +1029,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Sets the SPS as always visible or not
-     * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      */
     public set isAlwaysVisible(val: boolean) {
         this._alwaysVisible = val;
@@ -1038,7 +1038,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-     * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      */
     public set isVisibilityBoxLocked(val: boolean) {
         this._isVisibilityBoxLocked = val;
@@ -1050,7 +1050,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Gets if the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-     * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      */
     public get isVisibilityBoxLocked(): boolean {
         return this._isVisibilityBoxLocked;
@@ -1153,7 +1153,7 @@ export class SolidParticleSystem implements IDisposable {
     /**
      * This function does nothing. It may be overwritten to set all the particle first values.
      * The SPS doesn't call this function, you may have to call it by your own.
-     * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
      */
     public initParticles(): void {
     }
@@ -1161,7 +1161,7 @@ export class SolidParticleSystem implements IDisposable {
     /**
      * This function does nothing. It may be overwritten to recycle a particle.
      * The SPS doesn't call this function, you may have to call it by your own.
-     * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
      * @param particle The particle to recycle
      * @returns the recycled particle
      */
@@ -1172,7 +1172,7 @@ export class SolidParticleSystem implements IDisposable {
     /**
      * Updates a particle : this function should  be overwritten by the user.
      * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
-     * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
      * @example : just set a particle position or velocity and recycle conditions
      * @param particle The particle to update
      * @returns the updated particle
@@ -1187,7 +1187,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param particle the current particle
      * @param vertex the current index of the current particle
      * @param pt the index of the current vertex in the particle shape
-     * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#update-each-particle-shape
+     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#update-each-particle-shape
      * @example : just set a vertex particle position
      * @returns the updated vertex
      */

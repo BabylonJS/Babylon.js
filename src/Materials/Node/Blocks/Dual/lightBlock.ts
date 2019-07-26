@@ -13,6 +13,7 @@ import { InputBlock } from '../Input/inputBlock';
 import { Light } from '../../../../Lights/light';
 import { Nullable } from '../../../../types';
 import { _TypeStore } from '../../../../Misc/typeStore';
+import { Scene } from '../../../../scene';
 
 /**
  * Block used to add light in the fragment shader
@@ -230,6 +231,24 @@ export class LightBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\r\n`;
 
         return this;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        if (this.light) {
+            serializationObject.lightId = this.light.id;
+        }
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        if (serializationObject.lightId) {
+            this.light = scene.getLightByID(serializationObject.lightId);
+        }
     }
 }
 

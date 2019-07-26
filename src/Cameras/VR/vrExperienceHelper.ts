@@ -298,7 +298,7 @@ export class OnAfterEnteringVRObservableEvent {
 export class VRExperienceHelper {
     private _scene: Scene;
     private _position: Vector3;
-    private _btnVR: HTMLButtonElement;
+    private _btnVR: Nullable<HTMLButtonElement>;
     private _btnVRDisplayed: boolean;
 
     // Can the system support WebVR, even if a headset isn't plugged in?
@@ -326,6 +326,16 @@ export class VRExperienceHelper {
     private _onVRDisplayChanged: (eventArgs: IDisplayChangedEventArgs) => void;
     private _onVRRequestPresentStart: () => void;
     private _onVRRequestPresentComplete: (success: boolean) => void;
+
+    /**
+     * Gets or sets a boolean indicating that gaze can be enabled even if pointer lock is not engage (useful on iOS where fullscreen mode and pointer lock are not supported)
+     */
+    public enableGazeEvenWhenNoPointerLock = false;
+
+    /**
+     * Gets or sets a boolean indicating that the VREXperienceHelper will exit VR if double tap is detected
+     */
+    public exitVROnDoubleTap = true;
 
     /**
      * Observable raised right before entering VR.
@@ -616,6 +626,13 @@ export class VRExperienceHelper {
         return this._vrDeviceOrientationCamera;
     }
 
+    /**
+     * The html button that is used to trigger entering into VR.
+     */
+    public get vrButton(): Nullable<HTMLButtonElement> {
+        return this._btnVR;
+    }
+
     private get _teleportationRequestInitiated(): boolean {
         var result = this._cameraGazer._teleportationRequestInitiated
             || (this._leftController !== null && this._leftController._teleportationRequestInitiated)
@@ -782,7 +799,7 @@ export class VRExperienceHelper {
 
         // Exiting VR mode double tapping the touch screen
         this._scene.onPrePointerObservable.add(() => {
-            if (this.isInVRMode) {
+            if (this.isInVRMode && this.exitVROnDoubleTap) {
                 this.exitVR();
                 if (this._fullscreenVRpresenting) {
                     this._scene.getEngine().exitFullscreen();
@@ -882,7 +899,7 @@ export class VRExperienceHelper {
         }
         if (!this._fullscreenVRpresenting && this._canvas) {
             this.exitVR();
-            if (!this._useCustomVRButton) {
+            if (!this._useCustomVRButton && this._btnVR) {
                 this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
                 this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
             }
@@ -921,14 +938,15 @@ export class VRExperienceHelper {
     }
 
     private moveButtonToBottomRight() {
-        if (this._canvas && !this._useCustomVRButton) {
-            this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
-            this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+        if (this._canvas && !this._useCustomVRButton && this._btnVR) {
+            const rect: ClientRect = this._canvas.getBoundingClientRect();
+            this._btnVR.style.top = rect.top + rect.height - 70 + "px";
+            this._btnVR.style.left = rect.left + rect.width - 100 + "px";
         }
     }
 
     private displayVRButton() {
-        if (!this._useCustomVRButton && !this._btnVRDisplayed) {
+        if (!this._useCustomVRButton && !this._btnVRDisplayed && this._btnVR) {
             document.body.appendChild(this._btnVR);
             this._btnVRDisplayed = true;
         }
@@ -1205,7 +1223,7 @@ export class VRExperienceHelper {
             this._castRayAndSelectObject(this._rightController);
         }
 
-        if (this._noControllerIsActive && this._scene.getEngine().isPointerLock) {
+        if (this._noControllerIsActive && (this._scene.getEngine().isPointerLock || this.enableGazeEvenWhenNoPointerLock)) {
             this._castRayAndSelectObject(this._cameraGazer);
         } else {
             this._cameraGazer._gazeTracker.isVisible = false;
@@ -1852,7 +1870,7 @@ export class VRExperienceHelper {
         var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
 
         if (hit) {
-            // Populate the contrllers mesh that can be used for drag/drop
+            // Populate the controllers mesh that can be used for drag/drop
             if ((<any>gazer)._laserPointer) {
                 hit.originMesh = (<any>gazer)._laserPointer.parent;
             }
@@ -2029,7 +2047,7 @@ export class VRExperienceHelper {
         if (this._vrDeviceOrientationCamera) {
             this._vrDeviceOrientationCamera.dispose();
         }
-        if (!this._useCustomVRButton && this._btnVR.parentNode) {
+        if (!this._useCustomVRButton  && this._btnVR && this._btnVR.parentNode) {
             document.body.removeChild(this._btnVR);
         }
 
