@@ -47,8 +47,6 @@ export class PortHelper {
 
                 let style = this._GetPortStyle(port.connection!.type);
 
-                let isConnected = port.connection && port.connection.endpoints.length > 0;
-
                 outputPorts.push(
                     <div key={key} className="output-port">
                         {
@@ -61,11 +59,6 @@ export class PortHelper {
                             <div className="output-port-border">                                
                             </div>
                             <DefaultPortWidget key={key} name={port.name} node={node} style={style} />
-                            {
-                                !isConnected &&
-                                <div className="output-port-connection">                             
-                                </div>                            
-                            }
                             <div className="output-port-type"> 
                                 {
                                     typeIndicator

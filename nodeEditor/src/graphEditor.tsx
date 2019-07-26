@@ -527,7 +527,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     >
                         <DiagramWidget className="diagram" deleteKeys={[46]} ref={"test"} 
                         allowLooseLinks={false}
-                        inverseZoom={true} diagramEngine={this._engine} maxNumberPointsPerLink={0} />
+                        inverseZoom={true} 
+                        diagramEngine={this._engine} 
+                        maxNumberPointsPerLink={0} />
                     </div>
 
                     <div id="rightGrab"
