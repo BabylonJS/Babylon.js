@@ -2500,7 +2500,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         return null;
     }
-    
+
     /**
      * Gets a camera using its id
      * @param id defines the id to look for
