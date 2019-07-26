@@ -15,6 +15,7 @@ import { PromisePolyfill } from './promise';
 import { TimingTools } from './timingTools';
 import { InstantiationTools } from './instantiationTools';
 import { GUID } from './guid';
+import { IScreenshotSize } from './interfaces/screenshotSize';
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
@@ -754,7 +755,7 @@ export class Tools {
      * @param mimeType defines the MIME type of the screenshot image (default: image/png).
      * Check your browser for supported MIME types
      */
-    public static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
+    public static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
         throw _DevTools.WarnImport("ScreenshotTools");
     }
 
@@ -773,7 +774,7 @@ export class Tools {
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
-    public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType: string = "image/png"): Promise<string> {
+    public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png"): Promise<string> {
         throw _DevTools.WarnImport("ScreenshotTools");
     }
 
@@ -796,7 +797,7 @@ export class Tools {
      * @param antialiasing Whether antialiasing should be turned on or not (default: false)
      * @param fileName A name for for the downloaded file.
      */
-    public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
+    public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
         throw _DevTools.WarnImport("ScreenshotTools");
     }
 
@@ -818,7 +819,7 @@ export class Tools {
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
-    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): Promise<string> {
+    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): Promise<string> {
         throw _DevTools.WarnImport("ScreenshotTools");
     }
 
