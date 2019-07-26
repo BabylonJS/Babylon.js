@@ -6,7 +6,7 @@ import { FxaaPostProcess } from "../PostProcesses/fxaaPostProcess";
 import { Constants } from "../Engines/constants";
 import { Logger } from "./logger";
 import { _TypeStore } from "./typeStore";
-import { Tools } from './tools';
+import { IScreenshotSize, Tools } from "./tools";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -30,28 +30,35 @@ export class ScreenshotTools {
      * @param mimeType defines the MIME type of the screenshot image (default: image/png).
      * Check your browser for supported MIME types
      */
-    public static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
-        var width: number;
-        var height: number;
+    public static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
+        let width = 0;
+        let height = 0;
 
-        // If a precision value is specified
-        if (size.precision) {
-            width = Math.round(engine.getRenderWidth() * size.precision);
-            height = Math.round(width / engine.getAspectRatio(camera));
-        }
-        else if (size.width && size.height) {
-            width = size.width;
-            height = size.height;
-        }
-        //If passing only width, computing height to keep display canvas ratio.
-        else if (size.width && !size.height) {
-            width = size.width;
-            height = Math.round(width / engine.getAspectRatio(camera));
-        }
-        //If passing only height, computing width to keep display canvas ratio.
-        else if (size.height && !size.width) {
-            height = size.height;
-            width = Math.round(height * engine.getAspectRatio(camera));
+        //If a size value defined as object
+        if (typeof(size) === 'object') {
+            // If a precision value is specified
+            if (size.precision) {
+                width = Math.round(engine.getRenderWidth() * size.precision);
+                height = Math.round(width / engine.getAspectRatio(camera));
+            }
+            else if (size.width && size.height) {
+                width = size.width;
+                height = size.height;
+            }
+            //If passing only width, computing height to keep display canvas ratio.
+            else if (size.width && !size.height) {
+                width = size.width;
+                height = Math.round(width / engine.getAspectRatio(camera));
+            }
+            //If passing only height, computing width to keep display canvas ratio.
+            else if (size.height && !size.width) {
+                height = size.height;
+                width = Math.round(height * engine.getAspectRatio(camera));
+            }
+            else {
+                width = Math.round(engine.getRenderWidth());
+                height = Math.round(width / engine.getAspectRatio(camera));
+            }
         }
         //Assuming here that "size" parameter is a number
         else if (!isNaN(size)) {
@@ -110,36 +117,47 @@ export class ScreenshotTools {
      * @param antialiasing Whether antialiasing should be turned on or not (default: false)
      * @param fileName A name for for the downloaded file.
      */
-    public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
-        var width: number;
-        var height: number;
+    public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
+        let width = 0;
+        let height = 0;
+        let targetTextureSize: number | { width: number, height: number } = 0;
 
-        //If a precision value is specified
-        if (size.precision) {
-            width = Math.round(engine.getRenderWidth() * size.precision);
-            height = Math.round(width / engine.getAspectRatio(camera));
-            size = { width: width, height: height };
-        }
-        else if (size.width && size.height) {
-            width = size.width;
-            height = size.height;
-        }
-        //If passing only width, computing height to keep display canvas ratio.
-        else if (size.width && !size.height) {
-            width = size.width;
-            height = Math.round(width / engine.getAspectRatio(camera));
-            size = { width: width, height: height };
-        }
-        //If passing only height, computing width to keep display canvas ratio.
-        else if (size.height && !size.width) {
-            height = size.height;
-            width = Math.round(height * engine.getAspectRatio(camera));
-            size = { width: width, height: height };
+        //If a size value defined as object
+        if (typeof(size) === 'object') {
+            //If a precision value is specified
+            if (size.precision) {
+                width = Math.round(engine.getRenderWidth() * size.precision);
+                height = Math.round(width / engine.getAspectRatio(camera));
+                size = { width: width, height: height };
+            }
+            else if (size.width && size.height) {
+                width = size.width;
+                height = size.height;
+            }
+            //If passing only width, computing height to keep display canvas ratio.
+            else if (size.width && !size.height) {
+                width = size.width;
+                height = Math.round(width / engine.getAspectRatio(camera));
+                size = { width: width, height: height };
+            }
+            //If passing only height, computing width to keep display canvas ratio.
+            else if (size.height && !size.width) {
+                height = size.height;
+                width = Math.round(height * engine.getAspectRatio(camera));
+                size = { width: width, height: height };
+            }
+            else {
+                width = Math.round(engine.getRenderWidth());
+                height = Math.round(width / engine.getAspectRatio(camera));
+            }
+
+            targetTextureSize = {width, height};
         }
         //Assuming here that "size" parameter is a number
         else if (!isNaN(size)) {
             height = size;
             width = size;
+            targetTextureSize = size;
         }
         else {
             Logger.Error("Invalid 'size' parameter !");
@@ -165,7 +183,7 @@ export class ScreenshotTools {
         scene.render();
 
         // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
-        var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
+        var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
         texture.renderList = null;
         texture.samples = samples;
         if (antialiasing) {
