@@ -39,8 +39,8 @@ set_property(TARGET bimg PROPERTY FOLDER Dependencies/bgfx)
 set_property(TARGET bx PROPERTY FOLDER Dependencies/bgfx)
 
 set(CMAKE_USE_WINSSL ON CACHE BOOL "Set cURL to use WinSSL by default.")
-#add_subdirectory(Dependencies/curl EXCLUDE_FROM_ALL)
-#set_property(TARGET libcurl PROPERTY FOLDER Dependencies/curl)
+add_subdirectory(Dependencies/curl EXCLUDE_FROM_ALL)
+set_property(TARGET libcurl PROPERTY FOLDER Dependencies/curl)
 
 set(SOURCES
     "Include/Babylon/Runtime.h"
@@ -79,6 +79,14 @@ add_library(Library ${SOURCES})
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
+
+add_definitions(-DV8_DEPRECATION_WARNINGS=1)
+add_definitions(-DNODE_USE_V8_PLATFORM=1)
+add_definitions(-DHAVE_INSPECTOR=0)
+add_definitions(-DV8_INSPECTOR_USE_STL=1)
+add_definitions(-DV8_INSPECTOR_USE_OLD_STL=1)
+
+    
 target_compile_definitions(Library PRIVATE NOMINMAX)
 target_compile_definitions(Library PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 
@@ -97,7 +105,7 @@ target_link_libraries(Library
     PRIVATE bx
     PRIVATE bimg
     PRIVATE bgfx
-    #PRIVATE libcurl
+    PRIVATE libcurl
     PRIVATE glslang
     PRIVATE SPIRV
     PRIVATE spirv-cross-hlsl)
