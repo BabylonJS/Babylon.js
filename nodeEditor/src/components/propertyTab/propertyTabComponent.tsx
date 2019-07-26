@@ -80,7 +80,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <LineContainerComponent title="FILE">                        
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent label="Save" onClick={() => {
-                            let json = JSON.stringify(this.props.globalState.nodeMaterial!.serialize());
+                            let json = JSON.stringify(this.props.globalState.nodeMaterial!.serialize(), undefined, 2);
                             StringTools.DownloadAsFile(json, "nodeMaterial.json");
                         }} />
                         <ButtonLineComponent label="Export shaders" onClick={() => {

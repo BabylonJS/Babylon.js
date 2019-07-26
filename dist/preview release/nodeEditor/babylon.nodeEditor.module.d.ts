@@ -1021,10 +1021,18 @@ declare module "babylonjs-node-editor/components/diagram/remap/remapNodeFactory"
         getNewInstance(): RemapNodeModel;
     }
 }
+declare module "babylonjs-node-editor/graphHelper" {
+    import * as dagre from "babylonjs-node-editor/dagre";
+    import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
+    export class GraphHelper {
+        static DistributeGraph(model: DiagramModel): dagre.Node[];
+        private static _MapElements;
+        private static _MapEdges;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
-    import * as dagre from "babylonjs-node-editor/dagre";
     import { GlobalState } from "babylonjs-node-editor/globalState";
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
@@ -1054,27 +1062,14 @@ declare module "babylonjs-node-editor/graphEditor" {
          * @param nodeMaterialBlock
          */
         createNodeFromObject(options: NodeCreationOptions): DefaultNodeModel;
+        addValueNode(type: string): DefaultNodeModel;
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         zoomToFit(retry?: number): void;
-        distributeGraph(): dagre.Node[];
-        mapElements(): {
-            id: string;
-            metadata: {
-                id: string;
-                width: number;
-                height: number;
-            };
-        }[];
-        mapEdges(): {
-            from: import("storm-react-diagrams").NodeModel;
-            to: import("storm-react-diagrams").NodeModel;
-        }[];
         buildMaterial(): void;
         build(needToWait?: boolean): void;
         reOrganize(): void;
-        addValueNode(type: string): DefaultNodeModel;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -2025,6 +2020,13 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class GraphHelper {
+        static DistributeGraph(model: DiagramModel): dagre.Node[];
+        private static _MapElements;
+        private static _MapEdges;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -2050,27 +2052,14 @@ declare module NODEEDITOR {
          * @param nodeMaterialBlock
          */
         createNodeFromObject(options: NodeCreationOptions): DefaultNodeModel;
+        addValueNode(type: string): DefaultNodeModel;
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         zoomToFit(retry?: number): void;
-        distributeGraph(): dagre.Node[];
-        mapElements(): {
-            id: string;
-            metadata: {
-                id: string;
-                width: number;
-                height: number;
-            };
-        }[];
-        mapEdges(): {
-            from: import("storm-react-diagrams").NodeModel;
-            to: import("storm-react-diagrams").NodeModel;
-        }[];
         buildMaterial(): void;
         build(needToWait?: boolean): void;
         reOrganize(): void;
-        addValueNode(type: string): DefaultNodeModel;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
