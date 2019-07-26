@@ -78,21 +78,21 @@ export class BlockTools {
         let color = "Red";
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
-				color = "DimGrey";
+				color = "#ca9e27";
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:                
-				color = "Chocolate";
+				color = "#16bcb1";
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector3:                
             case NodeMaterialBlockConnectionPointTypes.Color3:                
-                color = "ForestGreen";
+                color = "#b786cb";
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector4:                
             case NodeMaterialBlockConnectionPointTypes.Color4:                
-				color = "Gold";
+				color = "#be5126";
                 break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:                
-				color = "LightCoral";
+				color = "#591990";
                 break;
         }
 
