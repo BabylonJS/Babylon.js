@@ -33,7 +33,7 @@ export class PreviewManager {
 
         this._dummySphere = MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, this._scene);
 
-        this._camera.attachControl(targetCanvas, false);
+       // this._camera.attachControl(targetCanvas, false);
 
         this._engine.runRenderLoop(() => {
             this._scene.render();
@@ -47,6 +47,7 @@ export class PreviewManager {
     public dispose() {
         this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
 
+        this._camera.dispose();
         this._dummySphere.dispose();
         this._light.dispose();
         this._engine.dispose();
