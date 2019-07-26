@@ -2491,7 +2491,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param uniqueId defines the texture's unique id
      * @return the texture or null if none found.
      */
-    public getTextureByUniqueID(uniqueId: number): Nullable<Texture> {
+    public getTextureByUniqueID(uniqueId: number): Nullable<BaseTexture> {
         for (var index = 0; index < this.textures.length; index++) {
             if (this.textures[index].uniqueId === uniqueId) {
                 return this.textures[index];
