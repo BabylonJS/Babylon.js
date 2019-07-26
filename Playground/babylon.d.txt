@@ -19356,6 +19356,10 @@ declare module BABYLON {
          */
         onClear: (Engine: Engine) => void;
         /**
+         * An event triggered when the texture is resized.
+         */
+        onResizeObservable: Observable<RenderTargetTexture>;
+        /**
          * Define the clear color of the Render Target if it should be different from the scene.
          */
         clearColor: Color4;
@@ -50413,20 +50417,6 @@ declare module BABYLON {
         Color4 = 64,
         /** Matrix */
         Matrix = 128,
-        /** Vector3 or Color3 */
-        Vector3OrColor3 = 40,
-        /** Vector3 or Vector4 */
-        Vector3OrVector4 = 24,
-        /** Vector4 or Color4 */
-        Vector4OrColor4 = 80,
-        /** Color3 or Color4 */
-        Color3OrColor4 = 96,
-        /** Vector2 or Color3 or Color4 */
-        Vector2OrColor3OrColor4 = 100,
-        /** Vector3 or Color3 or Color4 or Vector4 */
-        Vector3OrColor3OrVector4OrColor4 = 120,
-        /** Vector2 or Vector3 or Color3 or Color4 or Vector4 */
-        Vector2OrVector3OrColor3OrVector4OrColor4 = 124,
         /** Detect type based on connection */
         AutoDetect = 1024,
         /** Output type that will be defined by input type */
@@ -51402,6 +51392,10 @@ declare module BABYLON {
         private _type;
         /** @hidden */private _enforceAssociatedVariableName: boolean;
         /**
+         * Gets or sets the additional types supported byt this connection point
+         */
+        acceptedConnectionPointTypes: NodeMaterialBlockConnectionPointTypes[];
+        /**
          * Gets or sets the associated variable name in the shader
          */
         associatedVariableName: string;
@@ -51413,10 +51407,6 @@ declare module BABYLON {
          * Gets or sets the connection point name
          */
         name: string;
-        /**
-         * Gets or sets the swizzle to apply to this connection point when reading or writing
-         */
-        swizzle: string;
         /**
          * Gets or sets a boolean indicating that this connection point can be omitted
          */
@@ -51483,7 +51473,6 @@ declare module BABYLON {
          * @returns the serialized point object
          */
         serialize(): any;
-        private static _GetTypeLength;
     }
 }
 declare module BABYLON {
@@ -51662,6 +51651,10 @@ declare module BABYLON {
          * Gets the color input component
          */
         readonly color: NodeMaterialConnectionPoint;
+        /**
+         * Gets the alpha input component
+         */
+        readonly alpha: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }

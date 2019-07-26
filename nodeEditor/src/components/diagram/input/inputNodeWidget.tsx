@@ -110,7 +110,6 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                         value = `(${vec4Value.x}, ${vec4Value.y}, ${vec4Value.z}, ${vec4Value.w})`;
                         break;                        
                     case NodeMaterialBlockConnectionPointTypes.Color3:
-                    case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
                     case NodeMaterialBlockConnectionPointTypes.Color4: {
                         color = (inputBlock.value as Color3).toHexString();
                         break;
