@@ -922,7 +922,10 @@ export class NodeMaterial extends PushMaterial {
 
         for (var outputNode of this._fragmentOutputNodes) {
             this._gatherBlocks(outputNode, blocks);
-            serializationObject.outputNodes.push(outputNode.uniqueId);
+
+            if (serializationObject.outputNodes.indexOf(outputNode.uniqueId) === -1) {
+                serializationObject.outputNodes.push(outputNode.uniqueId);
+            }
         }
 
         // Blocks
