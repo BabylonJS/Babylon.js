@@ -367,6 +367,7 @@ export class Texture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
+        this.name = url;
         this.url = url;
         this._buffer = buffer;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
@@ -580,6 +581,10 @@ export class Texture extends BaseTexture {
      */
     public serialize(): any {
         var serializationObject = super.serialize();
+
+        if (!serializationObject) {
+            return null;
+        }
 
         if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
             serializationObject.base64String = this._buffer;

@@ -1,7 +1,8 @@
-import { LinkModel, PortModel, DefaultLinkModel } from "storm-react-diagrams";
+import { LinkModel, PortModel } from "storm-react-diagrams";
 import { Nullable } from 'babylonjs/types';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-import { DefaultNodeModel } from './defaultNodeModel';
+import { DefaultNodeModel } from '../defaultNodeModel';
+import { AdvancedLinkModel } from '../link/advancedLinkModel';
 
 /**
  * Port model
@@ -51,7 +52,7 @@ export class DefaultPortModel extends PortModel {
     }
 
     createLinkModel(): LinkModel {
-        return new DefaultLinkModel();
+        return new AdvancedLinkModel();
     }
 
     static SortInputOutput(a: Nullable<DefaultPortModel>, b: Nullable<DefaultPortModel>) {

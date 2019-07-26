@@ -19,7 +19,7 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { Nullable } from '../../types';
 import { VertexBuffer } from '../../Meshes/buffer';
 import { Tools } from '../../Misc/tools';
-import { VectorTransformBlock } from './Blocks/vectorTransformBlock';
+import { TransformBlock } from './Blocks/transformBlock';
 import { VertexOutputBlock } from './Blocks/Vertex/vertexOutputBlock';
 import { FragmentOutputBlock } from './Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
@@ -127,6 +127,11 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
+     */
+    public ignoreAlpha = false;
+
+    /**
     * Defines the maximum number of lights that can be used in the material
     */
     public maxSimultaneousLights = 4;
@@ -178,6 +183,11 @@ export class NodeMaterial extends PushMaterial {
         // Ensure the effect will be rebuilt.
         this._markAllSubMeshesAsTexturesDirty();
     }
+
+    /**
+     * Gets an array of blocks that needs to be serialized even if they are not yet connected
+     */
+    public attachedBlocks = new Array<NodeMaterialBlock>();
 
     /**
      * Create a new node based material
@@ -365,7 +375,10 @@ export class NodeMaterial extends PushMaterial {
      * @returns a boolean specifying if alpha blending is needed
      */
     public needAlphaBlending(): boolean {
-        return (this.alpha < 1.0) || this._sharedData.hints.needAlphaBlending;
+        if (this.ignoreAlpha) {
+            return false;
+        }
+        return (this.alpha < 1.0) || (this._sharedData && this._sharedData.hints.needAlphaBlending);
     }
 
     /**
@@ -380,12 +393,10 @@ export class NodeMaterial extends PushMaterial {
         node.initialize(state);
         node.autoConfigure();
 
-        if (node.isInput) {
-            (node as InputBlock).associatedVariableName = "";
-        }
-
         for (var input of node.inputs) {
-            input.associatedVariableName = "";
+            if (!node.isInput) {
+                input.associatedVariableName = "";
+            }
 
             let connectedPoint = input.connectedPoint;
             if (connectedPoint) {
@@ -833,6 +844,7 @@ export class NodeMaterial extends PushMaterial {
     public clear() {
         this._vertexOutputNodes = [];
         this._fragmentOutputNodes = [];
+        this.attachedBlocks = [];
     }
 
     /**
@@ -847,14 +859,14 @@ export class NodeMaterial extends PushMaterial {
         var worldInput = new InputBlock("world");
         worldInput.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.World);
 
-        var worldPos = new VectorTransformBlock("worldPos");
+        var worldPos = new TransformBlock("worldPos");
         positionInput.connectTo(worldPos);
         worldInput.connectTo(worldPos);
 
         var viewProjectionInput = new InputBlock("viewProjection");
         viewProjectionInput.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.ViewProjection);
 
-        var worldPosdMultipliedByViewProjection = new VectorTransformBlock("worldPos * viewProjectionTransform");
+        var worldPosdMultipliedByViewProjection = new TransformBlock("worldPos * viewProjectionTransform");
         worldPos.connectTo(worldPosdMultipliedByViewProjection);
         viewProjectionInput.connectTo(worldPosdMultipliedByViewProjection);
 
@@ -879,8 +891,8 @@ export class NodeMaterial extends PushMaterial {
         }
         list.push(rootNode);
 
-        for (var inputs of rootNode.inputs) {
-            let connectedPoint = inputs.connectedPoint;
+        for (var input of rootNode.inputs) {
+            let connectedPoint = input.connectedPoint;
             if (connectedPoint) {
                 let block = connectedPoint.ownerBlock;
                 if (block !== rootNode) {
@@ -920,7 +932,65 @@ export class NodeMaterial extends PushMaterial {
             serializationObject.blocks.push(block.serialize());
         }
 
+        for (var block of this.attachedBlocks) {
+            if (blocks.indexOf(block) !== -1) {
+                continue;
+            }
+            serializationObject.blocks.push(block.serialize());
+        }
+
         return serializationObject;
+    }
+
+    /**
+     * Clear the current graph and load a new one from a serialization object
+     * @param source defines the JSON representation of the material
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     */
+    public loadFromSerialization(source: any, rootUrl: string = "") {
+        this.clear();
+
+        let map: {[key: number]: NodeMaterialBlock} = {};
+
+        // Create blocks
+        for (var parsedBlock of source.blocks) {
+            let blockType = _TypeStore.GetClass(parsedBlock.customType);
+            if (blockType) {
+                let block: NodeMaterialBlock = new blockType();
+                block._deserialize(parsedBlock, this.getScene(), rootUrl);
+                map[parsedBlock.id] = block;
+
+                this.attachedBlocks.push(block);
+            }
+        }
+
+        // Connections
+
+        // Play them in reverse to make sure types are defined
+        for (var blockIndex = source.blocks.length - 1; blockIndex >= 0; blockIndex--) {
+            let parsedBlock = source.blocks[blockIndex];
+            let block = map[parsedBlock.id];
+
+            for (var input of parsedBlock.inputs) {
+                if (!input.targetBlockId) {
+                    continue;
+                }
+                let inputPoint = block.getInputByName(input.inputName);
+                let targetBlock = map[input.targetBlockId];
+                if (targetBlock) {
+                    let outputPoint = targetBlock.getOutputByName(input.targetConnectionName);
+
+                    if (inputPoint && outputPoint) {
+                        outputPoint.connectTo(inputPoint);
+                    }
+                }
+            }
+        }
+
+        // Outputs
+        for (var outputNodeId of source.outputNodes) {
+            this.addOutputNode(map[outputNodeId]);
+        }
     }
 
     /**
@@ -930,34 +1000,10 @@ export class NodeMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a new node material
      */
-    public static Parse(source: any, scene: Scene, rootUrl: string): NodeMaterial {
+    public static Parse(source: any, scene: Scene, rootUrl: string = ""): NodeMaterial {
         let nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene), source, scene, rootUrl);
 
-        let map: {[key: number]: NodeMaterialBlock} = {};
-
-        // Create blocks
-        for (var parsedBlock of source.blocks) {
-            let blockType = _TypeStore.GetClass(parsedBlock.customType);
-            if (blockType) {
-                let block: NodeMaterialBlock = new blockType();
-
-                map[parsedBlock.id] = block;
-            }
-        }
-
-        // Connections
-        // for (var parsedBlock of source.blocks) {
-        //     let block = map[parsedBlock.id];
-
-        //     for (var input of parsedBlock.inputs) {
-
-        //     }
-        // }
-
-        // Outputs
-        for (var outputNodeId of source.outputNodes) {
-            nodeMaterial.addOutputNode(map[outputNodeId]);
-        }
+        nodeMaterial.loadFromSerialization(source, rootUrl);
 
         return nodeMaterial;
     }

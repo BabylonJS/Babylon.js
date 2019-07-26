@@ -31,7 +31,7 @@ export class FogBlock extends NodeMaterialBlock {
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
 
         // Fragment
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3OrColor4, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("fogColor", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -132,8 +132,8 @@ export class FogBlock extends NodeMaterialBlock {
 
             state.compilationString += `#ifdef FOG\r\n`;
             state.compilationString += `float ${tempFogVariablename} = CalcFogFactor(${this._fogDistanceName}, ${this._fogParameters});\r\n`;
-            state.compilationString += this._declareOutput(output, state) + ` = ${tempFogVariablename} * ${color.associatedVariableName}.rgb + (1.0 - ${tempFogVariablename}) * ${fogColor.associatedVariableName};\r\n`;
-            state.compilationString += `#else\r\n${this._declareOutput(output, state)} =  ${color.associatedVariableName}.rgb;\r\n`;
+            state.compilationString += this._declareOutput(output, state) + ` = ${tempFogVariablename} * ${color.associatedVariableName} + (1.0 - ${tempFogVariablename}) * ${fogColor.associatedVariableName};\r\n`;
+            state.compilationString += `#else\r\n${this._declareOutput(output, state)} =  ${color.associatedVariableName};\r\n`;
             state.compilationString += `#endif\r\n`;
         } else {
             let worldPos = this.worldPosition;

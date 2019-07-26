@@ -526,7 +526,13 @@ var KHR_texture_transform = /** @class */ (function () {
                 resolve(babylonTexture);
                 return;
             }
-            return _this._textureTransformTextureAsync(babylonTexture, scene);
+            return _this._textureTransformTextureAsync(babylonTexture, scene)
+                .then(function (proceduralTexture) {
+                resolve(proceduralTexture);
+            })
+                .catch(function (e) {
+                reject(e);
+            });
         });
     };
     /**

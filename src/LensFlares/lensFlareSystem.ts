@@ -313,6 +313,10 @@ export class LensFlareSystem {
         for (var index = 0; index < this.lensFlares.length; index++) {
             var flare = this.lensFlares[index];
 
+            if (flare.texture && !flare.texture.isReady()) {
+                continue;
+            }
+
             engine.setAlphaMode(flare.alphaMode);
 
             var x = centerX - (distX * flare.position);

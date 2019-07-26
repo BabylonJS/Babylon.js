@@ -11,6 +11,8 @@ import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Nullable } from '../../../../types';
 import { _TypeStore } from '../../../../Misc/typeStore';
+import { Texture } from '../../../Textures/texture';
+import { Scene } from '../../../../scene';
 
 /**
  * Block used to read a texture from a sampler
@@ -191,6 +193,24 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         return this;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        if (this.texture) {
+            serializationObject.texture = this.texture.serialize();
+        }
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        if (serializationObject.texture) {
+            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
+        }
     }
 }
 

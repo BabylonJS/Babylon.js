@@ -4,12 +4,13 @@ import { NodeMaterialBlockConnectionPointMode } from '../../NodeMaterialBlockCon
 import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
 import { Nullable } from '../../../../types';
 import { Effect } from '../../../../Materials/effect';
-import { Matrix, Vector2, Vector3 } from '../../../../Maths/math.vector';
+import { Matrix, Vector2, Vector3, Vector4 } from '../../../../Maths/math.vector';
 import { Scene } from '../../../../scene';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../../Misc/typeStore';
+import { Color3, Color4 } from '../../../../Maths/math';
 
 /**
  * Block used to expose an input value
@@ -31,20 +32,26 @@ export class InputBlock extends NodeMaterialBlock {
         if (this._type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
             if (this.isUniform && this.value != null) {
                 if (!isNaN(this.value)) {
-                    return NodeMaterialBlockConnectionPointTypes.Float;
+                    this._type = NodeMaterialBlockConnectionPointTypes.Float;
+                    return this._type;
                 }
 
                 switch (this.value.getClassName()) {
                     case "Vector2":
-                        return NodeMaterialBlockConnectionPointTypes.Vector2;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
+                        return this._type;
                     case "Vector3":
-                        return NodeMaterialBlockConnectionPointTypes.Vector3;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
+                        return this._type;
                     case "Vector4":
-                        return NodeMaterialBlockConnectionPointTypes.Vector4;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
+                        return this._type;
                     case "Color3":
-                        return NodeMaterialBlockConnectionPointTypes.Color3;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Color3;
+                        return this._type;
                     case "Color4":
-                        return NodeMaterialBlockConnectionPointTypes.Color4;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Color4;
+                        return this._type;
                 }
             }
 
@@ -53,10 +60,12 @@ export class InputBlock extends NodeMaterialBlock {
                     case "position":
                     case "normal":
                     case "tangent":
-                        return NodeMaterialBlockConnectionPointTypes.Vector3;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
+                        return this._type;
                     case "uv":
                     case "uv2":
-                        return NodeMaterialBlockConnectionPointTypes.Vector2;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
+                        return this._type;
                 }
             }
 
@@ -68,9 +77,11 @@ export class InputBlock extends NodeMaterialBlock {
                     case NodeMaterialWellKnownValues.View:
                     case NodeMaterialWellKnownValues.ViewProjection:
                     case NodeMaterialWellKnownValues.Projection:
-                        return NodeMaterialBlockConnectionPointTypes.Matrix;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Matrix;
+                        return this._type;
                     case NodeMaterialWellKnownValues.CameraPosition:
-                        return NodeMaterialBlockConnectionPointTypes.Vector3;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
+                        return this._type;
                 }
             }
         }
@@ -88,6 +99,8 @@ export class InputBlock extends NodeMaterialBlock {
         super(name, target, false, true);
 
         this._type = type;
+
+        this.setDefaultValue();
 
         this.registerOutput("output", type);
     }
@@ -255,9 +268,16 @@ export class InputBlock extends NodeMaterialBlock {
                 this.value = Vector2.Zero();
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
                 this.value = Vector3.Zero();
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                this.value = Vector4.Zero();
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                this.value = Color3.White();
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                this.value = new Color4(1, 1, 1, 1);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 this.value = Matrix.Identity();
@@ -423,6 +443,48 @@ export class InputBlock extends NodeMaterialBlock {
         }
 
         this._emit(state);
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.type = this.type;
+        serializationObject.mode = this._mode;
+        serializationObject.wellKnownValue = this._wellKnownValue;
+
+        if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
+            if (this._storedValue.asArray) {
+                serializationObject.valueType = "BABYLON." + this._storedValue.getClassName();
+                serializationObject.value = this._storedValue.asArray();
+            } else {
+                serializationObject.valueType = "number";
+                serializationObject.value = this._storedValue;
+            }
+        }
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this._type = serializationObject.type;
+        this._mode = serializationObject.mode;
+        this._wellKnownValue = serializationObject.wellKnownValue;
+
+        if (!serializationObject.valueType) {
+            return;
+        }
+
+        if (serializationObject.valueType === "number") {
+            this._storedValue = serializationObject.value;
+        } else {
+            let valueType = _TypeStore.GetClass(serializationObject.valueType);
+
+            if (valueType) {
+                this._storedValue = valueType.FromArray(serializationObject.value);
+            }
+        }
     }
 }
 

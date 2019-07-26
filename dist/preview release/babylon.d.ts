@@ -13383,6 +13383,11 @@ declare module BABYLON {
          * @param transformNode defines the transform node to link to
          */
         linkTransformNode(transformNode: Nullable<TransformNode>): void;
+        /**
+         * Gets the node used to drive the bone's transformation
+         * @returns a transform node or null
+         */
+        getTransformNode(): Nullable<TransformNode>;
         /** Gets or sets current position (in local space) */
         position: Vector3;
         /** Gets or sets current rotation (in local space) */
@@ -13657,6 +13662,7 @@ declare module BABYLON {
         protected _scaling: Vector3;
         protected _isDirty: boolean;
         private _transformToBoneReferal;
+        private _isAbsoluteSynced;
         private _billboardMode;
         /**
         * Gets or sets the billboard mode. Default is 0.
@@ -13701,6 +13707,8 @@ declare module BABYLON {
         _localMatrix: Matrix;
         private _usePivotMatrix;
         private _absolutePosition;
+        private _absoluteScaling;
+        private _absoluteRotationQuaternion;
         private _pivotMatrix;
         private _pivotMatrixInverse;
         protected _postMultiplyPivotMatrix: boolean;
@@ -13773,6 +13781,16 @@ declare module BABYLON {
          * Returns a Vector3.
          */
         readonly absolutePosition: Vector3;
+        /**
+         * Returns the current mesh absolute scaling.
+         * Returns a Vector3.
+         */
+        readonly absoluteScaling: Vector3;
+        /**
+         * Returns the current mesh absolute rotation.
+         * Returns a Quaternion.
+         */
+        readonly absoluteRotationQuaternion: Quaternion;
         /**
          * Sets a new matrix to apply before all other transformation
          * @param matrix defines the transform matrix
@@ -14055,6 +14073,7 @@ declare module BABYLON {
          * @returns the current mesh
          */
         normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean, predicate?: Nullable<(node: AbstractMesh) => boolean>): TransformNode;
+        private _syncAbsoluteScalingAndRotation;
     }
 }
 declare module BABYLON {
@@ -24885,7 +24904,7 @@ declare module BABYLON {
      * The SPS is also a particle system. It provides some methods to manage the particles.
      * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
      *
-     * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
+     * Full documentation here : http://doc.babylonjs.com/how_to/Solid_Particle_System
      */
     export class SolidParticleSystem implements IDisposable {
         /**
@@ -24919,7 +24938,7 @@ declare module BABYLON {
         mesh: Mesh;
         /**
          * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
-         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#garbage-collector-concerns
+         * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#garbage-collector-concerns
          */
         vars: any;
         /**
@@ -24928,7 +24947,7 @@ declare module BABYLON {
          * Each element of this array is an object `{idx: int, faceId: int}`.
          * `idx` is the picked particle index in the `SPS.particles` array
          * `faceId` is the picked face index counted within this particle.
-         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#pickable-particles
+         * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
          */
         pickedParticles: {
             idx: number;
@@ -25030,7 +25049,7 @@ declare module BABYLON {
         private _addParticle;
         /**
          * Adds some particles to the SPS from the model shape. Returns the shape id.
-         * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
+         * Please read the doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#create-an-immutable-sps
          * @param mesh is any Mesh object that will be used as a model for the solid particles.
          * @param nb (positive integer) the number of particles to be created from this model
          * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
@@ -25063,7 +25082,7 @@ declare module BABYLON {
         dispose(): void;
         /**
          * Visibilty helper : Recomputes the visible size according to the mesh bounding box
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
          * @returns the SPS.
          */
         refreshVisibleSize(): SolidParticleSystem;
@@ -25071,25 +25090,25 @@ declare module BABYLON {
          * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
          * @param size the size (float) of the visibility box
          * note : this doesn't lock the SPS mesh bounding box.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
          */
         setVisibilityBox(size: number): void;
         /**
          * Gets whether the SPS as always visible or not
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
          */
         /**
         * Sets the SPS as always visible or not
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
         */
         isAlwaysVisible: boolean;
         /**
          * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
          */
         /**
         * Gets if the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+        * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
         */
         isVisibilityBoxLocked: boolean;
         /**
@@ -25152,13 +25171,13 @@ declare module BABYLON {
         /**
          * This function does nothing. It may be overwritten to set all the particle first values.
          * The SPS doesn't call this function, you may have to call it by your own.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
          */
         initParticles(): void;
         /**
          * This function does nothing. It may be overwritten to recycle a particle.
          * The SPS doesn't call this function, you may have to call it by your own.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
          * @param particle The particle to recycle
          * @returns the recycled particle
          */
@@ -25166,7 +25185,7 @@ declare module BABYLON {
         /**
          * Updates a particle : this function should  be overwritten by the user.
          * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
          * @example : just set a particle position or velocity and recycle conditions
          * @param particle The particle to update
          * @returns the updated particle
@@ -25178,7 +25197,7 @@ declare module BABYLON {
          * @param particle the current particle
          * @param vertex the current index of the current particle
          * @param pt the index of the current vertex in the particle shape
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#update-each-particle-shape
+         * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#update-each-particle-shape
          * @example : just set a vertex particle position
          * @returns the updated vertex
          */
@@ -31877,6 +31896,22 @@ declare module BABYLON {
          */
         static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string): void;
         /**
+         * Captures a screenshot of the current rendering
+         * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine defines the rendering engine
+         * @param camera defines the source camera
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution
+         * @param mimeType defines the MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+         * to the src parameter of an <img> to display it
+         */
+        static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType?: string): Promise<string>;
+        /**
          * Generates an image screenshot from the specified camera.
          * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
          * @param engine The engine to use for rendering
@@ -31896,6 +31931,25 @@ declare module BABYLON {
          * @param fileName A name for for the downloaded file.
          */
         static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): void;
+        /**
+         * Generates an image screenshot from the specified camera.
+         * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine The engine to use for rendering
+         * @param camera The camera to use for rendering
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution
+         * @param mimeType The MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         * @param samples Texture samples (default: 1)
+         * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+         * @param fileName A name for for the downloaded file.
+         * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+         * to the src parameter of an <img> to display it
+         */
+        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): Promise<string>;
         /**
          * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
          * Be aware Math.random() could cause collisions, but:
@@ -40433,6 +40487,14 @@ declare module BABYLON {
         private _onVRRequestPresentStart;
         private _onVRRequestPresentComplete;
         /**
+         * Gets or sets a boolean indicating that gaze can be enabled even if pointer lock is not engage (useful on iOS where fullscreen mode and pointer lock are not supported)
+         */
+        enableGazeEvenWhenNoPointerLock: boolean;
+        /**
+         * Gets or sets a boolean indicating that the VREXperienceHelper will exit VR if double tap is detected
+         */
+        exitVROnDoubleTap: boolean;
+        /**
          * Observable raised right before entering VR.
          */
         onEnteringVRObservable: Observable<VRExperienceHelper>;
@@ -40579,6 +40641,10 @@ declare module BABYLON {
          * The deviceOrientationCamera that is used as a fallback when vr device is not connected.
          */
         readonly vrDeviceOrientationCamera: Nullable<VRDeviceOrientationFreeCamera>;
+        /**
+         * The html button that is used to trigger entering into VR.
+         */
+        readonly vrButton: Nullable<HTMLButtonElement>;
         private readonly _teleportationRequestInitiated;
         /**
          * Defines wether or not Pointer lock should be requested when switching to
@@ -51163,7 +51229,7 @@ declare module BABYLON {
     /**
      * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
      */
-    export class VectorTransformBlock extends NodeMaterialBlock {
+    export class TransformBlock extends NodeMaterialBlock {
         /**
          * Defines the value to use to complement W value to transform it to a Vector4
          */
@@ -51173,7 +51239,7 @@ declare module BABYLON {
          */
         complementZ: number;
         /**
-         * Creates a new VectorTransformBlock
+         * Creates a new TransformBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -51195,6 +51261,8 @@ declare module BABYLON {
          */
         readonly transform: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -51225,10 +51293,6 @@ declare module BABYLON {
      */
     export class FragmentOutputBlock extends NodeMaterialBlock {
         /**
-         * Gets or sets a boolean indicating if this block will output an alpha value
-         */
-        alphaBlendingEnabled: boolean;
-        /**
          * Create a new FragmentOutputBlock
          * @param name defines the block name
          */
@@ -51239,9 +51303,17 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the color input component
+         * Gets the rgba input component
          */
-        readonly color: NodeMaterialConnectionPoint;
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb input component
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        /**
+         * Gets the a input component
+         */
+        readonly a: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -51311,6 +51383,10 @@ declare module BABYLON {
         /** Get the inspector from bundle or global */
         private _getGlobalNodeMaterialEditor;
         /**
+         * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
+         */
+        ignoreAlpha: boolean;
+        /**
         * Defines the maximum number of lights that can be used in the material
         */
         maxSimultaneousLights: number;
@@ -51341,6 +51417,10 @@ declare module BABYLON {
         * If sets to null, the scene one is in use.
         */
         imageProcessingConfiguration: ImageProcessingConfiguration;
+        /**
+         * Gets an array of blocks that needs to be serialized even if they are not yet connected
+         */
+        attachedBlocks: NodeMaterialBlock[];
         /**
          * Create a new node based material
          * @param name defines the material name
@@ -51478,13 +51558,19 @@ declare module BABYLON {
          */
         serialize(): any;
         /**
+         * Clear the current graph and load a new one from a serialization object
+         * @param source defines the JSON representation of the material
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         */
+        loadFromSerialization(source: any, rootUrl?: string): void;
+        /**
          * Creates a node material from parsed material data
          * @param source defines the JSON representation of the material
          * @param scene defines the hosting scene
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
          * @returns a new node material
          */
-        static Parse(source: any, scene: Scene, rootUrl: string): NodeMaterial;
+        static Parse(source: any, scene: Scene, rootUrl?: string): NodeMaterial;
     }
 }
 declare module BABYLON {
@@ -51529,6 +51615,8 @@ declare module BABYLON {
         private _injectVertexCode;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -51908,6 +51996,8 @@ declare module BABYLON {
          * @returns the serialized block object
          */
         serialize(): any;
+        /** @hidden */
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -51946,6 +52036,61 @@ declare module BABYLON {
         CameraPosition = 7,
         /** Fog Color */
         FogColor = 8
+    }
+}
+declare module BABYLON {
+    /**
+     * Contains position and normal vectors for a vertex
+     */
+    export class PositionNormalVertex {
+        /** the position of the vertex (defaut: 0,0,0) */
+        position: Vector3;
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal: Vector3;
+        /**
+         * Creates a PositionNormalVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         */
+        constructor(
+        /** the position of the vertex (defaut: 0,0,0) */
+        position?: Vector3, 
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal?: Vector3);
+        /**
+         * Clones the PositionNormalVertex
+         * @returns the cloned PositionNormalVertex
+         */
+        clone(): PositionNormalVertex;
+    }
+    /**
+     * Contains position, normal and uv vectors for a vertex
+     */
+    export class PositionNormalTextureVertex {
+        /** the position of the vertex (defaut: 0,0,0) */
+        position: Vector3;
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal: Vector3;
+        /** the uv of the vertex (default: 0,0) */
+        uv: Vector2;
+        /**
+         * Creates a PositionNormalTextureVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         * @param uv the uv of the vertex (default: 0,0)
+         */
+        constructor(
+        /** the position of the vertex (defaut: 0,0,0) */
+        position?: Vector3, 
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal?: Vector3, 
+        /** the uv of the vertex (default: 0,0) */
+        uv?: Vector2);
+        /**
+         * Clones the PositionNormalTextureVertex
+         * @returns the cloned PositionNormalTextureVertex
+         */
+        clone(): PositionNormalTextureVertex;
     }
 }
 declare module BABYLON {
@@ -52046,6 +52191,8 @@ declare module BABYLON {
         /** @hidden */
         _transmit(effect: Effect, scene: Scene): void;
         protected _buildBlock(state: NodeMaterialBuildState): void;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -52330,11 +52477,11 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to create a Color4 out of 4 inputs (one for each component)
+     * Block used to create a Color3/4 out of individual inputs (one for each component)
      */
-    export class RGBAMergerBlock extends NodeMaterialBlock {
+    export class ColorMergerBlock extends NodeMaterialBlock {
         /**
-         * Create a new RGBAMergerBlock
+         * Create a new ColorMergerBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -52344,39 +52491,39 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the R input component
+         * Gets the r component (input)
          */
         readonly r: NodeMaterialConnectionPoint;
         /**
-         * Gets the G input component
+         * Gets the g component (input)
          */
         readonly g: NodeMaterialConnectionPoint;
         /**
-         * Gets the B input component
+         * Gets the b component (input)
          */
         readonly b: NodeMaterialConnectionPoint;
         /**
-         * Gets the RGB input component
-         */
-        readonly rgb: NodeMaterialConnectionPoint;
-        /**
-         * Gets the R input component
+         * Gets the a component (input)
          */
         readonly a: NodeMaterialConnectionPoint;
         /**
-         * Gets the output component
+         * Gets the rgba component (output)
          */
-        readonly output: NodeMaterialConnectionPoint;
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {
     /**
-     * Block used to create a Color3 out of 3 inputs (one for each component)
+     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
      */
-    export class RGBMergerBlock extends NodeMaterialBlock {
+    export class VectorMergerBlock extends NodeMaterialBlock {
         /**
-         * Create a new RGBMergerBlock
+         * Create a new VectorMergerBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -52386,31 +52533,89 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the R component input
+         * Gets the x component (input)
+         */
+        readonly x: NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component (input)
+         */
+        readonly y: NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component (input)
+         */
+        readonly z: NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component (input)
+         */
+        readonly w: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component (output)
+         */
+        readonly xyzw: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         */
+        readonly xyz: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         */
+        readonly xy: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to expand a Color3/4 into 4 outputs (one for each component)
+     */
+    export class ColorSplitterBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ColorSplitterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the rgba component (input)
+         */
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (input)
+         */
+        readonly rgbIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         */
+        readonly rgbOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the r component (output)
          */
         readonly r: NodeMaterialConnectionPoint;
         /**
-         * Gets the G component input
+         * Gets the g component (output)
          */
         readonly g: NodeMaterialConnectionPoint;
         /**
-         * Gets the B component input
+         * Gets the b component (output)
          */
         readonly b: NodeMaterialConnectionPoint;
         /**
-         * Gets the output component
+         * Gets the a component (output)
          */
-        readonly output: NodeMaterialConnectionPoint;
+        readonly a: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {
     /**
-     * Block used to expand a Color4 or a Vector4 into 4 outputs (one for each component)
+     * Block used to expand a Vector3/4 into 4 outputs (one for each component)
      */
-    export class RGBASplitterBlock extends NodeMaterialBlock {
+    export class VectorSplitterBlock extends NodeMaterialBlock {
         /**
-         * Create a new RGBASplitterBlock
+         * Create a new VectorSplitterBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -52420,31 +52625,37 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the input component
+         * Gets the xyzw component (input)
          */
-        readonly input: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to expand a Color3 or a Vector3 into 3 outputs (one for each component)
-     */
-    export class RGBSplitterBlock extends NodeMaterialBlock {
+        readonly xyzw: NodeMaterialConnectionPoint;
         /**
-         * Create a new RGBSplitterBlock
-         * @param name defines the block name
+         * Gets the xyz component (input)
          */
-        constructor(name: string);
+        readonly xyzIn: NodeMaterialConnectionPoint;
         /**
-         * Gets the current class name
-         * @returns the class name
+         * Gets the xyz component (output)
          */
-        getClassName(): string;
+        readonly xyzOut: NodeMaterialConnectionPoint;
         /**
-         * Gets the input component
+         * Gets the xy component (output)
          */
-        readonly input: NodeMaterialConnectionPoint;
+        readonly xy: NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component (output)
+         */
+        readonly x: NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component (output)
+         */
+        readonly y: NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component (output)
+         */
+        readonly z: NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component (output)
+         */
+        readonly w: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -52571,6 +52782,8 @@ declare module BABYLON {
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private _injectVertexCode;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -52725,6 +52938,66 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to remap a float from a range to a new one
+     */
+    export class RemapBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the source range
+         */
+        sourceRange: Vector2;
+        /**
+         * Gets or sets the target range
+         */
+        targetRange: Vector2;
+        /**
+         * Creates a new RemapBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to normalize a vector
+     */
+    export class NormalizeBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new NormalizeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Effect Render Options
      */
     export interface IEffectRendererOptions {
@@ -52836,61 +53109,6 @@ declare module BABYLON {
         * Disposes of the effect wrapper
         */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Contains position and normal vectors for a vertex
-     */
-    export class PositionNormalVertex {
-        /** the position of the vertex (defaut: 0,0,0) */
-        position: Vector3;
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal: Vector3;
-        /**
-         * Creates a PositionNormalVertex
-         * @param position the position of the vertex (defaut: 0,0,0)
-         * @param normal the normal of the vertex (defaut: 0,1,0)
-         */
-        constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
-        position?: Vector3, 
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal?: Vector3);
-        /**
-         * Clones the PositionNormalVertex
-         * @returns the cloned PositionNormalVertex
-         */
-        clone(): PositionNormalVertex;
-    }
-    /**
-     * Contains position, normal and uv vectors for a vertex
-     */
-    export class PositionNormalTextureVertex {
-        /** the position of the vertex (defaut: 0,0,0) */
-        position: Vector3;
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal: Vector3;
-        /** the uv of the vertex (default: 0,0) */
-        uv: Vector2;
-        /**
-         * Creates a PositionNormalTextureVertex
-         * @param position the position of the vertex (defaut: 0,0,0)
-         * @param normal the normal of the vertex (defaut: 0,1,0)
-         * @param uv the uv of the vertex (default: 0,0)
-         */
-        constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
-        position?: Vector3, 
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal?: Vector3, 
-        /** the uv of the vertex (default: 0,0) */
-        uv?: Vector2);
-        /**
-         * Clones the PositionNormalTextureVertex
-         * @returns the cloned PositionNormalTextureVertex
-         */
-        clone(): PositionNormalTextureVertex;
     }
 }
 declare module BABYLON {
@@ -60250,6 +60468,22 @@ declare module BABYLON {
          */
         static CreateScreenshot(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string): void;
         /**
+         * Captures a screenshot of the current rendering
+         * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine defines the rendering engine
+         * @param camera defines the source camera
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution
+         * @param mimeType defines the MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+         * to the src parameter of an <img> to display it
+         */
+        static CreateScreenshotAsync(engine: Engine, camera: Camera, size: any, mimeType?: string): Promise<string>;
+        /**
          * Generates an image screenshot from the specified camera.
          * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
          * @param engine The engine to use for rendering
@@ -60269,6 +60503,25 @@ declare module BABYLON {
          * @param fileName A name for for the downloaded file.
          */
         static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): void;
+        /**
+         * Generates an image screenshot from the specified camera.
+         * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+         * @param engine The engine to use for rendering
+         * @param camera The camera to use for rendering
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution
+         * @param mimeType The MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types
+         * @param samples Texture samples (default: 1)
+         * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+         * @param fileName A name for for the downloaded file.
+         * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+         * to the src parameter of an <img> to display it
+         */
+        static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): Promise<string>;
     }
 }
 declare module BABYLON {

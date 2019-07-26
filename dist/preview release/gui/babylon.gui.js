@@ -1436,6 +1436,10 @@ var Button = /** @class */ (function (_super) {
     function Button(name) {
         var _this = _super.call(this, name) || this;
         _this.name = name;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        _this.delegatePickingToChildren = false;
         _this.thickness = 1;
         _this.isPointerBlocker = true;
         var alphaStore = null;
@@ -1489,6 +1493,19 @@ var Button = /** @class */ (function (_super) {
         }
         if (!_super.prototype.contains.call(this, x, y)) {
             return false;
+        }
+        if (this.delegatePickingToChildren) {
+            var contains = false;
+            for (var index = this._children.length - 1; index >= 0; index--) {
+                var child = this._children[index];
+                if (child.isEnabled && child.isHitTestVisible && child.isVisible && !child.notRenderable && child.contains(x, y)) {
+                    contains = true;
+                    break;
+                }
+            }
+            if (!contains) {
+                return false;
+            }
         }
         this._processObservables(type, x, y, pointerId, buttonIndex);
         return true;

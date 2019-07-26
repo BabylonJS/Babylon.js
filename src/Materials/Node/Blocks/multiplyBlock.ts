@@ -16,10 +16,11 @@ export class MultiplyBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("left", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("right", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this._inputs[1]._typeConnectionSource = this._inputs[0];
     }
 
     /**

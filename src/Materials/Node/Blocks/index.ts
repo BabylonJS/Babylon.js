@@ -7,4 +7,6 @@ export * from "./addBlock";
 export * from "./clampBlock";
 export * from "./crossBlock";
 export * from "./dotBlock";
-export * from "./vectorTransformBlock";
+export * from "./transformBlock";
+export * from "./remapBlock";
+export * from "./normalizeBlock";

@@ -9,6 +9,7 @@ import { Mesh } from '../../Meshes/mesh';
 import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
+import { Scene } from '../../scene';
 
 /**
  * Defines a block that can be used inside a node based material
@@ -152,16 +153,17 @@ export class NodeMaterialBlock {
     }
 
     protected _declareOutput(output: NodeMaterialConnectionPoint, state: NodeMaterialBuildState): string {
-        // if (output.isVarying) {
-        //     return `${output.associatedVariableName}`;
-        // }
-
         return `${state._getGLType(output.type)} ${output.associatedVariableName}`;
     }
 
     protected _writeVariable(currentPoint: NodeMaterialConnectionPoint): string {
-        let connectionPoint = currentPoint.connectedPoint!;
-        return `${currentPoint.associatedVariableName}${connectionPoint.swizzle ? "." + connectionPoint.swizzle : ""}`;
+        let connectionPoint = currentPoint.connectedPoint;
+
+        if (connectionPoint) {
+            return `${currentPoint.associatedVariableName}${connectionPoint.swizzle ? "." + connectionPoint.swizzle : ""}`;
+        }
+
+        return `0.`;
     }
 
     protected _writeFloat(value: number) {
@@ -481,6 +483,7 @@ export class NodeMaterialBlock {
         let serializationObject: any = {};
         serializationObject.customType = "BABYLON." + this.getClassName();
         serializationObject.id = this.uniqueId;
+        serializationObject.name = this.name;
 
         serializationObject.inputs = [];
 
@@ -489,5 +492,10 @@ export class NodeMaterialBlock {
         }
 
         return serializationObject;
+    }
+
+    /** @hidden */
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        this.name = serializationObject.name ;
     }
 }
