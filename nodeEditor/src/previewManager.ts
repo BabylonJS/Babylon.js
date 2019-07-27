@@ -1,13 +1,12 @@
 import { GlobalState } from './globalState';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { Nullable } from 'babylonjs/types';
-import { Observer } from 'babylonjs/Misc/index';
+import { Observer } from 'babylonjs/Misc/observable';
 import { Engine } from 'babylonjs/Engines/engine';
 import { Scene } from 'babylonjs/scene';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { Vector3 } from 'babylonjs/Maths/math.vector';
 import { HemisphericLight } from 'babylonjs/Lights/hemisphericLight';
-import { MeshBuilder } from 'babylonjs/Meshes/meshBuilder';
 import { ArcRotateCamera } from 'babylonjs/Cameras/arcRotateCamera';
 
 export class PreviewManager {
@@ -31,7 +30,7 @@ export class PreviewManager {
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
         this._light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
 
-        this._dummySphere = MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, this._scene);
+        this._dummySphere = Mesh.CreateSphere("sphere", 32, 2, this._scene);
 
        // this._camera.attachControl(targetCanvas, false);
 
