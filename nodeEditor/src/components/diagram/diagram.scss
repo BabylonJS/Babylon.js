@@ -72,7 +72,7 @@
     }
 
     &.output {
-        background: blue;
+        background: rgb(106, 44, 131);
         color:white;
 
         .inputs { 
@@ -200,15 +200,6 @@
                     .output-port-connection {
                         background: greenyellow !important;
                     }
-                }
-
-                .output-port-connection {
-                    pointer-events: none;
-                    grid-column: 1;
-                    grid-row: 1;
-                    background: #2796B2;
-                    border-radius: 10px;   
-                    transform: scale(1);
                 }
 
                 .output-port-type {

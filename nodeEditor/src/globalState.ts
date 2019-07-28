@@ -5,7 +5,7 @@ import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
 import { LogEntry } from './components/log/logComponent';
 
 export class GlobalState {
-    nodeMaterial?: NodeMaterial;
+    nodeMaterial: NodeMaterial;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     onSelectionChangedObservable = new Observable<Nullable<DefaultNodeModel>>();

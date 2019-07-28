@@ -6,7 +6,6 @@ import {
 } from "storm-react-diagrams";
 
 import * as React from "react";
-import * as dagre from "dagre";
 import { GlobalState } from './globalState';
 
 import { GenericNodeFactory } from './components/diagram/generic/genericNodeFactory';
@@ -37,24 +36,12 @@ import { AdvancedLinkFactory } from './components/diagram/link/advancedLinkFacto
 import { RemapNodeFactory } from './components/diagram/remap/remapNodeFactory';
 import { RemapNodeModel } from './components/diagram/remap/remapNodeModel';
 import { RemapBlock } from 'babylonjs/Materials/Node/Blocks/remapBlock';
+import { GraphHelper } from './graphHelper';
+import { PreviewManager } from './previewManager';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
 require("./components/diagram/diagram.scss");
-
-/*
-Graph Editor Overview
-
-Storm React setup:
-GenericNodeModel - Represents the nodes in the graph and can be any node type (eg. texture, vector2, etc)
-GenericNodeWidget - Renders the node model in the graph 
-GenericPortModel - Represents the input/output of a node (contained within each GenericNodeModel)
-
-Generating/modifying the graph:
-Generating node graph - the createNodeFromObject method is used to recursively create the graph
-Modifications to the graph - The listener in the constructor of GraphEditor listens for port changes and updates the node material based on changes
-Saving the graph/generating code - Not yet done
-*/
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -79,6 +66,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
     private _nodes = new Array<DefaultNodeModel>();
     private _blocks = new Array<NodeMaterialBlock>();
+
+    private _previewManager: PreviewManager;
 
     /** @hidden */
     public _toAdd: LinkModel[] | null = [];
@@ -126,12 +115,23 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         return newNode;
     }
+    
+    addValueNode(type: string) {
+        let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
+
+        let newInputBlock = new InputBlock(type, undefined, nodeType);
+        var localNode = this.createNodeFromObject({ type: type, nodeMaterialBlock: newInputBlock })
+
+        return localNode;
+    }
 
     componentDidMount() {
         if (this.props.globalState.hostDocument) {
             var widget = (this.refs["test"] as DiagramWidget);
             widget.setState({ document: this.props.globalState.hostDocument })
             this.props.globalState.hostDocument!.addEventListener("keyup", widget.onKeyUpPointer as any, false);
+
+            this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
     }
 
@@ -140,6 +140,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             var widget = (this.refs["test"] as DiagramWidget);
             this.props.globalState.hostDocument!.removeEventListener("keyup", widget.onKeyUpPointer as any, false);
         }
+
+        this._previewManager.dispose();
     }
 
     constructor(props: IGraphEditorProps) {
@@ -202,59 +204,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
     }
 
-    distributeGraph() {
-        let nodes = this.mapElements();
-        let edges = this.mapEdges();
-        let graph = new dagre.graphlib.Graph();
-        graph.setGraph({});
-        graph.setDefaultEdgeLabel(() => ({}));
-        graph.graph().rankdir = "LR";
-        //add elements to dagre graph
-        nodes.forEach(node => {
-            graph.setNode(node.id, node.metadata);
-        });
-        edges.forEach(edge => {
-            if (edge.from && edge.to) {
-                graph.setEdge(edge.from.id, edge.to.id);
-            }
-        });
-        //auto-distribute
-        dagre.layout(graph);
-        return graph.nodes().map(node => graph.node(node));
-    }
-
-    mapElements() {
-        let output = [];
-
-        // dagre compatible format
-        for (var nodeName in this._model.nodes) {
-            let node = this._model.nodes[nodeName];
-            let size = {
-                width: node.width | 200,
-                height: node.height | 100
-            };
-            output.push({ id: node.id, metadata: { ...size, id: node.id } });
-        }
-
-        return output;
-    }
-
-    mapEdges() {
-        // returns links which connects nodes
-        // we check are there both from and to nodes in the model. Sometimes links can be detached
-        let output = [];
-
-        for (var linkName in this._model.links) {
-            let link = this._model.links[linkName];
-
-            output.push({
-                from: link.sourcePort!.parent,
-                to: link.targetPort!.parent
-            });
-        }
-
-        return output;
-    }
+ 
 
     buildMaterial() {
         if (!this.props.globalState.nodeMaterial) {
@@ -412,7 +362,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     }
 
     reOrganize() {
-        let nodes = this.distributeGraph();
+        let nodes = GraphHelper.DistributeGraph(this._model);
         nodes.forEach(node => {
             for (var nodeName in this._model.nodes) {
                 let modelNode = this._model.nodes[nodeName];
@@ -424,15 +374,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
         });
         this.forceUpdate();
-    }
-
-    addValueNode(type: string) {
-        let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
-
-        let newInputBlock = new InputBlock(type, undefined, nodeType);
-        var localNode = this.createNodeFromObject({ type: type, nodeMaterialBlock: newInputBlock })
-
-        return localNode;
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
@@ -447,7 +388,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     }
 
     resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft = true) {
-
         if (!this._moveInProgress) {
             return;
         }
@@ -527,7 +467,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     >
                         <DiagramWidget className="diagram" deleteKeys={[46]} ref={"test"} 
                         allowLooseLinks={false}
-                        inverseZoom={true} diagramEngine={this._engine} maxNumberPointsPerLink={0} />
+                        inverseZoom={true} 
+                        diagramEngine={this._engine} 
+                        maxNumberPointsPerLink={0} />
                     </div>
 
                     <div id="rightGrab"
@@ -537,7 +479,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     ></div>
 
                     {/* Property tab */}
-                    <PropertyTabComponent globalState={this.props.globalState} />
+                    <div className="right-panel">
+                        <PropertyTabComponent globalState={this.props.globalState} />
+                        <div id="preview">
+                            <canvas id="preview-canvas"/>
+                        </div>
+                    </div>
 
                     <LogComponent globalState={this.props.globalState} />
                 </div>                
