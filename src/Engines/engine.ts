@@ -2047,7 +2047,7 @@ export class Engine {
             } else if (this.isVRPresenting()) {
                 this._requestVRFrame();
             } else {
-                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
+                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
             }
         } else {
             this._renderingQueueLaunched = false;
@@ -2068,7 +2068,7 @@ export class Engine {
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
             this._bindedRenderFunction = this._renderLoop.bind(this);
-            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
+            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
         }
     }
 
