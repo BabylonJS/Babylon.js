@@ -63920,6 +63920,10 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
     function TexturePropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    TexturePropertyTabComponent.prototype.updateAftertextureLoad = function () {
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+    };
     /**
      * Replaces the texture of the node
      * @param file the file of the texture to use
@@ -63936,22 +63940,24 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ReadFile(file, function (data) {
             var blob = new Blob([data], { type: "octet/stream" });
-            var url = URL.createObjectURL(blob);
-            if (texture.isCube) {
-                var extension = undefined;
-                if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                    extension = ".dds";
+            var reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = function () {
+                var base64data = reader.result;
+                if (texture.isCube) {
+                    var extension = undefined;
+                    if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                        extension = ".dds";
+                    }
+                    else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                        extension = ".env";
+                    }
+                    texture.updateURL(base64data, extension, function () { return _this.updateAftertextureLoad(); });
                 }
-                else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                    extension = ".env";
+                else {
+                    texture.updateURL(base64data, null, function () { return _this.updateAftertextureLoad(); });
                 }
-                texture.updateURL(url, extension, function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); });
-            }
-            else {
-                texture.updateURL(url, null, function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); });
-            }
-            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+            };
         }, undefined, true);
     };
     TexturePropertyTabComponent.prototype.render = function () {

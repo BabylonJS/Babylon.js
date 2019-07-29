@@ -312,6 +312,7 @@ declare module NODEEDITOR {
         node: TextureNodeModel;
     }
     export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps> {
+        updateAftertextureLoad(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
