@@ -27,7 +27,7 @@ export class ShaderCodeNode {
 
                     if (regex.test(this.line)) { // uniform
                         if (processor.uniformProcessor) {
-                            value = processor.uniformProcessor(this.line, options.isFragment);
+                            value = processor.uniformProcessor(this.line, options.isFragment, options.processingContext);
                         }
                     } else { // Uniform buffer
                         if (processor.uniformBufferProcessor) {
@@ -41,12 +41,12 @@ export class ShaderCodeNode {
                 if (options.lookForClosingBracketForUniformBuffer && this.line.indexOf("}") !== -1) {
                     options.lookForClosingBracketForUniformBuffer = false;
                     if (processor.endOfUniformBufferProcessor) {
-                        value = processor.endOfUniformBufferProcessor(this.line, options.isFragment);
+                        value = processor.endOfUniformBufferProcessor(this.line, options.isFragment, options.processingContext);
                     }
                 }
 
                 if (processor.lineProcessor) {
-                    value = processor.lineProcessor(value, options.isFragment);
+                    value = processor.lineProcessor(value, options.isFragment, options.processingContext);
                 }
             }
 
