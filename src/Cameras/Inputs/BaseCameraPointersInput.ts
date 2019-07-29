@@ -239,7 +239,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      */
     public detachControl(element: Nullable<HTMLElement>): void {
         if (this._onLostFocus) {
-            Tools.UnregisterTopRootEvents(this.camera.getScene().getEngine().getHostWindow(),[
+            Tools.UnregisterTopRootEvents(this.camera.getScene().getEngine().getHostWindow(), [
                 { name: "blur", handler: this._onLostFocus }
             ]);
         }

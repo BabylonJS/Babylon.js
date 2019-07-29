@@ -244,9 +244,9 @@ Engine.prototype._connectVREvents = function(canvas: HTMLCanvasElement, document
         document.exitPointerLock();
     };
 
-    if (DomManagement.IsWindowObjectExist()) {        
+    if (DomManagement.IsWindowObjectExist()) {
         let hostWindow = this.getHostWindow();
-        
+
         hostWindow.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
         hostWindow.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
     }

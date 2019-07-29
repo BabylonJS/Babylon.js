@@ -117,12 +117,12 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-        
+
         let hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
         hostWindow.addEventListener("orientationchange", this._orientationChanged);
         hostWindow.addEventListener("deviceorientation", this._deviceOrientation);
-        
+
         //In certain cases, the attach control is called AFTER orientation was changed,
         //So this is needed.
         this._orientationChanged();

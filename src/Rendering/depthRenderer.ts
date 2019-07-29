@@ -97,6 +97,8 @@ export class DepthRenderer {
             var engine = scene.getEngine();
             let material = subMesh.getMaterial();
 
+            mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+
             if (!material) {
                 return;
             }
