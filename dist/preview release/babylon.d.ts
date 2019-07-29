@@ -37908,7 +37908,7 @@ declare module BABYLON {
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */
-        static WaitForOrientationChangeAsync(timeout?: number): Promise<{}>;
+        static WaitForOrientationChangeAsync(timeout?: number): Promise<unknown>;
         /**
          * @hidden
          */
@@ -40856,7 +40856,7 @@ declare module BABYLON {
          * Stops the xrSession and restores the renderloop
          * @returns Promise which resolves after it exits XR
          */
-        exitXRAsync(): Promise<{}>;
+        exitXRAsync(): Promise<unknown>;
         /**
          * Checks if a session would be supported for the creation options specified
          * @param sessionMode session mode to check if supported eg. immersive-vr
@@ -41002,7 +41002,7 @@ declare module BABYLON {
          * Exits XR mode and returns the scene to its original state
          * @returns promise that resolves after xr mode has exited
          */
-        exitXRAsync(): Promise<{}>;
+        exitXRAsync(): Promise<unknown>;
         /**
          * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
          * @param sessionCreationOptions options for the XR session
@@ -42362,9 +42362,9 @@ declare module BABYLON {
         private _snapDistance;
         private _scaleRatio;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         /**
          * If set to true, planar drag is enabled
          */
@@ -43636,9 +43636,9 @@ declare module BABYLON {
         private _uniformScalingMesh;
         private _octahedron;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         attachedMesh: Nullable<AbstractMesh>;
         /**
          * Creates a ScaleGizmo
@@ -43897,9 +43897,9 @@ declare module BABYLON {
          */
         zGizmo: PlaneRotationGizmo;
         /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<{}>;
+        onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<{}>;
+        onDragEndObservable: Observable<unknown>;
         private _meshAttached;
         attachedMesh: Nullable<AbstractMesh>;
         /**
