@@ -5,10 +5,10 @@ import { ShaderProcessingContext } from "./shaderProcessingOptions";
 export interface IShaderProcessor {
     attributeProcessor?: (attribute: string, processingContext: Nullable<ShaderProcessingContext>) => string;
     varyingProcessor?: (varying: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
-    uniformProcessor?: (uniform: string, isFragment: boolean) => string;
+    uniformProcessor?: (uniform: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
     uniformBufferProcessor?: (uniformBuffer: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
-    endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean) => string;
-    lineProcessor?: (line: string, isFragment: boolean) => string;
-    preProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
-    postProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
+    endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
+    lineProcessor?: (line: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
+    preProcessor?: (code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
+    postProcessor?: (code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
 }

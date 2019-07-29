@@ -7,6 +7,8 @@ import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 
 /** @hidden */
 export interface IWebGPUPipelineContextSamplerCache {
+    setIndex: number;
+
     textureBinding: number;
 
     samplerBinding: number;
@@ -30,7 +32,11 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
     public availableAttributes: { [key: string]: number };
     public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number} };
-    public availableSamplers: { [key: string]: number };
+    public availableSamplers: { [key: string]: { setIndex: number, bindingIndex: number} };
+
+    public orderedAttributes: string[];
+    public orderedUBOsAndSamplers: { name: string, isSampler: boolean }[][];
+
     public sources: {
         vertex: string
         fragment: string,
@@ -65,6 +71,9 @@ export class WebGPUPipelineContext implements IPipelineContext {
     constructor(shaderProcessingContext: WebGPUShaderProcessingContext) {
         this.availableAttributes = shaderProcessingContext.availableAttributes;
         this.availableUBOs = shaderProcessingContext.availableUBOs;
+        this.availableSamplers = shaderProcessingContext.availableSamplers;
+        this.orderedAttributes = shaderProcessingContext.orderedAttributes;
+        this.orderedUBOsAndSamplers = shaderProcessingContext.orderedUBOsAndSamplers;
     }
 
     public _handlesSpectorRebuildCallback(onCompiled: (program: any) => void): void {
@@ -74,7 +83,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public _fillEffectInformation(effect: Effect, uniformBuffersNames: { [key: string]: number }, uniformsNames: string[], uniforms: { [key: string]: Nullable<WebGLUniformLocation> }, samplerList: string[], samplers: { [key: string]: number }, attributesNames: string[], attributes: number[]) {
         const engine = this.engine;
 
-        // TODO WEBGPU. Cleanup SEB on this entire function.
+        // TODO WEBGPU. Cleanup SEB on this entire function. Should not need anything in here or almost.
         let effectAvailableUniforms = engine.getUniforms(this, uniformsNames);
         effectAvailableUniforms.forEach((uniform, index) => {
             uniforms[uniformsNames[index]] = uniform;
@@ -97,7 +106,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
                 index--;
             }
             else {
-                samplers[name] = sampler;
+                samplers[name] = index;
             }
         }
 
