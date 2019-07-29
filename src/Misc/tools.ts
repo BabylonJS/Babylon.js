@@ -555,12 +555,13 @@ export class Tools {
 
     /**
      * Function used to register events at window level
+     * @param windowElement defines the Window object to use
      * @param events defines the events to register
      */
-    public static RegisterTopRootEvents(events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
+    public static RegisterTopRootEvents(windowElement: Window, events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
         for (var index = 0; index < events.length; index++) {
             var event = events[index];
-            window.addEventListener(event.name, <any>event.handler, false);
+            windowElement.addEventListener(event.name, <any>event.handler, false);
 
             try {
                 if (window.parent) {
@@ -574,16 +575,17 @@ export class Tools {
 
     /**
      * Function used to unregister events from window level
+     * @param windowElement defines the Window object to use
      * @param events defines the events to unregister
      */
-    public static UnregisterTopRootEvents(events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
+    public static UnregisterTopRootEvents(windowElement: Window, events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
         for (var index = 0; index < events.length; index++) {
             var event = events[index];
-            window.removeEventListener(event.name, <any>event.handler);
+            windowElement.removeEventListener(event.name, <any>event.handler);
 
             try {
-                if (window.parent) {
-                    window.parent.removeEventListener(event.name, <any>event.handler);
+                if (windowElement.parent) {
+                    windowElement.parent.removeEventListener(event.name, <any>event.handler);
                 }
             } catch (e) {
                 // Silently fails...
