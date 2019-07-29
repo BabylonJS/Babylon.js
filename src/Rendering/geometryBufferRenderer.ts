@@ -337,6 +337,8 @@ export class GeometryBufferRenderer {
                 return;
             }
 
+            mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+
             // Velocity
             if (this._enableVelocity && !this._previousTransformationMatrices[mesh.uniqueId]) {
                 this._previousTransformationMatrices[mesh.uniqueId] = {
