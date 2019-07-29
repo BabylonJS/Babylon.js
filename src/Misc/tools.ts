@@ -575,6 +575,7 @@ export class Tools {
 
     /**
      * Function used to unregister events from window level
+     * @param windowElement defines the Window object to use
      * @param events defines the events to unregister
      */
     public static UnregisterTopRootEvents(windowElement: Window, events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {

@@ -386,7 +386,7 @@ export class NodeMaterial extends PushMaterial {
      * @returns a boolean specifying if an alpha test is needed.
      */
     public needAlphaTesting(): boolean {
-        return this._sharedData.hints.needAlphaTesting;
+        return this._sharedData && this._sharedData.hints.needAlphaTesting;
     }
 
     private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[]) {
