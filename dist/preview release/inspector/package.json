@@ -32,6 +32,7 @@
         "babylonjs": "4.1.0-alpha.11",
         "babylonjs-gui": "4.1.0-alpha.11",
         "babylonjs-loaders": "4.1.0-alpha.11",
+        "babylonjs-materials": "4.1.0-alpha.11",
         "babylonjs-serializers": "4.1.0-alpha.11",
         "babylonjs-gltf2interface": "4.1.0-alpha.11"
     },

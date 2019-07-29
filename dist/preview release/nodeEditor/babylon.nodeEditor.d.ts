@@ -867,6 +867,20 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class PreviewManager {
+        private _nodeMaterial;
+        private _onBuildObserver;
+        private _engine;
+        private _scene;
+        private _light;
+        private _dummySphere;
+        private _camera;
+        constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
+        private _updatePreview;
+        dispose(): void;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -885,6 +899,7 @@ declare module NODEEDITOR {
         private _rightWidth;
         private _nodes;
         private _blocks;
+        private _previewManager;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -930,7 +945,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class GlobalState {
-        nodeMaterial?: BABYLON.NodeMaterial;
+        nodeMaterial: BABYLON.NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<DefaultNodeModel>>;

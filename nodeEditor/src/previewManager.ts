@@ -17,12 +17,14 @@ export class PreviewManager {
     private _light: HemisphericLight;
     private _dummySphere: Mesh;
     private _camera: ArcRotateCamera;
+    private _material: NodeMaterial;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeMaterial = globalState.nodeMaterial;
 
-        this._onBuildObserver = this._nodeMaterial.onBuildObservable.add(() => {
-            this._updatePreview();
+        this._onBuildObserver = this._nodeMaterial.onBuildObservable.add((nodeMaterial) => {
+            let serializationObject = nodeMaterial.serialize();
+            this._updatePreview(serializationObject);
         });
 
         this._engine = new Engine(targetCanvas, true);
@@ -32,19 +34,33 @@ export class PreviewManager {
 
         this._dummySphere = Mesh.CreateSphere("sphere", 32, 2, this._scene);
 
-       // this._camera.attachControl(targetCanvas, false);
+        this._camera.lowerRadiusLimit = 2.5;
+        this._camera.upperRadiusLimit = 10;
+        this._camera.attachControl(targetCanvas, false);
 
         this._engine.runRenderLoop(() => {
             this._scene.render();
         })
     }
 
-    private _updatePreview() {
-        
+    private _updatePreview(serializationObject: any) {
+        if (this._material) {
+            this._material.dispose();
+        }        
+
+        this._material = NodeMaterial.Parse(serializationObject, this._scene);
+
+        this._material.build();
+
+        this._dummySphere.material = this._material;
     }
 
     public dispose() {
         this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
+
+        if (this._material) {
+            this._material.dispose();
+        }
 
         this._camera.dispose();
         this._dummySphere.dispose();

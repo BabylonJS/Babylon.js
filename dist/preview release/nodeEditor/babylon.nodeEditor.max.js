@@ -5601,7 +5601,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #222222;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n#propertyTab {\n  grid-row: 1 / span 2;\n  grid-column: 5; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr auto;\n  grid-template-columns: 100%; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    padding-top: 100%;\n    display: grid; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 
 // exports
 
@@ -64552,6 +64552,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_diagram_remap_remapNodeFactory__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./components/diagram/remap/remapNodeFactory */ "./components/diagram/remap/remapNodeFactory.tsx");
 /* harmony import */ var _components_diagram_remap_remapNodeModel__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./components/diagram/remap/remapNodeModel */ "./components/diagram/remap/remapNodeModel.tsx");
 /* harmony import */ var _graphHelper__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./graphHelper */ "./graphHelper.ts");
+/* harmony import */ var _previewManager__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./previewManager */ "./previewManager.ts");
+
 
 
 
@@ -64682,6 +64684,7 @@ var GraphEditor = /** @class */ (function (_super) {
             var widget = this.refs["test"];
             widget.setState({ document: this.props.globalState.hostDocument });
             this.props.globalState.hostDocument.addEventListener("keyup", widget.onKeyUpPointer, false);
+            this._previewManager = new _previewManager__WEBPACK_IMPORTED_MODULE_24__["PreviewManager"](this.props.globalState.hostDocument.getElementById("preview-canvas"), this.props.globalState);
         }
     };
     GraphEditor.prototype.componentWillUnmount = function () {
@@ -64689,6 +64692,7 @@ var GraphEditor = /** @class */ (function (_super) {
             var widget = this.refs["test"];
             this.props.globalState.hostDocument.removeEventListener("keyup", widget.onKeyUpPointer, false);
         }
+        this._previewManager.dispose();
     };
     GraphEditor.prototype.zoomToFit = function (retry) {
         var _this = this;
@@ -64924,7 +64928,10 @@ var GraphEditor = /** @class */ (function (_super) {
                     } },
                     react__WEBPACK_IMPORTED_MODULE_2__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramWidget"], { className: "diagram", deleteKeys: [46], ref: "test", allowLooseLinks: false, inverseZoom: true, diagramEngine: this._engine, maxNumberPointsPerLink: 0 })),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_6__["PropertyTabComponent"], { globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "right-panel" },
+                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_6__["PropertyTabComponent"], { globalState: this.props.globalState }),
+                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "preview" },
+                        react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("canvas", { id: "preview-canvas" }))),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogComponent"], { globalState: this.props.globalState })),
             react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_18__["MessageDialogComponent"], { globalState: this.props.globalState })));
     };
@@ -65170,6 +65177,57 @@ var Portal = /** @class */ (function (_super) {
     };
     return Portal;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./previewManager.ts":
+/*!***************************!*\
+  !*** ./previewManager.ts ***!
+  \***************************/
+/*! exports provided: PreviewManager */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewManager", function() { return PreviewManager; });
+/* harmony import */ var babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Engines/engine */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_0__);
+
+
+
+
+
+
+var PreviewManager = /** @class */ (function () {
+    function PreviewManager(targetCanvas, globalState) {
+        var _this = this;
+        this._nodeMaterial = globalState.nodeMaterial;
+        this._onBuildObserver = this._nodeMaterial.onBuildObservable.add(function () {
+            _this._updatePreview();
+        });
+        this._engine = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_0__["Engine"](targetCanvas, true);
+        this._scene = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_0__["Scene"](this._engine);
+        this._camera = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_0__["ArcRotateCamera"]("Camera", 0, 0.8, 4, babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), this._scene);
+        this._light = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("light", new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
+        this._dummySphere = babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("sphere", 32, 2, this._scene);
+        // this._camera.attachControl(targetCanvas, false);
+        this._engine.runRenderLoop(function () {
+            _this._scene.render();
+        });
+    }
+    PreviewManager.prototype._updatePreview = function () {
+    };
+    PreviewManager.prototype.dispose = function () {
+        this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
+        this._camera.dispose();
+        this._dummySphere.dispose();
+        this._light.dispose();
+        this._engine.dispose();
+    };
+    return PreviewManager;
+}());
 
 
 

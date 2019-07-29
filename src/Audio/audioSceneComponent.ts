@@ -9,6 +9,8 @@ import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import { AssetContainer } from "../assetContainer";
 
+import "./audioEngine";
+
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
     // TODO: add sound

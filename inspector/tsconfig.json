@@ -14,6 +14,9 @@
             "babylonjs-loaders/*": [
                 "../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
             ],
+            "babylonjs-materials/*": [
+                "../../dist/preview release/materialsLibrary/babylonjs.materials.module.d.ts"
+            ],
             "babylonjs-serializers/*": [
                 "../../dist/preview release/serializers/babylonjs.serializers.module.d.ts"
             ],

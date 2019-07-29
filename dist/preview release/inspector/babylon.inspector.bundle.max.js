@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-serializers"), require("babylonjs"));
+		module.exports = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else if(typeof define === 'function' && define.amd)
-		define("babylonjs-inspector", ["babylonjs-gui", "babylonjs-loaders", "babylonjs-serializers", "babylonjs"], factory);
+		define("babylonjs-inspector", ["babylonjs-gui", "babylonjs-loaders", "babylonjs-materials", "babylonjs-serializers", "babylonjs"], factory);
 	else if(typeof exports === 'object')
-		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-serializers"), require("babylonjs"));
+		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
-		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -40328,9 +40328,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_materials_grid_gridMaterial__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-materials/grid/gridMaterial */ "babylonjs-materials/grid/gridMaterial");
+/* harmony import */ var babylonjs_materials_grid_gridMaterial__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_materials_grid_gridMaterial__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
 
 
 
@@ -40347,7 +40349,7 @@ var RenderGridPropertyGridComponent = /** @class */ (function (_super) {
         return _this;
     }
     RenderGridPropertyGridComponent.prototype.componentWillMount = function () {
-        var scene = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultKeepDepthUtilityLayer.utilityLayerScene;
+        var scene = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultKeepDepthUtilityLayer.utilityLayerScene;
         for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
             var mesh = _a[_i];
             if (mesh.reservedDataStore && mesh.reservedDataStore.isInspectorGrid) {
@@ -40358,20 +40360,12 @@ var RenderGridPropertyGridComponent = /** @class */ (function (_super) {
         }
     };
     RenderGridPropertyGridComponent.prototype.addOrRemoveGrid = function () {
-        var _this = this;
-        var scene = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultKeepDepthUtilityLayer.utilityLayerScene;
-        if (!BABYLON.GridMaterial) {
-            this.setState({ isEnabled: true });
-            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].LoadScript("https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js", function () {
-                _this.addOrRemoveGrid();
-            });
-            return;
-        }
+        var scene = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultKeepDepthUtilityLayer.utilityLayerScene;
         if (!this._gridMesh) {
             var extend = this.props.scene.getWorldExtends();
             var width = (extend.max.x - extend.min.x) * 5.0;
             var depth = (extend.max.z - extend.min.z) * 5.0;
-            this._gridMesh = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Mesh"].CreateGround("grid", 1.0, 1.0, 1, scene);
+            this._gridMesh = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Mesh"].CreateGround("grid", 1.0, 1.0, 1, scene);
             if (!this._gridMesh.reservedDataStore) {
                 this._gridMesh.reservedDataStore = {};
             }
@@ -40379,16 +40373,16 @@ var RenderGridPropertyGridComponent = /** @class */ (function (_super) {
             this._gridMesh.scaling.z = this._gridMesh.scaling.x;
             this._gridMesh.reservedDataStore.isInspectorGrid = true;
             this._gridMesh.isPickable = false;
-            var groundMaterial = new BABYLON.GridMaterial("GridMaterial", scene);
+            var groundMaterial = new babylonjs_materials_grid_gridMaterial__WEBPACK_IMPORTED_MODULE_3__["GridMaterial"]("GridMaterial", scene);
             groundMaterial.majorUnitFrequency = 10;
             groundMaterial.minorUnitVisibility = 0.3;
             groundMaterial.gridRatio = 0.01;
             groundMaterial.backFaceCulling = false;
-            groundMaterial.mainColor = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Color3"](1, 1, 1);
-            groundMaterial.lineColor = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Color3"](1.0, 1.0, 1.0);
+            groundMaterial.mainColor = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"](1, 1, 1);
+            groundMaterial.lineColor = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"](1.0, 1.0, 1.0);
             groundMaterial.opacity = 0.8;
             groundMaterial.zOffset = 1.0;
-            groundMaterial.opacityTexture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Texture"]("https://assets.babylonjs.com/environments/backgroundGround.png", scene);
+            groundMaterial.opacityTexture = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Texture"]("https://assets.babylonjs.com/environments/backgroundGround.png", scene);
             this._gridMesh.material = groundMaterial;
             this.setState({ isEnabled: true });
             return;
@@ -40400,7 +40394,7 @@ var RenderGridPropertyGridComponent = /** @class */ (function (_super) {
     RenderGridPropertyGridComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Render grid", isSelected: function () { return _this.state.isEnabled; }, onSelect: function () { return _this.addOrRemoveGrid(); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Render grid", isSelected: function () { return _this.state.isEnabled; }, onSelect: function () { return _this.addOrRemoveGrid(); } })));
     };
     return RenderGridPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43933,6 +43927,17 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__
 /***/ (function(module, exports) {
 
 module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__;
+
+/***/ }),
+
+/***/ "babylonjs-materials/grid/gridMaterial":
+/*!**********************************************************************************************************************************!*\
+  !*** external {"root":"BABYLON","commonjs":"babylonjs-materials","commonjs2":"babylonjs-materials","amd":"babylonjs-materials"} ***!
+  \**********************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__;
 
 /***/ }),
 

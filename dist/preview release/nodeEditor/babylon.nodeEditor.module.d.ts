@@ -1030,6 +1030,21 @@ declare module "babylonjs-node-editor/graphHelper" {
         private static _MapEdges;
     }
 }
+declare module "babylonjs-node-editor/previewManager" {
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    export class PreviewManager {
+        private _nodeMaterial;
+        private _onBuildObserver;
+        private _engine;
+        private _scene;
+        private _light;
+        private _dummySphere;
+        private _camera;
+        constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
+        private _updatePreview;
+        dispose(): void;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
@@ -1055,6 +1070,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _rightWidth;
         private _nodes;
         private _blocks;
+        private _previewManager;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -1111,7 +1127,7 @@ declare module "babylonjs-node-editor/globalState" {
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     import { LogEntry } from "babylonjs-node-editor/components/log/logComponent";
     export class GlobalState {
-        nodeMaterial?: NodeMaterial;
+        nodeMaterial: NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: Observable<Nullable<DefaultNodeModel>>;
@@ -2027,6 +2043,20 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class PreviewManager {
+        private _nodeMaterial;
+        private _onBuildObserver;
+        private _engine;
+        private _scene;
+        private _light;
+        private _dummySphere;
+        private _camera;
+        constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
+        private _updatePreview;
+        dispose(): void;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -2045,6 +2075,7 @@ declare module NODEEDITOR {
         private _rightWidth;
         private _nodes;
         private _blocks;
+        private _previewManager;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -2090,7 +2121,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class GlobalState {
-        nodeMaterial?: BABYLON.NodeMaterial;
+        nodeMaterial: BABYLON.NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<DefaultNodeModel>>;

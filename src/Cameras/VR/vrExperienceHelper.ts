@@ -771,7 +771,10 @@ export class VRExperienceHelper {
         }
 
         // Window events
-        window.addEventListener("resize", this._onResize);
+
+        let hostWindow = this._scene.getEngine().getHostWindow();
+
+        hostWindow.addEventListener("resize", this._onResize);
         document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
         document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
         document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
@@ -821,7 +824,7 @@ export class VRExperienceHelper {
         scene.getEngine().onVRDisplayChangedObservable.add(this._onVRDisplayChanged);
         scene.getEngine().onVRRequestPresentStart.add(this._onVRRequestPresentStart);
         scene.getEngine().onVRRequestPresentComplete.add(this._onVRRequestPresentComplete);
-        window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+        hostWindow.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
 
         scene.onDisposeObservable.add(() => {
             this.dispose();
