@@ -1699,6 +1699,7 @@ export class Engine {
 
     /**
      * Gets host window
+     * @returns the host window object
      */
     public getHostWindow(): Window {
         if (this._renderingCanvas && this._renderingCanvas.ownerDocument && this._renderingCanvas.ownerDocument.defaultView) {
@@ -1710,6 +1711,7 @@ export class Engine {
 
     /**
      * Gets host document
+     * @returns the host document object
      */
     public getHostDocument(): Document {
         if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
