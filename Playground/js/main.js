@@ -28,14 +28,6 @@ class Main {
      * Main function of the app
      */
     run() {
-
-        // TO DO - Rewrite this with unpkg.com
-        if (location.href.indexOf("indexStable") !== -1) {
-            this.parent.utils.setToMultipleID("currentVersion", "innerHTML", "v.3.0");
-        } else {
-            this.parent.utils.setToMultipleID("currentVersion", "innerHTML", "v.4.0");
-        }
-
         document.getElementById("saveFormButtonOk").addEventListener("click", function () {
             document.getElementById("saveLayer").style.display = "none";
             this.save();
@@ -61,16 +53,21 @@ class Main {
 
 
         // -------------------- UI --------------------
-        // TO DO - A proper UI class ?
-
+        
         // Display BJS version
         this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
         // Run
         this.parent.utils.setToMultipleID("runButton", "click", this.compileAndRun.bind(this));
         // New
-        this.parent.utils.setToMultipleID("newButton", "click", this.createNewScript.bind(this));
+        this.parent.utils.setToMultipleID("newButton", "click", function () {
+            this.parent.menuPG.removeAllOptions();
+            this.createNewScript.call(this);
+        }.bind(this));
         // Clear 
-        this.parent.utils.setToMultipleID("clearButton", "click", this.clear.bind(this));
+        this.parent.utils.setToMultipleID("clearButton", "click", function () {
+            this.parent.menuPG.removeAllOptions();
+            this.clear.call(this);
+        }.bind(this));
         // Save
         this.parent.utils.setToMultipleID("saveButton", "click", this.askForSave.bind(this));
         // Zip
@@ -78,15 +75,23 @@ class Main {
             this.parent.zipTool.getZip(this.engine);
         }.bind(this));
         // Themes
-        this.parent.utils.setToMultipleID("darkTheme", "click", [this.parent.settingsPG.setTheme.bind(this.parent.settingsPG, 'dark'), this.parent.menuPG.clickOptionSub.bind(this.parent.menuPG)]);
-        this.parent.utils.setToMultipleID("lightTheme", "click", [this.parent.settingsPG.setTheme.bind(this.parent.settingsPG, 'light'), this.parent.menuPG.clickOptionSub.bind(this.parent.menuPG)]);
+        this.parent.utils.setToMultipleID("darkTheme", "click", function () {
+            this.parent.menuPG.removeAllOptions();
+            this.parent.settingsPG.setTheme.call(this.parent.settingsPG, 'dark');
+        }.bind(this));
+        this.parent.utils.setToMultipleID("lightTheme", "click", function () {
+            this.parent.menuPG.removeAllOptions();
+            this.parent.settingsPG.setTheme.call(this.parent.settingsPG, 'light');
+        }.bind(this));
         // Size
         var displayFontSize = document.getElementsByClassName('displayFontSize');
         for (var i = 0; i < displayFontSize.length; i++) {
             var options = displayFontSize[i].querySelectorAll('.option');
             for (var j = 0; j < options.length; j++) {
-                options[j].addEventListener('click', this.parent.menuPG.clickOptionSub.bind(this.parent.menuPG));
-                options[j].addEventListener('click', this.parent.settingsPG.setFontSize.bind(this.parent.settingsPG, options[j].innerText));
+                options[j].addEventListener('click', function (evt) {
+                    this.parent.menuPG.removeAllOptions();
+                    this.parent.settingsPG.setFontSize.call(this.parent.settingsPG, evt.target.innerText)
+                }.bind(this));
             }
         }
         // Footer links
@@ -99,12 +104,16 @@ class Main {
         }
         // Language (JS / TS)
         this.parent.utils.setToMultipleID("toTSbutton", "click", function () {
-            this.parent.settingsPG.ScriptLanguage = "TS";
-            location.reload();
+            if (this.parent.settingsPG.ScriptLanguage == "JS") {
+                this.parent.settingsPG.ScriptLanguage = "TS";
+                location.reload();
+            }
         }.bind(this));
         this.parent.utils.setToMultipleID("toJSbutton", "click", function () {
-            this.parent.settingsPG.ScriptLanguage = "JS";
-            location.reload();
+            if (this.parent.settingsPG.ScriptLanguage == "TS") {
+                this.parent.settingsPG.ScriptLanguage = "JS";
+                location.reload();
+            }
         }.bind(this));
         // Safe mode
         this.parent.utils.setToMultipleID("safemodeToggle", 'click', function () {
@@ -119,18 +128,31 @@ class Main {
         this.parent.utils.setToMultipleID("editorButton", "click", this.toggleEditor.bind(this));
         // FullScreen
         this.parent.utils.setToMultipleID("fullscreenButton", "click", function () {
+            this.parent.menuPG.removeAllOptions();
             this.parent.menuPG.goFullscreen(this.engine);
         }.bind(this));
         // Editor fullScreen
-        this.parent.utils.setToMultipleID("editorFullscreenButton", "click", this.parent.menuPG.editorGoFullscreen.bind(this.parent.menuPG));
+        this.parent.utils.setToMultipleID("editorFullscreenButton", "click", function () {
+            this.parent.menuPG.removeAllOptions();
+            this.parent.menuPG.editorGoFullscreen.call(this.parent.menuPG)
+        }.bind(this));
         // Format
-        this.parent.utils.setToMultipleID("formatButton", "click", this.parent.monacoCreator.formatCode.bind(this.parent.monacoCreator));
+        this.parent.utils.setToMultipleID("formatButton", "click", function () {
+            this.parent.menuPG.removeAllOptions();
+            this.parent.monacoCreator.formatCode.call(this.parent.monacoCreator)
+        }.bind(this));
         // Minimap
         this.parent.utils.setToMultipleID("minimapToggle", "click", this.parent.monacoCreator.toggleMinimap.bind(this.parent.monacoCreator));
-        // Debug
-        this.parent.utils.setToMultipleID("debugButton", "click", this.toggleDebug.bind(this));
+        // Inspector
+        this.parent.utils.setToMultipleID("debugButton", "click", function () {
+            this.parent.menuPG.removeAllOptions();
+            this.toggleDebug.call(this);
+        }.bind(this));
         // Metadata
-        this.parent.utils.setToMultipleID("metadataButton", "click", this.parent.menuPG.displayMetadata.bind(this.parent.menuPG));
+        this.parent.utils.setToMultipleID("metadataButton", "click", function () {
+            this.parent.menuPG.removeAllOptions();
+            this.parent.menuPG.displayMetadata.call(this.parent.menuPG)
+        }.bind(this));
         // Initialize the metadata form
         this.showNoMetadata();
 
@@ -389,7 +411,8 @@ class Main {
     };
 
     checkSafeMode(message) {
-        if (document.getElementById("safemodeToggle" + this.parent.getCurrentSize).classList.contains('checked')) {
+        if (document.getElementById("safemodeToggle" + this.parent.getCurrentSize) &&
+            document.getElementById("safemodeToggle" + this.parent.getCurrentSize).classList.contains('checked')) {
             let confirm = window.confirm(message);
             if (!confirm) {
                 return false;
@@ -673,21 +696,6 @@ class Main {
             // Also log error in console to help debug playgrounds
             console.error(e);
         }
-    };
-
-    /**
-     * BJS version
-     */
-    // TO DO - Rewrite this with unpkg.com
-    setVersion(version) {
-        // switch (version) {
-        //     case "stable":
-        //         location.href = "indexStable.html" + location.hash;
-        //         break;
-        //     default:
-        //         location.href = "index.html" + location.hash;
-        //         break;
-        // }
     };
 
     /**

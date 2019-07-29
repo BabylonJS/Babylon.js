@@ -46,6 +46,12 @@ class MenuPG {
         for (var index = 0; index < this.allSelect.length; index++) {
             this.allSelect[index].addEventListener('click', this.displayMenu.bind(this));
         }
+        // Handle quit of menus
+        for (var i = 0; i < this.allToDisplay.length; i++) {
+            this.allToDisplay[i].addEventListener('mouseleave', function () {
+                this.removeAllOptions();
+            }.bind(this));
+        }
 
         // Handle mouseover / click on subSelect
         for (var index = 0; index < this.allSubSelect.length; index++) {
@@ -84,7 +90,15 @@ class MenuPG {
         }.bind(this));
 
         // On click anywhere, remove displayed options
+        // Avoid this if clicking in a menu
+        this.skipNextClick = false;
+        document.getElementById("exampleList").addEventListener('click', function () { this.skipNextClick = true; }.bind(this)); // Weird, does'nt work on mobile
+        document.getElementsByClassName("save-form")[0].addEventListener('click', function () { this.skipNextClick = true; }.bind(this));
         window.addEventListener('click', function () {
+            if (this.skipNextClick) {
+                this.skipNextClick = false;
+                return;
+            }
             this.removeAllOptions();
         }.bind(this));
 
@@ -99,7 +113,7 @@ class MenuPG {
                 var newButton = document.createElement("div");
                 newButton.classList.add("option");
                 // newButton.classList.add("noSubSelect");
-                newButton.innerText = CONFIG_last_versions[j][0];
+                newButton.innerText = "v" + CONFIG_last_versions[j][0];
                 newButton.value = CONFIG_last_versions[j][1];
 
                 newButton.addEventListener("click", function (evt) {
@@ -110,9 +124,15 @@ class MenuPG {
                 versionButtons.lastElementChild.appendChild(newButton);
             }
         }
+        this.displayVersionNumber(BABYLON.Engine.Version.substring(0, BABYLON.Engine.Version.search('-')));
+
+        // There's a metadatas close button on the mobile interface.
+        document.getElementById('saveFormButtonClose').addEventListener('click', this.hideMetadata.bind(this));
+        // Avoid closing metadatas when "onmouseleave" on menu
+        this.skipNextHideMetadatas = false;
 
         this.showQRCodes();
-    }
+    };
 
     /**
      * The logo displayed while loading the page
@@ -127,7 +147,8 @@ class MenuPG {
     displayVersionNumber(version) {
         this.hideWaitDiv();
         for (var i = 0; i < this.parent.utils.multipleSize.length; i++) {
-            document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement.firstElementChild.innerText = "v." + version;
+
+            document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement.firstElementChild.innerText = "v" + version;
         }
     };
 
@@ -216,13 +237,14 @@ class MenuPG {
         }
         if (!target.classList.contains('subSelect') && target.parentNode.style.display == 'block') {
             target.parentNode.style.display = 'none'
+
         }
 
         evt.preventDefault();
         evt.stopPropagation();
     };
 
-    /**
+    /** 
      * Remove displayed subItems
      */
     removeAllSubItems() {
@@ -235,6 +257,7 @@ class MenuPG {
      */
     removeAllOptions() {
         this.parent.examples.hideExamples();
+        this.hideMetadata();
         this.removeAllSubItems();
 
         for (var index = 0; index < this.allToDisplay.length; index++) {
@@ -243,6 +266,7 @@ class MenuPG {
                 a.style.display = 'none';
             }
         }
+
         for (var index = 0; index < this.allToDisplayBig.length; index++) {
             var b = this.allToDisplayBig[index];
             if (b.style.display == 'block') {
@@ -258,10 +282,10 @@ class MenuPG {
         if (this.navBarMobile.offsetHeight > 0) {
             this.removeAllOptions();
             this.canvasZoneElement.style.width = '0';
-            this.switchWrapper.style.left = "";
-            this.switchWrapper.style.right = "0";
+            this.switchWrapper.style.left = '';
+            this.switchWrapper.style.right = '0';
             this.switchWrapperCode.style.display = 'none';
-            this.fpsLabelElement.style.display = 'none';
+            this.fpsLabelElement.style.display = 'none'
             this.jsEditorElement.style.width = '100%';
             this.jsEditorElement.style.display = 'block';
             if (document.getElementsByClassName('gutter-horizontal').length > 0) document.getElementsByClassName('gutter-horizontal')[0].style.display = 'none';
@@ -279,8 +303,8 @@ class MenuPG {
             document.getElementsByClassName('gutter-horizontal')[0].style.display = 'none';
             this.switchWrapperCanvas.style.display = 'none';
             this.canvasZoneElement.style.width = '100%';
-            this.switchWrapper.style.left = "0";
-            this.switchWrapper.style.right = "";
+            this.switchWrapper.style.left = '0';
+            this.switchWrapper.style.right = '';
             this.switchWrapperCode.style.display = 'block';
             this.fpsLabelElement.style.display = 'block';
         }
@@ -341,15 +365,27 @@ class MenuPG {
      * Display the metadatas form
      */
     displayMetadata() {
-        this.removeAllOptions();
+        this.skipNextHideMetadatas = true;
         document.getElementById("saveLayer").style.display = "block";
     };
+    /**
+     * Hide the metadatas form
+     */
+    hideMetadata() {
+        if (this.skipNextHideMetadatas) {
+            this.skipNextHideMetadatas = false;
+            return;
+        }
+        else {
+            this.skipNextHideMetadatas = false;
+            document.getElementById("saveLayer").style.display = "none";
+        }
+    };
+
 
     /**
      * Navigation Overwrites
      */
-    // TO DO - Apply this when click on TS / JS button
-    // TO DO - Make it work with all sizes
     exitPrompt(e) {
         var safeToggle = document.getElementById("safemodeToggle1280");
         if (safeToggle.classList.contains('checked')) {
@@ -360,10 +396,10 @@ class MenuPG {
                 e.returnValue = message;
             }
             return message;
+
         }
     };
 
-    // TO DO - Make it work with all sizes
     showQRCodes() {
         for (var i = 0; i < this.parent.utils.multipleSize.length; i++) {
             $("#qrCodeImage" + this.parent.utils.multipleSize[i]).empty();
