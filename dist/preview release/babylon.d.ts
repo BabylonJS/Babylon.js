@@ -30321,6 +30321,14 @@ declare module BABYLON {
          */
         getRenderingCanvas(): Nullable<HTMLCanvasElement>;
         /**
+         * Gets host window
+         */
+        getHostWindow(): Window;
+        /**
+         * Gets host document
+         */
+        getHostDocument(): Document;
+        /**
          * Gets the client rect of the HTML canvas attached with the current webGL context
          * @returns a client rectanglee
          */
@@ -31854,9 +31862,10 @@ declare module BABYLON {
         static IsEmpty(obj: any): boolean;
         /**
          * Function used to register events at window level
+         * @param windowElement defines the Window object to use
          * @param events defines the events to register
          */
-        static RegisterTopRootEvents(events: {
+        static RegisterTopRootEvents(windowElement: Window, events: {
             name: string;
             handler: Nullable<(e: FocusEvent) => any>;
         }[]): void;
@@ -31864,7 +31873,7 @@ declare module BABYLON {
          * Function used to unregister events from window level
          * @param events defines the events to unregister
          */
-        static UnregisterTopRootEvents(events: {
+        static UnregisterTopRootEvents(windowElement: Window, events: {
             name: string;
             handler: Nullable<(e: FocusEvent) => any>;
         }[]): void;
