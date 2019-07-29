@@ -79,6 +79,9 @@ body {
     font-size: 38px;
     color: #BB464B;
 }
+#embed-host {
+    z-index: 10;
+}
 .wrapper {
     height: calc(100% - 55px - 35px); /* navbar top and bottom*/
     width: calc(100%);
@@ -356,6 +359,15 @@ body {
     right: 0;
     top: 0;
 }
+.navbar .category.right .button.selected {
+    background-color: white;
+}
+.navbar .category.right.languageJS .examplesButton.selected img {
+    filter: invert(17%) sepia(61%) saturate(651%) hue-rotate(214deg) brightness(91%) contrast(84%);
+}
+.navbar .category.right.languageTS .examplesButton.selected img {
+    filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%);
+}
 
 .navbar .category .buttonJStoTS {
     display: inline-block;
@@ -373,6 +385,9 @@ body {
     float: left;
 }
 
+.button.run {
+    background-color: white;
+}
 .button {
     cursor: pointer;
     display: inline-block;
@@ -403,6 +418,9 @@ body {
 .button:hover {
     cursor: pointer;
     background-color: white;
+}
+.button:hover span {
+    color: #3f3461;
 }
 .languageJS .button:hover img {
     filter: invert(17%) sepia(61%) saturate(651%) hue-rotate(214deg) brightness(91%) contrast(84%);
@@ -447,6 +465,9 @@ body {
     padding: 1px 5px 1px 15px;
     text-align: left;
 }
+.navbar .select .toDisplay.currentVersionDisplay  .option {
+    text-transform: lowercase; 
+}
 .navbar .select .toDisplay.languageJS {
     background-color: #3f3461;
 }
@@ -478,26 +499,29 @@ body {
     background-color: white;
 }
 .navbar .select .subSelect .toDisplaySub.languageJS .option {
-    color: #9379e6
+    color: white;
+    background-color: #bfabff;
+    
+}
+.navbar .select .subSelect .toDisplaySub.languageJS .option.selected {
+    color: #9379e6;
+    background-color: white;
 }
 .navbar .select .subSelect .toDisplaySub.languageJS .option:hover {
     color: white;
     background-color: #9379e6;
 }
-.navbar .select .subSelect .toDisplaySub.languageJS .option.selected {
-    color: white;
-    background-color: #bfabff;
-}
 .navbar .select .subSelect .toDisplaySub.languageTS .option {
+    color: white;
+    background-color: #ff7656;
+}
+.navbar .select .subSelect .toDisplaySub.languageTS .option.selected {
     color: #e0684b;
+    background-color: white;
 }
 .navbar .select .subSelect .toDisplaySub.languageTS .option:hover {
     color: white;
     background-color: #e0684b;
-}
-.navbar .select .subSelect .toDisplaySub.languageTS .option.selected {
-    color: white;
-    background-color: #ff7656;
 }
 .navbar .select .subSelect .qrCodeImage div {
     width: 256px;
@@ -668,6 +692,9 @@ body {
     border-radius: 4px;
     color: white;
     font-size: 14px;
+}
+.save-layer .save-form img {
+    display: none;
 }
 .save-layer .save-form .separator {
     width: 350px;

@@ -219,9 +219,13 @@
         height: 180px;
     }
 
+    .save-layer {
+        top: 40px;
+        height: calc(100% - 40px);
+    }
     .save-layer .save-form {
         z-index: 15;
-        position: fixed;
+        position: relative;
         width: 100%;
         height: 100%;
         overflow: auto;
@@ -231,6 +235,12 @@
         border-radius: 0;
         padding-bottom: 20px;
         box-sizing: border-box;
+    }
+    .save-layer .save-form img {
+        float: right;
+        width: 36px;
+        margin: -8px 10px 0 -45px ;
+        filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
     }
     .save-layer .save-form .separator, .save-layer .save-form input, .save-layer .save-form textarea {
         box-sizing: border-box;
