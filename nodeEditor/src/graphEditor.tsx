@@ -37,6 +37,7 @@ import { RemapNodeFactory } from './components/diagram/remap/remapNodeFactory';
 import { RemapNodeModel } from './components/diagram/remap/remapNodeModel';
 import { RemapBlock } from 'babylonjs/Materials/Node/Blocks/remapBlock';
 import { GraphHelper } from './graphHelper';
+import { PreviewManager } from './previewManager';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -65,6 +66,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
     private _nodes = new Array<DefaultNodeModel>();
     private _blocks = new Array<NodeMaterialBlock>();
+
+    private _previewManager: PreviewManager;
 
     /** @hidden */
     public _toAdd: LinkModel[] | null = [];
@@ -127,6 +130,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             var widget = (this.refs["test"] as DiagramWidget);
             widget.setState({ document: this.props.globalState.hostDocument })
             this.props.globalState.hostDocument!.addEventListener("keyup", widget.onKeyUpPointer as any, false);
+
+            this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
     }
 
@@ -135,6 +140,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             var widget = (this.refs["test"] as DiagramWidget);
             this.props.globalState.hostDocument!.removeEventListener("keyup", widget.onKeyUpPointer as any, false);
         }
+
+        this._previewManager.dispose();
     }
 
     constructor(props: IGraphEditorProps) {
@@ -396,6 +403,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this._rightWidth -= deltaX;
             this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
             DataStorage.StoreNumber("RightWidth", this._rightWidth);
+            rootElement.ownerDocument!.getElementById("preview")!.style.height = this._rightWidth + "px";
         }
 
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
@@ -472,7 +480,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     ></div>
 
                     {/* Property tab */}
-                    <PropertyTabComponent globalState={this.props.globalState} />
+                    <div className="right-panel">
+                        <PropertyTabComponent globalState={this.props.globalState} />
+                        <div id="preview" style={{height: this._rightWidth + "px"}}>
+                            <canvas id="preview-canvas"/>
+                        </div>
+                    </div>
 
                     <LogComponent globalState={this.props.globalState} />
                 </div>                

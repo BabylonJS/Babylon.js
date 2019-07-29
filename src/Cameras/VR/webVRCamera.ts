@@ -508,7 +508,9 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         if (this._vrDevice) {
             this.getEngine().enableVR();
         }
-        window.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
+
+        let hostWindow = this._scene.getEngine().getHostWindow();
+        hostWindow.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
     }
 
     /**

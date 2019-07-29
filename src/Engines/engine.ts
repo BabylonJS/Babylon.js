@@ -1162,8 +1162,9 @@ export class Engine {
             };
 
             if (DomManagement.IsWindowObjectExist()) {
-                window.addEventListener("blur", this._onBlur);
-                window.addEventListener("focus", this._onFocus);
+                let hostWindow = this.getHostWindow();
+                hostWindow.addEventListener("blur", this._onBlur);
+                hostWindow.addEventListener("focus", this._onFocus);
             }
 
             canvas.addEventListener("pointerout", this._onCanvasPointerOut);
@@ -1697,6 +1698,30 @@ export class Engine {
     }
 
     /**
+     * Gets host window
+     * @returns the host window object
+     */
+    public getHostWindow(): Window {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument && this._renderingCanvas.ownerDocument.defaultView) {
+            return this._renderingCanvas.ownerDocument.defaultView;
+        }
+
+        return window;
+    }
+
+    /**
+     * Gets host document
+     * @returns the host document object
+     */
+    public getHostDocument(): Document {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
+            return this._renderingCanvas.ownerDocument;
+        }
+
+        return document;
+    }
+
+    /**
      * Gets the client rect of the HTML canvas attached with the current webGL context
      * @returns a client rectanglee
      */
@@ -2022,7 +2047,7 @@ export class Engine {
             } else if (this.isVRPresenting()) {
                 this._requestVRFrame();
             } else {
-                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
+                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
             }
         } else {
             this._renderingQueueLaunched = false;
@@ -2043,7 +2068,7 @@ export class Engine {
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
             this._bindedRenderFunction = this._renderLoop.bind(this);
-            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
+            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
         }
     }
 

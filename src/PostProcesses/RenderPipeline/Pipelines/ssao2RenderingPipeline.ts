@@ -14,6 +14,8 @@ import { Scene } from "../../../scene";
 import { _TypeStore } from '../../../Misc/typeStore';
 import { EngineStore } from '../../../Engines/engineStore';
 
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+
 import "../../../Shaders/ssao2.fragment";
 import "../../../Shaders/ssaoCombine.fragment";
 
