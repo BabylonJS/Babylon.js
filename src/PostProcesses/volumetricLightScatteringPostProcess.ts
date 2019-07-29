@@ -295,6 +295,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                 return;
             }
 
+            mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+
             let material = subMesh.getMaterial();
 
             if (!material) {

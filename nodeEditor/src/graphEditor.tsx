@@ -403,6 +403,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this._rightWidth -= deltaX;
             this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
             DataStorage.StoreNumber("RightWidth", this._rightWidth);
+            rootElement.ownerDocument!.getElementById("preview")!.style.height = this._rightWidth + "px";
         }
 
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
@@ -481,7 +482,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     {/* Property tab */}
                     <div className="right-panel">
                         <PropertyTabComponent globalState={this.props.globalState} />
-                        <div id="preview">
+                        <div id="preview" style={{height: this._rightWidth + "px"}}>
                             <canvas id="preview-canvas"/>
                         </div>
                     </div>

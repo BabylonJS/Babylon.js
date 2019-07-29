@@ -1286,8 +1286,9 @@ export class Engine {
         };
 
         if (DomManagement.IsWindowObjectExist()) {
-            window.addEventListener("blur", this._onBlur);
-            window.addEventListener("focus", this._onFocus);
+            let hostWindow = this.getHostWindow();
+            hostWindow.addEventListener("blur", this._onBlur);
+            hostWindow.addEventListener("focus", this._onFocus);
         }
 
         canvas.addEventListener("pointerout", this._onCanvasPointerOut);
@@ -1740,6 +1741,28 @@ export class Engine {
      */
     public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
         return this._renderingCanvas;
+    }
+
+    /**
+     * Gets host window
+     */
+    public getHostWindow(): Window {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument && this._renderingCanvas.ownerDocument.defaultView) {
+            return this._renderingCanvas.ownerDocument.defaultView;
+        }
+
+        return window;
+    }
+
+    /**
+     * Gets host document
+     */
+    public getHostDocument(): Document {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
+            return this._renderingCanvas.ownerDocument;
+        }
+
+        return document;
     }
 
     /**

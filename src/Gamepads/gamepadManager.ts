@@ -102,8 +102,10 @@ export class GamepadManager {
             }
             // Checking if the gamepad connected event is supported (like in Firefox)
             if (this._gamepadEventSupported) {
-                window.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
-                window.addEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent, false);
+                let hostWindow = this._scene!.getEngine().getHostWindow();
+
+                hostWindow.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
+                hostWindow.addEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent, false);
             }
             else {
                 this._startMonitoringGamepads();
