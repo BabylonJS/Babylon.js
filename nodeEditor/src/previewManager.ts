@@ -40,7 +40,10 @@ export class PreviewManager {
 
         this._engine.runRenderLoop(() => {
             this._scene.render();
-        })
+        });
+
+        let serializationObject = this._nodeMaterial.serialize();
+        this._updatePreview(serializationObject);
     }
 
     private _updatePreview(serializationObject: any) {
@@ -49,9 +52,7 @@ export class PreviewManager {
         }        
 
         this._material = NodeMaterial.Parse(serializationObject, this._scene);
-
-        this._material.build();
-
+        this._material.build(true);
         this._dummySphere.material = this._material;
     }
 
