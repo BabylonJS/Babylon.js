@@ -875,6 +875,7 @@ declare module NODEEDITOR {
         private _light;
         private _dummySphere;
         private _camera;
+        private _material;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _updatePreview;
         dispose(): void;

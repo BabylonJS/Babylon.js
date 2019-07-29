@@ -29745,10 +29745,12 @@ declare module BABYLON {
         getRenderingCanvas(): Nullable<HTMLCanvasElement>;
         /**
          * Gets host window
+         * @returns the host window object
          */
         getHostWindow(): Window;
         /**
          * Gets host document
+         * @returns the host document object
          */
         getHostDocument(): Document;
         /**
@@ -31255,6 +31257,7 @@ declare module BABYLON {
         }[]): void;
         /**
          * Function used to unregister events from window level
+         * @param windowElement defines the Window object to use
          * @param events defines the events to unregister
          */
         static UnregisterTopRootEvents(windowElement: Window, events: {
@@ -50614,6 +50617,7 @@ declare module BABYLON {
      * Class used to create a node based material built by assembling shader blocks
      */
     export class NodeMaterial extends PushMaterial {
+        private static _BuildIdGenerator;
         private _options;
         private _vertexCompilationState;
         private _fragmentCompilationState;
