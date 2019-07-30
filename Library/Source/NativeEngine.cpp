@@ -179,6 +179,8 @@ namespace babylon
             case WebGLAttribType::UNSIGNED_BYTE:    return bgfx::AttribType::Uint8;
             case WebGLAttribType::SHORT:            return bgfx::AttribType::Int16;
             case WebGLAttribType::FLOAT:            return bgfx::AttribType::Float;
+            default: // avoid "warning: 4 enumeration values not handled"
+                break;
             }
 
             throw std::exception();
@@ -402,7 +404,6 @@ namespace babylon
 
     void NativeEngine::Impl::Initialize(Napi::Env& env)
     {
-        // todo
         EngineDefiner::Define(env, this);
     }
 
