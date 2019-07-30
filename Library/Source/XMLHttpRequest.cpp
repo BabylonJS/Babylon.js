@@ -126,13 +126,11 @@ namespace babylon
     void XMLHttpRequest::Send(const Napi::CallbackInfo& info)
     {
         auto lock = m_runtimeImpl.AcquireTaskLock();
-        /* todo
+
         m_runtimeImpl.Task = m_runtimeImpl.Task.then(arcana::inline_scheduler, arcana::cancellation::none(), [this]
         {
             return SendAsync();
         });
-        */
-
     }
 
     // TODO: Make this just be SendAsync() once the UWP file access bug is fixed.
