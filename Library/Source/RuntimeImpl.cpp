@@ -193,4 +193,8 @@ namespace babylon
             m_dispatcher.blocking_tick(m_cancelSource);
         }
     }
+
+    template arcana::task<std::string, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);
+    template arcana::task<std::vector<char>, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);
 }
+

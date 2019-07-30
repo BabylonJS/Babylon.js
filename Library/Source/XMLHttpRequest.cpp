@@ -138,8 +138,7 @@ namespace babylon
     // TODO: Make this just be SendAsync() once the UWP file access bug is fixed.
     arcana::task<void, std::exception_ptr> XMLHttpRequest::SendAsyncImpl()
     {
-        // doesn't link in Android
-        /*if (m_responseType.empty() || m_responseType == XMLHttpRequestTypes::ResponseType::Text)
+        if (m_responseType.empty() || m_responseType == XMLHttpRequestTypes::ResponseType::Text)
         {
             return m_runtimeImpl.LoadUrlAsync<std::string>(m_url).then(arcana::inline_scheduler, m_runtimeImpl.Cancellation(), [this](const std::string& data)
             {
@@ -158,7 +157,7 @@ namespace babylon
                 SetReadyState(ReadyState::Done);
             });
         }
-        else*/
+        else
         {
             throw std::exception();
         }
