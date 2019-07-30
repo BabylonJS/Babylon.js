@@ -78,6 +78,7 @@
 
 ### ScreenshotTools
 - Added interface for argument `size` of screenshot methods ([Dok11](https://github.com/Dok11/))
+- Implementation usage of precision in combination height and width params ([Dok11](https://github.com/Dok11/))
 
 ### Sounds
 - Added `ISoundOptions.skipCodecCheck` to make `Sound` more flexible with URLs ([nbduke](https://github.com/nbduke))
