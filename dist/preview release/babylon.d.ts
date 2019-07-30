@@ -60555,6 +60555,11 @@ declare module BABYLON {
          * to the src parameter of an <img> to display it
          */
         static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): Promise<string>;
+        /**
+         * Gets height and width for screenshot size
+         * @private
+         */
+        private static _getScreenshotSize;
     }
 }
 declare module BABYLON {
@@ -60625,6 +60630,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var blurPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var volumetricLightScatteringPassVertexShader: {
         name: string;
         shader: string;
     };
