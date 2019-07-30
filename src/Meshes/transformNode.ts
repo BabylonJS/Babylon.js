@@ -36,6 +36,10 @@ export class TransformNode extends Node {
      * Object will rotate to face the camera
      */
     public static BILLBOARDMODE_ALL = 7;
+    /**
+     * Object will rotate to face the camera's position instead of orientation
+     */
+    public static BILLBOARDMODE_USE_POSITION = 128;
 
     private _forward = new Vector3(0, 0, 1);
     private _forwardInverted = new Vector3(0, 0, -1);
@@ -1050,38 +1054,54 @@ export class TransformNode extends Node {
 
         // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
         if (useBillboardPath && camera) {
-            let storedTranslation = TmpVectors.Vector3[0];
-            this._worldMatrix.getTranslationToRef(storedTranslation); // Save translation
-
-            // Cancel camera rotation
-            TmpVectors.Matrix[1].copyFrom(camera.getViewMatrix());
-            TmpVectors.Matrix[1].setTranslationFromFloats(0, 0, 0);
-            TmpVectors.Matrix[1].invertToRef(TmpVectors.Matrix[0]);
-
-            if ((this.billboardMode & TransformNode.BILLBOARDMODE_ALL) !== TransformNode.BILLBOARDMODE_ALL) {
-                TmpVectors.Matrix[0].decompose(undefined, TmpVectors.Quaternion[0], undefined);
-                let eulerAngles = TmpVectors.Vector3[1];
-                TmpVectors.Quaternion[0].toEulerAnglesToRef(eulerAngles);
+            if (this.billboardMode & TransformNode.BILLBOARDMODE_USE_POSITION) {
+                this.lookAt(camera.position);
 
                 if ((this.billboardMode & TransformNode.BILLBOARDMODE_X) !== TransformNode.BILLBOARDMODE_X) {
-                    eulerAngles.x = 0;
+                    this.rotation.x = 0;
                 }
 
                 if ((this.billboardMode & TransformNode.BILLBOARDMODE_Y) !== TransformNode.BILLBOARDMODE_Y) {
-                    eulerAngles.y = 0;
+                    this.rotation.y = 0;
                 }
 
                 if ((this.billboardMode & TransformNode.BILLBOARDMODE_Z) !== TransformNode.BILLBOARDMODE_Z) {
-                    eulerAngles.z = 0;
+                    this.rotation.z = 0;
                 }
+            } else {
+                let storedTranslation = TmpVectors.Vector3[0];
+                this._worldMatrix.getTranslationToRef(storedTranslation); // Save translation
 
-                Matrix.RotationYawPitchRollToRef(eulerAngles.y, eulerAngles.x, eulerAngles.z, TmpVectors.Matrix[0]);
+                // Cancel camera rotation
+                TmpVectors.Matrix[1].copyFrom(camera.getViewMatrix());
+                TmpVectors.Matrix[1].setTranslationFromFloats(0, 0, 0);
+                TmpVectors.Matrix[1].invertToRef(TmpVectors.Matrix[0]);
+
+                if ((this.billboardMode & TransformNode.BILLBOARDMODE_ALL) !== TransformNode.BILLBOARDMODE_ALL) {
+                    TmpVectors.Matrix[0].decompose(undefined, TmpVectors.Quaternion[0], undefined);
+                    let eulerAngles = TmpVectors.Vector3[1];
+                    TmpVectors.Quaternion[0].toEulerAnglesToRef(eulerAngles);
+
+                    if ((this.billboardMode & TransformNode.BILLBOARDMODE_X) !== TransformNode.BILLBOARDMODE_X) {
+                        eulerAngles.x = 0;
+                    }
+
+                    if ((this.billboardMode & TransformNode.BILLBOARDMODE_Y) !== TransformNode.BILLBOARDMODE_Y) {
+                        eulerAngles.y = 0;
+                    }
+
+                    if ((this.billboardMode & TransformNode.BILLBOARDMODE_Z) !== TransformNode.BILLBOARDMODE_Z) {
+                        eulerAngles.z = 0;
+                    }
+
+                    Matrix.RotationYawPitchRollToRef(eulerAngles.y, eulerAngles.x, eulerAngles.z, TmpVectors.Matrix[0]);
+                }
+                this._worldMatrix.setTranslationFromFloats(0, 0, 0);
+                this._worldMatrix.multiplyToRef(TmpVectors.Matrix[0], this._worldMatrix);
+
+                // Restore translation
+                this._worldMatrix.setTranslation(TmpVectors.Vector3[0]);
             }
-            this._worldMatrix.setTranslationFromFloats(0, 0, 0);
-            this._worldMatrix.multiplyToRef(TmpVectors.Matrix[0], this._worldMatrix);
-
-            // Restore translation
-            this._worldMatrix.setTranslation(TmpVectors.Vector3[0]);
         }
 
         // Normal matrix
