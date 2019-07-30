@@ -112,11 +112,11 @@ namespace babylon
         auto lock = AcquireTaskLock();
         Task = Task.then(m_dispatcher, m_cancelSource, [this, url]
         {
-            //return LoadUrlAsync<std::string>(GetAbsoluteUrl(url).c_str()); todo
-        })/*.then(m_dispatcher, m_cancelSource, [this, url](const std::string& script)
+            return LoadUrlAsync<std::string>(GetAbsoluteUrl(url).c_str());
+        }).then(m_dispatcher, m_cancelSource, [this, url](const std::string& script)
         {
             Env().Eval(script.data(), url.data());
-        })*/;
+        });
         
     }
 
