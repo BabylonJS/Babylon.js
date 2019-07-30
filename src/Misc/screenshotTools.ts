@@ -262,6 +262,49 @@ export class ScreenshotTools {
             }, mimeType, samples, antialiasing, fileName);
         });
     }
+
+    /**
+     * Gets height and width for screenshot size
+     * @private
+     */
+    private static _getScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): {height: number, width: number} {
+        let height = 0;
+        let width = 0;
+
+        //If a size value defined as object
+        if (typeof(size) === 'object') {
+            const precision = size.precision
+              ? Math.abs(size.precision) // prevent GL_INVALID_VALUE : glViewport: negative width/height
+              : 1;
+
+            //If a width and height values is specified
+            if (size.width && size.height) {
+                height = size.height * precision;
+                width = size.width * precision;
+            }
+            //If passing only width, computing height to keep display canvas ratio.
+            else if (size.width && !size.height) {
+                width = size.width * precision;
+                height = Math.round(width / engine.getAspectRatio(camera));
+            }
+            //If passing only height, computing width to keep display canvas ratio.
+            else if (size.height && !size.width) {
+                height = size.height * precision;
+                width = Math.round(height * engine.getAspectRatio(camera));
+            }
+            else {
+                width = Math.round(engine.getRenderWidth() * precision);
+                height = Math.round(width / engine.getAspectRatio(camera));
+            }
+        }
+        //Assuming here that "size" parameter is a number
+        else if (!isNaN(size)) {
+            height = size;
+            width = size;
+        }
+
+        return { height, width };
+    }
 }
 
 Tools.CreateScreenshot = ScreenshotTools.CreateScreenshot;
