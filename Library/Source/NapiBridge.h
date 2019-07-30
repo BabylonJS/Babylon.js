@@ -80,7 +80,8 @@ namespace babylon
     {
         static void Define(Napi::Env& env, NativeEngineT* impl)
         {
-            Napi::HandleScope scope{ env };
+            // todo fix this template 
+            /*Napi::HandleScope scope{ env };
             auto func = NapiBridge<NativeEngineT>::Define("NativeEngine", env, impl)
                 .NapiBridge<NativeEngineT>::AddVoidReturningMethod<&NativeEngineT::RequestAnimationFrame>("requestAnimationFrame")
                 .NapiBridge<NativeEngineT>::AddValueReturningMethod<&NativeEngineT::CreateVertexArray>("createVertexArray")
@@ -139,6 +140,7 @@ namespace babylon
                 .NapiBridge<NativeEngineT>::Finalize();
 
             env.Global().Set("nativeEngine", func.New({}));
+            */
         }
     };
 }
