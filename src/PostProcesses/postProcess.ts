@@ -113,7 +113,7 @@ export class PostProcess {
     }
 
     public set samples(n: number) {
-        this._samples = n;
+        this._samples = Math.min(n, this._engine.getCaps().maxMSAASamples);
 
         this._textures.forEach((texture) => {
             if (texture.samples !== this._samples) {
