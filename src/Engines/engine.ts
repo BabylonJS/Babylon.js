@@ -193,6 +193,8 @@ export class EngineCapabilities {
     public parallelShaderCompile: {
         COMPLETION_STATUS_KHR: number;
     };
+    /** Max number of texture samples for MSAA */
+    public maxMSAASamples = 1;
 }
 
 /** Interface defining initialization parameters for Engine class */
@@ -1467,6 +1469,7 @@ export class Engine {
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
+            this._caps.maxMSAASamples = this._gl.getParameter(this._gl.MAX_SAMPLES);
         } else {
             var drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
 
@@ -4932,7 +4935,7 @@ export class Engine {
 
         var gl = this._gl;
 
-        samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
+        samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
         // Dispose previous render buffers
         if (texture._depthStencilBuffer) {
