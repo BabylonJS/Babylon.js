@@ -50,7 +50,8 @@ namespace
 
     void DestroyIsolate(v8::Isolate* isolate)
     {
-        delete isolate->GetArrayBufferAllocator();
+        // todo : GetArrayBufferAllocator not available?
+        //delete isolate->GetArrayBufferAllocator();
         isolate->Dispose();
     }
 

@@ -1,12 +1,12 @@
 ﻿#include <Babylon/RuntimeAndroid.h>
 #include "RuntimeImpl.h"
-#include <filesystem>
+//#include <filesystem>
 
 namespace babylon
 {
 
     RuntimeAndroid::RuntimeAndroid(void* nativeWindowPtr)
-        : RuntimeAndroid{nativeWindowPtr, GetUrlFromPath(GetModulePath().parent_path()) }
+        : RuntimeAndroid{nativeWindowPtr, GetUrlFromPath("."/*GetModulePath().parent_path()*/) } // todo : GetModulePath().parent_path() std::fs experimental not available with ndk
     {
     }
 

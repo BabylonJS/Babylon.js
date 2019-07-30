@@ -6,7 +6,7 @@ project(BabylonNative)
 set(SUPPORTED_PLATFORMS "Win32" "Android")
 if (ANDROID)
 set(BABYLON_NATIVE_PLATFORM "Android" CACHE STRING "Target platform for Babylon Native.")
-elseif()
+else()
 set(BABYLON_NATIVE_PLATFORM "Win32" CACHE STRING "Target platform for Babylon Native.")
 endif()
 

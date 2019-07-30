@@ -24,7 +24,9 @@ set(OPENGL_LIB GLESv3)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_FLAGS "-std=c++0x")
+set(ANDROID_STL "c++_shared")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -latomic")
+
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/src/")
 
@@ -32,6 +34,7 @@ add_library(BabylonNativeJNI SHARED
             src/main/cpp/BabylonNativeJNI.cpp
             ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/napi/source/js_native_api_v8.cc
             ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/napi/source/env_v8.cc
+            ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/napi/source/env.cc
          )
 
 target_compile_definitions(BabylonNativeJNI PUBLIC NODE_ADDON_API_DISABLE_DEPRECATED)
@@ -39,15 +42,11 @@ target_compile_definitions(BabylonNativeJNI PUBLIC NODE_ADDON_API_DISABLE_DEPREC
 target_include_directories(BabylonNativeJNI
         PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/../../Library/Include
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8-7.0.276.32/include
         ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/napi/include
-        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/include
-        "C:/Users/ceguille/AppData/Local/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/c++/v1"
         )
 
-#find_package(BABYLONNATIVE)
-
 add_definitions(-DANDROID_STL=c++_shared)
-
 
 target_link_libraries(BabylonNativeJNI
         ${OPENGL_LIB}
@@ -55,14 +54,7 @@ target_link_libraries(BabylonNativeJNI
         EGL
         log
         -lz
-
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_base.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_snapshot.a
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/libLibrary.a # BabylonNative
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_base.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_snapshot.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_base.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_snapshot.a
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libbgfx.a
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libbimg.a
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libbx.a
@@ -75,36 +67,10 @@ target_link_libraries(BabylonNativeJNI
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libsquish.a
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libastc.a
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libastc-codec.a
-
-
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/SPIRV-Cross/libspirv-cross-core.a
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/SPIRV-Cross/libspirv-cross-glsl.a
-
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/curl/lib/libcurl.a
-        ##${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_libbase.a
-        ##${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_base.a
-        ##${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_snapshot.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/mutex.o
-
-        ##${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_snapshot.a
-
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_libplatform.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_base.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_compiler.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_libsampler.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_base.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_snapshot.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_snapshot.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_base.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_snapshot.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_libbase.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_base.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_snapshot.a
-
-
-        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_base.a
-        #${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/prebuilt/v8/arm64-v8a/libv8_monolith.a
-        #stdc++
-"C:/Users/ceguille/AppData/Local/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so"
-
+        ${CMAKE_CURRENT_LIST_DIR}/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI}/libv8.cr.so
+        ${CMAKE_CURRENT_LIST_DIR}/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI}/libv8_libplatform.cr.so
+        ${CMAKE_CURRENT_LIST_DIR}/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI}/libc++_shared.so
         m)
