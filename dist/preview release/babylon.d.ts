@@ -18673,7 +18673,7 @@ declare module BABYLON {
          *
          * Returns the clone.
          */
-        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): InstancedMesh;
+        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): InstancedMesh;
         /**
          * Disposes the InstancedMesh.
          * Returns nothing.
@@ -29619,6 +29619,8 @@ declare module BABYLON {
         parallelShaderCompile: {
             COMPLETION_STATUS_KHR: number;
         };
+        /** Max number of texture samples for MSAA */
+        maxMSAASamples: number;
     }
     /** Interface defining initialization parameters for Engine class */
     export interface EngineOptions extends WebGLContextAttributes {
@@ -53103,7 +53105,7 @@ declare module BABYLON {
         /**
          * Vertex shader for the effect
          */
-        vertexShader: string;
+        vertexShader?: string;
         /**
          * Attributes to use in the shader
          */
@@ -58560,6 +58562,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var volumetricLightScatteringPassVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var volumetricLightScatteringPassPixelShader: {
         name: string;
         shader: string;
@@ -60630,13 +60639,6 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var blurPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var volumetricLightScatteringPassVertexShader: {
         name: string;
         shader: string;
     };
