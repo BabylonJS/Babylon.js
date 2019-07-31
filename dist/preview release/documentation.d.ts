@@ -18673,7 +18673,7 @@ declare module BABYLON {
          *
          * Returns the clone.
          */
-        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): InstancedMesh;
+        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): InstancedMesh;
         /**
          * Disposes the InstancedMesh.
          * Returns nothing.
@@ -29619,6 +29619,8 @@ declare module BABYLON {
         parallelShaderCompile: {
             COMPLETION_STATUS_KHR: number;
         };
+        /** Max number of texture samples for MSAA */
+        maxMSAASamples: number;
     }
     /** Interface defining initialization parameters for Engine class */
     export interface EngineOptions extends WebGLContextAttributes {
@@ -53103,7 +53105,7 @@ declare module BABYLON {
         /**
          * Vertex shader for the effect
          */
-        vertexShader: string;
+        vertexShader?: string;
         /**
          * Attributes to use in the shader
          */
@@ -58560,6 +58562,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var volumetricLightScatteringPassVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var volumetricLightScatteringPassPixelShader: {
         name: string;
         shader: string;
@@ -60555,6 +60564,11 @@ declare module BABYLON {
          * to the src parameter of an <img> to display it
          */
         static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): Promise<string>;
+        /**
+         * Gets height and width for screenshot size
+         * @private
+         */
+        private static _getScreenshotSize;
     }
 }
 declare module BABYLON {
@@ -69855,6 +69869,11 @@ declare module BABYLON {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        /**
+         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * will avoid calculating useless pixels in the pixel shader of the water material.
+         */
+        disableClipPlane: boolean;
         protected _renderTargets: BABYLON.SmartArray<BABYLON.RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
@@ -69865,6 +69884,8 @@ declare module BABYLON {
         private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
+        private _imageProcessingConfiguration;
+        private _imageProcessingObserver;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
