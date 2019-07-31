@@ -55,11 +55,11 @@ var createScene = function() {
     // Default intensity is 1. Let's dim the light a small amount
     light.intensity = 0;
 
-    var lamp = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);//addGround("lamp", new BABYLON.Vector3(0.25, 0.25, 0.25));
+    var lamp =/*BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);*/addGround("lamp", new BABYLON.Vector3(0.25, 0.25, 0.25));
 
     lamp.rotation.x = -3 * Math.PI / 4;
     lamp.position.copyFromFloats(-5, 10, 10);
-    lamp.color = new BABYLON.Vector3(1, 1, 1);
+    lamp.color = new BABYLON.Vector3(50, 50, 50);
 
     addMaterial(lamp);
     prepareUVS([lamp]);

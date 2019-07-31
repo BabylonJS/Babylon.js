@@ -18,7 +18,7 @@ import { RadiosityUtils } from "./radiosityUtils";
 import { RadiosityEffectsManager } from "./radiosityEffectsManager";
 
 import { Nullable } from "../types";
-// import { Tools } from "../misc/tools"
+import { Tools } from "../misc/tools"
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _DevTools } from '../Misc/devTools';
@@ -101,7 +101,7 @@ export class PatchRenderer {
     public useDepthCompare: boolean = true;
     public useHemicube: boolean = true;
     private _cachePatches: boolean = false;
-    private _patchMapResolution: number = 512;
+    private _patchMapResolution: number = 1024;
 
     public static PERFORMANCE_LOGS_LEVEL: number = 1;
     public static RADIOSITY_INFO_LOGS_LEVEL: number = 1;
@@ -153,7 +153,7 @@ export class PatchRenderer {
      */
     constructor(scene: Scene, meshes: Mesh[], texelSize: number) {  
         this._scene = scene;
-        this._near = 1;
+        this._near = 0.1;
         this._far = 10000;
         this._texelSize = texelSize;
         this._meshes = meshes;
@@ -901,7 +901,7 @@ export class PatchRenderer {
             }
 
             // console.log(engine.readPixelsFloat(0, 0, this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight()));
-            // Tools.DumpFramebuffer(this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight(), this._scene.getEngine());
+            Tools.DumpFramebuffer(this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight(), this._scene.getEngine());
         };
 
     }
