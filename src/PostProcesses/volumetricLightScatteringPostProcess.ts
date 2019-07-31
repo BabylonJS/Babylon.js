@@ -212,7 +212,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
             this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect(
-                { vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" },
+                "volumetricLightScatteringPass",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix"],
                 ["diffuseSampler"],
