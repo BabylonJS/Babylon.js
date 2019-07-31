@@ -89,7 +89,7 @@ export class DualShockPad extends Gamepad {
      */
     constructor(id: string, index: number, gamepad: any) {
         super(id.replace("STANDARD GAMEPAD", "SONY PLAYSTATION DUALSHOCK"), index, gamepad, 0, 1, 2, 3);
-        this.type = Gamepad.XBOX;
+        this.type = Gamepad.DUALSHOCK;
     }
 
     /**
