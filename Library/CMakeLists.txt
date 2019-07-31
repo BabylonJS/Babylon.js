@@ -1,3 +1,5 @@
+project(Library)
+
 set(NAPI_JAVASCRIPT_ENGINE "Chakra" CACHE STRING "JavaScript engine for N-API.")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -75,7 +77,14 @@ if(BABYLON_NATIVE_PLATFORM STREQUAL "Android")
         "Source/ShaderCompilerOpenGL.cpp")
 endif()
 
+
+
 add_library(Library ${SOURCES})
+
+set_target_properties(Library PROPERTIES
+         ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${BABYLON_NATIVE_PLATFORM}_${ARCH}")
+message("${PROJECT_BINARY_DIR}/${BABYLON_NATIVE_PLATFORM}/${ARCH}")
+
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
@@ -126,3 +135,4 @@ target_link_libraries(Library
 
 target_include_directories(Library PUBLIC "Include")
 target_link_libraries(Library PUBLIC napi)
+

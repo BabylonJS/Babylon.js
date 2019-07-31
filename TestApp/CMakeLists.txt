@@ -1,3 +1,5 @@
+project(TestApp)
+
 set(SCRIPTS
     "Scripts/babylon.glTF2FileLoader.js"
     "Scripts/babylon.max.js"
