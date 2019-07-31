@@ -947,8 +947,8 @@ export class TransformNode extends Node {
         }
 
         let camera = (<Camera>this.getScene().activeCamera);
+        const useBillboardPosition = (this._billboardMode & TransformNode.BILLBOARDMODE_USE_POSITION) !== 0;
         const useBillboardPath = this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard;
-        const useBillboardPosition = this._billboardMode & TransformNode.BILLBOARDMODE_USE_POSITION;
 
         // Billboarding based on camera position
         if (useBillboardPath && camera && useBillboardPosition) {
