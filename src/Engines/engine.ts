@@ -194,6 +194,8 @@ export class EngineCapabilities {
     public parallelShaderCompile: {
         COMPLETION_STATUS_KHR: number;
     };
+    /** Max number of texture samples for MSAA */
+    public maxMSAASamples = 1;
 }
 
 /** Interface defining initialization parameters for Engine class */
@@ -511,14 +513,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.11";
+        return "babylonjs@4.1.0-alpha.12";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.11";
+        return "4.1.0-alpha.12";
     }
 
     /**
@@ -1513,6 +1515,7 @@ export class Engine {
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
+            this._caps.maxMSAASamples = this._gl.getParameter(this._gl.MAX_SAMPLES);
         } else {
             var drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
 
@@ -2093,7 +2096,7 @@ export class Engine {
             } else if (this.isVRPresenting()) {
                 this._requestVRFrame();
             } else {
-                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
+                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
             }
         } else {
             this._renderingQueueLaunched = false;
@@ -2114,7 +2117,7 @@ export class Engine {
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
             this._bindedRenderFunction = this._renderLoop.bind(this);
-            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
+            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
         }
     }
 
@@ -4980,7 +4983,7 @@ export class Engine {
 
         var gl = this._gl;
 
-        samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
+        samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
         // Dispose previous render buffers
         if (texture._depthStencilBuffer) {

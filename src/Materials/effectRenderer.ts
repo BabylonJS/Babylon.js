@@ -206,7 +206,7 @@ interface EffectWrapperCreationOptions {
     /**
      * Vertex shader for the effect
      */
-    vertexShader: string;
+    vertexShader?: string;
     /**
      * Attributes to use in the shader
      */
@@ -243,11 +243,23 @@ export class EffectWrapper {
      * @param creationOptions options to create the effect
      */
     constructor(creationOptions: EffectWrapperCreationOptions) {
-        this.effect = new Effect({
+        let effectCreationOptions: any;
+        if (creationOptions.vertexShader) {
+            effectCreationOptions = {
                 fragmentSource: creationOptions.fragmentShader,
-                vertexSource: creationOptions.vertexShader || "postprocess",
+                vertexSource: creationOptions.vertexShader,
                 spectorName: creationOptions.name || "effectWrapper"
-            },
+            };
+        }
+        else {
+            effectCreationOptions = {
+                fragmentSource: creationOptions.fragmentShader,
+                vertex: "postprocess",
+                spectorName: creationOptions.name || "effectWrapper"
+            };
+        }
+
+        this.effect = new Effect(effectCreationOptions,
             creationOptions.attributeNames || ["position"],
             creationOptions.uniformNames || ["scale"],
             creationOptions.samplerNames,
