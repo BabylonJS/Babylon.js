@@ -11939,6 +11939,10 @@ declare module BABYLON {
          */
         static POSE_ENABLED: number;
         /**
+         * Represents an Dual Shock controller
+         */
+        static DUALSHOCK: number;
+        /**
          * Specifies whether the left control stick should be Y-inverted
          */
         protected _invertLeftStickY: boolean;
@@ -37729,6 +37733,238 @@ declare module BABYLON {
         * Sets the value of the `Right` button
         */
         buttonRB: number;
+        /**
+         * Gets the value of the Left joystick
+         */
+        /**
+        * Sets the value of the Left joystick
+        */
+        buttonLeftStick: number;
+        /**
+         * Gets the value of the Right joystick
+         */
+        /**
+        * Sets the value of the Right joystick
+        */
+        buttonRightStick: number;
+        /**
+         * Gets the value of D-pad up
+         */
+        /**
+        * Sets the value of D-pad up
+        */
+        dPadUp: number;
+        /**
+         * Gets the value of D-pad down
+         */
+        /**
+        * Sets the value of D-pad down
+        */
+        dPadDown: number;
+        /**
+         * Gets the value of D-pad left
+         */
+        /**
+        * Sets the value of D-pad left
+        */
+        dPadLeft: number;
+        /**
+         * Gets the value of D-pad right
+         */
+        /**
+        * Sets the value of D-pad right
+        */
+        dPadRight: number;
+        /**
+         * Force the gamepad to synchronize with device values
+         */
+        update(): void;
+        /**
+         * Disposes the gamepad
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines supported buttons for DualShock compatible gamepads
+     */
+    export enum DualShockButton {
+        /** Cross */
+        Cross = 0,
+        /** Circle */
+        Circle = 1,
+        /** Square */
+        Square = 2,
+        /** Triangle */
+        Triangle = 3,
+        /** Options */
+        Options = 4,
+        /** Share */
+        Share = 5,
+        /** L1 */
+        L1 = 6,
+        /** R1 */
+        R1 = 7,
+        /** Left stick */
+        LeftStick = 8,
+        /** Right stick */
+        RightStick = 9
+    }
+    /** Defines values for DualShock DPad  */
+    export enum DualShockDpad {
+        /** Up */
+        Up = 0,
+        /** Down */
+        Down = 1,
+        /** Left */
+        Left = 2,
+        /** Right */
+        Right = 3
+    }
+    /**
+     * Defines a DualShock gamepad
+     */
+    export class DualShockPad extends Gamepad {
+        private _leftTrigger;
+        private _rightTrigger;
+        private _onlefttriggerchanged;
+        private _onrighttriggerchanged;
+        private _onbuttondown;
+        private _onbuttonup;
+        private _ondpaddown;
+        private _ondpadup;
+        /** Observable raised when a button is pressed */
+        onButtonDownObservable: Observable<DualShockButton>;
+        /** Observable raised when a button is released */
+        onButtonUpObservable: Observable<DualShockButton>;
+        /** Observable raised when a pad is pressed */
+        onPadDownObservable: Observable<DualShockDpad>;
+        /** Observable raised when a pad is released */
+        onPadUpObservable: Observable<DualShockDpad>;
+        private _buttonCross;
+        private _buttonCircle;
+        private _buttonSquare;
+        private _buttonTriangle;
+        private _buttonShare;
+        private _buttonOptions;
+        private _buttonL1;
+        private _buttonR1;
+        private _buttonLeftStick;
+        private _buttonRightStick;
+        private _dPadUp;
+        private _dPadDown;
+        private _dPadLeft;
+        private _dPadRight;
+        /**
+         * Creates a new DualShock gamepad object
+         * @param id defines the id of this gamepad
+         * @param index defines its index
+         * @param gamepad defines the internal HTML gamepad object
+         */
+        constructor(id: string, index: number, gamepad: any);
+        /**
+         * Defines the callback to call when left trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onlefttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Defines the callback to call when right trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onrighttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Gets the left trigger value
+         */
+        /**
+        * Sets the left trigger value
+        */
+        leftTrigger: number;
+        /**
+         * Gets the right trigger value
+         */
+        /**
+        * Sets the right trigger value
+        */
+        rightTrigger: number;
+        /**
+         * Defines the callback to call when a button is pressed
+         * @param callback defines the callback to use
+         */
+        onbuttondown(callback: (buttonPressed: DualShockButton) => void): void;
+        /**
+         * Defines the callback to call when a button is released
+         * @param callback defines the callback to use
+         */
+        onbuttonup(callback: (buttonReleased: DualShockButton) => void): void;
+        /**
+         * Defines the callback to call when a pad is pressed
+         * @param callback defines the callback to use
+         */
+        ondpaddown(callback: (dPadPressed: DualShockDpad) => void): void;
+        /**
+         * Defines the callback to call when a pad is released
+         * @param callback defines the callback to use
+         */
+        ondpadup(callback: (dPadReleased: DualShockDpad) => void): void;
+        private _setButtonValue;
+        private _setDPadValue;
+        /**
+         * Gets the value of the `Cross` button
+         */
+        /**
+        * Sets the value of the `Cross` button
+        */
+        buttonCross: number;
+        /**
+         * Gets the value of the `Circle` button
+         */
+        /**
+        * Sets the value of the `Circle` button
+        */
+        buttonCircle: number;
+        /**
+         * Gets the value of the `Square` button
+         */
+        /**
+        * Sets the value of the `Square` button
+        */
+        buttonSquare: number;
+        /**
+         * Gets the value of the `Triangle` button
+         */
+        /**
+        * Sets the value of the `Triangle` button
+        */
+        buttonTriangle: number;
+        /**
+         * Gets the value of the `Options` button
+         */
+        /**
+        * Sets the value of the `Options` button
+        */
+        buttonOptions: number;
+        /**
+         * Gets the value of the `Share` button
+         */
+        /**
+        * Sets the value of the `Share` button
+        */
+        buttonShare: number;
+        /**
+         * Gets the value of the `L1` button
+         */
+        /**
+        * Sets the value of the `L1` button
+        */
+        buttonL1: number;
+        /**
+         * Gets the value of the `R1` button
+         */
+        /**
+        * Sets the value of the `R1` button
+        */
+        buttonR1: number;
         /**
          * Gets the value of the Left joystick
          */
