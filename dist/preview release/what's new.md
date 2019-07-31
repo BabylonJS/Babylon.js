@@ -30,6 +30,7 @@
 - Added url parameters to web request modifiers ([PierreLeBlond](https://github.com/PierreLeBlond))
 - Added `VRExperienceHelper.exitVROnDoubleTap` ([Deltakosh](https://github.com/deltakosh/))
 - Added `Scene.getTextureByUniqueID` ([aWeirdo](https://github.com/aWeirdo/))
+- Added optional parameter to use Euler angles in planeRotationGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Engine
 - Morph targets now can morph UV channel as well ([Deltakosh](https://github.com/deltakosh/))
