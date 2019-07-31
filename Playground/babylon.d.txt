@@ -13509,6 +13509,10 @@ declare module BABYLON {
          * Object will rotate to face the camera
          */
         static BILLBOARDMODE_ALL: number;
+        /**
+         * Object will rotate to face the camera's position instead of orientation
+         */
+        static BILLBOARDMODE_USE_POSITION: number;
         private _forward;
         private _forwardInverted;
         private _up;
@@ -25163,6 +25167,8 @@ declare module BABYLON {
         static readonly BILLBOARDMODE_Z: number;
         /** Billboard on all axes */
         static readonly BILLBOARDMODE_ALL: number;
+        /** Billboard on using position instead of orientation */
+        static readonly BILLBOARDMODE_USE_POSITION: number;
         /** @hidden */private _internalAbstractMeshDataInfo: _InternalAbstractMeshDataInfo;
         /**
          * The culling strategy to use to check whether the mesh must be rendered or not.
@@ -43365,8 +43371,9 @@ declare module BABYLON {
          * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
          * @param color The color of the gizmo
          * @param tessellation Amount of tessellation to be used when creating rotation circles
+         * @param useEulerRotation Use and update Euler angle instead of quaternion
          */
-        constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number, parent?: Nullable<RotationGizmo>);
+        constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number, parent?: Nullable<RotationGizmo>, useEulerRotation?: boolean);
         protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
         /**
              * If the gizmo is enabled
@@ -43405,8 +43412,9 @@ declare module BABYLON {
          * Creates a RotationGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param tessellation Amount of tessellation to be used when creating rotation circles
+         * @param useEulerRotation Use and update Euler angle instead of quaternion
          */
-        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
+        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number, useEulerRotation?: boolean);
         updateGizmoRotationToMatchAttachedMesh: boolean;
         /**
          * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
