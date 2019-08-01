@@ -233,6 +233,9 @@ export class SceneSerializer {
             serializationObject.environmentTexture = scene.environmentTexture.name;
         }
 
+        // Environment Intensity
+        serializationObject.environmentIntensity = scene.environmentIntensity;
+
         // Skeletons
         serializationObject.skeletons = [];
         for (index = 0; index < scene.skeletons.length; index++) {
