@@ -78,6 +78,7 @@
 ### Materials
 - Added `ShaderMaterial.setColor4Array` ([JonathanTron](https://github.com/JonathanTron/))
 - Added `ShaderMaterial.setArray4` ([JonathanTron](https://github.com/JonathanTron/))
+- Added `scene.environmentIntensity` to control the IBL strength overall in a scene ([Sebavan](https://github.com/sebavan/))
 
 ### ScreenshotTools
 - Added interface for argument `size` of screenshot methods ([Dok11](https://github.com/Dok11/))
