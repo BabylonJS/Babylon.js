@@ -2847,7 +2847,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Material
-        if (this.material) {
+        if (this.material && !this.material.doNotSerialize) {
             serializationObject.materialId = this.material.id;
         } else {
             this.material = null;
