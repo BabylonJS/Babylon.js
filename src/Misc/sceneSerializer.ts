@@ -46,7 +46,7 @@ var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
     //only works if the mesh is already loaded
     if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
         //serialize material
-        if (mesh.material && !mesh.doNotSerialize) {
+        if (mesh.material && !mesh.material.doNotSerialize) {
             if (mesh.material instanceof MultiMaterial) {
                 serializationObject.multiMaterials = serializationObject.multiMaterials || [];
                 serializationObject.materials = serializationObject.materials || [];
@@ -232,6 +232,9 @@ export class SceneSerializer {
         if (scene.environmentTexture) {
             serializationObject.environmentTexture = scene.environmentTexture.name;
         }
+
+        // Environment Intensity
+        serializationObject.environmentIntensity = scene.environmentIntensity;
 
         // Skeletons
         serializationObject.skeletons = [];
