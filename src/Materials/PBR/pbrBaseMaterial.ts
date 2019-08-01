@@ -1796,7 +1796,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
                 this._lightingInfos.y = this._emissiveIntensity;
-                this._lightingInfos.z = this._environmentIntensity;
+                this._lightingInfos.z = this._environmentIntensity * scene.environmentIntensity;
                 this._lightingInfos.w = this._specularIntensity;
 
                 ubo.updateVector4("vLightingIntensity", this._lightingInfos);
