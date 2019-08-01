@@ -3,9 +3,9 @@ import { Nullable } from "babylonjs/types"
 import { Observable } from 'babylonjs/Misc/observable';
 import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
 import { LogEntry } from './components/log/logComponent';
-import { NodeMaterialBlock } from 'babylonjs';
 import { NodeModel } from 'storm-react-diagrams';
 import { INodeLocationInfo } from './nodeLocationInfo';
+import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
