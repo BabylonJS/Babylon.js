@@ -11446,6 +11446,16 @@ var TextBlock = /** @class */ (function (_super) {
                 }
             }
             var newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
+            if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
+                var lineSpacing = 0;
+                if (this._lineSpacing.isPixel) {
+                    lineSpacing = this._lineSpacing.getValue(this._host);
+                }
+                else {
+                    lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                }
+                newHeight += (this._lines.length - 1) * lineSpacing;
+            }
             if (newHeight !== this._height.internalValue) {
                 this._height.updateInPlace(newHeight, _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL);
                 this._rebuildLayout = true;
@@ -11595,7 +11605,18 @@ var TextBlock = /** @class */ (function (_super) {
                     this._fontOffset = _control__WEBPACK_IMPORTED_MODULE_3__["Control"]._GetFontOffset(context_1.font);
                 }
                 var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context_1);
-                return this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
+                var newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
+                if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
+                    var lineSpacing = 0;
+                    if (this._lineSpacing.isPixel) {
+                        lineSpacing = this._lineSpacing.getValue(this._host);
+                    }
+                    else {
+                        lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                    }
+                    newHeight += (lines.length - 1) * lineSpacing;
+                }
+                return newHeight;
             }
         }
         return 0;
