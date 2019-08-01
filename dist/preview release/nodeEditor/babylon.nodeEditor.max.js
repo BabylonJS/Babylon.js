@@ -64359,8 +64359,37 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             var decoder = new TextDecoder("utf-8");
             var serializationObject = JSON.parse(decoder.decode(data));
             _this.props.globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
-            _this.props.globalState.onResetRequiredObservable.notifyObservers();
+            // Check for id mapping
+            if (serializationObject.locations && serializationObject.map) {
+                var map = serializationObject.map;
+                var locations = serializationObject.locations;
+                for (var _i = 0, locations_1 = locations; _i < locations_1.length; _i++) {
+                    var location = locations_1[_i];
+                    location.blockId = map[location.blockId];
+                }
+            }
+            _this.props.globalState.onResetRequiredObservable.notifyObservers(serializationObject.locations);
         }, undefined, true);
+    };
+    PropertyTabComponent.prototype.save = function () {
+        var material = this.props.globalState.nodeMaterial;
+        var serializationObject = material.serialize();
+        // Store node locations
+        for (var _i = 0, _a = material.attachedBlocks; _i < _a.length; _i++) {
+            var block = _a[_i];
+            var node = this.props.globalState.onGetNodeFromBlock(block);
+            if (!serializationObject.locations) {
+                serializationObject.locations = [];
+            }
+            serializationObject.locations.push({
+                blockId: block.uniqueId,
+                x: node.x,
+                y: node.y
+            });
+        }
+        // Output
+        var json = JSON.stringify(serializationObject, undefined, 2);
+        _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(json, "nodeMaterial.json");
     };
     PropertyTabComponent.prototype.render = function () {
         var _this = this;
@@ -64379,7 +64408,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
                             _this.props.globalState.nodeMaterial.setToDefault();
-                            _this.props.globalState.onResetRequiredObservable.notifyObservers();
+                            _this.props.globalState.onResetRequiredObservable.notifyObservers(null);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "UI" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Zoom to fit", onClick: function () {
@@ -64391,8 +64420,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FILE" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.load(file); }, accept: ".json" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save", onClick: function () {
-                            var json = JSON.stringify(_this.props.globalState.nodeMaterial.serialize(), undefined, 2);
-                            _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(json, "nodeMaterial.json");
+                            _this.save();
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export shaders", onClick: function () {
                             _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
@@ -64622,8 +64650,8 @@ var GraphEditor = /** @class */ (function (_super) {
             }
             _this.forceUpdate();
         });
-        _this.props.globalState.onResetRequiredObservable.add(function () {
-            _this.build();
+        _this.props.globalState.onResetRequiredObservable.add(function (locations) {
+            _this.build(false, locations);
             if (_this.props.globalState.nodeMaterial) {
                 _this.buildMaterial();
             }
@@ -64637,6 +64665,9 @@ var GraphEditor = /** @class */ (function (_super) {
         _this.props.globalState.onReOrganizedRequiredObservable.add(function () {
             _this.reOrganize();
         });
+        _this.props.globalState.onGetNodeFromBlock = function (block) {
+            return _this._nodes.filter(function (n) { return n.block === block; })[0];
+        };
         _this.build(true);
         return _this;
     }
@@ -64729,11 +64760,14 @@ var GraphEditor = /** @class */ (function (_super) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"](err, true));
         }
     };
-    GraphEditor.prototype.build = function (needToWait) {
+    GraphEditor.prototype.build = function (needToWait, locations) {
         var _this = this;
         if (needToWait === void 0) { needToWait = false; }
+        if (locations === void 0) { locations = null; }
         // setup the diagram model
         this._model = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramModel"]();
+        this._nodes = [];
+        this._blocks = [];
         // Listen to events
         this._model.addListener({
             nodesUpdated: function (e) {
@@ -64849,22 +64883,37 @@ var GraphEditor = /** @class */ (function (_super) {
             _this._toAdd = null;
             _this._engine.setDiagramModel(_this._model);
             _this.forceUpdate();
-            _this.reOrganize();
+            _this.reOrganize(locations);
         }, needToWait ? 500 : 1);
     };
-    GraphEditor.prototype.reOrganize = function () {
+    GraphEditor.prototype.reOrganize = function (locations) {
         var _this = this;
-        var nodes = _graphHelper__WEBPACK_IMPORTED_MODULE_23__["GraphHelper"].DistributeGraph(this._model);
-        nodes.forEach(function (node) {
-            for (var nodeName in _this._model.nodes) {
-                var modelNode = _this._model.nodes[nodeName];
-                if (modelNode.id === node.id) {
-                    modelNode.setPosition(node.x - node.width / 2, node.y - node.height / 2);
-                    return;
+        if (locations === void 0) { locations = null; }
+        if (!locations) {
+            var nodes = _graphHelper__WEBPACK_IMPORTED_MODULE_23__["GraphHelper"].DistributeGraph(this._model);
+            nodes.forEach(function (node) {
+                for (var nodeName in _this._model.nodes) {
+                    var modelNode = _this._model.nodes[nodeName];
+                    if (modelNode.id === node.id) {
+                        modelNode.setPosition(node.x - node.width / 2, node.y - node.height / 2);
+                        return;
+                    }
+                }
+            });
+        }
+        else {
+            for (var _i = 0, locations_1 = locations; _i < locations_1.length; _i++) {
+                var location = locations_1[_i];
+                for (var _a = 0, _b = this._nodes; _a < _b.length; _a++) {
+                    var node = _b[_a];
+                    if (node.block && node.block.uniqueId === location.blockId) {
+                        node.setPosition(location.x, location.y);
+                        break;
+                    }
                 }
             }
-        });
-        this.forceUpdate();
+        }
+        this._engine.repaintCanvas();
     };
     GraphEditor.prototype.onPointerDown = function (evt) {
         this._startX = evt.clientX;
