@@ -260,7 +260,7 @@ export class TextBlock extends Control {
             if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                 let lineSpacing = 0;
                 if (this._lineSpacing.isPixel) {
-                    lineSpacing= this._lineSpacing.getValue(this._host);
+                    lineSpacing = this._lineSpacing.getValue(this._host);
                 } else {
                     lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
                 }
@@ -442,11 +442,11 @@ export class TextBlock extends Control {
                 if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                     let lineSpacing = 0;
                     if (this._lineSpacing.isPixel) {
-                        lineSpacing= this._lineSpacing.getValue(this._host);
+                        lineSpacing = this._lineSpacing.getValue(this._host);
                     } else {
                         lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
                     }
-    
+
                     newHeight += (lines.length - 1) * lineSpacing;
                 }
 

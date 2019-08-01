@@ -32073,6 +32073,21 @@ declare module BABYLON {
         */
         environmentTexture: Nullable<BaseTexture>;
         /** @hidden */
+        protected _environmentIntensity: number;
+        /**
+         * Intensity of the environment in all pbr material.
+         * This dims or reinforces the IBL lighting overall (reflection and diffuse).
+         * As in the majority of the scene they are the same (exception for multi room and so on),
+         * this is easier to reference from here than from all the materials.
+         */
+        /**
+        * Intensity of the environment in all pbr material.
+        * This dims or reinforces the IBL lighting overall (reflection and diffuse).
+        * As in the majority of the scene they are the same (exception for multi room and so on),
+        * this is easier to set here than in all the materials.
+        */
+        environmentIntensity: number;
+        /** @hidden */
         protected _imageProcessingConfiguration: ImageProcessingConfiguration;
         /**
          * Default image processing configuration used either in the rendering
