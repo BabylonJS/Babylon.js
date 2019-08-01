@@ -11939,6 +11939,10 @@ declare module BABYLON {
          */
         static POSE_ENABLED: number;
         /**
+         * Represents an Dual Shock controller
+         */
+        static DUALSHOCK: number;
+        /**
          * Specifies whether the left control stick should be Y-inverted
          */
         protected _invertLeftStickY: boolean;
@@ -13505,6 +13509,10 @@ declare module BABYLON {
          * Object will rotate to face the camera
          */
         static BILLBOARDMODE_ALL: number;
+        /**
+         * Object will rotate to face the camera's position instead of orientation
+         */
+        static BILLBOARDMODE_USE_POSITION: number;
         private _forward;
         private _forwardInverted;
         private _up;
@@ -18414,7 +18422,7 @@ declare module BABYLON {
          *
          * Returns the clone.
          */
-        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): InstancedMesh;
+        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): InstancedMesh;
         /**
          * Disposes the InstancedMesh.
          * Returns nothing.
@@ -25159,6 +25167,8 @@ declare module BABYLON {
         static readonly BILLBOARDMODE_Z: number;
         /** Billboard on all axes */
         static readonly BILLBOARDMODE_ALL: number;
+        /** Billboard on using position instead of orientation */
+        static readonly BILLBOARDMODE_USE_POSITION: number;
         /** @hidden */private _internalAbstractMeshDataInfo: _InternalAbstractMeshDataInfo;
         /**
          * The culling strategy to use to check whether the mesh must be rendered or not.
@@ -29065,6 +29075,8 @@ declare module BABYLON {
         parallelShaderCompile: {
             COMPLETION_STATUS_KHR: number;
         };
+        /** Max number of texture samples for MSAA */
+        maxMSAASamples: number;
     }
     /** Interface defining initialization parameters for Engine class */
     export interface EngineOptions extends WebGLContextAttributes {
@@ -37781,6 +37793,238 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines supported buttons for DualShock compatible gamepads
+     */
+    export enum DualShockButton {
+        /** Cross */
+        Cross = 0,
+        /** Circle */
+        Circle = 1,
+        /** Square */
+        Square = 2,
+        /** Triangle */
+        Triangle = 3,
+        /** Options */
+        Options = 4,
+        /** Share */
+        Share = 5,
+        /** L1 */
+        L1 = 6,
+        /** R1 */
+        R1 = 7,
+        /** Left stick */
+        LeftStick = 8,
+        /** Right stick */
+        RightStick = 9
+    }
+    /** Defines values for DualShock DPad  */
+    export enum DualShockDpad {
+        /** Up */
+        Up = 0,
+        /** Down */
+        Down = 1,
+        /** Left */
+        Left = 2,
+        /** Right */
+        Right = 3
+    }
+    /**
+     * Defines a DualShock gamepad
+     */
+    export class DualShockPad extends Gamepad {
+        private _leftTrigger;
+        private _rightTrigger;
+        private _onlefttriggerchanged;
+        private _onrighttriggerchanged;
+        private _onbuttondown;
+        private _onbuttonup;
+        private _ondpaddown;
+        private _ondpadup;
+        /** Observable raised when a button is pressed */
+        onButtonDownObservable: Observable<DualShockButton>;
+        /** Observable raised when a button is released */
+        onButtonUpObservable: Observable<DualShockButton>;
+        /** Observable raised when a pad is pressed */
+        onPadDownObservable: Observable<DualShockDpad>;
+        /** Observable raised when a pad is released */
+        onPadUpObservable: Observable<DualShockDpad>;
+        private _buttonCross;
+        private _buttonCircle;
+        private _buttonSquare;
+        private _buttonTriangle;
+        private _buttonShare;
+        private _buttonOptions;
+        private _buttonL1;
+        private _buttonR1;
+        private _buttonLeftStick;
+        private _buttonRightStick;
+        private _dPadUp;
+        private _dPadDown;
+        private _dPadLeft;
+        private _dPadRight;
+        /**
+         * Creates a new DualShock gamepad object
+         * @param id defines the id of this gamepad
+         * @param index defines its index
+         * @param gamepad defines the internal HTML gamepad object
+         */
+        constructor(id: string, index: number, gamepad: any);
+        /**
+         * Defines the callback to call when left trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onlefttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Defines the callback to call when right trigger is pressed
+         * @param callback defines the callback to use
+         */
+        onrighttriggerchanged(callback: (value: number) => void): void;
+        /**
+         * Gets the left trigger value
+         */
+        /**
+        * Sets the left trigger value
+        */
+        leftTrigger: number;
+        /**
+         * Gets the right trigger value
+         */
+        /**
+        * Sets the right trigger value
+        */
+        rightTrigger: number;
+        /**
+         * Defines the callback to call when a button is pressed
+         * @param callback defines the callback to use
+         */
+        onbuttondown(callback: (buttonPressed: DualShockButton) => void): void;
+        /**
+         * Defines the callback to call when a button is released
+         * @param callback defines the callback to use
+         */
+        onbuttonup(callback: (buttonReleased: DualShockButton) => void): void;
+        /**
+         * Defines the callback to call when a pad is pressed
+         * @param callback defines the callback to use
+         */
+        ondpaddown(callback: (dPadPressed: DualShockDpad) => void): void;
+        /**
+         * Defines the callback to call when a pad is released
+         * @param callback defines the callback to use
+         */
+        ondpadup(callback: (dPadReleased: DualShockDpad) => void): void;
+        private _setButtonValue;
+        private _setDPadValue;
+        /**
+         * Gets the value of the `Cross` button
+         */
+        /**
+        * Sets the value of the `Cross` button
+        */
+        buttonCross: number;
+        /**
+         * Gets the value of the `Circle` button
+         */
+        /**
+        * Sets the value of the `Circle` button
+        */
+        buttonCircle: number;
+        /**
+         * Gets the value of the `Square` button
+         */
+        /**
+        * Sets the value of the `Square` button
+        */
+        buttonSquare: number;
+        /**
+         * Gets the value of the `Triangle` button
+         */
+        /**
+        * Sets the value of the `Triangle` button
+        */
+        buttonTriangle: number;
+        /**
+         * Gets the value of the `Options` button
+         */
+        /**
+        * Sets the value of the `Options` button
+        */
+        buttonOptions: number;
+        /**
+         * Gets the value of the `Share` button
+         */
+        /**
+        * Sets the value of the `Share` button
+        */
+        buttonShare: number;
+        /**
+         * Gets the value of the `L1` button
+         */
+        /**
+        * Sets the value of the `L1` button
+        */
+        buttonL1: number;
+        /**
+         * Gets the value of the `R1` button
+         */
+        /**
+        * Sets the value of the `R1` button
+        */
+        buttonR1: number;
+        /**
+         * Gets the value of the Left joystick
+         */
+        /**
+        * Sets the value of the Left joystick
+        */
+        buttonLeftStick: number;
+        /**
+         * Gets the value of the Right joystick
+         */
+        /**
+        * Sets the value of the Right joystick
+        */
+        buttonRightStick: number;
+        /**
+         * Gets the value of D-pad up
+         */
+        /**
+        * Sets the value of D-pad up
+        */
+        dPadUp: number;
+        /**
+         * Gets the value of D-pad down
+         */
+        /**
+        * Sets the value of D-pad down
+        */
+        dPadDown: number;
+        /**
+         * Gets the value of D-pad left
+         */
+        /**
+        * Sets the value of D-pad left
+        */
+        dPadLeft: number;
+        /**
+         * Gets the value of D-pad right
+         */
+        /**
+        * Sets the value of D-pad right
+        */
+        dPadRight: number;
+        /**
+         * Force the gamepad to synchronize with device values
+         */
+        update(): void;
+        /**
+         * Disposes the gamepad
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Manager for handling gamepads
      */
     export class GamepadManager {
@@ -43127,8 +43371,9 @@ declare module BABYLON {
          * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
          * @param color The color of the gizmo
          * @param tessellation Amount of tessellation to be used when creating rotation circles
+         * @param useEulerRotation Use and update Euler angle instead of quaternion
          */
-        constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number, parent?: Nullable<RotationGizmo>);
+        constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number, parent?: Nullable<RotationGizmo>, useEulerRotation?: boolean);
         protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
         /**
              * If the gizmo is enabled
@@ -43167,8 +43412,9 @@ declare module BABYLON {
          * Creates a RotationGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param tessellation Amount of tessellation to be used when creating rotation circles
+         * @param useEulerRotation Use and update Euler angle instead of quaternion
          */
-        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number);
+        constructor(gizmoLayer?: UtilityLayerRenderer, tessellation?: number, useEulerRotation?: boolean);
         updateGizmoRotationToMatchAttachedMesh: boolean;
         /**
          * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
@@ -52292,7 +52538,7 @@ declare module BABYLON {
         /**
          * Vertex shader for the effect
          */
-        vertexShader: string;
+        vertexShader?: string;
         /**
          * Attributes to use in the shader
          */
@@ -57703,6 +57949,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var volumetricLightScatteringPassVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var volumetricLightScatteringPassPixelShader: {
         name: string;
         shader: string;
@@ -59689,6 +59942,11 @@ declare module BABYLON {
          * to the src parameter of an <img> to display it
          */
         static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType?: string, samples?: number, antialiasing?: boolean, fileName?: string): Promise<string>;
+        /**
+         * Gets height and width for screenshot size
+         * @private
+         */
+        private static _getScreenshotSize;
     }
 }
 declare module BABYLON {
@@ -68763,6 +69021,11 @@ declare module BABYLON {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        /**
+         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * will avoid calculating useless pixels in the pixel shader of the water material.
+         */
+        disableClipPlane: boolean;
         protected _renderTargets: BABYLON.SmartArray<BABYLON.RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
@@ -68773,6 +69036,8 @@ declare module BABYLON {
         private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
+        private _imageProcessingConfiguration;
+        private _imageProcessingObserver;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */

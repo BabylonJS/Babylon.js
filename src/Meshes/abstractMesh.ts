@@ -163,6 +163,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return TransformNode.BILLBOARDMODE_ALL;
     }
 
+    /** Billboard on using position instead of orientation */
+    public static get BILLBOARDMODE_USE_POSITION(): number {
+        return TransformNode.BILLBOARDMODE_USE_POSITION;
+    }
+
     // Internal data
     /** @hidden */
     public _internalAbstractMeshDataInfo = new _InternalAbstractMeshDataInfo();
