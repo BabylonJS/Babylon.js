@@ -78,6 +78,7 @@
 ### Materials
 - Added `ShaderMaterial.setColor4Array` ([JonathanTron](https://github.com/JonathanTron/))
 - Added `ShaderMaterial.setArray4` ([JonathanTron](https://github.com/JonathanTron/))
+- Added `scene.environmentIntensity` to control the IBL strength overall in a scene ([Sebavan](https://github.com/sebavan/))
 
 ### ScreenshotTools
 - Added interface for argument `size` of screenshot methods ([Dok11](https://github.com/Dok11/))
@@ -97,6 +98,7 @@
 - Added a note on shallow bounding of getBoundingInfo ([tibotiber](https://github.com/tibotiber))
 
 ## Bug fixes
+- Fixed Textblock line spacing evaluation when linespacing > 0 ([Deltakosh](https://github.com/deltakosh/))
 - Fixed Xbox One gamepad controller button schemes ([MackeyK24](https://github.com/MackeyK24/))
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Removing assetContainer from scene will also remove gui layers ([TrevorDev](https://github.com/TrevorDev))
