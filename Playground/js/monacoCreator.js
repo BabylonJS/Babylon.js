@@ -18,6 +18,14 @@ class MonacoCreator {
         return this.jsEditor;
     };
 
+    getCode() {
+        if(this.jsEditor) return this.jsEditor.getValue();
+        else return "";
+    };
+    setCode(value) {
+        this.jsEditor.setValue(value);
+    };
+
     get MonacoMode() {
         return this.monacoMode;
     };
