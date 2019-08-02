@@ -122,8 +122,7 @@
             <div class="button removeOnPhone" id="zipButton1280"><img src="css/img/downloadButton.svg"></div>
             <div class="button" id="newButton1280"><img src="css/img/newButton.svg"></div>
             <div class="button removeOnPhone" id="clearButton1280"><img src="css/img/clearButton.svg"></div>
-
-            <div class="button select"><img src="css/img/optionsButton.svg">
+            <div class="button select" id="menuButton1280"><img src="css/img/optionsButton.svg">
                 <div class="toDisplay languageJS">
                     <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub languageJS">
@@ -133,12 +132,12 @@
                     </div>
                     <div class="option subSelect">Font size <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub displayFontSize languageJS">
-                            <div class="option" onclick="settingsPG.setFontSize(12);">12</div>
-                            <div class="option selected" onclick="settingsPG.setFontSize(14);">14</div>
-                            <div class="option" onclick="settingsPG.setFontSize(16);">16</div>
-                            <div class="option" onclick="settingsPG.setFontSize(18);">18</div>
-                            <div class="option" onclick="settingsPG.setFontSize(20);">20</div>
-                            <div class="option" onclick="settingsPG.setFontSize(22);">22</div>
+                            <div class="option">12</div>
+                            <div class="option selected">14</div>
+                            <div class="option">16</div>
+                            <div class="option">18</div>
+                            <div class="option">20</div>
+                            <div class="option">22</div>
                         </div>
                     </div>
                     <div class="option noSubSelect" id="safemodeToggle1280">Safe mode
@@ -153,27 +152,22 @@
                     <div class="option noSubSelect" id="minimapToggle1280">Minimap
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option subSelect" id="qrCodeHover1280">QR Code Link <i
-                            class="fa fa-chevron-right" aria-hidden="true"></i>
-                        <div class="toDisplaySub">
-                            <div class="option" id="qrCodeImage" class="qrCodeImage">QR Code Image</div>
+                    <div class="option subSelect" id="qrCodeHover1280">QR Code Link <i class="fa fa-chevron-right"
+                            aria-hidden="true"></i>
+                        <div class="toDisplaySub qrCodeImage">
+                            <div class="option" id="qrCodeImage1280">[QR Code Image]</div>
                         </div>
                     </div>
-                    <div class="option uncheck noSubSelect" id="debugButton1280">Inspector
-                        <i class="fa fa-square" aria-hidden="true"></i>
-                    </div>
+                    <div class="option uncheck noSubSelect" id="debugButton1280">Inspector</div>
                     <div class="option nosubselect" id="metadataButton1280">Metadata</div>
                 </div>
             </div>
         </div>
 
         <div class="category right">
-            <div class="button select" style="display: none;">
-                <span id="currentVersion1280">v.</span>
-                <div class="toDisplay currentVersionDisplay">
-                    <div class="option" onclick="setVersion('4.0');">4.0</div>
-                    <div class="option" onclick="setVersion('3.0');">3.0</div>
-                </div>
+            <div class="button select">
+                <span id="currentVersion1280"></span>
+                <div class="toDisplay currentVersionDisplay" style="display: none"></div>
             </div>
             <div class="button select"><img class="examplesButton" src="css/img/examplesButton.svg"></div>
         </div>
@@ -196,7 +190,7 @@
             <div class="button" id="newButton1024"><img src="css/img/newButton.svg"></div>
             <div class="button removeOnPhone" id="clearButton1024"><img src="css/img/clearButton.svg"></div>
 
-            <div class="button select"><img src="css/img/optionsButton.svg">
+            <div class="button select" id="menuButton1024"><img src="css/img/optionsButton.svg">
                 <div class="toDisplay">
                     <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
 
@@ -207,12 +201,12 @@
                     </div>
                     <div class="option subSelect">Font size <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub displayFontSize">
-                            <div class="option" onclick="settingsPG.setFontSize(12);">12</div>
-                            <div class="option selected" onclick="settingsPG.setFontSize(14);">14</div>
-                            <div class="option" onclick="settingsPG.setFontSize(16);">16</div>
-                            <div class="option" onclick="settingsPG.setFontSize(18);">18</div>
-                            <div class="option" onclick="settingsPG.setFontSize(20);">20</div>
-                            <div class="option" onclick="settingsPG.setFontSize(22);">22</div>
+                            <div class="option">12</div>
+                            <div class="option selected">14</div>
+                            <div class="option">16</div>
+                            <div class="option">18</div>
+                            <div class="option">20</div>
+                            <div class="option">22</div>
                         </div>
                     </div>
                     <div class="option noSubSelect" id="safemodeToggle1024">Safe mode
@@ -227,26 +221,22 @@
                     <div class="option noSubSelect" id="minimapToggle1024">Minimap
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option subSelect" id="qrCodeHover1024">QR Code Link <i
-                            class="fa fa-chevron-right" aria-hidden="true"></i>
-                        <div class="toDisplaySub">
-                            <div class="option" id="qrCodeImage" class="qrCodeImage">QR Code Image</div>
+                    <div class="option subSelect" id="qrCodeHover1024">QR Code Link <i class="fa fa-chevron-right"
+                            aria-hidden="true"></i>
+                        <div class="toDisplaySub qrCodeImage">
+                            <div class="option" id="qrCodeImage1024">[QR Code Image]</div>
                         </div>
                     </div>
-                    <div class="option uncheck noSubSelect" id="debugButton1024">Inspector
-                        <i class="fa fa-square" aria-hidden="true"></i>
-                    </div>
+                    <div class="option uncheck noSubSelect" id="debugButton1024">Inspector</div>
                     <div class="option noSubSelect" id="metadataButton1024">Metadata</div>
                 </div>
             </div>
         </div>
 
         <div class="category right">
-            <div class="button select" style="display: none;">
-                <span id="currentVersion1024">v.</span>
-                <div class="toDisplay currentVersionDisplay">
-                    <div class="option" onclick="setVersion('4.0');">4.0</div>
-                    <div class="option" onclick="setVersion('3.0');">3.0</div>
+            <div class="button select">
+                <span id="currentVersion1024"></span>
+                <div class="toDisplay currentVersionDisplay" style="display: none">
                 </div>
             </div>
             <div class="button select"><img class="examplesButton" src="css/img/examplesButton.svg"></div>
@@ -256,7 +246,7 @@
     <!-- Mobile -->
     <div class="navbar navBarMobile languageJS">
         <div class="category languageJS" id="JStoTSbar">
-            <div class="button select"><img src="css/img/hamburgerButton.svg">
+            <div class="button select" id="menuButtonMobile"><img src="css/img/hamburgerButton.svg">
                 <div class="toDisplay">
                     <div class="option noSubSelect languageTS" id="toTSbuttonMobile">TypeScript</div>
                     <div class="option noSubSelect languageJS" id="toJSbuttonMobile">JavaScript</div>
@@ -265,8 +255,15 @@
                     <div class="option noSubSelect" id="zipButtonMobile"><img src="css/img/downloadButton.svg">Download
                     </div>
                     <div class="option noSubSelect" id="newButtonMobile"><img src="css/img/newButton.svg">New</div>
-                    <div class="option noSubSelect" id="clearButtonMobile"><img src="css/img/clearButton.svg">Clear</div>
-                    <div class="option noSubSelect" id="debugButtonMobile"><img src="css/img/inspectorButton.svg">Inspector
+                    <div class="option noSubSelect" id="clearButtonMobile"><img src="css/img/clearButton.svg">Clear
+                    </div>
+                    <div class="option noSubSelect" id="debugButtonMobile"><img
+                            src="css/img/inspectorButton.svg">Inspector</div>
+                    <div class="option subSelect">
+                        <img src="css/img/optionsButton.svg">
+                        Version<div id="currentVersionMobile"></div>
+                        <div class="toDisplaySub currentVersionDisplay">
+                        </div>
                     </div>
                     <div class="option subSelect"><img src="css/img/optionsButton.svg">Theme
                         <div class="toDisplaySub">
@@ -276,14 +273,14 @@
                     </div>
                     <div class="option subSelect"><img src="css/img/optionsButton.svg">Font size
                         <div class="toDisplaySub displayFontSize">
-                            <div class="option" onclick="settingsPG.setFontSize(8);">8</div>
-                            <div class="option" onclick="settingsPG.setFontSize(10);">10</div>
-                            <div class="option selected" onclick="settingsPG.setFontSize(12);">12</div>
-                            <div class="option" onclick="settingsPG.setFontSize(14);">14</div>
-                            <div class="option" onclick="settingsPG.setFontSize(16);">16</div>
-                            <div class="option" onclick="settingsPG.setFontSize(18);">18</div>
-                            <div class="option" onclick="settingsPG.setFontSize(20);">20</div>
-                            <div class="option" onclick="settingsPG.setFontSize(22);">22</div>
+                            <div class="option">8</div>
+                            <div class="option">10</div>
+                            <div class="option selected">12</div>
+                            <div class="option">14</div>
+                            <div class="option">16</div>
+                            <div class="option">18</div>
+                            <div class="option">20</div>
+                            <div class="option">22</div>
                         </div>
                     </div>
                     <div style="display: none;" class="option noSubSelect" id="safemodeToggleMobile">Safe mode
@@ -292,18 +289,21 @@
                     <div style="display: none;" class="option checked noSubSelect" id="editorButtonMobile">Editor
                         <i class="fa fa-check-square" aria-hidden="true"></i>
                     </div>
-                    <div style="display: none;" class="option nosubselect" id="fullscreenButtonMobile" style="display: none">Fullscreen</div>
-                    <div style="display: none;" class="option nosubselect" id="editorFullscreenButtonMobile" style="display: none">Editor
+                    <div style="display: none;" class="option nosubselect" id="fullscreenButtonMobile"
+                        style="display: none">Fullscreen</div>
+                    <div style="display: none;" class="option nosubselect" id="editorFullscreenButtonMobile"
+                        style="display: none">Editor
                         Fullscreen</div>
-                    <div class="option nosubselect" id="formatButtonMobile"><img src="css/img/optionsButton.svg">Format code</div>
+                    <div class="option nosubselect" id="formatButtonMobile"><img src="css/img/optionsButton.svg">Format
+                        code</div>
                     <div style="display: none;" class="option nosubselect" id="minimapToggleMobile">Minimap
                         <i class="fa fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option subSelect" id="qrCodeHover"><img src="css/img/optionsButton.svg">QR Code Link
-                        <div class="toDisplaySub">
-                            <div class="option" id="qrCodeImage">QR Code Image</div>
+                    <!-- <div class="option subSelect" id="qrCodeHoverMobile"><img src="css/img/optionsButton.svg">QR Code Link
+                        <div class="toDisplaySub qrCodeImage">
+                            <div class="option" id="qrCodeImageMobile">[QR Code Image]</div>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="option nosubselect" id="metadataButtonMobile"><img
                             src="css/img/metadataButton.svg">Metadata</div>
                     <div class="option nosubselect"><img class="examplesButton"
@@ -332,16 +332,6 @@
             <div class="categoryTitle">
                 <img class="logo" src="css/img/logo_v4.svg">
                 <div class="version"><span class="versionSub" id="mainTitleMobile"></span></div>
-            </div>
-        </div>
-
-        <div class="category right">
-            <div class="button select" style="display: none;">
-                <span id="currentVersionMobile">v.</span>
-                <div class="toDisplay currentVersionDisplay">
-                    <div class="option" onclick="setVersion('4.0');">4.0</div>
-                    <div class="option" onclick="setVersion('3.0');">3.0</div>
-                </div>
             </div>
         </div>
 
@@ -397,6 +387,7 @@
 
     <div id="saveLayer" class="save-layer">
         <div class="save-form languageJS ">
+            <img id="saveFormButtonClose" src="css/img/clearButton.svg">
             <label for="saveFormTitle">TITLE</label>
             <div class="separator"></div>
             <input type="text" maxlength="120" id="saveFormTitle" class="save-form-title">
@@ -432,6 +423,7 @@
     <script src="https://code.jquery.com/jquery.js"></script>
 
     <!-- Main scripts -->
+    <script src="js/config_versions.js"></script>
     <script src="js/pbt.js"></script>
     <script src="js/libs/typescript.js"></script>
     <script src="js/examples.js"></script>

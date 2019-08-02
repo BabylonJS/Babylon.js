@@ -394,6 +394,7 @@ body {
     width: 55px;
     height: 100%;
     vertical-align: top;
+    margin-left: -3px;
     line-height: 100%;
     text-align: center;
 }
