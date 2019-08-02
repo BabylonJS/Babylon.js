@@ -163,7 +163,7 @@ export class LightBlock extends NodeMaterialBlock {
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
                 replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }]
             }, this._lightId.toString());
-        }        
+        }
 
         // Inject code in vertex
         let worldPosVaryingName = "v_" + worldPos.associatedVariableName;
@@ -179,12 +179,12 @@ export class LightBlock extends NodeMaterialBlock {
                     { search: /worldPos/g, replace: worldPos.associatedVariableName }
                 ]
             });
-        } else {            
+        } else {
             state.compilationString += `vec4 worldPos = ${worldPos.associatedVariableName};\r\n`;
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights"
             });
-        }        
+        }
 
         state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
         state.compilationString += `${worldNormalVaryingName} = ${worldNormal.associatedVariableName}.xyz;\r\n`;
@@ -206,7 +206,7 @@ export class LightBlock extends NodeMaterialBlock {
 
         let comments = `//${this.name}`;
         let worldPos = this.worldPosition;
-        
+
         state._emitFunctionFromInclude("helperFunctions", comments);
 
         state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
