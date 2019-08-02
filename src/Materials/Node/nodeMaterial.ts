@@ -779,6 +779,10 @@ export class NodeMaterial extends PushMaterial {
             return true;
         }
 
+        if (!this._sharedData) {
+            return false;
+        }
+
         for (var t of this._sharedData.textureBlocks) {
             if (t.texture === texture) {
                 return true;

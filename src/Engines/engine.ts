@@ -3379,7 +3379,7 @@ export class Engine {
             if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
                 let log = this._gl.getShaderInfoLog(vertexShader);
                 if (log) {
-                    throw new Error(log);
+                    throw new Error("VERTEX SHADER " + log);
                 }
             }
 
@@ -3387,7 +3387,7 @@ export class Engine {
             if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
                 let log = this._gl.getShaderInfoLog(fragmentShader);
                 if (log) {
-                    throw new Error(log);
+                    throw new Error("FRAGMENT SHADER " + log);
                 }
             }
 
