@@ -6,6 +6,8 @@ import { LogEntry } from './components/log/logComponent';
 import { NodeModel } from 'storm-react-diagrams';
 import { INodeLocationInfo } from './nodeLocationInfo';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+import { PreviewMeshType } from './components/preview/previewMeshType';
+import { DataStorage } from './dataStorage';
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
@@ -19,5 +21,11 @@ export class GlobalState {
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onErrorMessageDialogRequiredObservable = new Observable<string>();
+    onPreviewMeshTypeChanged = new Observable<void>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
+    previewMeshType: PreviewMeshType;
+
+    public constructor() {
+        this.previewMeshType = DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box);
+    }
 }

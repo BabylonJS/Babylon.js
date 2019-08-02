@@ -876,18 +876,38 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export enum PreviewMeshType {
+        Sphere = 0,
+        Box = 1,
+        Torus = 2,
+        Cylinder = 3
+    }
+}
+declare module NODEEDITOR {
     export class PreviewManager {
         private _nodeMaterial;
         private _onBuildObserver;
+        private _onPreviewMeshTypeChangedObserver;
         private _engine;
         private _scene;
         private _light;
-        private _dummySphere;
+        private _dummy;
         private _camera;
         private _material;
+        private _globalState;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
+        private _refreshPreviewMesh;
         private _updatePreview;
         dispose(): void;
+    }
+}
+declare module NODEEDITOR {
+    interface IPreviewMeshControlComponent {
+        globalState: GlobalState;
+    }
+    export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
+        changeMeshType(newOne: PreviewMeshType): void;
+        render(): JSX.Element;
     }
 }
 declare module NODEEDITOR {
@@ -966,7 +986,10 @@ declare module NODEEDITOR {
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
+        onPreviewMeshTypeChanged: BABYLON.Observable<void>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => NodeModel;
+        previewMeshType: PreviewMeshType;
+        constructor();
     }
 }
 declare module NODEEDITOR {
