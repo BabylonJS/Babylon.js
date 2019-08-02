@@ -12,6 +12,9 @@
     #exampleList #exampleBanner h1 img {
         display: block;
     }
+    #currentVersionMobile {
+        float: left;
+    }
     .navbarBottom {
         display: none;
     }

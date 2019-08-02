@@ -39,9 +39,6 @@ class SettingsPG {
             this.defaultScene = "scripts/basic scene.txt";
             this.parent.monacoCreator.monacoMode = "typescript";
         }
-
-        // Last BJS version
-        this.lastBJSversionURL = "";
     }
 
     get ScriptLanguage() {
@@ -137,19 +134,37 @@ class SettingsPG {
     };
 
     /**
-     * Set a different BJS version
+     * Set BJS version on click
      */
-    setBJSversion(evt) {
-        // if(this.lastBJSversionURL != '') unload(this.lastBJSversionURL);
-        BABYLON = null;
+    setBJSversion(evt, code) {
+        localStorage.setItem("bjs-playground-apiversion", evt.target.value);
+        localStorage.setItem("bjs-playground-apiversion-tempcode", code);
+        window.location.reload();
+    };
+    /**
+     * Check if we need to restore a BJS version
+     */
+    restoreVersion() {
+        if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null) {
+            BABYLON = null;
 
-        var newScript = document.createElement('script');
-        this.lastBJSversionURL = evt.target.value;
-        newScript.src = this.lastBJSversionURL;
-        newScript.onload = function () {
-            this.parent.menuPG.displayVersionNumber(BABYLON.Engine.Version);
-        }.bind(this);
+            this.parent.menuPG.displayWaitDiv();
 
-        document.head.appendChild(newScript);
+            var newBJSscript = document.createElement('script');
+            newBJSscript.src = localStorage.getItem("bjs-playground-apiversion");
+            newBJSscript.onload = function () {
+                console.log(BABYLON.Engine.Version);
+                this.parent.menuPG.displayVersionNumber(BABYLON.Engine.Version);
+                this.parent.monacoCreator.setCode(localStorage.getItem("bjs-playground-apiversion-tempcode"));
+
+                localStorage.removeItem("bjs-playground-apiversion");
+                localStorage.removeItem("bjs-playground-apiversion-tempcode");
+
+                this.parent.main.compileAndRun();
+            }.bind(this);
+
+            document.head.appendChild(newBJSscript);
+        }
+        else return false;
     };
 };

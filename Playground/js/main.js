@@ -45,17 +45,19 @@ class Main {
             }.bind(this)
         );
 
+        // Restore BJS version if needed
+        if (this.parent.settingsPG.restoreVersion() == false) {
+            // Check if there a hash in the URL
+            this.checkHash();
+        }
+
         // Load scripts list
         this.loadScriptsList();
 
-        // Check if there a hash in the URL
-        this.checkHash();
-
-
         // -------------------- UI --------------------
-        
-        // Display BJS version
-        this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
+
+        // Display BJS version - Need a check in case of version selection
+        if (BABYLON) this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
         // Run
         this.parent.utils.setToMultipleID("runButton", "click", this.compileAndRun.bind(this));
         // New
@@ -529,6 +531,9 @@ class Main {
          * Compile the script in the editor, and run the preview in the canvas
          */
     compileAndRun() {
+        // If we need to change the version, don't do this
+        if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null) return;
+
         try {
             this.parent.menuPG.hideWaitDiv();
 
@@ -546,7 +551,10 @@ class Main {
             }
 
             if (this.engine) {
-                this.engine.dispose();
+                try {
+                    this.engine.dispose();
+                }
+                catch(ex) {}
                 this.engine = null;
             }
 

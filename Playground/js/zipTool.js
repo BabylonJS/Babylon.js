@@ -135,7 +135,7 @@ class ZipTool {
             true,
             function () {
                 this.addImportedFilesToZip(zip, index + 1, importedFiles, folder, then);
-            });
+            }.bind(this));
     };
     getZip (engine) {
         if (engine.scenes.length === 0) {
