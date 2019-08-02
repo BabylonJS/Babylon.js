@@ -344,6 +344,13 @@ declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" 
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/nodeLocationInfo" {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+}
 declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -358,6 +365,7 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
         constructor(props: IPropertyTabComponentProps);
         componentWillMount(): void;
         load(file: File): void;
+        save(): void;
         render(): JSX.Element;
     }
 }
@@ -1054,6 +1062,8 @@ declare module "babylonjs-node-editor/graphEditor" {
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
+    import { Nullable } from 'babylonjs/types';
+    import { INodeLocationInfo } from "babylonjs-node-editor/nodeLocationInfo";
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1086,8 +1096,8 @@ declare module "babylonjs-node-editor/graphEditor" {
         constructor(props: IGraphEditorProps);
         zoomToFit(retry?: number): void;
         buildMaterial(): void;
-        build(needToWait?: boolean): void;
-        reOrganize(): void;
+        build(needToWait?: boolean, locations?: Nullable<INodeLocationInfo[]>): void;
+        reOrganize(locations?: Nullable<INodeLocationInfo[]>): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -1128,18 +1138,22 @@ declare module "babylonjs-node-editor/globalState" {
     import { Observable } from 'babylonjs/Misc/observable';
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     import { LogEntry } from "babylonjs-node-editor/components/log/logComponent";
+    import { NodeModel } from 'storm-react-diagrams';
+    import { INodeLocationInfo } from "babylonjs-node-editor/nodeLocationInfo";
+    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     export class GlobalState {
         nodeMaterial: NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: Observable<Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: Observable<void>;
-        onResetRequiredObservable: Observable<void>;
+        onResetRequiredObservable: Observable<Nullable<INodeLocationInfo[]>>;
         onUpdateRequiredObservable: Observable<void>;
         onZoomToFitRequiredObservable: Observable<void>;
         onReOrganizedRequiredObservable: Observable<void>;
         onLogRequiredObservable: Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: Observable<string>;
+        onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
     }
 }
 declare module "babylonjs-node-editor/sharedComponents/popup" {
@@ -1464,6 +1478,13 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+}
+declare module NODEEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -1473,6 +1494,7 @@ declare module NODEEDITOR {
         constructor(props: IPropertyTabComponentProps);
         componentWillMount(): void;
         load(file: File): void;
+        save(): void;
         render(): JSX.Element;
     }
 }
@@ -2093,8 +2115,8 @@ declare module NODEEDITOR {
         constructor(props: IGraphEditorProps);
         zoomToFit(retry?: number): void;
         buildMaterial(): void;
-        build(needToWait?: boolean): void;
-        reOrganize(): void;
+        build(needToWait?: boolean, locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
+        reOrganize(locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -2130,12 +2152,13 @@ declare module NODEEDITOR {
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
-        onResetRequiredObservable: BABYLON.Observable<void>;
+        onResetRequiredObservable: BABYLON.Observable<BABYLON.Nullable<INodeLocationInfo[]>>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
+        onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => NodeModel;
     }
 }
 declare module NODEEDITOR {
