@@ -995,6 +995,13 @@ export class NodeMaterial extends PushMaterial {
         for (var outputNodeId of source.outputNodes) {
             this.addOutputNode(map[outputNodeId]);
         }
+
+        // Store map for external uses
+        source.map = {};
+
+        for (var key in map) {
+            source.map[key] = map[key].uniqueId;
+        }
     }
 
     /**
