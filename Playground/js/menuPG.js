@@ -86,6 +86,7 @@ class MenuPG {
 
         // Message before unload
         window.addEventListener('beforeunload', function () {
+            if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null) return;
             this.exitPrompt();
         }.bind(this));
 
@@ -104,20 +105,30 @@ class MenuPG {
 
         // Version selection
         for (var i = 0; i < this.parent.utils.multipleSize.length; i++) {
-            var versionButtons = document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement;
-            versionButtons.addEventListener("click", function (evt) {
-                this.displayVersionsMenu(evt);
-            }.bind(this));
+            var versionButtons = null;
+            if (this.parent.utils.multipleSize[i] == "Mobile") {
+                var onclick = function (evt) { this.parent.examples.hideExamples(); };
+                document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).addEventListener("click", onclick.bind(this));
+                versionButtons = document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement;
+                versionButtons.addEventListener("click", onclick.bind(this));
+            }
+            else {
+                versionButtons = document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement;
+                versionButtons.addEventListener("click", function (evt) {
+                    this.parent.examples.hideExamples();
+                    this.removeAllOptions();
+                    this.displayVersionsMenu(evt);
+                }.bind(this));
+            }
 
             for (var j = 0; j < CONFIG_last_versions.length; j++) {
                 var newButton = document.createElement("div");
                 newButton.classList.add("option");
-                // newButton.classList.add("noSubSelect");
                 newButton.innerText = "v" + CONFIG_last_versions[j][0];
                 newButton.value = CONFIG_last_versions[j][1];
 
                 newButton.addEventListener("click", function (evt) {
-                    this.parent.settingsPG.setBJSversion(evt);
+                    this.parent.settingsPG.setBJSversion(evt, this.parent.monacoCreator.getCode());
                     this.displayWaitDiv();
                 }.bind(this));
 
@@ -145,10 +156,13 @@ class MenuPG {
     };
 
     displayVersionNumber(version) {
-        this.hideWaitDiv();
         for (var i = 0; i < this.parent.utils.multipleSize.length; i++) {
-
-            document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement.firstElementChild.innerText = "v" + version;
+            if (this.parent.utils.multipleSize[i] == "Mobile") {
+                document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).innerText = "Version " + version;
+            }
+            else {
+                document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement.firstElementChild.innerText = "v" + version;
+            }
         }
     };
 
@@ -197,6 +211,7 @@ class MenuPG {
      * Display children subMenu of the caller
      */
     displaySubitems(evt) {
+        
         // If it's in mobile mode, avoid the "mouseenter" bug
         if (evt.type == "mouseenter" && this.navBarMobile.offsetHeight > 0) return;
         this.removeAllSubItems();
@@ -205,6 +220,8 @@ class MenuPG {
         if (target.nodeName == "IMG") target = evt.target.parentNode;
 
         var toDisplay = target.querySelector('.toDisplaySub');
+        if(toDisplay == null) toDisplay = target.parentElement.querySelector('.toDisplaySub');
+
         if (toDisplay) {
             toDisplay.style.display = 'block';
 
