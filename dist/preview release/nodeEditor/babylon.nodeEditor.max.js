@@ -64753,7 +64753,7 @@ var GraphEditor = /** @class */ (function (_super) {
             return;
         }
         try {
-            this.props.globalState.nodeMaterial.build(true);
+            this.props.globalState.nodeMaterial.build();
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"]("Node material build successful", false));
         }
         catch (err) {
