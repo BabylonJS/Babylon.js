@@ -37,8 +37,9 @@ import { RemapNodeFactory } from './components/diagram/remap/remapNodeFactory';
 import { RemapNodeModel } from './components/diagram/remap/remapNodeModel';
 import { RemapBlock } from 'babylonjs/Materials/Node/Blocks/remapBlock';
 import { GraphHelper } from './graphHelper';
-import { PreviewManager } from './previewManager';
+import { PreviewManager } from './components/preview/previewManager';
 import { INodeLocationInfo } from './nodeLocationInfo';
+import { PreviewMeshControlComponent } from './components/preview/previewMeshControlComponent';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -501,6 +502,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     {/* Property tab */}
                     <div className="right-panel">
                         <PropertyTabComponent globalState={this.props.globalState} />
+                        <PreviewMeshControlComponent globalState={this.props.globalState} />
                         <div id="preview" style={{height: this._rightWidth + "px"}}>
                             <canvas id="preview-canvas"/>
                         </div>
