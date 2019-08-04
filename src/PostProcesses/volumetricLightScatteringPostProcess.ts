@@ -21,6 +21,7 @@ import "../Meshes/Builders/planeBuilder";
 
 import "../Shaders/depth.vertex";
 import "../Shaders/volumetricLightScattering.fragment";
+import "../Shaders/volumetricLightScatteringPass.vertex";
 import "../Shaders/volumetricLightScatteringPass.fragment";
 import { Color4, Color3 } from '../Maths/math.color';
 import { Viewport } from '../Maths/math.viewport';
@@ -212,7 +213,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
             this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect(
-                { vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" },
+                "volumetricLightScatteringPass",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix"],
                 ["diffuseSampler"],
@@ -294,6 +295,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             if (this._meshExcluded(mesh)) {
                 return;
             }
+
+            mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
             let material = subMesh.getMaterial();
 

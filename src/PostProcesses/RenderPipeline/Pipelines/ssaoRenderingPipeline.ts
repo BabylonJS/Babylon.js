@@ -13,6 +13,8 @@ import { Constants } from "../../../Engines/constants";
 import { serialize } from "../../../Misc/decorators";
 import { Scene } from "../../../scene";
 
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+
 import "../../../Shaders/ssao.fragment";
 import "../../../Shaders/ssaoCombine.fragment";
 

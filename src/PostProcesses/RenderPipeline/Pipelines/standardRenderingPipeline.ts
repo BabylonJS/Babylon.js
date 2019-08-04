@@ -23,6 +23,8 @@ import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
 
 declare type Animation = import("../../../Animations/animation").Animation;
 
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+
 import "../../../Shaders/standard.fragment";
 /**
  * Standard rendering pipeline

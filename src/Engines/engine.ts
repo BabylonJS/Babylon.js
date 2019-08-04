@@ -193,6 +193,8 @@ export class EngineCapabilities {
     public parallelShaderCompile: {
         COMPLETION_STATUS_KHR: number;
     };
+    /** Max number of texture samples for MSAA */
+    public maxMSAASamples = 1;
 }
 
 /** Interface defining initialization parameters for Engine class */
@@ -510,14 +512,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.11";
+        return "babylonjs@4.1.0-alpha.13";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.11";
+        return "4.1.0-alpha.13";
     }
 
     /**
@@ -1162,8 +1164,9 @@ export class Engine {
             };
 
             if (DomManagement.IsWindowObjectExist()) {
-                window.addEventListener("blur", this._onBlur);
-                window.addEventListener("focus", this._onFocus);
+                let hostWindow = this.getHostWindow();
+                hostWindow.addEventListener("blur", this._onBlur);
+                hostWindow.addEventListener("focus", this._onFocus);
             }
 
             canvas.addEventListener("pointerout", this._onCanvasPointerOut);
@@ -1466,6 +1469,7 @@ export class Engine {
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
+            this._caps.maxMSAASamples = this._gl.getParameter(this._gl.MAX_SAMPLES);
         } else {
             var drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
 
@@ -1694,6 +1698,30 @@ export class Engine {
      */
     public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
         return this._renderingCanvas;
+    }
+
+    /**
+     * Gets host window
+     * @returns the host window object
+     */
+    public getHostWindow(): Window {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument && this._renderingCanvas.ownerDocument.defaultView) {
+            return this._renderingCanvas.ownerDocument.defaultView;
+        }
+
+        return window;
+    }
+
+    /**
+     * Gets host document
+     * @returns the host document object
+     */
+    public getHostDocument(): Document {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
+            return this._renderingCanvas.ownerDocument;
+        }
+
+        return document;
     }
 
     /**
@@ -2022,7 +2050,7 @@ export class Engine {
             } else if (this.isVRPresenting()) {
                 this._requestVRFrame();
             } else {
-                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
+                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
             }
         } else {
             this._renderingQueueLaunched = false;
@@ -2043,7 +2071,7 @@ export class Engine {
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
             this._bindedRenderFunction = this._renderLoop.bind(this);
-            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
+            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
         }
     }
 
@@ -3351,7 +3379,7 @@ export class Engine {
             if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
                 let log = this._gl.getShaderInfoLog(vertexShader);
                 if (log) {
-                    throw new Error(log);
+                    throw new Error("VERTEX SHADER " + log);
                 }
             }
 
@@ -3359,7 +3387,7 @@ export class Engine {
             if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
                 let log = this._gl.getShaderInfoLog(fragmentShader);
                 if (log) {
-                    throw new Error(log);
+                    throw new Error("FRAGMENT SHADER " + log);
                 }
             }
 
@@ -4907,7 +4935,7 @@ export class Engine {
 
         var gl = this._gl;
 
-        samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
+        samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
         // Dispose previous render buffers
         if (texture._depthStencilBuffer) {
