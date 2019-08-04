@@ -369,7 +369,7 @@ export class InstancedMesh extends AbstractMesh {
      *
      * Returns the clone.
      */
-    public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): InstancedMesh {
+    public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): InstancedMesh {
         var result = this._sourceMesh.createInstance(name);
 
         // Deep copy
