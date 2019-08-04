@@ -21,6 +21,8 @@ export class Sprite {
     public angle = 0;
     /** Gets or sets the cell index in the sprite sheet */
     public cellIndex = 0;
+    /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
+    public cellRef: string;
     /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
     public invertU = 0;
     /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */

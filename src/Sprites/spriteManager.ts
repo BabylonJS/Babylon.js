@@ -80,6 +80,12 @@ export class SpriteManager implements ISpriteManager {
     public cellWidth: number;
     /** Defines the default height of a cell in the spritesheet */
     public cellHeight: number;
+    /** Associative array from JSON sprite data file */
+    public cellData: any;
+    /** Array of sprite names from JSON sprite data file */
+    public spriteMap: Array<string>;
+    /** True when packed cell data from JSON file is ready*/
+    public packedAndReady: boolean = false;
 
     /**
     * An event triggered when the manager is disposed.
@@ -99,6 +105,7 @@ export class SpriteManager implements ISpriteManager {
     }
 
     private _capacity: number;
+    private _fromPacked: boolean;
     private _spriteTexture: Texture;
     private _epsilon: number;
 
@@ -131,15 +138,17 @@ export class SpriteManager implements ISpriteManager {
      * @param scene defines the hosting scene
      * @param epsilon defines the epsilon value to align texture (0.01 by default)
      * @param samplingMode defines the smapling mode to use with spritesheet
+     * @param fromPacked set to false; do not alter
      */
     constructor(
         /** defines the manager's name */
         public name: string,
-        imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false) {
         if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
             scene._addComponent(new SpriteSceneComponent(scene));
         }
         this._capacity = capacity;
+        this._fromPacked = fromPacked;
         this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
         this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -173,34 +182,36 @@ export class SpriteManager implements ISpriteManager {
         this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
 
         // VBO
-        // 16 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellIndexX, cellIndexY, color r, color g, color b, color a)
-        this._vertexData = new Float32Array(capacity * 16 * 4);
-        this._buffer = new Buffer(scene.getEngine(), this._vertexData, true, 16);
+        // 18 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellLeft, cellTop, cellWidth, cellHeight, color r, color g, color b, color a)
+        this._vertexData = new Float32Array(capacity * 18 * 4);
+        this._buffer = new Buffer(scene.getEngine(), this._vertexData, true, 18);
 
         var positions = this._buffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 4);
         var options = this._buffer.createVertexBuffer("options", 4, 4);
-        var cellInfo = this._buffer.createVertexBuffer("cellInfo", 8, 4);
-        var colors = this._buffer.createVertexBuffer(VertexBuffer.ColorKind, 12, 4);
+        var inverts = this._buffer.createVertexBuffer("inverts", 8, 2);
+        var cellInfo = this._buffer.createVertexBuffer("cellInfo", 10, 4);
+        var colors = this._buffer.createVertexBuffer(VertexBuffer.ColorKind, 14, 4);
 
         this._vertexBuffers[VertexBuffer.PositionKind] = positions;
         this._vertexBuffers["options"] = options;
+        this._vertexBuffers["inverts"] = inverts;
         this._vertexBuffers["cellInfo"] = cellInfo;
         this._vertexBuffers[VertexBuffer.ColorKind] = colors;
 
         // Effects
         this._effectBase = this._scene.getEngine().createEffect("sprites",
-            [VertexBuffer.PositionKind, "options", "cellInfo", VertexBuffer.ColorKind],
+            [VertexBuffer.PositionKind, "options", "inverts", "cellInfo", VertexBuffer.ColorKind],
             ["view", "projection", "textureInfos", "alphaTest"],
             ["diffuseSampler"], "");
 
         this._effectFog = this._scene.getEngine().createEffect("sprites",
-            [VertexBuffer.PositionKind, "options", "cellInfo", VertexBuffer.ColorKind],
+            [VertexBuffer.PositionKind, "options", "inverts", "cellInfo", VertexBuffer.ColorKind],
             ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
             ["diffuseSampler"], "#define FOG");
     }
 
-    private _appendSpriteVertex(index: number, sprite: Sprite, offsetX: number, offsetY: number, rowSize: number): void {
-        var arrayOffset = index * 16;
+    private _appendSpriteVertex(index: number, sprite: Sprite, offsetX: number, offsetY: number, baseSize: any): void {
+        var arrayOffset = index * 18;
 
         if (offsetX === 0) {
             offsetX = this._epsilon;
@@ -216,24 +227,42 @@ export class SpriteManager implements ISpriteManager {
             offsetY = 1 - this._epsilon;
         }
 
+        // Positions
         this._vertexData[arrayOffset] = sprite.position.x;
         this._vertexData[arrayOffset + 1] = sprite.position.y;
         this._vertexData[arrayOffset + 2] = sprite.position.z;
         this._vertexData[arrayOffset + 3] = sprite.angle;
+        // Options
         this._vertexData[arrayOffset + 4] = sprite.width;
         this._vertexData[arrayOffset + 5] = sprite.height;
         this._vertexData[arrayOffset + 6] = offsetX;
         this._vertexData[arrayOffset + 7] = offsetY;
+        // Inverts
         this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
         this._vertexData[arrayOffset + 9] = sprite.invertV ? 1 : 0;
-        var offset = (sprite.cellIndex / rowSize) >> 0;
-        this._vertexData[arrayOffset + 10] = sprite.cellIndex - offset * rowSize;
-        this._vertexData[arrayOffset + 11] = offset;
+        // CellIfo
+        if (this.packedAndReady) {
+            if (sprite.cellIndex) {
+                sprite.cellRef = this.spriteMap[sprite.cellIndex];
+            }
+            this._vertexData[arrayOffset + 10] = this.cellData[sprite.cellRef].x / baseSize.width;
+            this._vertexData[arrayOffset + 11] = this.cellData[sprite.cellRef].y / baseSize.height;
+            this._vertexData[arrayOffset + 12] = this.cellData[sprite.cellRef].w / baseSize.width;
+            this._vertexData[arrayOffset + 13] = this.cellData[sprite.cellRef].h / baseSize.height;
+        }
+        else {
+            var rowSize = baseSize.width / this.cellWidth;
+            var offset = (sprite.cellIndex / rowSize) >> 0;
+            this._vertexData[arrayOffset + 10] = (sprite.cellIndex - offset * rowSize) * this.cellWidth / baseSize.width;
+            this._vertexData[arrayOffset + 11] = offset * this.cellHeight / baseSize.height;
+            this._vertexData[arrayOffset + 12] = this.cellWidth / baseSize.width;
+            this._vertexData[arrayOffset + 13] = this.cellHeight / baseSize.height;
+        }
         // Color
-        this._vertexData[arrayOffset + 12] = sprite.color.r;
-        this._vertexData[arrayOffset + 13] = sprite.color.g;
-        this._vertexData[arrayOffset + 14] = sprite.color.b;
-        this._vertexData[arrayOffset + 15] = sprite.color.a;
+        this._vertexData[arrayOffset + 14] = sprite.color.r;
+        this._vertexData[arrayOffset + 15] = sprite.color.g;
+        this._vertexData[arrayOffset + 16] = sprite.color.b;
+        this._vertexData[arrayOffset + 17] = sprite.color.a;
     }
 
     /**
@@ -320,13 +349,16 @@ export class SpriteManager implements ISpriteManager {
             return;
         }
 
+        if (this._fromPacked  && (!this.packedAndReady || !this.spriteMap || !this.cellData)) {
+            return;
+        }
+
         var engine = this._scene.getEngine();
         var baseSize = this._spriteTexture.getBaseSize();
 
         // Sprites
         var deltaTime = engine.getDeltaTime();
         var max = Math.min(this._capacity, this.sprites.length);
-        var rowSize = baseSize.width / this.cellWidth;
 
         var offset = 0;
         let noSprite = true;
@@ -339,10 +371,10 @@ export class SpriteManager implements ISpriteManager {
             noSprite = false;
             sprite._animate(deltaTime);
 
-            this._appendSpriteVertex(offset++, sprite, 0, 0, rowSize);
-            this._appendSpriteVertex(offset++, sprite, 1, 0, rowSize);
-            this._appendSpriteVertex(offset++, sprite, 1, 1, rowSize);
-            this._appendSpriteVertex(offset++, sprite, 0, 1, rowSize);
+            this._appendSpriteVertex(offset++, sprite, 0, 0, baseSize);
+            this._appendSpriteVertex(offset++, sprite, 1, 0, baseSize);
+            this._appendSpriteVertex(offset++, sprite, 1, 1, baseSize);
+            this._appendSpriteVertex(offset++, sprite, 0, 1, baseSize);
         }
 
         if (noSprite) {
@@ -364,8 +396,6 @@ export class SpriteManager implements ISpriteManager {
         effect.setTexture("diffuseSampler", this._spriteTexture);
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", this._scene.getProjectionMatrix());
-
-        effect.setFloat2("textureInfos", this.cellWidth / baseSize.width, this.cellHeight / baseSize.height);
 
         // Fog
         if (this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled) {
