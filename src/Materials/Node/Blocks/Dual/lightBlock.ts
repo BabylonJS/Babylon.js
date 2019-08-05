@@ -145,12 +145,46 @@ export class LightBlock extends NodeMaterialBlock {
         let worldPos = this.worldPosition;
         let worldNormal = this.worldNormal;
 
+        let comments = `//${this.name}`;
+
+        // Declaration
+        if (!this.light) { // Emit for all lights
+            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
+                repeatKey: "maxSimultaneousLights"
+            });
+            this._lightId = 0;
+
+            state.sharedData.dynamicUniformBlocks.push(this);
+        } else {
+
+            this._lightId = (state.counters["lightCounter"] !== undefined ? state.counters["lightCounter"] : -1) + 1;
+            state.counters["lightCounter"] = this._lightId;
+
+            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
+                replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }]
+            }, this._lightId.toString());
+        }
+
         // Inject code in vertex
         let worldPosVaryingName = "v_" + worldPos.associatedVariableName;
         state._emitVaryingFromString(worldPosVaryingName, "vec3");
 
         let worldNormalVaryingName = "v_" + worldNormal.associatedVariableName;
         state._emitVaryingFromString(worldNormalVaryingName, "vec3");
+
+        if (this.light) {
+            state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
+                replaceStrings: [
+                    { search: /{X}/g, replace: this._lightId.toString() },
+                    { search: /worldPos/g, replace: worldPos.associatedVariableName }
+                ]
+            });
+        } else {
+            state.compilationString += `vec4 worldPos = ${worldPos.associatedVariableName};\r\n`;
+            state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
+                repeatKey: "maxSimultaneousLights"
+            });
+        }
 
         state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
         state.compilationString += `${worldNormalVaryingName} = ${worldNormal.associatedVariableName}.xyz;\r\n`;
@@ -173,7 +207,15 @@ export class LightBlock extends NodeMaterialBlock {
         let comments = `//${this.name}`;
         let worldPos = this.worldPosition;
 
+        state._emitFunctionFromInclude("helperFunctions", comments);
+
         state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
+            replaceStrings: [
+                { search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName }
+            ]
+        });
+
+        state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
             replaceStrings: [
                 { search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName }
             ]
@@ -183,14 +225,7 @@ export class LightBlock extends NodeMaterialBlock {
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
                 repeatKey: "maxSimultaneousLights"
             });
-            this._lightId = 0;
-
-            state.sharedData.dynamicUniformBlocks.push(this);
         } else {
-
-            this._lightId = (state.counters["lightCounter"] !== undefined ? state.counters["lightCounter"] : -1) + 1;
-            state.counters["lightCounter"] = this._lightId;
-
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
                 replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }]
             }, this._lightId.toString());

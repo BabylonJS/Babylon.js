@@ -149,6 +149,11 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             container.environmentTexture = scene.environmentTexture;
         }
 
+        // Environment Intensity
+        if (parsedData.environmentIntensity !== undefined && parsedData.environmentIntensity !== null) {
+            scene.environmentIntensity = parsedData.environmentIntensity;
+        }
+
         // Lights
         if (parsedData.lights !== undefined && parsedData.lights !== null) {
             for (index = 0, cache = parsedData.lights.length; index < cache; index++) {

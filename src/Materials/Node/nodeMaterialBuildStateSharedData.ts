@@ -113,6 +113,7 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["matricesWeightsExtra"] = 0;
         this.variableNames["diffuseBase"] = 0;
         this.variableNames["specularBase"] = 0;
+        this.variableNames["worldPos"] = 0;
 
         // Exclude defines
         this.defineNames["MAINUV0"] = 0;
