@@ -95,10 +95,17 @@ export class VideoDome extends TransformNode {
         this._changeVideoMode(value);
     }
 
+    /**
+     * Is the video a 180 degrees video (half dome) or 360 video (full dome)
+     *
+     */
     public get halfDome(): boolean {
         return this._halfDome;
     }
 
+    /**
+     * Set the halfDome mode. If set, only the front (180 degrees) will be displayed and the back will be blacked out.
+     */
     public set halfDome(enabled: boolean) {
         this._halfDome = enabled;
         this._halfDomeMask.setEnabled(enabled);
