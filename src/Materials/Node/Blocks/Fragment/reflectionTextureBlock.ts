@@ -293,43 +293,43 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         state.compilationString += `vec3 ${this._reflectionColorName};\r\n`;
         state.compilationString += `#ifdef ${this._define3DName}\r\n`;
         state.compilationString += `#ifdef ${this._defineMirroredEquirectangularFixedName}\r\n`;
-        state.compilationString += `    vec3 ${this._reflectionCoordsName} =  computeMirroredFixedEquirectangularCoords(${worldPos}, ${worldNormal}, ${direction});\r\n`;
+        state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeMirroredFixedEquirectangularCoords(${worldPos}, ${worldNormal}, ${direction});\r\n`;
         state.compilationString += `#endif\r\n`;
     
         state.compilationString += `#ifdef ${this._defineEquirectangularFixedName}\r\n`;
-        state.compilationString += `    vec3 ${this._reflectionCoordsName} =  computeFixedEquirectangularCoords(${worldPos}, ${worldNormal}, ${direction});\r\n`;
+        state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeFixedEquirectangularCoords(${worldPos}, ${worldNormal}, ${direction});\r\n`;
         state.compilationString += `#endif\r\n`;
     
         state.compilationString += `#ifdef REFLECTIONMAP_EQUIRECTANGULAR\r\n`;
-        state.compilationString += `    vec3 ${this._reflectionCoordsName} =  computeEquirectangularCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
+        state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeEquirectangularCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
         state.compilationString += ` #endif\r\n`;
     
         state.compilationString += `#ifdef REFLECTIONMAP_SPHERICAL\r\n`;
-        state.compilationString += `    vec3 ${this._reflectionCoordsName} =  computeSpericalCoords(${worldPos}, ${worldNormal}, ${view}, ${reflectionMatrix});\r\n`;
+        state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeSpericalCoords(${worldPos}, ${worldNormal}, ${view}, ${reflectionMatrix});\r\n`;
         state.compilationString += `#endif\r\n`;
 
         state.compilationString += `#ifdef REFLECTIONMAP_PLANAR\r\n`;
-        state.compilationString += `    vec3 ${this._reflectionCoordsName} =  computePlanarCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
+        state.compilationString += `    vec3 ${this._reflectionCoordsName} = computePlanarCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
         state.compilationString += `#endif\r\n`;
 
         state.compilationString += `#ifdef REFLECTIONMAP_CUBIC\r\n`;
         state.compilationString += `    #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC\r\n`;
-        state.compilationString += `        vec3 ${this._reflectionCoordsName} =  computeCubicLocalCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix}, vReflectionSize, vReflectionPosition);\r\n`;
+        state.compilationString += `        vec3 ${this._reflectionCoordsName} = computeCubicLocalCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix}, vReflectionSize, vReflectionPosition);\r\n`;
         state.compilationString += `    #else\r\n`;
-        state.compilationString += `       vec3 ${this._reflectionCoordsName} =  computeCubicCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
+        state.compilationString += `       vec3 ${this._reflectionCoordsName} = computeCubicCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
         state.compilationString += `    #endif\r\n`;
         state.compilationString += `#endif\r\n`;
 
         state.compilationString += `#ifdef REFLECTIONMAP_PROJECTION\r\n`;
-        state.compilationString += `    vec3 ${this._reflectionCoordsName} =  computeProjectionCoords(${worldPos}, ${view}, ${reflectionMatrix});\r\n`;
+        state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeProjectionCoords(${worldPos}, ${view}, ${reflectionMatrix});\r\n`;
         state.compilationString += `#endif\r\n`;
     
         state.compilationString += `#ifdef ${this._defineSkyboxName}\r\n`;
-        state.compilationString += `    vec3 ${this._reflectionCoordsName} =  computeSkyBoxCoords(${positionUVW}, ${reflectionMatrix});\r\n`;
+        state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeSkyBoxCoords(${positionUVW}, ${reflectionMatrix});\r\n`;
         state.compilationString += `#endif\r\n`;
     
         state.compilationString += `#ifdef REFLECTIONMAP_EXPLICIT\r\n`;
-        state.compilationString += `    vec3 ${this._reflectionCoordsName} =  vec3(0, 0, 0);\r\n`;
+        state.compilationString += `    vec3 ${this._reflectionCoordsName} = vec3(0, 0, 0);\r\n`;
         state.compilationString += `#endif\r\n`;
         
         state.compilationString += `${this._reflectionColorName} = textureCube(${this._cubeSamplerName}, ${this._reflectionCoordsName}).rgb;\r\n`;
