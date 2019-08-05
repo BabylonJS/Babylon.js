@@ -396,7 +396,8 @@ export class Effect implements IDisposable {
                 ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
                     processorOptions.isFragment = true;
                     ShaderProcessor.Process(fragmentCode, processorOptions, (migratedFragmentCode) => {
-                        this._useFinalCode(migratedVertexCode, migratedFragmentCode, baseName);
+                        const finalShaders = ShaderProcessor.Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
+                        this._useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName);
                     });
                 });
             });
