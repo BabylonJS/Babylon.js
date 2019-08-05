@@ -200,4 +200,12 @@ export class WebGPUConstants {
     public static readonly GPUStencilOperation_decrementClamp = "decrement-clamp";
     public static readonly GPUStencilOperation_incrementWrap = "increment-wrap";
     public static readonly GPUStencilOperation_decrementWrap = "decrement-wrap";
+
+    public static readonly GPUFilterMode_nearest = "nearest";
+    public static readonly GPUFilterMode_linear = "linear";
+
+    public static readonly GPUAddressMode_clampToEdge = "clamp-to-edge";
+    public static readonly GPUAddressMode_repeat = "repeat";
+    public static readonly GPUAddressMode_mirrorRepeat = "mirror-repeat";
+    public static readonly GPUAddressMode_clampToBorderColor = "clamp-to-border-color";
 }
