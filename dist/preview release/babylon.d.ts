@@ -32693,6 +32693,21 @@ declare module BABYLON {
         */
         environmentTexture: Nullable<BaseTexture>;
         /** @hidden */
+        protected _environmentIntensity: number;
+        /**
+         * Intensity of the environment in all pbr material.
+         * This dims or reinforces the IBL lighting overall (reflection and diffuse).
+         * As in the majority of the scene they are the same (exception for multi room and so on),
+         * this is easier to reference from here than from all the materials.
+         */
+        /**
+        * Intensity of the environment in all pbr material.
+        * This dims or reinforces the IBL lighting overall (reflection and diffuse).
+        * As in the majority of the scene they are the same (exception for multi room and so on),
+        * this is easier to set here than in all the materials.
+        */
+        environmentIntensity: number;
+        /** @hidden */
         protected _imageProcessingConfiguration: ImageProcessingConfiguration;
         /**
          * Default image processing configuration used either in the rendering
@@ -38234,6 +38249,7 @@ declare module BABYLON {
         private _initialQuaternion;
         private _quaternionCache;
         private _tmpDragQuaternion;
+        private _disablePointerInputWhenUsingDeviceOrientation;
         /**
          * Creates a new device orientation camera
          * @param name The name of the camera
@@ -38242,10 +38258,9 @@ declare module BABYLON {
          */
         constructor(name: string, position: Vector3, scene: Scene);
         /**
-         * @hidden
-         * Disabled pointer input on first orientation sensor update (Default: true)
+         * Gets or sets a boolean indicating that pointer input must be disabled on first orientation sensor update (Default: true)
          */
-        _disablePointerInputWhenUsingDeviceOrientation: boolean;
+        disablePointerInputWhenUsingDeviceOrientation: boolean;
         private _dragFactor;
         /**
          * Enabled turning on the y axis when the orientation sensor is active

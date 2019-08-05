@@ -513,14 +513,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.12";
+        return "babylonjs@4.1.0-alpha.13";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.12";
+        return "4.1.0-alpha.13";
     }
 
     /**
@@ -3426,7 +3426,7 @@ export class Engine {
             if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
                 let log = this._gl.getShaderInfoLog(vertexShader);
                 if (log) {
-                    throw new Error(log);
+                    throw new Error("VERTEX SHADER " + log);
                 }
             }
 
@@ -3434,7 +3434,7 @@ export class Engine {
             if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
                 let log = this._gl.getShaderInfoLog(fragmentShader);
                 if (log) {
-                    throw new Error(log);
+                    throw new Error("FRAGMENT SHADER " + log);
                 }
             }
 

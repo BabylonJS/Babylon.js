@@ -5601,7 +5601,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr auto;\n  grid-template-columns: 100%; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 2;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto;\n  grid-template-columns: 100%; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar .button {\n      display: grid;\n      justify-content: center;\n      align-content: center;\n      height: 30px;\n      width: calc(100% / 4);\n      cursor: pointer; }\n      .right-panel #preview-mesh-bar .button:hover {\n        background: #337ab7;\n        color: white;\n        opacity: 0.8; }\n      .right-panel #preview-mesh-bar .button.selected {\n        background: #337ab7;\n        color: white; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 
 // exports
 
@@ -64152,6 +64152,178 @@ var NodeListComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/preview/previewManager.ts":
+/*!**********************************************!*\
+  !*** ./components/preview/previewManager.ts ***!
+  \**********************************************/
+/*! exports provided: PreviewManager */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewManager", function() { return PreviewManager; });
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
+
+
+
+
+
+
+
+
+var PreviewManager = /** @class */ (function () {
+    function PreviewManager(targetCanvas, globalState) {
+        var _this = this;
+        this._nodeMaterial = globalState.nodeMaterial;
+        this._globalState = globalState;
+        this._onBuildObserver = this._nodeMaterial.onBuildObservable.add(function (nodeMaterial) {
+            var serializationObject = nodeMaterial.serialize();
+            _this._updatePreview(serializationObject);
+        });
+        this._onPreviewMeshTypeChangedObserver = globalState.onPreviewMeshTypeChanged.add(function () {
+            _this._refreshPreviewMesh();
+        });
+        this._engine = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Engine"](targetCanvas, true);
+        this._scene = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Scene"](this._engine);
+        this._camera = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ArcRotateCamera"]("Camera", 0, 0.8, 4, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), this._scene);
+        this._light = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
+        this._camera.lowerRadiusLimit = 3;
+        this._camera.upperRadiusLimit = 10;
+        this._camera.wheelPrecision = 10;
+        this._camera.attachControl(targetCanvas, false);
+        this._refreshPreviewMesh();
+        this._engine.runRenderLoop(function () {
+            _this._engine.resize();
+            _this._scene.render();
+        });
+        var serializationObject = this._nodeMaterial.serialize();
+        this._updatePreview(serializationObject);
+    }
+    PreviewManager.prototype._refreshPreviewMesh = function () {
+        if (this._dummy) {
+            this._dummy.dispose();
+        }
+        switch (this._globalState.previewMeshType) {
+            case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
+                this._dummy = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateBox("dummy", 2, this._scene);
+                break;
+            case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Sphere:
+                this._dummy = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("dummy", 32, 2, this._scene);
+                break;
+            case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Torus:
+                this._dummy = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateTorus("dummy", 2, 0.5, 32, this._scene);
+                break;
+            case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Cylinder:
+                this._dummy = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateCylinder("dummy", 2, 1, 1.2, 32, 1, this._scene);
+                break;
+        }
+        this._dummy.material = this._material;
+    };
+    PreviewManager.prototype._updatePreview = function (serializationObject) {
+        if (this._material) {
+            this._material.dispose();
+        }
+        this._material = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].Parse(serializationObject, this._scene);
+        this._material.build(true);
+        this._dummy.material = this._material;
+    };
+    PreviewManager.prototype.dispose = function () {
+        this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
+        this._globalState.onPreviewMeshTypeChanged.remove(this._onPreviewMeshTypeChangedObserver);
+        if (this._material) {
+            this._material.dispose();
+        }
+        this._camera.dispose();
+        this._dummy.dispose();
+        this._light.dispose();
+        this._engine.dispose();
+    };
+    return PreviewManager;
+}());
+
+
+
+/***/ }),
+
+/***/ "./components/preview/previewMeshControlComponent.tsx":
+/*!************************************************************!*\
+  !*** ./components/preview/previewMeshControlComponent.tsx ***!
+  \************************************************************/
+/*! exports provided: PreviewMeshControlComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewMeshControlComponent", function() { return PreviewMeshControlComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
+/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
+
+
+
+
+
+
+var PreviewMeshControlComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PreviewMeshControlComponent, _super);
+    function PreviewMeshControlComponent() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    PreviewMeshControlComponent.prototype.changeMeshType = function (newOne) {
+        if (this.props.globalState.previewMeshType === newOne) {
+            return;
+        }
+        this.props.globalState.previewMeshType = newOne;
+        this.props.globalState.onPreviewMeshTypeChanged.notifyObservers();
+        _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreNumber("PreviewMeshType", newOne);
+        this.forceUpdate();
+    };
+    PreviewMeshControlComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Box); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Box ? " selected" : "") },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCube"] })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere ? " selected" : "") },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCircle"] })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Torus); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Torus ? " selected" : "") },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faRing"] })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Cylinder); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Cylinder ? " selected" : "") },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faHockeyPuck"] }))));
+    };
+    return PreviewMeshControlComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/preview/previewMeshType.ts":
+/*!***********************************************!*\
+  !*** ./components/preview/previewMeshType.ts ***!
+  \***********************************************/
+/*! exports provided: PreviewMeshType */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewMeshType", function() { return PreviewMeshType; });
+var PreviewMeshType;
+(function (PreviewMeshType) {
+    PreviewMeshType[PreviewMeshType["Sphere"] = 0] = "Sphere";
+    PreviewMeshType[PreviewMeshType["Box"] = 1] = "Box";
+    PreviewMeshType[PreviewMeshType["Torus"] = 2] = "Torus";
+    PreviewMeshType[PreviewMeshType["Cylinder"] = 3] = "Cylinder";
+})(PreviewMeshType || (PreviewMeshType = {}));
+
+
+/***/ }),
+
 /***/ "./components/propertyTab/properties/color3PropertyTabComponent.tsx":
 /*!**************************************************************************!*\
   !*** ./components/propertyTab/properties/color3PropertyTabComponent.tsx ***!
@@ -64359,8 +64531,37 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             var decoder = new TextDecoder("utf-8");
             var serializationObject = JSON.parse(decoder.decode(data));
             _this.props.globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
-            _this.props.globalState.onResetRequiredObservable.notifyObservers();
+            // Check for id mapping
+            if (serializationObject.locations && serializationObject.map) {
+                var map = serializationObject.map;
+                var locations = serializationObject.locations;
+                for (var _i = 0, locations_1 = locations; _i < locations_1.length; _i++) {
+                    var location = locations_1[_i];
+                    location.blockId = map[location.blockId];
+                }
+            }
+            _this.props.globalState.onResetRequiredObservable.notifyObservers(serializationObject.locations);
         }, undefined, true);
+    };
+    PropertyTabComponent.prototype.save = function () {
+        var material = this.props.globalState.nodeMaterial;
+        var serializationObject = material.serialize();
+        // Store node locations
+        for (var _i = 0, _a = material.attachedBlocks; _i < _a.length; _i++) {
+            var block = _a[_i];
+            var node = this.props.globalState.onGetNodeFromBlock(block);
+            if (!serializationObject.locations) {
+                serializationObject.locations = [];
+            }
+            serializationObject.locations.push({
+                blockId: block.uniqueId,
+                x: node.x,
+                y: node.y
+            });
+        }
+        // Output
+        var json = JSON.stringify(serializationObject, undefined, 2);
+        _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(json, "nodeMaterial.json");
     };
     PropertyTabComponent.prototype.render = function () {
         var _this = this;
@@ -64379,7 +64580,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
                             _this.props.globalState.nodeMaterial.setToDefault();
-                            _this.props.globalState.onResetRequiredObservable.notifyObservers();
+                            _this.props.globalState.onResetRequiredObservable.notifyObservers(null);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "UI" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Zoom to fit", onClick: function () {
@@ -64391,8 +64592,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FILE" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.load(file); }, accept: ".json" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save", onClick: function () {
-                            var json = JSON.stringify(_this.props.globalState.nodeMaterial.serialize(), undefined, 2);
-                            _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(json, "nodeMaterial.json");
+                            _this.save();
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export shaders", onClick: function () {
                             _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
@@ -64501,6 +64701,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/preview/previewMeshType */ "./components/preview/previewMeshType.ts");
+/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
+
+
 
 var GlobalState = /** @class */ (function () {
     function GlobalState() {
@@ -64512,6 +64716,8 @@ var GlobalState = /** @class */ (function () {
         this.onReOrganizedRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onErrorMessageDialogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPreviewMeshTypeChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.previewMeshType = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("PreviewMeshType", _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box);
     }
     return GlobalState;
 }());
@@ -64558,7 +64764,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_diagram_remap_remapNodeFactory__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./components/diagram/remap/remapNodeFactory */ "./components/diagram/remap/remapNodeFactory.tsx");
 /* harmony import */ var _components_diagram_remap_remapNodeModel__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./components/diagram/remap/remapNodeModel */ "./components/diagram/remap/remapNodeModel.tsx");
 /* harmony import */ var _graphHelper__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./graphHelper */ "./graphHelper.ts");
-/* harmony import */ var _previewManager__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./previewManager */ "./previewManager.ts");
+/* harmony import */ var _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./components/preview/previewManager */ "./components/preview/previewManager.ts");
+/* harmony import */ var _components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./components/preview/previewMeshControlComponent */ "./components/preview/previewMeshControlComponent.tsx");
+
 
 
 
@@ -64622,8 +64830,8 @@ var GraphEditor = /** @class */ (function (_super) {
             }
             _this.forceUpdate();
         });
-        _this.props.globalState.onResetRequiredObservable.add(function () {
-            _this.build();
+        _this.props.globalState.onResetRequiredObservable.add(function (locations) {
+            _this.build(false, locations);
             if (_this.props.globalState.nodeMaterial) {
                 _this.buildMaterial();
             }
@@ -64637,6 +64845,9 @@ var GraphEditor = /** @class */ (function (_super) {
         _this.props.globalState.onReOrganizedRequiredObservable.add(function () {
             _this.reOrganize();
         });
+        _this.props.globalState.onGetNodeFromBlock = function (block) {
+            return _this._nodes.filter(function (n) { return n.block === block; })[0];
+        };
         _this.build(true);
         return _this;
     }
@@ -64690,7 +64901,7 @@ var GraphEditor = /** @class */ (function (_super) {
             var widget = this.refs["test"];
             widget.setState({ document: this.props.globalState.hostDocument });
             this.props.globalState.hostDocument.addEventListener("keyup", widget.onKeyUpPointer, false);
-            this._previewManager = new _previewManager__WEBPACK_IMPORTED_MODULE_24__["PreviewManager"](this.props.globalState.hostDocument.getElementById("preview-canvas"), this.props.globalState);
+            this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_24__["PreviewManager"](this.props.globalState.hostDocument.getElementById("preview-canvas"), this.props.globalState);
         }
     };
     GraphEditor.prototype.componentWillUnmount = function () {
@@ -64722,18 +64933,21 @@ var GraphEditor = /** @class */ (function (_super) {
             return;
         }
         try {
-            this.props.globalState.nodeMaterial.build(true);
+            this.props.globalState.nodeMaterial.build();
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"]("Node material build successful", false));
         }
         catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"](err, true));
         }
     };
-    GraphEditor.prototype.build = function (needToWait) {
+    GraphEditor.prototype.build = function (needToWait, locations) {
         var _this = this;
         if (needToWait === void 0) { needToWait = false; }
+        if (locations === void 0) { locations = null; }
         // setup the diagram model
         this._model = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramModel"]();
+        this._nodes = [];
+        this._blocks = [];
         // Listen to events
         this._model.addListener({
             nodesUpdated: function (e) {
@@ -64849,22 +65063,37 @@ var GraphEditor = /** @class */ (function (_super) {
             _this._toAdd = null;
             _this._engine.setDiagramModel(_this._model);
             _this.forceUpdate();
-            _this.reOrganize();
+            _this.reOrganize(locations);
         }, needToWait ? 500 : 1);
     };
-    GraphEditor.prototype.reOrganize = function () {
+    GraphEditor.prototype.reOrganize = function (locations) {
         var _this = this;
-        var nodes = _graphHelper__WEBPACK_IMPORTED_MODULE_23__["GraphHelper"].DistributeGraph(this._model);
-        nodes.forEach(function (node) {
-            for (var nodeName in _this._model.nodes) {
-                var modelNode = _this._model.nodes[nodeName];
-                if (modelNode.id === node.id) {
-                    modelNode.setPosition(node.x - node.width / 2, node.y - node.height / 2);
-                    return;
+        if (locations === void 0) { locations = null; }
+        if (!locations) {
+            var nodes = _graphHelper__WEBPACK_IMPORTED_MODULE_23__["GraphHelper"].DistributeGraph(this._model);
+            nodes.forEach(function (node) {
+                for (var nodeName in _this._model.nodes) {
+                    var modelNode = _this._model.nodes[nodeName];
+                    if (modelNode.id === node.id) {
+                        modelNode.setPosition(node.x - node.width / 2, node.y - node.height / 2);
+                        return;
+                    }
+                }
+            });
+        }
+        else {
+            for (var _i = 0, locations_1 = locations; _i < locations_1.length; _i++) {
+                var location = locations_1[_i];
+                for (var _a = 0, _b = this._nodes; _a < _b.length; _a++) {
+                    var node = _b[_a];
+                    if (node.block && node.block.uniqueId === location.blockId) {
+                        node.setPosition(location.x, location.y);
+                        break;
+                    }
                 }
             }
-        });
-        this.forceUpdate();
+        }
+        this._engine.repaintCanvas();
     };
     GraphEditor.prototype.onPointerDown = function (evt) {
         this._startX = evt.clientX;
@@ -64937,6 +65166,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "right-panel" },
                     react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_6__["PropertyTabComponent"], { globalState: this.props.globalState }),
+                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_25__["PreviewMeshControlComponent"], { globalState: this.props.globalState }),
                     react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "preview", style: { height: this._rightWidth + "px" } },
                         react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("canvas", { id: "preview-canvas" }))),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogComponent"], { globalState: this.props.globalState })),
@@ -65184,72 +65414,6 @@ var Portal = /** @class */ (function (_super) {
     };
     return Portal;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./previewManager.ts":
-/*!***************************!*\
-  !*** ./previewManager.ts ***!
-  \***************************/
-/*! exports provided: PreviewManager */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewManager", function() { return PreviewManager; });
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
-
-
-
-
-
-
-
-var PreviewManager = /** @class */ (function () {
-    function PreviewManager(targetCanvas, globalState) {
-        var _this = this;
-        this._nodeMaterial = globalState.nodeMaterial;
-        this._onBuildObserver = this._nodeMaterial.onBuildObservable.add(function (nodeMaterial) {
-            var serializationObject = nodeMaterial.serialize();
-            _this._updatePreview(serializationObject);
-        });
-        this._engine = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Engine"](targetCanvas, true);
-        this._scene = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Scene"](this._engine);
-        this._camera = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ArcRotateCamera"]("Camera", 0, 0.8, 4, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), this._scene);
-        this._light = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
-        this._dummySphere = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("sphere", 32, 2, this._scene);
-        this._camera.lowerRadiusLimit = 2.5;
-        this._camera.upperRadiusLimit = 10;
-        this._camera.attachControl(targetCanvas, false);
-        this._engine.runRenderLoop(function () {
-            _this._scene.render();
-        });
-        var serializationObject = this._nodeMaterial.serialize();
-        this._updatePreview(serializationObject);
-    }
-    PreviewManager.prototype._updatePreview = function (serializationObject) {
-        if (this._material) {
-            this._material.dispose();
-        }
-        this._material = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].Parse(serializationObject, this._scene);
-        this._material.build(true);
-        this._dummySphere.material = this._material;
-    };
-    PreviewManager.prototype.dispose = function () {
-        this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
-        if (this._material) {
-            this._material.dispose();
-        }
-        this._camera.dispose();
-        this._dummySphere.dispose();
-        this._light.dispose();
-        this._engine.dispose();
-    };
-    return PreviewManager;
-}());
 
 
 

@@ -286,6 +286,13 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+}
+declare module NODEEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -295,6 +302,7 @@ declare module NODEEDITOR {
         constructor(props: IPropertyTabComponentProps);
         componentWillMount(): void;
         load(file: File): void;
+        save(): void;
         render(): JSX.Element;
     }
 }
@@ -868,18 +876,38 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export enum PreviewMeshType {
+        Sphere = 0,
+        Box = 1,
+        Torus = 2,
+        Cylinder = 3
+    }
+}
+declare module NODEEDITOR {
     export class PreviewManager {
         private _nodeMaterial;
         private _onBuildObserver;
+        private _onPreviewMeshTypeChangedObserver;
         private _engine;
         private _scene;
         private _light;
-        private _dummySphere;
+        private _dummy;
         private _camera;
         private _material;
+        private _globalState;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
+        private _refreshPreviewMesh;
         private _updatePreview;
         dispose(): void;
+    }
+}
+declare module NODEEDITOR {
+    interface IPreviewMeshControlComponent {
+        globalState: GlobalState;
+    }
+    export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
+        changeMeshType(newOne: PreviewMeshType): void;
+        render(): JSX.Element;
     }
 }
 declare module NODEEDITOR {
@@ -915,8 +943,8 @@ declare module NODEEDITOR {
         constructor(props: IGraphEditorProps);
         zoomToFit(retry?: number): void;
         buildMaterial(): void;
-        build(needToWait?: boolean): void;
-        reOrganize(): void;
+        build(needToWait?: boolean, locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
+        reOrganize(locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -952,12 +980,16 @@ declare module NODEEDITOR {
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
-        onResetRequiredObservable: BABYLON.Observable<void>;
+        onResetRequiredObservable: BABYLON.Observable<BABYLON.Nullable<INodeLocationInfo[]>>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
+        onPreviewMeshTypeChanged: BABYLON.Observable<void>;
+        onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => NodeModel;
+        previewMeshType: PreviewMeshType;
+        constructor();
     }
 }
 declare module NODEEDITOR {

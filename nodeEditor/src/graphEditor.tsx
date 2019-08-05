@@ -37,7 +37,9 @@ import { RemapNodeFactory } from './components/diagram/remap/remapNodeFactory';
 import { RemapNodeModel } from './components/diagram/remap/remapNodeModel';
 import { RemapBlock } from 'babylonjs/Materials/Node/Blocks/remapBlock';
 import { GraphHelper } from './graphHelper';
-import { PreviewManager } from './previewManager';
+import { PreviewManager } from './components/preview/previewManager';
+import { INodeLocationInfo } from './nodeLocationInfo';
+import { PreviewMeshControlComponent } from './components/preview/previewMeshControlComponent';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -164,8 +166,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this.forceUpdate();
         });
 
-        this.props.globalState.onResetRequiredObservable.add(() => {
-            this.build();
+        this.props.globalState.onResetRequiredObservable.add((locations) => {
+            this.build(false, locations);
             if (this.props.globalState.nodeMaterial) {
                 this.buildMaterial();
             }
@@ -181,7 +183,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         this.props.globalState.onReOrganizedRequiredObservable.add(() => {
             this.reOrganize();
-        })
+        });
+
+        this.props.globalState.onGetNodeFromBlock = (block) => {
+            return this._nodes.filter(n => n.block === block)[0];
+        }
 
         this.build(true);
     }
@@ -212,7 +218,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         try {
-            this.props.globalState.nodeMaterial.build(true);
+            this.props.globalState.nodeMaterial.build();
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
         }
         catch (err) {
@@ -220,9 +226,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
     }
 
-    build(needToWait = false) {
+    build(needToWait = false, locations: Nullable<INodeLocationInfo[]> = null) {
         // setup the diagram model
         this._model = new DiagramModel();
+        this._nodes = [];
+        this._blocks = [];
 
         // Listen to events
         this._model.addListener({
@@ -357,23 +365,35 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
             this.forceUpdate();
 
-            this.reOrganize();
+            this.reOrganize(locations);
         }, needToWait ? 500 : 1);
     }
 
-    reOrganize() {
-        let nodes = GraphHelper.DistributeGraph(this._model);
-        nodes.forEach(node => {
-            for (var nodeName in this._model.nodes) {
-                let modelNode = this._model.nodes[nodeName];
+    reOrganize(locations: Nullable<INodeLocationInfo[]> = null) {
+        if (!locations) {
+            let nodes = GraphHelper.DistributeGraph(this._model);
+            nodes.forEach(node => {
+                for (var nodeName in this._model.nodes) {
+                    let modelNode = this._model.nodes[nodeName];
 
-                if (modelNode.id === node.id) {
-                    modelNode.setPosition(node.x - node.width / 2, node.y - node.height / 2);
-                    return;
+                    if (modelNode.id === node.id) {
+                        modelNode.setPosition(node.x - node.width / 2, node.y - node.height / 2);
+                        return;
+                    }
+                }
+            });
+        } else {
+            for (var location of locations) {
+                for (var node of this._nodes) {
+                    if (node.block && node.block.uniqueId === location.blockId) {
+                        node.setPosition(location.x, location.y);
+                        break;
+                    }
                 }
             }
-        });
-        this.forceUpdate();
+        }
+
+        this._engine.repaintCanvas();
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
@@ -482,6 +502,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     {/* Property tab */}
                     <div className="right-panel">
                         <PropertyTabComponent globalState={this.props.globalState} />
+                        <PreviewMeshControlComponent globalState={this.props.globalState} />
                         <div id="preview" style={{height: this._rightWidth + "px"}}>
                             <canvas id="preview-canvas"/>
                         </div>
