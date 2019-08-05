@@ -779,6 +779,10 @@ export class NodeMaterial extends PushMaterial {
             return true;
         }
 
+        if (!this._sharedData) {
+            return false;
+        }
+
         for (var t of this._sharedData.textureBlocks) {
             if (t.texture === texture) {
                 return true;
@@ -994,6 +998,13 @@ export class NodeMaterial extends PushMaterial {
         // Outputs
         for (var outputNodeId of source.outputNodes) {
             this.addOutputNode(map[outputNodeId]);
+        }
+
+        // Store map for external uses
+        source.map = {};
+
+        for (var key in map) {
+            source.map[key] = map[key].uniqueId;
         }
     }
 
