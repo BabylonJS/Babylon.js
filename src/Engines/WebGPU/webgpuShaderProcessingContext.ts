@@ -18,7 +18,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number} };
     public availableSamplers: { [key: string]: { setIndex: number, bindingIndex: number} };
 
-    public leftOverUniforms: { name: string, type: string }[];
+    public leftOverUniforms: { name: string, type: string, length: number }[];
 
     public orderedAttributes: string[];
     public orderedUBOsAndSamplers: { name: string, isSampler: boolean }[][];

@@ -27,7 +27,7 @@ export class ShaderCodeNode {
 
                     if (regex.test(this.line)) { // uniform
                         if (processor.uniformProcessor) {
-                            value = processor.uniformProcessor(this.line, options.isFragment, options.processingContext);
+                            value = processor.uniformProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
                         }
                     } else { // Uniform buffer
                         if (processor.uniformBufferProcessor) {

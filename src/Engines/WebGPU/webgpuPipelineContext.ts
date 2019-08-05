@@ -50,7 +50,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public orderedAttributes: string[];
     public orderedUBOsAndSamplers: { name: string, isSampler: boolean }[][];
 
-    public leftOverUniforms: { name: string, type: string }[];
+    public leftOverUniforms: { name: string, type: string, length: number }[];
     public leftOverUniformsByName: { [name: string]: string };
 
     public sources: {
@@ -154,7 +154,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
         for (let leftOverUniform of this.leftOverUniforms) {
             const size = _uniformSizes[leftOverUniform.type];
-            this.uniformBuffer.addUniform(leftOverUniform.name, size);
+            this.uniformBuffer.addUniform(leftOverUniform.name, size, leftOverUniform.length);
             // TODO WEBGPU. Replace with info from uniform buffer class
             this.leftOverUniformsByName[leftOverUniform.name] = leftOverUniform.type;
         }
@@ -223,8 +223,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setFloatArray(uniformName: string, array: Float32Array): void {
-        // TODO WEBGPU. MorphTarget.
-        throw "setFloatArray not Supported in LeftOver UBO.";
+        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+            return;
+        }
+        this.uniformBuffer.updateFloatArray(uniformName, array);
     }
 
     /**
@@ -301,8 +303,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param matrices matrices to be set.
      */
     public setMatrices(uniformName: string, matrices: Float32Array): void {
-        // TODO WEBGPU.
-        throw "setMatrices not Supported in LeftOver UBO.";
+        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+            return;
+        }
+        this.uniformBuffer.updateMatrices(uniformName, matrices);
     }
 
     /**
