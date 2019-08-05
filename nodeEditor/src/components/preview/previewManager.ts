@@ -43,7 +43,7 @@ export class PreviewManager {
 
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
-        this._camera.wheelPrecision = 10;
+        this._camera.wheelPrecision = 20;
         this._camera.attachControl(targetCanvas, false);
 
         this._refreshPreviewMesh();
