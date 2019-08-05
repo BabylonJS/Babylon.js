@@ -991,6 +991,120 @@ export class WebGPUEngine extends Engine {
         this._releaseBuffer(dataBuffer);
     }
 
+    private _getSamplerFilterDescriptor(internalTexture: InternalTexture): {
+        magFilter: GPUFilterMode,
+        minFilter: GPUFilterMode,
+        mipmapFilter: GPUFilterMode
+    } {
+        let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode;
+        switch (internalTexture.samplingMode) {
+            case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
+                magFilter = WebGPUConstants.GPUFilterMode_linear;
+                minFilter = WebGPUConstants.GPUFilterMode_linear;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                break;
+            case Engine.TEXTURE_TRILINEAR_SAMPLINGMODE:
+                magFilter = WebGPUConstants.GPUFilterMode_linear;
+                minFilter = WebGPUConstants.GPUFilterMode_linear;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_linear;
+                break;
+            case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
+                magFilter = WebGPUConstants.GPUFilterMode_nearest;
+                minFilter = WebGPUConstants.GPUFilterMode_nearest;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_linear;
+                break;
+            case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+                magFilter = WebGPUConstants.GPUFilterMode_nearest;
+                minFilter = WebGPUConstants.GPUFilterMode_nearest;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                break;
+            case Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+                magFilter = WebGPUConstants.GPUFilterMode_nearest;
+                minFilter = WebGPUConstants.GPUFilterMode_linear;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                break;
+            case Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+                magFilter = WebGPUConstants.GPUFilterMode_nearest;
+                minFilter = WebGPUConstants.GPUFilterMode_linear;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_linear;
+                break;
+            case Engine.TEXTURE_NEAREST_LINEAR:
+                magFilter = WebGPUConstants.GPUFilterMode_nearest;
+                minFilter = WebGPUConstants.GPUFilterMode_linear;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                break;
+            case Engine.TEXTURE_NEAREST_NEAREST:
+                magFilter = WebGPUConstants.GPUFilterMode_nearest;
+                minFilter = WebGPUConstants.GPUFilterMode_nearest;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                break;
+            case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+                magFilter = WebGPUConstants.GPUFilterMode_linear;
+                minFilter = WebGPUConstants.GPUFilterMode_nearest;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                break;
+            case Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+                magFilter = WebGPUConstants.GPUFilterMode_linear;
+                minFilter = WebGPUConstants.GPUFilterMode_nearest;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_linear;
+                break;
+            case Engine.TEXTURE_LINEAR_LINEAR:
+                magFilter = WebGPUConstants.GPUFilterMode_linear;
+                minFilter = WebGPUConstants.GPUFilterMode_linear;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                break;
+            case Engine.TEXTURE_LINEAR_NEAREST:
+                magFilter = WebGPUConstants.GPUFilterMode_linear;
+                minFilter = WebGPUConstants.GPUFilterMode_nearest;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                break;
+            default:
+                magFilter = WebGPUConstants.GPUFilterMode_linear;
+                minFilter = WebGPUConstants.GPUFilterMode_linear;
+                mipmapFilter = WebGPUConstants.GPUFilterMode_linear;
+                break;
+        }
+
+        return {
+            magFilter,
+            minFilter,
+            mipmapFilter
+        };
+    }
+
+    private _getWrappingMode(mode: number): GPUAddressMode {
+        switch (mode) {
+            case Engine.TEXTURE_WRAP_ADDRESSMODE:
+                return WebGPUConstants.GPUAddressMode_repeat;
+            case Engine.TEXTURE_CLAMP_ADDRESSMODE:
+                return WebGPUConstants.GPUAddressMode_clampToEdge;
+            case Engine.TEXTURE_MIRROR_ADDRESSMODE:
+                return WebGPUConstants.GPUAddressMode_mirrorRepeat;
+            // case Engine.TEXTURE_MIRROR_BORDERMODE:
+            //     return WebGPUConstants.GPUAddressMode_clampToBorderColor;
+        }
+        return WebGPUConstants.GPUAddressMode_repeat;
+    }
+
+    private _getSamplerWrappingDescriptor(internalTexture: InternalTexture): {
+        addressModeU: GPUAddressMode,
+        addressModeV: GPUAddressMode,
+        addressModeW: GPUAddressMode
+    } {
+        return {
+            addressModeU: this._getWrappingMode(internalTexture._cachedWrapU!),
+            addressModeV: this._getWrappingMode(internalTexture._cachedWrapV!),
+            addressModeW: this._getWrappingMode(internalTexture._cachedWrapR!),
+        };
+    }
+
+    private _getSamplerDescriptor(internalTexture: InternalTexture): GPUSamplerDescriptor {
+        return {
+            ...this._getSamplerFilterDescriptor(internalTexture),
+            ...this._getSamplerWrappingDescriptor(internalTexture),
+        };
+    }
+
     public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
         const texture = new InternalTexture(this, InternalTexture.DATASOURCE_URL);
         const url = String(urlArg);
@@ -1041,18 +1155,6 @@ export class WebGPUEngine extends Engine {
             const gpuTexture = this._device.createTexture(textureDescriptor);
             texture._webGPUTexture = gpuTexture;
 
-            // TODO WEBGPU.
-            const samplerDescriptor: GPUSamplerDescriptor = {
-                magFilter: "linear",
-                minFilter: "linear",
-                mipmapFilter: "linear",
-                addressModeU: "repeat",
-                addressModeV: "repeat",
-                addressModeW: "repeat",
-            };
-            const gpuSampler = this._device.createSampler(samplerDescriptor);
-            texture._webGPUSampler = gpuSampler;
-
             if (noMipmap) {
                 this._uploadFromWebglTexture(webglEngineTexture, gpuTexture, width, height, -1);
             }
@@ -1081,6 +1183,8 @@ export class WebGPUEngine extends Engine {
         texture.isCube = true;
         texture.url = rootUrl;
         texture.generateMipMaps = !noMipmap;
+        // TODO WEBGPU. Cube Texture Sampling Mode.
+        texture.samplingMode = noMipmap ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         texture._lodGenerationScale = lodScale;
         texture._lodGenerationOffset = lodOffset;
 
@@ -1126,18 +1230,6 @@ export class WebGPUEngine extends Engine {
             const gpuTexture = this._device.createTexture(textureDescriptor);
             texture._webGPUTexture = gpuTexture;
 
-            // TODO WEBGPU.
-            const samplerDescriptor: GPUSamplerDescriptor = {
-                magFilter: "linear",
-                minFilter: "linear",
-                mipmapFilter: "linear",
-                addressModeU: "repeat",
-                addressModeV: "repeat",
-                addressModeW: "repeat",
-            };
-            const gpuSampler = this._device.createSampler(samplerDescriptor);
-            texture._webGPUSampler = gpuSampler;
-
             const faces = [0, 1, 2, 3, 4, 5];
             for (let face of faces) {
                 if (noMipmap) {
@@ -1181,9 +1273,18 @@ export class WebGPUEngine extends Engine {
             const pipeline = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             if (!texture) {
                 pipeline.samplers[name] = null;
+                return;
             }
-            else if (pipeline.samplers[name]) {
-                pipeline.samplers[name]!.texture = texture!.getInternalTexture()!;
+
+            const internalTexture = texture!.getInternalTexture();
+            if (internalTexture) {
+                internalTexture._cachedWrapU = texture.wrapU;
+                internalTexture._cachedWrapV = texture.wrapV;
+                internalTexture._cachedWrapR = texture.wrapR;
+            }
+
+            if (pipeline.samplers[name]) {
+                pipeline.samplers[name]!.texture = internalTexture!;
             }
             else {
                 // TODO WEBGPU. GC + 121 mapping samplers <-> availableSamplers
@@ -1192,7 +1293,7 @@ export class WebGPUEngine extends Engine {
                     setIndex: availableSampler.setIndex,
                     textureBinding: availableSampler.bindingIndex,
                     samplerBinding: availableSampler.bindingIndex + 1,
-                    texture: texture!.getInternalTexture()!
+                    texture: internalTexture!
                 };
             }
         }
@@ -1952,6 +2053,12 @@ export class WebGPUEngine extends Engine {
                 if (bindingDefinition.isSampler) {
                     const bindingInfo = webgpuPipelineContext.samplers[bindingDefinition.name];
                     if (bindingInfo) {
+                        if (!bindingInfo.texture._webGPUSampler) {
+                            const samplerDescriptor: GPUSamplerDescriptor = this._getSamplerDescriptor(bindingInfo.texture!);
+                            const gpuSampler = this._device.createSampler(samplerDescriptor);
+                            bindingInfo.texture._webGPUSampler = gpuSampler;
+                        }
+
                         bindings.push({
                             binding: bindingInfo.textureBinding,
                             resource: bindingInfo.texture._webGPUTextureView!,
@@ -2113,8 +2220,14 @@ export class WebGPUEngine extends Engine {
     public _unpackFlipY(value: boolean) { }
 
     // TODO WEBGPU. All of this should go once engine split with baseEngine.
+    /** @hidden */
+    public _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } { 
+        throw "_getSamplingParameters does not make sense in WebGPU";
+    }
+
     public bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void {
     }
+
     public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
         return [];
     }
