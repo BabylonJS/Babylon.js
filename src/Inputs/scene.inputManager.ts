@@ -822,6 +822,7 @@ export class InputManager {
 
         // Pointer
         canvas.removeEventListener(eventPrefix + "move", <any>this._onPointerMove);
+        canvas.removeEventListener(this._wheelEventName, <any>this._onPointerMove);
         canvas.removeEventListener(eventPrefix + "down", <any>this._onPointerDown);
         window.removeEventListener(eventPrefix + "up", <any>this._onPointerUp);
 
