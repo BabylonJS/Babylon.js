@@ -31,6 +31,7 @@
 - Added url parameters to web request modifiers ([PierreLeBlond](https://github.com/PierreLeBlond))
 - Added `VRExperienceHelper.exitVROnDoubleTap` ([Deltakosh](https://github.com/deltakosh/))
 - Added `Scene.getTextureByUniqueID` ([aWeirdo](https://github.com/aWeirdo/))
+- Added support for 180 VR videos in `VideoDome` ([RaananW](https://github.com/RaananW/))
 - Added optional parameter to use Euler angles in planeRotationGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Engine
