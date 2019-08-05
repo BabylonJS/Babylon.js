@@ -344,6 +344,13 @@ declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" 
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/nodeLocationInfo" {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+}
 declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -358,6 +365,7 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
         constructor(props: IPropertyTabComponentProps);
         componentWillMount(): void;
         load(file: File): void;
+        save(): void;
         render(): JSX.Element;
     }
 }
@@ -380,6 +388,7 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureProperty
         node: TextureNodeModel;
     }
     export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps> {
+        updateAftertextureLoad(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
@@ -1030,6 +1039,45 @@ declare module "babylonjs-node-editor/graphHelper" {
         private static _MapEdges;
     }
 }
+declare module "babylonjs-node-editor/components/preview/previewMeshType" {
+    export enum PreviewMeshType {
+        Sphere = 0,
+        Box = 1,
+        Torus = 2,
+        Cylinder = 3
+    }
+}
+declare module "babylonjs-node-editor/components/preview/previewManager" {
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    export class PreviewManager {
+        private _nodeMaterial;
+        private _onBuildObserver;
+        private _onPreviewMeshTypeChangedObserver;
+        private _engine;
+        private _scene;
+        private _light;
+        private _dummy;
+        private _camera;
+        private _material;
+        private _globalState;
+        constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
+        private _refreshPreviewMesh;
+        private _updatePreview;
+        dispose(): void;
+    }
+}
+declare module "babylonjs-node-editor/components/preview/previewMeshControlComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { PreviewMeshType } from "babylonjs-node-editor/components/preview/previewMeshType";
+    interface IPreviewMeshControlComponent {
+        globalState: GlobalState;
+    }
+    export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
+        changeMeshType(newOne: PreviewMeshType): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
@@ -1037,6 +1085,8 @@ declare module "babylonjs-node-editor/graphEditor" {
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
+    import { Nullable } from 'babylonjs/types';
+    import { INodeLocationInfo } from "babylonjs-node-editor/nodeLocationInfo";
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1055,6 +1105,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _rightWidth;
         private _nodes;
         private _blocks;
+        private _previewManager;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -1068,8 +1119,8 @@ declare module "babylonjs-node-editor/graphEditor" {
         constructor(props: IGraphEditorProps);
         zoomToFit(retry?: number): void;
         buildMaterial(): void;
-        build(needToWait?: boolean): void;
-        reOrganize(): void;
+        build(needToWait?: boolean, locations?: Nullable<INodeLocationInfo[]>): void;
+        reOrganize(locations?: Nullable<INodeLocationInfo[]>): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -1110,18 +1161,26 @@ declare module "babylonjs-node-editor/globalState" {
     import { Observable } from 'babylonjs/Misc/observable';
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     import { LogEntry } from "babylonjs-node-editor/components/log/logComponent";
+    import { NodeModel } from 'storm-react-diagrams';
+    import { INodeLocationInfo } from "babylonjs-node-editor/nodeLocationInfo";
+    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+    import { PreviewMeshType } from "babylonjs-node-editor/components/preview/previewMeshType";
     export class GlobalState {
-        nodeMaterial?: NodeMaterial;
+        nodeMaterial: NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: Observable<Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: Observable<void>;
-        onResetRequiredObservable: Observable<void>;
+        onResetRequiredObservable: Observable<Nullable<INodeLocationInfo[]>>;
         onUpdateRequiredObservable: Observable<void>;
         onZoomToFitRequiredObservable: Observable<void>;
         onReOrganizedRequiredObservable: Observable<void>;
         onLogRequiredObservable: Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: Observable<string>;
+        onPreviewMeshTypeChanged: Observable<void>;
+        onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
+        previewMeshType: PreviewMeshType;
+        constructor();
     }
 }
 declare module "babylonjs-node-editor/sharedComponents/popup" {
@@ -1446,6 +1505,13 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+}
+declare module NODEEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -1455,6 +1521,7 @@ declare module NODEEDITOR {
         constructor(props: IPropertyTabComponentProps);
         componentWillMount(): void;
         load(file: File): void;
+        save(): void;
         render(): JSX.Element;
     }
 }
@@ -1472,6 +1539,7 @@ declare module NODEEDITOR {
         node: TextureNodeModel;
     }
     export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps> {
+        updateAftertextureLoad(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
@@ -2027,6 +2095,41 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export enum PreviewMeshType {
+        Sphere = 0,
+        Box = 1,
+        Torus = 2,
+        Cylinder = 3
+    }
+}
+declare module NODEEDITOR {
+    export class PreviewManager {
+        private _nodeMaterial;
+        private _onBuildObserver;
+        private _onPreviewMeshTypeChangedObserver;
+        private _engine;
+        private _scene;
+        private _light;
+        private _dummy;
+        private _camera;
+        private _material;
+        private _globalState;
+        constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
+        private _refreshPreviewMesh;
+        private _updatePreview;
+        dispose(): void;
+    }
+}
+declare module NODEEDITOR {
+    interface IPreviewMeshControlComponent {
+        globalState: GlobalState;
+    }
+    export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
+        changeMeshType(newOne: PreviewMeshType): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -2045,6 +2148,7 @@ declare module NODEEDITOR {
         private _rightWidth;
         private _nodes;
         private _blocks;
+        private _previewManager;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -2058,8 +2162,8 @@ declare module NODEEDITOR {
         constructor(props: IGraphEditorProps);
         zoomToFit(retry?: number): void;
         buildMaterial(): void;
-        build(needToWait?: boolean): void;
-        reOrganize(): void;
+        build(needToWait?: boolean, locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
+        reOrganize(locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -2090,17 +2194,21 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class GlobalState {
-        nodeMaterial?: BABYLON.NodeMaterial;
+        nodeMaterial: BABYLON.NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
-        onResetRequiredObservable: BABYLON.Observable<void>;
+        onResetRequiredObservable: BABYLON.Observable<BABYLON.Nullable<INodeLocationInfo[]>>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
+        onPreviewMeshTypeChanged: BABYLON.Observable<void>;
+        onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => NodeModel;
+        previewMeshType: PreviewMeshType;
+        constructor();
     }
 }
 declare module NODEEDITOR {

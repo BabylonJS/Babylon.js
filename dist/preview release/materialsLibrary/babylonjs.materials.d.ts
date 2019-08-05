@@ -942,6 +942,11 @@ declare module BABYLON {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        /**
+         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * will avoid calculating useless pixels in the pixel shader of the water material.
+         */
+        disableClipPlane: boolean;
         protected _renderTargets: BABYLON.SmartArray<BABYLON.RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
@@ -952,6 +957,8 @@ declare module BABYLON {
         private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
+        private _imageProcessingConfiguration;
+        private _imageProcessingObserver;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */

@@ -96,11 +96,12 @@ export interface INodeMaterialOptions {
  * Class used to create a node based material built by assembling shader blocks
  */
 export class NodeMaterial extends PushMaterial {
+    private static _BuildIdGenerator: number = 0;
     private _options: INodeMaterialOptions;
     private _vertexCompilationState: NodeMaterialBuildState;
     private _fragmentCompilationState: NodeMaterialBuildState;
     private _sharedData: NodeMaterialBuildStateSharedData;
-    private _buildId: number = 0;
+    private _buildId: number = NodeMaterial._BuildIdGenerator++;
     private _buildWasSuccessful = false;
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
@@ -386,7 +387,7 @@ export class NodeMaterial extends PushMaterial {
      * @returns a boolean specifying if an alpha test is needed.
      */
     public needAlphaTesting(): boolean {
-        return this._sharedData.hints.needAlphaTesting;
+        return this._sharedData && this._sharedData.hints.needAlphaTesting;
     }
 
     private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[]) {
@@ -500,7 +501,7 @@ export class NodeMaterial extends PushMaterial {
         this._vertexCompilationState.finalize(this._vertexCompilationState);
         this._fragmentCompilationState.finalize(this._fragmentCompilationState);
 
-        this._buildId++;
+        this._buildId = NodeMaterial._BuildIdGenerator++;
 
         // Errors
         this._sharedData.emitErrors();
@@ -778,6 +779,10 @@ export class NodeMaterial extends PushMaterial {
             return true;
         }
 
+        if (!this._sharedData) {
+            return false;
+        }
+
         for (var t of this._sharedData.textureBlocks) {
             if (t.texture === texture) {
                 return true;
@@ -993,6 +998,13 @@ export class NodeMaterial extends PushMaterial {
         // Outputs
         for (var outputNodeId of source.outputNodes) {
             this.addOutputNode(map[outputNodeId]);
+        }
+
+        // Store map for external uses
+        source.map = {};
+
+        for (var key in map) {
+            source.map[key] = map[key].uniqueId;
         }
     }
 

@@ -6,10 +6,12 @@ import { Plane } from 'babylonjs/Maths/math.plane';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { Constants } from "babylonjs/Engines/constants";
 import { SmartArray } from "babylonjs/Misc/smartArray";
+import { Observer } from 'babylonjs/Misc/observable';
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
 import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
+import { IImageProcessingConfigurationDefines, ImageProcessingConfiguration } from "babylonjs/Materials/imageProcessingConfiguration";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
 import { MaterialFlags } from "babylonjs/Materials/materialFlags";
@@ -24,7 +26,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import "./water.fragment";
 import "./water.vertex";
 
-class WaterMaterialDefines extends MaterialDefines {
+class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
     public REFLECTION = false;
     public CLIPPLANE = false;
@@ -48,6 +50,21 @@ class WaterMaterialDefines extends MaterialDefines {
     public FRESNELSEPARATE = false;
     public BUMPSUPERIMPOSE = false;
     public BUMPAFFECTSREFLECTION = false;
+
+    public IMAGEPROCESSING = false;
+    public VIGNETTE = false;
+    public VIGNETTEBLENDMODEMULTIPLY = false;
+    public VIGNETTEBLENDMODEOPAQUE = false;
+    public TONEMAPPING = false;
+    public TONEMAPPING_ACES = false;
+    public CONTRAST = false;
+    public EXPOSURE = false;
+    public COLORCURVES = false;
+    public COLORGRADING = false;
+    public COLORGRADING3D = false;
+    public SAMPLER3DGREENDEPTH = false;
+    public SAMPLER3DBGRMAP = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
 
     constructor() {
         super();
@@ -158,6 +175,12 @@ export class WaterMaterial extends PushMaterial {
     */
     @serialize()
     public waveSpeed: number = 1.0;
+    /**
+     * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+     * will avoid calculating useless pixels in the pixel shader of the water material.
+     */
+    @serialize()
+    public disableClipPlane: boolean = false;
 
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
 
@@ -178,6 +201,9 @@ export class WaterMaterial extends PushMaterial {
     private _useLogarithmicDepth: boolean;
 
     private _waitingRenderList: Nullable<string[]>;
+
+    private _imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
+    private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
     /**
      * Gets a boolean indicating that current material needs to register RTT
@@ -202,6 +228,13 @@ export class WaterMaterial extends PushMaterial {
 
             return this._renderTargets;
         };
+
+        this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
+        if (this._imageProcessingConfiguration) {
+            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(() => {
+                this._markAllSubMeshesAsImageProcessingDirty();
+            });
+        }
     }
 
     @serialize()
@@ -328,6 +361,18 @@ export class WaterMaterial extends PushMaterial {
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
 
+        // Image processing
+        if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
+            if (!this._imageProcessingConfiguration.isReady()) {
+                return false;
+            }
+
+            this._imageProcessingConfiguration.prepareDefines(defines);
+
+            defines.IS_REFLECTION_LINEAR = (this.reflectionTexture != null && !this.reflectionTexture.gammaSpace);
+            defines.IS_REFRACTION_LINEAR = (this.refractionTexture != null && !this.refractionTexture.gammaSpace);
+        }
+
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
@@ -404,6 +449,11 @@ export class WaterMaterial extends PushMaterial {
                 "refractionSampler", "reflectionSampler"
             ];
             var uniformBuffers = new Array<string>();
+
+            if (ImageProcessingConfiguration) {
+                ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
+                ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
+            }
 
             MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -525,6 +575,11 @@ export class WaterMaterial extends PushMaterial {
         this._activeEffect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
         this._activeEffect.setFloat("waveSpeed", this.waveSpeed);
 
+        // image processing
+        if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
+            this._imageProcessingConfiguration.bind(this._activeEffect);
+        }
+
         this._afterBind(mesh, this._activeEffect);
     }
 
@@ -550,11 +605,14 @@ export class WaterMaterial extends PushMaterial {
                 isVisible = this._mesh.isVisible;
                 this._mesh.isVisible = false;
             }
-            // Clip plane
-            clipPlane = scene.clipPlane;
 
-            var positiony = this._mesh ? this._mesh.position.y : 0.0;
-            scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0), new Vector3(0, 1, 0));
+            // Clip plane
+            if (!this.disableClipPlane) {
+                clipPlane = scene.clipPlane;
+
+                var positiony = this._mesh ? this._mesh.position.y : 0.0;
+                scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0), new Vector3(0, 1, 0));
+            }
         };
 
         this._refractionRTT.onAfterRender = () => {
@@ -563,7 +621,9 @@ export class WaterMaterial extends PushMaterial {
             }
 
             // Clip plane
-            scene.clipPlane = clipPlane;
+            if (!this.disableClipPlane) {
+                scene.clipPlane = clipPlane;
+            }
         };
 
         this._reflectionRTT.onBeforeRender = () => {
@@ -573,13 +633,16 @@ export class WaterMaterial extends PushMaterial {
             }
 
             // Clip plane
-            clipPlane = scene.clipPlane;
+            if (!this.disableClipPlane) {
+                clipPlane = scene.clipPlane;
 
-            var positiony = this._mesh ? this._mesh.position.y : 0.0;
-            scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0), new Vector3(0, -1, 0));
+                var positiony = this._mesh ? this._mesh.position.y : 0.0;
+                scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0), new Vector3(0, -1, 0));
+
+                Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);
+            }
 
             // Transform
-            Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);
             savedViewMatrix = scene.getViewMatrix();
 
             mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
@@ -661,6 +724,11 @@ export class WaterMaterial extends PushMaterial {
         }
         if (this._refractionRTT) {
             this._refractionRTT.dispose();
+        }
+
+        // Remove image-processing observer
+        if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
+            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
         }
 
         super.dispose(forceDisposeEffect);

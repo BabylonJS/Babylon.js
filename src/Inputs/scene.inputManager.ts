@@ -803,7 +803,8 @@ export class InputManager {
         }
 
         if (attachUp) {
-            window.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
+            let hostWindow = scene.getEngine().getHostWindow();
+            hostWindow.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
         }
     }
 

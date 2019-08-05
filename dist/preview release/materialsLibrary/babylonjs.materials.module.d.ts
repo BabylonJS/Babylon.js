@@ -1318,6 +1318,8 @@ declare module "babylonjs-materials/triPlanar/index" {
 }
 declare module "babylonjs-materials/water/water.fragment" {
     import "babylonjs/Shaders/ShadersInclude/helperFunctions";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingFunctions";
     import "babylonjs/Shaders/ShadersInclude/lightFragmentDeclaration";
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/lightsFragmentFunctions";
@@ -1436,6 +1438,11 @@ declare module "babylonjs-materials/water/waterMaterial" {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        /**
+         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * will avoid calculating useless pixels in the pixel shader of the water material.
+         */
+        disableClipPlane: boolean;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
@@ -1446,6 +1453,8 @@ declare module "babylonjs-materials/water/waterMaterial" {
         private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
+        private _imageProcessingConfiguration;
+        private _imageProcessingObserver;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
@@ -2493,6 +2502,11 @@ declare module BABYLON {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        /**
+         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * will avoid calculating useless pixels in the pixel shader of the water material.
+         */
+        disableClipPlane: boolean;
         protected _renderTargets: BABYLON.SmartArray<BABYLON.RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
@@ -2503,6 +2517,8 @@ declare module BABYLON {
         private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
+        private _imageProcessingConfiguration;
+        private _imageProcessingObserver;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
