@@ -1166,10 +1166,14 @@ export class WebGPUEngine extends Engine {
 
             webglEngineTexture.dispose();
 
+            texture.onLoadedObservable.notifyObservers(texture);
+            texture.onLoadedObservable.clear();
+
             if (onLoad) {
                 onLoad();
             }
         };
+
         webglEngineTexture = this._decodeEngine.createTexture(urlArg, noMipmap, invertY, scene, samplingMode,
             onLoadInternal, onError, buffer, fallBack, format);
 
