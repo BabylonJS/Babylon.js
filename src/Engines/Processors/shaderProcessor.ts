@@ -19,6 +19,14 @@ export class ShaderProcessor {
         });
     }
 
+    public static Finalize(vertexCode: string, fragmentCode: string, options: ProcessingOptions): { vertexCode: string, fragmentCode: string } {
+        if (!options.processor || !options.processor.finalizeShaders) {
+            return { vertexCode, fragmentCode };
+        }
+
+        return options.processor.finalizeShaders(vertexCode, fragmentCode, options.processingContext);
+    }
+
     private static _ProcessPrecision(source: string, options: ProcessingOptions): string {
         const shouldUseHighPrecisionShader = options.shouldUseHighPrecisionShader;
 

@@ -198,6 +198,10 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             code += "gl_Position.y *= -1.; }";
         }
 
+        return code;
+    }
+
+    public finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): { vertexCode: string, fragmentCode: string } {
         // Builds the leftover UBOs.
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
         if (webgpuProcessingContext.leftOverUniforms.length) {
@@ -218,9 +222,11 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             }
             ubo += "};\n\n";
 
-            code = ubo + code;
+            // Currently set in both vert and frag but could be optim away if necessary.
+            vertexCode = ubo + vertexCode;
+            fragmentCode = ubo + fragmentCode;
         }
 
-        return code;
+        return { vertexCode, fragmentCode };
     }
 }
