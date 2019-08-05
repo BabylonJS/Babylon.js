@@ -121,7 +121,7 @@ export class WebGPUEngine extends Engine {
         availableSamplers: { [key: string]: { setIndex: number, bindingIndex: number} },
         orderedAttributes: string[],
         orderedUBOsAndSamplers: { name: string, isSampler: boolean }[][],
-        leftOverUniforms: { name: string, type: string }[],
+        leftOverUniforms: { name: string, type: string, length: number }[],
         leftOverUniformsByName: { [name: string]: string },
         sources: {
             vertex: string
@@ -1906,9 +1906,50 @@ export class WebGPUEngine extends Engine {
                     case VertexBuffer.FLOAT:
                         return WebGPUConstants.GPUVertexFormat_float4;
                 }
-            default:
-                throw new Error("Invalid kind '" + kind + "'");
         }
+
+        // MorphTargets
+        if (kind.indexOf("position") === 0 ||
+            kind.indexOf("normal") === 0 ||
+            kind.indexOf("tangent") === 0) {
+            switch (type) {
+                case VertexBuffer.BYTE:
+                    return normalized ? WebGPUConstants.GPUVertexFormat_char3norm : WebGPUConstants.GPUVertexFormat_char3;
+                case VertexBuffer.UNSIGNED_BYTE:
+                    return normalized ? WebGPUConstants.GPUVertexFormat_uchar3norm : WebGPUConstants.GPUVertexFormat_uchar3;
+                case VertexBuffer.SHORT:
+                    return normalized ? WebGPUConstants.GPUVertexFormat_short3norm : WebGPUConstants.GPUVertexFormat_short3;
+                case VertexBuffer.UNSIGNED_SHORT:
+                    return normalized ? WebGPUConstants.GPUVertexFormat_ushort3norm : WebGPUConstants.GPUVertexFormat_ushort3;
+                case VertexBuffer.INT:
+                    return WebGPUConstants.GPUVertexFormat_int3;
+                case VertexBuffer.UNSIGNED_INT:
+                    return WebGPUConstants.GPUVertexFormat_uint3;
+                case VertexBuffer.FLOAT:
+                    return WebGPUConstants.GPUVertexFormat_float3;
+            }
+        }
+        if (kind.indexOf("uv_") === 0) {
+            switch (type) {
+                case VertexBuffer.BYTE:
+                    return normalized ? WebGPUConstants.GPUVertexFormat_char2norm : WebGPUConstants.GPUVertexFormat_char2;
+                case VertexBuffer.UNSIGNED_BYTE:
+                    return normalized ? WebGPUConstants.GPUVertexFormat_uchar2norm : WebGPUConstants.GPUVertexFormat_uchar2;
+                case VertexBuffer.SHORT:
+                    return normalized ? WebGPUConstants.GPUVertexFormat_short2norm : WebGPUConstants.GPUVertexFormat_short2;
+                case VertexBuffer.UNSIGNED_SHORT:
+                    return normalized ? WebGPUConstants.GPUVertexFormat_ushort2norm : WebGPUConstants.GPUVertexFormat_ushort2;
+                case VertexBuffer.INT:
+                    return WebGPUConstants.GPUVertexFormat_int2;
+                case VertexBuffer.UNSIGNED_INT:
+                    return WebGPUConstants.GPUVertexFormat_uint2;
+                case VertexBuffer.FLOAT:
+                    return WebGPUConstants.GPUVertexFormat_float2;
+            }
+        }
+
+        // TODO WEBGPU. Manages Custom Attributes.
+        throw new Error("Invalid kind '" + kind + "'");
     }
 
     private _getVertexInputDescriptor(): GPUInputStateDescriptor {
@@ -2295,18 +2336,15 @@ export class WebGPUEngine extends Engine {
 
     public _unpackFlipY(value: boolean) { }
 
-    /**
-     * Apply all cached states (depth, culling, stencil and alpha)
-     */
+    // TODO WEBGPU. All of this should go once engine split with baseEngine.
     public applyStates() {
         // TODO WEBGPU. Apply States dynamically.
         // This is done at the pipeline creation level for the moment...
     }
 
-    // TODO WEBGPU. All of this should go once engine split with baseEngine.
     /** @hidden */
-    public _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } { 
-        throw "_getSamplingParameters does not make sense in WebGPU";
+    public _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } {
+        throw "_getSamplingParameters is not available in WebGPU";
     }
 
     public bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void {

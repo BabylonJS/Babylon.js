@@ -23,8 +23,9 @@ export class UniformBuffer {
     private _data: number[];
     private _bufferData: Float32Array;
     private _dynamic?: boolean;
-    private _uniformLocations: { [key: string]: number; };
-    private _uniformSizes: { [key: string]: number; };
+    private _uniformLocations: { [key: string]: number };
+    private _uniformSizes: { [key: string]: number };
+    private _uniformArraySizes: { [key: string]: { strideSize: number, arraySize: number } };
     private _uniformLocationPointer: number;
     private _needSync: boolean;
     private _noUBO: boolean;
@@ -77,11 +78,25 @@ export class UniformBuffer {
     public updateFloat4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
 
     /**
+     * Lambda to Update an array of float in a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
+    public updateFloatArray: (name: string, array: Float32Array) => void;
+
+    /**
      * Lambda to Update a 4x4 Matrix in a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
     public updateMatrix: (name: string, mat: IMatrixLike) => void;
+
+    /**
+     * Lambda to Update an array of 4x4 Matrix in a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
+    public updateMatrices:  (name: string, mat: Float32Array) => void;
 
     /**
      * Lambda to Update vec3 of float from a Vector in a uniform buffer.
@@ -133,6 +148,7 @@ export class UniformBuffer {
 
         this._uniformLocations = {};
         this._uniformSizes = {};
+        this._uniformArraySizes = {};
         this._uniformLocationPointer = 0;
         this._needSync = false;
 
@@ -143,7 +159,9 @@ export class UniformBuffer {
             this.updateFloat2 = this._updateFloat2ForEffect;
             this.updateFloat3 = this._updateFloat3ForEffect;
             this.updateFloat4 = this._updateFloat4ForEffect;
+            this.updateFloatArray = this._updateFloatArrayForEffect;
             this.updateMatrix = this._updateMatrixForEffect;
+            this.updateMatrices = this._updateMatricesForEffect;
             this.updateVector3 = this._updateVector3ForEffect;
             this.updateVector4 = this._updateVector4ForEffect;
             this.updateColor3 = this._updateColor3ForEffect;
@@ -157,7 +175,9 @@ export class UniformBuffer {
             this.updateFloat2 = this._updateFloat2ForUniform;
             this.updateFloat3 = this._updateFloat3ForUniform;
             this.updateFloat4 = this._updateFloat4ForUniform;
+            this.updateFloatArray = this._updateFloatArrayForUniform;
             this.updateMatrix = this._updateMatrixForUniform;
+            this.updateMatrices = this._updateMatricesForUniform;
             this.updateVector3 = this._updateVector3ForUniform;
             this.updateVector4 = this._updateVector4ForUniform;
             this.updateColor3 = this._updateColor3ForUniform;
@@ -242,8 +262,9 @@ export class UniformBuffer {
      * for the layout to be correct !
      * @param name Name of the uniform, as used in the uniform block in the shader.
      * @param size Data size, or data directly.
+     * @param arraySize The number of elements in the array, 0 if not an array.
      */
-    public addUniform(name: string, size: number | number[]) {
+    public addUniform(name: string, size: number | number[], arraySize = 0) {
         if (this._noUBO) {
             return;
         }
@@ -255,20 +276,45 @@ export class UniformBuffer {
         // This function must be called in the order of the shader layout !
         // size can be the size of the uniform, or data directly
         var data;
-        if (size instanceof Array) {
-            data = size;
-            size = data.length;
-        } else {
-            size = <number>size;
-            data = [];
 
+        // std140 FTW...
+        if (arraySize > 0) {
+            if (size instanceof Array) {
+                throw "addUniform should not be use with Array in UBO: " + name;
+            }
+
+            this._uniformArraySizes[name] = { strideSize: size, arraySize };
+            if (size == 16) {
+                size = size * arraySize;
+            }
+            else {
+                const perElementPadding =  4 - size;
+                const totalPadding =  perElementPadding * arraySize;
+                size = size * arraySize + totalPadding;
+            }
+
+            data = [];
             // Fill with zeros
             for (var i = 0; i < size; i++) {
                 data.push(0);
             }
         }
+        else {
+            if (size instanceof Array) {
+                data = size;
+                size = data.length;
+            } else {
+                size = <number>size;
+                data = [];
 
-        this._fillAlignment(<number>size);
+                // Fill with zeros
+                for (var i = 0; i < size; i++) {
+                    data.push(0);
+                }
+            }
+            this._fillAlignment(<number>size);
+        }
+
         this._uniformSizes[name] = <number>size;
         this._uniformLocations[name] = this._uniformLocationPointer;
         this._uniformLocationPointer += <number>size;
@@ -458,6 +504,55 @@ export class UniformBuffer {
         }
     }
 
+    /**
+     * Updates the value of an uniform. The `update` method must be called afterwards to make it effective in the GPU.
+     * @param uniformName Define the name of the uniform, as used in the uniform block in the shader.
+     * @param data Define the flattened data
+     * @param size Define the size of the data.
+     */
+    public updateUniformArray(uniformName: string, data: FloatArray, size: number) {
+
+        var location = this._uniformLocations[uniformName];
+        if (location === undefined) {
+            Logger.Error("Cannot add an uniform Array dynamically. Please, add it using addUniform.");
+            return;
+        }
+
+        if (!this._buffer) {
+            this.create();
+        }
+
+        const arraySizes = this._uniformArraySizes[uniformName];
+
+        if (!this._dynamic) {
+            // Cache for static uniform buffers
+            var changed = false;
+            let countToFour = 0;
+            let baseStride = 0;
+            for (var i = 0; i < size; i++) {
+                if (this._bufferData[location + baseStride * 4 + countToFour] !== data[i]) {
+                    changed = true;
+                    this._bufferData[location + baseStride * 4 + countToFour] = data[i];
+                }
+                countToFour++;
+                if (countToFour === arraySizes.strideSize) {
+                    for (; countToFour < 4; countToFour++) {
+                        this._bufferData[location + baseStride * 4 + countToFour] = 0;
+                    }
+                    countToFour = 0;
+                    baseStride++;
+                }
+            }
+
+            this._needSync = this._needSync || changed;
+        } else {
+            // No cache for dynamic
+            for (var i = 0; i < size; i++) {
+                this._bufferData[location + i] = data[i];
+            }
+        }
+    }
+
     // Update methods
 
     private _updateMatrix3x3ForUniform(name: string, matrix: Float32Array): void {
@@ -535,12 +630,28 @@ export class UniformBuffer {
         this.updateUniform(name, UniformBuffer._tempBuffer, 4);
     }
 
+    private _updateFloatArrayForEffect(name: string, array: Float32Array) {
+        this._currentEffect.setFloatArray(name, array);
+    }
+
+    private _updateFloatArrayForUniform(name: string, array: Float32Array) {
+        this.updateUniformArray(name, array, array.length);
+    }
+
     private _updateMatrixForEffect(name: string, mat: IMatrixLike) {
         this._currentEffect.setMatrix(name, mat);
     }
 
     private _updateMatrixForUniform(name: string, mat: IMatrixLike) {
         this.updateUniform(name, <any>mat.toArray(), 16);
+    }
+
+    private _updateMatricesForEffect(name: string, mat: Float32Array) {
+        this._currentEffect.setMatrices(name, mat);
+    }
+
+    private _updateMatricesForUniform(name: string, mat: Float32Array) {
+        this.updateUniform(name, mat, mat.length);
     }
 
     private _updateVector3ForEffect(name: string, vector: Vector3) {

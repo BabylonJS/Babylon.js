@@ -5,6 +5,10 @@ import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
+    "Light0": { setIndex: 0, bindingIndex: 5 },
+    "Light1": { setIndex: 0, bindingIndex: 6 },
+    "Light2": { setIndex: 0, bindingIndex: 7 },
+    "Light3": { setIndex: 0, bindingIndex: 8 },
     "Material": { setIndex: 1, bindingIndex: 0 },
     "Mesh": { setIndex: 1, bindingIndex: 1 },
 };
@@ -70,7 +74,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         return attribute;
     }
 
-    public uniformProcessor(uniform: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string {
+    public uniformProcessor(uniform: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>): string {
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
         const uniformRegex = new RegExp(/\s*uniform\s+(\S+)\s+(\S+)\s*;/gm);
@@ -78,7 +82,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         const match = uniformRegex.exec(uniform);
         if (match != null) {
             const uniformType = match[1];
-            const name = match[2];
+            let name = match[2];
 
             // TODO WEBGPU. Ensures it does not conflict with some of today's used construct for shadows.
             if (uniformType.indexOf("texture") === 0 || uniformType.indexOf("sampler") === 0) {
@@ -105,9 +109,23 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][textureBindingIndex] = { isSampler: true, name };
             }
             else {
+                // Check the size of the uniform array in case of array.
+                let length = 0;
+                const startArray = name.indexOf("[");
+                const endArray = name.indexOf("]");
+                if (startArray > 0 && endArray > 0) {
+                    const lengthInString = name.substring(startArray + 1, endArray);
+                    length = +(lengthInString);
+                    if (isNaN(length)) {
+                        length = +(preProcessors[lengthInString]);
+                    }
+                    name = name.substr(0, startArray);
+                }
+
                 webgpuProcessingContext.leftOverUniforms.push({
                     name,
-                    type: uniformType
+                    type: uniformType,
+                    length
                 });
                 uniform = "";
             }
@@ -218,7 +236,12 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
 
             let ubo = `layout(set = ${availableUBO.setIndex}, binding = ${availableUBO.bindingIndex}) uniform ${name} {\n    `;
             for (let leftOverUniform of webgpuProcessingContext.leftOverUniforms) {
-                ubo += `    ${leftOverUniform.type} ${leftOverUniform.name};\n`;
+                if (leftOverUniform.length > 0) {
+                    ubo += `    ${leftOverUniform.type} ${leftOverUniform.name}[${leftOverUniform.length}];\n`;
+                }
+                else {
+                    ubo += `    ${leftOverUniform.type} ${leftOverUniform.name};\n`;
+                }
             }
             ubo += "};\n\n";
 
