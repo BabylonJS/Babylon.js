@@ -256,6 +256,21 @@ export class NodeMaterialBlock {
     }
 
     /**
+     * Gets the sibling of the given output
+     * @param current defines the current output
+     * @returns the next output in the list or null
+     */
+    public getSiblingOutput(current: NodeMaterialConnectionPoint) {
+        let index = this._outputs.indexOf(current);
+
+        if (index === -1 || index >= this._outputs.length) {
+            return null;
+        }
+
+        return this._outputs[index + 1];
+    }
+
+    /**
      * Connect current block with another block
      * @param other defines the block to connect with
      * @param options define the various options to help pick the right connections
@@ -271,12 +286,19 @@ export class NodeMaterialBlock {
         }
 
         let output = options && options.output ? this.getOutputByName(options.output) : this.getFirstAvailableOutput(other);
-        let input = options && options.input ? other.getInputByName(options.input) : other.getFirstAvailableInput(output);
 
-        if (output && input) {
-            output.connectTo(input);
-        } else {
-            throw "Unable to find a compatible match";
+        let notFound = true;
+        while (notFound) {
+            let input = options && options.input ? other.getInputByName(options.input) : other.getFirstAvailableInput(output);
+
+            if (output && input && output.canConnectTo(input)) {
+                output.connectTo(input);
+                notFound = false;
+            } else if (!output) {
+                throw "Unable to find a compatible match";
+            } else {
+                output = this.getSiblingOutput(output);
+            }
         }
 
         return this;

@@ -6,3 +6,4 @@ export * from "../vectorMergerBlock";
 export * from "../colorSplitterBlock";
 export * from "../vectorSplitterBlock";
 export * from "./imageProcessingBlock";
+export * from "./reflectionTextureBlock";

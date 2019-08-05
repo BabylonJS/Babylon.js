@@ -113,9 +113,9 @@ void main(void) {
 
 #ifdef REFLECTIONMAP_SKYBOX
 	#ifdef REFLECTIONMAP_SKYBOX_TRANSFORMED
-		vPositionUVW = (reflectionMatrix * vec4(position, 1.0)).xyz;
+		vPositionUVW = (reflectionMatrix * vec4(positionUpdated, 1.0)).xyz;
 	#else
-		vPositionUVW = position;
+		vPositionUVW = positionUpdated;
 	#endif
 #endif 
 
