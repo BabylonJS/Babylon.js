@@ -118,12 +118,6 @@ uniform Material
     vec3 vSphericalXY;
     vec3 vSphericalYZ;
     vec3 vSphericalZX;
-
-    // Image Processing TODO WEBGPU Hack
-    #ifdef WEBGPU
-	float exposureLinear;
-	float contrast;
-    #endif
 };
 
 uniform Mesh

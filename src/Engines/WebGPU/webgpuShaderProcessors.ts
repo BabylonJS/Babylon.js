@@ -14,6 +14,7 @@ const _knownSamplers: { [key: string]: { setIndex: number, bindingIndex: number}
     // "reflectionSampler": { setIndex: 0, bindingIndex: 3 },
 };
 
+// TODO WEBGPU. sampler3D
 const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
     "textureCube": "samplerCube",
     "texture2D": "sampler2D",
@@ -104,7 +105,11 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][textureBindingIndex] = { isSampler: true, name };
             }
             else {
-                // TODO WEBGPU. Manage none UBOs uniforms.
+                webgpuProcessingContext.leftOverUniforms.push({
+                    name,
+                    type: uniformType
+                });
+                uniform = "";
             }
         }
         return uniform;
@@ -160,7 +165,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     //     return closingBracketLine;
     // }
 
-    public postProcessor(code: string, defines: string[], isFragment: boolean) {
+    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
         // Remove extensions
@@ -191,6 +196,29 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             const lastClosingCurly = code.lastIndexOf("}");
             code = code.substring(0, lastClosingCurly);
             code += "gl_Position.y *= -1.; }";
+        }
+
+        // Builds the leftover UBOs.
+        const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
+        if (webgpuProcessingContext.leftOverUniforms.length) {
+            const name = "LeftOver";
+            let availableUBO = webgpuProcessingContext.availableUBOs[name];
+            if (!availableUBO) {
+                availableUBO = webgpuProcessingContext.getNextFreeUBOBinding();
+                webgpuProcessingContext.availableUBOs[name] = availableUBO;
+                if (!webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex]) {
+                    webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex] = [];
+                }
+                webgpuProcessingContext.orderedUBOsAndSamplers[availableUBO.setIndex][availableUBO.bindingIndex] = { isSampler: false, name };
+            }
+
+            let ubo = `layout(set = ${availableUBO.setIndex}, binding = ${availableUBO.bindingIndex}) uniform ${name} {\n    `;
+            for (let leftOverUniform of webgpuProcessingContext.leftOverUniforms) {
+                ubo += `    ${leftOverUniform.type} ${leftOverUniform.name};\n`;
+            }
+            ubo += "};\n\n";
+
+            code = ubo + code;
         }
 
         return code;

@@ -1608,11 +1608,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vSphericalYZ", 3);
         ubo.addUniform("vSphericalZX", 3);
 
-        if (this.getScene().getEngine().isWebGPU) {
-            ubo.addUniform("exposureLinear", 1);
-            ubo.addUniform("contrast", 1);
-        }
-
         ubo.create();
     }
 
@@ -1931,13 +1926,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             // image processing
-            if (scene.getEngine().isWebGPU) {
-                ubo.updateFloat("exposureLinear", this._imageProcessingConfiguration.exposure);
-                ubo.updateFloat("contrast", this._imageProcessingConfiguration.contrast);
-            }
-            else {
-                this._imageProcessingConfiguration!.bind(this._activeEffect);
-            }
+            this._imageProcessingConfiguration!.bind(this._activeEffect);
 
             // Log. depth
             MaterialHelper.BindLogDepth(defines, this._activeEffect, scene);
