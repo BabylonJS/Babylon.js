@@ -179,11 +179,13 @@ export class VideoDome extends TransformNode {
         this._mesh.material = material;
         this._mesh.parent = this;
 
+        // create a (disabled until needed) mask to cover unneeded segments of 180 videos.
         this._halfDomeMask = SphereBuilder.CreateSphere("", { slice: 0.5, diameter: options.size * 0.99, segments: options.resolution, sideOrientation: Mesh.BACKSIDE }, scene);
         this._halfDomeMask.rotate(Axis.X, -Math.PI / 2);
         // set the parent, so it will always be positioned correctly AND will be disposed when the main sphere is disposed
         this._halfDomeMask.parent = this._mesh;
         this._halfDome = !!options.halfDomeMode;
+        // enable or disable according to the settings
         this._halfDomeMask.setEnabled(this._halfDome);
 
         // optional configuration
@@ -217,12 +219,14 @@ export class VideoDome extends TransformNode {
 
         switch (value) {
             case VideoDome.MODE_SIDEBYSIDE:
+                // in half-dome mode the uScale should be double of 360 videos
                 this._videoTexture.uScale = this._halfDome ? 1 : 0.5;
                 this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
                     this._videoTexture.uOffset = camera.isRightCamera ? 0.5 : 0.0;
                 });
                 break;
             case VideoDome.MODE_TOPBOTTOM:
+                // in half-dome mode the vScale should be double of 360 videos
                 this._videoTexture.vScale = this._halfDome ? 1 : 0.5;
                 this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
                     this._videoTexture.vOffset = camera.isRightCamera ? 0.5 : 0.0;
