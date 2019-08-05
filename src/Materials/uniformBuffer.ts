@@ -6,6 +6,7 @@ import { Effect } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { Color3 } from '../Maths/math.color';
+import { IMatrixLike } from '../Maths/math.like';
 /**
  * Uniform buffer objects.
  *
@@ -80,7 +81,7 @@ export class UniformBuffer {
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateMatrix: (name: string, mat: Matrix) => void;
+    public updateMatrix: (name: string, mat: IMatrixLike) => void;
 
     /**
      * Lambda to Update vec3 of float from a Vector in a uniform buffer.
@@ -534,11 +535,11 @@ export class UniformBuffer {
         this.updateUniform(name, UniformBuffer._tempBuffer, 4);
     }
 
-    private _updateMatrixForEffect(name: string, mat: Matrix) {
+    private _updateMatrixForEffect(name: string, mat: IMatrixLike) {
         this._currentEffect.setMatrix(name, mat);
     }
 
-    private _updateMatrixForUniform(name: string, mat: Matrix) {
+    private _updateMatrixForUniform(name: string, mat: IMatrixLike) {
         this.updateUniform(name, <any>mat.toArray(), 16);
     }
 

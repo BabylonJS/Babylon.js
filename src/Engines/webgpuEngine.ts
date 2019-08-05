@@ -121,6 +121,8 @@ export class WebGPUEngine extends Engine {
         availableSamplers: { [key: string]: { setIndex: number, bindingIndex: number} },
         orderedAttributes: string[],
         orderedUBOsAndSamplers: { name: string, isSampler: boolean }[][],
+        leftOverUniforms: { name: string, type: string }[],
+        leftOverUniformsByName: { [name: string]: string },
         sources: {
             vertex: string
             fragment: string,
@@ -790,7 +792,7 @@ export class WebGPUEngine extends Engine {
     }
 
     public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
-        var pipelineContext = new WebGPUPipelineContext(shaderProcessingContext! as WebGPUShaderProcessingContext);
+        var pipelineContext = new WebGPUPipelineContext(shaderProcessingContext! as WebGPUShaderProcessingContext, this);
         pipelineContext.engine = this;
         return pipelineContext;
     }
@@ -803,6 +805,7 @@ export class WebGPUEngine extends Engine {
         key: string) {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
 
+        // TODO WEBGPU. Check if caches could be reuse from piepline ???
         const shader = this._compiledShaders[key];
         if (shader) {
             webGpuContext.stages = shader.stages;
@@ -811,6 +814,8 @@ export class WebGPUEngine extends Engine {
             webGpuContext.availableSamplers = shader.availableSamplers;
             webGpuContext.orderedAttributes = shader.orderedAttributes;
             webGpuContext.orderedUBOsAndSamplers = shader.orderedUBOsAndSamplers;
+            webGpuContext.leftOverUniforms = shader.leftOverUniforms;
+            webGpuContext.leftOverUniformsByName = shader.leftOverUniformsByName;
             webGpuContext.sources = shader.sources;
         }
         else {
@@ -828,6 +833,8 @@ export class WebGPUEngine extends Engine {
                 availableSamplers: webGpuContext.availableSamplers,
                 orderedAttributes: webGpuContext.orderedAttributes,
                 orderedUBOsAndSamplers: webGpuContext.orderedUBOsAndSamplers,
+                leftOverUniforms: webGpuContext.leftOverUniforms,
+                leftOverUniformsByName: webGpuContext.leftOverUniformsByName,
                 sources: {
                     fragment: fragmentSourceCode,
                     vertex: vertexSourceCode
@@ -1569,6 +1576,68 @@ export class WebGPUEngine extends Engine {
         return WebGPUConstants.GPUColorWriteBits_NONE;
     }
 
+    /**
+     * Sets the current alpha mode
+     * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
+     * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     */
+    public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
+        if (this._alphaMode === mode) {
+            return;
+        }
+
+        switch (mode) {
+            case Engine.ALPHA_DISABLE:
+                this._alphaState.alphaBlend = false;
+                break;
+            case Engine.ALPHA_PREMULTIPLIED:
+                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Engine.ALPHA_PREMULTIPLIED_PORTERDUFF:
+                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Engine.ALPHA_COMBINE:
+                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Engine.ALPHA_ONEONE:
+                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Engine.ALPHA_ADD:
+                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Engine.ALPHA_SUBTRACT:
+                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Engine.ALPHA_MULTIPLY:
+                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Engine.ALPHA_MAXIMIZED:
+                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Engine.ALPHA_INTERPOLATE:
+                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Engine.ALPHA_SCREENMODE:
+                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                this._alphaState.alphaBlend = true;
+                break;
+        }
+        if (!noDepthWriteChange) {
+            this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
+        }
+        this._alphaMode = mode;
+    }
+
     private _getColorStateDescriptors(): GPUColorStateDescriptor[] {
         // TODO WEBGPU. Color State according to the cached blend state.
         // And the current render pass attaschment setup.
@@ -1846,12 +1915,19 @@ export class WebGPUEngine extends Engine {
         return vertexInputs;
     }
 
-    // TODO WEBGPU. find a better solution than hardcoded groups.
     private _getBindGroupsToRender(): GPUBindGroup[] {
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
         let bindGroups = webgpuPipelineContext.bindGroups;
         if (bindGroups) {
+            if (webgpuPipelineContext.uniformBuffer) {
+                webgpuPipelineContext.uniformBuffer.update();
+            }
             return bindGroups;
+        }
+
+        if (webgpuPipelineContext.uniformBuffer) {
+            this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, "LeftOver");
+            webgpuPipelineContext.uniformBuffer.update();
         }
 
         bindGroups = [];
@@ -1884,6 +1960,9 @@ export class WebGPUEngine extends Engine {
                             resource: bindingInfo.texture._webGPUSampler!,
                         });
                     }
+                    else {
+                        Logger.Error("Sampler has not been bound: " + bindingDefinition.name);
+                    }
                 }
                 else {
                     const dataBuffer = this._uniformsBuffers[bindingDefinition.name];
@@ -1897,6 +1976,9 @@ export class WebGPUEngine extends Engine {
                                 size: dataBuffer.capacity,
                             },
                         });
+                    }
+                    else {
+                        Logger.Error("UBO has not been bound: " + bindingDefinition.name);
                     }
                 }
             }
@@ -2030,9 +2112,9 @@ export class WebGPUEngine extends Engine {
 
     public _unpackFlipY(value: boolean) { }
 
+    // TODO WEBGPU. All of this should go once engine split with baseEngine.
     public bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void {
     }
-
     public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
         return [];
     }
