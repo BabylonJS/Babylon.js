@@ -208,4 +208,24 @@ export class WebGPUConstants {
     public static readonly GPUAddressMode_repeat = "repeat";
     public static readonly GPUAddressMode_mirrorRepeat = "mirror-repeat";
     public static readonly GPUAddressMode_clampToBorderColor = "clamp-to-border-color";
+
+    public static readonly GPUBlendFactor_zero = "zero";
+    public static readonly GPUBlendFactor_one = "one";
+    public static readonly GPUBlendFactor_srcColor = "src-color";
+    public static readonly GPUBlendFactor_oneMinusSrcColor = "one-minus-src-color";
+    public static readonly GPUBlendFactor_srcAlpha = "src-alpha";
+    public static readonly GPUBlendFactor_oneMinusSrcAlpha = "one-minus-src-alpha";
+    public static readonly GPUBlendFactor_dstColor = "dst-color";
+    public static readonly GPUBlendFactor_oneMinusDstColor = "one-minus-dst-color";
+    public static readonly GPUBlendFactor_dstAlpha = "dst-alpha";
+    public static readonly GPUBlendFactor_oneMinusDstAlpha = "one-minus-dst-alpha";
+    public static readonly GPUBlendFactor_srcAlphaSaturated = "src-alpha-saturated";
+    public static readonly GPUBlendFactor_blendColor = "blend-color";
+    public static readonly GPUBlendFactor_oneMinusBlendColor = "one-minus-blend-color";
+
+    public static readonly GPUBlendOperation_add = "add";
+    public static readonly GPUBlendOperation_substract = "subtract";
+    public static readonly GPUBlendOperation_reverseSubtract = "reverse-subtract";
+    public static readonly GPUBlendOperation_min = "min";
+    public static readonly GPUBlendOperation_max = "max";
 }
