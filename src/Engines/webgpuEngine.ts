@@ -1693,43 +1693,53 @@ export class WebGPUEngine extends Engine {
                 this._alphaState.alphaBlend = false;
                 break;
             case Engine.ALPHA_PREMULTIPLIED:
-                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
+                // this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
+                this._alphaState.setAlphaBlendFunctionParameters(1, 0x0303, 1, 1);
                 this._alphaState.alphaBlend = true;
                 break;
             case Engine.ALPHA_PREMULTIPLIED_PORTERDUFF:
-                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                // this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                this._alphaState.setAlphaBlendFunctionParameters(1, 0x0303, 1, 0x0303);
                 this._alphaState.alphaBlend = true;
                 break;
             case Engine.ALPHA_COMBINE:
-                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
+                // this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
+                this._alphaState.setAlphaBlendFunctionParameters(0x0302, 0x0303, 1, 1);
                 this._alphaState.alphaBlend = true;
                 break;
             case Engine.ALPHA_ONEONE:
-                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                // this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                this._alphaState.setAlphaBlendFunctionParameters(1, 1, 0, 1);
                 this._alphaState.alphaBlend = true;
                 break;
             case Engine.ALPHA_ADD:
-                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                // this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
+                this._alphaState.setAlphaBlendFunctionParameters(0x0302, 1, 0, 1);
                 this._alphaState.alphaBlend = true;
                 break;
             case Engine.ALPHA_SUBTRACT:
-                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
+                // this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
+                this._alphaState.setAlphaBlendFunctionParameters(0, 0x0301, 1, 1);
                 this._alphaState.alphaBlend = true;
                 break;
             case Engine.ALPHA_MULTIPLY:
-                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
+                // this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
+                this._alphaState.setAlphaBlendFunctionParameters(0x0306, 0, 1, 1);
                 this._alphaState.alphaBlend = true;
                 break;
             case Engine.ALPHA_MAXIMIZED:
-                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
+                // this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
+                this._alphaState.setAlphaBlendFunctionParameters(0x0302, 0x0301, 1, 1);
                 this._alphaState.alphaBlend = true;
                 break;
             case Engine.ALPHA_INTERPOLATE:
-                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
+                // this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
+                this._alphaState.setAlphaBlendFunctionParameters(0x8001, 0x8002, 0x8003, 0x8004);
                 this._alphaState.alphaBlend = true;
                 break;
             case Engine.ALPHA_SCREENMODE:
-                //this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                // this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                this._alphaState.setAlphaBlendFunctionParameters(1, 0x0301, 1, 0x0303);
                 this._alphaState.alphaBlend = true;
                 break;
         }
@@ -1739,24 +1749,86 @@ export class WebGPUEngine extends Engine {
         this._alphaMode = mode;
     }
 
+    private _getAphaBlendOperation(operation: Nullable<number>): GPUBlendOperation {
+        switch (operation) {
+            case 0x8006:
+                return WebGPUConstants.GPUBlendOperation_add;
+            case 0x800A:
+                return WebGPUConstants.GPUBlendOperation_substract;
+            case 0x800B:
+                return WebGPUConstants.GPUBlendOperation_reverseSubtract;
+            default:
+                return WebGPUConstants.GPUBlendOperation_add;
+        }
+    }
+
+    private _getAphaBlendFactor(factor: Nullable<number>): GPUBlendFactor {
+        switch (factor) {
+            case 0:
+                return WebGPUConstants.GPUBlendFactor_zero;
+            case 1:
+                return WebGPUConstants.GPUBlendFactor_one;
+            case 0x0300:
+                return WebGPUConstants.GPUBlendFactor_srcColor;
+            case 0x0301:
+                return WebGPUConstants.GPUBlendFactor_oneMinusSrcColor;
+            case 0x0302:
+                return WebGPUConstants.GPUBlendFactor_srcAlpha;
+            case 0x0303:
+                return WebGPUConstants.GPUBlendFactor_oneMinusSrcAlpha;
+            case 0x0304:
+                return WebGPUConstants.GPUBlendFactor_dstAlpha;
+            case 0x0305:
+                return WebGPUConstants.GPUBlendFactor_oneMinusDstAlpha;
+            case 0x0306:
+                return WebGPUConstants.GPUBlendFactor_dstColor;
+            case 0x0307:
+                return WebGPUConstants.GPUBlendFactor_oneMinusDstColor;
+            case 0x0308:
+                return WebGPUConstants.GPUBlendFactor_srcAlphaSaturated;
+            case 0x8001:
+                return WebGPUConstants.GPUBlendFactor_blendColor;
+            case 0x8002:
+                return WebGPUConstants.GPUBlendFactor_oneMinusBlendColor;
+            case 0x8003:
+                return WebGPUConstants.GPUBlendFactor_blendColor;
+            case 0x8004:
+                return WebGPUConstants.GPUBlendFactor_oneMinusBlendColor;
+            default:
+                return WebGPUConstants.GPUBlendFactor_one;
+        }
+    }
+
+    private _getAphaBlendState(): GPUBlendDescriptor {
+        if (!this._alphaState.alphaBlend) {
+            return { };
+        }
+
+        return {
+            srcFactor: this._getAphaBlendFactor(this._alphaState._blendFunctionParameters[2]),
+            dstFactor: this._getAphaBlendFactor(this._alphaState._blendFunctionParameters[3]),
+            operation: this._getAphaBlendOperation(this._alphaState._blendEquationParameters[1]),
+        };
+    }
+
+    private _getColorBlendState(): GPUBlendDescriptor {
+        if (!this._alphaState.alphaBlend) {
+            return { };
+        }
+
+        return {
+            srcFactor: this._getAphaBlendFactor(this._alphaState._blendFunctionParameters[0]),
+            dstFactor: this._getAphaBlendFactor(this._alphaState._blendFunctionParameters[1]),
+            operation: this._getAphaBlendOperation(this._alphaState._blendEquationParameters[0]),
+        };
+    }
+
     private _getColorStateDescriptors(): GPUColorStateDescriptor[] {
-        // TODO WEBGPU. Color State according to the cached blend state.
-        // And the current render pass attaschment setup.
-        // Manage Multi render target.
+        // TODO WEBGPU. Manage Multi render target.
         return [{
             format: this._options.swapChainFormat,
-            // alphaBlend: {
-            //     srcFactor: ,
-            //     dstFactor: ,
-            //     operation: ,
-            // },
-            // colorBlend: {
-            //     srcFactor: ,
-            //     dstFactor: ,
-            //     operation: ,
-            // },
-            alphaBlend: {},
-            colorBlend: {},
+            alphaBlend: this._getAphaBlendState(),
+            colorBlend: this._getColorBlendState(),
             writeMask: this._getWriteMask(),
         }];
     }
@@ -2129,6 +2201,10 @@ export class WebGPUEngine extends Engine {
 
         const bindGroups = this._getBindGroupsToRender();
         this._setRenderBindGroups(bindGroups);
+
+        if (this._alphaState.alphaBlend && this._alphaState._isBlendConstantsDirty) {
+            this._currentRenderPass!.setBlendColor(this._alphaState._blendConstants as any);
+        }
     }
 
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount: number = 1): void {
@@ -2218,6 +2294,14 @@ export class WebGPUEngine extends Engine {
     }
 
     public _unpackFlipY(value: boolean) { }
+
+    /**
+     * Apply all cached states (depth, culling, stencil and alpha)
+     */
+    public applyStates() {
+        // TODO WEBGPU. Apply States dynamically.
+        // This is done at the pipeline creation level for the moment...
+    }
 
     // TODO WEBGPU. All of this should go once engine split with baseEngine.
     /** @hidden */

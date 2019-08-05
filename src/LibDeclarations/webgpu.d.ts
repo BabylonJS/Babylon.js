@@ -294,13 +294,6 @@ interface GPUColorStateDescriptor {
     writeMask?: GPUColorWriteFlags;
 }
 
-interface GPUBlendStateDescriptor {
-  alpha?: GPUBlendDescriptor;
-  blendEnabled?: boolean;
-  color?: GPUBlendDescriptor;
-  writeMask?: GPUColorWriteFlags;
-}
-
 interface GPUBufferBinding {
   buffer?: GPUBuffer;
   offset?: number;
@@ -325,6 +318,14 @@ interface GPUColor {
   g?: number;
   r?: number;
 }
+
+interface GPUColorDict {
+  a: number;
+  b: number;
+  g: number;
+  r: number;
+}
+type GPUColor = [number, number, number, number] | GPUColorDict;
 
 interface GPUCommandEncoderDescriptor {
   label?: string;
@@ -431,7 +432,6 @@ interface GPURenderPipelineStageDescriptor {
 
 interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase, GPURenderPipelineStageDescriptor {
   colorStates?: GPUColorStateDescriptor[];
-  // blendStates?: GPUBlendStateDescriptor[];
   depthStencilState?: GPUDepthStencilStateDescriptor;
   vertexInput?: GPUInputStateDescriptor;
   primitiveTopology?: GPUPrimitiveTopology;
