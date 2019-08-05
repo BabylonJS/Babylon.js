@@ -10,11 +10,13 @@ import "../Meshes/Builders/sphereBuilder";
 import { Nullable } from "../types";
 import { Observer } from "../Misc/observable";
 import { Vector3 } from '../Maths/math.vector';
+import { Axis } from '../Maths';
+import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
 
 declare type Camera = import("../Cameras/camera").Camera;
 
 /**
- * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
+ * Display a 360/180 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
  * As a subclass of TransformNode, this allow parenting to the camera or multiple videos with different locations in the scene.
  * This class achieves its effect with a VideoTexture and a correctly configured BackgroundMaterial on an inverted sphere.
  * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
@@ -32,6 +34,8 @@ export class VideoDome extends TransformNode {
      * Define the video source as a Stereoscopic Side by Side panoramic 360 video.
      */
     public static readonly MODE_SIDEBYSIDE = 2;
+
+    private _halfDome: boolean = false;
 
     private _useDirectMapping = false;
 
@@ -56,6 +60,11 @@ export class VideoDome extends TransformNode {
      * The surface used for the skybox
      */
     protected _mesh: Mesh;
+
+    /**
+     * A mesh that will be used to mask the back of the video dome in case it is a 180 degree movie.
+     */
+    private _halfDomeMask: Mesh;
 
     /**
      * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
@@ -86,6 +95,15 @@ export class VideoDome extends TransformNode {
         this._changeVideoMode(value);
     }
 
+    public get halfDome(): boolean {
+        return this._halfDome;
+    }
+
+    public set halfDome(enabled: boolean) {
+        this._halfDome = enabled;
+        this._halfDomeMask.setEnabled(enabled);
+    }
+
     /**
      * Oberserver used in Stereoscopic VR Mode.
      */
@@ -105,7 +123,8 @@ export class VideoDome extends TransformNode {
         size?: number,
         poster?: string,
         faceForward?: boolean,
-        useDirectMapping?: boolean
+        useDirectMapping?: boolean,
+        halfDomeMode?: boolean
     }, scene: Scene) {
         super(name, scene);
 
@@ -160,6 +179,13 @@ export class VideoDome extends TransformNode {
         this._mesh.material = material;
         this._mesh.parent = this;
 
+        this._halfDomeMask = SphereBuilder.CreateSphere("", { slice: 0.5, diameter: options.size * 0.99, segments: options.resolution, sideOrientation: Mesh.BACKSIDE }, scene);
+        this._halfDomeMask.rotate(Axis.X, -Math.PI / 2);
+        // set the parent, so it will always be positioned correctly AND will be disposed when the main sphere is disposed
+        this._halfDomeMask.parent = this._mesh;
+        this._halfDome = !!options.halfDomeMode;
+        this._halfDomeMask.setEnabled(this._halfDome);
+
         // optional configuration
         if (options.clickToPlay) {
             scene.onPointerUp = () => {
@@ -191,13 +217,13 @@ export class VideoDome extends TransformNode {
 
         switch (value) {
             case VideoDome.MODE_SIDEBYSIDE:
-                this._videoTexture.uScale = 0.5;
+                this._videoTexture.uScale = this._halfDome ? 1 : 0.5;
                 this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
                     this._videoTexture.uOffset = camera.isRightCamera ? 0.5 : 0.0;
                 });
                 break;
             case VideoDome.MODE_TOPBOTTOM:
-                this._videoTexture.vScale = 0.5;
+                this._videoTexture.vScale = this._halfDome ? 1 : 0.5;
                 this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
                     this._videoTexture.vOffset = camera.isRightCamera ? 0.5 : 0.0;
                 });
