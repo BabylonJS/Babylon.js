@@ -1,7 +1,7 @@
 import { Logger } from "../Misc/logger";
 import { Nullable, DataArray, IndicesArray, FloatArray } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Color3, Color4 } from "../Maths/math";
+import { Color4 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
 import { Engine, EngineCapabilities, InstancingAttributeInfo } from "../Engines/engine";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
