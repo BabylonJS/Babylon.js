@@ -22,6 +22,25 @@ import { IShaderProcessor } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
 import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
+import { Tools } from "../Misc/tools";
+
+/**
+ * Options to load the associated Shaderc library
+ */
+export interface ShadercOptions {
+    /**
+     * Defines an existing instance of shaderC (usefull in modules who do not access the global instance).
+     */
+    shaderc?: any;
+    /**
+     * Defines the URL of the shaderc JS File.
+     */
+    jsPath?: string;
+    /**
+     * Defines the URL of the shaderc WASM File.
+     */
+    wasmPath?: string;
+}
 
 /**
  * Options to create the WebGPU engine
@@ -78,6 +97,12 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
  * The web GPU engine class provides support for WebGPU version of babylon.js.
  */
 export class WebGPUEngine extends Engine {
+    // Default shaderc options.
+    private static readonly _shadercDefaultOptions: ShadercOptions = {
+        jsPath: "http://preview.babylonjs.com/shaderc/shaderc.js",
+        wasmPath: "http://preview.babylonjs.com/shaderc/shaderc.wasm"
+    };
+
     // Page Life cycle and constants
     private readonly _uploadEncoderDescriptor = { label: "upload" };
     private readonly _renderEncoderDescriptor = { label: "render" };
@@ -213,8 +238,8 @@ export class WebGPUEngine extends Engine {
      * @param shadercOptions Defines the ShaderC compiler options if necessary
      * @returns a promise notifying the readiness of the engine.
      */
-    public initAsync(shadercOptions: any = null): Promise<void> {
-        return (window as any).Shaderc(shadercOptions)
+    public initAsync(shadercOptions?: ShadercOptions): Promise<void> {
+        return this._initShaderc(shadercOptions)
             .then((shaderc: any) => {
                 this._shaderc = shaderc;
                 return navigator.gpu!.requestAdapter(this._options);
@@ -235,6 +260,35 @@ export class WebGPUEngine extends Engine {
                 Logger.Error("Can not create WebGPU Device and/or context.");
                 Logger.Error(e);
             });
+    }
+
+    private _initShaderc(shadercOptions?: ShadercOptions): Promise<any> {
+        shadercOptions = shadercOptions || { };
+        shadercOptions = {
+            ...WebGPUEngine._shadercDefaultOptions,
+            ...shadercOptions
+        };
+
+        if (shadercOptions.shaderc) {
+            return Promise.resolve(shadercOptions.shaderc);
+        }
+
+        const wasmOptions = {
+            wasmBinaryFile: shadercOptions!.wasmPath
+        };
+
+        if ((window as any).Shaderc) {
+            return (window as any).Shaderc(wasmOptions);
+        }
+
+        if (shadercOptions.jsPath && shadercOptions.wasmPath) {
+            return Tools.LoadScriptAsync(shadercOptions.jsPath)
+                .then(() => {
+                    return (window as any).Shaderc(wasmOptions);
+                });
+        }
+
+        return Promise.reject("shaderc is not available.");
     }
 
     private _initializeLimits(): void {
