@@ -1882,15 +1882,6 @@ export class WebGPUEngine extends Engine {
             case VertexBuffer.NormalKind:
             case VertexBuffer.PositionKind:
                 switch (type) {
-                    // TODO WEBGPU...
-                    // case VertexBuffer.BYTE:
-                    //     return normalized ? WebGPUConstants.GPUVertexFormat_char3norm : WebGPUConstants.GPUVertexFormat_char3;
-                    // case VertexBuffer.UNSIGNED_BYTE:
-                    //     return normalized ? WebGPUConstants.GPUVertexFormat_uchar3norm : WebGPUConstants.GPUVertexFormat_uchar3;
-                    // case VertexBuffer.SHORT:
-                    //     return normalized ? WebGPUConstants.GPUVertexFormat_short3norm : WebGPUConstants.GPUVertexFormat_short3;
-                    // case VertexBuffer.UNSIGNED_SHORT:
-                    //     return normalized ? WebGPUConstants.GPUVertexFormat_ushort3norm : WebGPUConstants.GPUVertexFormat_ushort3;
                     case VertexBuffer.INT:
                         return WebGPUConstants.GPUVertexFormat_int3;
                     case VertexBuffer.UNSIGNED_INT:
@@ -1898,7 +1889,7 @@ export class WebGPUEngine extends Engine {
                     case VertexBuffer.FLOAT:
                         return WebGPUConstants.GPUVertexFormat_float3;
                     default:
-                        throw "Unsupported vertex type " + type;
+                        throw "Unsupported vertex type " + type + "(https://github.com/gpuweb/gpuweb/issues/231)";
                 }
             case VertexBuffer.ColorKind:
             case VertexBuffer.MatricesIndicesKind:
@@ -1933,15 +1924,6 @@ export class WebGPUEngine extends Engine {
             kind.indexOf("normal") === 0 ||
             kind.indexOf("tangent") === 0) {
             switch (type) {
-                // TODO WEBGPU...
-                // case VertexBuffer.BYTE:
-                //     return normalized ? WebGPUConstants.GPUVertexFormat_char3norm : WebGPUConstants.GPUVertexFormat_char3;
-                // case VertexBuffer.UNSIGNED_BYTE:
-                //     return normalized ? WebGPUConstants.GPUVertexFormat_uchar3norm : WebGPUConstants.GPUVertexFormat_uchar3;
-                // case VertexBuffer.SHORT:
-                //     return normalized ? WebGPUConstants.GPUVertexFormat_short3norm : WebGPUConstants.GPUVertexFormat_short3;
-                // case VertexBuffer.UNSIGNED_SHORT:
-                //     return normalized ? WebGPUConstants.GPUVertexFormat_ushort3norm : WebGPUConstants.GPUVertexFormat_ushort3;
                 case VertexBuffer.INT:
                     return WebGPUConstants.GPUVertexFormat_int3;
                 case VertexBuffer.UNSIGNED_INT:
@@ -1949,7 +1931,7 @@ export class WebGPUEngine extends Engine {
                 case VertexBuffer.FLOAT:
                     return WebGPUConstants.GPUVertexFormat_float3;
                 default:
-                    throw "Unsupported vertex type " + type;
+                    throw "Unsupported vertex type " + type + "(https://github.com/gpuweb/gpuweb/issues/231)";
             }
         }
         if (kind.indexOf("uv_") === 0) {
