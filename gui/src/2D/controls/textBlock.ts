@@ -439,7 +439,7 @@ export class TextBlock extends Control {
 
                 let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
 
-                if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
+                if (lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                     let lineSpacing = 0;
                     if (this._lineSpacing.isPixel) {
                         lineSpacing = this._lineSpacing.getValue(this._host);

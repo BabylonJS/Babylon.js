@@ -11606,7 +11606,7 @@ var TextBlock = /** @class */ (function (_super) {
                 }
                 var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context_1);
                 var newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
-                if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
+                if (lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                     var lineSpacing = 0;
                     if (this._lineSpacing.isPixel) {
                         lineSpacing = this._lineSpacing.getValue(this._host);
