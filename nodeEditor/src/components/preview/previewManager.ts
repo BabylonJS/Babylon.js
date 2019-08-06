@@ -14,6 +14,7 @@ export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
     private _onBuildObserver: Nullable<Observer<NodeMaterial>>;    
     private _onPreviewMeshTypeChangedObserver: Nullable<Observer<void>>;
+    private _onUpdateRequiredObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
     private _light: HemisphericLight;
@@ -35,6 +36,11 @@ export class PreviewManager {
             this._refreshPreviewMesh();
         });
 
+        this._onUpdateRequiredObserver = globalState.onUpdateRequiredObservable.add(() => {
+            let serializationObject = this._nodeMaterial.serialize();
+            this._updatePreview(serializationObject);
+        });
+
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
@@ -43,7 +49,7 @@ export class PreviewManager {
 
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
-        this._camera.wheelPrecision = 10;
+        this._camera.wheelPrecision = 20;
         this._camera.attachControl(targetCanvas, false);
 
         this._refreshPreviewMesh();
@@ -92,6 +98,7 @@ export class PreviewManager {
     public dispose() {
         this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
         this._globalState.onPreviewMeshTypeChanged.remove(this._onPreviewMeshTypeChangedObserver);
+        this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
 
         if (this._material) {
             this._material.dispose();

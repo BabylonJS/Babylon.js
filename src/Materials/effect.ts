@@ -768,6 +768,7 @@ export class Effect implements IDisposable {
             Logger.Error("Attributes: " + attributesNames.map(function(attribute) {
                 return " " + attribute;
             }));
+            Logger.Error("Defines:\r\n" + this.defines);
             Logger.Error("Error: " + this._compilationError);
             if (previousPipelineContext) {
                 this._pipelineContext = previousPipelineContext;
