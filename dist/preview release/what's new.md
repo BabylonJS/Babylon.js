@@ -32,6 +32,7 @@
 - Added url parameters to web request modifiers ([PierreLeBlond](https://github.com/PierreLeBlond))
 - Added `VRExperienceHelper.exitVROnDoubleTap` ([Deltakosh](https://github.com/deltakosh/))
 - Added `Scene.getTextureByUniqueID` ([aWeirdo](https://github.com/aWeirdo/))
+- Added support for 180 VR videos in `VideoDome` ([RaananW](https://github.com/RaananW/))
 - Added optional parameter to use Euler angles in planeRotationGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Engine
@@ -119,6 +120,7 @@
 - Fix useObjectOrienationForDragging for pointerDragBehavior when using a single axis drag ([TrevorDev](https://github.com/TrevorDev))
 - Fix VR button not positioning correctly in canvas ([haroldma](https://github.com/haroldma))
 - Fix check for material needing alpha blending in OutlineRenderer ([mkmc](https://github.com/mkmc))
+- Fixed: scene's input manager's detachControl doesn't remove a wheel event listener ([RamilKadyrov](https://github.com/RamilKadyrov))
 
 ## Breaking changes
 - Setting mesh.scaling to a new vector will no longer automatically call forceUpdate (this should be done manually when needed) ([TrevorDev](https://github.com/TrevorDev))
