@@ -34,10 +34,6 @@ interface HTMLCanvasElement {
     captureStream(fps?: number): MediaStream;
 }
 
-interface CanvasRenderingContext2D {
-    msImageSmoothingEnabled: boolean;
-}
-
 interface MouseEvent {
     mozMovementX: number;
     mozMovementY: number;
