@@ -79,6 +79,7 @@ export class WebGPUEngine extends Engine {
     private readonly _blitDescriptor = { label: "upload" };
     private readonly _clearDepthValue = 1;
     private readonly _clearStencilValue = 0;
+    private readonly _defaultSampleCount = 1;
 
     // Engine Life Cycle
     private _canvas: HTMLCanvasElement;
@@ -306,7 +307,7 @@ export class WebGPUEngine extends Engine {
             size: this._mainTextureExtends,
             arrayLayerCount: 1,
             mipLevelCount: 1,
-            // sampleCount: 1,
+            sampleCount: this._defaultSampleCount,
             dimension: WebGPUConstants.GPUTextureDimension_2d,
             format: WebGPUConstants.GPUTextureFormat_bgra8unorm,
             usage: WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT | WebGPUConstants.GPUTextureUsage_TRANSFER_SRC,
@@ -338,7 +339,7 @@ export class WebGPUEngine extends Engine {
             size: this._mainTextureExtends,
             arrayLayerCount: 1,
             mipLevelCount: 1,
-            sampleCount: 1,
+            sampleCount: this._defaultSampleCount,
             dimension: WebGPUConstants.GPUTextureDimension_2d,
             format: WebGPUConstants.GPUTextureFormat_depth24plusStencil8,
             usage: WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT
@@ -2078,7 +2079,7 @@ export class WebGPUEngine extends Engine {
         }
 
         // Unsupported at the moment but needs to be extracted from the MSAA param.
-        const sampleCount = 1;
+        const sampleCount = this._defaultSampleCount;
         const topology = this._getTopology(fillMode);
         const rasterizationStateDescriptor = this._getRasterizationStateDescriptor();
         const depthStateDescriptor = this._getDepthStencilStateDescriptor();
@@ -2088,7 +2089,7 @@ export class WebGPUEngine extends Engine {
         const pipelineLayout = this._getPipelineLayout();
 
         gpuPipeline.renderPipeline = this._device.createRenderPipeline({
-            sampleCount: sampleCount,
+            sampleCount,
             primitiveTopology: topology,
             rasterizationState: rasterizationStateDescriptor,
             depthStencilState: depthStateDescriptor,
