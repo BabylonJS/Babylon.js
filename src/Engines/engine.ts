@@ -1081,8 +1081,6 @@ export class Engine {
             }
 
             canvas = <HTMLCanvasElement>canvasOrContext;
-            this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
-
             // GL
             if (!options.disableWebGL2Support) {
                 try {
@@ -1116,6 +1114,8 @@ export class Engine {
             if (!this._gl) {
                 throw new Error("WebGL not supported");
             }
+
+            this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
 
             // Ensures a consistent color space unpacking of textures cross browser.
             this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
