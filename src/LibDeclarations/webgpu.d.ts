@@ -1,52 +1,48 @@
 // https://github.com/gpuweb/gpuweb/blob/72b88fd01c8dd7d17a03f5669e6b14fd0c9ce6b6/spec/index.bs
 // except #280 setSubData (TODO)
 
-export {};
-
-declare global {
-
-export interface GPUColorDict {
+interface GPUColorDict {
   a: number;
   b: number;
   g: number;
   r: number;
 }
-export type GPUColor = [number, number, number, number] | GPUColorDict;
+type GPUColor = [number, number, number, number] | GPUColorDict;
 
-export interface GPUOrigin2DDict {
+interface GPUOrigin2DDict {
   x?: number;
   y?: number;
 }
-export type GPUOrigin2D = [number, number] | GPUOrigin2DDict;
+type GPUOrigin2D = [number, number] | GPUOrigin2DDict;
 
-export interface GPUOrigin3DDict {
+interface GPUOrigin3DDict {
   x?: number;
   y?: number;
   z?: number;
 }
-export type GPUOrigin3D = [number, number, number] | GPUOrigin3DDict;
+type GPUOrigin3D = [number, number, number] | GPUOrigin3DDict;
 
-export interface GPUExtent3DDict {
+interface GPUExtent3DDict {
   width: number;
   height: number;
   depth: number;
 }
-export type GPUExtent3D = [number, number, number] | GPUExtent3DDict;
+type GPUExtent3D = [number, number, number] | GPUExtent3DDict;
 
-export type GPUBindingResource = GPUSampler | GPUTextureView | GPUBufferBinding;
+type GPUBindingResource = GPUSampler | GPUTextureView | GPUBufferBinding;
 
-export type GPUAddressMode =
+type GPUAddressMode =
   | "clamp-to-edge"
   | "repeat"
   | "mirror-repeat";
-export type GPUBindingType =
+type GPUBindingType =
   | "uniform-buffer"
   | "storage-buffer"
   | "readonly-storage-buffer"
   | "sampler"
   | "sampled-texture"
   | "storage-texture";
-export type GPUBlendFactor =
+type GPUBlendFactor =
   | "zero"
   | "one"
   | "src-color"
@@ -60,13 +56,13 @@ export type GPUBlendFactor =
   | "src-alpha-saturated"
   | "blend-color"
   | "one-minus-blend-color";
-export type GPUBlendOperation =
+type GPUBlendOperation =
   | "add"
   | "subtract"
   | "reverse-subtract"
   | "min"
   | "max";
-export type GPUCompareFunction =
+type GPUCompareFunction =
   | "never"
   | "less"
   | "equal"
@@ -75,31 +71,31 @@ export type GPUCompareFunction =
   | "notEqual"
   | "greaterEqual"
   | "always";
-export type GPUCullMode =
+type GPUCullMode =
   | "none"
   | "front"
   | "back";
-export type GPUFilterMode =
+type GPUFilterMode =
   | "nearest"
   | "linear";
-export type GPUFrontFace =
+type GPUFrontFace =
   | "ccw"
   | "cw";
-export type GPUIndexFormat =
+type GPUIndexFormat =
   | "uint16"
   | "uint32";
-export type GPUInputStepMode =
+type GPUInputStepMode =
   | "vertex"
   | "instance";
-export type GPULoadOp =
+type GPULoadOp =
   | "load";
-export type GPUPrimitiveTopology =
+type GPUPrimitiveTopology =
   | "point-list"
   | "line-list"
   | "line-strip"
   | "triangle-list"
   | "triangle-strip";
-export type GPUStencilOperation =
+type GPUStencilOperation =
   | "keep"
   | "zero"
   | "replace"
@@ -108,14 +104,14 @@ export type GPUStencilOperation =
   | "decrement-clamp"
   | "increment-wrap"
   | "decrement-wrap";
-export type GPUStoreOp =
+type GPUStoreOp =
   | "store"
   | "clear";
-export type GPUTextureDimension =
+type GPUTextureDimension =
   | "1d"
   | "2d"
   | "3d";
-export type GPUTextureFormat =
+type GPUTextureFormat =
   | "r8unorm"
   | "r8snorm"
   | "r8uint"
@@ -161,7 +157,7 @@ export type GPUTextureFormat =
   | "depth32float-stencil8"
   | "depth24plus"
   | "depth24plus-stencil8";
-export type GPUTextureViewDimension =
+type GPUTextureViewDimension =
   | "1d"
   | "2d"
   | "2d-array"
@@ -169,11 +165,11 @@ export type GPUTextureViewDimension =
   | "cube-array"
   | "3d";
 // SEB UPDATE.
-export type GPUTextureAspect =
+type GPUTextureAspect =
   | "all"
   | "stencil-only"
   | "depth-only";
-export type GPUVertexFormat =
+type GPUVertexFormat =
   | "uchar2"
   | "uchar4"
   | "char2"
@@ -205,8 +201,8 @@ export type GPUVertexFormat =
   | "int3"
   | "int4";
 
-export type GPUBufferUsageFlags = number;
-// export enum GPUBufferUsage {
+type GPUBufferUsageFlags = number;
+// enum GPUBufferUsage {
 //   NONE      = 0x0000,
 //   MAP_READ  = 0x0001,
 //   MAP_WRITE = 0x0002,
@@ -218,8 +214,8 @@ export type GPUBufferUsageFlags = number;
 //   STORAGE   = 0x0080,
 // }
 
-export type GPUColorWriteFlags = number;
-// export enum GPUColorWrite {
+type GPUColorWriteFlags = number;
+// enum GPUColorWrite {
 //   NONE  = 0x0,
 //   RED   = 0x1,
 //   GREEN = 0x2,
@@ -228,16 +224,16 @@ export type GPUColorWriteFlags = number;
 //   ALL   = 0xF,
 // }
 
-export type GPUShaderStageFlags = number;
-// export enum GPUShaderStage {
+type GPUShaderStageFlags = number;
+// enum GPUShaderStage {
 //   NONE     = 0x0,
 //   VERTEX   = 0x1,
 //   FRAGMENT = 0x2,
 //   COMPUTE  = 0x4,
 // }
 
-export type GPUTextureUsageFlags = number;
-// export enum GPUTextureUsage {
+type GPUTextureUsageFlags = number;
+// enum GPUTextureUsage {
 //   NONE              = 0x00,
 //   COPY_SRC          = 0x01,
 //   COPY_DST          = 0x02,
@@ -246,17 +242,17 @@ export type GPUTextureUsageFlags = number;
 //   OUTPUT_ATTACHMENT = 0x10,
 // }
 
-export interface GPUBindGroupBinding {
+interface GPUBindGroupBinding {
   binding: number;
   resource: GPUBindingResource;
 }
 
-export interface GPUBindGroupDescriptor extends GPUObjectDescriptorBase {
+interface GPUBindGroupDescriptor extends GPUObjectDescriptorBase {
   layout: GPUBindGroupLayout;
   bindings: GPUBindGroupBinding[];
 }
 
-export interface GPUBindGroupLayoutBinding {
+interface GPUBindGroupLayoutBinding {
   binding: number;
   visibility: GPUShaderStageFlags;
   type: GPUBindingType;
@@ -265,17 +261,17 @@ export interface GPUBindGroupLayoutBinding {
   dynamic?: boolean;
 }
 
-export interface GPUBindGroupLayoutDescriptor extends GPUObjectDescriptorBase {
+interface GPUBindGroupLayoutDescriptor extends GPUObjectDescriptorBase {
   bindings?: GPUBindGroupLayoutBinding[];
 }
 
-export interface GPUBlendDescriptor {
+interface GPUBlendDescriptor {
   dstFactor?: GPUBlendFactor;
   operation?: GPUBlendOperation;
   srcFactor?: GPUBlendFactor;
 }
 
-export interface GPUColorStateDescriptor {
+interface GPUColorStateDescriptor {
   format: GPUTextureFormat;
 
   alphaBlend?: GPUBlendDescriptor;
@@ -283,45 +279,45 @@ export interface GPUColorStateDescriptor {
   writeMask?: GPUColorWriteFlags;
 }
 
-export interface GPUBufferBinding {
+interface GPUBufferBinding {
   buffer: GPUBuffer;
   offset?: number;
   size?: number;
 }
 
-export interface GPUBufferCopyView {
+interface GPUBufferCopyView {
   buffer: GPUBuffer;
   offset?: number;
   rowPitch: number;
   imageHeight: number;
 }
 
-export interface GPUTextureCopyView {
+interface GPUTextureCopyView {
   texture: GPUTexture;
   mipLevel?: number;
   arrayLayer?: number;
   origin?: GPUOrigin3D;
 }
 
-export interface GPUImageBitmapCopyView {
+interface GPUImageBitmapCopyView {
   imageBitmap: ImageBitmap;
   origin?: GPUOrigin2D;
 }
 
-export interface GPUBufferDescriptor extends GPUObjectDescriptorBase {
+interface GPUBufferDescriptor extends GPUObjectDescriptorBase {
   size: number;
   usage: GPUBufferUsageFlags;
 }
 
-export interface GPUCommandEncoderDescriptor extends GPUObjectDescriptorBase {
+interface GPUCommandEncoderDescriptor extends GPUObjectDescriptorBase {
   label?: string;
 }
 
-export interface GPUComputePipelineDescriptor extends GPUPipelineDescriptorBase {
+interface GPUComputePipelineDescriptor extends GPUPipelineDescriptorBase {
   computeStage: GPUProgrammableStageDescriptor;
 }
 
-export interface GPUDepthStencilStateDescriptor {
+interface GPUDepthStencilStateDescriptor {
   format: GPUTextureFormat;
 
   depthWriteEnabled?: boolean;
@@ -334,57 +330,57 @@ export interface GPUDepthStencilStateDescriptor {
   stencilWriteMask?: number;
 }
 
-export interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
+interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
   extensions?: GPUExtensions;
   limits?: GPULimits;
 }
 
-export interface GPUExtensions {
+interface GPUExtensions {
   anisotropicFiltering?: boolean;
 }
 
-export interface GPUFenceDescriptor extends GPUObjectDescriptorBase {
+interface GPUFenceDescriptor extends GPUObjectDescriptorBase {
   initialValue?: number;
   label?: string;
   signalQueue?: GPUQueue;
 }
 
-export interface GPUVertexAttributeDescriptor {
+interface GPUVertexAttributeDescriptor {
   offset?: number;
   format: GPUVertexFormat;
   shaderLocation: number;
 }
 
-export interface GPUVertexBufferDescriptor {
+interface GPUVertexBufferDescriptor {
   stride: number;
   stepMode?: GPUInputStepMode;
   attributeSet: GPUVertexAttributeDescriptor[];
 }
 
-export interface GPUVertexInputDescriptor {
+interface GPUVertexInputDescriptor {
   indexFormat?: GPUIndexFormat;
   vertexBuffers: GPUVertexBufferDescriptor[];
 }
 
-export interface GPULimits {
+interface GPULimits {
   maxBindGroups?: number;
 }
 
-export interface GPUPipelineDescriptorBase {
+interface GPUPipelineDescriptorBase {
   label?: string;
   layout: GPUPipelineLayout;
 }
 
-export interface GPUPipelineLayoutDescriptor extends GPUObjectDescriptorBase {
+interface GPUPipelineLayoutDescriptor extends GPUObjectDescriptorBase {
   bindGroupLayouts: GPUBindGroupLayout[];
 }
 
-export interface GPUProgrammableStageDescriptor {
+interface GPUProgrammableStageDescriptor {
   module: GPUShaderModule;
   entryPoint: string;
 }
 
-export interface GPURasterizationStateDescriptor {
+interface GPURasterizationStateDescriptor {
   frontFace?: GPUFrontFace;
   cullMode?: GPUCullMode;
   depthBias?: number;
@@ -392,7 +388,7 @@ export interface GPURasterizationStateDescriptor {
   depthBiasClamp?: number;
 }
 
-export interface GPURenderPassColorAttachmentDescriptor {
+interface GPURenderPassColorAttachmentDescriptor {
   attachment: GPUTextureView;
   resolveTarget?: GPUTextureView | null;
 
@@ -400,7 +396,7 @@ export interface GPURenderPassColorAttachmentDescriptor {
   storeOp: GPUStoreOp;
 }
 
-export interface GPURenderPassDepthStencilAttachmentDescriptor {
+interface GPURenderPassDepthStencilAttachmentDescriptor {
   attachment: GPUTextureView;
 
   depthLoadValue: GPULoadOp | number;
@@ -410,17 +406,17 @@ export interface GPURenderPassDepthStencilAttachmentDescriptor {
   stencilStoreOp: GPUStoreOp;
 }
 
-export interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
+interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
   colorAttachments: GPURenderPassColorAttachmentDescriptor[];
   depthStencilAttachment?: GPURenderPassDepthStencilAttachmentDescriptor | null;
 }
 
-export interface GPURenderPipelineStageDescriptor {
+interface GPURenderPipelineStageDescriptor {
   vertexStage: GPUProgrammableStageDescriptor;
   fragmentStage?: GPUProgrammableStageDescriptor | null;
 }
 
-export interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase, GPURenderPipelineStageDescriptor {
+interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase, GPURenderPipelineStageDescriptor {
   primitiveTopology: GPUPrimitiveTopology;
   rasterizationState?: GPURasterizationStateDescriptor;
   colorStates: GPUColorStateDescriptor[];
@@ -432,7 +428,7 @@ export interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase, 
   alphaToCoverageEnabled?: boolean;
 }
 
-export interface GPUSamplerDescriptor extends GPUObjectDescriptorBase {
+interface GPUSamplerDescriptor extends GPUObjectDescriptorBase {
   compare?: GPUCompareFunction;
   lodMaxClamp?: number;
   lodMinClamp?: number;
@@ -445,25 +441,25 @@ export interface GPUSamplerDescriptor extends GPUObjectDescriptorBase {
   addressModeW?: GPUAddressMode;
 }
 
-export interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
+interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
   code: Uint32Array | string;
   label?: string;
 }
 
-export interface GPUStencilStateFaceDescriptor {
+interface GPUStencilStateFaceDescriptor {
   compare?: GPUCompareFunction;
   depthFailOp?: GPUStencilOperation;
   passOp?: GPUStencilOperation;
   failOp?: GPUStencilOperation;
 }
 
-export interface GPUSwapChainDescriptor extends GPUObjectDescriptorBase {
+interface GPUSwapChainDescriptor extends GPUObjectDescriptorBase {
   device: GPUDevice;
   format: GPUTextureFormat;
   usage?: GPUTextureUsageFlags;
 }
 
-export interface GPUTextureDescriptor extends GPUObjectDescriptorBase {
+interface GPUTextureDescriptor extends GPUObjectDescriptorBase {
   size: GPUExtent3D;
   arrayLayerCount?: number;
   mipLevelCount?: number;
@@ -473,7 +469,7 @@ export interface GPUTextureDescriptor extends GPUObjectDescriptorBase {
   usage: GPUTextureUsageFlags;
 }
 
-export interface GPUTextureViewDescriptor extends GPUObjectDescriptorBase {
+interface GPUTextureViewDescriptor extends GPUObjectDescriptorBase {
   aspect: GPUTextureAspect;
   baseArrayLayer?: number;
   baseMipLevel?: number;
@@ -483,19 +479,19 @@ export interface GPUTextureViewDescriptor extends GPUObjectDescriptorBase {
   mipLevelCount?: number;
 }
 
-export interface GPUAdapter extends GPUObjectBase {
+interface GPUAdapter extends GPUObjectBase {
   readonly extensions: GPUExtensions;
   readonly name: string;
   requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice>;
 }
 
-export interface GPUBindGroup extends GPUObjectBase {
+interface GPUBindGroup extends GPUObjectBase {
 }
 
-export interface GPUBindGroupLayout extends GPUObjectBase {
+interface GPUBindGroupLayout extends GPUObjectBase {
 }
 
-export interface GPUBuffer extends GPUObjectBase {
+interface GPUBuffer extends GPUObjectBase {
   //readonly mapping: ArrayBuffer | null;
   destroy(): void;
   unmap(): void;
@@ -506,13 +502,13 @@ export interface GPUBuffer extends GPUObjectBase {
   setSubData(offset: number, src: ArrayBufferView, srcOffset?: number, byteLength?: number): void;
 }
 
-export interface GPUCommandBuffer extends GPUObjectBase {
+interface GPUCommandBuffer extends GPUObjectBase {
 }
 
-export interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase {
+interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase {
 }
 
-export interface GPUCommandEncoder extends GPUObjectBase {
+interface GPUCommandEncoder extends GPUObjectBase {
   beginComputePass(descriptor?: GPUComputePassDescriptor): GPUComputePassEncoder;
   beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder;
   copyBufferToBuffer(source: GPUBuffer, sourceOffset: number, destination: GPUBuffer, destinationOffset: number, size: number): void;
@@ -527,10 +523,10 @@ export interface GPUCommandEncoder extends GPUObjectBase {
   insertDebugMarker(markerLabel: string): void;
 }
 
-export interface GPUComputePassDescriptor extends GPUObjectDescriptorBase {
+interface GPUComputePassDescriptor extends GPUObjectDescriptorBase {
 }
 
-export interface GPUComputePassEncoder extends GPUProgrammablePassEncoder {
+interface GPUComputePassEncoder extends GPUProgrammablePassEncoder {
   setPipeline(pipeline: GPUComputePipeline): void;
   dispatch(x: number, y?: number, z?: number): void;
   dispatchIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
@@ -538,25 +534,25 @@ export interface GPUComputePassEncoder extends GPUProgrammablePassEncoder {
   endPass(): void;
 }
 
-export interface GPUComputePipeline extends GPUObjectBase {
+interface GPUComputePipeline extends GPUObjectBase {
 }
 
-export interface GPUObjectBase {
+interface GPUObjectBase {
   label: string | undefined;
 }
 
-export interface GPUObjectDescriptorBase {
+interface GPUObjectDescriptorBase {
   label?: string;
 }
 
 // SwapChain / CanvasContext
-export interface GPUCanvasContext {
+interface GPUCanvasContext {
   configureSwapChain(descriptor: GPUSwapChainDescriptor): GPUSwapChain;
 
   getSwapChainPreferredFormat(device: GPUDevice): Promise<GPUTextureFormat>;
 }
 
-export interface GPUDevice extends GPUObjectBase {
+interface GPUDevice extends GPUObjectBase {
   readonly adapter: GPUAdapter;
   readonly extensions: GPUExtensions;
   readonly limits: GPULimits;
@@ -581,15 +577,15 @@ export interface GPUDevice extends GPUObjectBase {
   readonly lost: Promise<GPUDeviceLostInfo>;
 }
 
-export interface GPUFence extends GPUObjectBase {
+interface GPUFence extends GPUObjectBase {
   getCompletedValue(): number;
   onCompletion(completionValue: number): Promise<void>;
 }
 
-export interface GPUPipelineLayout extends GPUObjectBase {
+interface GPUPipelineLayout extends GPUObjectBase {
 }
 
-export interface GPUProgrammablePassEncoder extends GPUObjectBase {
+interface GPUProgrammablePassEncoder extends GPUObjectBase {
   setBindGroup(index: number, bindGroup: GPUBindGroup): void;
 
   popDebugGroup(): void;
@@ -597,13 +593,13 @@ export interface GPUProgrammablePassEncoder extends GPUObjectBase {
   insertDebugMarker(markerLabel: string): void;
 }
 
-export interface GPUQueue extends GPUObjectBase {
+interface GPUQueue extends GPUObjectBase {
   signal(fence: GPUFence, signalValue: number): void;
   submit(buffers: GPUCommandBuffer[]): void;
   createFence(descriptor?: GPUFenceDescriptor): GPUFence;
 }
 
-export interface GPURenderEncoderBase extends GPUProgrammablePassEncoder {
+interface GPURenderEncoderBase extends GPUProgrammablePassEncoder {
   setPipeline(pipeline: GPURenderPipeline): void;
 
   setIndexBuffer(buffer: GPUBuffer, offset: number): void;
@@ -616,7 +612,7 @@ export interface GPURenderEncoderBase extends GPUProgrammablePassEncoder {
   drawIndexedIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
 }
 
-export interface GPURenderPassEncoder extends GPURenderEncoderBase {
+interface GPURenderPassEncoder extends GPURenderEncoderBase {
   setViewport(x: number, y: number, width: number, height: number, minDepth: number, maxDepth: number): void;
   setScissorRect(x: number, y: number, width: number, height: number): void;
 
@@ -627,51 +623,51 @@ export interface GPURenderPassEncoder extends GPURenderEncoderBase {
   endPass(): void;
 }
 
-export interface GPURenderBundleDescriptor extends GPUObjectDescriptorBase {
+interface GPURenderBundleDescriptor extends GPUObjectDescriptorBase {
 }
 
-export interface GPURenderBundle extends GPUObjectBase {
+interface GPURenderBundle extends GPUObjectBase {
 }
 
-export interface GPURenderBundleEncoder extends GPURenderEncoderBase {
+interface GPURenderBundleEncoder extends GPURenderEncoderBase {
 }
 
-export interface GPURenderBundleEncoderDescriptor extends GPUObjectDescriptorBase {
+interface GPURenderBundleEncoderDescriptor extends GPUObjectDescriptorBase {
   colorFormats: GPUTextureFormat[];
   depthStencilFormat: GPUTextureFormat;
   sampleCount?: number;
 }
 
-export interface GPURenderPipeline extends GPUObjectBase {
+interface GPURenderPipeline extends GPUObjectBase {
 }
 
-export interface GPUSampler extends GPUObjectBase {
+interface GPUSampler extends GPUObjectBase {
 }
 
-export interface GPUShaderModule extends GPUObjectBase {
+interface GPUShaderModule extends GPUObjectBase {
 }
 
-export interface GPUSwapChain extends GPUObjectBase {
+interface GPUSwapChain extends GPUObjectBase {
   getCurrentTexture(): GPUTexture;
 }
 
-export interface GPUTexture extends GPUObjectBase {
+interface GPUTexture extends GPUObjectBase {
   createDefaultView(): GPUTextureView;
   createView(descriptor: GPUTextureViewDescriptor): GPUTextureView;
   destroy(): void;
 }
 
-export interface GPUTextureView extends GPUObjectBase {
+interface GPUTextureView extends GPUObjectBase {
 }
 
-export type GPUPowerPreference =
+type GPUPowerPreference =
   | "low-power"
   | "high-performance";
-export interface GPURequestAdapterOptions {
+interface GPURequestAdapterOptions {
   powerPreference?: GPUPowerPreference;
 }
 
-export interface GPU {
+interface GPU {
   requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter>;
 }
 
@@ -679,22 +675,22 @@ export interface GPU {
 // ERROR SCOPES
 // ****************************************************************************
 
-export type GPUErrorFilter = "none"
+type GPUErrorFilter = "none"
   | "out-of-memory"
   | "validation";
 
-export class GPUOutOfMemoryError {
+class GPUOutOfMemoryError {
   constructor();
 }
 
-export class GPUValidationError {
+class GPUValidationError {
   constructor(message: string);
   readonly message: string;
 }
 
-export type GPUError = GPUOutOfMemoryError | GPUValidationError;
+type GPUError = GPUOutOfMemoryError | GPUValidationError;
 
-export interface GPUDevice {
+interface GPUDevice {
   pushErrorScope(filter: GPUErrorFilter): void;
   popErrorScope(): Promise<GPUError | null>;
 }
@@ -703,29 +699,27 @@ export interface GPUDevice {
 // TELEMETRY
 // ****************************************************************************
 
-export interface GPUUncapturedErrorEvent extends Event {
+interface GPUUncapturedErrorEvent extends Event {
   readonly error: GPUError;
 }
 
-export interface GPUUncapturedErrorEventInit extends EventInit {
+interface GPUUncapturedErrorEventInit extends EventInit {
   error: GPUError;
 }
 
-export interface GPUDevice extends EventTarget {
+interface GPUDevice extends EventTarget {
   onuncapturederror: Event | undefined;
 }
 
-export interface GPUDeviceLostInfo {
+interface GPUDeviceLostInfo {
   readonly message: string;
 }
 
-export interface GPU {
+interface GPU {
   // May reject with DOMException  // TODO: DOMException("OperationError")?
   requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter>;
 }
 
-export interface Navigator {
+interface Navigator {
   readonly gpu: GPU | undefined;
-}
-
 }
