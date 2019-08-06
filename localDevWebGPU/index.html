@@ -64,7 +64,7 @@
         var engine = null;
 
         // Allow querystring to navigate easily in debug in local samples.
-        var indexjs = 'src/index';
+        var indexjs = '/localDev/src/index';
         var sampleSearch = /sample=([0-9]+)/i;
         var matches = null;
         if ((matches = sampleSearch.exec(window.location)) !== null) {
@@ -79,10 +79,10 @@
             .require(indexjs)
             .load(function() {
                 if (BABYLON.Engine.isSupported()) {
-                    var onLoad = () => {
+                    var onLoad = (engine) => {
                         // call the scene creation from the js.
                         if (typeof delayCreateScene !== "undefined") {
-                            var scene = delayCreateScene();
+                            var scene = delayCreateScene(engine);
 
                             if (scene) {
                                 // Register a render loop to repeatedly render the scene
@@ -96,7 +96,7 @@
                             }
                         }
                         else {
-                            var scene = createScene();
+                            var scene = createScene(engine);
 
                             if (scene) {
 
@@ -134,13 +134,13 @@
 
                     if (typeof createEngine !== "undefined") {
                         engine = createEngine();
-                        engine.initEngineAsync(shadercOptions).then(() => onLoad());
+                        engine.initEngineAsync(shadercOptions).then(() => onLoad(engine));
                     } else {
                         engine = new BABYLON.WebGPUEngine(canvas);
-                        engine.initEngineAsync(shadercOptions).then(() => onLoad());
+                        engine.initEngineAsync(shadercOptions).then(() => onLoad(engine));
                     }
 
-                    // BABYLONDEVTOOLS.Loader.debugShortcut(engine);                    
+                    // BABYLONDEVTOOLS.Loader.debugShortcut(engine);
                 }
                 else {
                     alert('BabylonJS is not supported.')
