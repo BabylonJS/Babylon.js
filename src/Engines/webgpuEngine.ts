@@ -2437,9 +2437,6 @@ export class WebGPUEngine extends Engine {
     public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
     }
 
-    public setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void {
-    }
-
     public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
     }
 
@@ -2459,11 +2456,5 @@ export class WebGPUEngine extends Engine {
     }
 
     public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
-    }
-
-    public setColor3(uniform: WebGLUniformLocation, color3: Color3): void {
-    }
-
-    public setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void {
     }
 }
