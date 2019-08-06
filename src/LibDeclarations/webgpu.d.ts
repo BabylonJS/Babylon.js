@@ -679,11 +679,11 @@ type GPUErrorFilter = "none"
   | "out-of-memory"
   | "validation";
 
-class GPUOutOfMemoryError {
+declare class GPUOutOfMemoryError {
   constructor();
 }
 
-class GPUValidationError {
+declare class GPUValidationError {
   constructor(message: string);
   readonly message: string;
 }
