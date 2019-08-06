@@ -1,6 +1,6 @@
 import { Nullable } from "../types";
 import { Tools } from "./tools";
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { InternalTexture } from "../Materials/Textures/internalTexture";

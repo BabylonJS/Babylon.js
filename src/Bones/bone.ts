@@ -1,11 +1,12 @@
 import { Skeleton } from "./skeleton";
 
-import { Vector3, Quaternion, Matrix, Space } from "../Maths/math";
+import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
+import { Space } from '../Maths/math.axis';
 
 declare type Animation = import("../Animations/animation").Animation;
 declare type AnimationPropertiesOverride = import("../Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -245,6 +246,14 @@ export class Bone extends Node {
 
     // Properties (matches AbstractMesh properties)
 
+    /**
+     * Gets the node used to drive the bone's transformation
+     * @returns a transform node or null
+     */
+    public getTransformNode() {
+        return this._linkedTransformNode;
+    }
+
     /** Gets or sets current position (in local space) */
     public get position(): Vector3 {
         this._decompose();
@@ -314,6 +323,11 @@ export class Bone extends Node {
             return;
         }
 
+        if (!this._localScaling) {
+            this._needToCompose = false;
+            return;
+        }
+
         this._needToCompose = false;
         Matrix.ComposeToRef(this._localScaling, this._localRotation, this._localPosition, this._localMatrix);
     }
@@ -372,7 +386,8 @@ export class Bone extends Node {
         this._skeleton._markAsDirty();
     }
 
-    private _markAsDirtyAndCompose() {
+    /** @hidden */
+    public _markAsDirtyAndCompose() {
         this.markAsDirty();
         this._needToCompose = true;
     }

@@ -515,7 +515,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     });
                     continue;
                 }
-                var position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : mesh.getAbsolutePosition();
+                var position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : (Vector3.ZeroReadOnly as Vector3);
                 var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
                 if (projectedPosition.z < 0 || projectedPosition.z > 1) {
                     control.notRenderable = true;

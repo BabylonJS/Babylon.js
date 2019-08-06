@@ -554,6 +554,7 @@ export class VertexBuffer {
             case VertexBuffer.UNSIGNED_SHORT:
                 return 2;
             case VertexBuffer.INT:
+            case VertexBuffer.UNSIGNED_INT:
             case VertexBuffer.FLOAT:
                 return 4;
             default:
@@ -568,7 +569,7 @@ export class VertexBuffer {
      * @param byteStride the byte stride of the data
      * @param componentCount the number of components per element
      * @param componentType the type of the component
-     * @param count the total number of components
+     * @param count the number of values to enumerate
      * @param normalized whether the data is normalized
      * @param callback the callback function called for each value
      */
@@ -617,7 +618,7 @@ export class VertexBuffer {
             case VertexBuffer.SHORT: {
                 let value = dataView.getInt16(byteOffset, true);
                 if (normalized) {
-                    value = Math.max(value / 16383, -1);
+                    value = Math.max(value / 32767, -1);
                 }
                 return value;
             }
@@ -627,6 +628,12 @@ export class VertexBuffer {
                     value = value / 65535;
                 }
                 return value;
+            }
+            case VertexBuffer.INT: {
+                return dataView.getInt32(byteOffset, true);
+            }
+            case VertexBuffer.UNSIGNED_INT: {
+                return dataView.getUint32(byteOffset, true);
             }
             case VertexBuffer.FLOAT: {
                 return dataView.getFloat32(byteOffset, true);

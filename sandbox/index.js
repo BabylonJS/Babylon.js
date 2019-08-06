@@ -174,7 +174,22 @@ if (BABYLON.Engine.isSupported()) {
             currentSkybox = currentScene.createDefaultSkybox(currentScene.environmentTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3, false);
         }
         else {
-            currentScene.createDefaultLight();
+            var pbrPresent = false;
+            for (var i = 0; i < currentScene.materials.length; i++) {
+                if (currentScene.materials[i]._transparencyMode !== undefined) {
+                    pbrPresent = true;
+                    break;
+                }
+            }
+
+            if (pbrPresent) {
+                if (!currentScene.environmentTexture) {
+                    currentScene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(skyboxPath, currentScene);
+                }
+            }
+            else {
+                currentScene.createDefaultLight();
+            }
         }
 
         // In case of error during loading, meshes will be empty and clearColor is set to red

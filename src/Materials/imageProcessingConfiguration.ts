@@ -2,7 +2,7 @@ import { serialize, SerializationHelper, serializeAsTexture, serializeAsColorCur
 import { Observable } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
 import { Nullable } from "../types";
-import { Color4 } from "../Maths/math";
+import { Color4 } from "../Maths/math.color";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { Effect } from "../Materials/effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";

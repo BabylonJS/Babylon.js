@@ -478,11 +478,10 @@ _glTFExporter__WEBPACK_IMPORTED_MODULE_1__["_Exporter"].RegisterExtension(NAME, 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return KHR_texture_transform; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Maths/math");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Maths/math");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _glTFExporter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFExporter */ "./glTF/2.0/glTFExporter.ts");
 /* harmony import */ var _shaders_textureTransform_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shaders/textureTransform.fragment */ "./glTF/2.0/shaders/textureTransform.fragment.ts");
-
 
 
 
@@ -507,6 +506,12 @@ var KHR_texture_transform = /** @class */ (function () {
     KHR_texture_transform.prototype.preExportTextureAsync = function (context, babylonTexture, mimeType) {
         var _this = this;
         return new Promise(function (resolve, reject) {
+            var scene = babylonTexture.getScene();
+            if (!scene) {
+                reject(context + ": \"scene\" is not defined for Babylon texture " + babylonTexture.name + "!");
+                return;
+            }
+            // TODO: this doesn't take into account rotation center values
             var texture_transform_extension = {};
             if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
                 texture_transform_extension.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
@@ -519,19 +524,15 @@ var KHR_texture_transform = /** @class */ (function () {
             }
             if (!Object.keys(texture_transform_extension).length) {
                 resolve(babylonTexture);
+                return;
             }
-            var scale = texture_transform_extension.scale ? new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](texture_transform_extension.scale[0], texture_transform_extension.scale[1]) : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].One();
-            var rotation = texture_transform_extension.rotation != null ? texture_transform_extension.rotation : 0;
-            var offset = texture_transform_extension.offset ? new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](texture_transform_extension.offset[0], texture_transform_extension.offset[1]) : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero();
-            var scene = babylonTexture.getScene();
-            if (!scene) {
-                reject(context + ": \"scene\" is not defined for Babylon texture " + babylonTexture.name + "!");
-            }
-            else {
-                _this.textureTransformTextureAsync(babylonTexture, offset, rotation, scale, scene).then(function (texture) {
-                    resolve(texture);
-                });
-            }
+            return _this._textureTransformTextureAsync(babylonTexture, scene)
+                .then(function (proceduralTexture) {
+                resolve(proceduralTexture);
+            })
+                .catch(function (e) {
+                reject(e);
+            });
         });
     };
     /**
@@ -542,11 +543,11 @@ var KHR_texture_transform = /** @class */ (function () {
      * @param scale
      * @param scene
      */
-    KHR_texture_transform.prototype.textureTransformTextureAsync = function (babylonTexture, offset, rotation, scale, scene) {
-        return new Promise(function (resolve, reject) {
-            var proceduralTexture = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["ProceduralTexture"]("" + babylonTexture.name, babylonTexture.getSize(), "textureTransform", scene);
+    KHR_texture_transform.prototype._textureTransformTextureAsync = function (babylonTexture, scene) {
+        return new Promise(function (resolve) {
+            var proceduralTexture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["ProceduralTexture"]("" + babylonTexture.name, babylonTexture.getSize(), "textureTransform", scene);
             if (!proceduralTexture) {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Cannot create procedural texture for " + babylonTexture.name + "!");
+                babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Cannot create procedural texture for " + babylonTexture.name + "!");
                 resolve(babylonTexture);
             }
             proceduralTexture.setTexture("textureSampler", babylonTexture);
@@ -1393,9 +1394,8 @@ var _Exporter = /** @class */ (function () {
         this._animations = [];
         this._imageData = {};
         this._convertToRightHandedSystem = this._babylonScene.useRightHandedSystem ? false : true;
-        var _options = options || {};
-        this._shouldExportNode = _options.shouldExportNode ? _options.shouldExportNode : function (babylonNode) { return true; };
-        this._animationSampleRate = _options.animationSampleRate ? _options.animationSampleRate : 1 / 60;
+        this._options = options || {};
+        this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
         this._glTFMaterialExporter = new _glTFMaterialExporter__WEBPACK_IMPORTED_MODULE_1__["_GLTFMaterialExporter"](this);
         this._loadExtensions();
     }
@@ -2224,7 +2224,6 @@ var _Exporter = /** @class */ (function () {
         var promises = [];
         var bufferMesh = null;
         var bufferView;
-        var uvCoordsPresent;
         var minMax;
         if (babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"]) {
             bufferMesh = babylonTransformNode;
@@ -2275,7 +2274,6 @@ var _Exporter = /** @class */ (function () {
                 // go through all mesh primitives (submeshes)
                 for (var _a = 0, _b = bufferMesh.subMeshes; _a < _b.length; _a++) {
                     var submesh = _b[_a];
-                    uvCoordsPresent = false;
                     var babylonMaterial = submesh.getMaterial() || bufferMesh.getScene().defaultMaterial;
                     var materialIndex = null;
                     if (babylonMaterial) {
@@ -2328,9 +2326,6 @@ var _Exporter = /** @class */ (function () {
                                     var accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, 5126 /* FLOAT */, vertexData.length / stride, 0, minMax.min, minMax.max);
                                     this._accessors.push(accessor);
                                     this.setAttributeKind(meshPrimitive, attributeKind);
-                                    if (meshPrimitive.attributes.TEXCOORD_0 != null || meshPrimitive.attributes.TEXCOORD_1 != null) {
-                                        uvCoordsPresent = true;
-                                    }
                                 }
                             }
                         }
@@ -2370,11 +2365,6 @@ var _Exporter = /** @class */ (function () {
                                 }
                             }
                         }
-                        if (!uvCoordsPresent && this._glTFMaterialExporter._hasTexturesPresent(this._materials[materialIndex])) {
-                            var newMat = this._glTFMaterialExporter._stripTexturesFromMaterial(this._materials[materialIndex]);
-                            this._materials.push(newMat);
-                            materialIndex = this._materials.length - 1;
-                        }
                         meshPrimitive.material = materialIndex;
                     }
                     mesh.primitives.push(meshPrimitive);
@@ -2403,7 +2393,7 @@ var _Exporter = /** @class */ (function () {
         var directDescendents;
         var nodes = babylonScene.transformNodes.concat(babylonScene.meshes, babylonScene.lights);
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, "image/png" /* PNG */, true).then(function () {
-            return _this.createNodeMapAndAnimationsAsync(babylonScene, nodes, _this._shouldExportNode, binaryWriter).then(function (nodeMap) {
+            return _this.createNodeMapAndAnimationsAsync(babylonScene, nodes, binaryWriter).then(function (nodeMap) {
                 _this._nodeMap = nodeMap;
                 _this._totalByteLength = binaryWriter.getByteOffset();
                 if (_this._totalByteLength == undefined) {
@@ -2415,8 +2405,16 @@ var _Exporter = /** @class */ (function () {
                     glTFNodeIndex = _this._nodeMap[babylonNode.uniqueId];
                     if (glTFNodeIndex !== undefined) {
                         glTFNode = _this._nodes[glTFNodeIndex];
+                        if (babylonNode.metadata) {
+                            if (_this._options.metadataSelector) {
+                                glTFNode.extras = _this._options.metadataSelector(babylonNode.metadata);
+                            }
+                            else if (babylonNode.metadata.gltf) {
+                                glTFNode.extras = babylonNode.metadata.gltf.extras;
+                            }
+                        }
                         if (!babylonNode.parent) {
-                            if (!_this._shouldExportNode(babylonNode)) {
+                            if (_this._options.shouldExportNode && !_this._options.shouldExportNode(babylonNode)) {
                                 babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Omitting " + babylonNode.name + " from scene.");
                             }
                             else {
@@ -2455,11 +2453,10 @@ var _Exporter = /** @class */ (function () {
      * Creates a mapping of Node unique id to node index and handles animations
      * @param babylonScene Babylon Scene
      * @param nodes Babylon transform nodes
-     * @param shouldExportNode Callback specifying if a transform node should be exported
      * @param binaryWriter Buffer to write binary data to
      * @returns Node mapping of unique id to index
      */
-    _Exporter.prototype.createNodeMapAndAnimationsAsync = function (babylonScene, nodes, shouldExportNode, binaryWriter) {
+    _Exporter.prototype.createNodeMapAndAnimationsAsync = function (babylonScene, nodes, binaryWriter) {
         var _this = this;
         var promiseChain = Promise.resolve();
         var nodeMap = {};
@@ -2471,7 +2468,7 @@ var _Exporter = /** @class */ (function () {
         };
         var idleGLTFAnimations = [];
         var _loop_1 = function (babylonNode) {
-            if (shouldExportNode(babylonNode)) {
+            if (!this_1._options.shouldExportNode || this_1._options.shouldExportNode(babylonNode)) {
                 promiseChain = promiseChain.then(function () {
                     return _this.createNodeAsync(babylonNode, binaryWriter).then(function (node) {
                         var promise = _this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode);
@@ -2499,6 +2496,7 @@ var _Exporter = /** @class */ (function () {
                 "Excluding node " + babylonNode.name;
             }
         };
+        var this_1 = this;
         for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
             var babylonNode = nodes_2[_i];
             _loop_1(babylonNode);
@@ -2934,19 +2932,17 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         return babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Scalar"].Clamp((-b + Math.sqrt(D)) / (2.0 * a), 0, 1);
     };
     /**
-     * Gets the glTF alpha mode from the Babylon Material
-     * @param babylonMaterial Babylon Material
-     * @returns The Babylon alpha mode value
+     * Sets the glTF alpha mode to a glTF material from the Babylon Material
+     * @param glTFMaterial glTF material
+     * @param babylonMaterial Babylon material
      */
-    _GLTFMaterialExporter.prototype._getAlphaMode = function (babylonMaterial) {
+    _GLTFMaterialExporter._SetAlphaMode = function (glTFMaterial, babylonMaterial) {
         if (babylonMaterial.needAlphaBlending()) {
-            return "BLEND" /* BLEND */;
+            glTFMaterial.alphaMode = "BLEND" /* BLEND */;
         }
         else if (babylonMaterial.needAlphaTesting()) {
-            return "MASK" /* MASK */;
-        }
-        else {
-            return "OPAQUE" /* OPAQUE */;
+            glTFMaterial.alphaMode = "MASK" /* MASK */;
+            glTFMaterial.alphaCutoff = babylonMaterial.alphaCutOff;
         }
     };
     /**
@@ -2962,7 +2958,6 @@ var _GLTFMaterialExporter = /** @class */ (function () {
     _GLTFMaterialExporter.prototype._convertStandardMaterialAsync = function (babylonStandardMaterial, mimeType, hasTextureCoords) {
         var materialMap = this._exporter._materialMap;
         var materials = this._exporter._materials;
-        var alphaMode = this._getAlphaMode(babylonStandardMaterial);
         var promises = [];
         var glTFPbrMetallicRoughness = this._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
         var glTFMaterial = { name: babylonStandardMaterial.name };
@@ -3022,22 +3017,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             glTFMaterial.emissiveFactor = babylonStandardMaterial.emissiveColor.asArray();
         }
         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
-        if (alphaMode !== "OPAQUE" /* OPAQUE */) {
-            switch (alphaMode) {
-                case "BLEND" /* BLEND */: {
-                    glTFMaterial.alphaMode = "BLEND" /* BLEND */;
-                    break;
-                }
-                case "MASK" /* MASK */: {
-                    glTFMaterial.alphaMode = "MASK" /* MASK */;
-                    glTFMaterial.alphaCutoff = babylonStandardMaterial.alphaCutOff;
-                    break;
-                }
-                default: {
-                    babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Unsupported alpha mode " + alphaMode);
-                }
-            }
-        }
+        _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonStandardMaterial);
         materials.push(glTFMaterial);
         materialMap[babylonStandardMaterial.uniqueId] = materials.length - 1;
         return Promise.all(promises).then(function () { });
@@ -3077,18 +3057,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         if (babylonPBRMetalRoughMaterial.doubleSided) {
             glTFMaterial.doubleSided = babylonPBRMetalRoughMaterial.doubleSided;
         }
-        var alphaMode = null;
-        if (babylonPBRMetalRoughMaterial.transparencyMode != null) {
-            alphaMode = this._getAlphaMode(babylonPBRMetalRoughMaterial);
-            if (alphaMode) {
-                if (alphaMode !== "OPAQUE" /* OPAQUE */) { //glTF defaults to opaque
-                    glTFMaterial.alphaMode = alphaMode;
-                    if (alphaMode === "MASK" /* MASK */) {
-                        glTFMaterial.alphaCutoff = babylonPBRMetalRoughMaterial.alphaCutOff;
-                    }
-                }
-            }
-        }
+        _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonPBRMetalRoughMaterial);
         if (hasTextureCoords) {
             if (babylonPBRMetalRoughMaterial.baseTexture != null) {
                 promises.push(this._exportTextureAsync(babylonPBRMetalRoughMaterial.baseTexture, mimeType).then(function (glTFTexture) {
@@ -3655,18 +3624,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var materials = this._exporter._materials;
         var promises = [];
         if (metallicRoughness) {
-            var alphaMode = null;
-            if (babylonPBRMaterial.transparencyMode != null) {
-                alphaMode = this._getAlphaMode(babylonPBRMaterial);
-                if (alphaMode) {
-                    if (alphaMode !== "OPAQUE" /* OPAQUE */) { //glTF defaults to opaque
-                        glTFMaterial.alphaMode = alphaMode;
-                        if (alphaMode === "MASK" /* MASK */) {
-                            glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
-                        }
-                    }
-                }
-            }
+            _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonPBRMaterial);
             if (!(_GLTFMaterialExporter.FuzzyEquals(metallicRoughness.baseColor, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].White(), _GLTFMaterialExporter._Epsilon) && babylonPBRMaterial.alpha >= _GLTFMaterialExporter._Epsilon)) {
                 glTFPbrMetallicRoughness.baseColorFactor = [
                     metallicRoughness.baseColor.r,
@@ -3825,6 +3783,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var imageValues = { data: arr, mimeType: mimeType };
         var extension = mimeType === "image/jpeg" /* JPEG */ ? '.jpeg' : '.png';
         var textureName = baseTextureName + extension;
+        var originalTextureName = textureName;
         if (textureName in imageData) {
             textureName = baseTextureName + "_" + babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].RandomId() + extension;
         }
@@ -3836,7 +3795,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             };
             var foundIndex = null;
             for (var i = 0; i < images.length; ++i) {
-                if (images[i].uri === textureName) {
+                if (images[i].uri === originalTextureName) {
                     foundIndex = i;
                     break;
                 }

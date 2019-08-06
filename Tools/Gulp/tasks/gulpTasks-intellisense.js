@@ -19,3 +19,9 @@ gulp.task("intellisense", function() {
         .pipe(replace(/^\s*_/gm, "private _"))
         .pipe(gulp.dest(config.build.playgroundDirectory));
 });
+
+gulp.task("documentation", function() {
+    return gulp.src(config.build.intellisenseSources)
+        .pipe(concat(config.build.documentationFile))
+        .pipe(gulp.dest(config.build.outputDirectory));
+});

@@ -23,6 +23,7 @@ import { SliderLineComponent } from "../../lines/sliderLineComponent";
 import { OptionsLineComponent } from "../../lines/optionsLineComponent";
 import { LockObject } from "./lockObject";
 import { GlobalState } from '../../../globalState';
+import { ButtonLineComponent } from '../../lines/buttonLineComponent';
 
 interface IScenePropertyGridComponentProps {
     globalState: GlobalState;
@@ -103,6 +104,15 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
         physicsEngine.setTimeStep(newValue);
     }
 
+    normalizeScene() {
+        const scene = this.props.scene;
+
+        scene.meshes.forEach((mesh) => {
+            mesh.normalizeToUnitCube(true);
+            mesh.computeWorldMatrix(true);
+        });
+    }
+
     render() {
         const scene = this.props.scene;
 
@@ -145,6 +155,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         <TextureLinkLineComponent label="Env. texture" texture={scene.environmentTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
                     }
                     <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} accept=".dds, .env" />
+                    <SliderLineComponent minimum={0} maximum={2} step={0.01} label="IBL Intensity" target={scene} propertyName="environmentIntensity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FogPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} scene={scene} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="MATERIAL IMAGE PROCESSING">
@@ -170,6 +181,9 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                 }
                 <LineContainerComponent globalState={this.props.globalState} title="COLLISIONS" closed={true}>
                     <Vector3LineComponent label="Gravity" target={scene} propertyName="gravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="SHADOWS" closed={true}>
+                    <ButtonLineComponent label="Normalize scene" onClick={() => this.normalizeScene()} />
                 </LineContainerComponent>
             </div>
         );

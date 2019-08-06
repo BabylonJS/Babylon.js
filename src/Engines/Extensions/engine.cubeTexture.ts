@@ -5,7 +5,7 @@ import { Nullable } from '../../types';
 import { Scene } from '../../scene';
 import { IInternalTextureLoader } from '../../Materials/Textures/internalTextureLoader';
 import { WebRequest } from '../../Misc/webRequest';
-import { Tools } from '../../Misc/tools';
+import { FileTools } from '../../Misc/fileTools';
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -191,7 +191,7 @@ Engine.prototype._partialLoadImg = function(url: string, index: number, loadedIm
         }
     };
 
-    img = Tools.LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null);
+    img = FileTools.LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null);
     if (scene) {
         scene._addPendingData(img);
     }
@@ -268,7 +268,7 @@ Engine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<S
         }
 
         this._cascadeLoadImgs(scene, (imgs) => {
-            var width = this.needPOTTextures ? Tools.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
+            var width = this.needPOTTextures ? Engine.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
             var height = width;
 
             this._prepareWorkingCanvas();

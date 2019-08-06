@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 import { Observable, Observer } from "../Misc/observable";
 import { Buffer } from "../Meshes/buffer";
 import { VertexBuffer } from "../Meshes/buffer";
-import { Vector3, Tmp } from "../Maths/math";
+import { Vector3, TmpVectors } from "../Maths/math.vector";
 import { Sprite } from "./sprite";
 import { SpriteSceneComponent } from "./spriteSceneComponent";
 import { PickingInfo } from "../Collisions/pickingInfo";
@@ -290,19 +290,19 @@ export class SpriteManager implements ISpriteManager {
         if (currentSprite) {
             var result = new PickingInfo();
 
-            cameraView.invertToRef(Tmp.Matrix[0]);
+            cameraView.invertToRef(TmpVectors.Matrix[0]);
             result.hit = true;
             result.pickedSprite = currentSprite;
             result.distance = distance;
 
             // Get picked point
-            let direction = Tmp.Vector3[0];
+            let direction = TmpVectors.Vector3[0];
             direction.copyFrom(ray.direction);
             direction.normalize();
             direction.scaleInPlace(distance);
 
             ray.origin.addToRef(direction, pickedPoint);
-            result.pickedPoint = Vector3.TransformCoordinates(pickedPoint, Tmp.Matrix[0]);
+            result.pickedPoint = Vector3.TransformCoordinates(pickedPoint, TmpVectors.Matrix[0]);
 
             return result;
         }

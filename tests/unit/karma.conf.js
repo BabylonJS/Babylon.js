@@ -12,6 +12,8 @@ module.exports = function(config) {
         frameworks: ['mocha', 'chai', 'sinon'],
 
         files: [
+            { pattern: 'dist/ammo.js', watched: false },    // need ammo for physics test
+
             '!./**/*.d.ts',
             './Tools/DevLoader/BabylonLoader.js',
             './tests/unit/babylon/babylon.example.tests.js',
@@ -20,14 +22,16 @@ module.exports = function(config) {
             './tests/unit/babylon/src/babylon.node.tests.js',
             './tests/unit/babylon/src/Animations/babylon.animation.tests.js',
             './tests/unit/babylon/src/Animations/babylon.animationGroup.tests.js',
-            './tests/unit/babylon/src/Loading/babylon.sceneLoader.tests.js',
-            './tests/unit/babylon/src/PostProcess/babylon.postProcess.tests.js',
-            './tests/unit/babylon/src/Material/babylon.material.tests.js',
-            './tests/unit/babylon/src/Mesh/babylon.dictionaryMode.tests.js',
-            './tests/unit/babylon/src/Mesh/babylon.geometry.tests.js',
-            './tests/unit/babylon/src/Mesh/babylon.mesh.vertexData.tests.js',
-            './tests/unit/babylon/src/Tools/babylon.promise.tests.js',
             './tests/unit/babylon/src/Cameras/babylon.pointerInput.tests.js',
+            './tests/unit/babylon/src/Culling/babylon.ray.tests.js',
+            './tests/unit/babylon/src/Loading/babylon.sceneLoader.tests.js',
+            './tests/unit/babylon/src/PostProcesses/babylon.postProcess.tests.js',
+            './tests/unit/babylon/src/Materials/babylon.material.tests.js',
+            './tests/unit/babylon/src/Meshes/babylon.dictionaryMode.tests.js',
+            './tests/unit/babylon/src/Meshes/babylon.geometry.tests.js',
+            './tests/unit/babylon/src/Meshes/babylon.mesh.vertexData.tests.js',
+            './tests/unit/babylon/src/Misc/babylon.promise.tests.js',
+            './tests/unit/babylon/src/Physics/babylon.physicsComponents.tests.js',
             { pattern: 'dist/preview release/**/*.js', watched: false, included: false, served: true },
             { pattern: 'assets/**/*', watched: false, included: false, served: true },
             //{ pattern: 'tests/**/*', watched: false, included: false, served: true },

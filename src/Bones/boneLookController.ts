@@ -1,8 +1,9 @@
 import { Nullable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
-import { Vector3, Quaternion, Matrix, Space, Axis } from "../Maths/math";
+import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Bone } from "./bone";
+import { Space, Axis } from '../Maths/math.axis';
 
 /**
  * Class used to make a bone look toward a point in space

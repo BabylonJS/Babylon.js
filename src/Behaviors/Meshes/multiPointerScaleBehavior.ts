@@ -1,7 +1,7 @@
 import { Mesh } from "../../Meshes/mesh";
 import { Behavior } from "../behavior";
 import { PointerDragBehavior } from "./pointerDragBehavior";
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { Nullable } from "../../types";
 import { Observer } from "../../Misc/observable";
 import { Scene } from "../../scene";

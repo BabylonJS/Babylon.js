@@ -1,10 +1,12 @@
-import { Vector3, ToLinearSpace, Color3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { SphericalPolynomial, SphericalHarmonics } from "../../Maths/sphericalPolynomial";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Nullable } from "../../types";
 import { Constants } from "../../Engines/constants";
 import { CubeMapInfo } from "./panoramaToCubemap";
+import { ToLinearSpace } from '../../Maths/math.constants';
+import { Color3 } from '../../Maths/math.color';
 
 class FileFaceOrientation {
     public name: string;
@@ -134,6 +136,11 @@ export class CubeMapToSphericalPolynomialTools {
                     var g = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 1];
                     var b = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 2];
 
+                    // Prevent NaN harmonics with extreme HDRI data.
+                    if (isNaN(r)) { r = 0; }
+                    if (isNaN(g)) { g = 0; }
+                    if (isNaN(b)) { b = 0; }
+
                     // Handle Integer types.
                     if (cubeInfo.type === Constants.TEXTURETYPE_UNSIGNED_INT) {
                         r /= 255;
@@ -147,6 +154,13 @@ export class CubeMapToSphericalPolynomialTools {
                         g = Math.pow(Scalar.Clamp(g), ToLinearSpace);
                         b = Math.pow(Scalar.Clamp(b), ToLinearSpace);
                     }
+
+                    // Prevent to explode in case of really high dynamic ranges.
+                    // sh 3 would not be enough to accurately represent it.
+                    const max = 4096;
+                    r = Scalar.Clamp(r, 0, max);
+                    g = Scalar.Clamp(g, 0, max);
+                    b = Scalar.Clamp(b, 0, max);
 
                     var color = new Color3(r, g, b);
 
