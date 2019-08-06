@@ -154,7 +154,6 @@ type GPUTextureFormat =
   | "rgba32sint"
   | "rgba32float"
   | "depth32float"
-  | "depth32float-stencil8"
   | "depth24plus"
   | "depth24plus-stencil8";
 type GPUTextureViewDimension =

@@ -74,7 +74,6 @@ export class WebGPUConstants {
     public static readonly GPUTextureFormat_rgba32float: GPUTextureFormat = "rgba32float";
     /* Depth and Stencil formats */
     public static readonly GPUTextureFormat_depth32float: GPUTextureFormat = "depth32float";
-    public static readonly GPUTextureFormat_depth32floatStencil8: GPUTextureFormat = "depth32float-stencil8";
     public static readonly GPUTextureFormat_depth24plus: GPUTextureFormat = "depth24plus";
     public static readonly GPUTextureFormat_depth24plusStencil8: GPUTextureFormat = "depth24plus-stencil8";
 
