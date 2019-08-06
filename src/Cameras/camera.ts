@@ -13,7 +13,6 @@ import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
-import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Viewport } from '../Maths/math.viewport';
 import { Frustum } from '../Maths/math.frustum';
 import { Plane } from '../Maths/math.plane';
@@ -23,7 +22,6 @@ declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTex
 declare type FreeCamera = import("./freeCamera").FreeCamera;
 declare type TargetCamera = import("./targetCamera").TargetCamera;
 declare type Ray = import("../Culling/ray").Ray;
-declare type WebVRFreeCamera = import("./VR/webVRCamera").WebVRFreeCamera;
 
 /**
  * This is the base class of all the camera used in the application.
@@ -296,12 +294,6 @@ export class Camera extends Node {
     private _stateStored: boolean;
 
     /**
-     * The current camera unifom buffer.
-     * @hidden Internal use only.
-     */
-    public _uniformBuffer: UniformBuffer;
-
-    /**
      * Instantiates a new camera object.
      * This should not be used directly but through the inherited cameras: ArcRotate, Free...
      * @see http://doc.babylonjs.com/features/cameras
@@ -320,45 +312,6 @@ export class Camera extends Node {
         }
 
         this.position = position;
-
-        // Camera Uniform Buffer.
-        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine());
-        this._buildUniformLayout();
-    }
-
-    protected _buildUniformLayout(): void {
-        this._uniformBuffer.addUniform("view", 16);
-        this._uniformBuffer.addUniform("viewProjection", 16);
-        this._uniformBuffer.addUniform("vEyePosition", 3);
-        this._uniformBuffer.addUniform("logarithmicDepthConstant", 1);
-        this._uniformBuffer.create();
-    }
-
-    /**
-     * Transfer the camera values to its UBO.
-     */
-    public transferToEffect(): void {
-        // TODO WEBGPU. Check if we could split scene and Camera ubo.
-        const ubo = this._uniformBuffer;
-        const scene = this.getScene();
-
-        ubo.updateMatrix("view", scene.getViewMatrix());
-        ubo.updateMatrix("viewProjection", scene.getTransformMatrix());
-        //if (effect.defines["LOGARITHMICDEPTH"]) {
-        ubo.updateFloat("logarithmicDepthConstant", 2.0 / (Math.log(this.maxZ + 1.0) / Math.LN2));
-        //}
-        if (scene._forcedViewPosition) {
-            ubo.updateVector3("vEyePosition", scene._forcedViewPosition);
-            return;
-        }
-        var globalPosition = scene.activeCamera!.globalPosition;
-        if (!globalPosition) {
-            // Use WebVRFreecamera's device position as global position is not it's actual position in babylon space
-            globalPosition = (scene.activeCamera! as WebVRFreeCamera).devicePosition;
-        }
-        ubo.updateVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
-
-        ubo.update();
     }
 
     /**
