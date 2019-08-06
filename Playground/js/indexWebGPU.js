@@ -520,9 +520,9 @@ function showError(errorMessage, errorEvent) {
                 var createEngineFunction = "createDefaultEngine";
                 var createSceneFunction;
 
-                getRunCode(jsEditor, function(code) {
+                getRunCode(jsEditor, async function(code) {
                     var createDefaultEngine = function() {
-                        return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+                        return new BABYLON.WebGPUEngine(canvas);
                     }
 
                     var scene;
@@ -546,6 +546,7 @@ function showError(errorMessage, errorEvent) {
                     if (!createSceneFunction) {
                         // just pasted code.
                         engine = createDefaultEngine();
+                        await engine.initAsync(window.shadercOptions);
                         scene = new BABYLON.Scene(engine);
                         eval("runScript = function(scene, canvas) {" + code + "}");
                         runScript(scene, canvas);
@@ -560,6 +561,8 @@ function showError(errorMessage, errorEvent) {
                             showError("createEngine function must return an engine.", null);
                             return;
                         }
+
+                        await engine.initAsync(window.shadercOptions);
 
                         //create scene
                         eval("scene = " + createSceneFunction + "()");
@@ -1186,7 +1189,7 @@ function showError(errorMessage, errorEvent) {
         // Save
         setToMultipleID("saveButton", "click", askForSave);
         // Zip
-        setToMultipleID("zipButton", "click", getZip);
+        // setToMultipleID("zipButton", "click", getZip);
         // Themes
         setToMultipleID("darkTheme", "click", toggleTheme.bind(this, 'dark'));
         setToMultipleID("lightTheme", "click", toggleTheme.bind(this, 'light'));
@@ -1210,7 +1213,7 @@ function showError(errorMessage, errorEvent) {
         // Format
         setToMultipleID("minimapToggle", "click", toggleMinimap);
         // Debug
-        setToMultipleID("debugButton", "click", toggleDebug);
+        // setToMultipleID("debugButton", "click", toggleDebug);
         // Metadata
         setToMultipleID("metadataButton", "click", toggleMetadata);
 
