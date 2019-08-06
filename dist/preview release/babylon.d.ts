@@ -44573,6 +44573,10 @@ declare module BABYLON {
          */
         light: Nullable<Light>;
         /**
+         * Gets the material used to render the light gizmo
+         */
+        readonly material: StandardMaterial;
+        /**
          * @hidden
          * Updates the gizmo to match the attached mesh's position/rotation
          */
@@ -51964,11 +51968,143 @@ declare module BABYLON {
          */
         readonly uv: NodeMaterialConnectionPoint;
         /**
-         * Gets the output component
+         * Gets the rgba output component
          */
-        readonly output: NodeMaterialConnectionPoint;
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb output component
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        /**
+         * Gets the r output component
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g output component
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b output component
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        /**
+         * Gets the a output component
+         */
+        readonly a: NodeMaterialConnectionPoint;
         autoConfigure(): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        isReady(): boolean;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        private _injectVertexCode;
+        private _writeOutput;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Enum used to define well known values e.g. values automatically provided by the system
+     */
+    export enum NodeMaterialWellKnownValues {
+        /** World */
+        World = 1,
+        /** View */
+        View = 2,
+        /** Projection */
+        Projection = 3,
+        /** ViewProjection */
+        ViewProjection = 4,
+        /** WorldView */
+        WorldView = 5,
+        /** WorldViewProjection */
+        WorldViewProjection = 6,
+        /** CameraPosition */
+        CameraPosition = 7,
+        /** Fog Color */
+        FogColor = 8
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to read a reflection texture from a sampler
+     */
+    export class ReflectionTextureBlock extends NodeMaterialBlock {
+        private _define3DName;
+        private _defineCubicName;
+        private _defineExplicitName;
+        private _defineProjectionName;
+        private _defineLocalCubicName;
+        private _defineSphericalName;
+        private _definePlanarName;
+        private _defineEquirectangularName;
+        private _defineMirroredEquirectangularFixedName;
+        private _defineEquirectangularFixedName;
+        private _defineSkyboxName;
+        private _cubeSamplerName;
+        private _2DSamplerName;
+        private _positionUVWName;
+        private _directionWName;
+        private _reflectionCoordsName;
+        private _reflection2DCoordsName;
+        private _reflectionColorName;
+        private _reflectionMatrixName;
+        /**
+         * Gets or sets the texture associated with the node
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Create a new TextureBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position input component
+         */
+        readonly position: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world position input component
+         */
+        readonly worldPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world normal input component
+         */
+        readonly worldNormal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world input component
+         */
+        readonly world: NodeMaterialConnectionPoint;
+        /**
+        * Gets the camera (or eye) position component
+        */
+        readonly cameraPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the view input component
+         */
+        readonly view: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb output component
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        /**
+         * Gets the r output component
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g output component
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b output component
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
@@ -51999,7 +52135,7 @@ declare module BABYLON {
         /**
          * Input blocks
          */
-        textureBlocks: TextureBlock[];
+        textureBlocks: (TextureBlock | ReflectionTextureBlock)[];
         /**
          * Bindable blocks (Blocks that need to set data to the effect)
          */
@@ -52163,7 +52299,7 @@ declare module BABYLON {
             }[];
         }, storeKey?: string): void;
         /** @hidden */
-        _emitVaryingFromString(name: string, type: string, define?: string, notDefine?: boolean): void;
+        _emitVaryingFromString(name: string, type: string, define?: string, notDefine?: boolean): boolean;
         /** @hidden */
         _emitUniformFromString(name: string, type: string, define?: string, notDefine?: boolean): void;
     }
@@ -52282,6 +52418,12 @@ declare module BABYLON {
          */
         getFirstAvailableOutput(forBlock?: Nullable<NodeMaterialBlock>): Nullable<NodeMaterialConnectionPoint>;
         /**
+         * Gets the sibling of the given output
+         * @param current defines the current output
+         * @returns the next output in the list or null
+         */
+        getSiblingOutput(current: NodeMaterialConnectionPoint): Nullable<NodeMaterialConnectionPoint>;
+        /**
          * Connect current block with another block
          * @param other defines the block to connect with
          * @param options define the various options to help pick the right connections
@@ -52377,6 +52519,8 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+<<<<<<< HEAD
+=======
      * Enum used to define well known values e.g. values automatically provided by the system
      */
     export enum NodeMaterialWellKnownValues {
@@ -52400,6 +52544,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+>>>>>>> e47aa63d1958a485f9b8ebff19354e6c3644dd46
      * Block used to expose an input value
      */
     export class InputBlock extends NodeMaterialBlock {

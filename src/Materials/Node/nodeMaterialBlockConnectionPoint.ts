@@ -175,7 +175,7 @@ export class NodeMaterialConnectionPoint {
      */
     public canConnectTo(connectionPoint: NodeMaterialConnectionPoint) {
         if (this.type !== connectionPoint.type && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
-            return (connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1);
+            return (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1);
         }
 
         return true;

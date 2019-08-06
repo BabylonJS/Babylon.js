@@ -109,6 +109,7 @@ export class GlobalState {
                 light.reservedDataStore.lightGizmo = new LightGizmo();
                 this.lightGizmos.push(light.reservedDataStore.lightGizmo)
                 light.reservedDataStore.lightGizmo.light = light;
+                light.reservedDataStore.lightGizmo.material.reservedDataStore = {hidden: true};
             }
         } else if (light.reservedDataStore && light.reservedDataStore.lightGizmo) {
             this.lightGizmos.splice(this.lightGizmos.indexOf(light.reservedDataStore.lightGizmo), 1);

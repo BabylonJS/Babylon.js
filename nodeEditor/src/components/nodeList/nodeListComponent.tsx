@@ -15,7 +15,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps> 
         // Block types used to create the menu from
         const allBlocks = {
             Vertex: ["BonesBlock", "InstancesBlock", "MorphTargetsBlock"],
-            Fragment: ["AlphaTestBlock", "ImageProcessingBlock", "TextureBlock", "LightBlock", "FogBlock"],
+            Fragment: ["AlphaTestBlock", "ImageProcessingBlock", "TextureBlock", "ReflectionTextureBlock","LightBlock", "FogBlock"],
             Outputs: ["VertexOutputBlock", "FragmentOutputBlock"],
             Math: ["AddBlock", "ClampBlock", "CrossBlock", "DotBlock", "MultiplyBlock", "RemapBlock", "NormalizeBlock", "TransformBlock", "ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
