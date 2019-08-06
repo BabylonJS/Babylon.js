@@ -2,6 +2,7 @@ import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint'
 import { NodeMaterialBlock } from './nodeMaterialBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
+import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -25,7 +26,7 @@ export class NodeMaterialBuildStateSharedData {
     /**
      * Input blocks
      */
-    public textureBlocks = new Array<TextureBlock>();
+    public textureBlocks = new Array<TextureBlock | ReflectionTextureBlock>();
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)
