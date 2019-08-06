@@ -21,7 +21,7 @@ function formatId(name) {
 
 function displayDropdownContent(display) {
     if (display) {
-        dropdownContent.style.display = "flex";
+        dropdownContent.style.display = "block";
         chevronDown.style.display = "inline";
         chevronUp.style.display = "none";
         dropdownBtn.classList.add("open");
@@ -36,7 +36,7 @@ function displayDropdownContent(display) {
     }
 }
 dropdownBtn.addEventListener("click", function() {
-    if (dropdownContent.style.display === "flex") {
+    if (dropdownContent.style.display === "block") {
         displayDropdownContent(false);
     }
     else {

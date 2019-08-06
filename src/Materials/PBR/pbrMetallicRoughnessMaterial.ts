@@ -1,6 +1,6 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import { Scene } from "../../scene";
-import { Color3 } from "../../Maths/math";
+import { Color3 } from "../../Maths/math.color";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -108,6 +108,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
         serializationObject.anisotropy = this.anisotropy.serialize();
         serializationObject.brdf = this.brdf.serialize();
         serializationObject.sheen = this.sheen.serialize();
+        serializationObject.subSurface = this.subSurface.serialize();
 
         return serializationObject;
     }
@@ -118,16 +119,19 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRMetallicRoughnessMaterial {
         const material = SerializationHelper.Parse(() => new PBRMetallicRoughnessMaterial(source.name, scene), source, scene, rootUrl);
         if (source.clearCoat) {
-            material.clearCoat.parse(source.clearCoat);
+            material.clearCoat.parse(source.clearCoat, scene, rootUrl);
         }
         if (source.anisotropy) {
-            material.anisotropy.parse(source.anisotropy);
+            material.anisotropy.parse(source.anisotropy, scene, rootUrl);
         }
         if (source.brdf) {
-            material.brdf.parse(source.brdf);
+            material.brdf.parse(source.brdf, scene, rootUrl);
         }
         if (source.sheen) {
-            material.sheen.parse(source.brdf);
+            material.sheen.parse(source.sheen, scene, rootUrl);
+        }
+        if (source.subSurface) {
+            material.subSurface.parse(source.subSurface, scene, rootUrl);
         }
         return material;
     }

@@ -12,18 +12,19 @@ interface MediaRecorder {
     onerror: (event: ErrorEvent) => void;
     /** Event raised when the recording stops. */
     onstop: (event: Event) => void;
-    /** Event raised when a new chunk  of data is available and should be tracked. */
+    /** Event raised when a new chunk of data is available and should be tracked. */
     ondataavailable: (event: Event) => void;
 }
 
 interface MediaRecorderOptions {
-    /** The mime type you want to use as the recording container for the new MediaRecorder */
+    /** The mime type you want to use as the recording container for the new MediaRecorder. */
     mimeType?: string;
     /** The chosen bitrate for the audio component of the media. */
     audioBitsPerSecond?: number;
     /** The chosen bitrate for the video component of the media. */
     videoBitsPerSecond?: number;
-    /** The chosen bitrate for the audio and video components of the media. This can be specified instead of the above two properties. If this is specified along with one or the other of the above properties, this will be used for the one that isn't specified. */
+    /** The chosen bitrate for the audio and video components of the media. This can be specified instead of the above two properties.
+     * If this is specified along with one or the other of the above properties, this will be used for the one that isn't specified. */
     bitsPerSecond?: number;
 }
 
@@ -47,21 +48,21 @@ interface MediaRecorderConstructor {
 declare var MediaRecorder: MediaRecorderConstructor;
 
 /**
- * This represents the different options avilable for the video capture.
+ * This represents the different options available for the video capture.
  */
 export interface VideoRecorderOptions {
-    /** Defines the mime type of the video */
+    /** Defines the mime type of the video. */
     mimeType: string;
-    /** Defines the video the video should be recorded at */
+    /** Defines the FPS the video should be recorded at. */
     fps: number;
-    /** Defines the chunk size for the recording data */
+    /** Defines the chunk size for the recording data. */
     recordChunckSize: number;
-    /** The audio tracks to attach to the record */
+    /** The audio tracks to attach to the recording. */
     audioTracks?: MediaStreamTrack[];
 }
 
 /**
- * This can helps recording videos from BabylonJS.
+ * This can help with recording videos from BabylonJS.
  * This is based on the available WebRTC functionalities of the browser.
  *
  * @see http://doc.babylonjs.com/how_to/render_scene_on_a_video
@@ -75,9 +76,9 @@ export class VideoRecorder {
     };
 
     /**
-     * Returns wehther or not the VideoRecorder is available in your browser.
-     * @param engine Defines the Babylon Engine to check the support for
-     * @returns true if supported otherwise false
+     * Returns whether or not the VideoRecorder is available in your browser.
+     * @param engine Defines the Babylon Engine.
+     * @returns true if supported otherwise false.
      */
     public static IsSupported(engine: Engine): boolean {
         const canvas = engine.getRenderingCanvas();
@@ -94,17 +95,16 @@ export class VideoRecorder {
     private _reject: Nullable<(error: any) => void>;
 
     /**
-     * True wether a recording is already in progress.
+     * True when a recording is already in progress.
      */
     public get isRecording(): boolean {
         return !!this._canvas && this._canvas.isRecording;
     }
 
     /**
-     * Create a new VideoCapture object which can help converting what you see in Babylon to
-     * a video file.
-     * @param engine Defines the BabylonJS Engine you wish to record
-     * @param options Defines options that can be used to customized the capture
+     * Create a new VideoCapture object which can help converting what you see in Babylon to a video file.
+     * @param engine Defines the BabylonJS Engine you wish to record.
+     * @param options Defines options that can be used to customize the capture.
      */
     constructor(engine: Engine, options: Nullable<VideoRecorderOptions> = null) {
         if (!VideoRecorder.IsSupported(engine)) {
@@ -138,8 +138,7 @@ export class VideoRecorder {
     }
 
     /**
-     * Stops the current recording before the default capture timeout passed in the startRecording
-     * functions.
+     * Stops the current recording before the default capture timeout passed in the startRecording function.
      */
     public stopRecording(): void {
         if (!this._canvas || !this._mediaRecorder) {
@@ -156,10 +155,11 @@ export class VideoRecorder {
 
     /**
      * Starts recording the canvas for a max duration specified in parameters.
-     * @param fileName Defines the name of the file to be downloaded when the recording stop. If null no automatic download will start and you can rely on the promise to get the data back.
+     * @param fileName Defines the name of the file to be downloaded when the recording stop.
+     * If null no automatic download will start and you can rely on the promise to get the data back.
      * @param maxDuration Defines the maximum recording time in seconds.
-     * It default to 7 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
-     * @return a promise callback at the end of the recording with the video data in Blob.
+     * It defaults to 7 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
+     * @return A promise callback at the end of the recording with the video data in Blob.
      */
     public startRecording(fileName: Nullable<string> = "babylonjs.webm", maxDuration = 7): Promise<Blob> {
         if (!this._canvas || !this._mediaRecorder) {

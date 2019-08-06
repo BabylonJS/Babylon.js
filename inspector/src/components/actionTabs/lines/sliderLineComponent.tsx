@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
+import { Tools } from 'babylonjs/Misc/tools';
 
 interface ISliderLineComponentProps {
     label: string;
@@ -10,6 +11,7 @@ interface ISliderLineComponentProps {
     maximum: number;
     step: number;
     directValue?: number;
+    useEuler?: boolean;
     onChange?: (value: number) => void;
     onInput?: (value: number) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -56,7 +58,11 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
 
     onChange(newValueString: any) {
         this._localChange = true;
-        const newValue = parseFloat(newValueString);
+        let newValue = parseFloat(newValueString);
+
+        if (this.props.useEuler) {
+            newValue = Tools.ToRadians(newValue);
+        }
 
         if (this.props.target) {
             if (this.props.onPropertyChangedObservable) {
@@ -85,6 +91,14 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         }
     }
 
+    prepareDataToRead(value: number) {
+        if (this.props.useEuler) {
+            return Tools.ToDegrees(value);
+        }
+
+        return value;
+    }
+
     render() {
         let decimalCount = this.props.decimalCount !== undefined ? this.props.decimalCount : 2;
         return (
@@ -93,7 +107,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                     {this.props.label}
                 </div>
                 <div className="slider">
-                    {this.state.value ? this.state.value.toFixed(decimalCount) : "0"}&nbsp;<input className="range" type="range" step={this.props.step} min={this.props.minimum} max={this.props.maximum} value={this.state.value}
+                    {this.state.value ? this.prepareDataToRead(this.state.value).toFixed(decimalCount) : "0"}&nbsp;<input className="range" type="range" step={this.props.step} min={this.prepareDataToRead(this.props.minimum)} max={this.prepareDataToRead(this.props.maximum)} value={this.prepareDataToRead(this.state.value)}
                         onInput={evt => this.onInput((evt.target as HTMLInputElement).value)}
                         onChange={evt => this.onChange(evt.target.value)} />
                 </div>

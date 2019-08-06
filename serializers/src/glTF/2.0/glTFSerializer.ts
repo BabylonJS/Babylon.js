@@ -13,6 +13,14 @@ export interface IExportOptions {
      * @returns boolean, which indicates whether the node should be exported (true) or not (false)
      */
     shouldExportNode?(node: Node): boolean;
+
+    /**
+     * Function used to extract the part of node's metadata that will be exported into glTF node extras
+     * @param metadata source metadata to read from
+     * @returns the data to store to glTF node extras
+     */
+    metadataSelector?(metadata: any): any;
+
     /**
      * The sample rate to bake animation curves
      */

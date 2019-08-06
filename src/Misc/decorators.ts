@@ -1,7 +1,9 @@
 import { Tags } from "../Misc/tags";
 import { Nullable } from "../types";
-import { Color4, Quaternion, Color3, Vector2, Vector3, Matrix } from "../Maths/math";
+import { Quaternion, Vector2, Vector3, Matrix } from "../Maths/math.vector";
 import { _DevTools } from './devTools';
+import { IAnimatable } from '../Animations/animatable.interface';
+import { Color4, Color3 } from '../Maths/math.color';
 
 declare type Scene = import("../scene").Scene;
 declare type Camera = import("../Cameras/camera").Camera;
@@ -10,7 +12,6 @@ declare type ImageProcessingConfiguration = import("../Materials/imageProcessing
 declare type FresnelParameters = import("../Materials/fresnelParameters").FresnelParameters;
 declare type ColorCurves = import("../Materials/colorCurves").ColorCurves;
 declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
-declare type IAnimatable = import("../Misc/tools").IAnimatable;
 
 var __decoratorInitialStore = {};
 var __mergedStore = {};
@@ -213,22 +214,22 @@ export function serializeAsCameraReference(sourceName?: string) {
  * Class used to help serialization objects
  */
 export class SerializationHelper {
-    /** hidden */
+    /** @hidden */
     public static _ImageProcessingConfigurationParser = (sourceProperty: any): ImageProcessingConfiguration => {
         throw _DevTools.WarnImport("ImageProcessingConfiguration");
     }
 
-    /** hidden */
+    /** @hidden */
     public static _FresnelParametersParser = (sourceProperty: any): FresnelParameters => {
         throw _DevTools.WarnImport("FresnelParameters");
     }
 
-    /** hidden */
+    /** @hidden */
     public static _ColorCurvesParser = (sourceProperty: any): ColorCurves => {
         throw _DevTools.WarnImport("ColorCurves");
     }
 
-    /** hidden */
+    /** @hidden */
     public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
         throw _DevTools.WarnImport("Texture");
     }

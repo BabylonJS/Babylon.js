@@ -1,10 +1,10 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Vector4 } from "../../Maths/math";
+import { Vector4 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
-VertexData.CreateTiledPlane = function(options: { pattern?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, size?: number, width?: number, height?: number, alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4}): VertexData {
+VertexData.CreateTiledPlane = function(options: { pattern?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, size?: number, width?: number, height?: number, alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
 
     var flipTile = options.pattern || Mesh.NO_FLIP;
     var tileWidth = options.tileWidth || options.tileSize || 1;
@@ -156,7 +156,7 @@ VertexData.CreateTiledPlane = function(options: { pattern?: number, tileSize?: n
             indices.push(index, index + 1, index + 3, index + 1, index + 2, index + 3);
             index += 4;
             a = 0,
-            b = 1 - offsetY / tileHeight;
+                b = 1 - offsetY / tileHeight;
             c = offsetX / tileWidth;
             d = 1;
             uvPart = [a, b, c, b, c, d, a, d];
@@ -208,7 +208,7 @@ VertexData.CreateTiledPlane = function(options: { pattern?: number, tileSize?: n
             indices.push(index, index + 1, index + 3, index + 1, index + 2, index + 3);
             index += 4;
             a = 0,
-            b = 0;
+                b = 0;
             c = offsetX / tileWidth;
             d = offsetY / tileHeight;
             uvPart = [a, b, c, b, c, d, a, d];
@@ -328,7 +328,7 @@ VertexData.CreateTiledPlane = function(options: { pattern?: number, tileSize?: n
                 indices.push(index, index + 1, index + 3, index + 1, index + 2, index + 3);
                 index += 4;
                 if (flipTile === Mesh.FLIP_TILE || flipTile === Mesh.ROTATE_TILE || flipTile === Mesh.FLIP_N_ROTATE_TILE) {
-                    uvs = uvs.concat(uvBaseLC[(y  + 1) % 2]);
+                    uvs = uvs.concat(uvBaseLC[(y + 1) % 2]);
                 }
                 else if (flipTile === Mesh.FLIP_ROW || flipTile === Mesh.ROTATE_ROW || flipTile === Mesh.FLIP_N_ROTATE_ROW) {
                     uvs = uvs.concat(uvBaseLC[y % 2]);
@@ -424,7 +424,7 @@ export class TiledPlaneBuilder {
      * @param scene defines the hosting scene
      * @returns the box mesh
      */
-    public static CreateTiledPlane(name: string, options: { pattern?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, size?: number, width?: number, height?: number, alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean}, scene: Nullable<Scene> = null): Mesh {
+    public static CreateTiledPlane(name: string, options: { pattern?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, size?: number, width?: number, height?: number, alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         var plane = new Mesh(name, scene);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

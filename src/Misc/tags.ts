@@ -1,4 +1,3 @@
-import { Tools } from "./tools";
 import { AndOrNotEvaluator } from "./andOrNotEvaluator";
 
 /**
@@ -50,7 +49,14 @@ export class Tags {
         if (!obj._tags) {
             return false;
         }
-        return !Tools.IsEmpty(obj._tags);
+
+        let tags = obj._tags;
+        for (var i in tags) {
+            if (tags.hasOwnProperty(i)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

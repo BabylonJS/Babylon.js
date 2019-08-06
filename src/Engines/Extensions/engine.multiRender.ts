@@ -261,7 +261,7 @@ Engine.prototype.updateMultipleRenderTargetTextureSampleCount = function(texture
 
     var gl = this._gl;
 
-    samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
+    samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
     // Dispose previous render buffers
     if (textures[0]._depthStencilBuffer) {

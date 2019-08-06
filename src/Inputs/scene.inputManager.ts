@@ -3,7 +3,7 @@ import { PointerInfoPre, PointerInfo, PointerEventTypes } from '../Events/pointe
 import { Nullable } from '../types';
 import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { PickingInfo } from '../Collisions/pickingInfo';
-import { Vector2, Matrix } from '../Maths/math';
+import { Vector2, Matrix } from '../Maths/math.vector';
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Constants } from '../Engines/constants';
 import { ActionEvent } from '../Actions/actionEvent';
@@ -266,7 +266,7 @@ export class InputManager {
         let scene = this._scene;
         if (pickResult && pickResult.hit && pickResult.pickedMesh) {
             this._pickedDownMesh = pickResult.pickedMesh;
-            var actionManager = pickResult.pickedMesh.actionManager;
+            var actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
             if (actionManager) {
                 if (actionManager.hasPickTriggers) {
                     actionManager.processTrigger(Constants.ACTION_OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
@@ -605,7 +605,7 @@ export class InputManager {
             }
 
             if (!scene.pointerMovePredicate) {
-                scene.pointerMovePredicate = (mesh: AbstractMesh): boolean => (mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || scene.constantlyUpdateMeshUnderPointer || (mesh.actionManager !== null && mesh.actionManager !== undefined)) && (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0));
+                scene.pointerMovePredicate = (mesh: AbstractMesh): boolean => (mesh.isPickable && mesh.isVisible && mesh.isReady() && mesh.isEnabled() && (mesh.enablePointerMoveEvents || scene.constantlyUpdateMeshUnderPointer || (mesh._getActionManagerForTrigger() != null)) && (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0));
             }
 
             // Meshes
@@ -762,13 +762,19 @@ export class InputManager {
         };
 
         // Keyboard events
-        this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(() => {
-            if (!canvas) {
-                return;
+        this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add((() => {
+            let fn = () => {
+                if (!canvas) {
+                    return;
+                }
+                canvas.addEventListener("keydown", this._onKeyDown, false);
+                canvas.addEventListener("keyup", this._onKeyUp, false);
+            };
+            if (document.activeElement === canvas) {
+                fn();
             }
-            canvas.addEventListener("keydown", this._onKeyDown, false);
-            canvas.addEventListener("keyup", this._onKeyUp, false);
-        });
+            return fn;
+        })());
 
         this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(() => {
             if (!canvas) {
@@ -797,7 +803,8 @@ export class InputManager {
         }
 
         if (attachUp) {
-            window.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
+            let hostWindow = scene.getEngine().getHostWindow();
+            hostWindow.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
         }
     }
 
@@ -815,6 +822,7 @@ export class InputManager {
 
         // Pointer
         canvas.removeEventListener(eventPrefix + "move", <any>this._onPointerMove);
+        canvas.removeEventListener(this._wheelEventName, <any>this._onPointerMove);
         canvas.removeEventListener(eventPrefix + "down", <any>this._onPointerDown);
         window.removeEventListener(eventPrefix + "up", <any>this._onPointerUp);
 

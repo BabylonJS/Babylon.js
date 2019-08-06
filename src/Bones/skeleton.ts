@@ -1,8 +1,7 @@
 import { Bone } from "./bone";
 
-import { IAnimatable } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { Vector3, Matrix, Tmp } from "../Maths/math";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -16,6 +15,7 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import { IInspectable } from '../Misc/iInspectable';
+import { IAnimatable } from '../Animations/animatable.interface';
 
 /**
  * Class used to handle skinning animations
@@ -74,7 +74,7 @@ export class Skeleton implements IAnimatable {
     private _useTextureToStoreBoneMatrices = true;
     /**
      * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
-     * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
+     * Please note that this option is not available if the hardware does not support it
      */
     public get useTextureToStoreBoneMatrices(): boolean {
         return this._useTextureToStoreBoneMatrices;
@@ -118,7 +118,7 @@ export class Skeleton implements IAnimatable {
      * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
      */
     public get isUsingTextureForMatrices() {
-        return this.useTextureToStoreBoneMatrices && this._canUseTextureForBones && !this.needInitialSkinMatrix;
+        return this.useTextureToStoreBoneMatrices && this._canUseTextureForBones;
     }
 
     /**
@@ -189,9 +189,14 @@ export class Skeleton implements IAnimatable {
 
     /**
      * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
+     * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
      * @returns a raw texture containing the data
      */
-    public getTransformMatrixTexture(): Nullable<RawTexture> {
+    public getTransformMatrixTexture(mesh: AbstractMesh): Nullable<RawTexture> {
+        if (this.needInitialSkinMatrix && mesh._transformMatrixTexture) {
+            return mesh._transformMatrixTexture;
+        }
+
         return this._transformMatrixTexture;
     }
 
@@ -471,13 +476,29 @@ export class Skeleton implements IAnimatable {
 
                         if (!bone.getParent()) {
                             var matrix = bone.getBaseMatrix();
-                            matrix.multiplyToRef(poseMatrix, Tmp.Matrix[1]);
-                            bone._updateDifferenceMatrix(Tmp.Matrix[1]);
+                            matrix.multiplyToRef(poseMatrix, TmpVectors.Matrix[1]);
+                            bone._updateDifferenceMatrix(TmpVectors.Matrix[1]);
+                        }
+                    }
+
+                    if (this.isUsingTextureForMatrices) {
+                        const textureWidth = (this.bones.length + 1) * 4;
+                        if (!mesh._transformMatrixTexture || mesh._transformMatrixTexture.getSize().width !== textureWidth) {
+
+                            if (mesh._transformMatrixTexture) {
+                                mesh._transformMatrixTexture.dispose();
+                            }
+
+                            mesh._transformMatrixTexture = RawTexture.CreateRGBATexture(mesh._bonesTransformMatrices, (this.bones.length + 1) * 4, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
                         }
                     }
                 }
 
                 this._computeTransformMatrices(mesh._bonesTransformMatrices, poseMatrix);
+
+                if (this.isUsingTextureForMatrices && mesh._transformMatrixTexture) {
+                    mesh._transformMatrixTexture.update(mesh._bonesTransformMatrices);
+                }
             }
         } else {
             if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {

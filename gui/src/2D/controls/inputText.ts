@@ -50,6 +50,8 @@ export class InputText extends Control implements IFocusableControl {
 
     /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
     public promptMessage = "Please enter text:";
+    /** Force disable prompt on mobile device */
+    public disableMobilePrompt = false;
 
     /** Observable raised when the text changes */
     public onTextChangedObservable = new Observable<InputText>();
@@ -364,7 +366,7 @@ export class InputText extends Control implements IFocusableControl {
 
         this.onFocusObservable.notifyObservers(this);
 
-        if (navigator.userAgent.indexOf("Mobile") !== -1) {
+        if (navigator.userAgent.indexOf("Mobile") !== -1 && !this.disableMobilePrompt) {
             let value = prompt(this.promptMessage);
 
             if (value !== null) {

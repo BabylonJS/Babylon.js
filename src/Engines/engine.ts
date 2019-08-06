@@ -1,18 +1,11 @@
 import { Observer, Observable } from "../Misc/observable";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import { StringDictionary } from "../Misc/stringDictionary";
-import { PromisePolyfill } from "../Misc/promise";
-import { Tools, ICustomAnimationFrameRequester, PerfCounter, IFileRequest } from "../Misc/tools";
 import { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
-import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Matrix, Color3, Color4, Viewport, Vector4 } from "../Maths/math";
-import { Scalar } from "../Maths/math.scalar";
-import { IDisplayChangedEventArgs } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Effect, EffectCreationOptions, EffectFallbacks } from "../Materials/effect";
-import { Material } from "../Materials/material";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -32,11 +25,30 @@ import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
+import { IShaderProcessor } from './Processors/iShaderProcessor';
+import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
+import { PerfCounter } from '../Misc/perfCounter';
+import { IFileRequest } from '../Misc/fileRequest';
+import { ICustomAnimationFrameRequester } from '../Misc/customAnimationFrameRequester';
+import { FileTools } from '../Misc/fileTools';
+import { IViewportLike, IColor4Like } from '../Maths/math.like';
 
+declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+
+/**
+ * Defines the interface used by objects containing a viewport (like a camera)
+ */
+interface IViewportOwnerLike {
+    /**
+     * Gets or sets the viewport
+     */
+    viewport: IViewportLike;
+}
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -182,6 +194,8 @@ export class EngineCapabilities {
     public parallelShaderCompile: {
         COMPLETION_STATUS_KHR: number;
     };
+    /** Max number of texture samples for MSAA */
+    public maxMSAASamples = 1;
 }
 
 /** Interface defining initialization parameters for Engine class */
@@ -227,6 +241,16 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Defines that engine should compile shaders with high precision floats (if supported). True by default
      */
     useHighPrecisionFloats?: boolean;
+}
+
+/**
+ * Defines the interface used by display changed events
+ */
+export interface IDisplayChangedEventArgs {
+    /** Gets the vrDisplay object (if any) */
+    vrDisplay: Nullable<any>;
+    /** Gets a boolean indicating if webVR is supported */
+    vrSupported: boolean;
 }
 
 /**
@@ -279,9 +303,7 @@ export class Engine {
         }
     }
 
-    /**
-     * Hidden
-     */
+    /** @hidden */
     public static _TextureLoaders: IInternalTextureLoader[] = [];
 
     // Const statics
@@ -491,14 +513,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.0";
+        return "babylonjs@4.1.0-alpha.13";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.0";
+        return "4.1.0-alpha.13";
     }
 
     /**
@@ -547,6 +569,9 @@ export class Engine {
     public static _RescalePostProcessFactory: Nullable<(engine: Engine) => PostProcess> = null;
 
     // Public members
+
+    /** @hidden */
+    public _shaderProcessor: Nullable<IShaderProcessor>;
 
     /**
      * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
@@ -735,7 +760,7 @@ export class Engine {
     private _onFullscreenChange: () => void;
     private _onPointerLockChange: () => void;
 
-    private _hardwareScalingLevel: number;
+    protected _hardwareScalingLevel: number;
     /** @hidden */
     public _caps: EngineCapabilities;
     private _pointerLockRequested: boolean;
@@ -835,7 +860,7 @@ export class Engine {
     private _compiledEffects: { [key: string]: Effect } = {};
     private _vertexAttribArraysEnabled: boolean[] = [];
     /** @hidden */
-    protected _cachedViewport: Nullable<Viewport>;
+    protected _cachedViewport: Nullable<IViewportLike>;
     private _cachedVertexArrayObject: Nullable<WebGLVertexArrayObject>;
     /** @hidden */
     protected _cachedVertexBuffers: any;
@@ -903,7 +928,7 @@ export class Engine {
     /**
      * Gets the current viewport
      */
-    public get currentViewport(): Nullable<Viewport> {
+    public get currentViewport(): Nullable<IViewportLike> {
         return this._cachedViewport;
     }
 
@@ -947,13 +972,22 @@ export class Engine {
      */
     public readonly premultipliedAlpha: boolean = true;
 
+    /** @hidden */
     protected _isWebGPU: boolean = false;
-
     /**
      * Gets a boolean indicating if the engine runs in WebGPU or not.
      */
     public get isWebGPU(): boolean {
         return this._isWebGPU;
+    }
+
+    /** @hidden */
+    protected _shaderPlatformName: string;
+    /**
+     * Gets the shader platfrom name used by the effects.
+     */
+    public get shaderPlatformName(): string {
+        return this._shaderPlatformName;
     }
 
     /**
@@ -964,9 +998,6 @@ export class Engine {
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
     constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
-
-        // Register promises
-        PromisePolyfill.Apply();
 
         let canvas: Nullable<HTMLCanvasElement> = null;
         Engine.Instances.push(this);
@@ -1058,10 +1089,12 @@ export class Engine {
                     this._gl = <any>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
                     if (this._gl) {
                         this._webGLVersion = 2.0;
+                        this._shaderPlatformName = "WEBGL2";
 
                         // Prevent weird browsers to lie :-)
                         if (!this._gl.deleteQuery) {
                             this._webGLVersion = 1.0;
+                            this._shaderPlatformName = "WEBGL1";
                         }
                     }
                 } catch (e) {
@@ -1118,6 +1151,8 @@ export class Engine {
 
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
                 canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
+
+                options.powerPreference = "high-performance";
             }
         } else {
             this._gl = <WebGLRenderingContext>canvasOrContext;
@@ -1125,6 +1160,7 @@ export class Engine {
 
             if (this._gl.renderbufferStorageMultisample) {
                 this._webGLVersion = 2.0;
+                this._shaderPlatformName = "WEBGL2";
             }
 
             const attributes = this._gl.getContextAttributes();
@@ -1165,14 +1201,7 @@ export class Engine {
 
                 // Pointer lock
                 if (this.isFullscreen && this._pointerLockRequested && canvas) {
-                    canvas.requestPointerLock = canvas.requestPointerLock ||
-                        canvas.msRequestPointerLock ||
-                        canvas.mozRequestPointerLock ||
-                        canvas.webkitRequestPointerLock;
-
-                    if (canvas.requestPointerLock) {
-                        canvas.requestPointerLock();
-                    }
+                    Engine._RequestPointerlock(canvas);
                 }
             };
 
@@ -1259,8 +1288,9 @@ export class Engine {
         };
 
         if (DomManagement.IsWindowObjectExist()) {
-            window.addEventListener("blur", this._onBlur);
-            window.addEventListener("focus", this._onFocus);
+            let hostWindow = this.getHostWindow();
+            hostWindow.addEventListener("blur", this._onBlur);
+            hostWindow.addEventListener("focus", this._onFocus);
         }
 
         canvas.addEventListener("pointerout", this._onCanvasPointerOut);
@@ -1273,6 +1303,25 @@ export class Engine {
         if (!Engine.audioEngine && audioEngine && Engine.AudioEngineFactory) {
             Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
         }
+
+        // Shader processor
+        this._shaderProcessor = this._getShaderProcessor();
+    }
+
+    /**
+     * Gets a shader processor implementation fitting with the current engine type.
+     * @returns The shader processor implementation.
+     */
+    protected _getShaderProcessor(): Nullable<IShaderProcessor> {
+        if (this.webGLVersion > 1) {
+            return new WebGL2ShaderProcessor();
+        }
+        return null;
+    }
+
+    /** @hidden */
+    public _getShaderProcessingContext(): Nullable<ShaderProcessingContext> {
+        return null;
     }
 
     // WebVR
@@ -1466,6 +1515,7 @@ export class Engine {
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
+            this._caps.maxMSAASamples = this._gl.getParameter(this._gl.MAX_SAMPLES);
         } else {
             var drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
 
@@ -1571,6 +1621,14 @@ export class Engine {
     }
 
     /**
+     * Gets a string idenfifying the name of the class
+     * @returns "Engine" string
+     */
+    public getClassName(): string {
+        return "Engine";
+    }
+
+    /**
      * Returns true if the stencil buffer has been enabled through the creation option of the context.
      */
     public get isStencilEnable(): boolean {
@@ -1637,12 +1695,12 @@ export class Engine {
 
     /**
      * Gets current aspect ratio
-     * @param camera defines the camera to use to get the aspect ratio
+     * @param viewportOwner defines the camera to use to get the aspect ratio
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the aspect ratio
      */
-    public getAspectRatio(camera: Camera, useScreen = false): number {
-        var viewport = camera.viewport;
+    public getAspectRatio(viewportOwner: IViewportOwnerLike, useScreen = false): number {
+        var viewport = viewportOwner.viewport;
         return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
     }
 
@@ -1686,6 +1744,30 @@ export class Engine {
      */
     public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
         return this._renderingCanvas;
+    }
+
+    /**
+     * Gets host window
+     * @returns the host window object
+     */
+    public getHostWindow(): Window {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument && this._renderingCanvas.ownerDocument.defaultView) {
+            return this._renderingCanvas.ownerDocument.defaultView;
+        }
+
+        return window;
+    }
+
+    /**
+     * Gets host document
+     * @returns the host document object
+     */
+    public getHostDocument(): Document {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
+            return this._renderingCanvas.ownerDocument;
+        }
+
+        return document;
     }
 
     /**
@@ -2009,12 +2091,12 @@ export class Engine {
         if (this._activeRenderLoops.length > 0) {
             // Register new frame
             if (this.customAnimationFrameRequester) {
-                this.customAnimationFrameRequester.requestID = Tools.QueueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
+                this.customAnimationFrameRequester.requestID = Engine.QueueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
                 this._frameHandler = this.customAnimationFrameRequester.requestID;
             } else if (this.isVRPresenting()) {
                 this._requestVRFrame();
             } else {
-                this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
+                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
             }
         } else {
             this._renderingQueueLaunched = false;
@@ -2035,7 +2117,7 @@ export class Engine {
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
             this._bindedRenderFunction = this._renderLoop.bind(this);
-            this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
+            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
         }
     }
 
@@ -2059,7 +2141,7 @@ export class Engine {
         if (!this.isFullscreen) {
             this._pointerLockRequested = requestPointerLock;
             if (this._renderingCanvas) {
-                Tools.RequestFullscreen(this._renderingCanvas);
+                Engine._RequestFullscreen(this._renderingCanvas);
             }
         }
     }
@@ -2069,8 +2151,24 @@ export class Engine {
      */
     public exitFullscreen(): void {
         if (this.isFullscreen) {
-            Tools.ExitFullscreen();
+            Engine._ExitFullscreen();
         }
+    }
+
+    /**
+     * Enters Pointerlock mode
+     */
+    public enterPointerlock(): void {
+        if (this._renderingCanvas) {
+            Engine._RequestPointerlock(this._renderingCanvas);
+        }
+    }
+
+    /**
+     * Exits Pointerlock mode
+     */
+    public exitPointerlock(): void {
+        Engine._ExitPointerlock();
     }
 
     /**
@@ -2080,7 +2178,7 @@ export class Engine {
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
      */
-    public clear(color: Nullable<Color4>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         this.applyStates();
 
         var mode = 0;
@@ -2107,7 +2205,7 @@ export class Engine {
      * @param height defines the height of the clear rectangle
      * @param clearColor defines the clear color
      */
-    public scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void {
+    public scissorClear(x: number, y: number, width: number, height: number, clearColor: IColor4Like): void {
         this.enableScissor(x, y, width, height);
         this.clear(clearColor, true, true, true);
         this.disableScissor();
@@ -2137,7 +2235,7 @@ export class Engine {
         gl.disable(gl.SCISSOR_TEST);
     }
 
-    private _viewportCached = new Vector4(0, 0, 0, 0);
+    private _viewportCached = { x: 0, y: 0, z: 0, w: 0 };
 
     /** @hidden */
     public _viewport(x: number, y: number, width: number, height: number): void {
@@ -2160,7 +2258,7 @@ export class Engine {
      * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
      * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
      */
-    public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
+    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         var width = requiredWidth || this.getRenderWidth();
         var height = requiredHeight || this.getRenderHeight();
         var x = viewport.x || 0;
@@ -2179,7 +2277,7 @@ export class Engine {
      * @param height defines the height of the viewport (in screen space)
      * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
      */
-    public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<Viewport> {
+    public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike> {
         let currentViewport = this._cachedViewport;
         this._cachedViewport = null;
 
@@ -2232,6 +2330,9 @@ export class Engine {
         if (!this._renderingCanvas) {
             return;
         }
+
+        width = width | 0;
+        height = height | 0;
 
         if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
             return;
@@ -3043,7 +3144,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
-        this.drawElementsType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, indexStart, indexCount, instancesCount);
+        this.drawElementsType(useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, indexStart, indexCount, instancesCount);
     }
 
     /**
@@ -3053,7 +3154,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
-        this.drawArraysType(Material.PointFillMode, verticesStart, verticesCount, instancesCount);
+        this.drawArraysType(Constants.MATERIAL_PointFillMode, verticesStart, verticesCount, instancesCount);
     }
 
     /**
@@ -3064,7 +3165,7 @@ export class Engine {
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
     public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
-        this.drawArraysType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, verticesStart, verticesCount, instancesCount);
+        this.drawArraysType(useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, verticesStart, verticesCount, instancesCount);
     }
 
     /**
@@ -3114,24 +3215,24 @@ export class Engine {
     private _drawMode(fillMode: number): number {
         switch (fillMode) {
             // Triangle views
-            case Material.TriangleFillMode:
+            case Constants.MATERIAL_TriangleFillMode:
                 return this._gl.TRIANGLES;
-            case Material.PointFillMode:
+            case Constants.MATERIAL_PointFillMode:
                 return this._gl.POINTS;
-            case Material.WireFrameFillMode:
+            case Constants.MATERIAL_WireFrameFillMode:
                 return this._gl.LINES;
             // Draw modes
-            case Material.PointListDrawMode:
+            case Constants.MATERIAL_PointListDrawMode:
                 return this._gl.POINTS;
-            case Material.LineListDrawMode:
+            case Constants.MATERIAL_LineListDrawMode:
                 return this._gl.LINES;
-            case Material.LineLoopDrawMode:
+            case Constants.MATERIAL_LineLoopDrawMode:
                 return this._gl.LINE_LOOP;
-            case Material.LineStripDrawMode:
+            case Constants.MATERIAL_LineStripDrawMode:
                 return this._gl.LINE_STRIP;
-            case Material.TriangleStripDrawMode:
+            case Constants.MATERIAL_TriangleStripDrawMode:
                 return this._gl.TRIANGLE_STRIP;
-            case Material.TriangleFanDrawMode:
+            case Constants.MATERIAL_TriangleFanDrawMode:
                 return this._gl.TRIANGLE_FAN;
             default:
                 return this._gl.TRIANGLES;
@@ -3261,9 +3362,10 @@ export class Engine {
 
     /**
      * Creates a new pipeline context
+     * @param shaderProcessingContext defines the shader processing context used during the processing if available
      * @returns the new pipeline
      */
-    public createPipelineContext(): IPipelineContext {
+    public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
         var pipelineContext = new WebGLPipelineContext();
         pipelineContext.engine = this;
 
@@ -3324,7 +3426,7 @@ export class Engine {
             if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
                 let log = this._gl.getShaderInfoLog(vertexShader);
                 if (log) {
-                    throw new Error(log);
+                    throw new Error("VERTEX SHADER " + log);
                 }
             }
 
@@ -3332,7 +3434,7 @@ export class Engine {
             if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
                 let log = this._gl.getShaderInfoLog(fragmentShader);
                 if (log) {
-                    throw new Error(log);
+                    throw new Error("FRAGMENT SHADER " + log);
                 }
             }
 
@@ -3636,19 +3738,6 @@ export class Engine {
     }
 
     /**
-     * Set the value of an uniform to a matrix
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param matrix defines the matrix to store
-     */
-    public setMatrix(uniform: Nullable<WebGLUniformLocation>, matrix: Matrix): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniformMatrix4fv(uniform, false, matrix.toArray() as Float32Array);
-    }
-
-    /**
      * Set the value of an uniform to a matrix (3x3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrix defines the Float32Array representing the 3x3 matrix to store
@@ -3759,38 +3848,11 @@ export class Engine {
     }
 
     /**
-     * Set the value of an uniform to a Color3
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param color3 defines the color to store
-     */
-    public setColor3(uniform: Nullable<WebGLUniformLocation>, color3: Color3): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform3f(uniform, color3.r, color3.g, color3.b);
-    }
-
-    /**
-     * Set the value of an uniform to a Color3 and an alpha value
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param color3 defines the color to store
-     * @param alpha defines the alpha component to store
-     */
-    public setColor4(uniform: Nullable<WebGLUniformLocation>, color3: Color3, alpha: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
-    }
-
-    /**
      * Sets a Color4 on a uniform variable
      * @param uniform defines the uniform location
      * @param color4 defines the value to be set
      */
-    public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void {
+    public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: IColor4Like): void {
         if (!uniform) {
             return;
         }
@@ -4231,8 +4293,8 @@ export class Engine {
                     // Add Back
                     customFallback = true;
                     excludeLoaders.push(loader);
-                    Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
-                    this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, null, buffer, texture, undefined, undefined, excludeLoaders);
+                    this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
+                    return;
                 }
             }
 
@@ -4240,8 +4302,9 @@ export class Engine {
                 if (onLoadObserver) {
                     texture.onLoadedObservable.remove(onLoadObserver);
                 }
-                if (Tools.UseFallbackTexture) {
-                    this.createTexture(Tools.fallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, null, buffer, texture);
+                if (EngineStore.UseFallbackTexture) {
+                    this.createTexture(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
+                    return;
                 }
             }
 
@@ -4314,11 +4377,6 @@ export class Engine {
                         this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
                         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
 
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
                         this._rescaleTexture(source, texture, scene, internalFormat, () => {
                             this._releaseTexture(source);
                             this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
@@ -4335,11 +4393,11 @@ export class Engine {
                 if (buffer instanceof HTMLImageElement) {
                     onload(buffer);
                 } else {
-                    Tools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null);
+                    FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null);
                 }
             }
             else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || buffer instanceof Blob) {
-                Tools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null);
+                FileTools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null);
             }
             else {
                 onload(<HTMLImageElement>buffer);
@@ -4349,7 +4407,21 @@ export class Engine {
         return texture;
     }
 
-    private _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<Scene>, internalFormat: number, onComplete: () => void): void {
+    /**
+     * @hidden
+     * Rescales a texture
+     * @param source input texutre
+     * @param destination destination texture
+     * @param scene scene to use to render the resize
+     * @param internalFormat format to use when resizing
+     * @param onComplete callback to be called when resize has completed
+     */
+    public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<Scene>, internalFormat: number, onComplete: () => void): void {
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, this._gl.LINEAR);
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
+        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
+
         let rtt = this.createRenderTargetTexture({
             width: destination.width,
             height: destination.height,
@@ -4446,8 +4518,8 @@ export class Engine {
         texture.baseHeight = height;
 
         if (generateMipMaps) {
-            width = this.needPOTTextures ? Tools.GetExponentOfTwo(width, this._caps.maxTextureSize) : width;
-            height = this.needPOTTextures ? Tools.GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
+            width = this.needPOTTextures ? Engine.GetExponentOfTwo(width, this._caps.maxTextureSize) : width;
+            height = this.needPOTTextures ? Engine.GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
         }
 
         //  this.resetTextureCache();
@@ -4911,7 +4983,7 @@ export class Engine {
 
         var gl = this._gl;
 
-        samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
+        samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
         // Dispose previous render buffers
         if (texture._depthStencilBuffer) {
@@ -4977,12 +5049,12 @@ export class Engine {
     }
 
     /** @hidden */
-    public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+    public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0, babylonInternalFormat?: number, useTextureWidthAndHeight = false): void {
         var gl = this._gl;
 
         var textureType = this._getWebGLTextureType(texture.type);
         var format = this._getInternalFormat(texture.format);
-        var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
+        var internalFormat = babylonInternalFormat === undefined ? this._getRGBABufferInternalSizedFormat(texture.type, format) : this._getInternalFormat(babylonInternalFormat);
 
         this._unpackFlipY(texture.invertY);
 
@@ -4991,10 +5063,10 @@ export class Engine {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }
 
-        const lodMaxWidth = Math.round(Scalar.Log2(texture.width));
-        const lodMaxHeight = Math.round(Scalar.Log2(texture.height));
-        const width = Math.pow(2, Math.max(lodMaxWidth - lod, 0));
-        const height = Math.pow(2, Math.max(lodMaxHeight - lod, 0));
+        const lodMaxWidth = Math.round(Math.log(texture.width) * Math.LOG2E);
+        const lodMaxHeight = Math.round(Math.log(texture.height) * Math.LOG2E);
+        const width = useTextureWidthAndHeight ? texture.width : Math.pow(2, Math.max(lodMaxWidth - lod, 0));
+        const height = useTextureWidthAndHeight ? texture.height : Math.pow(2, Math.max(lodMaxHeight - lod, 0));
 
         gl.texImage2D(target, lod, internalFormat, width, height, 0, format, textureType, imageData);
     }
@@ -5111,8 +5183,8 @@ export class Engine {
     private _prepareWebGLTexture(texture: InternalTexture, scene: Nullable<Scene>, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
         processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE): void {
         var maxTextureSize = this.getCaps().maxTextureSize;
-        var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(width, maxTextureSize) : width);
-        var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(height, maxTextureSize) : height);
+        var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Engine.GetExponentOfTwo(width, maxTextureSize) : width);
+        var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Engine.GetExponentOfTwo(height, maxTextureSize) : height);
 
         var gl = this._gl;
         if (!gl) {
@@ -5227,6 +5299,11 @@ export class Engine {
         }
         if (texture._lodTextureLow) {
             texture._lodTextureLow.dispose();
+        }
+
+        // Integrated irradiance map.
+        if (texture._irradianceTexture) {
+            texture._irradianceTexture.dispose();
         }
 
         // Set output texture of post process to null if the texture has been released/disposed
@@ -5560,10 +5637,10 @@ export class Engine {
             let texture = textures[i].getInternalTexture();
 
             if (texture) {
-                this._textureUnits[channel + i] = channel + i;
+                this._textureUnits[i] = channel + i;
                 texture._associatedChannel = channel + i;
             } else {
-                this._textureUnits[channel + i] = -1;
+                this._textureUnits[i] = -1;
             }
         }
         this._gl.uniform1iv(uniform, this._textureUnits);
@@ -6086,6 +6163,12 @@ export class Engine {
                     return this._gl.HALF_FLOAT_OES;
                 case Engine.TEXTURETYPE_UNSIGNED_BYTE:
                     return this._gl.UNSIGNED_BYTE;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+                    return this._gl.UNSIGNED_SHORT_4_4_4_4;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                    return this._gl.UNSIGNED_SHORT_5_5_5_1;
+                case Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                    return this._gl.UNSIGNED_SHORT_5_6_5;
             }
             return this._gl.UNSIGNED_BYTE;
         }
@@ -6355,7 +6438,7 @@ export class Engine {
 
     /** @hidden */
     public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
-        let request = Tools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        let request = FileTools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -6394,6 +6477,161 @@ export class Engine {
             return gl != null && !!window.WebGLRenderingContext;
         } catch (e) {
             return false;
+        }
+    }
+
+    /**
+     * Find the next highest power of two.
+     * @param x Number to start search from.
+     * @return Next highest power of two.
+     */
+    public static CeilingPOT(x: number): number {
+        x--;
+        x |= x >> 1;
+        x |= x >> 2;
+        x |= x >> 4;
+        x |= x >> 8;
+        x |= x >> 16;
+        x++;
+        return x;
+    }
+
+    /**
+     * Find the next lowest power of two.
+     * @param x Number to start search from.
+     * @return Next lowest power of two.
+     */
+    public static FloorPOT(x: number): number {
+        x = x | (x >> 1);
+        x = x | (x >> 2);
+        x = x | (x >> 4);
+        x = x | (x >> 8);
+        x = x | (x >> 16);
+        return x - (x >> 1);
+    }
+
+    /**
+     * Find the nearest power of two.
+     * @param x Number to start search from.
+     * @return Next nearest power of two.
+     */
+    public static NearestPOT(x: number): number {
+        var c = Engine.CeilingPOT(x);
+        var f = Engine.FloorPOT(x);
+        return (c - x) > (x - f) ? f : c;
+    }
+
+    /**
+     * Get the closest exponent of two
+     * @param value defines the value to approximate
+     * @param max defines the maximum value to return
+     * @param mode defines how to define the closest value
+     * @returns closest exponent of two of the given value
+     */
+    public static GetExponentOfTwo(value: number, max: number, mode = Constants.SCALEMODE_NEAREST): number {
+        let pot;
+
+        switch (mode) {
+            case Constants.SCALEMODE_FLOOR:
+                pot = Engine.FloorPOT(value);
+                break;
+            case Constants.SCALEMODE_NEAREST:
+                pot = Engine.NearestPOT(value);
+                break;
+            case Constants.SCALEMODE_CEILING:
+            default:
+                pot = Engine.CeilingPOT(value);
+                break;
+        }
+
+        return Math.min(pot, max);
+    }
+
+    /**
+     * Queue a new function into the requested animation frame pool (ie. this function will be executed byt the browser for the next frame)
+     * @param func - the function to be called
+     * @param requester - the object that will request the next frame. Falls back to window.
+     * @returns frame number
+     */
+    public static QueueNewFrame(func: () => void, requester?: any): number {
+        if (!DomManagement.IsWindowObjectExist()) {
+            return setTimeout(func, 16);
+        }
+
+        if (!requester) {
+            requester = window;
+        }
+
+        if (requester.requestAnimationFrame) {
+            return requester.requestAnimationFrame(func);
+        }
+        else if (requester.msRequestAnimationFrame) {
+            return requester.msRequestAnimationFrame(func);
+        }
+        else if (requester.webkitRequestAnimationFrame) {
+            return requester.webkitRequestAnimationFrame(func);
+        }
+        else if (requester.mozRequestAnimationFrame) {
+            return requester.mozRequestAnimationFrame(func);
+        }
+        else if (requester.oRequestAnimationFrame) {
+            return requester.oRequestAnimationFrame(func);
+        }
+        else {
+            return window.setTimeout(func, 16);
+        }
+    }
+
+    /**
+     * Ask the browser to promote the current element to pointerlock mode
+     * @param element defines the DOM element to promote
+     */
+    static _RequestPointerlock(element: HTMLElement): void {
+        element.requestPointerLock = element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
+        if (element.requestPointerLock) {
+            element.requestPointerLock();
+        }
+    }
+
+    /**
+     * Asks the browser to exit pointerlock mode
+     */
+    static _ExitPointerlock(): void {
+        let anyDoc = document as any;
+        document.exitPointerLock = document.exitPointerLock || anyDoc.msExitPointerLock || anyDoc.mozExitPointerLock || anyDoc.webkitExitPointerLock;
+
+        if (document.exitPointerLock) {
+            document.exitPointerLock();
+        }
+    }
+
+    /**
+     * Ask the browser to promote the current element to fullscreen rendering mode
+     * @param element defines the DOM element to promote
+     */
+    static _RequestFullscreen(element: HTMLElement): void {
+        var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || (<any>element).webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
+        if (!requestFunction) { return; }
+        requestFunction.call(element);
+    }
+
+    /**
+     * Asks the browser to exit fullscreen mode
+     */
+    static _ExitFullscreen(): void {
+        let anyDoc = document as any;
+
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+        else if (anyDoc.mozCancelFullScreen) {
+            anyDoc.mozCancelFullScreen();
+        }
+        else if (anyDoc.webkitCancelFullScreen) {
+            anyDoc.webkitCancelFullScreen();
+        }
+        else if (anyDoc.msCancelFullScreen) {
+            anyDoc.msCancelFullScreen();
         }
     }
 }

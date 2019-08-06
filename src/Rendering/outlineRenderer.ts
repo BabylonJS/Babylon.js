@@ -1,6 +1,6 @@
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
-import { _InstancesBatch } from "../Meshes/mesh";
+import { _InstancesBatch, Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
@@ -8,6 +8,7 @@ import { Constants } from "../Engines/constants";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
+import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Shaders/outline.fragment";
 import "../Shaders/outline.vertex";
@@ -187,6 +188,9 @@ export class OutlineRenderer implements ISceneComponent {
             this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
         }
 
+        // Morph targets
+        MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
+
         mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
 
         // Alpha test
@@ -252,13 +256,24 @@ export class OutlineRenderer implements ISceneComponent {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
 
+        // Morph targets
+        const morphTargetManager = (mesh as Mesh).morphTargetManager;
+        let numMorphInfluencers = 0;
+        if (morphTargetManager) {
+            if (morphTargetManager.numInfluencers > 0) {
+                numMorphInfluencers = morphTargetManager.numInfluencers;
+
+                defines.push("#define MORPHTARGETS");
+                defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
+
+                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
+            }
+        }
+
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         // Get correct effect
@@ -267,8 +282,10 @@ export class OutlineRenderer implements ISceneComponent {
             this._cachedDefines = join;
             this._effect = this.scene.getEngine().createEffect("outline",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant"],
-                ["diffuseSampler"], join);
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant", "morphTargetInfluences"],
+                ["diffuseSampler"], join,
+                undefined, undefined, undefined,
+                { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 
         return this._effect.isReady();
@@ -279,7 +296,7 @@ export class OutlineRenderer implements ISceneComponent {
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
             var material = subMesh.getMaterial();
-            if (material && material.needAlphaBlending) {
+            if (material && material.needAlphaBlending()) {
                 this._engine.cacheStencilState();
                 // Draw only to stencil buffer for the original mesh
                 // The resulting stencil buffer will be used so the outline is not visible inside the mesh when the mesh is transparent
@@ -301,7 +318,7 @@ export class OutlineRenderer implements ISceneComponent {
             this.render(subMesh, batch);
             this._engine.setDepthWrite(this._savedDepthWrite);
 
-            if (material && material.needAlphaBlending) {
+            if (material && material.needAlphaBlending()) {
                 this._engine.restoreStencilState();
             }
         }

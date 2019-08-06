@@ -3,9 +3,10 @@ import { ViewerConfiguration } from './configuration';
 import { processConfigurationCompatibility } from './configurationCompatibility';
 
 import { deepmerge } from '../helper';
-import { IFileRequest, Tools } from 'babylonjs/Misc/tools';
+import { Tools } from 'babylonjs/Misc/tools';
 import { extendedConfiguration } from './types/extended';
 import { renderOnlyDefaultConfiguration } from './types/renderOnlyDefault';
+import { IFileRequest } from 'babylonjs/Misc/fileRequest';
 
 /**
  * The configuration loader will load the configuration object from any source and will use the defined mapper to
@@ -23,7 +24,7 @@ export class RenderOnlyConfigurationLoader {
         this._loadRequests = [];
     }
 
-    private _getConfigurationTypeExcludeTemplate (types: string): ViewerConfiguration {
+    private _getConfigurationTypeExcludeTemplate(types: string): ViewerConfiguration {
         let config: ViewerConfiguration = {};
         let typesSeparated = types.split(",");
         typesSeparated.forEach((type) => {
@@ -45,7 +46,7 @@ export class RenderOnlyConfigurationLoader {
         return config;
     };
 
-    protected getExtendedConfig(type:string|undefined){
+    protected getExtendedConfig(type: string | undefined) {
         return this._getConfigurationTypeExcludeTemplate(type || "extended");
     }
 
@@ -61,7 +62,7 @@ export class RenderOnlyConfigurationLoader {
 
         let loadedConfig: ViewerConfiguration = deepmerge({}, initConfig);
         this._processInitialConfiguration(loadedConfig);
-        
+
         let extendedConfiguration = this.getExtendedConfig(loadedConfig.extends);
 
         if (loadedConfig.configuration) {
@@ -160,5 +161,5 @@ export class RenderOnlyConfigurationLoader {
             this._loadRequests.push(fileRequest);
         });
     }
-    
+
 }

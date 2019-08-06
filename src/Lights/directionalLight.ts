@@ -1,7 +1,7 @@
 import { serialize } from "../Misc/decorators";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Matrix, Vector3 } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";

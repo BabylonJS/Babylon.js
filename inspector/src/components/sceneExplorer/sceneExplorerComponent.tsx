@@ -17,6 +17,7 @@ import { Vector3 } from 'babylonjs/Maths/math';
 import { PointLight } from 'babylonjs/Lights/pointLight';
 import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
+import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
 
 require("./sceneExplorer.scss");
 
@@ -242,6 +243,26 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     label: "Add new Default Rendering Pipeline",
                     action: () => {
                         let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, [scene.activeCamera!]);
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
+                    }
+                });
+            }
+
+            if (!pipelines.some(p => p.getClassName() === "SSAORenderingPipeline")) {
+                pipelineContextMenus.push({
+                    label: "Add new SSAO Rendering Pipeline",
+                    action: () => {
+                        let newPipeline = new SSAORenderingPipeline("SSAO rendering pipeline", scene, 1, [scene.activeCamera!]);
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
+                    }
+                });
+            }
+
+            if (scene.getEngine().webGLVersion > 1 && !pipelines.some(p => p.getClassName() === "SSAORenderingPipeline")) {
+                pipelineContextMenus.push({
+                    label: "Add new SSAO2 Rendering Pipeline",
+                    action: () => {
+                        let newPipeline = new SSAORenderingPipeline("SSAO2 rendering pipeline", scene, 1, [scene.activeCamera!]);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });

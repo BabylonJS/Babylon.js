@@ -4,7 +4,7 @@ import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { GlobalState } from '../../components/globalState';
 
 interface ILineContainerComponentProps {
-    globalState: GlobalState;
+    globalState?: GlobalState;
     title: string;
     children: any[] | any;
     closed?: boolean;
@@ -55,13 +55,13 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
     }
 
     componentDidMount() {
-        if (!this.props.globalState.selectedLineContainerTitle) {
+        if (this.props.globalState && !this.props.globalState.selectedLineContainerTitle) {
             return;
         }
 
-        if (this.props.globalState.selectedLineContainerTitle === this.props.title) {
+        if (this.props.globalState && this.props.globalState.selectedLineContainerTitle === this.props.title) {
             setTimeout(() => {
-                this.props.globalState.selectedLineContainerTitle = "";
+                this.props.globalState!.selectedLineContainerTitle = "";
             });
 
             this.setState({ isExpanded: true, isHighlighted: true });

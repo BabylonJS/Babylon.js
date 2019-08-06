@@ -1,7 +1,8 @@
 import { SmartArray } from "../../Misc/smartArray";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Vector2, Color4 } from "../../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
+import { Color4 } from "../../Maths/math.color";
 import { VertexBuffer } from "../../Meshes/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -13,7 +14,7 @@ import { Light } from "../../Lights/light";
 import { Material } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { Effect } from "../../Materials/effect";
+import { Effect, EffectFallbacks } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
@@ -222,10 +223,21 @@ export class ShadowGenerator implements IShadowGenerator {
     public onBeforeShadowMapRenderObservable = new Observable<Effect>();
 
     /**
+     * Observable triggered after the shadow is rendered. Can be used to restore internal effect state
+     */
+    public onAfterShadowMapRenderObservable = new Observable<Effect>();
+
+    /**
      * Observable triggered before a mesh is rendered in the shadow map.
      * Can be used to update internal effect state (that you can get from the onBeforeShadowMapRenderObservable)
      */
     public onBeforeShadowMapRenderMeshObservable = new Observable<Mesh>();
+
+    /**
+     * Observable triggered after a mesh is rendered in the shadow map.
+     * Can be used to update internal effect state (that you can get from the onAfterShadowMapRenderObservable)
+     */
+    public onAfterShadowMapRenderMeshObservable = new Observable<Mesh>();
 
     private _bias = 0.00005;
     /**
@@ -516,7 +528,15 @@ export class ShadowGenerator implements IShadowGenerator {
      * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
      */
     public set filteringQuality(filteringQuality: number) {
+        if (this._filteringQuality === filteringQuality) {
+            return;
+        }
+
         this._filteringQuality = filteringQuality;
+
+        this._disposeBlurPostProcesses();
+        this._applyFilterValues();
+        this._light._markMeshesAsLightDirty();
     }
 
     /**
@@ -562,6 +582,16 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     private _darkness = 0;
+
+    /** Gets or sets the actual darkness of a shadow */
+    public get darkness() {
+        return this._darkness;
+    }
+
+    public set darkness(value: number) {
+        this.setDarkness(value);
+    }
+
     /**
      * Returns the darkness value (float). This can only decrease the actual darkness of a shadow.
      * 0 means strongest and 1 would means no shadow.
@@ -589,6 +619,16 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     private _transparencyShadow = false;
+
+    /** Gets or sets the ability to have transparent shadow  */
+    public get transparencyShadow() {
+        return this._transparencyShadow;
+    }
+
+    public set transparencyShadow(value: boolean) {
+        this.setTransparencyShadow(value);
+    }
+
     /**
      * Sets the ability to have transparent shadow (boolean).
      * @param transparent True if transparent else False
@@ -618,6 +658,14 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         return this._shadowMap;
+    }
+
+    /**
+     * Gets the class name of that object
+     * @returns "ShadowGenerator"
+     */
+    public getClassName(): string {
+        return "ShadowGenerator";
     }
 
     /**
@@ -827,6 +875,12 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.clear(clearOne, true, true, false);
             }
         });
+
+        this._shadowMap.onResizeObservable.add((RTT) => {
+            this._mapSize = RTT.getRenderSize();
+            this._light._markMeshesAsLightDirty();
+            this.recreateShadowMap();
+        });
     }
 
     private _initializeBlurRTTAndPostProcesses(): void {
@@ -954,7 +1008,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 const skeleton = mesh.skeleton;
 
                 if (skeleton.isUsingTextureForMatrices) {
-                    const boneTexture = skeleton.getTransformMatrixTexture();
+                    const boneTexture = skeleton.getTransformMatrixTexture(mesh);
 
                     if (!boneTexture) {
                         return;
@@ -985,6 +1039,11 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, false);
             }
+
+            // Observables
+            this.onAfterShadowMapRenderObservable.notifyObservers(this._effect);
+            this.onAfterShadowMapRenderMeshObservable.notifyObservers(mesh);
+
         } else {
             // Need to reset refresh rate of the shadowMap
             if (this._shadowMap) {
@@ -1134,6 +1193,7 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Bones
+        const fallbacks = new EffectFallbacks();
         if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
@@ -1143,6 +1203,9 @@ export class ShadowGenerator implements IShadowGenerator {
             }
             const skeleton = mesh.skeleton;
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+            if (mesh.numBoneInfluencers > 0) {
+                fallbacks.addCPUSkinningFallback(0, mesh);
+            }
 
             if (skeleton.isUsingTextureForMatrices) {
                 defines.push("#define BONETEXTURE");
@@ -1162,17 +1225,14 @@ export class ShadowGenerator implements IShadowGenerator {
                 defines.push("#define MORPHTARGETS");
                 morphInfluencers = manager.numInfluencers;
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
-                MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, { "NUM_MORPH_INFLUENCERS": morphInfluencers });
+                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
             }
         }
 
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         if (this.customShaderOptions) {
@@ -1226,7 +1286,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._effect = this._scene.getEngine().createEffect(shaderName,
                 attribs, uniforms,
                 samplers, join,
-                undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
+                fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
         }
 
         if (!this._effect.isReady()) {
@@ -1464,6 +1524,11 @@ export class ShadowGenerator implements IShadowGenerator {
             this._light._shadowGenerator = null;
             this._light._markMeshesAsLightDirty();
         }
+
+        this.onBeforeShadowMapRenderMeshObservable.clear();
+        this.onBeforeShadowMapRenderObservable.clear();
+        this.onAfterShadowMapRenderMeshObservable.clear();
+        this.onAfterShadowMapRenderObservable.clear();
     }
 
     /**
