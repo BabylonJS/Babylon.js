@@ -1,4 +1,4 @@
-import { ShaderProcessingContext } from "../processors/shaderProcessingOptions";
+import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
 const _maxSets = 4;
 const _maxBindingsPerSet = 16;
