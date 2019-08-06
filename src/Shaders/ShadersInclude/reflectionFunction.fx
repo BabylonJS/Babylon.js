@@ -50,7 +50,7 @@ vec3 computeEquirectangularCoords(vec4 worldPos, vec3 worldNormal, vec3 eyePosit
 	return vec3(s, t, 0);
 }
 
-vec3 computeSpericalCoords(vec4 worldPos, vec3 worldNormal, mat4 view, mat4 reflectionMatrix)
+vec3 computeSphericalCoords(vec4 worldPos, vec3 worldNormal, mat4 view, mat4 reflectionMatrix)
 {
 	vec3 viewDir = normalize(vec3(view * worldPos));
 	vec3 viewNormal = normalize(vec3(view * vec4(worldNormal, 0.0)));
@@ -134,7 +134,7 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 #endif
 
 #ifdef REFLECTIONMAP_SPHERICAL
-	return computeSpericalCoords(worldPos, worldNormal, view, reflectionMatrix);
+	return computeSphericalCoords(worldPos, worldNormal, view, reflectionMatrix);
 #endif
 
 #ifdef REFLECTIONMAP_PLANAR
