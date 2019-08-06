@@ -167,10 +167,14 @@ export class LightBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         let worldPosVaryingName = "v_" + worldPos.associatedVariableName;
-        state._emitVaryingFromString(worldPosVaryingName, "vec3");
+        if (state._emitVaryingFromString(worldPosVaryingName, "vec3")) {
+            state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
+        }
 
         let worldNormalVaryingName = "v_" + worldNormal.associatedVariableName;
-        state._emitVaryingFromString(worldNormalVaryingName, "vec3");
+        if (state._emitVaryingFromString(worldNormalVaryingName, "vec3")) {
+            state.compilationString += `${worldNormalVaryingName} = ${worldNormal.associatedVariableName}.xyz;\r\n`;
+        }
 
         if (this.light) {
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
@@ -185,9 +189,6 @@ export class LightBlock extends NodeMaterialBlock {
                 repeatKey: "maxSimultaneousLights"
             });
         }
-
-        state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
-        state.compilationString += `${worldNormalVaryingName} = ${worldNormal.associatedVariableName}.xyz;\r\n`;
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
