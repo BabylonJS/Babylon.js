@@ -22,6 +22,25 @@ import { IShaderProcessor } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
 import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
+import { Tools } from "../Misc/tools";
+
+/**
+ * Options to load the associated Shaderc library
+ */
+export interface ShadercOptions {
+    /**
+     * Defines an existing instance of shaderC (usefull in modules who do not access the global instance).
+     */
+    shaderc?: any;
+    /**
+     * Defines the URL of the shaderc JS File.
+     */
+    jsPath?: string;
+    /**
+     * Defines the URL of the shaderc WASM File.
+     */
+    wasmPath?: string;
+}
 
 /**
  * Options to create the WebGPU engine
@@ -67,19 +86,29 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      * Defines the requested Swap Chain Format.
      */
     swapChainFormat?: GPUTextureFormat;
+
+    /**
+     * Defines wether MSAA is enabled on the canvas.
+     */
+    antialiasing?: boolean;
 }
 
 /**
  * The web GPU engine class provides support for WebGPU version of babylon.js.
  */
 export class WebGPUEngine extends Engine {
+    // Default shaderc options.
+    private static readonly _shadercDefaultOptions: ShadercOptions = {
+        jsPath: "http://preview.babylonjs.com/shaderc/shaderc.js",
+        wasmPath: "http://preview.babylonjs.com/shaderc/shaderc.wasm"
+    };
+
     // Page Life cycle and constants
     private readonly _uploadEncoderDescriptor = { label: "upload" };
     private readonly _renderEncoderDescriptor = { label: "render" };
-    private readonly _blitDescriptor = { label: "upload" };
     private readonly _clearDepthValue = 1;
     private readonly _clearStencilValue = 0;
-    private readonly _defaultSampleCount = 1;
+    private readonly _defaultSampleCount = 4; // Only supported value for now.
 
     // Engine Life Cycle
     private _canvas: HTMLCanvasElement;
@@ -89,13 +118,13 @@ export class WebGPUEngine extends Engine {
     private _device: GPUDevice;
     private _context: GPUCanvasContext;
     private _swapChain: GPUSwapChain;
+    private _mainPassSampleCount: number;
 
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
     // And when the frame starts to swap the target texture from the swap chain
     private _mainTexture: GPUTexture;
     private _depthTexture: GPUTexture;
-    private _mainTextureCopyView: GPUTextureCopyView;
     private _mainColorAttachments: GPURenderPassColorAttachmentDescriptor[];
     private _mainTextureExtends: GPUExtent3D;
     private _mainDepthAttachment: GPURenderPassDepthStencilAttachmentDescriptor;
@@ -103,7 +132,6 @@ export class WebGPUEngine extends Engine {
     // Frame Life Cycle (recreated each frame)
     private _uploadEncoder: GPUCommandEncoder;
     private _renderEncoder: GPUCommandEncoder;
-    private _blitEncoder: GPUCommandEncoder;
 
     private _commandBuffers: GPUCommandBuffer[] = [null as any, null as any];
 
@@ -159,6 +187,7 @@ export class WebGPUEngine extends Engine {
 
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.GPUTextureFormat_bgra8unorm;
+        options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;
 
         this._decodeEngine.getCaps().textureFloat = false;
         this._decodeEngine.getCaps().textureFloatRender = false;
@@ -194,8 +223,8 @@ export class WebGPUEngine extends Engine {
         this._canvas = canvas;
         this._options = options;
 
-        // TODO WEBGPU. RESIZE and SCALING.
         this._hardwareScalingLevel = 1;
+        this._mainPassSampleCount = options.antialiasing ? this._defaultSampleCount : 1;
 
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
     }
@@ -209,9 +238,8 @@ export class WebGPUEngine extends Engine {
      * @param shadercOptions Defines the ShaderC compiler options if necessary
      * @returns a promise notifying the readiness of the engine.
      */
-    public initEngineAsync(shadercOptions: any = null): Promise<void> {
-        // TODO WEBGPU. Rename to initAsync.
-        return (window as any).Shaderc(shadercOptions)
+    public initAsync(shadercOptions?: ShadercOptions): Promise<void> {
+        return this._initShaderc(shadercOptions)
             .then((shaderc: any) => {
                 this._shaderc = shaderc;
                 return navigator.gpu!.requestAdapter(this._options);
@@ -232,6 +260,35 @@ export class WebGPUEngine extends Engine {
                 Logger.Error("Can not create WebGPU Device and/or context.");
                 Logger.Error(e);
             });
+    }
+
+    private _initShaderc(shadercOptions?: ShadercOptions): Promise<any> {
+        shadercOptions = shadercOptions || { };
+        shadercOptions = {
+            ...WebGPUEngine._shadercDefaultOptions,
+            ...shadercOptions
+        };
+
+        if (shadercOptions.shaderc) {
+            return Promise.resolve(shadercOptions.shaderc);
+        }
+
+        const wasmOptions = {
+            wasmBinaryFile: shadercOptions!.wasmPath
+        };
+
+        if ((window as any).Shaderc) {
+            return (window as any).Shaderc(wasmOptions);
+        }
+
+        if (shadercOptions.jsPath && shadercOptions.wasmPath) {
+            return Tools.LoadScriptAsync(shadercOptions.jsPath)
+                .then(() => {
+                    return (window as any).Shaderc(wasmOptions);
+                });
+        }
+
+        return Promise.reject("shaderc is not available.");
     }
 
     private _initializeLimits(): void {
@@ -290,12 +347,11 @@ export class WebGPUEngine extends Engine {
         this._swapChain = this._context.configureSwapChain({
             device: this._device,
             format: this._options.swapChainFormat!,
-            usage: WebGPUConstants.GPUTextureUsage_TRANSFER_DST,
+            usage: WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT | WebGPUConstants.GPUTextureUsage_COPY_SRC,
         });
     }
 
     // Set default values as WebGL with depth and stencil attachment for the broadest Compat.
-    // TODO WEBGPU. Reinit on resize.
     private _initializeMainAttachments(): void {
         this._mainTextureExtends = {
             width: this.getRenderWidth(),
@@ -303,46 +359,43 @@ export class WebGPUEngine extends Engine {
             depth: 1
         };
 
-        const mainTextureDescriptor = {
-            size: this._mainTextureExtends,
-            arrayLayerCount: 1,
-            mipLevelCount: 1,
-            sampleCount: this._defaultSampleCount,
-            dimension: WebGPUConstants.GPUTextureDimension_2d,
-            format: WebGPUConstants.GPUTextureFormat_bgra8unorm,
-            usage: WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT | WebGPUConstants.GPUTextureUsage_TRANSFER_SRC,
-        };
+        if (this._options.antialiasing) {
+            const mainTextureDescriptor = {
+                size: this._mainTextureExtends,
+                arrayLayerCount: 1,
+                mipLevelCount: 1,
+                sampleCount: this._mainPassSampleCount,
+                dimension: WebGPUConstants.GPUTextureDimension_2d,
+                format: WebGPUConstants.GPUTextureFormat_bgra8unorm,
+                usage: WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT,
+            };
 
-        if (this._mainTexture) {
-            this._mainTexture.destroy();
+            if (this._mainTexture) {
+                this._mainTexture.destroy();
+            }
+            this._mainTexture = this._device.createTexture(mainTextureDescriptor);
+            this._mainColorAttachments = [{
+                attachment: this._mainTexture.createDefaultView(),
+                loadValue: new Color4(0, 0, 0, 1),
+                storeOp: WebGPUConstants.GPUStoreOp_store
+            }];
         }
-        this._mainTexture = this._device.createTexture(mainTextureDescriptor);
-        const mainTextureView = this._mainTexture.createDefaultView();
-        this._mainTextureCopyView = {
-            texture: this._mainTexture,
-            origin: {
-                x: 0,
-                y: 0,
-                z: 0
-            },
-            mipLevel: 0,
-            arrayLayer: 0,
-        };
-
-        this._mainColorAttachments = [{
-            attachment: mainTextureView,
-            loadValue: new Color4(0, 0, 0, 1),
-            storeOp: WebGPUConstants.GPUStoreOp_store
-        }];
+        else {
+            this._mainColorAttachments = [{
+                attachment: this._swapChain.getCurrentTexture().createDefaultView(),
+                loadValue: new Color4(0, 0, 0, 1),
+                storeOp: WebGPUConstants.GPUStoreOp_store
+            }];
+        }
 
         const depthTextureDescriptor = {
             size: this._mainTextureExtends,
             arrayLayerCount: 1,
             mipLevelCount: 1,
-            sampleCount: this._defaultSampleCount,
+            sampleCount: this._mainPassSampleCount,
             dimension: WebGPUConstants.GPUTextureDimension_2d,
             format: WebGPUConstants.GPUTextureFormat_depth24plusStencil8,
-            usage: WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT
+            usage:  WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT
         };
 
         if (this._depthTexture) {
@@ -1160,7 +1213,7 @@ export class WebGPUEngine extends Engine {
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,
                 sampleCount: 1,
                 size: textureExtent,
-                usage: WebGPUConstants.GPUTextureUsage_TRANSFER_DST | WebGPUConstants.GPUTextureUsage_SAMPLED
+                usage: WebGPUConstants.GPUTextureUsage_COPY_DST | WebGPUConstants.GPUTextureUsage_SAMPLED
             };
 
             const gpuTexture = this._device.createTexture(textureDescriptor);
@@ -1239,7 +1292,7 @@ export class WebGPUEngine extends Engine {
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,
                 sampleCount: 1,
                 size: textureExtent,
-                usage: WebGPUConstants.GPUTextureUsage_TRANSFER_DST | WebGPUConstants.GPUTextureUsage_SAMPLED
+                usage: WebGPUConstants.GPUTextureUsage_COPY_DST | WebGPUConstants.GPUTextureUsage_SAMPLED
             };
 
             const gpuTexture = this._device.createTexture(textureDescriptor);
@@ -1407,7 +1460,6 @@ export class WebGPUEngine extends Engine {
 
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
-        this._blitEncoder = this._device.createCommandEncoder(this._blitDescriptor);
     }
 
     private _freezeCommands: boolean = false;
@@ -1437,20 +1489,6 @@ export class WebGPUEngine extends Engine {
             this._frozenCommands[0] = this._commandBuffers[0];
             this._frozenCommands[1] = this._commandBuffers[1];
         }
-
-        // TODO WEBGPU. GC.
-        this._blitEncoder.copyTextureToTexture(this._mainTextureCopyView, {
-                texture: this._swapChain.getCurrentTexture(),
-                origin: {
-                    x: 0,
-                    y: 0,
-                    z: 0
-                },
-                mipLevel: 0,
-                arrayLayer: 0,
-            },
-            this._mainTextureExtends);
-        this._commandBuffers[2] = this._blitEncoder.finish();
 
         this._device.getQueue().submit(this._commandBuffers);
 
@@ -1482,7 +1520,13 @@ export class WebGPUEngine extends Engine {
             this._endRenderPass();
         }
 
-        // this._mainColorAttachments[0].attachment = this._swapChain.getCurrentTexture().createDefaultView();
+        // Resolve in case of MSAA
+        if (this._options.antialiasing) {
+            this._mainColorAttachments[0].resolveTarget = this._swapChain.getCurrentTexture().createDefaultView();
+        }
+        else {
+            this._mainColorAttachments[0].attachment = this._swapChain.getCurrentTexture().createDefaultView();
+        }
 
         this._currentRenderPass = this._renderEncoder.beginRenderPass({
             colorAttachments: this._mainColorAttachments,
@@ -2061,7 +2105,6 @@ export class WebGPUEngine extends Engine {
         }
 
         // Unsupported at the moment but needs to be extracted from the MSAA param.
-        const sampleCount = this._defaultSampleCount;
         const topology = this._getTopology(fillMode);
         const rasterizationStateDescriptor = this._getRasterizationStateDescriptor();
         const depthStateDescriptor = this._getDepthStencilStateDescriptor();
@@ -2071,7 +2114,7 @@ export class WebGPUEngine extends Engine {
         const pipelineLayout = this._getPipelineLayout();
 
         gpuPipeline.renderPipeline = this._device.createRenderPipeline({
-            sampleCount,
+            sampleCount: this._mainPassSampleCount,
             primitiveTopology: topology,
             rasterizationState: rasterizationStateDescriptor,
             depthStencilState: depthStateDescriptor,

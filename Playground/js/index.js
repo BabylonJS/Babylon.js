@@ -835,6 +835,9 @@ function showError(errorMessage, errorEvent) {
                 case "stable":
                     location.href = "indexStable.html" + location.hash;
                     break;
+                case "webgpu":
+                    location.href = "indexWebGPU.html" + location.hash;
+                    break;
                 default:
                     location.href = "index.html" + location.hash;
                     break;
