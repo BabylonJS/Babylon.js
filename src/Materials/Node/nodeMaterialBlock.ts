@@ -10,6 +10,7 @@ import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
 import { Scene } from '../../scene';
+import { _TypeStore } from '../../Misc/typeStore';
 
 /**
  * Defines a block that can be used inside a node based material
@@ -494,6 +495,26 @@ export class NodeMaterialBlock {
             }
         }
         return false;
+    }
+
+    /**
+     * Clone the current block to a new identical block
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a copy of the current block
+     */
+    public clone(scene: Scene, rootUrl: string = "") {
+        let serializationObject = this.serialize();
+
+        let blockType = _TypeStore.GetClass(serializationObject.customType);
+        if (blockType) {
+            let block: NodeMaterialBlock = new blockType();
+            block._deserialize(serializationObject, scene, rootUrl);
+
+            return block;
+        }
+
+        return null;
     }
 
     /**
