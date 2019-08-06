@@ -683,7 +683,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     protected _buildUniformLayout(): void {
         this._uniformBuffer.addUniform("world", 16);
         this._uniformBuffer.addUniform("visibility", 1);
-        // TODO. Bones
+        // TODO WEBGPU. Bones.
         this._uniformBuffer.create();
     }
 
@@ -697,7 +697,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         ubo.updateMatrix("world", world);
         ubo.updateFloat("visibility", this._internalAbstractMeshDataInfo._visibility);
 
-        // TODO. Bones.
+        // TODO WEBGPU. Bones.
 
         ubo.update();
     }
