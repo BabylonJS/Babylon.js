@@ -882,12 +882,12 @@ export class NodeMaterial extends PushMaterial {
         var pixelColor = new InputBlock("color");
         pixelColor.value = new Color4(0.8, 0.8, 0.8, 1);
 
-        var pixelOutput = new FragmentOutputBlock("pixelOutput");
-        pixelColor.connectTo(pixelOutput);
+        var fragmentOutput = new FragmentOutputBlock("fragmentOutput");
+        pixelColor.connectTo(fragmentOutput);
 
         // Add to nodes
         this.addOutputNode(vertexOutput);
-        this.addOutputNode(pixelOutput);
+        this.addOutputNode(fragmentOutput);
     }
 
     private _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]) {
