@@ -13,6 +13,7 @@
   - WebXR webVR parity helpers (Vive, WMR, Oculus Rift) ([TrevorDev](https://github.com/TrevorDev))
 
 ## Updates
+- SpritePackedManager extends SpriteManager so that a sprite sheet with different size sprites can be used ([JohnK](https://github.com/BabylonJSGuide))
 
 ### General
 - Added support for dual shock gamepads ([Deltakosh](https://github.com/deltakosh/))

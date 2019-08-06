@@ -13,6 +13,8 @@ import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Constants } from "../Engines/constants";
+import { AssetsManager } from "../Misc/assetsManager";
+import { Logger } from "../Misc/logger";
 
 import "../Shaders/sprites.fragment";
 import "../Shaders/sprites.vertex";
@@ -80,12 +82,13 @@ export class SpriteManager implements ISpriteManager {
     public cellWidth: number;
     /** Defines the default height of a cell in the spritesheet */
     public cellHeight: number;
+
     /** Associative array from JSON sprite data file */
-    public cellData: any;
+    private _cellData: any;
     /** Array of sprite names from JSON sprite data file */
-    public spriteMap: Array<string>;
+    private _spriteMap: Array<string>;
     /** True when packed cell data from JSON file is ready*/
-    public packedAndReady: boolean = false;
+    private _packedAndReady: boolean = false;
 
     /**
     * An event triggered when the manager is disposed.
@@ -143,7 +146,7 @@ export class SpriteManager implements ISpriteManager {
     constructor(
         /** defines the manager's name */
         public name: string,
-        imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false) {
+        imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false, spriteJSON: string = "") {
         if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
             scene._addComponent(new SpriteSceneComponent(scene));
         }
@@ -208,6 +211,56 @@ export class SpriteManager implements ISpriteManager {
             [VertexBuffer.PositionKind, "options", "inverts", "cellInfo", VertexBuffer.ColorKind],
             ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
             ["diffuseSampler"], "#define FOG");
+
+        if (this._fromPacked) {
+            this._makePacked(imgUrl, spriteJSON);
+        }
+    }
+
+    private _makePacked(imgUrl: string, spriteJSON: string) {
+        if (spriteJSON !== null) {
+            try {
+                let celldata = JSON.parse(spriteJSON);
+                let spritemap = (<string[]>(<any>Reflect).ownKeys(celldata.frames));
+                this._spriteMap = spritemap;
+                this._packedAndReady = true;
+                this._cellData = celldata.frames;
+            }
+            catch (e) {
+                throw new Error(`Invalid JSON`);
+            }
+        }
+        else {
+            let re = /\./g;
+            let li: number;
+            do {
+                li = re.lastIndex;
+                re.test(imgUrl);
+            } while (re.lastIndex > 0);
+            let jsonUrl = imgUrl.substring(0, li - 1) + ".json";
+            let assetsManager = new AssetsManager(this._scene);
+            let task = assetsManager.addTextFileTask("LoadSpriteJSON", jsonUrl);
+
+            task.onSuccess = (task) => {
+                try {
+                    let celldata  = JSON.parse(task.text);
+                    let spritemap = (<string[]>(<any>Reflect).ownKeys(celldata.frames));
+                    this._spriteMap = spritemap;
+                    this._packedAndReady = true;
+                    this._cellData = celldata.frames;
+                }
+                catch (e) {
+                    throw new Error(`Invalid JSON`);
+                }
+            };
+
+            assetsManager.onTaskErrorObservable.add((task) => {
+                Logger.Error("Unable to Load Sprite JSON Data. Spritesheet managed with constant cell size.");
+                this._fromPacked = false;
+                this._packedAndReady = false;
+            });
+            assetsManager.load();
+        }
     }
 
     private _appendSpriteVertex(index: number, sprite: Sprite, offsetX: number, offsetY: number, baseSize: any): void {
@@ -241,14 +294,15 @@ export class SpriteManager implements ISpriteManager {
         this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
         this._vertexData[arrayOffset + 9] = sprite.invertV ? 1 : 0;
         // CellIfo
-        if (this.packedAndReady) {
-            if (sprite.cellIndex) {
-                sprite.cellRef = this.spriteMap[sprite.cellIndex];
+        if (this._packedAndReady) {
+            let num = sprite.cellIndex;
+            if (typeof (num) === "number" && isFinite(num) && Math.floor(num) === num) {
+                sprite.cellRef = this._spriteMap[sprite.cellIndex];
             }
-            this._vertexData[arrayOffset + 10] = this.cellData[sprite.cellRef].x / baseSize.width;
-            this._vertexData[arrayOffset + 11] = this.cellData[sprite.cellRef].y / baseSize.height;
-            this._vertexData[arrayOffset + 12] = this.cellData[sprite.cellRef].w / baseSize.width;
-            this._vertexData[arrayOffset + 13] = this.cellData[sprite.cellRef].h / baseSize.height;
+            this._vertexData[arrayOffset + 10] = this._cellData[sprite.cellRef].frame.x / baseSize.width;
+            this._vertexData[arrayOffset + 11] = this._cellData[sprite.cellRef].frame.y / baseSize.height;
+            this._vertexData[arrayOffset + 12] = this._cellData[sprite.cellRef].frame.w / baseSize.width;
+            this._vertexData[arrayOffset + 13] = this._cellData[sprite.cellRef].frame.h / baseSize.height;
         }
         else {
             var rowSize = baseSize.width / this.cellWidth;
@@ -349,7 +403,7 @@ export class SpriteManager implements ISpriteManager {
             return;
         }
 
-        if (this._fromPacked  && (!this.packedAndReady || !this.spriteMap || !this.cellData)) {
+        if (this._fromPacked  && (!this._packedAndReady || !this._spriteMap || !this._cellData)) {
             return;
         }
 

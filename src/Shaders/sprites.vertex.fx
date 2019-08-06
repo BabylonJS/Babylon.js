@@ -44,7 +44,7 @@ void main(void) {
 	vec2 uvSize = cellInfo.zw;
 
 	vUV.x = uvPlace.x + uvSize.x * uvOffset.x;
-	vUV.y = 1.0 - (uvPlace.y + uvSize.y * uvOffset.y);
+	vUV.y = uvPlace.y + uvSize.y * uvOffset.y;
 
 	// Fog
 #ifdef FOG
