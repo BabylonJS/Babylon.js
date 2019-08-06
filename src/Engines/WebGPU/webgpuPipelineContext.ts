@@ -6,7 +6,6 @@ import { Effect } from '../../Materials/effect';
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../../Maths/math.like';
-import { _IDoNeedToBeInTheBuild } from '../../Particles';
 
 const _uniformSizes: { [type: string]: number } = {
     "float": 1,
