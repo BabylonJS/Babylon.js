@@ -227,7 +227,9 @@ export class EdgesRenderer implements IEdgesRenderer {
             this._buffers[VertexBuffer.NormalKind] = null;
         }
 
-        this._source.getScene().getEngine()._releaseBuffer(this._ib);
+        if (this._ib) {
+            this._source.getScene().getEngine()._releaseBuffer(this._ib);
+        }
         this._lineShader.dispose();
     }
 
