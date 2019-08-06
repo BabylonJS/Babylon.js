@@ -1009,7 +1009,6 @@ export class ArcRotateCamera extends TargetCamera {
 
             var up = this.upVector;
             if (this.allowUpsideDown && sinb < 0) {
-                up = up.clone();
                 up = up.negate();
             }
 
