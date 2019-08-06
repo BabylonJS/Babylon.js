@@ -11,7 +11,6 @@
     <script src="../dist/preview%20release/ammo.js"></script>
     <script src="../dist/preview%20release/gltf_validator.js"></script>
     <script src="../Tools/DevLoader/BabylonLoader.js"></script>
-    <script src="../dist/preview%20release/shaderc/shaderc.js"></script>
 
     <style>
         html,
@@ -129,15 +128,16 @@
                     }
 
                     var shadercOptions = { 
-                        wasmBinaryFile: "/dist/preview release/Shaderc/shaderc.wasm"
+                        jsPath: "/dist/preview release/shaderc/shaderc.js",
+                        wasmPath: "/dist/preview release/shaderc/shaderc.wasm"
                     };
 
                     if (typeof createEngine !== "undefined") {
                         engine = createEngine();
-                        engine.initEngineAsync(shadercOptions).then(() => onLoad(engine));
+                        engine.initAsync(shadercOptions).then(() => onLoad(engine));
                     } else {
                         engine = new BABYLON.WebGPUEngine(canvas);
-                        engine.initEngineAsync(shadercOptions).then(() => onLoad(engine));
+                        engine.initAsync(shadercOptions).then(() => onLoad(engine));
                     }
 
                     // BABYLONDEVTOOLS.Loader.debugShortcut(engine);

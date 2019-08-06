@@ -5,8 +5,12 @@
     <title>Babylon.js Playground</title>
     <meta charset='utf-8' />
     <meta name="viewport" content="width=device-width, user-scalable=no">
-    <link rel="shortcut icon" href="https://www.babylonjs.com/favicon.ico">
-
+    <link rel="shortcut icon" href="https://www.babylonjs.com/img/favicon/favicon.ico">
+    <link rel="manifest" href="https://www.babylonjs.com/img/favicon/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="https://www.babylonjs.com/img/favicon/ms-icon-144x144.png">
+    <meta name="msapplication-config" content="https://www.babylonjs.com/img/favicon/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css">
 
     <script src="js/libs/pep.min.js"></script>
@@ -25,13 +29,14 @@
     <script src="https://preview.babylonjs.com/gltf_validator.js"></script>
     <script src="https://preview.babylonjs.com/earcut.min.js"></script>
     <!-- Babylon.js -->
+    <script src="https://preview.babylonjs.com/shaderc/shaderc.js"></script>
     <script src="https://preview.babylonjs.com/babylon.js"></script>
-    <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <!-- <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script> -->
     <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
     <script src="https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.js"></script>
     <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
-    <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
-    <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+    <!-- <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+    <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script> -->
     <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
 
@@ -53,7 +58,7 @@
 <body>
     <div class="navbar navBar1600">
         <div class="title">
-            Babylon.js Playground
+            Babylon.js Playground WEBGPU
         </div>
         <div class="version" id="mainTitle">
         </div>
@@ -77,9 +82,6 @@
         <div class="category">
             <div class="button" id="saveButton1600">Save
                 <i class="fa fa-floppy-o" aria-hidden="true"></i>
-            </div>
-            <div class="button removeOnPhone" id="zipButton1600">Zip
-                <i class="fa fa-download" aria-hidden="true"></i>
             </div>
         </div>
 
@@ -117,21 +119,12 @@
                     <div class="option" id="minimapToggle1600">Minimap
                         <i class="far fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link
-                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
-                        <div class="toDisplaySub">
-                            <div class="option" style="height:auto;padding: 20px;background: white;" id="qrCodeImage">QR
-                                Code Image</div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            <div class="button uncheck" id="debugButton1600">Inspector</div>
+            <!-- <div class="button uncheck" id="debugButton1600">Inspector</div> -->
             <div class="button" id="metadataButton1600">Metadata</div>
         </div>
-
-
 
         <div class="category right">
             <div class="button select">
@@ -139,7 +132,6 @@
                 <div class="toDisplay">
                     <div class="option" onclick="setVersion('latest');">Latest</div>
                     <div class="option" onclick="setVersion('stable');">Stable</div>
-                    <div class="option" onclick="setVersion('webgpu');">WebGPU</div>
                 </div>
             </div>
             <div class="button select">
@@ -150,7 +142,7 @@
 
     <div class="navbar navBar1475">
         <div class="title">
-            Babylon.js Playground
+            Babylon.js Playground WEBGPU
         </div>
         <div class="version" id="mainTitle">
         </div>
@@ -174,9 +166,6 @@
         <div class="category">
             <div class="button" id="saveButton1475">Save
                 <i class="fa fa-floppy-o" aria-hidden="true"></i>
-            </div>
-            <div class="button removeOnPhone" id="zipButton1475">Zip
-                <i class="fa fa-download" aria-hidden="true"></i>
             </div>
         </div>
 
@@ -214,7 +203,7 @@
                     <div class="option" id="minimapToggle1475">Minimap
                         <i class="far fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option" id="debugButton1475">Inspector</div>
+                    <!-- <div class="option" id="debugButton1475">Inspector</div> -->
                     <div class="option" id="metadataButton1475">Metadata</div>
                     <div class="option subSelect">
                         <span id="currentVersion1475">Vers. : Latest</span>
@@ -222,7 +211,12 @@
                         <div class="toDisplaySub">
                             <div class="option" onclick="setVersion('latest');">Latest</div>
                             <div class="option" onclick="setVersion('stable');">Stable</div>
-                            <div class="option" onclick="setVersion('webgpu');">WebGPU</div>
+                        </div>
+                    </div>
+                    <div class="option subSelect" id="qrCodeHover" onmouseover="showQRCode();">QR Code Link
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                        <div class="toDisplaySub">
+                            <div class="option" style="height:auto;padding: 20px;background: white;" id="qrCodeImage">QR Code Image</div>
                         </div>
                     </div>
                 </div>
@@ -256,9 +250,6 @@
         <div class="category">
             <div class="button" id="saveButton1030">Save
                 <i class="fa fa-floppy-o" aria-hidden="true"></i>
-            </div>
-            <div class="button removeOnPhone" id="zipButton1030">Zip
-                <i class="fa fa-download" aria-hidden="true"></i>
             </div>
         </div>
 
@@ -296,7 +287,7 @@
                     <div class="option" id="minimapToggle1030">Minimap
                         <i class="far fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option" id="debugButton1030">Inspector</div>
+                    <!-- <div class="option" id="debugButton1030">Inspector</div> -->
                     <div class="option" id="metadataButton1030">Metadata</div>
                     <div class="option subSelect">
                         <span id="currentVersion1030">Vers. : Latest</span>
@@ -304,7 +295,6 @@
                         <div class="toDisplaySub">
                             <div class="option" onclick="setVersion('latest');">Latest</div>
                             <div class="option" onclick="setVersion('stable');">Stable</div>
-                            <div class="option" onclick="setVersion('webgpu');">WebGPU</div>
                         </div>
                     </div>
                 </div>
@@ -333,9 +323,6 @@
                     </div>
                     <div class="option" id="saveButton750">Save
                         <i class="fa fa-floppy-o" aria-hidden="true"></i>
-                    </div>
-                    <div class="option" id="zipButton750">Zip
-                        <i class="fa fa-download" aria-hidden="true"></i>
                     </div>
                 </div>
             </div>
@@ -375,7 +362,7 @@
                     <div class="option" id="minimapToggle750">Minimap
                         <i class="far fa-square" aria-hidden="true"></i>
                     </div>
-                    <div class="option" id="debugButton750">Inspector</div>
+                    <!-- <div class="option" id="debugButton750">Inspector</div> -->
                     <div class="option" id="metadataButton750">Metadata</div>
                     <div class="option subSelect">
                         <span id="currentVersion750">Vers. : Latest</span>
@@ -383,7 +370,6 @@
                         <div class="toDisplaySub">
                             <div class="option" onclick="setVersion('latest');">Latest</div>
                             <div class="option" onclick="setVersion('stable');">Stable</div>
-                            <div class="option" onclick="setVersion('webgpu');">WebGPU</div>
                         </div>
                     </div>
                 </div>
@@ -392,7 +378,7 @@
 
         <div class="category right">
             <div class="button select">
-                <span id="currentScript750">Examples</span>
+                <span class="examplesButton">Examples</span>
             </div>
         </div>
     </div>
@@ -403,7 +389,7 @@
             <canvas touch-action="none" id="renderCanvas"></canvas>
         </div>
     </div>
-    <div id="exampleList" class="javascript">
+    <div id="exampleList">
         <div id="exampleBanner">
             <h1>Examples</h1>
         </div>
@@ -461,25 +447,17 @@
         </div>
     </div>
 
-    <div id="waitDiv">
-        <span id="waitTitle">Babylon.js Playground
-            <BR>
-            <BR>
-            <BR>
-        </span>
-        <div id="logo-part">
-            <img src="v4.svg" id="waitLogo" />
-            <img src="spinner.svg" id="waitSpinner" />
-        </div>
-    </div>
-
-    <script src="js/libs/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery.js"></script>
     <script src="js/jquery.qrcode.js"></script>
     <script src="js/qrcode.js"></script>
 
+    <script>
+        Split(['#jsEditor', '#canvasZone']);
+    </script>
+
     <script src="js/actions.js"></script>
     <script src="js/pbt.js"></script>
-    <script src="js/index.js"></script>
+    <script src="js/indexWebGPU.js"></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-41767310-2"></script>

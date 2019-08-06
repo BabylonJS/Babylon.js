@@ -145,8 +145,8 @@ export class WebGPUConstants {
     public static readonly GPUTextureAspect_stencilOnly: GPUTextureAspect = "stencil-only";
 
     public static readonly GPUTextureUsage_NONE = 0;
-    public static readonly GPUTextureUsage_TRANSFER_SRC = 1;
-    public static readonly GPUTextureUsage_TRANSFER_DST = 2;
+    public static readonly GPUTextureUsage_COPY_SRC = 1;
+    public static readonly GPUTextureUsage_COPY_DST = 2;
     public static readonly GPUTextureUsage_SAMPLED = 4;
     public static readonly GPUTextureUsage_STORAGE = 8;
     public static readonly GPUTextureUsage_OUTPUT_ATTACHMENT = 16;
