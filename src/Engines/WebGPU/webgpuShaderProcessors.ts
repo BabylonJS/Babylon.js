@@ -1,6 +1,6 @@
 import { Nullable } from '../../types';
 import { IShaderProcessor } from '../Processors/iShaderProcessor';
-import { ShaderProcessingContext } from "../processors/shaderProcessingOptions";
+import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
