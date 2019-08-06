@@ -760,7 +760,7 @@ export class Engine {
     private _onFullscreenChange: () => void;
     private _onPointerLockChange: () => void;
 
-    private _hardwareScalingLevel: number;
+    protected _hardwareScalingLevel: number;
     /** @hidden */
     public _caps: EngineCapabilities;
     private _pointerLockRequested: boolean;

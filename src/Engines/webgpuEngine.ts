@@ -90,6 +90,8 @@ export class WebGPUEngine extends Engine {
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
     // And when the frame starts to swap the target texture from the swap chain
+    private _mainTexture: GPUTexture;
+    private _depthTexture: GPUTexture;
     private _mainTextureCopyView: GPUTextureCopyView;
     private _mainColorAttachments: GPURenderPassColorAttachmentDescriptor[];
     private _mainTextureExtends: GPUExtent3D;
@@ -189,6 +191,9 @@ export class WebGPUEngine extends Engine {
         this._canvas = canvas;
         this._options = options;
 
+        // TODO WEBGPU. RESIZE and SCALING.
+        this._hardwareScalingLevel = 1;
+
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
     }
 
@@ -216,7 +221,9 @@ export class WebGPUEngine extends Engine {
             .then(() => {
                 this._initializeLimits();
                 this._initializeContextAndSwapChain();
-                this._initializeMainAttachments();
+                // this._initializeMainAttachments();
+                // Initialization is in the resize :-)
+                this.resize();
             })
             .catch((e: any) => {
                 Logger.Error("Can not create WebGPU Device and/or context.");
@@ -303,10 +310,13 @@ export class WebGPUEngine extends Engine {
             usage: WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT | WebGPUConstants.GPUTextureUsage_TRANSFER_SRC,
         };
 
-        const mainTexture = this._device.createTexture(mainTextureDescriptor);
-        const mainTextureView = mainTexture.createDefaultView();
+        if (this._mainTexture) {
+            this._mainTexture.destroy();
+        }
+        this._mainTexture = this._device.createTexture(mainTextureDescriptor);
+        const mainTextureView = this._mainTexture.createDefaultView();
         this._mainTextureCopyView = {
-            texture: mainTexture,
+            texture: this._mainTexture,
             origin: {
                 x: 0,
                 y: 0,
@@ -333,9 +343,12 @@ export class WebGPUEngine extends Engine {
             usage: WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT
         };
 
-        const depthTexture = this._device.createTexture(depthTextureDescriptor);
+        if (this._depthTexture) {
+            this._depthTexture.destroy();
+        }
+        this._depthTexture = this._device.createTexture(depthTextureDescriptor);
         this._mainDepthAttachment = {
-            attachment: depthTexture.createDefaultView(),
+            attachment: this._depthTexture.createDefaultView(),
 
             depthLoadOp: WebGPUConstants.GPULoadOp_clear,
             depthStoreOp: WebGPUConstants.GPUStoreOp_store,
@@ -1293,12 +1306,14 @@ export class WebGPUEngine extends Engine {
             else {
                 // TODO WEBGPU. GC + 121 mapping samplers <-> availableSamplers
                 const availableSampler = pipeline.availableSamplers[name];
-                pipeline.samplers[name] = {
-                    setIndex: availableSampler.setIndex,
-                    textureBinding: availableSampler.bindingIndex,
-                    samplerBinding: availableSampler.bindingIndex + 1,
-                    texture: internalTexture!
-                };
+                if (availableSampler) {
+                    pipeline.samplers[name] = {
+                        setIndex: availableSampler.setIndex,
+                        textureBinding: availableSampler.bindingIndex,
+                        samplerBinding: availableSampler.bindingIndex + 1,
+                        texture: internalTexture!
+                    };
+                }
             }
         }
     }
@@ -2266,6 +2281,18 @@ export class WebGPUEngine extends Engine {
         this._currentRenderPass!.draw(verticesCount, instancesCount, verticesStart, 0);
     }
 
+    /**
+     * Force a specific size of the canvas
+     * @param width defines the new canvas' width
+     * @param height defines the new canvas' height
+     */
+    public setSize(width: number, height: number): void {
+        super.setSize(width, height);
+
+        // TODO WEBGPU. Disposeold attachements.
+        this._initializeMainAttachments();
+    }
+
     //------------------------------------------------------------------------------
     //                              Dispose
     //------------------------------------------------------------------------------
@@ -2276,6 +2303,12 @@ export class WebGPUEngine extends Engine {
     public dispose(): void {
         this._decodeEngine.dispose();
         this._compiledShaders = { };
+        if (this._mainTexture) {
+            this._mainTexture.destroy();
+        }
+        if (this._depthTexture) {
+            this._depthTexture.destroy();
+        }
         super.dispose();
     }
 
