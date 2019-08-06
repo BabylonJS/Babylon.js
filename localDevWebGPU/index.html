@@ -134,10 +134,10 @@
 
                     if (typeof createEngine !== "undefined") {
                         engine = createEngine();
-                        engine.initEngineAsync(shadercOptions).then(() => onLoad(engine));
+                        engine.initAsync(shadercOptions).then(() => onLoad(engine));
                     } else {
                         engine = new BABYLON.WebGPUEngine(canvas);
-                        engine.initEngineAsync(shadercOptions).then(() => onLoad(engine));
+                        engine.initAsync(shadercOptions).then(() => onLoad(engine));
                     }
 
                     // BABYLONDEVTOOLS.Loader.debugShortcut(engine);
