@@ -10,10 +10,10 @@ export class WebGPUConstants {
     public static readonly GPUIndexFormat_uint16: GPUIndexFormat = "uint16";
     public static readonly GPUIndexFormat_uint32: GPUIndexFormat = "uint32";
 
-    public static readonly GPULoadOp_clear: GPULoadOp = "clear";
     public static readonly GPULoadOp_load: GPULoadOp = "load";
 
     public static readonly GPUStoreOp_store: GPUStoreOp = "store";
+    public static readonly GPUStoreOp_clear: GPUStoreOp = "clear";
 
     public static readonly GPUPrimitiveTopology_pointList: GPUPrimitiveTopology = "point-list";
     public static readonly GPUPrimitiveTopology_lineList: GPUPrimitiveTopology = "line-list";
@@ -27,7 +27,6 @@ export class WebGPUConstants {
 
     /* Normal 8 bit formats */
     public static readonly GPUTextureFormat_r8unorm: GPUTextureFormat = "r8unorm";
-    public static readonly GPUTextureFormat_r8unormSrgb: GPUTextureFormat = "r8unorm-srgb";
     public static readonly GPUTextureFormat_r8snorm: GPUTextureFormat = "r8snorm";
     public static readonly GPUTextureFormat_r8uint: GPUTextureFormat = "r8uint";
     public static readonly GPUTextureFormat_r8sint: GPUTextureFormat = "r8sint";
@@ -38,12 +37,9 @@ export class WebGPUConstants {
     public static readonly GPUTextureFormat_r16sint: GPUTextureFormat = "r16sint";
     public static readonly GPUTextureFormat_r16float: GPUTextureFormat = "r16float";
     public static readonly GPUTextureFormat_rg8unorm: GPUTextureFormat = "rg8unorm";
-    public static readonly GPUTextureFormat_rg8unormSrgb: GPUTextureFormat = "rg8unorm-srgb";
     public static readonly GPUTextureFormat_rg8snorm: GPUTextureFormat = "rg8snorm";
     public static readonly GPUTextureFormat_rg8uint: GPUTextureFormat = "rg8uint";
     public static readonly GPUTextureFormat_rg8sint: GPUTextureFormat = "rg8sint";
-    /* Packed 16 bit formats */
-    public static readonly GPUTextureFormat_b5g6r5unorm: GPUTextureFormat = "b5g6r5unorm";
     /* Normal 32 bit formats */
     public static readonly GPUTextureFormat_r32uint: GPUTextureFormat = "r32uint";
     public static readonly GPUTextureFormat_r32sint: GPUTextureFormat = "r32sint";
@@ -79,6 +75,8 @@ export class WebGPUConstants {
     /* Depth and Stencil formats */
     public static readonly GPUTextureFormat_depth32float: GPUTextureFormat = "depth32float";
     public static readonly GPUTextureFormat_depth32floatStencil8: GPUTextureFormat = "depth32float-stencil8";
+    public static readonly GPUTextureFormat_depth24plus: GPUTextureFormat = "depth24plus";
+    public static readonly GPUTextureFormat_depth24plusStencil8: GPUTextureFormat = "depth24plus-stencil8";
 
     public static readonly GPUTextureViewDimension_1d: GPUTextureViewDimension = "1d";
     public static readonly GPUTextureViewDimension_2d: GPUTextureViewDimension = "2d";
@@ -90,42 +88,23 @@ export class WebGPUConstants {
     public static readonly GPUPowerPreference_lowPower: GPUPowerPreference = "low-power";
     public static readonly GPUPowerPreference_highPerformance: GPUPowerPreference = "high-performance";
 
-    public static readonly GPUVertexFormat_uchar: GPUVertexFormat = "uchar";
     public static readonly GPUVertexFormat_uchar2: GPUVertexFormat = "uchar2";
-    public static readonly GPUVertexFormat_uchar3: GPUVertexFormat = "uchar3";
     public static readonly GPUVertexFormat_uchar4: GPUVertexFormat = "uchar4";
-    public static readonly GPUVertexFormat_char: GPUVertexFormat = "char";
     public static readonly GPUVertexFormat_char2: GPUVertexFormat = "char2";
-    public static readonly GPUVertexFormat_char3: GPUVertexFormat = "char3";
     public static readonly GPUVertexFormat_char4: GPUVertexFormat = "char4";
-    public static readonly GPUVertexFormat_ucharnorm: GPUVertexFormat = "ucharnorm";
     public static readonly GPUVertexFormat_uchar2norm: GPUVertexFormat = "uchar2norm";
-    public static readonly GPUVertexFormat_uchar3norm: GPUVertexFormat = "uchar3norm";
     public static readonly GPUVertexFormat_uchar4norm: GPUVertexFormat = "uchar4norm";
-    public static readonly GPUVertexFormat_uchar4normBGRA: GPUVertexFormat = "uchar4norm-bgra";
-    public static readonly GPUVertexFormat_charnorm: GPUVertexFormat = "charnorm";
     public static readonly GPUVertexFormat_char2norm: GPUVertexFormat = "char2norm";
-    public static readonly GPUVertexFormat_char3norm: GPUVertexFormat = "char3norm";
     public static readonly GPUVertexFormat_char4norm: GPUVertexFormat = "char4norm";
-    public static readonly GPUVertexFormat_ushort: GPUVertexFormat = "ushort";
     public static readonly GPUVertexFormat_ushort2: GPUVertexFormat = "ushort2";
-    public static readonly GPUVertexFormat_ushort3: GPUVertexFormat = "ushort3";
     public static readonly GPUVertexFormat_ushort4: GPUVertexFormat = "ushort4";
-    public static readonly GPUVertexFormat_short: GPUVertexFormat = "short";
     public static readonly GPUVertexFormat_short2: GPUVertexFormat = "short2";
-    public static readonly GPUVertexFormat_short3: GPUVertexFormat = "short3";
     public static readonly GPUVertexFormat_short4: GPUVertexFormat = "short4";
-    public static readonly GPUVertexFormat_ushortnorm: GPUVertexFormat = "ushortnorm";
     public static readonly GPUVertexFormat_ushort2norm: GPUVertexFormat = "ushort2norm";
-    public static readonly GPUVertexFormat_ushort3norm: GPUVertexFormat = "ushort3norm";
     public static readonly GPUVertexFormat_ushort4norm: GPUVertexFormat = "ushort4norm";
-    public static readonly GPUVertexFormat_shortnorm: GPUVertexFormat = "shortnorm";
     public static readonly GPUVertexFormat_short2norm: GPUVertexFormat = "short2norm";
-    public static readonly GPUVertexFormat_short3norm: GPUVertexFormat = "short3norm";
     public static readonly GPUVertexFormat_short4norm: GPUVertexFormat = "short4norm";
-    public static readonly GPUVertexFormat_half: GPUVertexFormat = "half";
     public static readonly GPUVertexFormat_half2: GPUVertexFormat = "half2";
-    public static readonly GPUVertexFormat_half3: GPUVertexFormat = "half3";
     public static readonly GPUVertexFormat_half4: GPUVertexFormat = "half4";
     public static readonly GPUVertexFormat_float: GPUVertexFormat = "float";
     public static readonly GPUVertexFormat_float2: GPUVertexFormat = "float2";
@@ -162,9 +141,9 @@ export class WebGPUConstants {
     public static readonly GPUShaderStageBit_FRAGMENT = 2;
     public static readonly GPUShaderStageBit_COMPUTE = 4;
 
-    public static readonly GPUTextureAspect_COLOR = 1;
-    public static readonly GPUTextureAspect_DEPTH = 2;
-    public static readonly GPUTextureAspect_STENCIL = 4;
+    public static readonly GPUTextureAspect_all: GPUTextureAspect = "all";
+    public static readonly GPUTextureAspect_depthOnly: GPUTextureAspect = "depth-only";
+    public static readonly GPUTextureAspect_stencilOnly: GPUTextureAspect = "stencil-only";
 
     public static readonly GPUTextureUsage_NONE = 0;
     public static readonly GPUTextureUsage_TRANSFER_SRC = 1;
@@ -183,49 +162,46 @@ export class WebGPUConstants {
     public static readonly GPUCompareFunction_always: GPUCompareFunction = "always";
 
     public static readonly GPUBindingType_uniformBuffer: GPUBindingType = "uniform-buffer";
-    public static readonly GPUBindingType_dynamicUniformBuffer: GPUBindingType = "dynamic-uniform-buffer";
     public static readonly GPUBindingType_sampler: GPUBindingType = "sampler";
     public static readonly GPUBindingType_sampledTexture: GPUBindingType = "sampled-texture";
     public static readonly GPUBindingType_storageBuffer: GPUBindingType = "storage-buffer";
-    public static readonly GPUBindingType_dynamicStorageBuffer: GPUBindingType = "dynamic-storage-buffer";
 
     public static readonly GPUInputStepMode_vertex: GPUInputStepMode = "vertex";
     public static readonly GPUInputStepMode_instance: GPUInputStepMode = "instance";
 
-    public static readonly GPUStencilOperation_keep = "keep";
-    public static readonly GPUStencilOperation_zero = "zero";
-    public static readonly GPUStencilOperation_replace = "replace";
-    public static readonly GPUStencilOperation_invert = "invert";
-    public static readonly GPUStencilOperation_incrementClamp = "increment-clamp";
-    public static readonly GPUStencilOperation_decrementClamp = "decrement-clamp";
-    public static readonly GPUStencilOperation_incrementWrap = "increment-wrap";
-    public static readonly GPUStencilOperation_decrementWrap = "decrement-wrap";
+    public static readonly GPUStencilOperation_keep: GPUStencilOperation = "keep";
+    public static readonly GPUStencilOperation_zero: GPUStencilOperation = "zero";
+    public static readonly GPUStencilOperation_replace: GPUStencilOperation = "replace";
+    public static readonly GPUStencilOperation_invert: GPUStencilOperation = "invert";
+    public static readonly GPUStencilOperation_incrementClamp: GPUStencilOperation = "increment-clamp";
+    public static readonly GPUStencilOperation_decrementClamp: GPUStencilOperation = "decrement-clamp";
+    public static readonly GPUStencilOperation_incrementWrap: GPUStencilOperation = "increment-wrap";
+    public static readonly GPUStencilOperation_decrementWrap: GPUStencilOperation = "decrement-wrap";
 
-    public static readonly GPUFilterMode_nearest = "nearest";
-    public static readonly GPUFilterMode_linear = "linear";
+    public static readonly GPUFilterMode_nearest: GPUFilterMode = "nearest";
+    public static readonly GPUFilterMode_linear: GPUFilterMode = "linear";
 
-    public static readonly GPUAddressMode_clampToEdge = "clamp-to-edge";
-    public static readonly GPUAddressMode_repeat = "repeat";
-    public static readonly GPUAddressMode_mirrorRepeat = "mirror-repeat";
-    public static readonly GPUAddressMode_clampToBorderColor = "clamp-to-border-color";
+    public static readonly GPUAddressMode_clampToEdge: GPUAddressMode = "clamp-to-edge";
+    public static readonly GPUAddressMode_repeat: GPUAddressMode = "repeat";
+    public static readonly GPUAddressMode_mirrorRepeat: GPUAddressMode = "mirror-repeat";
 
-    public static readonly GPUBlendFactor_zero = "zero";
-    public static readonly GPUBlendFactor_one = "one";
-    public static readonly GPUBlendFactor_srcColor = "src-color";
-    public static readonly GPUBlendFactor_oneMinusSrcColor = "one-minus-src-color";
-    public static readonly GPUBlendFactor_srcAlpha = "src-alpha";
-    public static readonly GPUBlendFactor_oneMinusSrcAlpha = "one-minus-src-alpha";
-    public static readonly GPUBlendFactor_dstColor = "dst-color";
-    public static readonly GPUBlendFactor_oneMinusDstColor = "one-minus-dst-color";
-    public static readonly GPUBlendFactor_dstAlpha = "dst-alpha";
-    public static readonly GPUBlendFactor_oneMinusDstAlpha = "one-minus-dst-alpha";
-    public static readonly GPUBlendFactor_srcAlphaSaturated = "src-alpha-saturated";
-    public static readonly GPUBlendFactor_blendColor = "blend-color";
-    public static readonly GPUBlendFactor_oneMinusBlendColor = "one-minus-blend-color";
+    public static readonly GPUBlendFactor_zero: GPUBlendFactor = "zero";
+    public static readonly GPUBlendFactor_one: GPUBlendFactor = "one";
+    public static readonly GPUBlendFactor_srcColor: GPUBlendFactor = "src-color";
+    public static readonly GPUBlendFactor_oneMinusSrcColor: GPUBlendFactor = "one-minus-src-color";
+    public static readonly GPUBlendFactor_srcAlpha: GPUBlendFactor = "src-alpha";
+    public static readonly GPUBlendFactor_oneMinusSrcAlpha: GPUBlendFactor = "one-minus-src-alpha";
+    public static readonly GPUBlendFactor_dstColor: GPUBlendFactor = "dst-color";
+    public static readonly GPUBlendFactor_oneMinusDstColor: GPUBlendFactor = "one-minus-dst-color";
+    public static readonly GPUBlendFactor_dstAlpha: GPUBlendFactor = "dst-alpha";
+    public static readonly GPUBlendFactor_oneMinusDstAlpha: GPUBlendFactor = "one-minus-dst-alpha";
+    public static readonly GPUBlendFactor_srcAlphaSaturated: GPUBlendFactor = "src-alpha-saturated";
+    public static readonly GPUBlendFactor_blendColor: GPUBlendFactor = "blend-color";
+    public static readonly GPUBlendFactor_oneMinusBlendColor: GPUBlendFactor = "one-minus-blend-color";
 
-    public static readonly GPUBlendOperation_add = "add";
-    public static readonly GPUBlendOperation_substract = "subtract";
-    public static readonly GPUBlendOperation_reverseSubtract = "reverse-subtract";
-    public static readonly GPUBlendOperation_min = "min";
-    public static readonly GPUBlendOperation_max = "max";
+    public static readonly GPUBlendOperation_add: GPUBlendOperation = "add";
+    public static readonly GPUBlendOperation_substract: GPUBlendOperation = "subtract";
+    public static readonly GPUBlendOperation_reverseSubtract: GPUBlendOperation = "reverse-subtract";
+    public static readonly GPUBlendOperation_min: GPUBlendOperation = "min";
+    public static readonly GPUBlendOperation_max: GPUBlendOperation = "max";
 }
