@@ -13,7 +13,9 @@ export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTab
 
     render() {
         return (
-            <FloatLineComponent label="Value" target={this.props.inputBlock} propertyName="value"></FloatLineComponent>
+            <FloatLineComponent label="Value" target={this.props.inputBlock} propertyName="value" onChange={() => {
+                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+            }}></FloatLineComponent>
         );
     }
 }

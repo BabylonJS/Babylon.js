@@ -13,7 +13,9 @@ export class Vector3PropertyTabComponent extends React.Component<IVector3Propert
 
     render() {
         return (
-            <Vector3LineComponent label="Value" target={this.props.inputBlock} propertyName="value"></Vector3LineComponent>
+            <Vector3LineComponent label="Value" target={this.props.inputBlock} propertyName="value" onChange={() => {
+                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+            }}></Vector3LineComponent>
         );
     }
 }
