@@ -214,8 +214,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     return;
                 }
 
-                let block = this._copiedNode.block;
+                let block = this._copiedNode.block!;
                 let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
+
+                if (!clone) {
+                    return;
+                }
+                
                 let newNode = this.createNodeFromObject({ nodeMaterialBlock: clone });
 
                 newNode.x = this._copiedNode.x;
