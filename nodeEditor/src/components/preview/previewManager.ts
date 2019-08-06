@@ -14,6 +14,7 @@ export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
     private _onBuildObserver: Nullable<Observer<NodeMaterial>>;    
     private _onPreviewMeshTypeChangedObserver: Nullable<Observer<void>>;
+    private _onUpdateRequiredObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
     private _light: HemisphericLight;
@@ -33,6 +34,11 @@ export class PreviewManager {
 
         this._onPreviewMeshTypeChangedObserver = globalState.onPreviewMeshTypeChanged.add(() => {
             this._refreshPreviewMesh();
+        });
+
+        this._onUpdateRequiredObserver = globalState.onUpdateRequiredObservable.add(() => {
+            let serializationObject = this._nodeMaterial.serialize();
+            this._updatePreview(serializationObject);
         });
 
         this._engine = new Engine(targetCanvas, true);
@@ -92,6 +98,7 @@ export class PreviewManager {
     public dispose() {
         this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
         this._globalState.onPreviewMeshTypeChanged.remove(this._onPreviewMeshTypeChangedObserver);
+        this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
 
         if (this._material) {
             this._material.dispose();

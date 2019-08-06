@@ -21,13 +21,20 @@ import { Constants } from '../../../../Engines/constants';
  */
 export class ReflectionTextureBlock extends NodeMaterialBlock {
     private _define3DName: string;
+    private _defineCubicName: string;
+    private _defineExplicitName: string;
+    private _defineProjectionName: string;
+    private _defineLocalCubicName: string;
+    private _defineSphericalName: string;
+    private _definePlanarName: string;
+    private _defineEquirectangularName: string;
     private _defineMirroredEquirectangularFixedName: string;
     private _defineEquirectangularFixedName: string;
     private _defineSkyboxName: string;
     private _cubeSamplerName: string;
     private _2DSamplerName: string;
     private _positionUVWName: string;
-    private _directionWName: string;    
+    private _directionWName: string;
     private _reflectionCoordsName: string;
     private _reflection2DCoordsName: string;
     private _reflectionColorName: string;
@@ -47,9 +54,9 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
 
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
-        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);        
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
-        
+
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Fragment);
 
@@ -86,28 +93,28 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
      */
     public get worldNormal(): NodeMaterialConnectionPoint {
         return this._inputs[2];
-    }    
+    }
 
     /**
      * Gets the world input component
      */
     public get world(): NodeMaterialConnectionPoint {
         return this._inputs[3];
-    }  
+    }
 
     /**
     * Gets the camera (or eye) position component
     */
     public get cameraPosition(): NodeMaterialConnectionPoint {
         return this._inputs[4];
-    }  
-    
+    }
+
     /**
      * Gets the view input component
      */
     public get view(): NodeMaterialConnectionPoint {
         return this._inputs[5];
-    }      
+    }
 
     /**
      * Gets the rgb output component
@@ -115,28 +122,28 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
     public get rgb(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
-    
+
     /**
      * Gets the r output component
      */
     public get r(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
-    
+
     /**
      * Gets the g output component
      */
     public get g(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
-    
+
     /**
      * Gets the b output component
      */
     public get b(): NodeMaterialConnectionPoint {
         return this._outputs[3];
-    }     
-    
+    }
+
     public autoConfigure() {
         if (!this.position.isConnected) {
             let positionInput = new InputBlock("position");
@@ -161,7 +168,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
             viewInput.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
             viewInput.output.connectTo(this.view);
         }
-    }    
+    }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
@@ -172,13 +179,15 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        if (this.texture.isCube) {
-            defines.setValue(this._define3DName, true);
-        } else {
-            defines.setValue(this._define3DName, false);
-        }
-
+        defines.setValue(this._define3DName, this.texture.isCube);
+        defines.setValue(this._defineLocalCubicName, (<any>this.texture).boundingBoxSize ? true : false);
+        defines.setValue(this._defineExplicitName, this.texture.coordinatesMode === Constants.TEXTURE_EXPLICIT_MODE);
         defines.setValue(this._defineSkyboxName, this.texture.coordinatesMode === Constants.TEXTURE_SKYBOX_MODE);
+        defines.setValue(this._defineCubicName, this.texture.coordinatesMode === Constants.TEXTURE_CUBIC_MODE);
+        defines.setValue(this._defineSphericalName, this.texture.coordinatesMode === Constants.TEXTURE_SPHERICAL_MODE);
+        defines.setValue(this._definePlanarName, this.texture.coordinatesMode === Constants.TEXTURE_PLANAR_MODE);
+        defines.setValue(this._defineProjectionName, this.texture.coordinatesMode === Constants.TEXTURE_PROJECTION_MODE);
+        defines.setValue(this._defineEquirectangularName, this.texture.coordinatesMode === Constants.TEXTURE_EQUIRECTANGULAR_MODE);
         defines.setValue(this._defineEquirectangularFixedName, this.texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE);
         defines.setValue(this._defineMirroredEquirectangularFixedName, this.texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE);
     }
@@ -202,7 +211,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
             effect.setTexture(this._cubeSamplerName, this.texture);
         } else {
             effect.setTexture(this._2DSamplerName, this.texture);
-        }        
+        }
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
@@ -238,13 +247,20 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
-        
-        this._define3DName = state._getFreeDefineName("REFLECTIONMAP_3D");
-        this._defineMirroredEquirectangularFixedName = state._getFreeDefineName("REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED");
-        this._defineEquirectangularFixedName = state._getFreeDefineName("REFLECTIONMAP_EQUIRECTANGULAR_FIXED");
-        this._defineSkyboxName = state._getFreeDefineName("REFLECTIONMAP_SKYBOX");
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
+            this._define3DName = state._getFreeDefineName("REFLECTIONMAP_3D");
+            this._defineCubicName = state._getFreeDefineName("REFLECTIONMAP_CUBIC");
+            this._defineSphericalName = state._getFreeDefineName("REFLECTIONMAP_SPHERICAL");
+            this._definePlanarName = state._getFreeDefineName("REFLECTIONMAP_PLANAR");
+            this._defineProjectionName = state._getFreeDefineName("REFLECTIONMAP_PROJECTION");
+            this._defineExplicitName = state._getFreeDefineName("REFLECTIONMAP_EXPLICIT");
+            this._defineEquirectangularName = state._getFreeDefineName("REFLECTIONMAP_EQUIRECTANGULAR");
+            this._defineLocalCubicName = state._getFreeDefineName("USE_LOCAL_REFLECTIONMAP_CUBIC");
+            this._defineMirroredEquirectangularFixedName = state._getFreeDefineName("REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED");
+            this._defineEquirectangularFixedName = state._getFreeDefineName("REFLECTIONMAP_EQUIRECTANGULAR_FIXED");
+            this._defineSkyboxName = state._getFreeDefineName("REFLECTIONMAP_SKYBOX");
+
             // Vertex
             this._injectVertexCode(state);
             return;
@@ -282,8 +298,8 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._reflectionMatrixName, "mat4");
 
         // Code
-        let worldPos = "v_" + this.worldPosition.associatedVariableName;
-        let worldNormal = "v_" + this.worldNormal.associatedVariableName + "xyz";
+        let worldPos = `vec4(v_${this.worldPosition.associatedVariableName}, 1.0)`;
+        let worldNormal = "v_" + this.worldNormal.associatedVariableName + ".xyz";
         let reflectionMatrix = this._reflectionMatrixName;
         let direction = `normalize(${this._directionWName})`;
         let positionUVW = `${this._positionUVWName}`;
@@ -295,51 +311,51 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef ${this._defineMirroredEquirectangularFixedName}\r\n`;
         state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeMirroredFixedEquirectangularCoords(${worldPos}, ${worldNormal}, ${direction});\r\n`;
         state.compilationString += `#endif\r\n`;
-    
+
         state.compilationString += `#ifdef ${this._defineEquirectangularFixedName}\r\n`;
         state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeFixedEquirectangularCoords(${worldPos}, ${worldNormal}, ${direction});\r\n`;
         state.compilationString += `#endif\r\n`;
-    
-        state.compilationString += `#ifdef REFLECTIONMAP_EQUIRECTANGULAR\r\n`;
+
+        state.compilationString += `#ifdef ${this._defineEquirectangularName}\r\n`;
         state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeEquirectangularCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
         state.compilationString += ` #endif\r\n`;
-    
-        state.compilationString += `#ifdef REFLECTIONMAP_SPHERICAL\r\n`;
-        state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeSpericalCoords(${worldPos}, ${worldNormal}, ${view}, ${reflectionMatrix});\r\n`;
+
+        state.compilationString += `#ifdef ${this._defineSphericalName}\r\n`;
+        state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeSphericalCoords(${worldPos}, ${worldNormal}, ${view}, ${reflectionMatrix});\r\n`;
         state.compilationString += `#endif\r\n`;
 
-        state.compilationString += `#ifdef REFLECTIONMAP_PLANAR\r\n`;
+        state.compilationString += `#ifdef ${this._definePlanarName}\r\n`;
         state.compilationString += `    vec3 ${this._reflectionCoordsName} = computePlanarCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
         state.compilationString += `#endif\r\n`;
 
-        state.compilationString += `#ifdef REFLECTIONMAP_CUBIC\r\n`;
-        state.compilationString += `    #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC\r\n`;
+        state.compilationString += `#ifdef ${this._defineCubicName}\r\n`;
+        state.compilationString += `    #ifdef ${this._defineLocalCubicName}\r\n`;
         state.compilationString += `        vec3 ${this._reflectionCoordsName} = computeCubicLocalCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix}, vReflectionSize, vReflectionPosition);\r\n`;
         state.compilationString += `    #else\r\n`;
         state.compilationString += `       vec3 ${this._reflectionCoordsName} = computeCubicCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
         state.compilationString += `    #endif\r\n`;
         state.compilationString += `#endif\r\n`;
 
-        state.compilationString += `#ifdef REFLECTIONMAP_PROJECTION\r\n`;
+        state.compilationString += `#ifdef ${this._defineProjectionName}\r\n`;
         state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeProjectionCoords(${worldPos}, ${view}, ${reflectionMatrix});\r\n`;
         state.compilationString += `#endif\r\n`;
-    
+
         state.compilationString += `#ifdef ${this._defineSkyboxName}\r\n`;
         state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeSkyBoxCoords(${positionUVW}, ${reflectionMatrix});\r\n`;
         state.compilationString += `#endif\r\n`;
-    
-        state.compilationString += `#ifdef REFLECTIONMAP_EXPLICIT\r\n`;
+
+        state.compilationString += `#ifdef ${this._defineExplicitName}\r\n`;
         state.compilationString += `    vec3 ${this._reflectionCoordsName} = vec3(0, 0, 0);\r\n`;
         state.compilationString += `#endif\r\n`;
-        
+
         state.compilationString += `${this._reflectionColorName} = textureCube(${this._cubeSamplerName}, ${this._reflectionCoordsName}).rgb;\r\n`;
         state.compilationString += `#else\r\n`;
         state.compilationString += `vec2 ${this._reflection2DCoordsName} = ${this._reflectionCoordsName}.xy;\r\n`;
-    
-        state.compilationString += `#ifdef REFLECTIONMAP_PROJECTION\r\n`;
+
+        state.compilationString += `#ifdef ${this._defineProjectionName}\r\n`;
         state.compilationString += `${this._reflection2DCoordsName} /= ${this._reflectionCoordsName}.z;\r\n`;
         state.compilationString += `#endif\r\n`;
-    
+
         state.compilationString += `${this._reflection2DCoordsName}.y = 1.0 - ${this._reflection2DCoordsName}.y;\r\n`;
         state.compilationString += `${this._reflectionColorName} = texture2D(${this._2DSamplerName}, ${this._reflection2DCoordsName}).rgb;\r\n`;
         state.compilationString += `#endif\r\n`;

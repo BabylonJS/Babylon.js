@@ -126,18 +126,18 @@ void main(void) {
 #include<instancesVertex>
 #include<bonesVertex>
 
+	vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
+
 #ifdef MULTIVIEW
 	if (gl_ViewID_OVR == 0u) {
-		gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+		gl_Position = viewProjection * worldPos;
 	} else {
-		gl_Position = viewProjectionR * finalWorld * vec4(positionUpdated, 1.0);
+		gl_Position = viewProjectionR * worldPos;
 	}
 #else
-	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
-#endif
-	
+	gl_Position = viewProjection * worldPos;
+#endif	
 
-	vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 	vPositionW = vec3(worldPos);
 
 #ifdef NORMAL
