@@ -525,6 +525,11 @@ function showError(errorMessage, errorEvent) {
                 var createEngineFunction = "createDefaultEngine";
                 var createSceneFunction;
 
+                if (!navigator.gpu) {
+                    showError("WebGPU is not supported on your platform.", {});
+                    return;
+                }
+
                 getRunCode(jsEditor, async function(code) {
                     var createDefaultEngine = function() {
                         return new BABYLON.WebGPUEngine(canvas);
