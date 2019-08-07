@@ -9,6 +9,7 @@ import { ColorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/colorSplitte
 import { VectorSplitterBlock } from 'babylonjs/Materials/Node/Blocks/vectorSplitterBlock';
 import { RemapBlock } from 'babylonjs/Materials/Node/Blocks/remapBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
+import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
 import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertexOutputBlock';
@@ -45,6 +46,8 @@ export class BlockTools {
                 return new VectorSplitterBlock("VectorSplitter");
             case "TextureBlock":
                 return new TextureBlock("Texture");
+            case "ReflectionTextureBlock":
+                return new ReflectionTextureBlock("Texture");                
             case "LightBlock":
                 return new LightBlock("Lights");
             case "FogBlock":

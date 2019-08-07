@@ -4085,6 +4085,8 @@ declare module BABYLON {
         static readonly NOTEQUAL: number;
         /** Passed to stencilOperation to specify that stencil value must be kept */
         static readonly KEEP: number;
+        /** Passed to stencilOperation to specify that stencil value must be zero */
+        static readonly ZERO: number;
         /** Passed to stencilOperation to specify that stencil value must be replaced */
         static readonly REPLACE: number;
         /** Passed to stencilOperation to specify that stencil value must be incremented */
@@ -4455,22 +4457,215 @@ declare module BABYLON {
          */
         isReady: boolean;
         /** @hidden */private _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
+        /** @hidden */private _fillEffectInformation(effect: Effect, uniformBuffersNames: {
+            [key: string]: number;
+        }, uniformsNames: string[], uniforms: {
+            [key: string]: Nullable<WebGLUniformLocation>;
+        }, samplerList: string[], samplers: {
+            [key: string]: number;
+        }, attributesNames: string[], attributes: number[]): void;
+        /** Releases the resources associated with the pipeline. */
+        dispose(): void;
+        /**
+         * Sets an interger value on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value Value to be set.
+         */
+        setInt(uniformName: string, value: number): void;
+        /**
+         * Sets an int array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray2(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray3(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray4(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an float array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an float array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray2(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an float array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray3(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an float array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray4(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray2(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray3(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray4(uniformName: string, array: number[]): void;
+        /**
+         * Sets matrices on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrices matrices to be set.
+         */
+        setMatrices(uniformName: string, matrices: Float32Array): void;
+        /**
+         * Sets matrix on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix(uniformName: string, matrix: IMatrixLike): void;
+        /**
+         * Sets a 3x3 matrix on a uniform variable. (Speicified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix3x3(uniformName: string, matrix: Float32Array): void;
+        /**
+         * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix2x2(uniformName: string, matrix: Float32Array): void;
+        /**
+         * Sets a float on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value value to be set.
+         */
+        setFloat(uniformName: string, value: number): void;
+        /**
+         * Sets a boolean on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param bool value to be set.
+         */
+        setBool(uniformName: string, bool: boolean): void;
+        /**
+         * Sets a Vector2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector2 vector2 to be set.
+         */
+        setVector2(uniformName: string, vector2: IVector2Like): void;
+        /**
+         * Sets a float2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float2.
+         * @param y Second float in float2.
+         */
+        setFloat2(uniformName: string, x: number, y: number): void;
+        /**
+         * Sets a Vector3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector3 Value to be set.
+         */
+        setVector3(uniformName: string, vector3: IVector3Like): void;
+        /**
+         * Sets a float3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float3.
+         * @param y Second float in float3.
+         * @param z Third float in float3.
+         */
+        setFloat3(uniformName: string, x: number, y: number, z: number): void;
+        /**
+         * Sets a Vector4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector4 Value to be set.
+         */
+        setVector4(uniformName: string, vector4: IVector4Like): void;
+        /**
+         * Sets a float4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float4.
+         * @param y Second float in float4.
+         * @param z Third float in float4.
+         * @param w Fourth float in float4.
+         */
+        setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void;
+        /**
+         * Sets a Color3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         */
+        setColor3(uniformName: string, color3: IColor3Like): void;
+        /**
+         * Sets a Color4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         * @param alpha Alpha value to be set.
+         */
+        setColor4(uniformName: string, color3: IColor3Like, alpha: number): void;
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniformName defines the name of the variable
+         * @param color4 defines the value to be set
+         */
+        setDirectColor4(uniformName: string, color4: IColor4Like): void;
     }
 }
 declare module BABYLON {
     /** @hidden */
     export interface IShaderProcessor {
-        attributeProcessor?: (attribute: string) => string;
-        varyingProcessor?: (varying: string, isFragment: boolean) => string;
-        uniformProcessor?: (uniform: string, isFragment: boolean) => string;
-        uniformBufferProcessor?: (uniformBuffer: string, isFragment: boolean) => string;
-        endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean) => string;
-        lineProcessor?: (line: string, isFragment: boolean) => string;
-        preProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
-        postProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
+        attributeProcessor?: (attribute: string, processingContext: Nullable<ShaderProcessingContext>) => string;
+        varyingProcessor?: (varying: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
+        uniformProcessor?: (uniform: string, isFragment: boolean, preProcessors: {
+            [key: string]: string;
+        }, processingContext: Nullable<ShaderProcessingContext>) => string;
+        uniformBufferProcessor?: (uniformBuffer: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
+        endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
+        lineProcessor?: (line: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
+        preProcessor?: (code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
+        postProcessor?: (code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
+        finalizeShaders?: (vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>) => {
+            vertexCode: string;
+            fragmentCode: string;
+        };
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export interface ShaderProcessingContext {
+    }
     /** @hidden */
     export interface ProcessingOptions {
         defines: string[];
@@ -4482,10 +4677,11 @@ declare module BABYLON {
         includesShadersStore: {
             [key: string]: string;
         };
-        processor?: IShaderProcessor;
+        processor: Nullable<IShaderProcessor>;
         version: string;
         platformName: string;
         lookForClosingBracketForUniformBuffer?: boolean;
+        processingContext: Nullable<ShaderProcessingContext>;
     }
 }
 declare module BABYLON {
@@ -4763,6 +4959,10 @@ declare module BABYLON {
     /** @hidden */
     export class ShaderProcessor {
         static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void): void;
+        static Finalize(vertexCode: string, fragmentCode: string, options: ProcessingOptions): {
+            vertexCode: string;
+            fragmentCode: string;
+        };
         private static _ProcessPrecision;
         private static _ExtractOperation;
         private static _BuildSubExpression;
@@ -5555,15 +5755,11 @@ declare module BABYLON {
     /**
      * @hidden
      **/
-    export class _AlphaState {
+    export class _AlphaState {private _blendFunctionParameters: Nullable<number>[];private _blendEquationParameters: Nullable<number>[];private _blendConstants: Nullable<number>[];private _isBlendConstantsDirty: boolean;
+        private _alphaBlend;
         private _isAlphaBlendDirty;
         private _isBlendFunctionParametersDirty;
         private _isBlendEquationParametersDirty;
-        private _isBlendConstantsDirty;
-        private _alphaBlend;
-        private _blendFunctionParameters;
-        private _blendEquationParameters;
-        private _blendConstants;
         /**
          * Initializes the state.
          */
@@ -25388,11 +25584,26 @@ declare module BABYLON {
          */
         onRebuildObservable: Observable<AbstractMesh>;
         /**
+         * The current camera unifom buffer.
+         * @hidden Internal use only.
+         */private _uniformBuffer: UniformBuffer;
+        /**
          * Creates a new AbstractMesh
          * @param name defines the name of the mesh
          * @param scene defines the hosting scene
          */
         constructor(name: string, scene?: Nullable<Scene>);
+        protected _buildUniformLayout(): void;
+        /**
+         * Transfer the mesh values to its UBO.
+         * @param world The world matrix associated with the mesh
+         */
+        transferToEffect(world: Matrix): void;
+        /**
+         * Gets the mesh uniform buffer.
+         * @return the uniform buffer of the mesh.
+         */
+        getMeshUniformBuffer(): UniformBuffer;
         /**
          * Returns the string "AbstractMesh"
          * @returns "AbstractMesh"
@@ -27516,6 +27727,9 @@ declare module BABYLON {
         /** @hidden */private _linearSpecularLOD: boolean;
         /** @hidden */private _irradianceTexture: Nullable<BaseTexture>;
         /** @hidden */private _webGLTexture: Nullable<WebGLTexture>;
+        /** @hidden */private _webGPUTexture: Nullable<GPUTexture>;
+        /** @hidden */private _webGPUSampler: Nullable<GPUSampler>;
+        /** @hidden */private _webGPUTextureView: Nullable<GPUTextureView>;
         /** @hidden */private _references: number;
         private _engine;
         /**
@@ -27687,11 +27901,13 @@ declare module BABYLON {
          */
         readonly onBindObservable: Observable<Effect>;
         /** @hidden */private _bonesComputationForcedToCPU: boolean;
+        /** @hidden */private _uniformBuffersNames: {
+            [key: string]: number;
+        };
+        /** @hidden */private _samplerList: string[];
         private static _uniqueIdSeed;
         private _engine;
-        private _uniformBuffersNames;
         private _uniformsNames;
-        private _samplerList;
         private _samplers;
         private _isReady;
         private _compilationError;
@@ -27704,8 +27920,6 @@ declare module BABYLON {
          */private _key: string;
         private _indexParameters;
         private _fallbacks;
-        private _vertexSourceCode;
-        private _fragmentSourceCode;
         private _vertexSourceCodeOverride;
         private _fragmentSourceCodeOverride;
         private _transformFeedbackVaryings;
@@ -27713,8 +27927,10 @@ declare module BABYLON {
          * Compiled shader to webGL program.
          * @hidden
          */private _pipelineContext: Nullable<IPipelineContext>;
-        private _valueCache;
+        /** @hidden */private _vertexSourceCode: string;
+        /** @hidden */private _fragmentSourceCode: string;
         private static _baseCache;
+        private _processingContext;
         /**
          * Instantiates an effect.
          * An effect can be used to create/manage/execute vertex and fragment shaders.
@@ -27728,8 +27944,13 @@ declare module BABYLON {
          * @param onCompiled Callback that will be called when the shader is compiled.
          * @param onError Callback that will be called if an error occurs during shader compilation.
          * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
+         * @param key Effect Key identifying uniquely compiled shader variants
+         * @param sources Already processed sources for the current key.
          */
-        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: Nullable<string[]>, engine?: Engine, defines?: Nullable<string>, fallbacks?: Nullable<EffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
+        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: Nullable<string[]>, engine?: Engine, defines?: Nullable<string>, fallbacks?: Nullable<EffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any, key?: string, sources?: {
+            vertex: string;
+            fragment: string;
+        });
         private _useFinalCode;
         /**
          * Unique key for this effect
@@ -27856,10 +28077,6 @@ declare module BABYLON {
          * @param postProcess Post process to get the output texture from.
          */
         setTextureFromPostProcessOutput(channel: string, postProcess: Nullable<PostProcess>): void;
-        /** @hidden */private _cacheMatrix(uniformName: string, matrix: IMatrixLike): boolean;
-        /** @hidden */private _cacheFloat2(uniformName: string, x: number, y: number): boolean;
-        /** @hidden */private _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean;
-        /** @hidden */private _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean;
         /**
          * Binds a buffer to a uniform.
          * @param buffer Buffer to bind.
@@ -28075,7 +28292,9 @@ declare module BABYLON {
          * @returns this effect.
          */
         setDirectColor4(uniformName: string, color4: IColor4Like): Effect;
-        /** Release all associated resources */
+        /**
+         * Release all associated resources.
+         **/
         dispose(): void;
         /**
          * This function will add a new shader to the shader store
@@ -28121,6 +28340,7 @@ declare module BABYLON {
         private _dynamic?;
         private _uniformLocations;
         private _uniformSizes;
+        private _uniformArraySizes;
         private _uniformLocationPointer;
         private _needSync;
         private _noUBO;
@@ -28164,11 +28384,23 @@ declare module BABYLON {
          */
         updateFloat4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
         /**
+         * Lambda to Update an array of float in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
+         */
+        updateFloatArray: (name: string, array: Float32Array) => void;
+        /**
          * Lambda to Update a 4x4 Matrix in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
          * You will need to pass the name of the uniform as well as the value.
          */
-        updateMatrix: (name: string, mat: Matrix) => void;
+        updateMatrix: (name: string, mat: IMatrixLike) => void;
+        /**
+         * Lambda to Update an array of 4x4 Matrix in a uniform buffer.
+         * This is dynamic to allow compat with webgl 1 and 2.
+         * You will need to pass the name of the uniform as well as the value.
+         */
+        updateMatrices: (name: string, mat: Float32Array) => void;
         /**
          * Lambda to Update vec3 of float from a Vector in a uniform buffer.
          * This is dynamic to allow compat with webgl 1 and 2.
@@ -28246,8 +28478,9 @@ declare module BABYLON {
          * for the layout to be correct !
          * @param name Name of the uniform, as used in the uniform block in the shader.
          * @param size Data size, or data directly.
+         * @param arraySize The number of elements in the array, 0 if not an array.
          */
-        addUniform(name: string, size: number | number[]): void;
+        addUniform(name: string, size: number | number[], arraySize?: number): void;
         /**
          * Adds a Matrix 4x4 to the uniform buffer.
          * @param name Name of the uniform, as used in the uniform block in the shader.
@@ -28316,6 +28549,13 @@ declare module BABYLON {
          * @param size Define the size of the data.
          */
         updateUniform(uniformName: string, data: FloatArray, size: number): void;
+        /**
+         * Updates the value of an uniform. The `update` method must be called afterwards to make it effective in the GPU.
+         * @param uniformName Define the name of the uniform, as used in the uniform block in the shader.
+         * @param data Define the flattened data
+         * @param size Define the size of the data.
+         */
+        updateUniformArray(uniformName: string, data: FloatArray, size: number): void;
         private _updateMatrix3x3ForUniform;
         private _updateMatrix3x3ForEffect;
         private _updateMatrix2x2ForEffect;
@@ -28328,8 +28568,12 @@ declare module BABYLON {
         private _updateFloat3ForUniform;
         private _updateFloat4ForEffect;
         private _updateFloat4ForUniform;
+        private _updateFloatArrayForEffect;
+        private _updateFloatArrayForUniform;
         private _updateMatrixForEffect;
         private _updateMatrixForUniform;
+        private _updateMatricesForEffect;
+        private _updateMatricesForUniform;
         private _updateVector3ForEffect;
         private _updateVector3ForUniform;
         private _updateVector4ForEffect;
@@ -28688,6 +28932,8 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export class WebGLPipelineContext implements IPipelineContext {
+        private _valueCache;
+        private _uniforms;
         engine: Engine;
         program: Nullable<WebGLProgram>;
         context?: WebGLRenderingContext;
@@ -28697,7 +28943,199 @@ declare module BABYLON {
         onCompiled?: () => void;
         transformFeedback?: WebGLTransformFeedback | null;
         readonly isAsync: boolean;
-        readonly isReady: boolean;private _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
+        readonly isReady: boolean;private _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;private _fillEffectInformation(effect: Effect, uniformBuffersNames: {
+            [key: string]: number;
+        }, uniformsNames: string[], uniforms: {
+            [key: string]: Nullable<WebGLUniformLocation>;
+        }, samplerList: string[], samplers: {
+            [key: string]: number;
+        }, attributesNames: string[], attributes: number[]): void;
+        /**
+         * Release all associated resources.
+         **/
+        dispose(): void;
+        /** @hidden */private _cacheMatrix(uniformName: string, matrix: IMatrixLike): boolean;
+        /** @hidden */private _cacheFloat2(uniformName: string, x: number, y: number): boolean;
+        /** @hidden */private _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean;
+        /** @hidden */private _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean;
+        /**
+         * Sets an interger value on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value Value to be set.
+         */
+        setInt(uniformName: string, value: number): void;
+        /**
+         * Sets an int array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray2(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray3(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray4(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an float array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an float array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray2(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an float array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray3(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an float array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray4(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray2(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setArray3(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray4(uniformName: string, array: number[]): void;
+        /**
+         * Sets matrices on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrices matrices to be set.
+         */
+        setMatrices(uniformName: string, matrices: Float32Array): void;
+        /**
+         * Sets matrix on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix(uniformName: string, matrix: IMatrixLike): void;
+        /**
+         * Sets a 3x3 matrix on a uniform variable. (Speicified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix3x3(uniformName: string, matrix: Float32Array): void;
+        /**
+         * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix2x2(uniformName: string, matrix: Float32Array): void;
+        /**
+         * Sets a float on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value value to be set.
+         * @returns this effect.
+         */
+        setFloat(uniformName: string, value: number): void;
+        /**
+         * Sets a boolean on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param bool value to be set.
+         */
+        setBool(uniformName: string, bool: boolean): void;
+        /**
+         * Sets a Vector2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector2 vector2 to be set.
+         */
+        setVector2(uniformName: string, vector2: IVector2Like): void;
+        /**
+         * Sets a float2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float2.
+         * @param y Second float in float2.
+         */
+        setFloat2(uniformName: string, x: number, y: number): void;
+        /**
+         * Sets a Vector3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector3 Value to be set.
+         */
+        setVector3(uniformName: string, vector3: IVector3Like): void;
+        /**
+         * Sets a float3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float3.
+         * @param y Second float in float3.
+         * @param z Third float in float3.
+         */
+        setFloat3(uniformName: string, x: number, y: number, z: number): void;
+        /**
+         * Sets a Vector4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector4 Value to be set.
+         */
+        setVector4(uniformName: string, vector4: IVector4Like): void;
+        /**
+         * Sets a float4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float4.
+         * @param y Second float in float4.
+         * @param z Third float in float4.
+         * @param w Fourth float in float4.
+         * @returns this effect.
+         */
+        setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void;
+        /**
+         * Sets a Color3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         */
+        setColor3(uniformName: string, color3: IColor3Like): void;
+        /**
+         * Sets a Color4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         * @param alpha Alpha value to be set.
+         */
+        setColor4(uniformName: string, color3: IColor3Like, alpha: number): void;
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniformName defines the name of the variable
+         * @param color4 defines the value to be set
+         */
+        setDirectColor4(uniformName: string, color4: IColor4Like): void;
     }
 }
 declare module BABYLON {
@@ -29382,7 +29820,7 @@ declare module BABYLON {
         /**
          * Method called to create the default rescale post process on each engine.
          */private static _RescalePostProcessFactory: Nullable<(engine: Engine) => PostProcess>;
-        /** @hidden */private _shaderProcessor: IShaderProcessor;
+        /** @hidden */private _shaderProcessor: Nullable<IShaderProcessor>;
         /**
          * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
          */
@@ -29515,7 +29953,7 @@ declare module BABYLON {
         private _onCanvasFocus;
         private _onFullscreenChange;
         private _onPointerLockChange;
-        private _hardwareScalingLevel;
+        protected _hardwareScalingLevel: number;
         /** @hidden */private _caps: EngineCapabilities;
         private _pointerLockRequested;
         private _isStencilEnable;
@@ -29528,8 +29966,8 @@ declare module BABYLON {
         private _videoTextureSupported;
         private _renderingQueueLaunched;
         private _activeRenderLoops;
-        private _deterministicLockstep;
-        private _lockstepMaxSteps;
+        protected _deterministicLockstep: boolean;
+        protected _lockstepMaxSteps: number;
         /**
          * Observable signaled when a context lost event is raised
          */
@@ -29648,6 +30086,18 @@ declare module BABYLON {
          * Defines whether the engine has been created with the premultipliedAlpha option on or not.
          */
         readonly premultipliedAlpha: boolean;
+        /** @hidden */
+        protected _isWebGPU: boolean;
+        /**
+         * Gets a boolean indicating if the engine runs in WebGPU or not.
+         */
+        readonly isWebGPU: boolean;
+        /** @hidden */
+        protected _shaderPlatformName: string;
+        /**
+         * Gets the shader platfrom name used by the effects.
+         */
+        readonly shaderPlatformName: string;
         /**
          * Creates a new engine
          * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
@@ -29656,6 +30106,19 @@ declare module BABYLON {
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
         constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        /**
+         * Shared initialization across engines types.
+         * @param canvas The canvas associated with this instance of the engine.
+         * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
+         * @param audioEngine Defines if an audio engine should be created by default
+         */
+        protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean): void;
+        /**
+         * Gets a shader processor implementation fitting with the current engine type.
+         * @returns The shader processor implementation.
+         */
+        protected _getShaderProcessor(): Nullable<IShaderProcessor>;
+        /** @hidden */private _getShaderProcessingContext(): Nullable<ShaderProcessingContext>;
         /**
          * Initializes a webVR display and starts listening to display change events
          * The onVRDisplayChangedObservable will be notified upon these changes
@@ -30128,8 +30591,9 @@ declare module BABYLON {
          * Bind a buffer to the current webGL context at a given location
          * @param buffer defines the buffer to bind
          * @param location defines the index where to bind the buffer
+         * @param name Name of the uniform variable to bind
          */
-        bindUniformBufferBase(buffer: DataBuffer, location: number): void;
+        bindUniformBufferBase(buffer: DataBuffer, location: number, name: string): void;
         /**
          * Bind a specific block at a given index in a specific shader program
          * @param pipelineContext defines the pipeline context to use
@@ -30297,12 +30761,13 @@ declare module BABYLON {
         createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
         /**
          * Creates a new pipeline context
+         * @param shaderProcessingContext defines the shader processing context used during the processing if available
          * @returns the new pipeline
          */
-        createPipelineContext(): WebGLPipelineContext;
+        createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext;
         private _createShaderProgram;
         private _finalizePipelineContext;
-        /** @hidden */private _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>): void;
+        /** @hidden */private _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>, key: string): void;
         /** @hidden */private _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean;
         /** @hidden */private _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void): void;
         /**
@@ -30732,8 +31197,9 @@ declare module BABYLON {
          * @param channel The texture channel
          * @param uniform The uniform to set
          * @param texture The texture to apply
+         * @param name The name of the uniform in the effect
          */
-        setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>): void;
+        setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void;
         /**
          * Sets a depth stencil texture from a render target to the according uniform.
          * @param channel The texture channel
@@ -30881,6 +31347,7 @@ declare module BABYLON {
         /** @hidden */private _getRGBAMultiSampleBufferFormat(type: number): number;
         /** @hidden */private _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
         /** @hidden */private _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
+        /** @hidden */private _shouldOnlyUpdateCameras(): boolean;
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
@@ -42962,6 +43429,860 @@ declare module BABYLON {
         }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class WebGPUConstants {
+        static readonly GPUCullMode_none: GPUCullMode;
+        static readonly GPUCullMode_front: GPUCullMode;
+        static readonly GPUCullMode_back: GPUCullMode;
+        static readonly GPUFrontFace_ccw: GPUFrontFace;
+        static readonly GPUFrontFace_cw: GPUFrontFace;
+        static readonly GPUIndexFormat_uint16: GPUIndexFormat;
+        static readonly GPUIndexFormat_uint32: GPUIndexFormat;
+        static readonly GPULoadOp_load: GPULoadOp;
+        static readonly GPUStoreOp_store: GPUStoreOp;
+        static readonly GPUStoreOp_clear: GPUStoreOp;
+        static readonly GPUPrimitiveTopology_pointList: GPUPrimitiveTopology;
+        static readonly GPUPrimitiveTopology_lineList: GPUPrimitiveTopology;
+        static readonly GPUPrimitiveTopology_lineStrip: GPUPrimitiveTopology;
+        static readonly GPUPrimitiveTopology_triangleList: GPUPrimitiveTopology;
+        static readonly GPUPrimitiveTopology_triangleStrip: GPUPrimitiveTopology;
+        static readonly GPUTextureDimension_1d: GPUTextureDimension;
+        static readonly GPUTextureDimension_2d: GPUTextureDimension;
+        static readonly GPUTextureDimension_3d: GPUTextureDimension;
+        static readonly GPUTextureFormat_r8unorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_r8snorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_r8uint: GPUTextureFormat;
+        static readonly GPUTextureFormat_r8sint: GPUTextureFormat;
+        static readonly GPUTextureFormat_r16unorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_r16snorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_r16uint: GPUTextureFormat;
+        static readonly GPUTextureFormat_r16sint: GPUTextureFormat;
+        static readonly GPUTextureFormat_r16float: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg8unorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg8snorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg8uint: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg8sint: GPUTextureFormat;
+        static readonly GPUTextureFormat_r32uint: GPUTextureFormat;
+        static readonly GPUTextureFormat_r32sint: GPUTextureFormat;
+        static readonly GPUTextureFormat_r32float: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg16unorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg16snorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg16uint: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg16sint: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg16float: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba8unorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba8unormSrgb: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba8snorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba8uint: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba8sint: GPUTextureFormat;
+        static readonly GPUTextureFormat_bgra8unorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_bgra8unormSrgb: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgb10a2unorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg11b10float: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg32uint: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg32sint: GPUTextureFormat;
+        static readonly GPUTextureFormat_rg32float: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba16unorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba16snorm: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba16uint: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba16sint: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba16float: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba32uint: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba32sint: GPUTextureFormat;
+        static readonly GPUTextureFormat_rgba32float: GPUTextureFormat;
+        static readonly GPUTextureFormat_depth32float: GPUTextureFormat;
+        static readonly GPUTextureFormat_depth24plus: GPUTextureFormat;
+        static readonly GPUTextureFormat_depth24plusStencil8: GPUTextureFormat;
+        static readonly GPUTextureViewDimension_1d: GPUTextureViewDimension;
+        static readonly GPUTextureViewDimension_2d: GPUTextureViewDimension;
+        static readonly GPUTextureViewDimension_2dArray: GPUTextureViewDimension;
+        static readonly GPUTextureViewDimension_cube: GPUTextureViewDimension;
+        static readonly GPUTextureViewDimension_cubeArray: GPUTextureViewDimension;
+        static readonly GPUTextureViewDimension_3d: GPUTextureViewDimension;
+        static readonly GPUPowerPreference_lowPower: GPUPowerPreference;
+        static readonly GPUPowerPreference_highPerformance: GPUPowerPreference;
+        static readonly GPUVertexFormat_uchar2: GPUVertexFormat;
+        static readonly GPUVertexFormat_uchar4: GPUVertexFormat;
+        static readonly GPUVertexFormat_char2: GPUVertexFormat;
+        static readonly GPUVertexFormat_char4: GPUVertexFormat;
+        static readonly GPUVertexFormat_uchar2norm: GPUVertexFormat;
+        static readonly GPUVertexFormat_uchar4norm: GPUVertexFormat;
+        static readonly GPUVertexFormat_char2norm: GPUVertexFormat;
+        static readonly GPUVertexFormat_char4norm: GPUVertexFormat;
+        static readonly GPUVertexFormat_ushort2: GPUVertexFormat;
+        static readonly GPUVertexFormat_ushort4: GPUVertexFormat;
+        static readonly GPUVertexFormat_short2: GPUVertexFormat;
+        static readonly GPUVertexFormat_short4: GPUVertexFormat;
+        static readonly GPUVertexFormat_ushort2norm: GPUVertexFormat;
+        static readonly GPUVertexFormat_ushort4norm: GPUVertexFormat;
+        static readonly GPUVertexFormat_short2norm: GPUVertexFormat;
+        static readonly GPUVertexFormat_short4norm: GPUVertexFormat;
+        static readonly GPUVertexFormat_half2: GPUVertexFormat;
+        static readonly GPUVertexFormat_half4: GPUVertexFormat;
+        static readonly GPUVertexFormat_float: GPUVertexFormat;
+        static readonly GPUVertexFormat_float2: GPUVertexFormat;
+        static readonly GPUVertexFormat_float3: GPUVertexFormat;
+        static readonly GPUVertexFormat_float4: GPUVertexFormat;
+        static readonly GPUVertexFormat_uint: GPUVertexFormat;
+        static readonly GPUVertexFormat_uint2: GPUVertexFormat;
+        static readonly GPUVertexFormat_uint3: GPUVertexFormat;
+        static readonly GPUVertexFormat_uint4: GPUVertexFormat;
+        static readonly GPUVertexFormat_int: GPUVertexFormat;
+        static readonly GPUVertexFormat_int2: GPUVertexFormat;
+        static readonly GPUVertexFormat_int3: GPUVertexFormat;
+        static readonly GPUVertexFormat_int4: GPUVertexFormat;
+        static readonly GPUBufferUsage_NONE: number;
+        static readonly GPUBufferUsage_MAP_READ: number;
+        static readonly GPUBufferUsage_MAP_WRITE: number;
+        static readonly GPUBufferUsage_TRANSFER_SRC: number;
+        static readonly GPUBufferUsage_TRANSFER_DST: number;
+        static readonly GPUBufferUsage_INDEX: number;
+        static readonly GPUBufferUsage_VERTEX: number;
+        static readonly GPUBufferUsage_UNIFORM: number;
+        static readonly GPUBufferUsage_STORAGE: number;
+        static readonly GPUColorWriteBits_NONE: number;
+        static readonly GPUColorWriteBits_RED: number;
+        static readonly GPUColorWriteBits_GREEN: number;
+        static readonly GPUColorWriteBits_BLUE: number;
+        static readonly GPUColorWriteBits_ALPHA: number;
+        static readonly GPUColorWriteBits_ALL: number;
+        static readonly GPUShaderStageBit_NONE: number;
+        static readonly GPUShaderStageBit_VERTEX: number;
+        static readonly GPUShaderStageBit_FRAGMENT: number;
+        static readonly GPUShaderStageBit_COMPUTE: number;
+        static readonly GPUTextureAspect_all: GPUTextureAspect;
+        static readonly GPUTextureAspect_depthOnly: GPUTextureAspect;
+        static readonly GPUTextureAspect_stencilOnly: GPUTextureAspect;
+        static readonly GPUTextureUsage_NONE: number;
+        static readonly GPUTextureUsage_COPY_SRC: number;
+        static readonly GPUTextureUsage_COPY_DST: number;
+        static readonly GPUTextureUsage_SAMPLED: number;
+        static readonly GPUTextureUsage_STORAGE: number;
+        static readonly GPUTextureUsage_OUTPUT_ATTACHMENT: number;
+        static readonly GPUCompareFunction_never: GPUCompareFunction;
+        static readonly GPUCompareFunction_less: GPUCompareFunction;
+        static readonly GPUCompareFunction_equal: GPUCompareFunction;
+        static readonly GPUCompareFunction_lessEqual: GPUCompareFunction;
+        static readonly GPUCompareFunction_greater: GPUCompareFunction;
+        static readonly GPUCompareFunction_notEqual: GPUCompareFunction;
+        static readonly GPUCompareFunction_greaterEqual: GPUCompareFunction;
+        static readonly GPUCompareFunction_always: GPUCompareFunction;
+        static readonly GPUBindingType_uniformBuffer: GPUBindingType;
+        static readonly GPUBindingType_sampler: GPUBindingType;
+        static readonly GPUBindingType_sampledTexture: GPUBindingType;
+        static readonly GPUBindingType_storageBuffer: GPUBindingType;
+        static readonly GPUInputStepMode_vertex: GPUInputStepMode;
+        static readonly GPUInputStepMode_instance: GPUInputStepMode;
+        static readonly GPUStencilOperation_keep: GPUStencilOperation;
+        static readonly GPUStencilOperation_zero: GPUStencilOperation;
+        static readonly GPUStencilOperation_replace: GPUStencilOperation;
+        static readonly GPUStencilOperation_invert: GPUStencilOperation;
+        static readonly GPUStencilOperation_incrementClamp: GPUStencilOperation;
+        static readonly GPUStencilOperation_decrementClamp: GPUStencilOperation;
+        static readonly GPUStencilOperation_incrementWrap: GPUStencilOperation;
+        static readonly GPUStencilOperation_decrementWrap: GPUStencilOperation;
+        static readonly GPUFilterMode_nearest: GPUFilterMode;
+        static readonly GPUFilterMode_linear: GPUFilterMode;
+        static readonly GPUAddressMode_clampToEdge: GPUAddressMode;
+        static readonly GPUAddressMode_repeat: GPUAddressMode;
+        static readonly GPUAddressMode_mirrorRepeat: GPUAddressMode;
+        static readonly GPUBlendFactor_zero: GPUBlendFactor;
+        static readonly GPUBlendFactor_one: GPUBlendFactor;
+        static readonly GPUBlendFactor_srcColor: GPUBlendFactor;
+        static readonly GPUBlendFactor_oneMinusSrcColor: GPUBlendFactor;
+        static readonly GPUBlendFactor_srcAlpha: GPUBlendFactor;
+        static readonly GPUBlendFactor_oneMinusSrcAlpha: GPUBlendFactor;
+        static readonly GPUBlendFactor_dstColor: GPUBlendFactor;
+        static readonly GPUBlendFactor_oneMinusDstColor: GPUBlendFactor;
+        static readonly GPUBlendFactor_dstAlpha: GPUBlendFactor;
+        static readonly GPUBlendFactor_oneMinusDstAlpha: GPUBlendFactor;
+        static readonly GPUBlendFactor_srcAlphaSaturated: GPUBlendFactor;
+        static readonly GPUBlendFactor_blendColor: GPUBlendFactor;
+        static readonly GPUBlendFactor_oneMinusBlendColor: GPUBlendFactor;
+        static readonly GPUBlendOperation_add: GPUBlendOperation;
+        static readonly GPUBlendOperation_substract: GPUBlendOperation;
+        static readonly GPUBlendOperation_reverseSubtract: GPUBlendOperation;
+        static readonly GPUBlendOperation_min: GPUBlendOperation;
+        static readonly GPUBlendOperation_max: GPUBlendOperation;
+    }
+}
+declare module BABYLON {
+    /**
+     * Contains position and normal vectors for a vertex
+     */
+    export class PositionNormalVertex {
+        /** the position of the vertex (defaut: 0,0,0) */
+        position: Vector3;
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal: Vector3;
+        /**
+         * Creates a PositionNormalVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         */
+        constructor(
+        /** the position of the vertex (defaut: 0,0,0) */
+        position?: Vector3, 
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal?: Vector3);
+        /**
+         * Clones the PositionNormalVertex
+         * @returns the cloned PositionNormalVertex
+         */
+        clone(): PositionNormalVertex;
+    }
+    /**
+     * Contains position, normal and uv vectors for a vertex
+     */
+    export class PositionNormalTextureVertex {
+        /** the position of the vertex (defaut: 0,0,0) */
+        position: Vector3;
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal: Vector3;
+        /** the uv of the vertex (default: 0,0) */
+        uv: Vector2;
+        /**
+         * Creates a PositionNormalTextureVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         * @param uv the uv of the vertex (default: 0,0)
+         */
+        constructor(
+        /** the position of the vertex (defaut: 0,0,0) */
+        position?: Vector3, 
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal?: Vector3, 
+        /** the uv of the vertex (default: 0,0) */
+        uv?: Vector2);
+        /**
+         * Clones the PositionNormalTextureVertex
+         * @returns the cloned PositionNormalTextureVertex
+         */
+        clone(): PositionNormalTextureVertex;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
+        attributeNextLocation: number;
+        varyingNextLocation: number;
+        uboNextBindingIndex: number;
+        freeSetIndex: number;
+        freeBindingIndex: number;
+        availableVaryings: {
+            [key: string]: number;
+        };
+        availableAttributes: {
+            [key: string]: number;
+        };
+        availableUBOs: {
+            [key: string]: {
+                setIndex: number;
+                bindingIndex: number;
+            };
+        };
+        availableSamplers: {
+            [key: string]: {
+                setIndex: number;
+                bindingIndex: number;
+            };
+        };
+        leftOverUniforms: {
+            name: string;
+            type: string;
+            length: number;
+        }[];
+        orderedAttributes: string[];
+        orderedUBOsAndSamplers: {
+            name: string;
+            isSampler: boolean;
+        }[][];
+        constructor();
+        getNextFreeUBOBinding(): {
+            setIndex: number;
+            bindingIndex: number;
+        };
+        getNextFreeTextureBinding(): {
+            setIndex: number;
+            bindingIndex: number;
+        };
+        private _getNextFreeBinding;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export interface IWebGPUPipelineContextSamplerCache {
+        setIndex: number;
+        textureBinding: number;
+        samplerBinding: number;
+        texture: InternalTexture;
+    }
+    /** @hidden */
+    export interface IWebGPUPipelineContextVertexInputsCache {
+        indexBuffer: Nullable<GPUBuffer>;
+        indexOffset: number;
+        vertexStartSlot: number;
+        vertexBuffers: GPUBuffer[];
+        vertexOffsets: number[];
+    }
+    /** @hidden */
+    export class WebGPUPipelineContext implements IPipelineContext {
+        engine: WebGPUEngine;
+        availableAttributes: {
+            [key: string]: number;
+        };
+        availableUBOs: {
+            [key: string]: {
+                setIndex: number;
+                bindingIndex: number;
+            };
+        };
+        availableSamplers: {
+            [key: string]: {
+                setIndex: number;
+                bindingIndex: number;
+            };
+        };
+        orderedAttributes: string[];
+        orderedUBOsAndSamplers: {
+            name: string;
+            isSampler: boolean;
+        }[][];
+        leftOverUniforms: {
+            name: string;
+            type: string;
+            length: number;
+        }[];
+        leftOverUniformsByName: {
+            [name: string]: string;
+        };
+        sources: {
+            vertex: string;
+            fragment: string;
+        };
+        stages: Nullable<GPURenderPipelineStageDescriptor>;
+        samplers: {
+            [name: string]: Nullable<IWebGPUPipelineContextSamplerCache>;
+        };
+        vertexInputs: IWebGPUPipelineContextVertexInputsCache;
+        bindGroupLayouts: (GPUBindGroupLayout | undefined)[];
+        bindGroups: GPUBindGroup[];
+        renderPipeline: GPURenderPipeline;
+        /**
+         * Stores the uniform buffer
+         */
+        uniformBuffer: Nullable<UniformBuffer>;
+        onCompiled?: () => void;
+        readonly isAsync: boolean;
+        readonly isReady: boolean;
+        constructor(shaderProcessingContext: WebGPUShaderProcessingContext, engine: WebGPUEngine);private _handlesSpectorRebuildCallback(onCompiled: (program: any) => void): void;private _fillEffectInformation(effect: Effect, uniformBuffersNames: {
+            [key: string]: number;
+        }, uniformsNames: string[], uniforms: {
+            [key: string]: Nullable<WebGLUniformLocation>;
+        }, samplerList: string[], samplers: {
+            [key: string]: number;
+        }, attributesNames: string[], attributes: number[]): void;
+        /**
+         * Build the uniform buffer used in the material.
+         */
+        buildUniformLayout(): void;
+        /**
+         * Release all associated resources.
+         **/
+        dispose(): void;
+        /**
+         * Sets an interger value on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value Value to be set.
+         */
+        setInt(uniformName: string, value: number): void;
+        /**
+         * Sets an int array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray2(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray3(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setIntArray4(uniformName: string, array: Int32Array): void;
+        /**
+         * Sets an float array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an float array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray2(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an float array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray3(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an float array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setFloatArray4(uniformName: string, array: Float32Array): void;
+        /**
+         * Sets an array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray2(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
+        setArray3(uniformName: string, array: number[]): void;
+        /**
+         * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         */
+        setArray4(uniformName: string, array: number[]): void;
+        /**
+         * Sets matrices on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrices matrices to be set.
+         */
+        setMatrices(uniformName: string, matrices: Float32Array): void;
+        /**
+         * Sets matrix on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix(uniformName: string, matrix: IMatrixLike): void;
+        /**
+         * Sets a 3x3 matrix on a uniform variable. (Speicified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix3x3(uniformName: string, matrix: Float32Array): void;
+        /**
+         * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         */
+        setMatrix2x2(uniformName: string, matrix: Float32Array): void;
+        /**
+         * Sets a float on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value value to be set.
+         * @returns this effect.
+         */
+        setFloat(uniformName: string, value: number): void;
+        /**
+         * Sets a boolean on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param bool value to be set.
+         */
+        setBool(uniformName: string, bool: boolean): void;
+        /**
+         * Sets a Vector2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector2 vector2 to be set.
+         */
+        setVector2(uniformName: string, vector2: IVector2Like): void;
+        /**
+         * Sets a float2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float2.
+         * @param y Second float in float2.
+         */
+        setFloat2(uniformName: string, x: number, y: number): void;
+        /**
+         * Sets a Vector3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector3 Value to be set.
+         */
+        setVector3(uniformName: string, vector3: IVector3Like): void;
+        /**
+         * Sets a float3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float3.
+         * @param y Second float in float3.
+         * @param z Third float in float3.
+         */
+        setFloat3(uniformName: string, x: number, y: number, z: number): void;
+        /**
+         * Sets a Vector4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector4 Value to be set.
+         */
+        setVector4(uniformName: string, vector4: IVector4Like): void;
+        /**
+         * Sets a float4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float4.
+         * @param y Second float in float4.
+         * @param z Third float in float4.
+         * @param w Fourth float in float4.
+         * @returns this effect.
+         */
+        setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void;
+        /**
+         * Sets a Color3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         */
+        setColor3(uniformName: string, color3: IColor3Like): void;
+        /**
+         * Sets a Color4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         * @param alpha Alpha value to be set.
+         */
+        setColor4(uniformName: string, color3: IColor3Like, alpha: number): void;
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniformName defines the name of the variable
+         * @param color4 defines the value to be set
+         */
+        setDirectColor4(uniformName: string, color4: IColor4Like): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUDataBuffer extends DataBuffer {
+        private _buffer;
+        constructor(resource: GPUBuffer);
+        readonly underlyingResource: any;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPUShaderProcessor implements IShaderProcessor {
+        varyingProcessor(varying: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string;
+        attributeProcessor(attribute: string, processingContext: Nullable<ShaderProcessingContext>): string;
+        uniformProcessor(uniform: string, isFragment: boolean, preProcessors: {
+            [key: string]: string;
+        }, processingContext: Nullable<ShaderProcessingContext>): string;
+        uniformBufferProcessor(uniformBuffer: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string;
+        postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string;
+        finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): {
+            vertexCode: string;
+            fragmentCode: string;
+        };
+    }
+}
+declare module BABYLON {
+    /**
+     * Options to load the associated Shaderc library
+     */
+    export interface ShadercOptions {
+        /**
+         * Defines an existing instance of shaderC (usefull in modules who do not access the global instance).
+         */
+        shaderc?: any;
+        /**
+         * Defines the URL of the shaderc JS File.
+         */
+        jsPath?: string;
+        /**
+         * Defines the URL of the shaderc WASM File.
+         */
+        wasmPath?: string;
+    }
+    /**
+     * Options to create the WebGPU engine
+     */
+    export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
+        /**
+         * If delta time between frames should be constant
+         * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         */
+        deterministicLockstep?: boolean;
+        /**
+         * Maximum about of steps between frames (Default: 4)
+         * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         */
+        lockstepMaxSteps?: number;
+        /**
+         * Defines that engine should ignore modifying touch action attribute and style
+         * If not handle, you might need to set it up on your side for expected touch devices behavior.
+         */
+        doNotHandleTouchAction?: boolean;
+        /**
+         * Defines if webaudio should be initialized as well
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         */
+        audioEngine?: boolean;
+        /**
+         * Defines the category of adapter to use.
+         * Is it the discrete or integrated device.
+         */
+        powerPreference?: GPUPowerPreference;
+        /**
+         * Defines the device descriptor used to create a device.
+         */
+        deviceDescriptor?: GPUDeviceDescriptor;
+        /**
+         * Defines the requested Swap Chain Format.
+         */
+        swapChainFormat?: GPUTextureFormat;
+        /**
+         * Defines wether MSAA is enabled on the canvas.
+         */
+        antialiasing?: boolean;
+    }
+    /**
+     * The web GPU engine class provides support for WebGPU version of babylon.js.
+     */
+    export class WebGPUEngine extends Engine {
+        private static readonly _shadercDefaultOptions;
+        private readonly _uploadEncoderDescriptor;
+        private readonly _renderEncoderDescriptor;
+        private readonly _clearDepthValue;
+        private readonly _clearStencilValue;
+        private readonly _defaultSampleCount;
+        private _canvas;
+        private _options;
+        private _shaderc;
+        private _adapter;
+        private _device;
+        private _context;
+        private _swapChain;
+        private _mainPassSampleCount;
+        private _mainTexture;
+        private _depthTexture;
+        private _mainColorAttachments;
+        private _mainTextureExtends;
+        private _mainDepthAttachment;
+        private _uploadEncoder;
+        private _renderEncoder;
+        private _commandBuffers;
+        private _currentRenderPass;
+        private _currentVertexBuffers;
+        private _currentIndexBuffer;
+        private __colorWrite;
+        private _uniformsBuffers;
+        private _compiledShaders;
+        private _decodeCanvas;
+        private _decodeEngine;
+        /**
+         * Gets a boolean indicating that the engine supports uniform buffers
+         * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+         */
+        readonly supportsUniformBuffers: boolean;
+        /**
+         * Create a new instance of the gpu engine.
+         * @param canvas Defines the canvas to use to display the result
+         * @param options Defines the options passed to the engine to create the GPU context dependencies
+         */
+        constructor(canvas: HTMLCanvasElement, options?: WebGPUEngineOptions);
+        /**
+         * Initializes the WebGPU context and dependencies.
+         * @param shadercOptions Defines the ShaderC compiler options if necessary
+         * @returns a promise notifying the readiness of the engine.
+         */
+        initAsync(shadercOptions?: ShadercOptions): Promise<void>;
+        private _initShaderc;
+        private _initializeLimits;
+        private _initializeContextAndSwapChain;
+        private _initializeMainAttachments;
+        /**
+         * Gets a shader processor implementation fitting with the current engine type.
+         * @returns The shader processor implementation.
+         */
+        protected _getShaderProcessor(): Nullable<IShaderProcessor>;
+        /** @hidden */private _getShaderProcessingContext(): Nullable<ShaderProcessingContext>;
+        wipeCaches(bruteForce?: boolean): void;
+        setColorWrite(enable: boolean): void;
+        getColorWrite(): boolean;private _viewport(x: number, y: number, width: number, height: number): void;
+        enableScissor(x: number, y: number, width: number, height: number): void;
+        disableScissor(): void;
+        clear(color: Color4, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+        private _createBuffer;
+        private _setSubData;
+        createVertexBuffer(data: DataArray): DataBuffer;
+        createDynamicVertexBuffer(data: DataArray): DataBuffer;
+        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
+        createIndexBuffer(data: IndicesArray): DataBuffer;
+        updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
+        bindBuffersDirectly(vertexBuffer: DataBuffer, indexBuffer: DataBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void;
+        updateAndBindInstancesBuffer(instancesBuffer: DataBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void;
+        bindBuffers(vertexBuffers: {
+            [key: string]: Nullable<VertexBuffer>;
+        }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void;
+        /** @hidden */private _releaseBuffer(buffer: DataBuffer): boolean;
+        createUniformBuffer(elements: FloatArray): DataBuffer;
+        createDynamicUniformBuffer(elements: FloatArray): DataBuffer;
+        updateUniformBuffer(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void;
+        bindUniformBufferBase(buffer: DataBuffer, location: number, name: string): void;
+        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
+        private _compileRawShaderToSpirV;
+        private _compileShaderToSpirV;
+        private _createPipelineStageDescriptor;
+        private _compileRawPipelineStageDescriptor;
+        private _compilePipelineStageDescriptor;
+        createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
+        createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
+        createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext;
+        /** @hidden */private _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>, key: string): void;
+        getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[];
+        enableEffect(effect: Effect): void;private _releaseEffect(effect: Effect): void;
+        /**
+         * Force the engine to release all cached effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
+         */
+        releaseEffects(): void;private _deletePipelineContext(pipelineContext: IPipelineContext): void;
+        /** @hidden */private _createTexture(): WebGLTexture;
+        /** @hidden */private _releaseTexture(texture: InternalTexture): void;
+        private _uploadMipMapsFromWebglTexture;
+        private _uploadFromWebglTexture;
+        private _getSamplerFilterDescriptor;
+        private _getWrappingMode;
+        private _getSamplerWrappingDescriptor;
+        private _getSamplerDescriptor;
+        createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<ArrayBuffer | HTMLImageElement>, fallBack?: InternalTexture, format?: number): InternalTexture;
+        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>, excludeLoaders?: Array<IInternalTextureLoader>): InternalTexture;
+        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
+        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number): void;
+        setTexture(channel: number, _: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void;
+        bindSamplers(effect: Effect): void;private _bindTextureDirectly(target: number, texture: InternalTexture): boolean;
+        /** @hidden */private _bindTexture(channel: number, texture: InternalTexture): void;
+        /** @hidden */private _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
+        /** @hidden */private _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
+        /** @hidden */private _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
+        /** @hidden */private _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
+        createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        /**
+         * Begin a new frame
+         */
+        beginFrame(): void;
+        private _freezeCommands;
+        private _frozenCommands;private _shouldOnlyUpdateCameras(): boolean;
+        /**
+         * End the current frame
+         */
+        endFrame(): void;
+        /**
+         * Freezes the current list of commands to speed up rendering of sub sequent frames.
+         */
+        freezeCommands(): void;
+        /**
+         * Freezes the current list of commands to speed up rendering of sub sequent frames.
+         */
+        unFreezeCommands(): void;
+        private _startMainRenderPass;
+        private _endRenderPass;
+        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
+        unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+        private _getTopology;
+        private _getCompareFunction;
+        private _getOpFunction;
+        private _getDepthStencilStateDescriptor;
+        /**
+         * Set various states to the webGL context
+         * @param culling defines backface culling state
+         * @param zOffset defines the value to apply to zOffset (0 by default)
+         * @param force defines if states must be applied even if cache is up to date
+         * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+         */
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        private _getFrontFace;
+        private _getCullMode;
+        private _getRasterizationStateDescriptor;
+        private _getWriteMask;
+        /**
+         * Sets the current alpha mode
+         * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
+         * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+         */
+        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
+        private _getAphaBlendOperation;
+        private _getAphaBlendFactor;
+        private _getAphaBlendState;
+        private _getColorBlendState;
+        private _getColorStateDescriptors;
+        private _getStages;
+        private _getVertexInputDescriptorFormat;
+        private _getVertexInputDescriptor;
+        private _getPipelineLayout;
+        private _getRenderPipeline;
+        private _getVertexInputsToRender;
+        private _getBindGroupsToRender;
+        private _bindVertexInputs;
+        private _setRenderBindGroups;
+        private _setRenderPipeline;
+        drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void;
+        drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
+        /**
+         * Force a specific size of the canvas
+         * @param width defines the new canvas' width
+         * @param height defines the new canvas' height
+         */
+        setSize(width: number, height: number): void;
+        /**
+         * Dispose and release all associated resources
+         */
+        dispose(): void;
+        getRenderWidth(useScreen?: boolean): number;
+        getRenderHeight(useScreen?: boolean): number;
+        getRenderingCanvas(): Nullable<HTMLCanvasElement>;
+        getError(): number;
+        areAllEffectsReady(): boolean;private _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void): void;private _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean;private _getUnpackAlignement(): number;private _unpackFlipY(value: boolean): void;
+        applyStates(): void;
+        /** @hidden */private _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): {
+            min: number;
+            mag: number;
+        };
+        bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void;
+        getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[];
+        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setArray(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray2(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray3(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray4(uniform: WebGLUniformLocation, array: number[]): void;
+        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
+        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setFloat(uniform: WebGLUniformLocation, value: number): void;
+        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
+        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
+        setBool(uniform: WebGLUniformLocation, bool: number): void;
+        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
+    }
+}
+declare module BABYLON {
     /**
      * Gather the list of clipboard event types as constants.
      */
@@ -47126,61 +48447,6 @@ declare module BABYLON {
              */
             createDefaultXRExperienceAsync(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
         }
-}
-declare module BABYLON {
-    /**
-     * Contains position and normal vectors for a vertex
-     */
-    export class PositionNormalVertex {
-        /** the position of the vertex (defaut: 0,0,0) */
-        position: Vector3;
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal: Vector3;
-        /**
-         * Creates a PositionNormalVertex
-         * @param position the position of the vertex (defaut: 0,0,0)
-         * @param normal the normal of the vertex (defaut: 0,1,0)
-         */
-        constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
-        position?: Vector3, 
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal?: Vector3);
-        /**
-         * Clones the PositionNormalVertex
-         * @returns the cloned PositionNormalVertex
-         */
-        clone(): PositionNormalVertex;
-    }
-    /**
-     * Contains position, normal and uv vectors for a vertex
-     */
-    export class PositionNormalTextureVertex {
-        /** the position of the vertex (defaut: 0,0,0) */
-        position: Vector3;
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal: Vector3;
-        /** the uv of the vertex (default: 0,0) */
-        uv: Vector2;
-        /**
-         * Creates a PositionNormalTextureVertex
-         * @param position the position of the vertex (defaut: 0,0,0)
-         * @param normal the normal of the vertex (defaut: 0,1,0)
-         * @param uv the uv of the vertex (default: 0,0)
-         */
-        constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
-        position?: Vector3, 
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal?: Vector3, 
-        /** the uv of the vertex (default: 0,0) */
-        uv?: Vector2);
-        /**
-         * Clones the PositionNormalTextureVertex
-         * @returns the cloned PositionNormalTextureVertex
-         */
-        clone(): PositionNormalTextureVertex;
-    }
 }
 declare module BABYLON {
     /**
@@ -60452,6 +61718,731 @@ declare var WebGLVertexArrayObject: {
     prototype: WebGLVertexArrayObject;
     new(): WebGLVertexArrayObject;
 };
+
+// https://github.com/gpuweb/gpuweb/blob/72b88fd01c8dd7d17a03f5669e6b14fd0c9ce6b6/spec/index.bs
+// except #280 setSubData (TODO)
+
+interface GPUColorDict {
+  a: number;
+  b: number;
+  g: number;
+  r: number;
+}
+type GPUColor = [number, number, number, number] | GPUColorDict;
+
+interface GPUOrigin2DDict {
+  x?: number;
+  y?: number;
+}
+type GPUOrigin2D = [number, number] | GPUOrigin2DDict;
+
+interface GPUOrigin3DDict {
+  x?: number;
+  y?: number;
+  z?: number;
+}
+type GPUOrigin3D = [number, number, number] | GPUOrigin3DDict;
+
+interface GPUExtent3DDict {
+  width: number;
+  height: number;
+  depth: number;
+}
+type GPUExtent3D = [number, number, number] | GPUExtent3DDict;
+
+type GPUBindingResource = GPUSampler | GPUTextureView | GPUBufferBinding;
+
+type GPUAddressMode =
+  | "clamp-to-edge"
+  | "repeat"
+  | "mirror-repeat";
+type GPUBindingType =
+  | "uniform-buffer"
+  | "storage-buffer"
+  | "readonly-storage-buffer"
+  | "sampler"
+  | "sampled-texture"
+  | "storage-texture";
+type GPUBlendFactor =
+  | "zero"
+  | "one"
+  | "src-color"
+  | "one-minus-src-color"
+  | "src-alpha"
+  | "one-minus-src-alpha"
+  | "dst-color"
+  | "one-minus-dst-color"
+  | "dst-alpha"
+  | "one-minus-dst-alpha"
+  | "src-alpha-saturated"
+  | "blend-color"
+  | "one-minus-blend-color";
+type GPUBlendOperation =
+  | "add"
+  | "subtract"
+  | "reverse-subtract"
+  | "min"
+  | "max";
+type GPUCompareFunction =
+  | "never"
+  | "less"
+  | "equal"
+  | "lessEqual"
+  | "greater"
+  | "notEqual"
+  | "greaterEqual"
+  | "always";
+type GPUCullMode =
+  | "none"
+  | "front"
+  | "back";
+type GPUFilterMode =
+  | "nearest"
+  | "linear";
+type GPUFrontFace =
+  | "ccw"
+  | "cw";
+type GPUIndexFormat =
+  | "uint16"
+  | "uint32";
+type GPUInputStepMode =
+  | "vertex"
+  | "instance";
+type GPULoadOp =
+  | "load";
+type GPUPrimitiveTopology =
+  | "point-list"
+  | "line-list"
+  | "line-strip"
+  | "triangle-list"
+  | "triangle-strip";
+type GPUStencilOperation =
+  | "keep"
+  | "zero"
+  | "replace"
+  | "invert"
+  | "increment-clamp"
+  | "decrement-clamp"
+  | "increment-wrap"
+  | "decrement-wrap";
+type GPUStoreOp =
+  | "store"
+  | "clear";
+type GPUTextureDimension =
+  | "1d"
+  | "2d"
+  | "3d";
+type GPUTextureFormat =
+  | "r8unorm"
+  | "r8snorm"
+  | "r8uint"
+  | "r8sint"
+  | "r16unorm"
+  | "r16snorm"
+  | "r16uint"
+  | "r16sint"
+  | "r16float"
+  | "rg8unorm"
+  | "rg8snorm"
+  | "rg8uint"
+  | "rg8sint"
+  | "r32uint"
+  | "r32sint"
+  | "r32float"
+  | "rg16unorm"
+  | "rg16snorm"
+  | "rg16uint"
+  | "rg16sint"
+  | "rg16float"
+  | "rgba8unorm"
+  | "rgba8unorm-srgb"
+  | "rgba8snorm"
+  | "rgba8uint"
+  | "rgba8sint"
+  | "bgra8unorm"
+  | "bgra8unorm-srgb"
+  | "rgb10a2unorm"
+  | "rg11b10float"
+  | "rg32uint"
+  | "rg32sint"
+  | "rg32float"
+  | "rgba16unorm"
+  | "rgba16snorm"
+  | "rgba16uint"
+  | "rgba16sint"
+  | "rgba16float"
+  | "rgba32uint"
+  | "rgba32sint"
+  | "rgba32float"
+  | "depth32float"
+  | "depth24plus"
+  | "depth24plus-stencil8";
+type GPUTextureViewDimension =
+  | "1d"
+  | "2d"
+  | "2d-array"
+  | "cube"
+  | "cube-array"
+  | "3d";
+// SEB UPDATE.
+type GPUTextureAspect =
+  | "all"
+  | "stencil-only"
+  | "depth-only";
+type GPUVertexFormat =
+  | "uchar2"
+  | "uchar4"
+  | "char2"
+  | "char4"
+  | "uchar2norm"
+  | "uchar4norm"
+  | "char2norm"
+  | "char4norm"
+  | "ushort2"
+  | "ushort4"
+  | "short2"
+  | "short4"
+  | "ushort2norm"
+  | "ushort4norm"
+  | "short2norm"
+  | "short4norm"
+  | "half2"
+  | "half4"
+  | "float"
+  | "float2"
+  | "float3"
+  | "float4"
+  | "uint"
+  | "uint2"
+  | "uint3"
+  | "uint4"
+  | "int"
+  | "int2"
+  | "int3"
+  | "int4";
+
+type GPUBufferUsageFlags = number;
+// enum GPUBufferUsage {
+//   NONE      = 0x0000,
+//   MAP_READ  = 0x0001,
+//   MAP_WRITE = 0x0002,
+//   COPY_SRC  = 0x0004,
+//   COPY_DST  = 0x0008,
+//   INDEX     = 0x0010,
+//   VERTEX    = 0x0020,
+//   UNIFORM   = 0x0040,
+//   STORAGE   = 0x0080,
+// }
+
+type GPUColorWriteFlags = number;
+// enum GPUColorWrite {
+//   NONE  = 0x0,
+//   RED   = 0x1,
+//   GREEN = 0x2,
+//   BLUE  = 0x4,
+//   ALPHA = 0x8,
+//   ALL   = 0xF,
+// }
+
+type GPUShaderStageFlags = number;
+// enum GPUShaderStage {
+//   NONE     = 0x0,
+//   VERTEX   = 0x1,
+//   FRAGMENT = 0x2,
+//   COMPUTE  = 0x4,
+// }
+
+type GPUTextureUsageFlags = number;
+// enum GPUTextureUsage {
+//   NONE              = 0x00,
+//   COPY_SRC          = 0x01,
+//   COPY_DST          = 0x02,
+//   SAMPLED           = 0x04,
+//   STORAGE           = 0x08,
+//   OUTPUT_ATTACHMENT = 0x10,
+// }
+
+interface GPUBindGroupBinding {
+  binding: number;
+  resource: GPUBindingResource;
+}
+
+interface GPUBindGroupDescriptor extends GPUObjectDescriptorBase {
+  layout: GPUBindGroupLayout;
+  bindings: GPUBindGroupBinding[];
+}
+
+interface GPUBindGroupLayoutBinding {
+  binding: number;
+  visibility: GPUShaderStageFlags;
+  type: GPUBindingType;
+  textureDimension?: GPUTextureViewDimension;
+  multisampled?: boolean;
+  dynamic?: boolean;
+}
+
+interface GPUBindGroupLayoutDescriptor extends GPUObjectDescriptorBase {
+  bindings?: GPUBindGroupLayoutBinding[];
+}
+
+interface GPUBlendDescriptor {
+  dstFactor?: GPUBlendFactor;
+  operation?: GPUBlendOperation;
+  srcFactor?: GPUBlendFactor;
+}
+
+interface GPUColorStateDescriptor {
+  format: GPUTextureFormat;
+
+  alphaBlend?: GPUBlendDescriptor;
+  colorBlend?: GPUBlendDescriptor;
+  writeMask?: GPUColorWriteFlags;
+}
+
+interface GPUBufferBinding {
+  buffer: GPUBuffer;
+  offset?: number;
+  size?: number;
+}
+
+interface GPUBufferCopyView {
+  buffer: GPUBuffer;
+  offset?: number;
+  rowPitch: number;
+  imageHeight: number;
+}
+
+interface GPUTextureCopyView {
+  texture: GPUTexture;
+  mipLevel?: number;
+  arrayLayer?: number;
+  origin?: GPUOrigin3D;
+}
+
+interface GPUImageBitmapCopyView {
+  imageBitmap: ImageBitmap;
+  origin?: GPUOrigin2D;
+}
+
+interface GPUBufferDescriptor extends GPUObjectDescriptorBase {
+  size: number;
+  usage: GPUBufferUsageFlags;
+}
+
+interface GPUCommandEncoderDescriptor extends GPUObjectDescriptorBase {
+  label?: string;
+}
+
+interface GPUComputePipelineDescriptor extends GPUPipelineDescriptorBase {
+  computeStage: GPUProgrammableStageDescriptor;
+}
+
+interface GPUDepthStencilStateDescriptor {
+  format: GPUTextureFormat;
+
+  depthWriteEnabled?: boolean;
+  depthCompare?: GPUCompareFunction;
+
+  stencilFront: GPUStencilStateFaceDescriptor;
+  stencilBack: GPUStencilStateFaceDescriptor;
+
+  stencilReadMask?: number;
+  stencilWriteMask?: number;
+}
+
+interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
+  extensions?: GPUExtensions;
+  limits?: GPULimits;
+}
+
+interface GPUExtensions {
+  anisotropicFiltering?: boolean;
+}
+
+interface GPUFenceDescriptor extends GPUObjectDescriptorBase {
+  initialValue?: number;
+  label?: string;
+  signalQueue?: GPUQueue;
+}
+
+interface GPUVertexAttributeDescriptor {
+  offset?: number;
+  format: GPUVertexFormat;
+  shaderLocation: number;
+}
+
+interface GPUVertexBufferDescriptor {
+  stride: number;
+  stepMode?: GPUInputStepMode;
+  attributeSet: GPUVertexAttributeDescriptor[];
+}
+
+interface GPUVertexInputDescriptor {
+  indexFormat?: GPUIndexFormat;
+  vertexBuffers: GPUVertexBufferDescriptor[];
+}
+
+interface GPULimits {
+  maxBindGroups?: number;
+}
+
+interface GPUPipelineDescriptorBase {
+  label?: string;
+  layout: GPUPipelineLayout;
+}
+
+interface GPUPipelineLayoutDescriptor extends GPUObjectDescriptorBase {
+  bindGroupLayouts: GPUBindGroupLayout[];
+}
+
+interface GPUProgrammableStageDescriptor {
+  module: GPUShaderModule;
+  entryPoint: string;
+}
+
+interface GPURasterizationStateDescriptor {
+  frontFace?: GPUFrontFace;
+  cullMode?: GPUCullMode;
+  depthBias?: number;
+  depthBiasSlopeScale?: number;
+  depthBiasClamp?: number;
+}
+
+interface GPURenderPassColorAttachmentDescriptor {
+  attachment: GPUTextureView;
+  resolveTarget?: GPUTextureView | null;
+
+  loadValue: GPULoadOp | GPUColor;
+  storeOp: GPUStoreOp;
+}
+
+interface GPURenderPassDepthStencilAttachmentDescriptor {
+  attachment: GPUTextureView;
+
+  depthLoadValue: GPULoadOp | number;
+  depthStoreOp: GPUStoreOp;
+
+  stencilLoadValue: GPULoadOp | number;
+  stencilStoreOp: GPUStoreOp;
+}
+
+interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
+  colorAttachments: GPURenderPassColorAttachmentDescriptor[];
+  depthStencilAttachment?: GPURenderPassDepthStencilAttachmentDescriptor | null;
+}
+
+interface GPURenderPipelineStageDescriptor {
+  vertexStage: GPUProgrammableStageDescriptor;
+  fragmentStage?: GPUProgrammableStageDescriptor | null;
+}
+
+interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase, GPURenderPipelineStageDescriptor {
+  primitiveTopology: GPUPrimitiveTopology;
+  rasterizationState?: GPURasterizationStateDescriptor;
+  colorStates: GPUColorStateDescriptor[];
+  depthStencilState?: GPUDepthStencilStateDescriptor | null;
+  vertexInput: GPUVertexInputDescriptor;
+
+  sampleCount?: number;
+  sampleMask?: number;
+  alphaToCoverageEnabled?: boolean;
+}
+
+interface GPUSamplerDescriptor extends GPUObjectDescriptorBase {
+  compare?: GPUCompareFunction;
+  lodMaxClamp?: number;
+  lodMinClamp?: number;
+  magFilter?: GPUFilterMode;
+  maxAnisotropy?: number;
+  minFilter?: GPUFilterMode;
+  mipmapFilter?: GPUFilterMode;
+  addressModeU?: GPUAddressMode;
+  addressModeV?: GPUAddressMode;
+  addressModeW?: GPUAddressMode;
+}
+
+interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
+  code: Uint32Array | string;
+  label?: string;
+}
+
+interface GPUStencilStateFaceDescriptor {
+  compare?: GPUCompareFunction;
+  depthFailOp?: GPUStencilOperation;
+  passOp?: GPUStencilOperation;
+  failOp?: GPUStencilOperation;
+}
+
+interface GPUSwapChainDescriptor extends GPUObjectDescriptorBase {
+  device: GPUDevice;
+  format: GPUTextureFormat;
+  usage?: GPUTextureUsageFlags;
+}
+
+interface GPUTextureDescriptor extends GPUObjectDescriptorBase {
+  size: GPUExtent3D;
+  arrayLayerCount?: number;
+  mipLevelCount?: number;
+  sampleCount?: number;
+  dimension?: GPUTextureDimension;
+  format: GPUTextureFormat;
+  usage: GPUTextureUsageFlags;
+}
+
+interface GPUTextureViewDescriptor extends GPUObjectDescriptorBase {
+  aspect: GPUTextureAspect;
+  baseArrayLayer?: number;
+  baseMipLevel?: number;
+  dimension: GPUTextureViewDimension;
+  format: GPUTextureFormat;
+  arrayLayerCount?: number;
+  mipLevelCount?: number;
+}
+
+interface GPUAdapter extends GPUObjectBase {
+  readonly extensions: GPUExtensions;
+  readonly name: string;
+  requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice>;
+}
+
+interface GPUBindGroup extends GPUObjectBase {
+}
+
+interface GPUBindGroupLayout extends GPUObjectBase {
+}
+
+interface GPUBuffer extends GPUObjectBase {
+  //readonly mapping: ArrayBuffer | null;
+  destroy(): void;
+  unmap(): void;
+
+  mapWriteAsync(): Promise<ArrayBuffer>;
+  mapReadAsync(): Promise<ArrayBuffer>;
+  // TODO: Remove setSubData (#280)
+  setSubData(offset: number, src: ArrayBufferView, srcOffset?: number, byteLength?: number): void;
+}
+
+interface GPUCommandBuffer extends GPUObjectBase {
+}
+
+interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase {
+}
+
+interface GPUCommandEncoder extends GPUObjectBase {
+  beginComputePass(descriptor?: GPUComputePassDescriptor): GPUComputePassEncoder;
+  beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder;
+  copyBufferToBuffer(source: GPUBuffer, sourceOffset: number, destination: GPUBuffer, destinationOffset: number, size: number): void;
+  copyBufferToTexture(source: GPUBufferCopyView, destination: GPUTextureCopyView, copySize: GPUExtent3D): void;
+  copyTextureToBuffer(source: GPUTextureCopyView, destination: GPUBufferCopyView, copySize: GPUExtent3D): void;
+  copyTextureToTexture(source: GPUTextureCopyView, destination: GPUTextureCopyView, copySize: GPUExtent3D): void;
+  copyImageBitmapToTexture(source: GPUImageBitmapCopyView, destination: GPUTextureCopyView, copySize: GPUExtent3D): void;
+  finish(descriptor?: GPUCommandBufferDescriptor): GPUCommandBuffer;
+
+  popDebugGroup(): void;
+  pushDebugGroup(groupLabel: string): void;
+  insertDebugMarker(markerLabel: string): void;
+}
+
+interface GPUComputePassDescriptor extends GPUObjectDescriptorBase {
+}
+
+interface GPUComputePassEncoder extends GPUProgrammablePassEncoder {
+  setPipeline(pipeline: GPUComputePipeline): void;
+  dispatch(x: number, y?: number, z?: number): void;
+  dispatchIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
+
+  endPass(): void;
+}
+
+interface GPUComputePipeline extends GPUObjectBase {
+}
+
+interface GPUObjectBase {
+  label: string | undefined;
+}
+
+interface GPUObjectDescriptorBase {
+  label?: string;
+}
+
+// SwapChain / CanvasContext
+interface GPUCanvasContext {
+  configureSwapChain(descriptor: GPUSwapChainDescriptor): GPUSwapChain;
+
+  getSwapChainPreferredFormat(device: GPUDevice): Promise<GPUTextureFormat>;
+}
+
+interface GPUDevice extends GPUObjectBase {
+  readonly adapter: GPUAdapter;
+  readonly extensions: GPUExtensions;
+  readonly limits: GPULimits;
+
+  createBindGroup(descriptor: GPUBindGroupDescriptor): GPUBindGroup;
+  createBindGroupLayout(descriptor: GPUBindGroupLayoutDescriptor): GPUBindGroupLayout;
+  createBuffer(descriptor: GPUBufferDescriptor): GPUBuffer;
+  createBufferMapped(descriptor: GPUBufferDescriptor): [GPUBuffer, ArrayBuffer];
+  createBufferMappedAsync(descriptor: GPUBufferDescriptor): Promise<[GPUBuffer, ArrayBuffer]>;
+  createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline;
+  createPipelineLayout(descriptor: GPUPipelineLayoutDescriptor): GPUPipelineLayout;
+  createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline;
+  createSampler(descriptor?: GPUSamplerDescriptor): GPUSampler;
+  createShaderModule(descriptor: GPUShaderModuleDescriptor): GPUShaderModule;
+  createTexture(descriptor: GPUTextureDescriptor): GPUTexture;
+
+  createCommandEncoder(descriptor?: GPUCommandEncoderDescriptor): GPUCommandEncoder;
+  createRenderBundleEncoder(descriptor: GPURenderBundleEncoderDescriptor): GPURenderBundleEncoder;
+
+  getQueue(): GPUQueue;
+
+  readonly lost: Promise<GPUDeviceLostInfo>;
+}
+
+interface GPUFence extends GPUObjectBase {
+  getCompletedValue(): number;
+  onCompletion(completionValue: number): Promise<void>;
+}
+
+interface GPUPipelineLayout extends GPUObjectBase {
+}
+
+interface GPUProgrammablePassEncoder extends GPUObjectBase {
+  setBindGroup(index: number, bindGroup: GPUBindGroup): void;
+
+  popDebugGroup(): void;
+  pushDebugGroup(groupLabel: string): void;
+  insertDebugMarker(markerLabel: string): void;
+}
+
+interface GPUQueue extends GPUObjectBase {
+  signal(fence: GPUFence, signalValue: number): void;
+  submit(buffers: GPUCommandBuffer[]): void;
+  createFence(descriptor?: GPUFenceDescriptor): GPUFence;
+}
+
+interface GPURenderEncoderBase extends GPUProgrammablePassEncoder {
+  setPipeline(pipeline: GPURenderPipeline): void;
+
+  setIndexBuffer(buffer: GPUBuffer, offset: number): void;
+  setVertexBuffers(startSlot: number, buffers: GPUBuffer[], offsets: number[]): void;
+
+  draw(vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number): void;
+  drawIndexed(indexCount: number, instanceCount: number, firstIndex: number, baseVertex: number, firstInstance: number): void;
+
+  drawIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
+  drawIndexedIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
+}
+
+interface GPURenderPassEncoder extends GPURenderEncoderBase {
+  setViewport(x: number, y: number, width: number, height: number, minDepth: number, maxDepth: number): void;
+  setScissorRect(x: number, y: number, width: number, height: number): void;
+
+  setBlendColor(color: GPUColor): void;
+  setStencilReference(reference: number): void;
+
+  executeBundles(bundles: GPURenderBundle[]): void;
+  endPass(): void;
+}
+
+interface GPURenderBundleDescriptor extends GPUObjectDescriptorBase {
+}
+
+interface GPURenderBundle extends GPUObjectBase {
+}
+
+interface GPURenderBundleEncoder extends GPURenderEncoderBase {
+}
+
+interface GPURenderBundleEncoderDescriptor extends GPUObjectDescriptorBase {
+  colorFormats: GPUTextureFormat[];
+  depthStencilFormat: GPUTextureFormat;
+  sampleCount?: number;
+}
+
+interface GPURenderPipeline extends GPUObjectBase {
+}
+
+interface GPUSampler extends GPUObjectBase {
+}
+
+interface GPUShaderModule extends GPUObjectBase {
+}
+
+interface GPUSwapChain extends GPUObjectBase {
+  getCurrentTexture(): GPUTexture;
+}
+
+interface GPUTexture extends GPUObjectBase {
+  createDefaultView(): GPUTextureView;
+  createView(descriptor: GPUTextureViewDescriptor): GPUTextureView;
+  destroy(): void;
+}
+
+interface GPUTextureView extends GPUObjectBase {
+}
+
+type GPUPowerPreference =
+  | "low-power"
+  | "high-performance";
+interface GPURequestAdapterOptions {
+  powerPreference?: GPUPowerPreference;
+}
+
+interface GPU {
+  requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter>;
+}
+
+// ****************************************************************************
+// ERROR SCOPES
+// ****************************************************************************
+
+type GPUErrorFilter = "none"
+  | "out-of-memory"
+  | "validation";
+
+declare class GPUOutOfMemoryError {
+  constructor();
+}
+
+declare class GPUValidationError {
+  constructor(message: string);
+  readonly message: string;
+}
+
+type GPUError = GPUOutOfMemoryError | GPUValidationError;
+
+interface GPUDevice {
+  pushErrorScope(filter: GPUErrorFilter): void;
+  popErrorScope(): Promise<GPUError | null>;
+}
+
+// ****************************************************************************
+// TELEMETRY
+// ****************************************************************************
+
+interface GPUUncapturedErrorEvent extends Event {
+  readonly error: GPUError;
+}
+
+interface GPUUncapturedErrorEventInit extends EventInit {
+  error: GPUError;
+}
+
+interface GPUDevice extends EventTarget {
+  onuncapturederror: Event | undefined;
+}
+
+interface GPUDeviceLostInfo {
+  readonly message: string;
+}
+
+interface GPU {
+  // May reject with DOMException  // TODO: DOMException("OperationError")?
+  requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter>;
+}
+
+interface Navigator {
+  readonly gpu: GPU | undefined;
+}
 
 // Type definitions for WebVR API
 // Project: https://w3c.github.io/webvr/
