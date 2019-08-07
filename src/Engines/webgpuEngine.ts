@@ -1903,106 +1903,77 @@ export class WebGPUEngine extends Engine {
         return gpuPipeline.stages!;
     }
 
-    private _getVertexInputDescriptorFormat(kind: string, type: number, normalized: boolean): GPUVertexFormat {
-        switch (kind) {
-            case VertexBuffer.UVKind:
-            case VertexBuffer.UV2Kind:
-            case VertexBuffer.UV3Kind:
-            case VertexBuffer.UV4Kind:
-            case VertexBuffer.UV5Kind:
-            case VertexBuffer.UV6Kind:
-                switch (type) {
-                    case VertexBuffer.BYTE:
+    private _getVertexInputDescriptorFormat(vertexBuffer: VertexBuffer): GPUVertexFormat {
+        const kind = vertexBuffer.getKind();
+        const type = vertexBuffer.type;
+        const normalized = vertexBuffer.normalized;
+        const size = vertexBuffer.getSize();
+
+        switch (type) {
+            case VertexBuffer.BYTE:
+                switch (size) {
+                    case 2:
                         return normalized ? WebGPUConstants.GPUVertexFormat_char2norm : WebGPUConstants.GPUVertexFormat_char2;
-                    case VertexBuffer.UNSIGNED_BYTE:
-                        return normalized ? WebGPUConstants.GPUVertexFormat_uchar2norm : WebGPUConstants.GPUVertexFormat_uchar2;
-                    case VertexBuffer.SHORT:
-                        return normalized ? WebGPUConstants.GPUVertexFormat_short2norm : WebGPUConstants.GPUVertexFormat_short2;
-                    case VertexBuffer.UNSIGNED_SHORT:
-                        return normalized ? WebGPUConstants.GPUVertexFormat_ushort2norm : WebGPUConstants.GPUVertexFormat_ushort2;
-                    case VertexBuffer.INT:
-                        return WebGPUConstants.GPUVertexFormat_int2;
-                    case VertexBuffer.UNSIGNED_INT:
-                        return WebGPUConstants.GPUVertexFormat_uint2;
-                    case VertexBuffer.FLOAT:
-                        return WebGPUConstants.GPUVertexFormat_float2;
-                }
-            case VertexBuffer.NormalKind:
-            case VertexBuffer.PositionKind:
-                switch (type) {
-                    case VertexBuffer.INT:
-                        return WebGPUConstants.GPUVertexFormat_int3;
-                    case VertexBuffer.UNSIGNED_INT:
-                        return WebGPUConstants.GPUVertexFormat_uint3;
-                    case VertexBuffer.FLOAT:
-                        return WebGPUConstants.GPUVertexFormat_float3;
-                    default:
-                        throw "Unsupported vertex type " + type + "(https://github.com/gpuweb/gpuweb/issues/231)";
-                }
-            case VertexBuffer.ColorKind:
-            case VertexBuffer.MatricesIndicesKind:
-            case VertexBuffer.MatricesIndicesExtraKind:
-            case VertexBuffer.MatricesWeightsKind:
-            case VertexBuffer.MatricesWeightsExtraKind:
-            case VertexBuffer.TangentKind:
-            case "world0":
-            case "world1":
-            case "world2":
-            case "world3":
-                switch (type) {
-                    case VertexBuffer.BYTE:
+                    case 4:
                         return normalized ? WebGPUConstants.GPUVertexFormat_char4norm : WebGPUConstants.GPUVertexFormat_char4;
-                    case VertexBuffer.UNSIGNED_BYTE:
+                }
+            case VertexBuffer.UNSIGNED_BYTE:
+                switch (size) {
+                    case 2:
+                        return normalized ? WebGPUConstants.GPUVertexFormat_uchar2norm : WebGPUConstants.GPUVertexFormat_uchar2;
+                    case 4:
                         return normalized ? WebGPUConstants.GPUVertexFormat_uchar4norm : WebGPUConstants.GPUVertexFormat_uchar4;
-                    case VertexBuffer.SHORT:
+                }
+            case VertexBuffer.SHORT:
+                switch (size) {
+                    case 2:
+                        return normalized ? WebGPUConstants.GPUVertexFormat_short2norm : WebGPUConstants.GPUVertexFormat_short2;
+                    case 4:
                         return normalized ? WebGPUConstants.GPUVertexFormat_short4norm : WebGPUConstants.GPUVertexFormat_short4;
-                    case VertexBuffer.UNSIGNED_SHORT:
+                }
+            case VertexBuffer.UNSIGNED_SHORT:
+                switch (size) {
+                    case 2:
+                        return normalized ? WebGPUConstants.GPUVertexFormat_ushort2norm : WebGPUConstants.GPUVertexFormat_ushort2;
+                    case 4:
                         return normalized ? WebGPUConstants.GPUVertexFormat_ushort4norm : WebGPUConstants.GPUVertexFormat_ushort4;
-                    case VertexBuffer.INT:
+                }
+            case VertexBuffer.INT:
+                switch (size) {
+                    case 1:
+                        return WebGPUConstants.GPUVertexFormat_int;
+                    case 2:
+                        return WebGPUConstants.GPUVertexFormat_int2;
+                    case 3:
+                        return WebGPUConstants.GPUVertexFormat_int3;
+                    case 4:
                         return WebGPUConstants.GPUVertexFormat_int4;
-                    case VertexBuffer.UNSIGNED_INT:
+                }
+            case VertexBuffer.UNSIGNED_INT:
+                switch (size) {
+                    case 1:
+                        return WebGPUConstants.GPUVertexFormat_uint;
+                    case 2:
+                        return WebGPUConstants.GPUVertexFormat_uint2;
+                    case 3:
+                        return WebGPUConstants.GPUVertexFormat_uint3;
+                    case 4:
                         return WebGPUConstants.GPUVertexFormat_uint4;
-                    case VertexBuffer.FLOAT:
+                }
+            case VertexBuffer.FLOAT:
+                switch (size) {
+                    case 1:
+                        return WebGPUConstants.GPUVertexFormat_float;
+                    case 2:
+                        return WebGPUConstants.GPUVertexFormat_float2;
+                    case 3:
+                        return WebGPUConstants.GPUVertexFormat_float3;
+                    case 4:
                         return WebGPUConstants.GPUVertexFormat_float4;
                 }
         }
 
-        // MorphTargets
-        if (kind.indexOf("position") === 0 ||
-            kind.indexOf("normal") === 0 ||
-            kind.indexOf("tangent") === 0) {
-            switch (type) {
-                case VertexBuffer.INT:
-                    return WebGPUConstants.GPUVertexFormat_int3;
-                case VertexBuffer.UNSIGNED_INT:
-                    return WebGPUConstants.GPUVertexFormat_uint3;
-                case VertexBuffer.FLOAT:
-                    return WebGPUConstants.GPUVertexFormat_float3;
-                default:
-                    throw "Unsupported vertex type " + type + "(https://github.com/gpuweb/gpuweb/issues/231)";
-            }
-        }
-        if (kind.indexOf("uv_") === 0) {
-            switch (type) {
-                case VertexBuffer.BYTE:
-                    return normalized ? WebGPUConstants.GPUVertexFormat_char2norm : WebGPUConstants.GPUVertexFormat_char2;
-                case VertexBuffer.UNSIGNED_BYTE:
-                    return normalized ? WebGPUConstants.GPUVertexFormat_uchar2norm : WebGPUConstants.GPUVertexFormat_uchar2;
-                case VertexBuffer.SHORT:
-                    return normalized ? WebGPUConstants.GPUVertexFormat_short2norm : WebGPUConstants.GPUVertexFormat_short2;
-                case VertexBuffer.UNSIGNED_SHORT:
-                    return normalized ? WebGPUConstants.GPUVertexFormat_ushort2norm : WebGPUConstants.GPUVertexFormat_ushort2;
-                case VertexBuffer.INT:
-                    return WebGPUConstants.GPUVertexFormat_int2;
-                case VertexBuffer.UNSIGNED_INT:
-                    return WebGPUConstants.GPUVertexFormat_uint2;
-                case VertexBuffer.FLOAT:
-                    return WebGPUConstants.GPUVertexFormat_float2;
-            }
-        }
-
-        // TODO WEBGPU. Manages Custom Attributes.
-        throw new Error("Invalid kind '" + kind + "'");
+        throw new Error("Invalid Format '" + kind + "'");
     }
 
     private _getVertexInputDescriptor(): GPUVertexInputDescriptor {
@@ -2021,7 +1992,7 @@ export class WebGPUEngine extends Engine {
                 const positionAttributeDescriptor: GPUVertexAttributeDescriptor = {
                     shaderLocation: location,
                     offset: 0, // not available in WebGL
-                    format: this._getVertexInputDescriptorFormat(vertexBuffer.getKind(), vertexBuffer.type, vertexBuffer.normalized),
+                    format: this._getVertexInputDescriptorFormat(vertexBuffer),
                 };
 
                 // TODO WEBGPU. Factorize the one with the same underlying buffer.
@@ -2032,7 +2003,7 @@ export class WebGPUEngine extends Engine {
                     attributeSet: [positionAttributeDescriptor]
                 };
 
-                descriptors.push(vertexBufferDescriptor);
+               descriptors.push(vertexBufferDescriptor);
             }
         }
 
@@ -2057,6 +2028,11 @@ export class WebGPUEngine extends Engine {
         for (let i = 0; i < webgpuPipelineContext.orderedUBOsAndSamplers.length; i++) {
             const setDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
+                const bindings: GPUBindGroupLayoutBinding[] = [];
+                const uniformsBindGroupLayout = this._device.createBindGroupLayout({
+                    bindings,
+                });
+                bindGroupLayouts[i] = uniformsBindGroupLayout;
                 continue;
             }
 
@@ -2204,6 +2180,13 @@ export class WebGPUEngine extends Engine {
         for (let i = 0; i < webgpuPipelineContext.orderedUBOsAndSamplers.length; i++) {
             const setDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
+                const groupLayout = bindGroupLayouts[i];
+                if (groupLayout) {
+                    bindGroups[i] = this._device.createBindGroup({
+                        layout: groupLayout,
+                        bindings: [],
+                    });
+                }
                 continue;
             }
 
