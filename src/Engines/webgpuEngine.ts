@@ -504,6 +504,10 @@ export class WebGPUEngine extends Engine {
     }
 
     public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+        // Some PGs are using color3...
+        if (color.a === undefined) {
+            color.a = 1;
+        }
         this._mainColorAttachments[0].loadValue = backBuffer ? color : WebGPUConstants.GPULoadOp_load;
 
         this._mainDepthAttachment.depthLoadValue = depth ? this._clearDepthValue : WebGPUConstants.GPULoadOp_load;
@@ -1199,7 +1203,7 @@ export class WebGPUEngine extends Engine {
             texture._sphericalPolynomial = webglEngineTexture._sphericalPolynomial;
 
             let mipMaps = Scalar.Log2(Math.max(width, height));
-            mipMaps = Math.round(mipMaps);
+            mipMaps = Math.floor(mipMaps);
 
             const textureExtent = {
                 width,
@@ -2063,16 +2067,16 @@ export class WebGPUEngine extends Engine {
                     continue;
                 }
 
-                // TODO WEBGPU. Authorize shared samplers and Vertex Textures.
+                // TODO WEBGPU. Optimize shared samplers visibility for vertex/framgent.
                 if (bindingDefinition.isSampler) {
                     bindings.push({
                         binding: j,
-                        visibility: WebGPUConstants.GPUShaderStageBit_FRAGMENT,
+                        visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                         type: WebGPUConstants.GPUBindingType_sampledTexture,
                     }, {
                         // TODO WEBGPU. No Magic + 1.
                         binding: j + 1,
-                        visibility: WebGPUConstants.GPUShaderStageBit_FRAGMENT,
+                        visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                         type: WebGPUConstants.GPUBindingType_sampler
                     });
                 }
