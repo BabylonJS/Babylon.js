@@ -42,7 +42,7 @@ target_compile_definitions(BabylonNativeJNI PUBLIC NODE_ADDON_API_DISABLE_DEPREC
 target_include_directories(BabylonNativeJNI
         PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/../../Library/Include
-        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8-7.0.276.32/include
+        ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/v8/include
         ${CMAKE_CURRENT_LIST_DIR}/../../Library/Dependencies/napi/include
         )
 
@@ -54,7 +54,7 @@ target_link_libraries(BabylonNativeJNI
         EGL
         log
         -lz
-        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/libLibrary.a # BabylonNative
+        ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Android_${CMAKE_ANDROID_ARCH_ABI}/libLibrary.a # BabylonNative
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libbgfx.a
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libbimg.a
         ${CMAKE_CURRENT_LIST_DIR}/../../build/Library/Dependencies/bgfx.cmake/libbx.a

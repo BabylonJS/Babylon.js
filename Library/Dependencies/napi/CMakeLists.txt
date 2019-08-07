@@ -12,7 +12,7 @@ if(NOT(NAPI_JAVASCRIPT_ENGINE IN_LIST SUPPORTED_JAVASCRIPT_ENGINES))
     message(FATAL_ERROR "Unrecognized engine: ${NAPI_JAVASCRIPT_ENGINE}")
 endif()
 
-if(NAPI_JAVASCRIPT_ENGINE STREQUAL "V8")
+if(NAPI_JAVASCRIPT_ENGINE STREQUAL "V8" AND NOT ANDROID)
     set(NUGET_PATH "${CMAKE_BINARY_DIR}/NuGet")
     set(NUGET_EXE "${NUGET_PATH}/nuget.exe")
     if(NOT EXISTS ${NUGET_EXE})
@@ -62,6 +62,11 @@ target_compile_definitions(napi PUBLIC NODE_ADDON_API_DISABLE_DEPRECATED)
 
 if(NAPI_JAVASCRIPT_ENGINE STREQUAL "Chakra")
     target_compile_definitions(napi PRIVATE USE_EDGEMODE_JSRT)
+endif()
+
+# V8 android build until we figured out how to deal with custom V8 nugget
+if (ANDROID)
+target_include_directories(napi PUBLIC "../v8/include")
 endif()
 
 target_include_directories(napi PUBLIC "include")
