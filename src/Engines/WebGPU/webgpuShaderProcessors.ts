@@ -88,7 +88,10 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             if (uniformType.indexOf("texture") === 0 || uniformType.indexOf("sampler") === 0) {
                 let samplerInfo = _knownSamplers[name];
                 if (!samplerInfo) {
-                    samplerInfo = webgpuProcessingContext.getNextFreeTextureBinding();
+                    samplerInfo = webgpuProcessingContext.availableSamplers[name];
+                    if (!samplerInfo) {
+                        samplerInfo = webgpuProcessingContext.getNextFreeTextureBinding();
+                    }
                 }
 
                 const setIndex = samplerInfo.setIndex;
@@ -120,6 +123,12 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                         length = +(preProcessors[lengthInString]);
                     }
                     name = name.substr(0, startArray);
+                }
+
+                for (let i = 0; i < webgpuProcessingContext.leftOverUniforms.length; i++) {
+                    if (webgpuProcessingContext.leftOverUniforms[i].name === name) {
+                        return "";
+                    }
                 }
 
                 webgpuProcessingContext.leftOverUniforms.push({

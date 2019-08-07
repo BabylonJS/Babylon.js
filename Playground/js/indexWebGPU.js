@@ -4,7 +4,12 @@ var monacoMode = "javascript";
 
 function getRunCode(jsEditor, callBack) {
     var code = jsEditor.getValue();
-    callBack(code);
+    callBack(code).catch((e) => {
+        showError(e);
+
+        // Also log error in console to help debug playgrounds
+        console.error(e);
+    })
 }
 
 
@@ -520,6 +525,11 @@ function showError(errorMessage, errorEvent) {
                 var createEngineFunction = "createDefaultEngine";
                 var createSceneFunction;
 
+                if (!navigator.gpu) {
+                    showError("WebGPU is not supported on your platform.", {});
+                    return;
+                }
+
                 getRunCode(jsEditor, async function(code) {
                     var createDefaultEngine = function() {
                         return new BABYLON.WebGPUEngine(canvas);
@@ -565,7 +575,7 @@ function showError(errorMessage, errorEvent) {
                         await engine.initAsync(window.shadercOptions);
 
                         //create scene
-                        eval("scene = " + createSceneFunction + "()");
+                        eval("scene = " + createSceneFunction + "(engine, canvas)");
 
                         if (!scene) {
                             showError(createSceneFunction + " function must return a scene.", null);
@@ -1228,7 +1238,7 @@ function showError(errorMessage, errorEvent) {
 
     var xhr = new XMLHttpRequest();
 
-    xhr.open('GET', "babylon.d.txt", true);
+    xhr.open('GET', "babylonWebGPU.d.txt", true);
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
