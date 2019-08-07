@@ -458,7 +458,7 @@ namespace babylon
     Napi::Value NativeEngine::Impl::CreateIndexBuffer(const Napi::CallbackInfo& info)
     {
         const Napi::TypedArray data = info[0].As<Napi::TypedArray>();
-        const bgfx::Memory* ref = bgfx::makeRef(data.As<Napi::Uint8Array>().Data(), static_cast<uint32_t>(data.ByteLength()));
+        const bgfx::Memory* ref = bgfx::copy(data.As<Napi::Uint8Array>().Data(), static_cast<uint32_t>(data.ByteLength()));
         const uint16_t flags = data.TypedArrayType() == napi_typedarray_type::napi_uint16_array ? 0 : BGFX_BUFFER_INDEX32;
         const bgfx::IndexBufferHandle handle = bgfx::createIndexBuffer(ref, flags);
         return Napi::Value::From(info.Env(), static_cast<uint32_t>(handle.idx));
