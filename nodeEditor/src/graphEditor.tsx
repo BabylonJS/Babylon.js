@@ -71,6 +71,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
     private _previewManager: PreviewManager;
 
+    private _copiedNode: Nullable<DefaultNodeModel> = null;
+
     /** @hidden */
     public _toAdd: LinkModel[] | null = [];
 
@@ -188,6 +190,46 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this.props.globalState.onGetNodeFromBlock = (block) => {
             return this._nodes.filter(n => n.block === block)[0];
         }
+
+        this.props.globalState.hostDocument!.addEventListener("keyup", evt => {
+            if (!evt.ctrlKey) {
+                return;
+            }
+
+            if (evt.key === "c") {
+                let selectedItems = this._engine.diagramModel.getSelectedItems();
+                if (!selectedItems.length) {
+                    return;
+                }
+    
+                let selectedItem = selectedItems[0] as DefaultNodeModel;
+    
+                if (!selectedItem.block) {
+                    return;
+                }
+
+                this._copiedNode = selectedItem;
+            } else if (evt.key === "v") {
+                if (!this._copiedNode) {
+                    return;
+                }
+
+                let block = this._copiedNode.block!;
+                let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
+
+                if (!clone) {
+                    return;
+                }
+                
+                let newNode = this.createNodeFromObject({ nodeMaterialBlock: clone });
+
+                newNode.x = this._copiedNode.x;
+                newNode.y = this._copiedNode.y + this._copiedNode.height + 10;
+
+                this._engine.repaintCanvas();
+            }
+
+        }, false);
 
         this.build(true);
     }
