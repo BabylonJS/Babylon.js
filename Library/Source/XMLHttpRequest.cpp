@@ -77,7 +77,11 @@ namespace babylon
 
     Napi::Value XMLHttpRequest::GetStatus(const Napi::CallbackInfo&)
     {
-        return {};//Napi::Value::From(Env(), arcana::underlying_cast(m_status)); todo
+#ifdef WIN32
+        return Napi::Value::From(Env(), arcana::underlying_cast(m_status));
+#else
+        return Napi::Value::From(Env(), m_status);
+#endif
     }
 
     void XMLHttpRequest::AddEventListener(const Napi::CallbackInfo& info)

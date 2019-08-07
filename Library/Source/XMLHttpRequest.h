@@ -71,8 +71,11 @@ namespace babylon
         Napi::Reference<Napi::ArrayBuffer> m_response;
         std::string m_responseText;
         std::string m_responseType;
-        //winrt::Windows::Web::Http::HttpStatusCode m_status{ winrt::Windows::Web::Http::HttpStatusCode::None };
+#ifdef WIN32
+        winrt::Windows::Web::Http::HttpStatusCode m_status{ winrt::Windows::Web::Http::HttpStatusCode::None };
+#else
         int m_status = 0;
+#endif
         std::string m_responseURL;
         std::unordered_map<std::string, std::vector<Napi::FunctionReference>> m_eventHandlerRefs;
 
