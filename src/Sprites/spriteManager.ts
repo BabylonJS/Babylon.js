@@ -13,7 +13,6 @@ import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Constants } from "../Engines/constants";
-import { AssetsManager } from "../Misc/assetsManager";
 import { Logger } from "../Misc/logger";
 
 import "../Shaders/sprites.fragment";
@@ -142,11 +141,12 @@ export class SpriteManager implements ISpriteManager {
      * @param epsilon defines the epsilon value to align texture (0.01 by default)
      * @param samplingMode defines the smapling mode to use with spritesheet
      * @param fromPacked set to false; do not alter
+     * @param spriteJSON, null otherwise a JSON object defining sprite sheet data; do not alter
      */
     constructor(
         /** defines the manager's name */
         public name: string,
-        imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false, spriteJSON: string = "") {
+        imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false, spriteJSON: string | null = null) {
         if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
             scene._addComponent(new SpriteSceneComponent(scene));
         }
@@ -217,7 +217,7 @@ export class SpriteManager implements ISpriteManager {
         }
     }
 
-    private _makePacked(imgUrl: string, spriteJSON: string) {
+    private _makePacked(imgUrl: string, spriteJSON: string | null) {
         if (spriteJSON !== null) {
             try {
                 let celldata = JSON.parse(spriteJSON);
@@ -227,7 +227,9 @@ export class SpriteManager implements ISpriteManager {
                 this._cellData = celldata.frames;
             }
             catch (e) {
-                throw new Error(`Invalid JSON`);
+                this._fromPacked = false;
+                this._packedAndReady = false;
+                throw new Error("Invalid JSON from string. Spritesheet managed with constant cell size.");
             }
         }
         else {
@@ -238,28 +240,28 @@ export class SpriteManager implements ISpriteManager {
                 re.test(imgUrl);
             } while (re.lastIndex > 0);
             let jsonUrl = imgUrl.substring(0, li - 1) + ".json";
-            let assetsManager = new AssetsManager(this._scene);
-            let task = assetsManager.addTextFileTask("LoadSpriteJSON", jsonUrl);
-
-            task.onSuccess = (task) => {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", jsonUrl, true);
+            xmlhttp.onerror = () => {
+                Logger.Error("Unable to Load Sprite JSON Data. Spritesheet managed with constant cell size.");
+                this._fromPacked = false;
+                this._packedAndReady = false;
+            };
+            xmlhttp.onload = () => {
                 try {
-                    let celldata  = JSON.parse(task.text);
+                    let celldata  = JSON.parse(xmlhttp.response);
                     let spritemap = (<string[]>(<any>Reflect).ownKeys(celldata.frames));
                     this._spriteMap = spritemap;
                     this._packedAndReady = true;
                     this._cellData = celldata.frames;
                 }
                 catch (e) {
-                    throw new Error(`Invalid JSON`);
+                    this._fromPacked = false;
+                    this._packedAndReady = false;
+                    throw new Error("Invalid JSON from file. Spritesheet managed with constant cell size.");
                 }
             };
-
-            assetsManager.onTaskErrorObservable.add((task) => {
-                Logger.Error("Unable to Load Sprite JSON Data. Spritesheet managed with constant cell size.");
-                this._fromPacked = false;
-                this._packedAndReady = false;
-            });
-            assetsManager.load();
+            xmlhttp.send();
         }
     }
 
@@ -295,6 +297,9 @@ export class SpriteManager implements ISpriteManager {
         this._vertexData[arrayOffset + 9] = sprite.invertV ? 1 : 0;
         // CellIfo
         if (this._packedAndReady) {
+            if (!sprite.cellRef) {
+                sprite.cellIndex = 0;
+            }
             let num = sprite.cellIndex;
             if (typeof (num) === "number" && isFinite(num) && Math.floor(num) === num) {
                 sprite.cellRef = this._spriteMap[sprite.cellIndex];
@@ -305,6 +310,9 @@ export class SpriteManager implements ISpriteManager {
             this._vertexData[arrayOffset + 13] = this._cellData[sprite.cellRef].frame.h / baseSize.height;
         }
         else {
+            if (!sprite.cellIndex) {
+                sprite.cellIndex = 0;
+            }
             var rowSize = baseSize.width / this.cellWidth;
             var offset = (sprite.cellIndex / rowSize) >> 0;
             this._vertexData[arrayOffset + 10] = (sprite.cellIndex - offset * rowSize) * this.cellWidth / baseSize.width;

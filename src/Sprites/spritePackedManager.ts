@@ -21,7 +21,7 @@ export class SpritePackedManager extends SpriteManager{
      * @param fromPacked set to true; do not alter
      */
 
-    constructor(public name: string, imgUrl: string, capacity: number, scene: Scene, spriteJSON: string = "", epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+    constructor(public name: string, imgUrl: string, capacity: number, scene: Scene, spriteJSON: string | null = null, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
 
         //the cellSize parameter is not used when built from JSON which provides individual cell data, defaults to 64 if JSON load fails
         super(name, imgUrl, capacity, 64, scene, epsilon, samplingMode, true, spriteJSON);
