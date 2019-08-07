@@ -124,7 +124,8 @@ class MenuPG {
             for (var j = 0; j < CONFIG_last_versions.length; j++) {
                 var newButton = document.createElement("div");
                 newButton.classList.add("option");
-                newButton.innerText = "v" + CONFIG_last_versions[j][0];
+                if(CONFIG_last_versions[j][0] == "Latest") newButton.innerText = "Latest";
+                else newButton.innerText = "v" + CONFIG_last_versions[j][0];
                 newButton.value = CONFIG_last_versions[j][1];
 
                 newButton.addEventListener("click", function (evt) {
@@ -135,7 +136,7 @@ class MenuPG {
                 versionButtons.lastElementChild.appendChild(newButton);
             }
         }
-        this.displayVersionNumber(BABYLON.Engine.Version.substring(0, BABYLON.Engine.Version.search('-')));
+        this.displayVersionNumber("Latest");
 
         // There's a metadatas close button on the mobile interface.
         document.getElementById('saveFormButtonClose').addEventListener('click', this.hideMetadata.bind(this));
@@ -158,10 +159,12 @@ class MenuPG {
     displayVersionNumber(version) {
         for (var i = 0; i < this.parent.utils.multipleSize.length; i++) {
             if (this.parent.utils.multipleSize[i] == "Mobile") {
-                document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).innerText = "Version " + version;
+                if(version == "Latest") document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).innerText = version;
+                else document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).innerText = "Version " + version;
             }
             else {
-                document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement.firstElementChild.innerText = "v" + version;
+                if(version == "Latest") document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement.firstElementChild.innerText = version;
+                else document.getElementById("currentVersion" + this.parent.utils.multipleSize[i]).parentElement.firstElementChild.innerText = "v" + version;
             }
         }
     };
