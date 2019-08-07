@@ -69,10 +69,45 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the output component
+     * Gets the rgba output component
      */
-    public get output(): NodeMaterialConnectionPoint {
+    public get rgba(): NodeMaterialConnectionPoint {
         return this._outputs[0];
+    }
+
+    /**
+     * Gets the rgb output component
+     */
+    public get rgb(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
+     * Gets the r output component
+     */
+    public get r(): NodeMaterialConnectionPoint {
+        return this._outputs[2];
+    }
+
+    /**
+     * Gets the g output component
+     */
+    public get g(): NodeMaterialConnectionPoint {
+        return this._outputs[3];
+    }
+
+    /**
+     * Gets the b output component
+     */
+    public get b(): NodeMaterialConnectionPoint {
+        return this._outputs[4];
+    }
+
+    /**
+     * Gets the a output component
+     */
+    public get a(): NodeMaterialConnectionPoint {
+        return this._outputs[5];
     }
 
     public autoConfigure() {

@@ -41308,6 +41308,7 @@ var GlobalState = /** @class */ (function () {
                 light.reservedDataStore.lightGizmo = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["LightGizmo"]();
                 this.lightGizmos.push(light.reservedDataStore.lightGizmo);
                 light.reservedDataStore.lightGizmo.light = light;
+                light.reservedDataStore.lightGizmo.material.reservedDataStore = { hidden: true };
             }
         }
         else if (light.reservedDataStore && light.reservedDataStore.lightGizmo) {
