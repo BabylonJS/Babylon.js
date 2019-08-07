@@ -459,6 +459,9 @@ body {
     width: 100%;
     display: none;
 }
+.navbar .select .toDisplay.currentVersionDisplay .option {
+    margin-left: -3px;
+}
 .navbar .select .toDisplay .option {
     font-size: 20px;
     height: 35px;
