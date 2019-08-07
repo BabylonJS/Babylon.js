@@ -4,7 +4,12 @@ var monacoMode = "javascript";
 
 function getRunCode(jsEditor, callBack) {
     var code = jsEditor.getValue();
-    callBack(code);
+    callBack(code).catch((e) => {
+        showError(e);
+
+        // Also log error in console to help debug playgrounds
+        console.error(e);
+    })
 }
 
 
