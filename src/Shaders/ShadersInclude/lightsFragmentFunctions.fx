@@ -109,9 +109,8 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 		return result;
 }
 
-vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, mat4 textureProjectionMatrix){
+vec2 computeProjectionTextureDiffuseLightingUV(mat4 textureProjectionMatrix){
 	vec4 strq = textureProjectionMatrix * vec4(vPositionW, 1.0);
 	strq /= strq.w;
-	vec3 textureColor = texture2D(projectionLightSampler, strq.xy).rgb;
-	return textureColor;
+	return strq.xy;
 }
