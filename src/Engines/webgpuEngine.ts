@@ -99,8 +99,8 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
 export class WebGPUEngine extends Engine {
     // Default shaderc options.
     private static readonly _shadercDefaultOptions: ShadercOptions = {
-        jsPath: "http://preview.babylonjs.com/shaderc/shaderc.js",
-        wasmPath: "http://preview.babylonjs.com/shaderc/shaderc.wasm"
+        jsPath: "https://preview.babylonjs.com/shaderc/shaderc.js",
+        wasmPath: "https://preview.babylonjs.com/shaderc/shaderc.wasm"
     };
 
     // Page Life cycle and constants
