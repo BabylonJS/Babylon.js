@@ -145,7 +145,9 @@ namespace babylon
             return m_runtimeImpl.LoadUrlAsync<std::string>(m_url).then(arcana::inline_scheduler, m_runtimeImpl.Cancellation(), [this](const std::string& data)
             {
                 m_responseText = std::move(data);
-                //m_status = winrt::Windows::Web::Http::HttpStatusCode::Ok;
+#ifdef WIN32
+                m_status = winrt::Windows::Web::Http::HttpStatusCode::Ok;
+#endif
                 SetReadyState(ReadyState::Done);
             });
         }
@@ -155,7 +157,9 @@ namespace babylon
             {
                 m_response = Napi::Persistent(Napi::ArrayBuffer::New(Env(), data.size()));
                 memcpy(m_response.Value().Data(), data.data(), data.size());
-                //m_status = winrt::Windows::Web::Http::HttpStatusCode::Ok;
+#ifdef WIN32
+                m_status = winrt::Windows::Web::Http::HttpStatusCode::Ok;
+#endif
                 SetReadyState(ReadyState::Done);
             });
         }
