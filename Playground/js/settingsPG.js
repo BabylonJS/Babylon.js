@@ -153,8 +153,8 @@ class SettingsPG {
             var newBJSscript = document.createElement('script');
             newBJSscript.src = localStorage.getItem("bjs-playground-apiversion");
             newBJSscript.onload = function () {
-                console.log(BABYLON.Engine.Version);
-                this.parent.menuPG.displayVersionNumber(BABYLON.Engine.Version);
+                if(BABYLON.Engine.Version.search('-') != -1) this.parent.menuPG.displayVersionNumber("Latest");
+                else this.parent.menuPG.displayVersionNumber(BABYLON.Engine.Version);
                 this.parent.monacoCreator.setCode(localStorage.getItem("bjs-playground-apiversion-tempcode"));
 
                 localStorage.removeItem("bjs-playground-apiversion");
