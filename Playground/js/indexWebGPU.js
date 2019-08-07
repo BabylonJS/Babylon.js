@@ -575,7 +575,7 @@ function showError(errorMessage, errorEvent) {
                         await engine.initAsync(window.shadercOptions);
 
                         //create scene
-                        eval("scene = " + createSceneFunction + "()");
+                        eval("scene = " + createSceneFunction + "(engine, canvas)");
 
                         if (!scene) {
                             showError(createSceneFunction + " function must return a scene.", null);
