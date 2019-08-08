@@ -84,7 +84,6 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             const uniformType = match[1];
             let name = match[2];
 
-            // TODO WEBGPU. Ensures it does not conflict with some of today's used construct for shadows.
             if (uniformType.indexOf("texture") === 0 || uniformType.indexOf("sampler") === 0) {
                 let samplerInfo = _knownSamplers[name];
                 if (!samplerInfo) {

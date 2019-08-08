@@ -168,7 +168,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
         if (this.uniformBuffer) {
             this.uniformBuffer.dispose();
         }
-        // TODO WEBGPU. Dispose all resources.
     }
 
     /**
@@ -261,7 +260,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setArray(uniformName: string, array: number[]): void {
-        // TODO WEBGPU.
         throw "setArray not Supported in LeftOver UBO.";
     }
 
@@ -271,7 +269,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setArray2(uniformName: string, array: number[]): void {
-        // TODO WEBGPU.
         throw "setArray2 not Supported in LeftOver UBO.";
     }
 
@@ -282,7 +279,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @returns this effect.
      */
     public setArray3(uniformName: string, array: number[]): void {
-        // TODO WEBGPU.
         throw "setArray3 not Supported in LeftOver UBO.";
     }
 
@@ -292,7 +288,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setArray4(uniformName: string, array: number[]): void {
-        // TODO WEBGPU.
         throw "setArray4 not Supported in LeftOver UBO.";
     }
 
@@ -363,8 +358,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param bool value to be set.
      */
     public setBool(uniformName: string, bool: boolean): void {
-        // this.engine.setBool(this._uniforms[uniformName], bool ? 1 : 0);
-        // TODO WEBGPU.
         throw "setBool not Supported in LeftOver UBO.";
     }
 

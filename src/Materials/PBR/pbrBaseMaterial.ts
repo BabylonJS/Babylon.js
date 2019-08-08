@@ -1656,8 +1656,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._activeEffect = effect;
 
-        // Matrices
-        // TODO WEBGPU. Find a better approach.
+        // Matrices Mesh.
         mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
         mesh.transferToEffect(world);
 
