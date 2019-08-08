@@ -196,7 +196,6 @@ export class WebGPUEngine extends Engine {
 
         Logger.Log(`Babylon.js v${Engine.Version} - WebGPU engine`);
         if (!navigator.gpu) {
-            // TODO WEBGPU Fall back to webgl.
             Logger.Error("WebGPU is not supported by your browser.");
             return;
         }
@@ -334,12 +333,10 @@ export class WebGPUEngine extends Engine {
         this._caps.drawBuffersExtension = true;
 
         this._caps.depthTextureExtension = true;
-        // TODO WEBGPU. No need here but could be use to create descriptors ???
         this._caps.vertexArrayObject = false;
         this._caps.instancedArrays = true;
 
-        // TODO WEBGPU. Unused for now.
-        // this._caps.parallelShaderCompile = null;
+        this._caps.parallelShaderCompile = null as any;
     }
 
     private _initializeContextAndSwapChain(): void {
@@ -490,8 +487,7 @@ export class WebGPUEngine extends Engine {
             this._startMainRenderPass();
         }
 
-        // TODO WEBGPU. Scissor.
-        //this._currentRenderPass!.setScissorRect(x, y, width, height);
+        this._currentRenderPass!.setScissorRect(x, y, width, height);
     }
 
     public disableScissor() {
@@ -499,8 +495,7 @@ export class WebGPUEngine extends Engine {
             this._startMainRenderPass();
         }
 
-        // TODO WEBGPU. Scissor.
-        //this._currentRenderPass!.setScissorRect(0, 0, this.getRenderWidth(), this.getRenderHeight());
+        this._currentRenderPass!.setScissorRect(0, 0, this.getRenderWidth(), this.getRenderHeight());
     }
 
     public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
@@ -513,8 +508,6 @@ export class WebGPUEngine extends Engine {
         this._mainDepthAttachment.depthLoadValue = depth ? this._clearDepthValue : WebGPUConstants.GPULoadOp_load;
         this._mainDepthAttachment.stencilLoadValue = stencil ? this._clearStencilValue : WebGPUConstants.GPULoadOp_load;
 
-        // TODO WEBGPU. Where to store GPUOpStore ???
-        // TODO WEBGPU. Should be main or rtt with a frame buffer like object.
         this._startMainRenderPass();
     }
 
@@ -567,15 +560,13 @@ export class WebGPUEngine extends Engine {
         const maxChunk = 1024 * 1024 * 15;
         let offset = 0;
         while ((chunkEnd - (chunkStart + offset)) > maxChunk) {
-            // TODO WEBGPU.
-            // Deprecated soon to be removed... replace by mappedBuffers
+            // TODO WEBGPU. Deprecated soon to be removed... replace by mappedBuffers
             buffer.setSubData(dstByteOffset + offset, src, srcByteOffset + offset, maxChunk);
             offset += maxChunk;
 
         }
 
-        // TODO WEBGPU.
-        // Deprecated soon to be removed... replace by mappedBuffers
+        // TODO WEBGPU. Deprecated soon to be removed... replace by mappedBuffers
         buffer.setSubData(dstByteOffset + offset, src, srcByteOffset + offset, byteLength - offset);
     }
 
@@ -601,7 +592,6 @@ export class WebGPUEngine extends Engine {
     }
 
     public createDynamicVertexBuffer(data: DataArray): DataBuffer {
-        // TODO WEBGPU.
         return this.createVertexBuffer(data);
     }
 
@@ -667,7 +657,6 @@ export class WebGPUEngine extends Engine {
     public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
         const gpuBuffer = indexBuffer as WebGPUDataBuffer;
 
-        // TODO WEBGPU. Manage buffer morphing from small int to bigint.
         var view: ArrayBufferView;
         if (indices instanceof Uint16Array) {
             if (indexBuffer.is32Bits) {
@@ -694,7 +683,6 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        // TODO WEBGPU. check if offset is in bytes ???
         this._setSubData(gpuBuffer, offset, view);
     }
 
@@ -741,7 +729,6 @@ export class WebGPUEngine extends Engine {
     }
 
     public createDynamicUniformBuffer(elements: FloatArray): DataBuffer {
-        // TODO WEBGPU. Implement dynamic buffers.
         return this.createUniformBuffer(elements);
     }
 
@@ -767,7 +754,6 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        // TODO WEBGPU. Check count and offset are in bytes.
         this._setSubData(dataBuffer, offset, view, 0, count);
     }
 
@@ -917,8 +903,7 @@ export class WebGPUEngine extends Engine {
         const results = new Array(attributesNames.length);
         const gpuPipelineContext = (pipelineContext as WebGPUPipelineContext);
 
-        // TODO WEBGPU.
-        // Hard coded for WebGPU until an introspection lib is available.
+        // TODO WEBGPU. Hard coded for WebGPU until an introspection lib is available.
         // Should be done at processing time, not need to double the work in here.
         for (let i = 0; i < attributesNames.length; i++) {
             const attributeName = attributesNames[i];
@@ -958,8 +943,7 @@ export class WebGPUEngine extends Engine {
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
         const webgpuPipelineContext = pipelineContext as WebGPUPipelineContext;
         if (webgpuPipelineContext) {
-            // TODO WEBGPU. Spector like cleanup.
-            // TODO WEBGPU. Any pipeline required cleanup.
+            pipelineContext.dispose();
         }
     }
 
@@ -967,15 +951,14 @@ export class WebGPUEngine extends Engine {
     //                              Textures
     //------------------------------------------------------------------------------
 
-    // TODO WEBGPU. SHOULD not be possible to return gl unwrapped from Engine.
     /** @hidden */
     public _createTexture(): WebGLTexture {
+        // TODO WEBGPU. This should return the GPUTexture, WebGLTexture might need to be wrapped like the buffers.
         return { };
     }
 
     /** @hidden */
     public _releaseTexture(texture: InternalTexture): void {
-        // TODO WEBGPU. check if it is all to release.
         if (texture._webGPUTexture) {
             texture._webGPUTexture.destroy();
         }
@@ -1336,7 +1319,6 @@ export class WebGPUEngine extends Engine {
     }
 
     public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
-        // TODO WEBGPU.
         throw "Unimplemented updateDynamicTexture on WebGPU so far";
     }
 
@@ -1359,7 +1341,7 @@ export class WebGPUEngine extends Engine {
                 pipeline.samplers[name]!.texture = internalTexture!;
             }
             else {
-                // TODO WEBGPU. GC + 121 mapping samplers <-> availableSamplers
+                // TODO WEBGPU. 121 mapping samplers <-> availableSamplers
                 const availableSampler = pipeline.availableSamplers[name];
                 if (availableSampler) {
                     pipeline.samplers[name] = {
@@ -1588,7 +1570,7 @@ export class WebGPUEngine extends Engine {
                 return WebGPUConstants.GPUPrimitiveTopology_lineList;
             case Constants.MATERIAL_LineLoopDrawMode:
                 // return this._gl.LINE_LOOP;
-                // TODO WEBGPU. Line Loop Mode
+                // TODO WEBGPU. Line Loop Mode Fallback at buffer load time.
                 throw "LineLoop is an unsupported fillmode in WebGPU";
             case Constants.MATERIAL_LineStripDrawMode:
                 return WebGPUConstants.GPUPrimitiveTopology_lineStrip;
@@ -1596,7 +1578,7 @@ export class WebGPUEngine extends Engine {
                 return WebGPUConstants.GPUPrimitiveTopology_triangleStrip;
             case Constants.MATERIAL_TriangleFanDrawMode:
                 // return this._gl.TRIANGLE_FAN;
-                // TODO WEBGPU. Triangle Fan Mode
+                // TODO WEBGPU. Triangle Fan Mode Fallback at buffer load time.
                 throw "TriangleFan is an unsupported fillmode in WebGPU";
             default:
                 return WebGPUConstants.GPUPrimitiveTopology_triangleList;
@@ -1724,8 +1706,6 @@ export class WebGPUEngine extends Engine {
     }
 
     private _getRasterizationStateDescriptor(): GPURasterizationStateDescriptor {
-        // TODO WEBGPU. Cull State according to the cached state.
-        // And the current render pass attachment setup.
         return {
             frontFace: this._getFrontFace(),
             cullMode: this._getCullMode(),
@@ -1996,7 +1976,6 @@ export class WebGPUEngine extends Engine {
                 };
 
                 // TODO WEBGPU. Factorize the one with the same underlying buffer.
-                // manage interleaved and instances.
                 const vertexBufferDescriptor: GPUVertexBufferDescriptor = {
                     stride: vertexBuffer.byteStride,
                     stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.GPUInputStepMode_instance : WebGPUConstants.GPUInputStepMode_vertex,
@@ -2050,7 +2029,7 @@ export class WebGPUEngine extends Engine {
                         visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                         type: WebGPUConstants.GPUBindingType_sampledTexture,
                     }, {
-                        // TODO WEBGPU. No Magic + 1.
+                        // TODO WEBGPU. No Magic + 1 (coming from current 1 texture 1 sampler startegy).
                         binding: j + 1,
                         visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                         type: WebGPUConstants.GPUBindingType_sampler
@@ -2271,7 +2250,6 @@ export class WebGPUEngine extends Engine {
     }
 
     private _setRenderPipeline(fillMode: number): void {
-        // TODO WEBGPU. Add dynamicity to the data.
         const pipeline = this._getRenderPipeline(fillMode);
         this._currentRenderPass!.setPipeline(pipeline);
 
@@ -2307,8 +2285,6 @@ export class WebGPUEngine extends Engine {
      */
     public setSize(width: number, height: number): void {
         super.setSize(width, height);
-
-        // TODO WEBGPU. Disposeold attachements.
         this._initializeMainAttachments();
     }
 
@@ -2368,20 +2344,17 @@ export class WebGPUEngine extends Engine {
     //                              Unused WebGPU
     //------------------------------------------------------------------------------
     public areAllEffectsReady(): boolean {
-        // TODO WEBGPU.
         // No parallel shader compilation.
         return true;
     }
 
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
-        // TODO WEBGPU.
         // No parallel shader compilation.
         // No Async, so direct launch
         action();
     }
 
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
-        // TODO WEBGPU.
         // No parallel shader compilation.
         return true;
     }
@@ -2392,9 +2365,10 @@ export class WebGPUEngine extends Engine {
 
     public _unpackFlipY(value: boolean) { }
 
-    // TODO WEBGPU. All of this should go once engine split with baseEngine.
+    // TODO WEBGPU. All of the below should go once engine split with baseEngine.
+
     public applyStates() {
-        // TODO WEBGPU. Apply States dynamically.
+        // Apply States dynamically.
         // This is done at the pipeline creation level for the moment...
     }
 
