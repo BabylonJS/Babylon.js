@@ -1223,7 +1223,7 @@ function showError(errorMessage, errorEvent) {
         // Format
         setToMultipleID("minimapToggle", "click", toggleMinimap);
         // Debug
-        // setToMultipleID("debugButton", "click", toggleDebug);
+        setToMultipleID("debugButton", "click", toggleDebug);
         // Metadata
         setToMultipleID("metadataButton", "click", toggleMetadata);
 
