@@ -15,7 +15,7 @@ export class SpritePackedManager extends SpriteManager{
      * @param imgUrl defines the sprite sheet url
      * @param capacity defines the maximum allowed number of sprites
      * @param scene defines the hosting scene
-     * @param spriteJSON, null otherwise a JSON object defining sprite sheet data
+     * @param spriteJSON null otherwise a JSON object defining sprite sheet data
      * @param epsilon defines the epsilon value to align texture (0.01 by default)
      * @param samplingMode defines the smapling mode to use with spritesheet
      * @param fromPacked set to true; do not alter

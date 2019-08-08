@@ -141,7 +141,7 @@ export class SpriteManager implements ISpriteManager {
      * @param epsilon defines the epsilon value to align texture (0.01 by default)
      * @param samplingMode defines the smapling mode to use with spritesheet
      * @param fromPacked set to false; do not alter
-     * @param spriteJSON, null otherwise a JSON object defining sprite sheet data; do not alter
+     * @param spriteJSON null otherwise a JSON object defining sprite sheet data; do not alter
      */
     constructor(
         /** defines the manager's name */
