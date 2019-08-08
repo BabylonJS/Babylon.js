@@ -207,7 +207,10 @@ var BABYLONDEVTOOLS;
                     this.loadLibrary(moduleName, module.libraries[i], module);
                 }
                 // Allow also loaders in CORE.
-                else if (coreOnly && moduleName === "loaders") {
+                else if (coreOnly && (moduleName === "loaders" ||
+                    moduleName === "inspector" ||
+                    moduleName === "nodeEditor" ||
+                    moduleName === "materialsLibrary")) {
                     this.loadLibrary(moduleName, module.libraries[i], module);
                 }
             }
