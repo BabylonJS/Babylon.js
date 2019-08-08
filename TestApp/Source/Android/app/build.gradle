@@ -27,3 +27,14 @@ android {
         }
     }
 }
+
+task copyFiles << {
+    copy
+            {
+                from '../../../Scripts'
+                include "*.js"
+                into 'src/main/assets/Scripts'
+            }
+}
+
+preBuild.dependsOn(copyFiles)

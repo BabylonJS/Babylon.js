@@ -1,6 +1,7 @@
 package com.android.appviewer;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.net.Uri;
@@ -31,7 +32,7 @@ public class AndroidViewAppActivity extends Activity implements AndroidViewAppSu
         System.loadLibrary("BabylonNativeJNI");
     }
 
-    public static native void initEngine(AssetManager assetManager);
+    public static native void initEngine(AssetManager assetManager, String path);
     public static native void finishEngine();
     public static native void surfaceCreated(Surface surface);
     public static native void surfaceChanged(int width, int height);
@@ -49,8 +50,12 @@ public class AndroidViewAppActivity extends Activity implements AndroidViewAppSu
         super.onCreate(icicle);
         mView = new AndroidViewAppSurfaceView(getApplication(), this);
         setContentView(mView);
-        initEngine(getApplication().getResources().getAssets());
 
+        try {
+            initEngine(getApplication().getResources().getAssets(), getDataDir(getApplicationContext()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         class PinchListener extends ScaleGestureDetector.SimpleOnScaleGestureListener
         {
 
@@ -88,6 +93,12 @@ public class AndroidViewAppActivity extends Activity implements AndroidViewAppSu
         }
 
         mUri = uri;
+    }
+
+    private static String getDataDir(Context context) throws Exception {
+        return context.getPackageManager()
+                .getPackageInfo(context.getPackageName(), 0)
+                .applicationInfo.dataDir;
     }
 
     private ByteBuffer readBytes(InputStream inputStream) throws IOException
