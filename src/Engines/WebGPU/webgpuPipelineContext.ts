@@ -463,6 +463,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param color4 defines the value to be set
      */
     public setDirectColor4(uniformName: string, color4: IColor4Like): void {
-        this.setFloat4(uniformName, color4.b, color4.g, color4.b, color4.a);
+        this.setFloat4(uniformName, color4.r, color4.g, color4.b, color4.a);
     }
 }
