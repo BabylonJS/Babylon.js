@@ -13,6 +13,8 @@ import { Color3PropertyTabComponent } from '../../propertyTab/properties/color3P
 import { FloatPropertyTabComponent } from '../../propertyTab/properties/floatPropertyTabComponent';
 import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
 import { StringTools } from '../../../stringTools';
+import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
+import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
 
 interface IInputPropertyTabComponentProps {
     globalState: GlobalState;
@@ -60,8 +62,15 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
 
         var wellKnownOptions: {label: string, value: NodeMaterialWellKnownValues}[] = [];
         var attributeOptions: {label: string, value: string}[] = [];
+        var animationOptions: {label: string, value: AnimatedInputBlockTypes}[] = [];
 
-        switch(inputBlock.type) {            
+        switch(inputBlock.type) {      
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                animationOptions = [
+                    { label: "None", value: AnimatedInputBlockTypes.None },
+                    { label: "Time", value: AnimatedInputBlockTypes.Time },
+                ];
+                break;      
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 wellKnownOptions = [
                     { label: "World", value: NodeMaterialWellKnownValues.World },
@@ -109,6 +118,7 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
+                    <TextInputLineComponent label="Name" propertyName="name" target={inputBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                     <TextLineComponent label="Type" value={StringTools.GetBaseType(inputBlock.type)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
@@ -147,7 +157,14 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                         }} isSelected={() => inputBlock.isWellKnownValue} />
                     }
                     {
-                        inputBlock.isUniform && !inputBlock.isWellKnownValue &&
+                        inputBlock.isUniform && animationOptions.length > 0 &&
+                        <OptionsLineComponent label="Animation type" options={animationOptions} target={inputBlock} propertyName="animationType" onSelect={(value: any) => {
+                            this.forceUpdate();
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        }} />
+                    }                    
+                    {
+                        inputBlock.isUniform && !inputBlock.isWellKnownValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
                         this.renderValue(this.props.globalState)
                     }
                     {

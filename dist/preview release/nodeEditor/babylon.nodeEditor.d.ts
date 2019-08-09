@@ -1,7 +1,7 @@
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | null;
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -650,19 +650,19 @@ declare module NODEEDITOR {
     /**
      * GenericNodeWidgetProps
      */
-    export interface InputNodeWidgetProps {
+    export interface IInputNodeWidgetProps {
         node: BABYLON.Nullable<InputNodeModel>;
         globalState: GlobalState;
     }
     /**
      * Used to display a node block for the node editor
      */
-    export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
+    export class InputNodeWidget extends React.Component<IInputNodeWidgetProps> {
         /**
          * Creates a GenericNodeWidget
          * @param props
          */
-        constructor(props: InputNodeWidgetProps);
+        constructor(props: IInputNodeWidgetProps);
         renderValue(value: string): JSX.Element | null;
         render(): JSX.Element | null;
     }
@@ -912,6 +912,73 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface ITrigonometryTabComponentProps {
+        globalState: GlobalState;
+        trigonometryNode: TrigonometryNodeModel;
+    }
+    export class TrigonometryPropertyTabComponentProps extends React.Component<ITrigonometryTabComponentProps> {
+        constructor(props: ITrigonometryTabComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Generic node model which stores information about a node editor block
+     */
+    export class TrigonometryNodeModel extends DefaultNodeModel {
+        readonly trigonometryBlock: BABYLON.TrigonometryBlock;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface ITrigonometryNodeWidgetProps {
+        node: BABYLON.Nullable<TrigonometryNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class TrigonometryNodeWidget extends React.Component<ITrigonometryNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: ITrigonometryNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class TrigonometryNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a GenericNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: TrigonometryNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns input node model
+         */
+        getNewInstance(): TrigonometryNodeModel;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -932,6 +999,8 @@ declare module NODEEDITOR {
         private _blocks;
         private _previewManager;
         private _copiedNode;
+        private _mouseLocationX;
+        private _mouseLocationY;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**

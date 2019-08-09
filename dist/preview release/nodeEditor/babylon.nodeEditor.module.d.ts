@@ -18,6 +18,8 @@ declare module "babylonjs-node-editor/blockTools" {
     import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
     import { NormalizeBlock } from 'babylonjs/Materials/Node/Blocks/normalizeBlock';
     import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
+    import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
+    import { TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
     import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
     import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
     import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
@@ -25,7 +27,7 @@ declare module "babylonjs-node-editor/blockTools" {
     import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
     import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
     export class BlockTools {
-        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | RemapBlock | NormalizeBlock | null;
+        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -775,19 +777,19 @@ declare module "babylonjs-node-editor/components/diagram/input/inputNodeWidget" 
     /**
      * GenericNodeWidgetProps
      */
-    export interface InputNodeWidgetProps {
+    export interface IInputNodeWidgetProps {
         node: Nullable<InputNodeModel>;
         globalState: GlobalState;
     }
     /**
      * Used to display a node block for the node editor
      */
-    export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
+    export class InputNodeWidget extends React.Component<IInputNodeWidgetProps> {
         /**
          * Creates a GenericNodeWidget
          * @param props
          */
-        constructor(props: InputNodeWidgetProps);
+        constructor(props: IInputNodeWidgetProps);
         renderValue(value: string): JSX.Element | null;
         render(): JSX.Element | null;
     }
@@ -1080,6 +1082,86 @@ declare module "babylonjs-node-editor/components/preview/previewMeshControlCompo
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/components/diagram/trigonometry/trigonometryNodePropertyComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { TrigonometryNodeModel } from "babylonjs-node-editor/components/diagram/trigonometry/trigonometryNodeModel";
+    interface ITrigonometryTabComponentProps {
+        globalState: GlobalState;
+        trigonometryNode: TrigonometryNodeModel;
+    }
+    export class TrigonometryPropertyTabComponentProps extends React.Component<ITrigonometryTabComponentProps> {
+        constructor(props: ITrigonometryTabComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/trigonometry/trigonometryNodeModel" {
+    import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
+    /**
+     * Generic node model which stores information about a node editor block
+     */
+    export class TrigonometryNodeModel extends DefaultNodeModel {
+        readonly trigonometryBlock: TrigonometryBlock;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/trigonometry/trigonometryNodeWidget" {
+    import * as React from "react";
+    import { TrigonometryNodeModel } from "babylonjs-node-editor/components/diagram/trigonometry/trigonometryNodeModel";
+    import { Nullable } from 'babylonjs/types';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface ITrigonometryNodeWidgetProps {
+        node: Nullable<TrigonometryNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class TrigonometryNodeWidget extends React.Component<ITrigonometryNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: ITrigonometryNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/trigonometry/trigonometryNodeFactory" {
+    import * as SRD from "storm-react-diagrams";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { TrigonometryNodeModel } from "babylonjs-node-editor/components/diagram/trigonometry/trigonometryNodeModel";
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class TrigonometryNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a GenericNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: TrigonometryNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns input node model
+         */
+        getNewInstance(): TrigonometryNodeModel;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
@@ -1109,6 +1191,8 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _blocks;
         private _previewManager;
         private _copiedNode;
+        private _mouseLocationX;
+        private _mouseLocationY;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -1223,7 +1307,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | null;
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -1872,19 +1956,19 @@ declare module NODEEDITOR {
     /**
      * GenericNodeWidgetProps
      */
-    export interface InputNodeWidgetProps {
+    export interface IInputNodeWidgetProps {
         node: BABYLON.Nullable<InputNodeModel>;
         globalState: GlobalState;
     }
     /**
      * Used to display a node block for the node editor
      */
-    export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
+    export class InputNodeWidget extends React.Component<IInputNodeWidgetProps> {
         /**
          * Creates a GenericNodeWidget
          * @param props
          */
-        constructor(props: InputNodeWidgetProps);
+        constructor(props: IInputNodeWidgetProps);
         renderValue(value: string): JSX.Element | null;
         render(): JSX.Element | null;
     }
@@ -2134,6 +2218,73 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface ITrigonometryTabComponentProps {
+        globalState: GlobalState;
+        trigonometryNode: TrigonometryNodeModel;
+    }
+    export class TrigonometryPropertyTabComponentProps extends React.Component<ITrigonometryTabComponentProps> {
+        constructor(props: ITrigonometryTabComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Generic node model which stores information about a node editor block
+     */
+    export class TrigonometryNodeModel extends DefaultNodeModel {
+        readonly trigonometryBlock: BABYLON.TrigonometryBlock;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface ITrigonometryNodeWidgetProps {
+        node: BABYLON.Nullable<TrigonometryNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class TrigonometryNodeWidget extends React.Component<ITrigonometryNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: ITrigonometryNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class TrigonometryNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a GenericNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: TrigonometryNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns input node model
+         */
+        getNewInstance(): TrigonometryNodeModel;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -2154,6 +2305,8 @@ declare module NODEEDITOR {
         private _blocks;
         private _previewManager;
         private _copiedNode;
+        private _mouseLocationX;
+        private _mouseLocationY;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
