@@ -268,6 +268,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._onBeforeDrawObserver = this.onBeforeDrawObservable.add(callback);
     }
 
+    public get hasInstances(): boolean {
+        return this.instances.length > 0;
+    }
+
     // Members
 
     /**

@@ -1072,6 +1072,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return false;
     }
 
+    /**
+     * Gets a boolean indicating if this mesh has instances
+     */
+    public get hasInstances(): boolean {
+        return false;
+    }
+
     // ================================== Point of View Movement =================================
 
     /**
