@@ -5525,7 +5525,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .input-port-border {\n  border-color: #00c0ff !important; }\n\n.srd-node--selected .output-port-border {\n  border-color: #00c0ff !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 10px;\n  transform: scale(1); }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: greenyellow !important; }\n\n.diagramBlock {\n  background: white;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 20px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 2; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 16px;\n    border-top-left-radius: 16px;\n    font-size: 16px;\n    text-align: center;\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 10px calc(100% - 10px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -8px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 12px; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-border {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          border: 4px solid black;\n          width: 4px;\n          height: 7px;\n          border-right: 0;\n          position: absolute;\n          border-bottom-left-radius: 10px;\n          border-top-left-radius: 10px;\n          transform: translateX(-2px) scale(1.2); }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 2px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 10px) 10px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 3px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 12px; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-border {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          border: 4px solid black;\n          width: 4px;\n          border-left: 0;\n          border-left: 0;\n          transform: translateX(9px) scale(1.2);\n          border-bottom-right-radius: 10px;\n          border-top-right-radius: 10px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 2px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 16px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
+exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .input-port-border {\n  border-color: #00c0ff !important; }\n\n.srd-node--selected .output-port-border {\n  border-color: #00c0ff !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 10px;\n  transform: scale(1); }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: greenyellow !important; }\n\n.diagramBlock {\n  background: white;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 20px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n  .diagramBlock.trigonometry {\n    background: #405c86;\n    color: white; }\n    .diagramBlock.trigonometry .value {\n      grid-row: 2; }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 2; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 16px;\n    border-top-left-radius: 16px;\n    font-size: 16px;\n    text-align: center;\n    margin-top: -1px;\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 10px calc(100% - 10px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -8px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 12px; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-border {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          border: 4px solid black;\n          width: 4px;\n          height: 7px;\n          border-right: 0;\n          position: absolute;\n          border-bottom-left-radius: 10px;\n          border-top-left-radius: 10px;\n          transform: translateX(-2px) scale(1.2); }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 2px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 10px) 10px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 3px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 12px; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-border {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          border: 4px solid black;\n          width: 4px;\n          border-left: 0;\n          border-left: 0;\n          transform: translateX(9px) scale(1.2);\n          border-bottom-right-radius: 10px;\n          border-top-right-radius: 10px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 2px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 16px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
 
 // exports
 
@@ -62139,6 +62139,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -62178,6 +62180,8 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["AddBlock"]("Add");
             case "ClampBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ClampBlock"]("Clamp");
+            case "ScaleBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ScaleBlock"]("Scale");
             case "CrossBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["CrossBlock"]("Dot");
             case "DotBlock":
@@ -62186,6 +62190,8 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MultiplyBlock"]("Multiply");
             case "TransformBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TransformBlock"]("Transform");
+            case "TrigonometryBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Trigonometry");
             case "RemapBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["RemapBlock"]("Remap");
             case "NormalizeBlock":
@@ -62700,6 +62706,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../propertyTab/properties/floatPropertyTabComponent */ "./components/propertyTab/properties/floatPropertyTabComponent.tsx");
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
+/* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
+
+
 
 
 
@@ -62742,7 +62751,14 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
         var inputBlock = this.props.inputNode.inputBlock;
         var wellKnownOptions = [];
         var attributeOptions = [];
+        var animationOptions = [];
         switch (inputBlock.type) {
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Float:
+                animationOptions = [
+                    { label: "None", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["AnimatedInputBlockTypes"].None },
+                    { label: "Time", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["AnimatedInputBlockTypes"].Time },
+                ];
+                break;
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Matrix:
                 wellKnownOptions = [
                     { label: "World", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialWellKnownValues"].World },
@@ -62788,6 +62804,7 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_10__["LineContainerComponent"], { title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextInputLineComponent"], { label: "Name", propertyName: "name", target: inputBlock, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextLineComponent"], { label: "Type", value: _stringTools__WEBPACK_IMPORTED_MODULE_11__["StringTools"].GetBaseType(inputBlock.type) })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_10__["LineContainerComponent"], { title: "PROPERTIES" },
                 attributeOptions.length > 0 &&
@@ -62820,7 +62837,12 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                             _this.forceUpdate();
                         }, isSelected: function () { return inputBlock.isWellKnownValue; } }),
-                inputBlock.isUniform && !inputBlock.isWellKnownValue &&
+                inputBlock.isUniform && animationOptions.length > 0 &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { label: "Animation type", options: animationOptions, target: inputBlock, propertyName: "animationType", onSelect: function (value) {
+                            _this.forceUpdate();
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        } }),
+                inputBlock.isUniform && !inputBlock.isWellKnownValue && inputBlock.animationType === babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["AnimatedInputBlockTypes"].None &&
                     this.renderValue(this.props.globalState),
                 inputBlock.isUniform && inputBlock.isWellKnownValue &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { label: "Well known value", options: wellKnownOptions, target: inputBlock, propertyName: "wellKnownValue", onSelect: function (value) {
@@ -62853,6 +62875,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
+
 
 
 
@@ -62931,19 +62954,24 @@ var InputNodeWidget = /** @class */ (function (_super) {
                 }
                 switch (inputBlock.type) {
                     case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Float:
-                        value = inputBlock.value;
+                        if (inputBlock.animationType !== babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["AnimatedInputBlockTypes"].None) {
+                            value = babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["AnimatedInputBlockTypes"][inputBlock.animationType];
+                        }
+                        else {
+                            value = inputBlock.value.toFixed(2);
+                        }
                         break;
                     case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                         var vec2Value = inputBlock.value;
-                        value = "(" + vec2Value.x + ", " + vec2Value.y + ")";
+                        value = "(" + vec2Value.x.toFixed(2) + ", " + vec2Value.y.toFixed(2) + ")";
                         break;
                     case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector3:
                         var vec3Value = inputBlock.value;
-                        value = "(" + vec3Value.x + ", " + vec3Value.y + ", " + vec3Value.z + ")";
+                        value = "(" + vec3Value.x.toFixed(2) + ", " + vec3Value.y.toFixed(2) + ", " + vec3Value.z.toFixed(2) + ")";
                         break;
                     case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector4:
                         var vec4Value = inputBlock.value;
-                        value = "(" + vec4Value.x + ", " + vec4Value.y + ", " + vec4Value.z + ", " + vec4Value.w + ")";
+                        value = "(" + vec4Value.x.toFixed(2) + ", " + vec4Value.y.toFixed(2) + ", " + vec4Value.z.toFixed(2) + ", " + vec4Value.w.toFixed(2) + ")";
                         break;
                     case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color3:
                     case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color4: {
@@ -63980,6 +64008,227 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/diagram/trigonometry/trigonometryNodeFactory.tsx":
+/*!*********************************************************************!*\
+  !*** ./components/diagram/trigonometry/trigonometryNodeFactory.tsx ***!
+  \*********************************************************************/
+/*! exports provided: TrigonometryNodeFactory */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TrigonometryNodeFactory", function() { return TrigonometryNodeFactory; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _trigonometryNodeModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./trigonometryNodeModel */ "./components/diagram/trigonometry/trigonometryNodeModel.tsx");
+/* harmony import */ var _trigonometryNodeWidget__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./trigonometryNodeWidget */ "./components/diagram/trigonometry/trigonometryNodeWidget.tsx");
+
+
+
+
+
+/**
+ * Node factory which creates editor nodes
+ */
+var TrigonometryNodeFactory = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeFactory, _super);
+    /**
+     * Constructs a GenericNodeFactory
+     */
+    function TrigonometryNodeFactory(globalState) {
+        var _this = _super.call(this, "trigonometry") || this;
+        _this._globalState = globalState;
+        return _this;
+    }
+    /**
+     * Generates a node widget
+     * @param diagramEngine diagram engine
+     * @param node node to generate
+     * @returns node widget jsx
+     */
+    TrigonometryNodeFactory.prototype.generateReactWidget = function (diagramEngine, node) {
+        return react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_trigonometryNodeWidget__WEBPACK_IMPORTED_MODULE_4__["TrigonometryNodeWidget"], { node: node, globalState: this._globalState });
+    };
+    /**
+     * Gets a new instance of a node model
+     * @returns input node model
+     */
+    TrigonometryNodeFactory.prototype.getNewInstance = function () {
+        return new _trigonometryNodeModel__WEBPACK_IMPORTED_MODULE_3__["TrigonometryNodeModel"]();
+    };
+    return TrigonometryNodeFactory;
+}(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["AbstractNodeFactory"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/trigonometry/trigonometryNodeModel.tsx":
+/*!*******************************************************************!*\
+  !*** ./components/diagram/trigonometry/trigonometryNodeModel.tsx ***!
+  \*******************************************************************/
+/*! exports provided: TrigonometryNodeModel */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TrigonometryNodeModel", function() { return TrigonometryNodeModel; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
+/* harmony import */ var _trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./trigonometryNodePropertyComponent */ "./components/diagram/trigonometry/trigonometryNodePropertyComponent.tsx");
+
+
+
+
+/**
+ * Generic node model which stores information about a node editor block
+ */
+var TrigonometryNodeModel = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeModel, _super);
+    /**
+     * Constructs the node model
+     */
+    function TrigonometryNodeModel() {
+        return _super.call(this, "trigonometry") || this;
+    }
+    Object.defineProperty(TrigonometryNodeModel.prototype, "trigonometryBlock", {
+        get: function () {
+            return this.block;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    TrigonometryNodeModel.prototype.renderProperties = function (globalState) {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__["TrigonometryPropertyTabComponentProps"], { globalState: globalState, trigonometryNode: this }));
+    };
+    return TrigonometryNodeModel;
+}(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/trigonometry/trigonometryNodePropertyComponent.tsx":
+/*!*******************************************************************************!*\
+  !*** ./components/diagram/trigonometry/trigonometryNodePropertyComponent.tsx ***!
+  \*******************************************************************************/
+/*! exports provided: TrigonometryPropertyTabComponentProps */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TrigonometryPropertyTabComponentProps", function() { return TrigonometryPropertyTabComponentProps; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__);
+
+
+
+
+
+
+
+var TrigonometryPropertyTabComponentProps = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryPropertyTabComponentProps, _super);
+    function TrigonometryPropertyTabComponentProps(props) {
+        return _super.call(this, props) || this;
+    }
+    TrigonometryPropertyTabComponentProps.prototype.render = function () {
+        var _this = this;
+        var trigonometryBlock = this.props.trigonometryNode.trigonometryBlock;
+        var operationOptions = [
+            { label: "Cos", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Cos },
+            { label: "Sin", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Sin },
+            { label: "Abs", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Abs }
+        ];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { label: "Name", propertyName: "name", target: trigonometryBlock, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { label: "Type", value: trigonometryBlock.getClassName() })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "PROPERTIES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Operation", valuesAreStrings: true, options: operationOptions, target: trigonometryBlock, propertyName: "operation", onSelect: function (value) {
+                        _this.forceUpdate();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                    } }))));
+    };
+    return TrigonometryPropertyTabComponentProps;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/trigonometry/trigonometryNodeWidget.tsx":
+/*!********************************************************************!*\
+  !*** ./components/diagram/trigonometry/trigonometryNodeWidget.tsx ***!
+  \********************************************************************/
+/*! exports provided: TrigonometryNodeWidget */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TrigonometryNodeWidget", function() { return TrigonometryNodeWidget; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+/**
+ * Used to display a node block for the node editor
+ */
+var TrigonometryNodeWidget = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeWidget, _super);
+    /**
+     * Creates a GenericNodeWidget
+     * @param props
+     */
+    function TrigonometryNodeWidget(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {};
+        if (_this.props.node) {
+            _this.props.node.addListener({
+                selectionChanged: function () {
+                    var selected = _this.props.node.selected;
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(selected ? _this.props.node : null);
+                }
+            });
+        }
+        return _this;
+    }
+    TrigonometryNodeWidget.prototype.render = function () {
+        var outputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateOutputPorts(this.props.node, false);
+        var inputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateInputPorts(this.props.node);
+        var trigonometryBlock = this.props.node.trigonometryBlock;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock trigonometry" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, trigonometryBlock.name),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value-text" }, babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__["TrigonometryBlockOperations"][trigonometryBlock.operation]))));
+    };
+    return TrigonometryNodeWidget;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/log/log.scss":
 /*!*********************************!*\
   !*** ./components/log/log.scss ***!
@@ -64133,7 +64382,8 @@ var NodeListComponent = /** @class */ (function (_super) {
             Vertex: ["BonesBlock", "InstancesBlock", "MorphTargetsBlock"],
             Fragment: ["AlphaTestBlock", "ImageProcessingBlock", "TextureBlock", "ReflectionTextureBlock", "LightBlock", "FogBlock"],
             Outputs: ["VertexOutputBlock", "FragmentOutputBlock"],
-            Math: ["AddBlock", "ClampBlock", "CrossBlock", "DotBlock", "MultiplyBlock", "RemapBlock", "NormalizeBlock", "TransformBlock", "ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
+            Math: ["AddBlock", "ClampBlock", "CrossBlock", "DotBlock", "MultiplyBlock", "RemapBlock", "NormalizeBlock", "ScaleBlock", "TransformBlock", "TrigonometryBlock"],
+            Conversion: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
         };
         // Create node menu
@@ -64783,6 +65033,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _graphHelper__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./graphHelper */ "./graphHelper.ts");
 /* harmony import */ var _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./components/preview/previewManager */ "./components/preview/previewManager.ts");
 /* harmony import */ var _components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./components/preview/previewMeshControlComponent */ "./components/preview/previewMeshControlComponent.tsx");
+/* harmony import */ var _components_diagram_trigonometry_trigonometryNodeFactory__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./components/diagram/trigonometry/trigonometryNodeFactory */ "./components/diagram/trigonometry/trigonometryNodeFactory.tsx");
+/* harmony import */ var _components_diagram_trigonometry_trigonometryNodeModel__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./components/diagram/trigonometry/trigonometryNodeModel */ "./components/diagram/trigonometry/trigonometryNodeModel.tsx");
+
+
+
 
 
 
@@ -64831,6 +65086,8 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._nodes = new Array();
         _this._blocks = new Array();
         _this._copiedNode = null;
+        _this._mouseLocationX = 0;
+        _this._mouseLocationY = 0;
         /** @hidden */
         _this._toAdd = [];
         // setup the diagram engine
@@ -64841,6 +65098,7 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._engine.registerNodeFactory(new _components_diagram_light_lightNodeFactory__WEBPACK_IMPORTED_MODULE_16__["LightNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_input_inputNodeFactory__WEBPACK_IMPORTED_MODULE_11__["InputNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_remap_remapNodeFactory__WEBPACK_IMPORTED_MODULE_21__["RemapNodeFactory"](_this.props.globalState));
+        _this._engine.registerNodeFactory(new _components_diagram_trigonometry_trigonometryNodeFactory__WEBPACK_IMPORTED_MODULE_26__["TrigonometryNodeFactory"](_this.props.globalState));
         _this._engine.registerLinkFactory(new _components_diagram_link_advancedLinkFactory__WEBPACK_IMPORTED_MODULE_20__["AdvancedLinkFactory"]());
         _this.props.globalState.onRebuildRequiredObservable.add(function () {
             if (_this.props.globalState.nodeMaterial) {
@@ -64866,7 +65124,7 @@ var GraphEditor = /** @class */ (function (_super) {
         _this.props.globalState.onGetNodeFromBlock = function (block) {
             return _this._nodes.filter(function (n) { return n.block === block; })[0];
         };
-        _this.props.globalState.hostDocument.addEventListener("keyup", function (evt) {
+        _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
             if (!evt.ctrlKey) {
                 return;
             }
@@ -64891,8 +65149,12 @@ var GraphEditor = /** @class */ (function (_super) {
                     return;
                 }
                 var newNode = _this.createNodeFromObject({ nodeMaterialBlock: clone });
-                newNode.x = _this._copiedNode.x;
-                newNode.y = _this._copiedNode.y + _this._copiedNode.height + 10;
+                var rootElement = _this.props.globalState.hostDocument.querySelector(".diagram-container");
+                var zoomLevel = _this._engine.diagramModel.getZoomLevel() / 100.0;
+                var x = (_this._mouseLocationX - rootElement.offsetLeft - _this._engine.diagramModel.getOffsetX() - _this.NodeWidth) / zoomLevel;
+                var y = (_this._mouseLocationY - rootElement.offsetTop - _this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
+                newNode.x = x;
+                newNode.y = y;
                 _this._engine.repaintCanvas();
             }
         }, false);
@@ -64921,6 +65183,9 @@ var GraphEditor = /** @class */ (function (_super) {
         }
         else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["InputBlock"]) {
             newNode = new _components_diagram_input_inputNodeModel__WEBPACK_IMPORTED_MODULE_12__["InputNodeModel"]();
+        }
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["TrigonometryBlock"]) {
+            newNode = new _components_diagram_trigonometry_trigonometryNodeModel__WEBPACK_IMPORTED_MODULE_27__["TrigonometryNodeModel"]();
         }
         else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["RemapBlock"]) {
             newNode = new _components_diagram_remap_remapNodeModel__WEBPACK_IMPORTED_MODULE_22__["RemapNodeModel"]();
@@ -65202,6 +65467,9 @@ var GraphEditor = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_portal__WEBPACK_IMPORTED_MODULE_7__["Portal"], { globalState: this.props.globalState },
             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "node-editor-graph-root", style: {
                     gridTemplateColumns: this.buildColumnLayout()
+                }, onMouseMove: function (evt) {
+                    _this._mouseLocationX = evt.pageX;
+                    _this._mouseLocationY = evt.pageY;
                 } },
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_5__["NodeListComponent"], { globalState: this.props.globalState }),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "leftGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt); } }),

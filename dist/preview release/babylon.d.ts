@@ -51753,6 +51753,7 @@ declare module BABYLON {
         private _cachedWorldViewMatrix;
         private _cachedWorldViewProjectionMatrix;
         private _optimizers;
+        private _animationFrame;
         /** Define the URl to load node editor script */
         static EditorURL: string;
         private BJSNODEMATERIALEDITOR;
@@ -52173,6 +52174,10 @@ declare module BABYLON {
          */
         blockingBlocks: NodeMaterialBlock[];
         /**
+         * Gets the list of animated inputs
+         */
+        animatedInputs: InputBlock[];
+        /**
          * Build Id used to avoid multiple recompilations
          */
         buildId: number;
@@ -52538,6 +52543,17 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum defining the type of animations supported by InputBlock
+     */
+    export enum AnimatedInputBlockTypes {
+        /** No animation */
+        None = 0,
+        /** Time based animation. Will only work for floats */
+        Time = 1
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to expose an input value
      */
     export class InputBlock extends NodeMaterialBlock {
@@ -52546,6 +52562,7 @@ declare module BABYLON {
         private _storedValue;
         private _valueCallback;
         private _type;
+        private _animationType;
         /** @hidden */
         _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
         /**
@@ -52589,6 +52606,8 @@ declare module BABYLON {
          * Gets or sets the associated variable name in the shader
          */
         associatedVariableName: string;
+        /** Gets or sets the type of animation applied to the input */
+        animationType: AnimatedInputBlockTypes;
         /**
          * Gets a boolean indicating that this connection point not defined yet
          */
@@ -52623,6 +52642,11 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
+        /**
+         * Animate the input if animationType !== None
+         * @param scene defines the rendering scene
+         */
+        animate(scene: Scene): void;
         private _emitDefine;
         /**
          * Set the input block to its default value (based on its type)
@@ -53079,13 +53103,17 @@ declare module BABYLON {
          */
         readonly xyzIn: NodeMaterialConnectionPoint;
         /**
+         * Gets the xy component (input)
+         */
+        readonly xyIn: NodeMaterialConnectionPoint;
+        /**
          * Gets the xyz component (output)
          */
         readonly xyzOut: NodeMaterialConnectionPoint;
         /**
          * Gets the xy component (output)
          */
-        readonly xy: NodeMaterialConnectionPoint;
+        readonly xyOut: NodeMaterialConnectionPoint;
         /**
          * Gets the x component (output)
          */
@@ -53294,6 +53322,36 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to scale a vector by a float
+     */
+    export class ScaleBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ScaleBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the factor input component
+         */
+        readonly factor: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to clamp a float
      */
     export class ClampBlock extends NodeMaterialBlock {
@@ -53423,6 +53481,47 @@ declare module BABYLON {
     export class NormalizeBlock extends NodeMaterialBlock {
         /**
          * Creates a new NormalizeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Operations supported by the Trigonometry block
+     */
+    export enum TrigonometryBlockOperations {
+        /** Cos */
+        Cos = 0,
+        /** Sin */
+        Sin = 1,
+        /** Abs */
+        Abs = 2
+    }
+    /**
+     * Block used to apply trigonometry operation to floats
+     */
+    export class TrigonometryBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the operation applied by the block
+         */
+        operation: TrigonometryBlockOperations;
+        /**
+         * Creates a new TrigonometryBlock
          * @param name defines the block name
          */
         constructor(name: string);
