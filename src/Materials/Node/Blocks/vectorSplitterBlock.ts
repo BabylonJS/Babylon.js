@@ -19,6 +19,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
 
         this.registerInput("xyzw", NodeMaterialBlockConnectionPointTypes.Vector4, true);
         this.registerInput("xyz ", NodeMaterialBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("xy ", NodeMaterialBlockConnectionPointTypes.Vector2, true);
 
         this.registerOutput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("xy", NodeMaterialBlockConnectionPointTypes.Vector2);
@@ -51,6 +52,13 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the xy component (input)
+     */
+    public get xyIn(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
      * Gets the xyz component (output)
      */
     public get xyzOut(): NodeMaterialConnectionPoint {
@@ -60,7 +68,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     /**
      * Gets the xy component (output)
      */
-    public get xy(): NodeMaterialConnectionPoint {
+    public get xyOut(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
@@ -94,7 +102,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this.xyzw.isConnected ? this.xyzw : this.xyzIn;
+        let input = this.xyzw.isConnected ? this.xyzw : this.xyzw.isConnected ? this.xyzIn : this.xyIn;
 
         let xyzOutput = this._outputs[0];
         let xyOutput = this._outputs[1];
@@ -104,7 +112,11 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         let wOutput = this._outputs[5];
 
         if (xyzOutput.connectedBlocks.length > 0) {
-            state.compilationString += this._declareOutput(xyzOutput, state) + ` = ${input.associatedVariableName}.xyz;\r\n`;
+            if (input === this.xyIn) {
+                state.compilationString += this._declareOutput(xyzOutput, state) + ` = vec3(${input.associatedVariableName}, 0.0);\r\n`;
+            } else {
+                state.compilationString += this._declareOutput(xyzOutput, state) + ` = ${input.associatedVariableName}.xyz;\r\n`;
+            }
         }
         if (xyOutput.connectedBlocks.length > 0) {
             state.compilationString += this._declareOutput(xyOutput, state) + ` = ${input.associatedVariableName}.xy;\r\n`;

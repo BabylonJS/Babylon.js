@@ -11,6 +11,7 @@ import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { Color3, Color4 } from '../../../../Maths/math';
+import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
 
 /**
  * Block used to expose an input value
@@ -21,6 +22,7 @@ export class InputBlock extends NodeMaterialBlock {
     private _storedValue: any;
     private _valueCallback: () => any;
     private _type: NodeMaterialBlockConnectionPointTypes;
+    private _animationType = AnimatedInputBlockTypes.None;
 
     /** @hidden */
     public _wellKnownValue: Nullable<NodeMaterialWellKnownValues> = null;
@@ -172,6 +174,15 @@ export class InputBlock extends NodeMaterialBlock {
         this._associatedVariableName = value;
     }
 
+    /** Gets or sets the type of animation applied to the input */
+    public get animationType() {
+        return this._animationType;
+    }
+
+    public set animationType(value: AnimatedInputBlockTypes) {
+        this._animationType = value;
+    }
+
     /**
      * Gets a boolean indicating that this connection point not defined yet
      */
@@ -248,6 +259,21 @@ export class InputBlock extends NodeMaterialBlock {
         return "InputBlock";
     }
 
+    /**
+     * Animate the input if animationType !== None
+     * @param scene defines the rendering scene
+     */
+    public animate(scene: Scene) {
+        switch (this._animationType) {
+            case AnimatedInputBlockTypes.Time: {
+                if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
+                    this.value += scene.getAnimationRatio() * 0.01;
+                }
+                break;
+            }
+        }
+    }
+
     private _emitDefine(define: string): string {
         if (define[0] === "!") {
             return `#ifndef ${define.substring(1)}\r\n`;
@@ -315,6 +341,10 @@ export class InputBlock extends NodeMaterialBlock {
                     case NodeMaterialWellKnownValues.WorldViewProjection:
                         hints.needWorldViewProjectionMatrix = true;
                         break;
+                }
+            } else {
+                if (this._animationType !== AnimatedInputBlockTypes.None) {
+                    state.sharedData.animatedInputs.push(this);
                 }
             }
 
@@ -447,6 +477,7 @@ export class InputBlock extends NodeMaterialBlock {
         serializationObject.type = this.type;
         serializationObject.mode = this._mode;
         serializationObject.wellKnownValue = this._wellKnownValue;
+        serializationObject.animationType = this._animationType;
 
         if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
             if (this._storedValue.asArray) {
@@ -467,6 +498,7 @@ export class InputBlock extends NodeMaterialBlock {
         this._type = serializationObject.type;
         this._mode = serializationObject.mode;
         this._wellKnownValue = serializationObject.wellKnownValue;
+        this._animationType = serializationObject.animationType;
 
         if (!serializationObject.valueType) {
             return;

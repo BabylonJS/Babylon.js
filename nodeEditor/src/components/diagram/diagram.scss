@@ -54,6 +54,15 @@
         }
     }
 
+    &.trigonometry {
+        background: rgb(64, 92, 134);
+        color:white;
+
+        .value {
+            grid-row: 2;
+        }
+    }
+
      &.remap {
         color:white;
         background: #4086BB;
@@ -88,7 +97,7 @@
         border-top-left-radius: 16px;
         font-size: 16px;
         text-align: center;
-        // margin: -1px;
+        margin-top: -1px;
         
         white-space: nowrap;
         text-overflow: ellipsis;
