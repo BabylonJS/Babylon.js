@@ -4,7 +4,6 @@
 
 namespace babylon
 {
-
     Napi::FunctionReference XMLHttpRequest::constructor;
 
     void XMLHttpRequest::Initialize(Napi::Env& env, RuntimeImpl& runtimeImpl)

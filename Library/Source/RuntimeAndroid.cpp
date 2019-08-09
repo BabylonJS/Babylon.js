@@ -5,12 +5,12 @@
 namespace babylon
 {
 
-    RuntimeAndroid::RuntimeAndroid(void* nativeWindowPtr)
+    RuntimeAndroid::RuntimeAndroid(ANativeWindow* nativeWindowPtr)
         : RuntimeAndroid{nativeWindowPtr, GetUrlFromPath(".") } // todo : GetModulePath().parent_path() std::fs experimental not available with ndk
     {
     }
 
-    RuntimeAndroid::RuntimeAndroid(void* nativeWindowPtr, const std::string& rootUrl)
+    RuntimeAndroid::RuntimeAndroid(ANativeWindow* nativeWindowPtr, const std::string& rootUrl)
         : Runtime{ std::make_unique<RuntimeImpl>(nativeWindowPtr, rootUrl) }
     {
         // android stub
@@ -18,7 +18,7 @@ namespace babylon
 
     void RuntimeImpl::ThreadProcedure()
     {
-        // android stub
+        RuntimeImpl::BaseThreadProcedure();
     }
 
 }

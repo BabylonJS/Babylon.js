@@ -44,9 +44,6 @@ namespace babylon
         arcana::task<void, std::exception_ptr> Task = arcana::task_from_result<std::exception_ptr>();
         std::scoped_lock<std::mutex> AcquireTaskLock();
 
-
-
-
     private:
         void BaseThreadProcedure();
         void ThreadProcedure();

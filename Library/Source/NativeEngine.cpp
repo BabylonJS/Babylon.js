@@ -96,7 +96,7 @@ namespace babylon
 
                 if (memberType.basetype != spirv_cross::SPIRType::Float)
                 {
-                    throw std::exception();
+                    throw std::exception(); // Not supported
                 }
 
                 if (memberType.columns == 1 && 1 <= memberType.vecsize && memberType.vecsize <= 4)
@@ -180,10 +180,9 @@ namespace babylon
             case WebGLAttribType::SHORT:            return bgfx::AttribType::Int16;
             case WebGLAttribType::FLOAT:            return bgfx::AttribType::Float;
             default: // avoid "warning: 4 enumeration values not handled"
+                throw std::exception();
                 break;
             }
-
-            throw std::exception();
         }
 
         // Must match constants.ts in Babylon.js.

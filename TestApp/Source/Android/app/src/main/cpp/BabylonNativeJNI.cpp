@@ -10,6 +10,7 @@
 #include <Babylon/RuntimeAndroid.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
+#include <InputManager.h>
 
 extern "C" {
     JNIEXPORT void JNICALL Java_com_android_appviewer_AndroidViewAppActivity_initEngine(JNIEnv* env, jobject obj, jobject assetMgr, jstring path);
@@ -25,10 +26,15 @@ extern "C" {
 
 std::unique_ptr<babylon::RuntimeAndroid> runtime{};
 std::string androidPackagePath;
+std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
+
 static AAssetManager* g_assetMgrNative = nullptr;
 
-namespace babylon {
-    std::vector<char> GetFileContents(const std::string &file_name) {
+namespace babylon
+{
+    // this is the way to load apk embedded assets.
+    std::vector<char> GetFileContents(const std::string &file_name)
+    {
         std::vector<char> buffer;
         AAsset *asset = AAssetManager_open(g_assetMgrNative, file_name.c_str(),
                                            AASSET_MODE_UNKNOWN);
@@ -58,14 +64,14 @@ Java_com_android_appviewer_AndroidViewAppActivity_finishEngine(JNIEnv* env, jobj
 JNIEXPORT void JNICALL
 Java_com_android_appviewer_AndroidViewAppActivity_surfaceCreated(JNIEnv* env, jobject obj, jobject surface)
 {
-    if (!runtime) {
+    if (!runtime)
+    {
         ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
-        //auto rootUrl = "file://";
 
         runtime = std::make_unique<babylon::RuntimeAndroid>(window, "");
 
-        //inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
-        //InputManager::Initialize(*runtime, *inputBuffer);
+        inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
+        InputManager::Initialize(*runtime, *inputBuffer);
 
         runtime->LoadScript("Scripts/babylon.max.js");
         runtime->LoadScript("Scripts/babylon.glTF2FileLoader.js");
