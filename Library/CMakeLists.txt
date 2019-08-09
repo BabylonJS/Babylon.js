@@ -87,13 +87,11 @@ set_target_properties(Library PROPERTIES
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
 
-add_definitions(-DV8_DEPRECATION_WARNINGS=1)
-add_definitions(-DNODE_USE_V8_PLATFORM=1)
-add_definitions(-DHAVE_INSPECTOR=0)
-add_definitions(-DV8_INSPECTOR_USE_STL=1)
-add_definitions(-DV8_INSPECTOR_USE_OLD_STL=1)
-
-    
+target_compile_definitions(Library PRIVATE V8_DEPRECATION_WARNINGS=1)
+target_compile_definitions(Library PRIVATE NODE_USE_V8_PLATFORM=1)
+target_compile_definitions(Library PRIVATE HAVE_INSPECTOR=0)
+target_compile_definitions(Library PRIVATE V8_INSPECTOR_USE_STL=1)
+target_compile_definitions(Library PRIVATE V8_INSPECTOR_USE_OLD_STL=1)
 target_compile_definitions(Library PRIVATE NOMINMAX)
 target_compile_definitions(Library PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 
