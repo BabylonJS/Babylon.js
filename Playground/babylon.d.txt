@@ -23041,6 +23041,7 @@ declare module BABYLON {
          * Sets a callback to call before drawing the mesh. It is recommended to use onBeforeDrawObservable instead
          */
         onBeforeDraw: () => void;
+        readonly hasInstances: boolean;
         /**
          * Gets the delay loading state of the mesh (when delay loading is turned on)
          * @see http://doc.babylonjs.com/how_to/using_the_incremental_loading_system
@@ -25564,6 +25565,10 @@ declare module BABYLON {
          * Gets a boolean indicating if this mesh is an instance or a regular mesh
          */
         readonly isAnInstance: boolean;
+        /**
+         * Gets a boolean indicating if this mesh has instances
+         */
+        readonly hasInstances: boolean;
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
          * This is performed taking into account the meshes current rotation, so you do not have to care.
