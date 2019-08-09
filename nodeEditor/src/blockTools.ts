@@ -16,6 +16,8 @@ import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertex
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { NormalizeBlock } from 'babylonjs/Materials/Node/Blocks/normalizeBlock';
 import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
+import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
+import { TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
 import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
 import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
@@ -60,6 +62,8 @@ export class BlockTools {
                 return new AddBlock("Add");
             case "ClampBlock":
                 return new ClampBlock("Clamp");
+            case "ScaleBlock":
+                return new ScaleBlock("Scale");
             case "CrossBlock":
                 return new CrossBlock("Dot");
             case "DotBlock":
@@ -68,6 +72,8 @@ export class BlockTools {
                 return new MultiplyBlock("Multiply");
             case "TransformBlock":
                 return new TransformBlock("Transform");
+            case "TrigonometryBlock":
+                return new TrigonometryBlock("Trigonometry");
             case "RemapBlock":
                 return new RemapBlock("Remap");
             case "NormalizeBlock":
