@@ -2,7 +2,8 @@ import { serialize } from "../../../Misc/decorators";
 import { Observable } from "../../../Misc/observable";
 import { Nullable } from "../../../types";
 import { Scene } from "../../../scene";
-import { Matrix, Vector3, Vector2, Color3, Color4 } from "../../../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../../../Maths/math.vector";
+import { Color4, Color3 } from '../../../Maths/math.color';
 import { Engine } from "../../../Engines/engine";
 import { VertexBuffer } from "../../../Meshes/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
@@ -143,7 +144,7 @@ export class ProceduralTexture extends Texture {
 
     /**
      * The effect that is created when initializing the post process.
-     * @returns The created effect corrisponding the the postprocess.
+     * @returns The created effect corresponding the the postprocess.
      */
     public getEffect(): Effect {
         return this._effect;

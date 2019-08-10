@@ -110,12 +110,10 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         }
 
         imgBack.style.position = "absolute";
-        imgBack.style.left = "50%";
-        imgBack.style.top = "50%";
-        imgBack.style.width = "10vw";
-        imgBack.style.height = "10vw";
-        imgBack.style.marginLeft = "-5vw";
-        imgBack.style.marginTop = "-5vw";
+        imgBack.style.left = "40%";
+        imgBack.style.top = "40%";
+        imgBack.style.width = "20%";
+        imgBack.style.height = "20%";
 
         // Loading spinner
         var imgSpinner = new Image();
@@ -127,12 +125,10 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         }
 
         imgSpinner.style.position = "absolute";
-        imgSpinner.style.left = "50%";
-        imgSpinner.style.top = "50%";
-        imgSpinner.style.width = "18vw";
-        imgSpinner.style.height = "18vw";
-        imgSpinner.style.marginLeft = "-9vw";
-        imgSpinner.style.marginTop = "-9vw";
+        imgSpinner.style.left = "30%";
+        imgSpinner.style.top = "30%";
+        imgSpinner.style.width = "40%";
+        imgSpinner.style.height = "40%";
         imgSpinner.style.animation = "spin1 0.75s infinite linear";
         imgSpinner.style.webkitAnimation = "spin1 0.75s infinite linear";
         imgSpinner.style.transformOrigin = "50% 50%";

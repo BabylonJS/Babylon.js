@@ -154,6 +154,13 @@ export class Observable<T> {
     private _onObserverAdded: Nullable<(observer: Observer<T>) => void>;
 
     /**
+     * Gets the list of observers
+     */
+    public get observers(): Array<Observer<T>> {
+        return this._observers;
+    }
+
+    /**
      * Creates a new observable
      * @param onObserverAdded defines a callback to call when a new observer is added
      */
@@ -233,8 +240,12 @@ export class Observable<T> {
     public removeCallback(callback: (eventData: T, eventState: EventState) => void, scope?: any): boolean {
 
         for (var index = 0; index < this._observers.length; index++) {
-            if (this._observers[index].callback === callback && (!scope || scope === this._observers[index].scope)) {
-                this._deferUnregister(this._observers[index]);
+            const observer = this._observers[index];
+            if (observer._willBeUnregistered) {
+                continue;
+            }
+            if (observer.callback === callback && (!scope || scope === observer.scope)) {
+                this._deferUnregister(observer);
                 return true;
             }
         }
@@ -272,8 +283,8 @@ export class Observable<T> {
      * @param observer the observer to move
      */
     public makeObserverTopPriority(observer: Observer<T>) {
-           this._remove(observer);
-           this._observers.unshift(observer);
+        this._remove(observer);
+        this._observers.unshift(observer);
     }
 
     /**

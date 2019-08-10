@@ -1,4 +1,4 @@
-import { Matrix, Color4 } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -8,12 +8,14 @@ import { Texture } from "../Materials/Textures/texture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
+import { MaterialHelper } from "../Materials/materialHelper";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { _DevTools } from '../Misc/devTools';
+import { Color4 } from '../Maths/math.color';
 
 /** @hidden */
 interface ISavedTransformationMatrix {
@@ -226,13 +228,24 @@ export class GeometryBufferRenderer {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
 
+        // Morph targets
+        const morphTargetManager = (mesh as Mesh).morphTargetManager;
+        let numMorphInfluencers = 0;
+        if (morphTargetManager) {
+            if (morphTargetManager.numInfluencers > 0) {
+                numMorphInfluencers = morphTargetManager.numInfluencers;
+
+                defines.push("#define MORPHTARGETS");
+                defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
+
+                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
+            }
+        }
+
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         // Setup textures count
@@ -244,10 +257,10 @@ export class GeometryBufferRenderer {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("geometry",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones"],
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones", "morphTargetInfluences"],
                 ["diffuseSampler"], join,
                 undefined, undefined, undefined,
-                { buffersCount: this._enablePosition ? 3 : 2 });
+                { buffersCount: this._enablePosition ? 3 : 2, maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 
         return this._effect.isReady();
@@ -324,6 +337,8 @@ export class GeometryBufferRenderer {
                 return;
             }
 
+            mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+
             // Velocity
             if (this._enableVelocity && !this._previousTransformationMatrices[mesh.uniqueId]) {
                 this._previousTransformationMatrices[mesh.uniqueId] = {
@@ -373,6 +388,9 @@ export class GeometryBufferRenderer {
                         this._effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[mesh.uniqueId]);
                     }
                 }
+
+                // Morph targets
+                MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
 
                 // Velocity
                 if (this._enableVelocity) {

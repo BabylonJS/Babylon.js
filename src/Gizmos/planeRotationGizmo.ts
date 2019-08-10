@@ -1,7 +1,8 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
-import { Quaternion, Matrix, Vector3, Color3 } from "../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
+import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
@@ -13,6 +14,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 
 import "../Meshes/Builders/linesBuilder";
+import { RotationGizmo } from "./rotationGizmo";
 
 /**
  * Single plane rotation gizmo
@@ -34,16 +36,20 @@ export class PlaneRotationGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
+    private _isEnabled: boolean = true;
+    private _parent: Nullable<RotationGizmo> = null;
+
     /**
      * Creates a PlaneRotationGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
      * @param color The color of the gizmo
      * @param tessellation Amount of tessellation to be used when creating rotation circles
+     * @param useEulerRotation Use and update Euler angle instead of quaternion
      */
-    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32) {
+    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null, useEulerRotation = false) {
         super(gizmoLayer);
-
+        this._parent = parent;
         // Create Material
         var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
         coloredMaterial.diffuseColor = color;
@@ -95,7 +101,7 @@ export class PlaneRotationGizmo extends Gizmo {
         var amountToRotate = new Quaternion();
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedMesh) {
-                if (!this.attachedMesh.rotationQuaternion) {
+                if (!this.attachedMesh.rotationQuaternion || useEulerRotation) {
                     this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
                 }
 
@@ -171,6 +177,12 @@ export class PlaneRotationGizmo extends Gizmo {
                     amountToRotate.multiplyToRef(this.attachedMesh.rotationQuaternion, this.attachedMesh.rotationQuaternion);
                 }
 
+                if (useEulerRotation) {
+                    this.attachedMesh.rotationQuaternion.toEulerAnglesToRef(tmpVector);
+                    this.attachedMesh.rotationQuaternion = null;
+                    this.attachedMesh.rotation.copyFrom(tmpVector);
+                }
+
                 lastDragPosition.copyFrom(event.dragPlanePoint);
                 if (snapped) {
                     tmpSnapEvent.snapDistance = angle;
@@ -207,7 +219,23 @@ export class PlaneRotationGizmo extends Gizmo {
             this.dragBehavior.enabled = value ? true : false;
         }
     }
-
+    /**
+         * If the gizmo is enabled
+         */
+    public set isEnabled(value: boolean) {
+        this._isEnabled = value;
+        if (!value) {
+            this.attachedMesh = null;
+        }
+        else {
+            if (this._parent) {
+                this.attachedMesh = this._parent.attachedMesh;
+            }
+        }
+    }
+    public get isEnabled(): boolean {
+        return this._isEnabled;
+    }
     /**
      * Disposes of the gizmo
      */

@@ -1,9 +1,10 @@
 import { Camera } from "../camera";
-import { Matrix, Viewport } from "../../Maths/math";
+import { Matrix } from "../../Maths/math.vector";
 import { VRDistortionCorrectionPostProcess } from "../../PostProcesses/vrDistortionCorrectionPostProcess";
 import { VRMultiviewToSingleviewPostProcess } from '../../PostProcesses/vrMultiviewToSingleviewPostProcess';
 import { VRCameraMetrics } from "../VR/vrCameraMetrics";
 import { Logger } from '../../Misc/logger';
+import { Viewport } from '../../Maths/math.viewport';
 
 Camera._setVRRigMode = function(camera: Camera, rigParams: any) {
     var metrics = <VRCameraMetrics>rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();
@@ -29,7 +30,7 @@ Camera._setVRRigMode = function(camera: Camera, rigParams: any) {
         if (!camera.getScene().getEngine().getCaps().multiview) {
             Logger.Warn("Multiview is not supported, falling back to standard rendering");
             metrics.multiviewEnabled = false;
-        }else {
+        } else {
             camera._useMultiviewToSingleView = true;
             camera._rigPostProcess = new VRMultiviewToSingleviewPostProcess("VRMultiviewToSingleview", camera, metrics.postProcessScaleFactor);
         }

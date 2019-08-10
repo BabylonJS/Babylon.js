@@ -3,6 +3,8 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
+import { SliderLineComponent } from './sliderLineComponent';
+import { Tools } from 'babylonjs/Misc/tools';
 
 interface IFloatLineComponentProps {
     label: string;
@@ -13,6 +15,9 @@ interface IFloatLineComponentProps {
     isInteger?: boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     additionalClass?: string;
+    step?: string,
+    digits?: number;
+    useEuler?: boolean
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -23,7 +28,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         super(props);
 
         let currentValue = this.props.target[this.props.propertyName];
-        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(3)) : "0" };
+        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 3)) : "0" };
         this._store = currentValue;
     }
 
@@ -38,7 +43,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(3) : "0";
+        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
 
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
@@ -103,14 +108,31 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     render() {
+        let valueAsNumber: number;
+
+        if (this.props.isInteger) {
+            valueAsNumber = parseInt(this.state.value);
+        } else {
+            valueAsNumber = parseFloat(this.state.value);
+        }
+
         return (
-            <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
-                <div className="label">
-                    {this.props.label}
-                </div>
-                <div className="value">
-                    <input type="number" step="0.01" className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
-                </div>
+            <div>
+                {
+                    !this.props.useEuler &&
+                    <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
+                        <div className="label">
+                            {this.props.label}
+                        </div>
+                        <div className="value">
+                            <input type="number" step={this.props.step || "0.01"} className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
+                        </div>
+                    </div>
+                }
+                {
+                    this.props.useEuler &&
+                    <SliderLineComponent label={this.props.label} minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(valueAsNumber)} onChange={value => this.updateValue(Tools.ToRadians(value).toString())} />
+                }
             </div>
         );
     }

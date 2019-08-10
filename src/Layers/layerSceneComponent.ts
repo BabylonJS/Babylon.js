@@ -6,6 +6,7 @@ import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Layer } from "./layer";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { AbstractScene } from '../abstractScene';
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -125,6 +126,39 @@ export class LayerSceneComponent implements ISceneComponent {
     private _drawRenderTargetForeground(renderTarget: RenderTargetTexture): void {
         this._draw((layer: Layer) => {
             return this._drawRenderTargetPredicate(layer, false, this.scene.activeCamera!.layerMask, renderTarget);
+        });
+    }
+
+    /**
+     * Adds all the elements from the container to the scene
+     * @param container the container holding the elements
+     */
+    public addFromContainer(container: AbstractScene): void {
+        if (!container.layers) {
+            return;
+        }
+        container.layers.forEach((layer) => {
+            this.scene.layers.push(layer);
+        });
+    }
+
+    /**
+     * Removes all the elements in the container from the scene
+     * @param container contains the elements to remove
+     * @param dispose if the removed element should be disposed (default: false)
+     */
+    public removeFromContainer(container: AbstractScene, dispose = false): void {
+        if (!container.layers) {
+            return;
+        }
+        container.layers.forEach((layer) => {
+            var index = this.scene.layers.indexOf(layer);
+            if (index !== -1) {
+                this.scene.layers.splice(index, 1);
+            }
+            if (dispose) {
+                layer.dispose();
+            }
         });
     }
 }

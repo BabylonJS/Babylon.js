@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Color3 } from "../Maths/math";
+import { Color3 } from '../Maths/math.color';
 import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";

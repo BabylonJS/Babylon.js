@@ -142,12 +142,20 @@ a:visited {
     filter:alpha(opacity=0);
 }
 
-#logo {
+#logoContainer {
     position: absolute;
     top:0;
+    left:0;
+    width: 100%;   
+    height: calc(100% - 70px);
+    pointer-events: none;
+}
+
+#logo {
+    position: absolute;
     width: 20%;
     height: 20%;
-    top: 30%;
+    top: 40%;
     left: 40%;
     pointer-events: none;
 }
@@ -378,6 +386,8 @@ a:visited {
     bottom: var(--footer-height);
     min-width: 135px;
     width: 200px;
+    max-height: 50vh;
+    overflow-y: auto;
     flex-direction: column;
     transition: all 0.3s ease; /* Add transition for hover effects */
 }

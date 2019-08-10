@@ -1,11 +1,12 @@
 import { Nullable } from "./types";
-import { IAnimatable, IFileRequest, Tools, PerfCounter } from "./Misc/tools";
+import { Tools } from "./Misc/tools";
+import { IAnimatable } from './Animations/animatable.interface';
 import { PrecisionDate } from "./Misc/precisionDate";
 import { Observable, Observer } from "./Misc/observable";
 import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { Color4, Color3, Plane, Vector2, Vector3, Matrix, Frustum } from "./Maths/math";
+import { Vector2, Vector3, Matrix } from "./Maths/math.vector";
 import { Geometry } from "./Meshes/geometry";
 import { TransformNode } from "./Meshes/transformNode";
 import { SubMesh } from "./Meshes/subMesh";
@@ -47,6 +48,12 @@ import { AbstractActionManager } from './Actions/abstractActionManager';
 import { _DevTools } from './Misc/devTools';
 import { WebRequest } from './Misc/webRequest';
 import { InputManager } from './Inputs/scene.inputManager';
+import { PerfCounter } from './Misc/perfCounter';
+import { IFileRequest } from './Misc/fileRequest';
+import { Color4, Color3 } from './Maths/math.color';
+import { Plane } from './Maths/math.plane';
+import { Frustum } from './Maths/math.frustum';
+import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -95,9 +102,6 @@ export interface SceneOptions {
  * @see http://doc.babylonjs.com/features/scene
  */
 export class Scene extends AbstractScene implements IAnimatable {
-    // Statics
-    private static _uniqueIdCounter = 0;
-
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = 0;
     /** The fog density is following an exponential function */
@@ -195,6 +199,32 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         this._environmentTexture = value;
+        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    /** @hidden */
+    protected _environmentIntensity: number = 1;
+    /**
+     * Intensity of the environment in all pbr material.
+     * This dims or reinforces the IBL lighting overall (reflection and diffuse).
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to reference from here than from all the materials.
+     */
+    public get environmentIntensity(): number {
+        return this._environmentIntensity;
+    }
+    /**
+     * Intensity of the environment in all pbr material.
+     * This dims or reinforces the IBL lighting overall (reflection and diffuse).
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to set here than in all the materials.
+     */
+    public set environmentIntensity(value: number) {
+        if (this._environmentIntensity === value) {
+            return;
+        }
+
+        this._environmentIntensity = value;
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
@@ -366,6 +396,11 @@ export class Scene extends AbstractScene implements IAnimatable {
     * An event triggered after rendering the scene
     */
     public onAfterRenderObservable = new Observable<Scene>();
+
+    /**
+    * An event triggered after rendering the scene for an active camera (When scene.render is called this will be called after each camera)
+    */
+    public onAfterRenderCameraObservable = new Observable<Camera>();
 
     private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
     /** Sets a function to be executed after rendering this scene */
@@ -1164,7 +1199,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._transientComponents.push(component);
 
         const serializableComponent = component as ISceneSerializableComponent;
-        if (serializableComponent.addFromContainer) {
+        if (serializableComponent.addFromContainer && serializableComponent.serialize) {
             this._serializableComponents.push(serializableComponent);
         }
     }
@@ -1851,6 +1886,12 @@ export class Scene extends AbstractScene implements IAnimatable {
             return;
         }
 
+        if (this._isDisposed) {
+            this.onReadyObservable.clear();
+            this._executeWhenReadyTimeoutId = -1;
+            return;
+        }
+
         this._executeWhenReadyTimeoutId = setTimeout(() => {
             this._checkIsReady();
         }, 150);
@@ -1945,9 +1986,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns an unique number for the scene
      */
     public getUniqueId() {
-        var result = Scene._uniqueIdCounter;
-        Scene._uniqueIdCounter++;
-        return result;
+        return UniqueIdGenerator.UniqueId;
     }
 
     /**
@@ -2444,6 +2483,21 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
+     * Gets a the last added material using a given id
+     * @param id defines the material's ID
+     * @return the last material with the given id or null if none found.
+     */
+    public getLastMaterialByID(id: string): Nullable<Material> {
+        for (var index = this.materials.length - 1; index >= 0; index--) {
+            if (this.materials[index].id === id) {
+                return this.materials[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Gets a material using its name
      * @param name defines the material's name
      * @return the material or null if none found.
@@ -2452,6 +2506,21 @@ export class Scene extends AbstractScene implements IAnimatable {
         for (var index = 0; index < this.materials.length; index++) {
             if (this.materials[index].name === name) {
                 return this.materials[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get a texture using its unique id
+     * @param uniqueId defines the texture's unique id
+     * @return the texture or null if none found.
+     */
+    public getTextureByUniqueID(uniqueId: number): Nullable<BaseTexture> {
+        for (var index = 0; index < this.textures.length; index++) {
+            if (this.textures[index].uniqueId === uniqueId) {
+                return this.textures[index];
             }
         }
 
@@ -3084,7 +3153,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh): void {
-        if (initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+        if (initialMesh.hasInstances || initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
             for (let step of this._evaluateSubMeshStage) {
                 step.action(mesh, subMesh);
             }
@@ -3235,6 +3304,14 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public unfreezeActiveMeshes(): Scene {
+
+        for (var index = 0; index < this.meshes.length; index++) {
+            const mesh = this.meshes[index];
+            if (mesh._internalAbstractMeshDataInfo) {
+                mesh._internalAbstractMeshDataInfo._isActive = false;
+            }
+        }
+
         for (var index = 0; index < this._activeMeshes.length; index++) {
             this._activeMeshes.data[index]._unFreeze();
         }
@@ -3495,10 +3572,16 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             this._intermediateRendering = false;
 
+            // Need to bind if sub-camera has an outputRenderTarget eg. for webXR
+            if (this.activeCamera && this.activeCamera.outputRenderTarget) {
+                needRebind = true;
+            }
+
             // Restore framebuffer after rendering to targets
             if (needRebind) {
                 this._bindFrameBuffer();
             }
+
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -3537,6 +3620,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _processSubCameras(camera: Camera): void {
         if (camera.cameraRigMode === Camera.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
             this._renderForCamera(camera);
+            this.onAfterRenderCameraObservable.notifyObservers(camera);
             return;
         }
 
@@ -3552,6 +3636,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
         this._activeCamera = camera;
         this.setTransformMatrix(this._activeCamera.getViewMatrix(), this._activeCamera.getProjectionMatrix());
+        this.onAfterRenderCameraObservable.notifyObservers(camera);
     }
 
     private _checkIntersections(): void {
@@ -4120,8 +4205,8 @@ export class Scene extends AbstractScene implements IAnimatable {
             var minBox = boundingInfo.boundingBox.minimumWorld;
             var maxBox = boundingInfo.boundingBox.maximumWorld;
 
-            Tools.CheckExtends(minBox, min, max);
-            Tools.CheckExtends(maxBox, min, max);
+            Vector3.CheckExtends(minBox, min, max);
+            Vector3.CheckExtends(maxBox, min, max);
         });
 
         return {
@@ -4193,7 +4278,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean,
         fastCheck?: boolean, camera?: Nullable<Camera>,
-        trianglePredicate?: (p0: Vector3, p1: Vector3, p2: Vector3) => boolean
+        trianglePredicate?: TrianglePickingPredicate
     ): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
         const pi = new PickingInfo();

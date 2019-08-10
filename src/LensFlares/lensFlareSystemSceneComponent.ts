@@ -134,7 +134,7 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
     }
 
     /**
-     * Adds all the element from the container to the scene
+     * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
     public addFromContainer(container: AbstractScene): void {

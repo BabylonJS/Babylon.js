@@ -104,6 +104,18 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             { label: "Spherical", value: Texture.SPHERICAL_MODE },
         ];
 
+        let extension = "";
+        let url = (texture as Texture).url;
+
+        if (url) {
+            for (var index = url.length - 1; index >= 0; index--) {
+                if (url[index] === ".") {
+                    break;
+                }
+                extension = url[index] + extension;
+            }
+        }
+
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
@@ -111,10 +123,15 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <FileButtonLineComponent label="Replace texture" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 </LineContainerComponent>
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
+                    lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Width" value={texture.getSize().width.toString()} />
                     <TextLineComponent label="Height" value={texture.getSize().height.toString()} />
+                    {
+                        extension &&
+                        <TextLineComponent label="File format" value={extension} />
+                    }
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={texture.getClassName()} />
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
@@ -152,9 +169,9 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                             <FloatLineComponent lockObject={this.props.lockObject} label="V offset" target={texture} propertyName="vOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <FloatLineComponent lockObject={this.props.lockObject} label="U scale" target={texture} propertyName="uScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <FloatLineComponent lockObject={this.props.lockObject} label="V scale" target={texture} propertyName="vScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <FloatLineComponent lockObject={this.props.lockObject} label="U angle" target={texture} propertyName="uAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <FloatLineComponent lockObject={this.props.lockObject} label="V angle" target={texture} propertyName="vAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <FloatLineComponent lockObject={this.props.lockObject} label="W angle" target={texture} propertyName="wAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="U angle" useEuler={this.props.globalState.onlyUseEulers} target={texture} propertyName="uAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="V angle" useEuler={this.props.globalState.onlyUseEulers} target={texture} propertyName="vAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="W angle" useEuler={this.props.globalState.onlyUseEulers} target={texture} propertyName="wAng" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE} />
                             <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE} />
                         </div>
@@ -162,7 +179,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     {
                         texture.isCube &&
                         <div>
-                            <SliderLineComponent label="Rotation Y" minimum={0} maximum={2 * Math.PI} step={0.1} target={texture} propertyName="rotationY" />
+                            <SliderLineComponent label="Rotation Y" useEuler={this.props.globalState.onlyUseEulers} minimum={0} maximum={2 * Math.PI} step={0.1} target={texture} propertyName="rotationY" />
                         </div>
                     }
                 </LineContainerComponent>

@@ -19,9 +19,25 @@ export class MorphTargetManager {
     private _influences: Float32Array;
     private _supportsNormals = false;
     private _supportsTangents = false;
+    private _supportsUVs = false;
     private _vertexCount = 0;
     private _uniqueId = 0;
     private _tempInfluences = new Array<number>();
+
+    /**
+     * Gets or sets a boolean indicating if normals must be morphed
+     */
+    public enableNormalMorphing = true;
+
+    /**
+     * Gets or sets a boolean indicating if tangents must be morphed
+     */
+    public enableTangentMorphing = true;
+
+    /**
+     * Gets or sets a boolean indicating if UV must be morphed
+     */
+    public enableUVMorphing = true;
 
     /**
      * Creates a new MorphTargetManager
@@ -59,14 +75,21 @@ export class MorphTargetManager {
      * Gets a boolean indicating if this manager supports morphing of normals
      */
     public get supportsNormals(): boolean {
-        return this._supportsNormals;
+        return this._supportsNormals && this.enableNormalMorphing;
     }
 
     /**
      * Gets a boolean indicating if this manager supports morphing of tangents
      */
     public get supportsTangents(): boolean {
-        return this._supportsTangents;
+        return this._supportsTangents && this.enableTangentMorphing;
+    }
+
+    /**
+     * Gets a boolean indicating if this manager supports morphing of texture coordinates
+     */
+    public get supportsUVs(): boolean {
+        return this._supportsUVs && this.enableUVMorphing;
     }
 
     /**
@@ -160,6 +183,7 @@ export class MorphTargetManager {
         this._activeTargets.reset();
         this._supportsNormals = true;
         this._supportsTangents = true;
+        this._supportsUVs = true;
         this._vertexCount = 0;
         for (var target of this._targets) {
             if (target.influence === 0) {
@@ -171,6 +195,7 @@ export class MorphTargetManager {
 
             this._supportsNormals = this._supportsNormals && target.hasNormals;
             this._supportsTangents = this._supportsTangents && target.hasTangents;
+            this._supportsUVs = this._supportsUVs && target.hasUVs;
 
             const positions = target.getPositions();
             if (positions) {

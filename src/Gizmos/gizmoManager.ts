@@ -7,7 +7,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { Color3 } from "../Maths/math";
+import { Color3 } from '../Maths/math.color';
 import { SixDofDragBehavior } from "../Behaviors/Meshes/sixDofDragBehavior";
 
 import { Gizmo } from "./gizmo";
@@ -48,13 +48,27 @@ export class GizmoManager implements IDisposable {
     public usePointerToAttachGizmos = true;
 
     /**
+     * Utility layer that the bounding box gizmo belongs to
+     */
+    public get keepDepthUtilityLayer() {
+        return this._defaultKeepDepthUtilityLayer;
+    }
+
+    /**
+     * Utility layer that all gizmos besides bounding box belong to
+     */
+    public get utilityLayer() {
+        return this._defaultUtilityLayer;
+    }
+
+    /**
      * Instatiates a gizmo manager
      * @param scene the scene to overlay the gizmos on top of
      */
     constructor(private scene: Scene) {
         this._defaultKeepDepthUtilityLayer = new UtilityLayerRenderer(scene);
         this._defaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
-        this._defaultUtilityLayer = UtilityLayerRenderer.DefaultUtilityLayer;
+        this._defaultUtilityLayer = new UtilityLayerRenderer(scene);
 
         this.gizmos = { positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null };
 
@@ -207,6 +221,7 @@ export class GizmoManager implements IDisposable {
             }
         }
         this._defaultKeepDepthUtilityLayer.dispose();
+        this._defaultUtilityLayer.dispose();
         this.boundingBoxDragBehavior.detach();
         this.onAttachedToMeshObservable.clear();
     }

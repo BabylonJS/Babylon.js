@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Vector3, Vector2 } from "../Maths/math";
+import { Vector3, Vector2 } from "../Maths/math.vector";
 import { StringDictionary } from "./stringDictionary";
 
 // Mainly based on these 2 articles :

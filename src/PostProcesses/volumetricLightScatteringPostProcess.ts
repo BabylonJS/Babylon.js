@@ -1,7 +1,7 @@
 import { serializeAsVector3, serialize, serializeAsMeshReference } from "../Misc/decorators";
 import { SmartArray } from "../Misc/smartArray";
 import { Logger } from "../Misc/logger";
-import { Color4, Color3, Vector2, Vector3, Matrix, Viewport } from "../Maths/math";
+import { Vector2, Vector3, Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { SubMesh } from "../Meshes/subMesh";
@@ -9,6 +9,7 @@ import { Mesh } from "../Meshes/mesh";
 import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
+import { MaterialHelper } from "../Materials/materialHelper";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -20,7 +21,10 @@ import "../Meshes/Builders/planeBuilder";
 
 import "../Shaders/depth.vertex";
 import "../Shaders/volumetricLightScattering.fragment";
+import "../Shaders/volumetricLightScatteringPass.vertex";
 import "../Shaders/volumetricLightScatteringPass.fragment";
+import { Color4, Color3 } from '../Maths/math.color';
+import { Viewport } from '../Maths/math.viewport';
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -201,10 +205,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         // Get correct effect
@@ -212,10 +213,14 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
             this._volumetricLightScatteringPass = mesh.getScene().getEngine().createEffect(
-                { vertexElement: "depth", fragmentElement: "volumetricLightScatteringPass" },
+                "volumetricLightScatteringPass",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix"],
-                ["diffuseSampler"], join);
+                ["diffuseSampler"],
+                join,
+                undefined, undefined, undefined,
+                { maxSimultaneousMorphTargets: mesh.numBoneInfluencers }
+            );
         }
 
         return this._volumetricLightScatteringPass.isReady();
@@ -290,6 +295,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             if (this._meshExcluded(mesh)) {
                 return;
             }
+
+            mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
             let material = subMesh.getMaterial();
 

@@ -36,6 +36,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
         return (
             <div>
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={camera}
+                    lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={camera.id} />
@@ -47,7 +48,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                     <OptionsLineComponent label="Mode" options={modeOptions} target={camera} propertyName="mode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ mode: value })} />
                     {
                         camera.mode === Camera.PERSPECTIVE_CAMERA &&
-                        <SliderLineComponent label="Field of view" target={camera} propertyName="fov" minimum={0.1} maximum={Math.PI} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <SliderLineComponent label="Field of view" target={camera} useEuler={this.props.globalState.onlyUseEulers} propertyName="fov" minimum={0.1} maximum={Math.PI} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     {
                         camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&

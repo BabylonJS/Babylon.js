@@ -1,5 +1,5 @@
 import { Nullable, FloatArray } from "../types";
-import { Vector3, Vector2, Tmp } from "../Maths/math";
+import { Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Sprite } from "../Sprites/sprite";
@@ -30,9 +30,9 @@ export class PickingInfo {
      * The mesh corresponding the the pick collision
      */
     public pickedMesh: Nullable<AbstractMesh> = null;
-    /** (See getTextureCoordinates) The barycentric U coordinate that is used when calulating the texture coordinates of the collision.*/
+    /** (See getTextureCoordinates) The barycentric U coordinate that is used when calculating the texture coordinates of the collision.*/
     public bu = 0;
-    /** (See getTextureCoordinates) The barycentric V coordinate that is used when calulating the texture coordinates of the collision.*/
+    /** (See getTextureCoordinates) The barycentric V coordinate that is used when calculating the texture coordinates of the collision.*/
     public bv = 0;
     /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
     public faceId = -1;
@@ -97,13 +97,13 @@ export class PickingInfo {
             let wm = this.pickedMesh.getWorldMatrix();
 
             if (this.pickedMesh.nonUniformScaling) {
-                Tmp.Matrix[0].copyFrom(wm);
-                wm = Tmp.Matrix[0];
+                TmpVectors.Matrix[0].copyFrom(wm);
+                wm = TmpVectors.Matrix[0];
                 wm.setTranslationFromFloats(0, 0, 0);
                 wm.invert();
-                wm.transposeToRef(Tmp.Matrix[1]);
+                wm.transposeToRef(TmpVectors.Matrix[1]);
 
-                wm = Tmp.Matrix[1];
+                wm = TmpVectors.Matrix[1];
             }
 
             result = Vector3.TransformNormal(result, wm);
@@ -137,9 +137,9 @@ export class PickingInfo {
         var uv1 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 1] * 2);
         var uv2 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 2] * 2);
 
-        uv0 = uv0.scale(1.0 - this.bu - this.bv);
-        uv1 = uv1.scale(this.bu);
-        uv2 = uv2.scale(this.bv);
+        uv0 = uv0.scale(this.bu);
+        uv1 = uv1.scale(this.bv);
+        uv2 = uv2.scale(1.0 - this.bu - this.bv);
 
         return new Vector2(uv0.x + uv1.x + uv2.x, uv0.y + uv1.y + uv2.y);
     }

@@ -2,12 +2,13 @@ import { Observer } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Vector2, Plane } from "../../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
+import { Plane } from '../../Maths/math.plane';
 /**
  * Mirror texture can be used to simulate the view from a mirror in a scene.
  * It will dynamically be rendered every frame to adapt to the camera point of view.
