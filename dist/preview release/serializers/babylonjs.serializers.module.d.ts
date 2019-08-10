@@ -94,7 +94,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporterExtension" {
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/glTFMaterialExporter" {
-    import { ITextureInfo, ImageMimeType, IMaterial, IMaterialPbrMetallicRoughness, MaterialAlphaMode } from "babylonjs-gltf2interface";
+    import { ITextureInfo, ImageMimeType, IMaterial, IMaterialPbrMetallicRoughness } from "babylonjs-gltf2interface";
     import { Nullable } from "babylonjs/types";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Material } from "babylonjs/Materials/material";
@@ -173,11 +173,11 @@ declare module "babylonjs-serializers/glTF/2.0/glTFMaterialExporter" {
          */
         static _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number;
         /**
-         * Gets the glTF alpha mode from the Babylon Material
-         * @param babylonMaterial Babylon Material
-         * @returns The Babylon alpha mode value
+         * Sets the glTF alpha mode to a glTF material from the Babylon Material
+         * @param glTFMaterial glTF material
+         * @param babylonMaterial Babylon material
          */
-        _getAlphaMode(babylonMaterial: Material): MaterialAlphaMode;
+        private static _SetAlphaMode;
         /**
          * Converts a Babylon Standard Material to a glTF Material
          * @param babylonStandardMaterial BJS Standard Material
@@ -357,6 +357,12 @@ declare module "babylonjs-serializers/glTF/2.0/glTFSerializer" {
          * @returns boolean, which indicates whether the node should be exported (true) or not (false)
          */
         shouldExportNode?(node: Node): boolean;
+        /**
+         * Function used to extract the part of node's metadata that will be exported into glTF node extras
+         * @param metadata source metadata to read from
+         * @returns the data to store to glTF node extras
+         */
+        metadataSelector?(metadata: any): any;
         /**
          * The sample rate to bake animation curves
          */
@@ -587,10 +593,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          * Baked animation sample rate
          */
         private _animationSampleRate;
-        /**
-         * Callback which specifies if a node should be exported or not
-         */
-        private _shouldExportNode;
+        private _options;
         private _localEngine;
         _glTFMaterialExporter: _GLTFMaterialExporter;
         private _extensions;
@@ -777,7 +780,6 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          * Creates a mapping of Node unique id to node index and handles animations
          * @param babylonScene Babylon Scene
          * @param nodes Babylon transform nodes
-         * @param shouldExportNode Callback specifying if a transform node should be exported
          * @param binaryWriter Buffer to write binary data to
          * @returns Node mapping of unique id to index
          */
@@ -1048,10 +1050,7 @@ declare module "babylonjs-serializers/glTF/2.0/shaders/textureTransform.fragment
 declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform" {
     import { ImageMimeType } from "babylonjs-gltf2interface";
     import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math";
-    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Texture } from "babylonjs/Materials/Textures/texture";
-    import { Scene } from "babylonjs/scene";
     import { IGLTFExporterExtensionV2 } from "babylonjs-serializers/glTF/2.0/glTFExporterExtension";
     import { _Exporter } from "babylonjs-serializers/glTF/2.0/glTFExporter";
     import "babylonjs-serializers/glTF/2.0/shaders/textureTransform.fragment";
@@ -1078,7 +1077,7 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform"
          * @param scale
          * @param scene
          */
-        textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
+        private _textureTransformTextureAsync;
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_lights_punctual" {
@@ -1334,11 +1333,11 @@ declare module BABYLON.GLTF2.Exporter {
          */
         static _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number;
         /**
-         * Gets the glTF alpha mode from the Babylon Material
-         * @param babylonMaterial Babylon Material
-         * @returns The Babylon alpha mode value
+         * Sets the glTF alpha mode to a glTF material from the Babylon Material
+         * @param glTFMaterial glTF material
+         * @param babylonMaterial Babylon material
          */
-        _getAlphaMode(babylonMaterial: Material): MaterialAlphaMode;
+        private static _SetAlphaMode;
         /**
          * Converts a Babylon Standard Material to a glTF Material
          * @param babylonStandardMaterial BJS Standard Material
@@ -1515,6 +1514,12 @@ declare module BABYLON {
          * @returns boolean, which indicates whether the node should be exported (true) or not (false)
          */
         shouldExportNode?(node: Node): boolean;
+        /**
+         * Function used to extract the part of node's metadata that will be exported into glTF node extras
+         * @param metadata source metadata to read from
+         * @returns the data to store to glTF node extras
+         */
+        metadataSelector?(metadata: any): any;
         /**
          * The sample rate to bake animation curves
          */
@@ -1729,10 +1734,7 @@ declare module BABYLON.GLTF2.Exporter {
          * Baked animation sample rate
          */
         private _animationSampleRate;
-        /**
-         * Callback which specifies if a node should be exported or not
-         */
-        private _shouldExportNode;
+        private _options;
         private _localEngine;
         _glTFMaterialExporter: _GLTFMaterialExporter;
         private _extensions;
@@ -1919,7 +1921,6 @@ declare module BABYLON.GLTF2.Exporter {
          * Creates a mapping of Node unique id to node index and handles animations
          * @param babylonScene Babylon Scene
          * @param nodes Babylon transform nodes
-         * @param shouldExportNode Callback specifying if a transform node should be exported
          * @param binaryWriter Buffer to write binary data to
          * @returns Node mapping of unique id to index
          */
@@ -2204,7 +2205,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @param scale
          * @param scene
          */
-        textureTransformTextureAsync(babylonTexture: Texture, offset: Vector2, rotation: number, scale: Vector2, scene: Scene): Promise<BaseTexture>;
+        private _textureTransformTextureAsync;
     }
 }
 declare module BABYLON.GLTF2.Exporter.Extensions {

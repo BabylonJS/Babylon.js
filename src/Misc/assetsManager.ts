@@ -820,6 +820,13 @@ export class AssetsManager {
     public useDefaultLoadingScreen = true;
 
     /**
+     * Gets or sets a boolean defining if the AssetsManager should automatically hide the loading screen
+     * when all assets have been downloaded.
+     * If set to false, you need to manually call in hideLoadingUI() once your scene is ready.
+     */
+    public autoHideLoadingUI = true;
+
+    /**
      * Creates a new AssetsManager
      * @param scene defines the scene to work on
      */
@@ -1010,7 +1017,9 @@ export class AssetsManager {
                 console.log(e);
             }
             this._isLoading = false;
-            this._scene.getEngine().hideLoadingUI();
+            if (this.autoHideLoadingUI) {
+                this._scene.getEngine().hideLoadingUI();
+            }
         }
     }
 
@@ -1093,6 +1102,10 @@ export class AssetsManager {
      */
     public loadAsync(): Promise<void> {
         return new Promise((resolve, reject) => {
+            if (this._isLoading) {
+                resolve();
+                return;
+            }
             this.onTasksDoneObservable.addOnce((remainingTasks) => {
                 if (remainingTasks && remainingTasks.length) {
                     reject(remainingTasks);
@@ -1100,6 +1113,8 @@ export class AssetsManager {
                     resolve();
                 }
             });
+
+            this.load();
         });
     }
 }

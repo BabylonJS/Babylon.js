@@ -13,24 +13,30 @@ interface ITextureLineComponentProps {
     texture: BaseTexture;
     width: number;
     height: number;
-    globalState: GlobalState;
+    globalState?: GlobalState;
+    hideChannelSelect?: boolean;
 }
 
-export class TextureLineComponent extends React.Component<ITextureLineComponentProps, { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }> {
+enum ChannelToDisplay {
+    R,
+    G,
+    B,
+    A,
+    All
+}
+
+export class TextureLineComponent extends React.Component<ITextureLineComponentProps, { channel: ChannelToDisplay, face: number }> {
     constructor(props: ITextureLineComponentProps) {
         super(props);
 
         this.state = {
-            displayRed: true,
-            displayGreen: true,
-            displayBlue: true,
-            displayAlpha: true,
+            channel: ChannelToDisplay.All,
             face: 0
         };
     }
 
-    shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }): boolean {
-        return (nextProps.texture !== this.props.texture || nextState.displayRed !== this.state.displayRed || nextState.displayGreen !== this.state.displayGreen || nextState.displayBlue !== this.state.displayBlue || nextState.displayAlpha !== this.state.displayAlpha || nextState.face !== this.state.face);
+    shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { channel: ChannelToDisplay, face: number }): boolean {
+        return (nextProps.texture !== this.props.texture || nextState.channel !== this.state.channel || nextState.face !== this.state.face);
     }
 
     componentDidMount() {
@@ -43,6 +49,11 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
     updatePreview() {
         var texture = this.props.texture;
+        if (!texture.isReady() && texture._texture) {
+            texture._texture.onLoadedObservable.addOnce(() => {
+                this.updatePreview();
+            })
+        }
         var scene = texture.getScene()!;
         var engine = scene.getEngine();
         var size = texture.getSize();
@@ -72,7 +83,10 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
         const previewCanvas = this.refs.canvas as HTMLCanvasElement;
 
-        this.props.globalState.blockMutationUpdates = true;
+        if (this.props.globalState) {
+            this.props.globalState.blockMutationUpdates = true;
+        }
+
         let rtt = new RenderTargetTexture(
             "temp",
             { width: width, height: height },
@@ -95,27 +109,31 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             var data = engine.readPixels(0, 0, width, height);
 
             if (!texture.isCube) {
-                if (!this.state.displayRed || !this.state.displayGreen || !this.state.displayBlue) {
+                if (this.state.channel != ChannelToDisplay.All) {
                     for (var i = 0; i < width * height * 4; i += 4) {
 
-                        if (!this.state.displayRed) {
-                            data[i] = 0;
-                        }
-
-                        if (!this.state.displayGreen) {
-                            data[i + 1] = 0;
-                        }
-
-                        if (!this.state.displayBlue) {
-                            data[i + 2] = 0;
-                        }
-
-                        if (this.state.displayAlpha) {
-                            var alpha = data[i + 2];
-                            data[i] = alpha;
-                            data[i + 1] = alpha;
-                            data[i + 2] = alpha;
-                            data[i + 2] = 0;
+                        switch (this.state.channel) {
+                            case ChannelToDisplay.R:
+                                data[i + 1] = data[i];
+                                data[i + 2] = data[i];
+                                data[i + 3] = 255;
+                                break;
+                            case ChannelToDisplay.G:
+                                data[i] = data[i + 1];
+                                data[i + 2] = data[i];
+                                data[i + 3] = 255;
+                                break;
+                            case ChannelToDisplay.B:
+                                data[i] = data[i + 2];
+                                data[i + 1] = data[i + 2];
+                                data[i + 3] = 255;
+                                break;
+                            case ChannelToDisplay.A:
+                                data[i] = data[i + 3];
+                                data[i + 1] = data[i + 3];
+                                data[i + 2] = data[i + 3];
+                                data[i + 3] = 255;
+                                break;
                         }
                     }
                 }
@@ -156,7 +174,10 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         passPostProcess.dispose();
 
         previewCanvas.style.height = height + "px";
-        this.props.globalState.blockMutationUpdates = false;
+        if (this.props.globalState) {
+            this.props.globalState.blockMutationUpdates = false;
+        }
+
     }
 
     render() {
@@ -165,7 +186,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         return (
             <div className="textureLine">
                 {
-                    texture.isCube &&
+                    !this.props.hideChannelSelect && texture.isCube &&
                     <div className="control3D">
                         <button className={this.state.face === 0 ? "px command selected" : "px command"} onClick={() => this.setState({ face: 0 })}>PX</button>
                         <button className={this.state.face === 1 ? "nx command selected" : "nx command"} onClick={() => this.setState({ face: 1 })}>NX</button>
@@ -176,13 +197,13 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                     </div>
                 }
                 {
-                    !texture.isCube &&
+                    !this.props.hideChannelSelect && !texture.isCube &&
                     <div className="control">
-                        <button className={this.state.displayRed && !this.state.displayGreen ? "red command selected" : "red command"} onClick={() => this.setState({ displayRed: true, displayGreen: false, displayBlue: false, displayAlpha: false })}>R</button>
-                        <button className={this.state.displayGreen && !this.state.displayBlue ? "green command selected" : "green command"} onClick={() => this.setState({ displayRed: false, displayGreen: true, displayBlue: false, displayAlpha: false })}>G</button>
-                        <button className={this.state.displayBlue && !this.state.displayAlpha ? "blue command selected" : "blue command"} onClick={() => this.setState({ displayRed: false, displayGreen: false, displayBlue: true, displayAlpha: false })}>B</button>
-                        <button className={this.state.displayAlpha && !this.state.displayRed ? "alpha command selected" : "alpha command"} onClick={() => this.setState({ displayRed: false, displayGreen: false, displayBlue: false, displayAlpha: true })}>A</button>
-                        <button className={this.state.displayRed && this.state.displayGreen ? "all command selected" : "all command"} onClick={() => this.setState({ displayRed: true, displayGreen: true, displayBlue: true, displayAlpha: true })}>ALL</button>
+                        <button className={this.state.channel === ChannelToDisplay.R ? "red command selected" : "red command"} onClick={() => this.setState({ channel: ChannelToDisplay.R })}>R</button>
+                        <button className={this.state.channel === ChannelToDisplay.G ? "green command selected" : "green command"} onClick={() => this.setState({ channel: ChannelToDisplay.G })}>G</button>
+                        <button className={this.state.channel === ChannelToDisplay.B ? "blue command selected" : "blue command"} onClick={() => this.setState({ channel: ChannelToDisplay.B })}>B</button>
+                        <button className={this.state.channel === ChannelToDisplay.A ? "alpha command selected" : "alpha command"} onClick={() => this.setState({ channel: ChannelToDisplay.A })}>A</button>
+                        <button className={this.state.channel === ChannelToDisplay.All ? "all command selected" : "all command"} onClick={() => this.setState({ channel: ChannelToDisplay.All })}>ALL</button>
                     </div>
                 }
                 <canvas ref="canvas" className="preview" />

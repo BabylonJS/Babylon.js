@@ -1,5 +1,5 @@
 import { Scene } from "../../scene";
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
@@ -86,7 +86,8 @@ export class GearVRController extends WebVRController {
 PoseEnabledControllerHelper._ControllerFactories.push({
     canCreate: (gamepadInfo) => {
         return gamepadInfo.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0 ||
-            gamepadInfo.id.indexOf('Oculus Go') !== -1;
+            gamepadInfo.id.indexOf('Oculus Go') !== -1 ||
+            gamepadInfo.id.indexOf('Vive Focus') !== -1;
     },
     create: (gamepadInfo) => {
         return new GearVRController(gamepadInfo);

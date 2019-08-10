@@ -8,3 +8,4 @@ export * from "./animationEvent";
 export * from "./animationGroup";
 export * from "./animationKey";
 export * from "./animationRange";
+export * from "./animatable.interface";

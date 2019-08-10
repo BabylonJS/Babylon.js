@@ -1415,8 +1415,9 @@ declare module BABYLON.GLTF2 {
          * @returns A promise that resolves with the loaded data when the load is complete
          */
         loadBufferViewAsync(context: string, bufferView: IBufferView): Promise<ArrayBufferView>;
-        private _loadIndicesAccessorAsync;
+        private _loadAccessorAsync;
         private _loadFloatAccessorAsync;
+        private _loadIndicesAccessorAsync;
         private _loadVertexBufferViewAsync;
         private _loadVertexAccessorAsync;
         private _loadMaterialMetallicRoughnessPropertiesAsync;
@@ -1491,6 +1492,7 @@ declare module BABYLON.GLTF2 {
         }, pointer: string): void;
         private static _GetTextureWrapMode;
         private static _GetTextureSamplingMode;
+        private static _GetTypedArrayConstructor;
         private static _GetTypedArray;
         private static _GetNumComponents;
         private static _ValidateUri;
@@ -1777,6 +1779,29 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         constructor(loader: GLTFLoader);
         dispose(): void;
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * Store glTF extras (if present) in BJS objects' metadata
+     */
+    export class ExtrasAsMetadata implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        private _assignExtras;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
+        /** @hidden */
+        loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
+        /** @hidden */
+        createMaterial(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material>;
     }
 }
 declare module BABYLON {

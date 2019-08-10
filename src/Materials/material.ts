@@ -1,15 +1,15 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { Tools, IAnimatable } from "../Misc/tools";
+import { Tools } from "../Misc/tools";
+import { IAnimatable } from '../Animations/animatable.interface';
 import { SmartArray } from "../Misc/smartArray";
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Plane, Matrix } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { BaseSubMesh, SubMesh } from "../Meshes/subMesh";
 import { Geometry } from "../Meshes/geometry";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -18,7 +18,9 @@ import { MaterialDefines } from "./materialDefines";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
+import { Plane } from '../Maths/math.plane';
 
+declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
 declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
 
@@ -917,6 +919,7 @@ export class Material implements IAnimatable {
         });
     }
 
+    private static readonly _AllDirtyCallBack = (defines: MaterialDefines) => defines.markAllAsDirty();
     private static readonly _ImageProcessingDirtyCallBack = (defines: MaterialDefines) => defines.markAsImageProcessingDirty();
     private static readonly _TextureDirtyCallBack = (defines: MaterialDefines) => defines.markAsTexturesDirty();
     private static readonly _FresnelDirtyCallBack = (defines: MaterialDefines) => defines.markAsFresnelDirty();
@@ -1005,6 +1008,13 @@ export class Material implements IAnimatable {
                 func(subMesh._materialDefines);
             }
         }
+    }
+
+    /**
+ * Indicates that we need to re-calculated for all submeshes
+ */
+    protected _markAllSubMeshesAsAllDirty() {
+        this._markAllSubMeshesAsDirty(Material._AllDirtyCallBack);
     }
 
     /**

@@ -99,7 +99,6 @@ function saveRenderImage(data, canvas) {
 }
 
 function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
-    seed = 100000;
     var renderData = getRenderData(canvas, engine);
     var testRes = true;
 
@@ -217,6 +216,8 @@ function runTest(index, done) {
         container.appendChild(renderImage);
 
         location.href = "#" + container.id;
+       
+        seed = 100000;
 
         if (test.sceneFolder) {
             BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function(newScene) {
@@ -324,10 +325,9 @@ function runTest(index, done) {
                     try {
                         request.onreadystatechange = null;
 
-                        var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/assets/");
-                        scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/assets/");
-                        scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/assets/");
-                        scriptToRun = scriptToRun.replace(/\/Assets\//g, config.root + "/assets/");
+                        var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
+                        scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
+                        scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/Assets/");
 
                         if (test.replace) {
                             var split = test.replace.split(",");

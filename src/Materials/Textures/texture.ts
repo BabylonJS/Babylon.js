@@ -1,15 +1,18 @@
 import { serialize, SerializationHelper } from "../../Misc/decorators";
 import { Observable } from "../../Misc/observable";
-import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Plane } from "../../Maths/math";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { _AlphaState } from "../../States/index";
 import { _TypeStore } from '../../Misc/typeStore';
 import { _DevTools } from '../../Misc/devTools';
 import { IInspectable } from '../../Misc/iInspectable';
+import { Engine } from '../../Engines/engine';
+import { TimingTools } from '../../Misc/timingTools';
+import { InstantiationTools } from '../../Misc/instantiationTools';
+import { Plane } from '../../Maths/math.plane';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -257,7 +260,7 @@ export class Texture extends BaseTexture {
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see http://doc.babylonjs.com/babylon101/materials#texture
      * @param url define the url of the picture to load as a texture
-     * @param scene define the scene the texture will belong to
+     * @param scene define the scene or engine the texture will belong to
      * @param noMipmap define if the texture will require mip maps or not
      * @param invertY define if the texture needs to be inverted on the y axis during loading
      * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
@@ -267,8 +270,8 @@ export class Texture extends BaseTexture {
      * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      */
-    constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
-        super(scene);
+    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | Engine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
+        super((sceneOrEngine && sceneOrEngine.getClassName() === "Scene") ? (sceneOrEngine as Scene) : null);
 
         this.name = url || "";
         this.url = url;
@@ -281,17 +284,36 @@ export class Texture extends BaseTexture {
             this._format = format;
         }
 
-        scene = this.getScene();
+        var scene = this.getScene();
+        var engine = (sceneOrEngine && (sceneOrEngine as Engine).getCaps) ? (sceneOrEngine as Engine) : (scene ? scene.getEngine() : null);
 
-        if (!scene) {
+        if (!engine) {
             return;
         }
-        scene.getEngine().onBeforeTextureInitObservable.notifyObservers(this);
+        engine.onBeforeTextureInitObservable.notifyObservers(this);
 
         let load = () => {
-            if (this._texture && this._texture._invertVScale) {
-                this.vScale = -1;
+            if (this._texture) {
+                if (this._texture._invertVScale) {
+                    this.vScale *= -1;
+                    this.vOffset += 1;
+                }
+
+                // Update texutre to match internal texture's wrapping
+                if (this._texture._cachedWrapU !== null) {
+                    this.wrapU = this._texture._cachedWrapU;
+                    this._texture._cachedWrapU = null;
+                }
+                if (this._texture._cachedWrapV !== null) {
+                    this.wrapV = this._texture._cachedWrapV;
+                    this._texture._cachedWrapV = null;
+                }
+                if (this._texture._cachedWrapR !== null) {
+                    this.wrapR = this._texture._cachedWrapR;
+                    this._texture._cachedWrapR = null;
+                }
             }
+
             if (this.onLoadObservable.hasObservers()) {
                 this.onLoadObservable.notifyObservers(this);
             }
@@ -313,8 +335,8 @@ export class Texture extends BaseTexture {
         this._texture = this._getFromCache(this.url, noMipmap, samplingMode, invertY);
 
         if (!this._texture) {
-            if (!scene.useDelayedTextureLoading) {
-                this._texture = scene.getEngine().createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format);
+            if (!scene || !scene.useDelayedTextureLoading) {
+                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format);
                 if (deleteBuffer) {
                     delete this._buffer;
                 }
@@ -326,7 +348,7 @@ export class Texture extends BaseTexture {
             }
         } else {
             if (this._texture.isReady) {
-                Tools.SetImmediate(() => load());
+                TimingTools.SetImmediate(() => load());
             } else {
                 this._texture.onLoadedObservable.add(load);
             }
@@ -345,6 +367,7 @@ export class Texture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
+        this.name = url;
         this.url = url;
         this._buffer = buffer;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
@@ -381,7 +404,7 @@ export class Texture extends BaseTexture {
         } else {
             if (this._delayedOnLoad) {
                 if (this._texture.isReady) {
-                    Tools.SetImmediate(this._delayedOnLoad);
+                    TimingTools.SetImmediate(this._delayedOnLoad);
                 } else {
                     this._texture.onLoadedObservable.add(this._delayedOnLoad);
                 }
@@ -559,6 +582,10 @@ export class Texture extends BaseTexture {
     public serialize(): any {
         var serializationObject = super.serialize();
 
+        if (!serializationObject) {
+            return null;
+        }
+
         if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
             serializationObject.base64String = this._buffer;
             serializationObject.name = serializationObject.name.replace("data:", "");
@@ -599,7 +626,7 @@ export class Texture extends BaseTexture {
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> {
         if (parsedTexture.customType) {
-            var customTexture = Tools.Instantiate(parsedTexture.customType);
+            var customTexture = InstantiationTools.Instantiate(parsedTexture.customType);
             // Update Sampling Mode
             var parsedCustomTexture: any = customTexture.Parse(parsedTexture, scene, rootUrl);
             if (parsedTexture.samplingMode && parsedCustomTexture.updateSamplingMode && parsedCustomTexture._samplingMode) {

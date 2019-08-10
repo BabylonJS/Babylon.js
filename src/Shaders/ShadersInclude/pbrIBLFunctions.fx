@@ -1,7 +1,12 @@
 #if defined(REFLECTION) || defined(SS_REFRACTION)
     float getLodFromAlphaG(float cubeMapDimensionPixels, float microsurfaceAverageSlope) {
-        float microsurfaceAverageSlopeTexels = microsurfaceAverageSlope * cubeMapDimensionPixels;
+        float microsurfaceAverageSlopeTexels = cubeMapDimensionPixels * microsurfaceAverageSlope;
         float lod = log2(microsurfaceAverageSlopeTexels);
+        return lod;
+    }
+
+    float getLinearLodFromRoughness(float cubeMapDimensionPixels, float roughness) {
+        float lod = log2(cubeMapDimensionPixels) * roughness;
         return lod;
     }
 #endif

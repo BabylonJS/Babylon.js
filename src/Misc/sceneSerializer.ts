@@ -46,7 +46,7 @@ var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
     //only works if the mesh is already loaded
     if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
         //serialize material
-        if (mesh.material) {
+        if (mesh.material && !mesh.material.doNotSerialize) {
             if (mesh.material instanceof MultiMaterial) {
                 serializationObject.multiMaterials = serializationObject.multiMaterials || [];
                 serializationObject.materials = serializationObject.materials || [];
@@ -86,7 +86,7 @@ var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
             serializeGeometry(geometry, serializationObject.geometries);
         }
         // Skeletons
-        if (mesh.skeleton) {
+        if (mesh.skeleton && !mesh.skeleton.doNotSerialize) {
             serializationObject.skeletons = serializationObject.skeletons || [];
             serializationObject.skeletons.push(mesh.skeleton.serialize());
         }
@@ -190,6 +190,16 @@ export class SceneSerializer {
         // Animations
         SerializationHelper.AppendSerializedAnimations(scene, serializationObject);
 
+        // Animation Groups
+        if (scene.animationGroups && scene.animationGroups.length > 0) {
+            serializationObject.animationGroups = [];
+            for (var animationGroupIndex = 0; animationGroupIndex < scene.animationGroups.length; animationGroupIndex++) {
+                var animationGroup = scene.animationGroups[animationGroupIndex];
+
+                serializationObject.animationGroups.push(animationGroup.serialize());
+            }
+        }
+
         // Reflection probes
         if (scene.reflectionProbes && scene.reflectionProbes.length > 0) {
             serializationObject.reflectionProbes = [];
@@ -222,6 +232,9 @@ export class SceneSerializer {
         if (scene.environmentTexture) {
             serializationObject.environmentTexture = scene.environmentTexture.name;
         }
+
+        // Environment Intensity
+        serializationObject.environmentIntensity = scene.environmentIntensity;
 
         // Skeletons
         serializationObject.skeletons = [];
@@ -313,13 +326,13 @@ export class SceneSerializer {
             for (var i = 0; i < toSerialize.length; ++i) {
                 if (withChildren) {
                     toSerialize[i].getDescendants().forEach((node: Node) => {
-                        if (node instanceof Mesh && (toSerialize.indexOf(node) < 0)) {
+                        if (node instanceof Mesh && (toSerialize.indexOf(node) < 0) && !node.doNotSerialize) {
                             toSerialize.push(node);
                         }
                     });
                 }
                 //make sure the array doesn't contain the object already
-                if (withParents && toSerialize[i].parent && (toSerialize.indexOf(toSerialize[i].parent) < 0)) {
+                if (withParents && toSerialize[i].parent && (toSerialize.indexOf(toSerialize[i].parent) < 0) && !toSerialize[i].parent.doNotSerialize) {
                     toSerialize.push(toSerialize[i].parent);
                 }
             }

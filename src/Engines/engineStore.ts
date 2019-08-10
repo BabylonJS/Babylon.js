@@ -31,4 +31,16 @@ export class EngineStore {
     public static get LastCreatedScene(): Nullable<Scene> {
         return this._LastCreatedScene;
     }
+
+    /**
+     * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
+     * @ignorenaming
+     */
+    public static UseFallbackTexture = true;
+
+    /**
+     * Texture content used if a texture cannot loaded
+     * @ignorenaming
+     */
+    public static FallbackTexture = "";
 }

@@ -3,7 +3,7 @@ import { Mesh } from "../Meshes/mesh";
 import { Nullable } from "../types";
 import { Observer } from "../Misc/observable";
 import { Scene } from "../scene";
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 

@@ -16,7 +16,7 @@ export class ConvolutionPostProcess extends PostProcess {
     /**
      * Creates a new instance ConvolutionPostProcess
      * @param name The name of the effect.
-     * @param kernel Array of 9 values corrisponding to the 3x3 kernel to be applied
+     * @param kernel Array of 9 values corresponding to the 3x3 kernel to be applied
      * @param options The required width/height ratio to downsize to before computing the render pass.
      * @param camera The camera to apply the render pass to.
      * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
@@ -25,7 +25,7 @@ export class ConvolutionPostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      */
     constructor(name: string,
-        /** Array of 9 values corrisponding to the 3x3 kernel to be applied */
+        /** Array of 9 values corresponding to the 3x3 kernel to be applied */
         public kernel: number[],
         options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);

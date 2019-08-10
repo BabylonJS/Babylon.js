@@ -1,7 +1,7 @@
 import { Nullable } from "../../../types";
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
 import { Observer } from "../../../Misc/observable";
-import { IAnimatable } from "../../../Misc/tools";
+import { IAnimatable } from '../../../Animations/animatable.interface';
 import { Logger } from "../../../Misc/logger";
 import { Camera } from "../../../Cameras/camera";
 import { ImageProcessingConfiguration } from "../../../Materials/imageProcessingConfiguration";
@@ -611,6 +611,11 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
         if (this._cameras !== null) {
             this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
+        }
+
+        // In multicamera mode, the scene needs to autoclear in between cameras.
+        if (this._scene.activeCameras && this._scene.activeCameras.length > 1) {
+            this._scene.autoClear = true;
         }
 
         if (!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1) {

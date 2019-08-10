@@ -235,7 +235,9 @@ export class MultiMaterial extends Material {
             var subMatId = parsedMultiMaterial.materials[matIndex];
 
             if (subMatId) {
-                multiMaterial.subMaterials.push(scene.getMaterialByID(subMatId));
+                // If the same multimaterial is loaded twice, the 2nd multimaterial needs to reference the latest material by that id which
+                // is why this lookup should use getLastMaterialByID instead of getMaterialByID
+                multiMaterial.subMaterials.push(scene.getLastMaterialByID(subMatId));
             } else {
                 multiMaterial.subMaterials.push(null);
             }

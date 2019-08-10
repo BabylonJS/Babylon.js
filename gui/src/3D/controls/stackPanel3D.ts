@@ -1,5 +1,5 @@
 import { Tools } from "babylonjs/Misc/tools";
-import { Matrix, Tmp, Vector3 } from "babylonjs/Maths/math";
+import { Matrix, TmpVectors, Vector3 } from "babylonjs/Maths/math";
 
 import { Container3D } from "./container3D";
 
@@ -59,10 +59,10 @@ export class StackPanel3D extends Container3D {
 
             controlCount++;
             child.mesh.computeWorldMatrix(true);
-            child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
+            child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, TmpVectors.Matrix[0]);
 
             let boundingBox = child.mesh.getBoundingInfo().boundingBox;
-            let extendSize = Vector3.TransformNormal(boundingBox.extendSize, Tmp.Matrix[0]);
+            let extendSize = Vector3.TransformNormal(boundingBox.extendSize, TmpVectors.Matrix[0]);
             extendSizes.push(extendSize);
 
             if (this._isVertical) {

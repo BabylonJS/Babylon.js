@@ -1,6 +1,6 @@
 import { PBREnvironment, EnvironmentDeserializer } from "./environmentSerializer";
 import { Scene } from "babylonjs/scene";
-import { Vector3, Quaternion, Axis, Matrix, Tmp } from "babylonjs/Maths/math";
+import { Vector3, Quaternion, Axis, Matrix, TmpVectors } from "babylonjs/Maths/math";
 import { SphericalPolynomial } from "babylonjs/Maths/sphericalPolynomial";
 import { ShadowLight } from "babylonjs/Lights/shadowLight";
 import { TextureUtils } from "./texture";
@@ -146,16 +146,16 @@ export class ViewerLabs {
 
     public rotateShadowLight(shadowLight: ShadowLight, amount: number, point = Vector3.Zero(), axis = Axis.Y, target = Vector3.Zero()) {
         axis.normalize();
-        point.subtractToRef(shadowLight.position, Tmp.Vector3[0]);
-        Matrix.TranslationToRef(Tmp.Vector3[0].x, Tmp.Vector3[0].y, Tmp.Vector3[0].z, Tmp.Matrix[0]);
-        Tmp.Matrix[0].invertToRef(Tmp.Matrix[2]);
-        Matrix.RotationAxisToRef(axis, amount, Tmp.Matrix[1]);
-        Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[2]);
-        Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[2]);
+        point.subtractToRef(shadowLight.position, TmpVectors.Vector3[0]);
+        Matrix.TranslationToRef(TmpVectors.Vector3[0].x, TmpVectors.Vector3[0].y, TmpVectors.Vector3[0].z, TmpVectors.Matrix[0]);
+        TmpVectors.Matrix[0].invertToRef(TmpVectors.Matrix[2]);
+        Matrix.RotationAxisToRef(axis, amount, TmpVectors.Matrix[1]);
+        TmpVectors.Matrix[2].multiplyToRef(TmpVectors.Matrix[1], TmpVectors.Matrix[2]);
+        TmpVectors.Matrix[2].multiplyToRef(TmpVectors.Matrix[0], TmpVectors.Matrix[2]);
 
-        Tmp.Matrix[2].decompose(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1]);
+        TmpVectors.Matrix[2].decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], TmpVectors.Vector3[1]);
 
-        shadowLight.position.addInPlace(Tmp.Vector3[1]);
+        shadowLight.position.addInPlace(TmpVectors.Vector3[1]);
 
         shadowLight.setDirectionToTarget(target);
     }

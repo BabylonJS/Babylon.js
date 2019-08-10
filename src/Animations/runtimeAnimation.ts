@@ -1,5 +1,6 @@
 import { DeepImmutable, Nullable } from "../types";
-import { Quaternion, Vector3, Vector2, Size, Color3, Matrix } from "../Maths/math";
+import { Quaternion, Vector3, Vector2, Matrix } from "../Maths/math.vector";
+import { Color3 } from '../Maths/math.color';
 import { Animation, _IAnimationState } from "./animation";
 import { AnimationEvent } from "./animationEvent";
 
@@ -7,6 +8,7 @@ declare type Animatable = import("./animatable").Animatable;
 
 import { Scene } from "../scene";
 import { IAnimationKey } from './animationKey';
+import { Size } from '../Maths/math.size';
 
 // Static values to help the garbage collector
 
@@ -426,6 +428,17 @@ export class RuntimeAnimation {
             frame = keys[0].frame;
         } else if (frame > keys[keys.length - 1].frame) {
             frame = keys[keys.length - 1].frame;
+        }
+
+        // Need to reset animation events
+        const events = this._events;
+        if (events.length) {
+            for (var index = 0; index < events.length; index++) {
+                if (!events[index].onlyOnce) {
+                    // reset events in the future
+                    events[index].isDone = events[index].frame < frame;
+                }
+            }
         }
 
         this._currentFrame = frame;

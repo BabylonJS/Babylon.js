@@ -1,6 +1,4 @@
-#ifdef GL_ES
-	precision mediump sampler2DArray;
-#endif
+precision mediump sampler2DArray;
 
 varying vec2 vUV;
 uniform sampler2DArray multiviewSampler;

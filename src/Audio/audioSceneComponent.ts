@@ -3,11 +3,13 @@ import { SoundTrack } from "./soundTrack";
 import { Engine } from "../Engines/engine";
 import { Camera } from "../Cameras/camera";
 import { Nullable } from "../types";
-import { Matrix, Vector3 } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { SceneComponentConstants, ISceneSerializableComponent } from "../sceneComponent";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import { AssetContainer } from "../assetContainer";
+
+import "./audioEngine";
 
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
@@ -258,7 +260,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     }
 
     /**
-     * Adds all the element from the container to the scene
+     * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
     public addFromContainer(container: AbstractScene): void {
@@ -398,7 +400,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         }
 
         if (listeningCamera && audioEngine.audioContext) {
-            audioEngine.audioContext.listener.setPosition(listeningCamera.position.x, listeningCamera.position.y, listeningCamera.position.z);
+            audioEngine.audioContext.listener.setPosition(listeningCamera.globalPosition.x, listeningCamera.globalPosition.y, listeningCamera.globalPosition.z);
             // for VR cameras
             if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
                 listeningCamera = listeningCamera.rigCameras[0];

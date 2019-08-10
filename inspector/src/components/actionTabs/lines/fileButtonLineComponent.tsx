@@ -7,6 +7,9 @@ interface IFileButtonLineComponentProps {
 }
 
 export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+    private static _IDGenerator = 0;
+    private _id = FileButtonLineComponent._IDGenerator++;
+
     constructor(props: IFileButtonLineComponentProps) {
         super(props);
     }
@@ -23,10 +26,10 @@ export class FileButtonLineComponent extends React.Component<IFileButtonLineComp
     render() {
         return (
             <div className="buttonLine">
-                <label htmlFor="file-upload" className="file-upload">
+                <label htmlFor={"file-upload" + this._id} className="file-upload">
                     {this.props.label}
                 </label>
-                <input ref="upload" id="file-upload" type="file" accept={this.props.accept} onChange={evt => this.onChange(evt)} />
+                <input ref="upload" id={"file-upload" + this._id} type="file" accept={this.props.accept} onChange={evt => this.onChange(evt)} />
             </div>
         );
     }

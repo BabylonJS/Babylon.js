@@ -52,7 +52,7 @@ export abstract class WebVRController extends PoseEnabledController {
     }
 
     /**
-     * X and Y axis corrisponding to the controllers joystick
+     * X and Y axis corresponding to the controllers joystick
      */
     public pad: StickValues = { x: 0, y: 0 };
 

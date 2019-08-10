@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Color3 } from "../Maths/math";
+import { Color3 } from "../Maths/math.color";
 import { Texture } from "../Materials/Textures/texture";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";

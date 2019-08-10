@@ -58,7 +58,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         const element = ReactDOM.findDOMNode(this) as Element;
 
         if (element) {
-            element.scrollIntoView();
+            element.scrollIntoView(false);
         }
     }
 

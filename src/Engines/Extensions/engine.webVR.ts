@@ -1,22 +1,12 @@
 import { Nullable } from "../../types";
 import { Engine, IDisplayChangedEventArgs } from "../../Engines/engine";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { Size } from '../../Maths/math';
+import { Size } from '../../Maths/math.size';
 import { Observable } from '../../Misc/observable';
 import { Tools } from '../../Misc/tools';
 import { DomManagement } from '../../Misc/domManagement';
 
 declare module "../../Engines/engine" {
-    /**
-     * Defines the interface used by display changed events
-     */
-    export interface IDisplayChangedEventArgs {
-        /** Gets the vrDisplay object (if any) */
-        vrDisplay: Nullable<any>;
-        /** Gets a boolean indicating if webVR is supported */
-        vrSupported: boolean;
-    }
-
     export interface Engine {
         /** @hidden */
         _vrDisplay: any;
@@ -143,15 +133,16 @@ Engine.prototype.initWebVRAsync = function(): Promise<IDisplayChangedEventArgs> 
         this._onVrDisplayDisconnect = () => {
             this._vrDisplay.cancelAnimationFrame(this._frameHandler);
             this._vrDisplay = undefined;
-            this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
+            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
             notifyObservers();
         };
         this._onVrDisplayPresentChange = () => {
             this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
         };
-        window.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-        window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-        window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+        let hostWindow = this.getHostWindow();
+        hostWindow.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
+        hostWindow.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+        hostWindow.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
     }
     this._webVRInitPromise = this._webVRInitPromise || this._getVRDisplaysAsync();
     this._webVRInitPromise.then(notifyObservers);
@@ -254,8 +245,10 @@ Engine.prototype._connectVREvents = function(canvas: HTMLCanvasElement, document
     };
 
     if (DomManagement.IsWindowObjectExist()) {
-        window.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
-        window.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
+        let hostWindow = this.getHostWindow();
+
+        hostWindow.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
+        hostWindow.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
     }
 };
 
@@ -276,5 +269,5 @@ Engine.prototype.isVRPresenting = function() {
 };
 
 Engine.prototype._requestVRFrame = function() {
-    this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
+    this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
 };
