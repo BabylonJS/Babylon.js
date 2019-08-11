@@ -198,7 +198,6 @@ Object.defineProperty(Scene.prototype, "audioListenerPositionProvider", {
             compo = new AudioSceneComponent(this);
             this._addComponent(compo);
         }
-        
 
         if (typeof value !== 'function') {
             throw new Error('The value passed to [Scene.audioListenerPositionProvider] must be a function that returns a Vector3');
@@ -448,7 +447,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
                 audioEngine.audioContext.listener.setPosition(position.x, position.y, position.z);
             } else {
                 var listeningCamera: Nullable<Camera>;
-                
+
                 if (scene.activeCameras.length > 0) {
                     listeningCamera = scene.activeCameras[0];
                 } else {
