@@ -16,7 +16,7 @@ VertexData.CreateCylinder = function(options: { height?: number, diameterTop?: n
     var subdivisions: number = options.subdivisions || 1;
     var hasRings: boolean = options.hasRings ? true : false;
     var enclose: boolean = options.enclose ? true : false;
-    var cap = options.cap || Mesh.CAP_ALL;
+    var cap = (options.cap === 0) ? 0 : options.cap || Mesh.CAP_ALL;
     var arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
     var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
     var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
