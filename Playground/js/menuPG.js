@@ -151,9 +151,11 @@ class MenuPG {
      */
     displayWaitDiv() {
         document.getElementById("waitDiv").style.display = "flex";
+        document.getElementById("fpsLabel").style.display = "none";
     };
     hideWaitDiv() {
         document.getElementById("waitDiv").style.display = "none";
+        document.getElementById("fpsLabel").style.display = "block";
     };
 
     displayVersionNumber(version) {

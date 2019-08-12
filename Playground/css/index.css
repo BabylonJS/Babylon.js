@@ -8,6 +8,7 @@ body {
     overflow: hidden;
     font-family: "acumin-pro-condensed";
 }
+
 #waitDiv {
     position: absolute;
     width: 100%;
@@ -15,14 +16,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: black;
-    opacity: 0.8;
+    background: rgba(1,1,1,.8);
+    opacity: 1;
     top:0px;
     left:0px;
     z-index: 10;
     flex-direction: column;
 }
-
 #logo-part {
     width: 20vw;
     display: grid;
@@ -30,7 +30,11 @@ body {
     grid-template-columns: 100%;
     align-items: center;
 }
-
+#waitTitle {
+    text-align: center;
+    font-size: 38px;
+    color: #BB464B;
+}
 #waitLogo {
     grid-column: 1;
     grid-row: 1;
@@ -38,7 +42,6 @@ body {
     width: 40%;
     height: 40%;
 }
-
 #waitSpinner {
     grid-column: 1;
     grid-row: 1;
@@ -74,11 +77,6 @@ body {
 100% { transform: rotate(360deg);}
 } 
 
-#waitTitle {
-    text-align: center;
-    font-size: 38px;
-    color: #BB464B;
-}
 #embed-host {
     z-index: 10;
 }
@@ -151,10 +149,10 @@ body {
 }
 #exampleList #exampleBanner {
     text-align: center;
-    padding: 10px 0;
+    padding: 1px 0;
 }
 #exampleList #exampleBanner.languageJS {
-    background-color: #3f3461;
+    background-color: #201936;
 }
 #exampleList #exampleBanner.languageTS {
     background-color: #bb464b;
@@ -162,10 +160,10 @@ body {
 #exampleList #exampleBanner h1 {
     width: 100%;
     text-align: center;
-    font-weight: 700;
+    font-weight: normal;
     color: white;
     font-size: 25px;
-    line-height: 36px;
+    line-height: 32px;
 }
 #exampleList #exampleBanner h1 img {
     display: none;
@@ -278,6 +276,7 @@ body {
     font-size: 0;
 }
 .fpsLabel {
+    display: none;
     position: absolute;
     top: 80px;
     right: 0;
@@ -385,9 +384,6 @@ body {
     float: left;
 }
 
-.button.run {
-    background-color: white;
-}
 .button {
     cursor: pointer;
     display: inline-block;
@@ -413,8 +409,13 @@ body {
 .languageTS .button img {
     filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%);
 }
+.button.run img {
+    filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
+}
 .button i {
     margin-left: 10px;
+    font-size: 14px;
+    vertical-align: middle;
 }
 .button:hover {
     cursor: pointer;
@@ -656,16 +657,16 @@ body {
     line-height: 35px;
     padding-right:20px;
 }
-.navbarBottom .links .link{
+.navbarBottom .links .link {
     display: inline-block;
     line-height: 35px;
     font-size: 16px;
     color: white;
 }
-.navbarBottom .links .link:hover{
+.navbarBottom .links .link:hover {
     background-color:#3F3461;
 }
-.navbarBottom .links .link a{
+.navbarBottom .links .link a {
     text-decoration: none;
     line-height: 35px;
     padding: 6px 15px;
