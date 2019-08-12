@@ -222,7 +222,7 @@ export class DirectionalLight extends ShadowLight {
         } else {
             this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
         }
-        
+
         return this;
     }
 
