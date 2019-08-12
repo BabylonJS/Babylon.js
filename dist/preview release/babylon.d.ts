@@ -28885,6 +28885,8 @@ declare module BABYLON {
          * @param size Define the size of the data.
          */
         updateUniform(uniformName: string, data: FloatArray, size: number): void;
+        private _valueCache;
+        private _cacheMatrix;
         private _updateMatrix3x3ForUniform;
         private _updateMatrix3x3ForEffect;
         private _updateMatrix2x2ForEffect;
@@ -35190,6 +35192,11 @@ declare module BABYLON {
              * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
              */
             headphone: boolean;
+            /**
+             * Gets or sets custom audio listener position provider
+             * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+             */
+            audioListenerPositionProvider: Nullable<() => Vector3>;
         }
     /**
      * Defines the sound scene component responsible to manage any sounds
@@ -35216,6 +35223,15 @@ declare module BABYLON {
          * Please use the according Switch methods to change output.
          */
         readonly headphone: boolean;
+        private _audioListenerPositionProvider;
+        /**
+         * Gets the current audio listener position provider
+         */
+        /**
+        * Sets a custom listener position for all sounds in the scene
+        * By default, this is the position of the first active camera
+        */
+        audioListenerPositionProvider: Nullable<() => Vector3>;
         /**
          * Creates a new instance of the component for the given scene
          * @param scene Defines the scene to register the component in
