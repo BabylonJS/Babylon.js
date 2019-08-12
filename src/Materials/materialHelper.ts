@@ -75,9 +75,7 @@ export class MaterialHelper {
     public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
         var matrix = texture.getTextureMatrix();
 
-        if (!matrix.isIdentityAs3x2()) {
-            uniformBuffer.updateMatrix(key + "Matrix", matrix);
-        }
+        uniformBuffer.updateMatrix(key + "Matrix", matrix);
     }
 
     /**
