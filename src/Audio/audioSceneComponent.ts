@@ -84,6 +84,12 @@ declare module "../scene" {
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         headphone: boolean;
+
+        /**
+         * Gets or sets custom audio listener position provider
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         */
+        audioListenerPositionProvider: Nullable<() => Vector3>;
     }
 }
 
