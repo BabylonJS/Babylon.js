@@ -122,6 +122,8 @@ Java_com_android_appviewer_AndroidViewAppActivity_step(JNIEnv* env, jobject obj)
 JNIEXPORT void JNICALL
 Java_com_android_appviewer_AndroidViewAppActivity_setTouchInfo(JNIEnv* env, jobject obj, jfloat x, jfloat y, jboolean down)
 {
+    inputBuffer->SetPointerPosition(x, y);
+    inputBuffer->SetPointerDown(down);
 }
 
 JNIEXPORT void JNICALL
