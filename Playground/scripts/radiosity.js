@@ -17,7 +17,7 @@ var prepareUVS = function(ms) {
     for (let i = 0; i < geometryMeshes.length; i++) {
         let mesh = geometryMeshes[i];
         mesh.__lightmapSize = 1 / factor / worldToTexelRatio;
-        mesh.__lightmapSize = Math.max(1, BABYLON.Tools.FloorPOT(mesh.__lightmapSize));
+        mesh.__lightmapSize = Math.min(1024, Math.max(1, BABYLON.Tools.FloorPOT(mesh.__lightmapSize)));
         console.log(mesh.__lightmapSize);
         meshes.push(mesh);
     }

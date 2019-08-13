@@ -1,4 +1,4 @@
-import { Vector2, Vector3 } from "../Maths/math"
+import { Vector2, Vector3 } from "../Maths/math";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Scene } from "../scene";
@@ -188,7 +188,6 @@ class RadiosityUtils {
         return RadiosityUtils.subdiviseRec(nv1[0], nv1[1], nv1[2], nn1[0], nn1[1], nn1[2], nuv1[0], nuv1[1], nuv1[2], ni1[0], ni1[1], ni1[2], areaThreshold, buffer, normBuffer, uvBuffer, indices, indexPointer);
     }
 
-
     public static findBiggestSide(v0: Vector3, v1: Vector3, v2: Vector3): number[] {
         // TODO : buffer this
         let l10 = v1.subtract(v0).lengthSquared();
@@ -217,7 +216,6 @@ class RadiosityUtils {
         let c = Vector3.Cross(v10, v20);
         return 0.5 * c.length();
     }
-
 
     public static encodeId(n: number) {
         var id = new Vector3();
