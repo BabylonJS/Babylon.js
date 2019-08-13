@@ -37,7 +37,7 @@ namespace babylon
         struct UniformInfo final
         {
             uint8_t Stage{};
-            // uninitilized bgfx resource is kInvalidHandle. 0 can be a valid.
+            // uninitilized bgfx resource is kInvalidHandle. 0 can be a valid handle.
             bgfx::UniformHandle Handle{bgfx::kInvalidHandle};
         };
 
