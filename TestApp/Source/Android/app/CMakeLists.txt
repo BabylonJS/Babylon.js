@@ -56,7 +56,7 @@ target_link_libraries(BabylonNativeJNI
         EGL
         log
         -lz
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Android_${CMAKE_ANDROID_ARCH_ABI}/libLibrary.a # BabylonNative
+        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Android_${CMAKE_ANDROID_ARCH_ABI}/libLibrary.a # BabylonNative
         ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libbgfx.a
         ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libbimg.a
         ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libbx.a

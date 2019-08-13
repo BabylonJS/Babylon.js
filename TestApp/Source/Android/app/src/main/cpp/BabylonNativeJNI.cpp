@@ -61,14 +61,34 @@ Java_com_android_appviewer_AndroidViewAppActivity_finishEngine(JNIEnv* env, jobj
 {
 }
 
+void AndroidLogMessage(const char* message)
+{
+    __android_log_write(ANDROID_LOG_INFO, "BabylonNative", message);
+}
+
+void AndroidWarnMessage(const char* message)
+{
+    __android_log_write(ANDROID_LOG_WARN, "BabylonNative", message);
+}
+
+void AndroidErrorMessage(const char* message)
+{
+    __android_log_write(ANDROID_LOG_ERROR, "BabylonNative", message);
+}
+
 JNIEXPORT void JNICALL
 Java_com_android_appviewer_AndroidViewAppActivity_surfaceCreated(JNIEnv* env, jobject obj, jobject surface)
 {
     if (!runtime)
     {
+        // register console outputs
+        babylon::Runtime::RegisterLogOutput(AndroidLogMessage);
+        babylon::Runtime::RegisterWarnOutput(AndroidWarnMessage);
+        babylon::Runtime::RegisterErrorOutput(AndroidErrorMessage);
+
         ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
 
-        runtime = std::make_unique<babylon::RuntimeAndroid>(window, "");
+        runtime = std::make_unique<babylon::RuntimeAndroid>(window, "file:///data/local/tmp");
 
         inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
         InputManager::Initialize(*runtime, *inputBuffer);

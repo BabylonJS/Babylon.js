@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Babylon/Runtime.h>
-#include <Napi/Napi.h>
+#include <napi/napi.h>
 
 class InputManager final : public Napi::ObjectWrap<InputManager>
 {
