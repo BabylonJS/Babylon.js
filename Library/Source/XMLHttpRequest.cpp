@@ -76,11 +76,7 @@ namespace babylon
 
     Napi::Value XMLHttpRequest::GetStatus(const Napi::CallbackInfo&)
     {
-#ifdef WIN32
         return Napi::Value::From(Env(), arcana::underlying_cast(m_status));
-#else
-        return Napi::Value::From(Env(), m_status);
-#endif
     }
 
     void XMLHttpRequest::AddEventListener(const Napi::CallbackInfo& info)
@@ -144,9 +140,7 @@ namespace babylon
             return m_runtimeImpl.LoadUrlAsync<std::string>(m_url).then(arcana::inline_scheduler, m_runtimeImpl.Cancellation(), [this](const std::string& data)
             {
                 m_responseText = std::move(data);
-#ifdef WIN32
-                m_status = winrt::Windows::Web::Http::HttpStatusCode::Ok;
-#endif
+                m_status = HTTPStatusCode::Ok;
                 SetReadyState(ReadyState::Done);
             });
         }
@@ -156,9 +150,7 @@ namespace babylon
             {
                 m_response = Napi::Persistent(Napi::ArrayBuffer::New(Env(), data.size()));
                 memcpy(m_response.Value().Data(), data.data(), data.size());
-#ifdef WIN32
-                m_status = winrt::Windows::Web::Http::HttpStatusCode::Ok;
-#endif
+                m_status = HTTPStatusCode::Ok;
                 SetReadyState(ReadyState::Done);
             });
         }
