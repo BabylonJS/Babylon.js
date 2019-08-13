@@ -42,6 +42,14 @@ export interface INavigationEnginePlugin {
     getRandomPointAround(position: Vector3, maxRadius: number): Vector3;
 
     /**
+     * Compute the final position from a segment made of destination-position
+     * @param position world position
+     * @param destination world position
+     * @returns the resulting point along the navmesh
+     */
+    moveAlong(position: Vector3, destination: Vector3): Vector3;
+
+    /**
      * Compute a navigation path from start to end. Returns an empty array if no path can be computed
      * @param start world position
      * @param end world position
