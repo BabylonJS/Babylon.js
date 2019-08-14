@@ -185,7 +185,7 @@ function runTest(index, done) {
 
     var title = document.createElement("div");
     title.className = "title";
-    titleContainer.appendChild("#" + index + "> " + title);
+    titleContainer.appendChild(title);
 
     var result = document.createElement("div");
     result.className = "result";
@@ -200,7 +200,7 @@ function runTest(index, done) {
     resultCanvas.className = "resultImage";
     container.appendChild(resultCanvas);
 
-    title.innerHTML = test.title;
+    title.innerHTML = "#" + index + "> " + test.title;
 
     console.log("Running " + test.title);
 
