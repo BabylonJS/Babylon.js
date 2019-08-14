@@ -102,7 +102,7 @@ export class NodeMaterialConnectionPoint {
     /**
      * Gets a boolean indicating that the current point is connected to an input block
      */
-    public get isConnectedToInput(): boolean {
+    public get isConnectedToInputBlock(): boolean {
         return this.connectedPoint !== null && this.connectedPoint.ownerBlock.isInput;
     }
 
@@ -110,7 +110,7 @@ export class NodeMaterialConnectionPoint {
      * Gets a the connected input block (if any)
      */
     public get connectInputBlock(): Nullable<InputBlock> {
-        if (!this.isConnectedToInput) {
+        if (!this.isConnectedToInputBlock) {
             return null;
         }
 
@@ -147,7 +147,12 @@ export class NodeMaterialConnectionPoint {
 
     /** Gets the list of connected endpoints */
     public get endpoints() {
-        return this, this._endpoints;
+        return this._endpoints;
+    }
+
+    /** Gets a boolean indicating if that output point is connected to at least one input */
+    public get hasEndpoints(): boolean {
+        return this._endpoints && this._endpoints.length > 0;
     }
 
     /**
