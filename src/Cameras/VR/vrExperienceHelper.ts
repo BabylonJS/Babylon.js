@@ -271,6 +271,7 @@ class VRExperienceHelperCameraGazer extends VRExperienceHelperGazer {
     constructor(private getCamera: () => Nullable<Camera>, scene: Scene) {
         super(scene);
     }
+
     _getForwardRay(length: number): Ray {
         var camera = this.getCamera();
         if (camera) {
@@ -404,6 +405,12 @@ export class VRExperienceHelper {
      * Observable raised when a new mesh is selected based on meshSelectionPredicate
      */
     public onNewMeshSelected = new Observable<AbstractMesh>();
+
+    /**
+     * Observable raised when a new mesh is selected based on meshSelectionPredicate.
+     * This observable will provide the mesh and the controller used to select the mesh
+     */
+    public onMeshSelectedWithController = new Observable<{mesh: AbstractMesh, controller: WebVRController}>();
 
     /**
      * Observable raised when a new mesh is picked based on meshSelectionPredicate
@@ -1970,9 +1977,13 @@ export class VRExperienceHelper {
                     }
                     try {
                         this.onNewMeshSelected.notifyObservers(hit.pickedMesh);
+                        let gazerAsControllerGazer = gazer as VRExperienceHelperControllerGazer;
+                        if (gazerAsControllerGazer.webVRController) {
+                            this.onMeshSelectedWithController.notifyObservers({mesh: hit.pickedMesh, controller: gazerAsControllerGazer.webVRController});
+                        }
                     }
                     catch (err) {
-                        Logger.Warn("Error in your custom logic onNewMeshSelected: " + err);
+                        Logger.Warn("Error while raising onNewMeshSelected or onMeshSelectedWithController: " + err);
                     }
                 }
                 else {

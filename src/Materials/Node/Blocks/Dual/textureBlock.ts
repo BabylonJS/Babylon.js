@@ -227,7 +227,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._textureInfoName, "float");
 
         for (var output of this._outputs) {
-            if (output.connectedBlocks.length) {
+            if (output.hasEndpoints) {
                 this._writeOutput(state, output, output.name);
             }
         }
