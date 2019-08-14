@@ -1,4 +1,6 @@
 set(NAPI_JAVASCRIPT_ENGINE "Chakra" CACHE STRING "JavaScript engine for N-API.")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(Dependencies/napi EXCLUDE_FROM_ALL)
 set_property(TARGET napi PROPERTY FOLDER Dependencies/napi)
 set(BABYLON_NATIVE_DEPENDENCIES ${NAPI_DEPENDENCIES} PARENT_SCOPE)
@@ -68,10 +70,26 @@ if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL 
         "Source/ShaderCompilerD3D.cpp")
 endif()
 
+if(BABYLON_NATIVE_PLATFORM STREQUAL "Android")
+    set(SOURCES ${SOURCES}
+        "Source/ShaderCompilerOpenGL.cpp")
+endif()
+
+
+
 add_library(Library ${SOURCES})
+
+set_target_properties(Library PROPERTIES
+         ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${BABYLON_NATIVE_PLATFORM}_${ARCH}")
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 
+
+target_compile_definitions(Library PRIVATE V8_DEPRECATION_WARNINGS=1)
+target_compile_definitions(Library PRIVATE NODE_USE_V8_PLATFORM=1)
+target_compile_definitions(Library PRIVATE HAVE_INSPECTOR=0)
+target_compile_definitions(Library PRIVATE V8_INSPECTOR_USE_STL=1)
+target_compile_definitions(Library PRIVATE V8_INSPECTOR_USE_OLD_STL=1)
 target_compile_definitions(Library PRIVATE NOMINMAX)
 target_compile_definitions(Library PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 
@@ -111,3 +129,4 @@ target_link_libraries(Library
 
 target_include_directories(Library PUBLIC "Include")
 target_link_libraries(Library PUBLIC napi)
+

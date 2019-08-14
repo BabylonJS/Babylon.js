@@ -53,7 +53,7 @@ namespace babylon
 
         if (code != CURLUE_OK)
         {
-            throw std::exception{ "Invalid URL, neither absolute nor relative." };
+            throw std::exception{ };
         }
 
         char* buf;
@@ -61,7 +61,7 @@ namespace babylon
 
         if (code != CURLUE_OK)
         {
-            throw std::exception{ "Invalid URL, unable to create final URL." };
+            throw std::exception{ };
         }
 
         std::string absoluteUrl{ buf };
@@ -97,7 +97,7 @@ namespace babylon
                 auto result = curl_easy_perform(curl);
                 if (result != CURLE_OK)
                 {
-                    throw std::exception("HTTP request failed.");
+                    throw std::exception();
                 }
 
                 curl_easy_cleanup(curl);
@@ -117,6 +117,7 @@ namespace babylon
         {
             Env().Eval(script.data(), url.data());
         });
+        
     }
 
     void RuntimeImpl::Eval(const std::string& string, const std::string& sourceUrl)
@@ -192,4 +193,8 @@ namespace babylon
             m_dispatcher.blocking_tick(m_cancelSource);
         }
     }
+
+    template arcana::task<std::string, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);
+    template arcana::task<std::vector<char>, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);
 }
+

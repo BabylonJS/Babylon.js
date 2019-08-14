@@ -1791,8 +1791,9 @@ template <typename T>
 inline Buffer<T> Buffer<T>::New(napi_env env, size_t length) {
   napi_value value;
   void* data;
-  napi_status status = napi_create_buffer(env, length * sizeof (T), &data, &value);
-  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
+  //HACK
+  //napi_status status = napi_create_buffer(env, length * sizeof (T), &data, &value);
+  //NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
   return Buffer(env, value, length, static_cast<T*>(data));
 }
 
@@ -1971,7 +1972,7 @@ inline Error Error::New(napi_env env, const std::string& message) {
 inline void Error::Fatal(const char*, const char* message) {
   // $HACK
   //napi_fatal_error(location, NAPI_AUTO_LENGTH, message, NAPI_AUTO_LENGTH);
-  throw std::exception(message);
+  throw std::exception();
 }
 
 inline Error::Error() : ObjectReference() {

@@ -1,0 +1,40 @@
+apply plugin: 'com.android.application'
+
+def platformVersion = 21
+android {
+    compileSdkVersion 28
+
+    defaultConfig {
+        applicationId 'com.android.appviewer'
+        minSdkVersion "${platformVersion}"
+        targetSdkVersion 28
+        externalNativeBuild {
+            cmake {
+                arguments '-DANDROID_STL=c++_static'
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                          'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+        }
+    }
+}
+
+task copyFiles << {
+    copy
+            {
+                from '../../../Scripts'
+                include "*.js"
+                into 'src/main/assets/Scripts'
+            }
+}
+
+preBuild.dependsOn(copyFiles)

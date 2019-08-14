@@ -19,22 +19,22 @@ namespace babylon
             Definition& operator=(const Definition&) = delete;
 
             template<void(ImplT::*method)(const Napi::CallbackInfo& info)>
-            Definition& AddVoidReturningMethod(const std::string& name)
+            Definition& AddVoidReturningMethod(const char* name)
             {
-                m_propertyDescriptors.push_back(InstanceMethod(name.c_str(), &NapiBridge<ImplT>::InstanceMethodImpl<method>, napi_default, m_impl));
+                m_propertyDescriptors.push_back(Napi::ObjectWrap<NapiBridge<ImplT>>::InstanceMethod(name, &NapiBridge<ImplT>::InstanceMethodImpl<method>, napi_default, m_impl));
                 return *this;
             }
 
             template<Napi::Value(ImplT::*method)(const Napi::CallbackInfo& info)>
-            Definition& AddValueReturningMethod(const std::string& name)
+            Definition& AddValueReturningMethod(const char* name)
             {
-                m_propertyDescriptors.push_back(InstanceMethod(name.c_str(), &NapiBridge<ImplT>::InstanceMethodImpl<method>, napi_default, m_impl));
+                m_propertyDescriptors.push_back(Napi::ObjectWrap<NapiBridge<ImplT>>::InstanceMethod(name, &NapiBridge<ImplT>::InstanceMethodImpl<method>, napi_default, m_impl));
                 return *this;
             }
 
             Napi::Function Finalize()
             {
-                return DefineClass(m_env, m_name.c_str(), m_propertyDescriptors, m_impl);
+                return NapiBridge<ImplT>::DefineClass(m_env, m_name.c_str(), m_propertyDescriptors, m_impl);
             }
 
         private:
@@ -45,15 +45,15 @@ namespace babylon
             {
             }
 
-            const std::string m_name{};
-            Napi::Env& m_env{};
+            const std::string m_name;
+            Napi::Env& m_env;
             ImplT* m_impl{};
-            std::vector<Napi::ClassPropertyDescriptor<NapiBridge<ImplT>>> m_propertyDescriptors{};
+            std::vector<Napi::ClassPropertyDescriptor<NapiBridge<ImplT>>> m_propertyDescriptors;
         };
 
-        static Definition Define(const std::string& name, Napi::Env& env, ImplT* impl)
+        static NapiBridge<ImplT>::Definition Define(const std::string& name, Napi::Env& env, ImplT* impl)
         {
-            return{ name, env, impl };
+            return NapiBridge<ImplT>::Definition{ name, env, impl };
         }
 
         explicit NapiBridge(const Napi::CallbackInfo& info)
@@ -82,60 +82,60 @@ namespace babylon
         {
             Napi::HandleScope scope{ env };
             auto func = NapiBridge<NativeEngineT>::Define("NativeEngine", env, impl)
-                .AddVoidReturningMethod<&NativeEngineT::RequestAnimationFrame>("requestAnimationFrame")
-                .AddValueReturningMethod<&NativeEngineT::CreateVertexArray>("createVertexArray")
-                .AddVoidReturningMethod<&NativeEngineT::DeleteVertexArray>("deleteVertexArray")
-                .AddVoidReturningMethod<&NativeEngineT::BindVertexArray>("bindVertexArray")
-                .AddValueReturningMethod<&NativeEngineT::CreateIndexBuffer>("createIndexBuffer")
-                .AddVoidReturningMethod<&NativeEngineT::DeleteIndexBuffer>("deleteIndexBuffer")
-                .AddVoidReturningMethod<&NativeEngineT::RecordIndexBuffer>("recordIndexBuffer")
-                .AddValueReturningMethod<&NativeEngineT::CreateVertexBuffer>("createVertexBuffer")
-                .AddVoidReturningMethod<&NativeEngineT::DeleteVertexBuffer>("deleteVertexBuffer")
-                .AddVoidReturningMethod<&NativeEngineT::RecordVertexBuffer>("recordVertexBuffer")
-                .AddValueReturningMethod<&NativeEngineT::CreateProgram>("createProgram")
-                .AddValueReturningMethod<&NativeEngineT::GetUniforms>("getUniforms")
-                .AddValueReturningMethod<&NativeEngineT::GetAttributes>("getAttributes")
-                .AddVoidReturningMethod<&NativeEngineT::SetProgram>("setProgram")
-                .AddVoidReturningMethod<&NativeEngineT::SetState>("setState")
-                .AddVoidReturningMethod<&NativeEngineT::SetZOffset>("setZOffset")
-                .AddValueReturningMethod<&NativeEngineT::GetZOffset>("getZOffset")
-                .AddVoidReturningMethod<&NativeEngineT::SetDepthTest>("setDepthTest")
-                .AddValueReturningMethod<&NativeEngineT::GetDepthWrite>("getDepthWrite")
-                .AddVoidReturningMethod<&NativeEngineT::SetDepthWrite>("setDepthWrite")
-                .AddVoidReturningMethod<&NativeEngineT::SetColorWrite>("setColorWrite")
-                .AddVoidReturningMethod<&NativeEngineT::SetBlendMode>("setBlendMode")
-                .AddVoidReturningMethod<&NativeEngineT::SetMatrix>("setMatrix")
-                .AddVoidReturningMethod<&NativeEngineT::SetIntArray>("setIntArray")
-                .AddVoidReturningMethod<&NativeEngineT::SetIntArray2>("setIntArray2")
-                .AddVoidReturningMethod<&NativeEngineT::SetIntArray3>("setIntArray3")
-                .AddVoidReturningMethod<&NativeEngineT::SetIntArray4>("setIntArray4")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloatArray>("setFloatArray")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloatArray2>("setFloatArray2")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloatArray3>("setFloatArray3")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloatArray4>("setFloatArray4")
-                .AddVoidReturningMethod<&NativeEngineT::SetMatrices>("setMatrices")
-                .AddVoidReturningMethod<&NativeEngineT::SetMatrix3x3>("setMatrix3x3")
-                .AddVoidReturningMethod<&NativeEngineT::SetMatrix2x2>("setMatrix2x2")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloat>("setFloat")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloat2>("setFloat2")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloat3>("setFloat3")
-                .AddVoidReturningMethod<&NativeEngineT::SetFloat4>("setFloat4")
-                .AddVoidReturningMethod<&NativeEngineT::SetBool>("setBool")
-                .AddValueReturningMethod<&NativeEngineT::CreateTexture>("createTexture")
-                .AddVoidReturningMethod<&NativeEngineT::LoadTexture>("loadTexture")
-                .AddVoidReturningMethod<&NativeEngineT::LoadCubeTexture>("loadCubeTexture")
-                .AddValueReturningMethod<&NativeEngineT::GetTextureWidth>("getTextureWidth")
-                .AddValueReturningMethod<&NativeEngineT::GetTextureHeight>("getTextureHeight")
-                .AddVoidReturningMethod<&NativeEngineT::SetTextureSampling>("setTextureSampling")
-                .AddVoidReturningMethod<&NativeEngineT::SetTextureWrapMode>("setTextureWrapMode")
-                .AddVoidReturningMethod<&NativeEngineT::SetTextureAnisotropicLevel>("setTextureAnisotropicLevel")
-                .AddVoidReturningMethod<&NativeEngineT::SetTexture>("setTexture")
-                .AddVoidReturningMethod<&NativeEngineT::DeleteTexture>("deleteTexture")
-                .AddVoidReturningMethod<&NativeEngineT::DrawIndexed>("drawIndexed")
-                .AddVoidReturningMethod<&NativeEngineT::Draw>("draw")
-                .AddVoidReturningMethod<&NativeEngineT::Clear>("clear")
-                .AddValueReturningMethod<&NativeEngineT::GetRenderWidth>("getRenderWidth")
-                .AddValueReturningMethod<&NativeEngineT::GetRenderHeight>("getRenderHeight")
+                .template AddVoidReturningMethod<&NativeEngineT::RequestAnimationFrame>("requestAnimationFrame")
+                .template AddValueReturningMethod<&NativeEngineT::CreateVertexArray>("createVertexArray")
+                .template AddVoidReturningMethod<&NativeEngineT::DeleteVertexArray>("deleteVertexArray")
+                .template AddVoidReturningMethod<&NativeEngineT::BindVertexArray>("bindVertexArray")
+                .template AddValueReturningMethod<&NativeEngineT::CreateIndexBuffer>("createIndexBuffer")
+                .template AddVoidReturningMethod<&NativeEngineT::DeleteIndexBuffer>("deleteIndexBuffer")
+                .template AddVoidReturningMethod<&NativeEngineT::RecordIndexBuffer>("recordIndexBuffer")
+                .template AddValueReturningMethod<&NativeEngineT::CreateVertexBuffer>("createVertexBuffer")
+                .template AddVoidReturningMethod<&NativeEngineT::DeleteVertexBuffer>("deleteVertexBuffer")
+                .template AddVoidReturningMethod<&NativeEngineT::RecordVertexBuffer>("recordVertexBuffer")
+                .template AddValueReturningMethod<&NativeEngineT::CreateProgram>("createProgram")
+                .template AddValueReturningMethod<&NativeEngineT::GetUniforms>("getUniforms")
+                .template AddValueReturningMethod<&NativeEngineT::GetAttributes>("getAttributes")
+                .template AddVoidReturningMethod<&NativeEngineT::SetProgram>("setProgram")
+                .template AddVoidReturningMethod<&NativeEngineT::SetState>("setState")
+                .template AddVoidReturningMethod<&NativeEngineT::SetZOffset>("setZOffset")
+                .template AddValueReturningMethod<&NativeEngineT::GetZOffset>("getZOffset")
+                .template AddVoidReturningMethod<&NativeEngineT::SetDepthTest>("setDepthTest")
+                .template AddValueReturningMethod<&NativeEngineT::GetDepthWrite>("getDepthWrite")
+                .template AddVoidReturningMethod<&NativeEngineT::SetDepthWrite>("setDepthWrite")
+                .template AddVoidReturningMethod<&NativeEngineT::SetColorWrite>("setColorWrite")
+                .template AddVoidReturningMethod<&NativeEngineT::SetBlendMode>("setBlendMode")
+                .template AddVoidReturningMethod<&NativeEngineT::SetMatrix>("setMatrix")
+                .template AddVoidReturningMethod<&NativeEngineT::SetIntArray>("setIntArray")
+                .template AddVoidReturningMethod<&NativeEngineT::SetIntArray2>("setIntArray2")
+                .template AddVoidReturningMethod<&NativeEngineT::SetIntArray3>("setIntArray3")
+                .template AddVoidReturningMethod<&NativeEngineT::SetIntArray4>("setIntArray4")
+                .template AddVoidReturningMethod<&NativeEngineT::SetFloatArray>("setFloatArray")
+                .template AddVoidReturningMethod<&NativeEngineT::SetFloatArray2>("setFloatArray2")
+                .template AddVoidReturningMethod<&NativeEngineT::SetFloatArray3>("setFloatArray3")
+                .template AddVoidReturningMethod<&NativeEngineT::SetFloatArray4>("setFloatArray4")
+                .template AddVoidReturningMethod<&NativeEngineT::SetMatrices>("setMatrices")
+                .template AddVoidReturningMethod<&NativeEngineT::SetMatrix3x3>("setMatrix3x3")
+                .template AddVoidReturningMethod<&NativeEngineT::SetMatrix2x2>("setMatrix2x2")
+                .template AddVoidReturningMethod<&NativeEngineT::SetFloat>("setFloat")
+                .template AddVoidReturningMethod<&NativeEngineT::SetFloat2>("setFloat2")
+                .template AddVoidReturningMethod<&NativeEngineT::SetFloat3>("setFloat3")
+                .template AddVoidReturningMethod<&NativeEngineT::SetFloat4>("setFloat4")
+                .template AddVoidReturningMethod<&NativeEngineT::SetBool>("setBool")
+                .template AddValueReturningMethod<&NativeEngineT::CreateTexture>("createTexture")
+                .template AddVoidReturningMethod<&NativeEngineT::LoadTexture>("loadTexture")
+                .template AddVoidReturningMethod<&NativeEngineT::LoadCubeTexture>("loadCubeTexture")
+                .template AddValueReturningMethod<&NativeEngineT::GetTextureWidth>("getTextureWidth")
+                .template AddValueReturningMethod<&NativeEngineT::GetTextureHeight>("getTextureHeight")
+                .template AddVoidReturningMethod<&NativeEngineT::SetTextureSampling>("setTextureSampling")
+                .template AddVoidReturningMethod<&NativeEngineT::SetTextureWrapMode>("setTextureWrapMode")
+                .template AddVoidReturningMethod<&NativeEngineT::SetTextureAnisotropicLevel>("setTextureAnisotropicLevel")
+                .template AddVoidReturningMethod<&NativeEngineT::SetTexture>("setTexture")
+                .template AddVoidReturningMethod<&NativeEngineT::DeleteTexture>("deleteTexture")
+                .template AddVoidReturningMethod<&NativeEngineT::DrawIndexed>("drawIndexed")
+                .template AddVoidReturningMethod<&NativeEngineT::Draw>("draw")
+                .template AddVoidReturningMethod<&NativeEngineT::Clear>("clear")
+                .template AddValueReturningMethod<&NativeEngineT::GetRenderWidth>("getRenderWidth")
+                .template AddValueReturningMethod<&NativeEngineT::GetRenderHeight>("getRenderHeight")
                 .Finalize();
 
             env.Global().Set("nativeEngine", func.New({}));

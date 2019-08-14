@@ -65,7 +65,5 @@ namespace babylon
         babylon::Env* m_env{};
         const std::string m_rootUrl{};
     };
-
-    template arcana::task<std::string, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);
-    template arcana::task<std::vector<char>, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);
 }
+    

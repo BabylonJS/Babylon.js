@@ -125,6 +125,7 @@ namespace babylon
     void XMLHttpRequest::Send(const Napi::CallbackInfo& info)
     {
         auto lock = m_runtimeImpl.AcquireTaskLock();
+
         m_runtimeImpl.Task = m_runtimeImpl.Task.then(arcana::inline_scheduler, arcana::cancellation::none(), [this]
         {
             return SendAsync();
@@ -139,7 +140,7 @@ namespace babylon
             return m_runtimeImpl.LoadUrlAsync<std::string>(m_url).then(arcana::inline_scheduler, m_runtimeImpl.Cancellation(), [this](const std::string& data)
             {
                 m_responseText = std::move(data);
-                m_status = winrt::Windows::Web::Http::HttpStatusCode::Ok;
+                m_status = HTTPStatusCode::Ok;
                 SetReadyState(ReadyState::Done);
             });
         }
@@ -149,13 +150,13 @@ namespace babylon
             {
                 m_response = Napi::Persistent(Napi::ArrayBuffer::New(Env(), data.size()));
                 memcpy(m_response.Value().Data(), data.data(), data.size());
-                m_status = winrt::Windows::Web::Http::HttpStatusCode::Ok;
+                m_status = HTTPStatusCode::Ok;
                 SetReadyState(ReadyState::Done);
             });
         }
         else
         {
-            throw std::exception("Invalid response type");
+            throw std::exception();
         }
     }
 
@@ -173,4 +174,5 @@ namespace babylon
             }
         }
     }
+
 }

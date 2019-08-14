@@ -5,6 +5,7 @@
 
 namespace babylon
 {
+
     Window::Window(RuntimeImpl& runtimeImpl)
         : m_runtimeImpl{ runtimeImpl }
     {

@@ -110,4 +110,5 @@ namespace babylon
             1, // generalConstantMatrixVectorIndexing
         }
     };
+
 }

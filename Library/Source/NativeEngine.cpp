@@ -6,7 +6,10 @@
 
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
-
+#ifndef WIN32
+#include <alloca.h>
+#define alloca(size)   __builtin_alloca(size)
+#endif
 // TODO: this needs to be fixed in bgfx
 namespace bgfx
 {
@@ -28,12 +31,14 @@ namespace bgfx
 
 namespace babylon
 {
+
     namespace
     {
         struct UniformInfo final
         {
             uint8_t Stage{};
-            bgfx::UniformHandle Handle{};
+            // uninitilized bgfx resource is kInvalidHandle. 0 can be a valid handle.
+            bgfx::UniformHandle Handle{bgfx::kInvalidHandle};
         };
 
         template<typename AppendageT>
@@ -92,7 +97,7 @@ namespace babylon
 
                 if (memberType.basetype != spirv_cross::SPIRType::Float)
                 {
-                    throw std::exception("Not supported");
+                    throw std::exception(); // Not supported
                 }
 
                 if (memberType.columns == 1 && 1 <= memberType.vecsize && memberType.vecsize <= 4)
@@ -107,7 +112,7 @@ namespace babylon
                 }
                 else
                 {
-                    throw std::exception("Not supported");
+                    throw std::exception();
                 }
 
                 for (const auto size : memberType.array)
@@ -175,9 +180,10 @@ namespace babylon
             case WebGLAttribType::UNSIGNED_BYTE:    return bgfx::AttribType::Uint8;
             case WebGLAttribType::SHORT:            return bgfx::AttribType::Int16;
             case WebGLAttribType::FLOAT:            return bgfx::AttribType::Float;
+            default: // avoid "warning: 4 enumeration values not handled"
+                throw std::exception();
+                break;
             }
-
-            throw std::exception("Unsupported attribute type");
         }
 
         // Must match constants.ts in Babylon.js.
@@ -1008,7 +1014,7 @@ namespace babylon
             }
             default:
             {
-                throw std::exception("Unexpected texture format.");
+                throw std::exception();
             }
         }
 
