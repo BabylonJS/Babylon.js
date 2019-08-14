@@ -185,7 +185,7 @@ function runTest(index, done) {
 
     var title = document.createElement("div");
     title.className = "title";
-    titleContainer.appendChild(title);
+    titleContainer.appendChild("#" + index + "> " + title);
 
     var result = document.createElement("div");
     result.className = "result";

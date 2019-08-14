@@ -40882,6 +40882,14 @@ declare module BABYLON {
          */
         onNewMeshSelected: Observable<AbstractMesh>;
         /**
+         * Observable raised when a new mesh is selected based on meshSelectionPredicate.
+         * This observable will provide the mesh and the controller used to select the mesh
+         */
+        onMeshSelectedWithController: Observable<{
+            mesh: AbstractMesh;
+            controller: WebVRController;
+        }>;
+        /**
          * Observable raised when a new mesh is picked based on meshSelectionPredicate
          */
         onNewMeshPicked: Observable<PickingInfo>;
@@ -52732,7 +52740,7 @@ declare module BABYLON {
         /**
          * Gets a boolean indicating that the current point is connected to an input block
          */
-        readonly isConnectedToInput: boolean;
+        readonly isConnectedToInputBlock: boolean;
         /**
          * Gets a the connected input block (if any)
          */
@@ -52747,6 +52755,8 @@ declare module BABYLON {
         readonly connectedBlocks: Array<NodeMaterialBlock>;
         /** Gets the list of connected endpoints */
         readonly endpoints: NodeMaterialConnectionPoint[];
+        /** Gets a boolean indicating if that output point is connected to at least one input */
+        readonly hasEndpoints: boolean;
         /**
          * Creates a new connection point
          * @param name defines the connection point name
@@ -58945,6 +58955,7 @@ declare module BABYLON {
         private _motionStrength;
         private _isObjectBasedMotionBlur;
         private _floatTextureType;
+        private _camerasToBeAttached;
         private _ratio;
         private _bloomEnabled;
         private _depthOfFieldEnabled;

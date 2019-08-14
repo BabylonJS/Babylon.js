@@ -86,9 +86,9 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         let color4Output = this._outputs[0];
         let color3Output = this._outputs[1];
 
-        if (color4Output.endpoints.length) {
+        if (color4Output.hasEndpoints) {
             state.compilationString += this._declareOutput(color4Output, state) + ` = vec4(${this._writeVariable(rInput)}, ${this._writeVariable(gInput)}, ${this._writeVariable(bInput)}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"});\r\n`;
-        } else if (color3Output.endpoints.length) {
+        } else if (color3Output.hasEndpoints) {
             state.compilationString += this._declareOutput(color3Output, state) + ` = vec3(${this._writeVariable(rInput)}, ${this._writeVariable(gInput)}, ${this._writeVariable(bInput)});\r\n`;
         }
 
