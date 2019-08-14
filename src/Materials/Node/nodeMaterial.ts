@@ -253,6 +253,21 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Get a block by its name
+     * @param name defines the name of the block to retrieve
+     * @returns the required block or null if not found
+     */
+    public getBlockByName(name: string) {
+        for (var block of this.attachedBlocks) {
+            if (block.name === name) {
+                return block;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Adds a new optimizer to the list of optimizers
      * @param optimizer defines the optimizers to add
      * @returns the current material
@@ -1034,6 +1049,20 @@ export class NodeMaterial extends PushMaterial {
         nodeMaterial.loadFromSerialization(source, rootUrl);
 
         return nodeMaterial;
+    }
+
+    /**
+     * Creates a new node material set to default basic configuration
+     * @param name defines the name of the material
+     * @param scene defines the hosting scene
+     * @returns a new NodeMaterial
+     */
+    public static CreateDefault(name: string, scene?: Scene) {
+        let newMaterial = new NodeMaterial(name, scene);
+        newMaterial.setToDefault();
+        newMaterial.build();
+
+        return newMaterial;
     }
 }
 

@@ -95,11 +95,11 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         let v3Output = this._outputs[1];
         let v2Output = this._outputs[2];
 
-        if (v4Output.endpoints.length) {
+        if (v4Output.hasEndpoints) {
             state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${this._writeVariable(xInput)}, ${this._writeVariable(yInput)}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${zInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
-        } else if (v3Output.endpoints.length) {
+        } else if (v3Output.hasEndpoints) {
             state.compilationString += this._declareOutput(v3Output, state) + ` = vec3(${this._writeVariable(xInput)}, ${this._writeVariable(yInput)}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"});\r\n`;
-        } else if (v2Output.endpoints.length) {
+        } else if (v2Output.hasEndpoints) {
             state.compilationString += this._declareOutput(v2Output, state) + ` = vec2(${this._writeVariable(xInput)}, ${this._writeVariable(yInput)});\r\n`;
         }
 
