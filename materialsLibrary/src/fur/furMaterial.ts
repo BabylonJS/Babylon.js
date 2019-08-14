@@ -533,7 +533,7 @@ export class FurMaterial extends PushMaterial {
             offsetFur.furTime = mat.furTime;
             offsetFur.furDensity = mat.furDensity;
 
-            var offsetMesh = sourceMesh.clone(sourceMesh.name + i);
+            var offsetMesh = sourceMesh.clone(sourceMesh.name + i) as Mesh;
 
             offsetMesh.material = offsetFur;
             offsetMesh.skeleton = sourceMesh.skeleton;

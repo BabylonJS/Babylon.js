@@ -128,7 +128,7 @@ class VRExperienceHelperGazer implements IDisposable {
             targetMat.backFaceCulling = false;
             this._gazeTracker.material = targetMat;
         } else {
-            this._gazeTracker = gazeTrackerToClone.clone("gazeTracker");
+            this._gazeTracker = gazeTrackerToClone.clone("gazeTracker") as Mesh;
         }
 
     }
@@ -505,11 +505,11 @@ export class VRExperienceHelper {
             this._cameraGazer._gazeTracker.isVisible = false;
             this._cameraGazer._gazeTracker.name = "gazeTracker";
             if (this._leftController) {
-                this._leftController._gazeTracker = this._cameraGazer._gazeTracker.clone("gazeTracker");
+                this._leftController._gazeTracker = this._cameraGazer._gazeTracker.clone("gazeTracker") as Mesh;
             }
 
             if (this._rightController) {
-                this._rightController._gazeTracker = this._cameraGazer._gazeTracker.clone("gazeTracker");
+                this._rightController._gazeTracker = this._cameraGazer._gazeTracker.clone("gazeTracker") as Mesh;
             }
         }
     }

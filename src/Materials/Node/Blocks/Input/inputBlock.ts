@@ -27,6 +27,9 @@ export class InputBlock extends NodeMaterialBlock {
     /** @hidden */
     public _wellKnownValue: Nullable<NodeMaterialWellKnownValues> = null;
 
+    /** Gets or sets a boolean indicating that this input can be edited in the Inspector */
+    public visibleInInspector = true;
+
     /**
      * Gets or sets the connection point type (default is float)
      */
@@ -478,6 +481,7 @@ export class InputBlock extends NodeMaterialBlock {
         serializationObject.mode = this._mode;
         serializationObject.wellKnownValue = this._wellKnownValue;
         serializationObject.animationType = this._animationType;
+        serializationObject.visibleInInspector = this.visibleInInspector;
 
         if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
             if (this._storedValue.asArray) {
@@ -499,6 +503,7 @@ export class InputBlock extends NodeMaterialBlock {
         this._mode = serializationObject.mode;
         this._wellKnownValue = serializationObject.wellKnownValue;
         this._animationType = serializationObject.animationType;
+        this.visibleInInspector = serializationObject.visibleInInspector;
 
         if (!serializationObject.valueType) {
             return;
