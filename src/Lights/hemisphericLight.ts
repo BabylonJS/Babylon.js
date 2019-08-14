@@ -91,21 +91,12 @@ export class HemisphericLight extends Light {
      */
     public transferToEffect(effect: Effect, lightIndex: string): HemisphericLight {
         var normalizeDirection = Vector3.Normalize(this.direction);
-        if (this.getScene().useRightHandedSystem) {
-            this._uniformBuffer.updateFloat4("vLightData",
-                -normalizeDirection.x,
-                -normalizeDirection.y,
-                -normalizeDirection.z,
-                0.0,
-                lightIndex);
-        } else {
-            this._uniformBuffer.updateFloat4("vLightData",
-                normalizeDirection.x,
-                normalizeDirection.y,
-                normalizeDirection.z,
-                0.0,
-                lightIndex);
-        }
+        this._uniformBuffer.updateFloat4("vLightData",
+            normalizeDirection.x,
+            normalizeDirection.y,
+            normalizeDirection.z,
+            0.0,
+            lightIndex);
         this._uniformBuffer.updateColor3("vLightGround", this.groundColor.scale(this.intensity), lightIndex);
         return this;
     }
