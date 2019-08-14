@@ -1626,6 +1626,44 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/vector4LineComponent" {
+    import * as React from "react";
+    import { Vector4 } from "babylonjs/Maths/math";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    interface IVector4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: Vector4) => void;
+        useEuler?: boolean;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
+        isExpanded: boolean;
+        value: Vector4;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector4LineComponentProps);
+        getCurrentValue(): any;
+        shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: Vector4;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Vector4): void;
+        updateVector4(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        updateStateW(value: number): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -1643,6 +1681,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
+        renderInputValues(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -3503,6 +3542,40 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IVector4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector4) => void;
+        useEuler?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector4;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector4LineComponentProps);
+        getCurrentValue(): any;
+        shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector4;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector4): void;
+        updateVector4(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        updateStateW(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface INodeMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: BABYLON.NodeMaterial;
@@ -3513,6 +3586,7 @@ declare module INSPECTOR {
     export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
+        renderInputValues(): JSX.Element;
         render(): JSX.Element;
     }
 }

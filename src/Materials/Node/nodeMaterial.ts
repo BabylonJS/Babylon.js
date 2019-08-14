@@ -268,6 +268,21 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Gets the list of input blocks attached to this material
+     * @returns an array of InputBlocks
+     */
+    public getInputBlocks() {
+        let blocks: InputBlock[] = [];
+        for (var block of this.attachedBlocks) {
+            if (block.isInput) {
+                blocks.push(block as InputBlock);
+            }
+        }
+
+        return blocks;
+    }
+
+    /**
      * Adds a new optimizer to the list of optimizers
      * @param optimizer defines the optimizers to add
      * @returns the current material
@@ -409,6 +424,10 @@ export class NodeMaterial extends PushMaterial {
     private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[]) {
         node.initialize(state);
         node.autoConfigure();
+
+        if (this.attachedBlocks.indexOf(node) === -1) {
+            this.attachedBlocks.push(node);
+        }
 
         for (var input of node.inputs) {
             if (!node.isInput) {

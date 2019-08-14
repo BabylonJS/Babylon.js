@@ -10,6 +10,12 @@ import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { FloatLineComponent } from '../../../lines/floatLineComponent';
+import { Color3LineComponent } from '../../../lines/color3LineComponent';
+import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
+import { Vector4LineComponent } from '../../../lines/vector4LineComponent';
+import { Vector2LineComponent } from '../../../lines/vector2LineComponent';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 
 interface INodeMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -28,15 +34,67 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         this.props.material.edit();
     }
 
+    renderInputValues() {
+        let configurableInputBlocks = this.props.material.getInputBlocks().filter(block => {
+            return block.visibleInInspector && block.isUniform && !block.isWellKnownValue
+        }).sort( (a, b) => {
+            return a.name.localeCompare(b.name);
+        });
+
+        return (
+            <>
+                {
+                    configurableInputBlocks.map(block => {
+                        switch (block.type) {
+                            case NodeMaterialBlockConnectionPointTypes.Float:
+                                return (
+                                    <FloatLineComponent key={block.name} lockObject={this.props.lockObject} label={block.name} target={block} propertyName="value" 
+                                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                    />
+                                )
+                            case NodeMaterialBlockConnectionPointTypes.Color3:
+                            case NodeMaterialBlockConnectionPointTypes.Color4:
+                                return (
+                                    <Color3LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                                )     
+                            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                                    return (
+                                        <Vector2LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                                            onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                                    )                                
+                            case NodeMaterialBlockConnectionPointTypes.Vector3:
+                                return (
+                                    <Vector3LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                                )
+                            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                                return (
+                                    <Vector4LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                                )
+                            }
+                        return null;
+                    })
+                }
+            </>
+        );
+    }
+
     render() {
         const material = this.props.material;
 
         return (
             <div className="pane">
                 <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent globalState={this.props.globalState} title="NODES">
-                    <CheckBoxLineComponent label="Ignore alpha" target={material} propertyName="ignoreAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <LineContainerComponent globalState={this.props.globalState} title="CONFIGURATION">
+                <CheckBoxLineComponent label="Ignore alpha" target={material} propertyName="ignoreAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <ButtonLineComponent label="Edit" onClick={() => this.edit()} />
+                </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="INPUTS">
+                    {
+                        this.renderInputValues()
+                    }                    
                 </LineContainerComponent>
             </div>
         );

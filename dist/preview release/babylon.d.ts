@@ -13831,10 +13831,17 @@ declare module BABYLON {
          */
         getPivotMatrix(): Matrix;
         /**
-         * Prevents the World matrix to be computed any longer.
+         * Instantiate (when possible) or clone that node with its hierarchy
+         * @param newParent defines the new parent to use for the instance (or clone)
+         * @returns an instance (or a clone) of the current node with its hiearchy
+         */
+        instantiateHierarychy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
+        /**
+         * Prevents the World matrix to be computed any longer
+         * @param newWorldMatrix defines an optional matrix to use as world matrix
          * @returns the TransformNode.
          */
-        freezeWorldMatrix(): TransformNode;
+        freezeWorldMatrix(newWorldMatrix?: Nullable<Matrix>): TransformNode;
         /**
          * Allows back the World matrix computation.
          * @returns the TransformNode.
@@ -14057,7 +14064,7 @@ declare module BABYLON {
          * @param doNotCloneChildren Do not clone children hierarchy
          * @returns the new transform node
          */
-        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<TransformNode>;
+        clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<TransformNode>;
         /**
          * Serializes the objects information.
          * @param currentSerializationObject defines the object to serialize in
@@ -18619,7 +18626,7 @@ declare module BABYLON {
          *
          * Returns the Mesh.
          */
-        setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh;
+        setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh;
         /**
          * Updates the existing vertex data of the mesh geometry for the requested `kind`.
          * If the mesh has no geometry, it is simply returned as it is.
@@ -18693,7 +18700,7 @@ declare module BABYLON {
          *
          * Returns the clone.
          */
-        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): InstancedMesh;
+        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
         /**
          * Disposes the InstancedMesh.
          * Returns nothing.
@@ -19050,7 +19057,7 @@ declare module BABYLON {
          * @param useVertexColor defines if this LinesMesh supports vertex color
          * @param useVertexAlpha defines if this LinesMesh supports vertex alpha
          */
-        constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: LinesMesh, doNotCloneChildren?: boolean, 
+        constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: Nullable<LinesMesh>, doNotCloneChildren?: boolean, 
         /**
          * If vertex color should be applied to the mesh
          */
@@ -19078,9 +19085,9 @@ declare module BABYLON {
          */
         readonly checkCollisions: boolean;
         /** @hidden */
-        _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh;
+        _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */
-        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): LinesMesh;
+        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh;
         /**
          * Disposes of the line mesh
          * @param doNotRecurse If children should be disposed
@@ -19089,7 +19096,7 @@ declare module BABYLON {
         /**
          * Returns a new LineMesh object cloned from the current one.
          */
-        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh;
+        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
         /**
          * Creates a new InstancedLinesMesh object from the mesh model.
          * @see http://doc.babylonjs.com/how_to/how_to_use_instances
@@ -23428,6 +23435,7 @@ declare module BABYLON {
          * @param clonePhysicsImpostor When cloning, include cloning mesh physics impostor, default True.
          */
         constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: Nullable<Mesh>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean);
+        instantiateHierarychy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
         /**
          * Gets the class name
          * @returns the string "Mesh".
@@ -23665,7 +23673,7 @@ declare module BABYLON {
          * @param stride defines the data stride size (can be null)
          * @returns the current mesh
          */
-        setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh;
+        setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh;
         /**
          * Flags an associated vertex buffer as updatable
          * @param kind defines which buffer to use (positions, indices, normals, etc). Possible `kind` values :
@@ -23710,7 +23718,7 @@ declare module BABYLON {
          * @param makeItUnique defines if the geometry associated with the mesh must be cloned to make the change only for this mesh (and not all meshes associated with the same geometry)
          * @returns the current mesh
          */
-        updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh;
+        updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh;
         /**
          * This method updates the vertex positions of an updatable mesh according to the `positionFunction` returned values.
          * @see http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions
@@ -23731,7 +23739,7 @@ declare module BABYLON {
          * @param updatable defines if the updated index buffer must be flagged as updatable (default is false)
          * @returns the current mesh
          */
-        setIndices(indices: IndicesArray, totalVertices?: Nullable<number>, updatable?: boolean): Mesh;
+        setIndices(indices: IndicesArray, totalVertices?: Nullable<number>, updatable?: boolean): AbstractMesh;
         /**
          * Update the current index buffer
          * @param indices defines the source data
@@ -23739,7 +23747,7 @@ declare module BABYLON {
          * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
          * @returns the current mesh
          */
-        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): Mesh;
+        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): AbstractMesh;
         /**
          * Invert the geometry to move from a right handed system to a left handed one.
          * @returns the current mesh
@@ -23868,7 +23876,7 @@ declare module BABYLON {
          * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
          * @returns a new mesh
          */
-        clone(name?: string, newParent?: Node, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean): Mesh;
+        clone(name?: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean): Nullable<AbstractMesh>;
         /**
          * Releases resources associated with this mesh.
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
@@ -26146,7 +26154,7 @@ declare module BABYLON {
          * @param doNotCloneChildren defines a boolean indicating that children must not be cloned (false by default)
          * @returns the new mesh
          */
-        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
+        clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
         /**
          * Disposes all the submeshes of the current meshnp
          * @returns the current mesh
@@ -51849,6 +51857,17 @@ declare module BABYLON {
          */
         protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
         /**
+         * Get a block by its name
+         * @param name defines the name of the block to retrieve
+         * @returns the required block or null if not found
+         */
+        getBlockByName(name: string): NodeMaterialBlock | null;
+        /**
+         * Gets the list of input blocks attached to this material
+         * @returns an array of InputBlocks
+         */
+        getInputBlocks(): InputBlock[];
+        /**
          * Adds a new optimizer to the list of optimizers
          * @param optimizer defines the optimizers to add
          * @returns the current material
@@ -51977,6 +51996,13 @@ declare module BABYLON {
          * @returns a new node material
          */
         static Parse(source: any, scene: Scene, rootUrl?: string): NodeMaterial;
+        /**
+         * Creates a new node material set to default basic configuration
+         * @param name defines the name of the material
+         * @param scene defines the hosting scene
+         * @returns a new NodeMaterial
+         */
+        static CreateDefault(name: string, scene?: Scene): NodeMaterial;
     }
 }
 declare module BABYLON {
@@ -52545,7 +52571,7 @@ declare module BABYLON {
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
          * @returns a copy of the current block
          */
-        clone(scene: Scene, rootUrl?: string): Nullable<NodeMaterialBlock>;
+        clone(scene: Scene, rootUrl?: string): NodeMaterialBlock | null;
         /**
          * Serializes this block in a JSON representation
          * @returns the serialized block object
@@ -52594,6 +52620,8 @@ declare module BABYLON {
         private _animationType;
         /** @hidden */
         _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        /** Gets or sets a boolean indicating that this input can be edited in the Inspector */
+        visibleInInspector: boolean;
         /**
          * Gets or sets the connection point type (default is float)
          */
