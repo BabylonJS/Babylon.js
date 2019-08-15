@@ -263,9 +263,7 @@ export class LightBlock extends NodeMaterialBlock {
 
         state.compilationString += this._declareOutput(diffuseOutput, state) + ` = diffuseBase;\r\n`;
         if (specularOutput.hasEndpoints) {
-            state.compilationString += `#ifdef SPECULARTERM\r\n`;
             state.compilationString += this._declareOutput(specularOutput, state) + ` = specularBase;\r\n`;
-            state.compilationString += `#endif\r\n`;
         }
 
         return this;
