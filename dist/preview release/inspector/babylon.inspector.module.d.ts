@@ -1685,6 +1685,28 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/multiMaterialPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { Material } from 'babylonjs/Materials/material';
+    import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
+    interface IMultiMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: MultiMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: Observable<any>;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMaterialPropertyGridComponentProps> {
+        constructor(props: IMultiMaterialPropertyGridComponentProps);
+        onMaterialLink(mat: Material): void;
+        renderChildMaterial(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGridTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class PropertyGridTabComponent extends PaneComponent {
@@ -3587,6 +3609,21 @@ declare module INSPECTOR {
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
         renderInputValues(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IMultiMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: BABYLON.MultiMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMaterialPropertyGridComponentProps> {
+        constructor(props: IMultiMaterialPropertyGridComponentProps);
+        onMaterialLink(mat: BABYLON.Material): void;
+        renderChildMaterial(): JSX.Element;
         render(): JSX.Element;
     }
 }

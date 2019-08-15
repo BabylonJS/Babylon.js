@@ -1298,6 +1298,21 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IMultiMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: BABYLON.MultiMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMaterialPropertyGridComponentProps> {
+        constructor(props: IMultiMaterialPropertyGridComponentProps);
+        onMaterialLink(mat: BABYLON.Material): void;
+        renderChildMaterial(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
