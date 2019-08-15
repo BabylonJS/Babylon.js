@@ -364,7 +364,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         const scene = this.scene;
         this._audioEnabled = false;
 
-        if (Engine.audioEngine.audioContext) {
+        if (Engine.audioEngine && Engine.audioEngine.audioContext) {
             Engine.audioEngine.audioContext.suspend();
         }
 
@@ -388,7 +388,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         const scene = this.scene;
         this._audioEnabled = true;
 
-        if (Engine.audioEngine.audioContext) {
+        if (Engine.audioEngine && Engine.audioEngine.audioContext) {
             Engine.audioEngine.audioContext.resume();
         }
 
