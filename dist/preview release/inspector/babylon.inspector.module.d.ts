@@ -1681,7 +1681,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
-        renderInputValues(): JSX.Element;
+        renderInputValues(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -3608,7 +3608,7 @@ declare module INSPECTOR {
     export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
-        renderInputValues(): JSX.Element;
+        renderInputValues(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
