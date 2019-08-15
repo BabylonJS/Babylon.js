@@ -13,5 +13,6 @@ namespace babylon
     std::string GetUrlFromPath(const std::filesystem::path& path)
     {
         // TODO: implement with Windows::Foundation::Uri
+        throw std::exception("Not implemented!");
     }
 }

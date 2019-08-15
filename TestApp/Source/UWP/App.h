@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <Shared/InputManager.h>
-#include <Runtime/RuntimeUWP.h>
+#include <Babylon/RuntimeUWP.h>
 
 #include <ppltasks.h>
 
