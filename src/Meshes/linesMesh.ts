@@ -13,6 +13,7 @@ import { MaterialHelper } from '../Materials/materialHelper';
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
+import { AbstractMesh } from './abstractMesh';
 
 /**
  * Line mesh
@@ -55,7 +56,7 @@ export class LinesMesh extends Mesh {
         name: string,
         scene: Nullable<Scene> = null,
         parent: Nullable<Node> = null,
-        source?: LinesMesh,
+        source: Nullable<LinesMesh> = null,
         doNotCloneChildren?: boolean,
         /**
          * If vertex color should be applied to the mesh
@@ -168,7 +169,7 @@ export class LinesMesh extends Mesh {
     }
 
     /** @hidden */
-    public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh {
+    public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh {
         if (!this._geometry) {
             return this;
         }
@@ -191,7 +192,7 @@ export class LinesMesh extends Mesh {
     }
 
     /** @hidden */
-    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): LinesMesh {
+    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
             return this;
         }
@@ -221,7 +222,7 @@ export class LinesMesh extends Mesh {
     /**
      * Returns a new LineMesh object cloned from the current one.
      */
-    public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
+    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
         return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
     }
 
