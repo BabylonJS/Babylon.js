@@ -351,7 +351,7 @@ export class SpriteManager implements ISpriteManager {
         var distance = Number.MAX_VALUE;
         var currentSprite: Nullable<Sprite> = null;
         var pickedPoint = TmpVectors.Vector3[2].copyFromFloats(0, 0, 0);
-        var cameraSpacePosition = Vector3.Zero();
+        var cameraSpacePosition = TmpVectors.Vector3[3].copyFromFloats(0, 0, 0);;
         var cameraView = camera.getViewMatrix();
 
         for (var index = 0; index < count; index++) {
@@ -396,7 +396,7 @@ export class SpriteManager implements ISpriteManager {
             result.distance = distance;
 
             // Get picked point
-            let direction = TmpVectors.Vector3[3];
+            let direction = TmpVectors.Vector3[4];
             direction.copyFrom(ray.direction);
             direction.normalize();
             direction.scaleInPlace(distance);
@@ -424,7 +424,7 @@ export class SpriteManager implements ISpriteManager {
         var distance: number;
         var results: Nullable<PickingInfo[]> = [];
         var pickedPoint = TmpVectors.Vector3[2].copyFromFloats(0, 0, 0);
-        var cameraSpacePosition = Vector3.Zero();
+        var cameraSpacePosition = TmpVectors.Vector3[3].copyFromFloats(0, 0, 0);;
         var cameraView = camera.getViewMatrix();
 
         for (var index = 0; index < count; index++) {
@@ -458,7 +458,7 @@ export class SpriteManager implements ISpriteManager {
                 result.distance = distance;
 
                 // Get picked point
-                let direction = TmpVectors.Vector3[3];
+                let direction = TmpVectors.Vector3[4];
                 direction.copyFrom(ray.direction);
                 direction.normalize();
                 direction.scaleInPlace(distance);
