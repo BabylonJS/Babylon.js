@@ -1690,9 +1690,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
                 sideOrientation = this._effectiveMaterial.sideOrientation;
-                if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
-                    sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
-                }
+            }
+            if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
+                sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
             }
             instanceDataStorage.sideOrientation = sideOrientation!;
         } else {
