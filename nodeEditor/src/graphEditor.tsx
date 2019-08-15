@@ -40,6 +40,9 @@ import { GraphHelper } from './graphHelper';
 import { PreviewManager } from './components/preview/previewManager';
 import { INodeLocationInfo } from './nodeLocationInfo';
 import { PreviewMeshControlComponent } from './components/preview/previewMeshControlComponent';
+import { TrigonometryNodeFactory } from './components/diagram/trigonometry/trigonometryNodeFactory';
+import { TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
+import { TrigonometryNodeModel } from './components/diagram/trigonometry/trigonometryNodeModel';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -70,8 +73,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _blocks = new Array<NodeMaterialBlock>();
 
     private _previewManager: PreviewManager;
-
     private _copiedNode: Nullable<DefaultNodeModel> = null;
+    private _mouseLocationX = 0;
+    private _mouseLocationY = 0;
 
     /** @hidden */
     public _toAdd: LinkModel[] | null = [];
@@ -99,7 +103,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         } else if (options.nodeMaterialBlock instanceof LightBlock) {
             newNode = new LightNodeModel();
         } else if (options.nodeMaterialBlock instanceof InputBlock) {
-            newNode = new InputNodeModel();        
+            newNode = new InputNodeModel();     
+        } else if (options.nodeMaterialBlock instanceof TrigonometryBlock) {
+            newNode = new TrigonometryNodeModel();                    
         } else if (options.nodeMaterialBlock instanceof RemapBlock) {
             newNode = new RemapNodeModel();
         } else {
@@ -159,6 +165,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine.registerNodeFactory(new LightNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new InputNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new RemapNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new TrigonometryNodeFactory(this.props.globalState));
         this._engine.registerLinkFactory(new AdvancedLinkFactory());
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
@@ -191,7 +198,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             return this._nodes.filter(n => n.block === block)[0];
         }
 
-        this.props.globalState.hostDocument!.addEventListener("keyup", evt => {
+        this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             if (!evt.ctrlKey) {
                 return;
             }
@@ -222,9 +229,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 }
                 
                 let newNode = this.createNodeFromObject({ nodeMaterialBlock: clone });
+                const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
+                const zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
 
-                newNode.x = this._copiedNode.x;
-                newNode.y = this._copiedNode.y + this._copiedNode.height + 10;
+                let x = (this._mouseLocationX - rootElement.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
+                let y = (this._mouseLocationY - rootElement.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
+
+                newNode.x = x;
+                newNode.y = y;
 
                 this._engine.repaintCanvas();
             }
@@ -251,8 +263,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             setTimeout(() => this.zoomToFit(retry), 1);
         }
     }
-
- 
 
     buildMaterial() {
         if (!this.props.globalState.nodeMaterial) {
@@ -508,8 +518,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 <div id="node-editor-graph-root" style={
                     {
                         gridTemplateColumns: this.buildColumnLayout()
-                    }
-                }>
+                    }}
+                    onMouseMove={evt => {
+                        this._mouseLocationX = evt.pageX;
+                        this._mouseLocationY = evt.pageY;
+                    }}
+                    >
                     {/* Node creation menu */}
                     <NodeListComponent globalState={this.props.globalState} />
 

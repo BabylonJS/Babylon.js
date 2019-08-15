@@ -1,6 +1,11 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
-    "tests": [
+    "tests": [        
+        {
+            "title": "Node material",
+            "playgroundId": "#WYM31D#3",
+            "referenceImage": "node-material.png"
+        },
         {
             "title": "Basis loader",
             "playgroundId": "#4RN0VF#0",
@@ -19,6 +24,7 @@
         {
             "title": "Nested BBG",
             "playgroundId": "#ZG0C8B#1",
+            "renderCount": 10,
             "referenceImage": "nested_BBG.png"
         },
         {
@@ -506,8 +512,7 @@
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (Right Handed)",
-            "playgroundId": "#KX53VK#27",
-            "replace": "useRightHandedSystem = false, useRightHandedSystem = true",
+            "playgroundId": "#KX53VK#30",
             "referenceImage": "glTFSerializerNegativeWorldMatrix_Right.png"
         },
         {

@@ -3246,6 +3246,14 @@ var Container = /** @class */ (function (_super) {
         _this._adaptWidthToChildren = false;
         /** @hidden */
         _this._adaptHeightToChildren = false;
+        /**
+         * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+         */
+        _this.logLayoutCycleErrors = false;
+        /**
+         * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+         */
+        _this.maxLayoutCycle = 3;
         return _this;
     }
     Object.defineProperty(Container.prototype, "adaptHeightToChildren", {
@@ -3521,8 +3529,8 @@ var Container = /** @class */ (function (_super) {
                 this._postMeasure();
             }
             rebuildCount++;
-        } while (this._rebuildLayout && rebuildCount < 3);
-        if (rebuildCount >= 3) {
+        } while (this._rebuildLayout && rebuildCount < this.maxLayoutCycle);
+        if (rebuildCount >= 3 && this.logLayoutCycleErrors) {
             babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["Logger"].Error("Layout cycle detected in GUI (Container name=" + this.name + ", uniqueId=" + this.uniqueId + ")");
         }
         context.restore();
@@ -10949,6 +10957,10 @@ var StackPanel = /** @class */ (function (_super) {
         _this._manualWidth = false;
         _this._manualHeight = false;
         _this._doNotTrackManualChanges = false;
+        /**
+         * Gets or sets a boolean indicating that layou warnings should be ignored
+         */
+        _this.ignoreLayoutWarnings = false;
         return _this;
     }
     Object.defineProperty(StackPanel.prototype, "isVertical", {
@@ -11053,7 +11065,9 @@ var StackPanel = /** @class */ (function (_super) {
                     child._top.ignoreAdaptiveScaling = true;
                 }
                 if (child._height.isPercentage) {
-                    babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Control (Name:" + child.name + ", UniqueId:" + child.uniqueId + ") is using height in percentage mode inside a vertical StackPanel");
+                    if (!this.ignoreLayoutWarnings) {
+                        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Control (Name:" + child.name + ", UniqueId:" + child.uniqueId + ") is using height in percentage mode inside a vertical StackPanel");
+                    }
                 }
                 else {
                     stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels;
@@ -11066,7 +11080,9 @@ var StackPanel = /** @class */ (function (_super) {
                     child._left.ignoreAdaptiveScaling = true;
                 }
                 if (child._width.isPercentage) {
-                    babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Control (Name:" + child.name + ", UniqueId:" + child.uniqueId + ") is using width in percentage mode inside a horizontal StackPanel");
+                    if (!this.ignoreLayoutWarnings) {
+                        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Control (Name:" + child.name + ", UniqueId:" + child.uniqueId + ") is using width in percentage mode inside a horizontal StackPanel");
+                    }
                 }
                 else {
                     stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels;

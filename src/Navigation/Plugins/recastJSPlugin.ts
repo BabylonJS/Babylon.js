@@ -175,6 +175,20 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     }
 
     /**
+     * Compute the final position from a segment made of destination-position
+     * @param position world position
+     * @param destination world position
+     * @returns the resulting point along the navmesh
+     */
+    moveAlong(position: Vector3, destination: Vector3): Vector3 {
+        var p = new this.bjsRECAST.Vec3(position.x, position.y, position.z);
+        var d = new this.bjsRECAST.Vec3(destination.x, destination.y, destination.z);
+        var ret = this.navMesh.moveAlong(p, d);
+        var pr = new Vector3(ret.x, ret.y, ret.z);
+        return pr;
+    }
+
+    /**
      * Compute a navigation path from start to end. Returns an empty array if no path can be computed
      * @param start world position
      * @param end world position

@@ -21,6 +21,16 @@ export class Container extends Control {
     /** @hidden */
     protected _adaptHeightToChildren = false;
 
+    /**
+     * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+     */
+    public logLayoutCycleErrors = false;
+
+    /**
+     * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+     */
+    public maxLayoutCycle = 3;
+
     /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
     public get adaptHeightToChildren(): boolean {
         return this._adaptHeightToChildren;
@@ -343,9 +353,9 @@ export class Container extends Control {
             }
             rebuildCount++;
         }
-        while (this._rebuildLayout && rebuildCount < 3);
+        while (this._rebuildLayout && rebuildCount < this.maxLayoutCycle);
 
-        if (rebuildCount >= 3) {
+        if (rebuildCount >= 3 && this.logLayoutCycleErrors) {
             Logger.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
         }
 

@@ -59,6 +59,11 @@ export class NodeMaterialBuildStateSharedData {
     public blockingBlocks = new Array<NodeMaterialBlock>();
 
     /**
+     * Gets the list of animated inputs
+     */
+    public animatedInputs = new Array<InputBlock>();
+
+    /**
      * Build Id used to avoid multiple recompilations
      */
     public buildId: number;
