@@ -361,7 +361,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\r\n`;
 
         for (var output of this._outputs) {
-            if (output.connectedBlocks.length) {
+            if (output.hasEndpoints) {
                 this._writeOutput(state, output, output.name);
             }
         }

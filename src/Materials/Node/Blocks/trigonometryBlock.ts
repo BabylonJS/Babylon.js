@@ -1,0 +1,90 @@
+import { NodeMaterialBlock } from '../nodeMaterialBlock';
+import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
+import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { _TypeStore } from '../../../Misc/typeStore';
+
+/**
+ * Operations supported by the Trigonometry block
+ */
+export enum TrigonometryBlockOperations {
+    /** Cos */
+    Cos,
+    /** Sin */
+    Sin,
+    /** Abs */
+    Abs
+}
+
+/**
+ * Block used to apply trigonometry operation to floats
+ */
+export class TrigonometryBlock extends NodeMaterialBlock {
+
+    /**
+     * Gets or sets the operation applied by the block
+     */
+    public operation = TrigonometryBlockOperations.Cos;
+
+    /**
+     * Creates a new TrigonometryBlock
+     * @param name defines the block name
+     */
+    public constructor(name: string) {
+        super(name, NodeMaterialBlockTargets.Neutral);
+
+        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName() {
+        return "TrigonometryBlock";
+    }
+
+    /**
+     * Gets the input component
+     */
+    public get input(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
+
+    /**
+     * Gets the output component
+     */
+    public get output(): NodeMaterialConnectionPoint {
+        return this._outputs[0];
+    }
+
+    protected _buildBlock(state: NodeMaterialBuildState) {
+        super._buildBlock(state);
+
+        let output = this._outputs[0];
+        let operation = "";
+
+        switch (this.operation) {
+            case TrigonometryBlockOperations.Cos: {
+                operation = "cos";
+                break;
+            }
+            case TrigonometryBlockOperations.Sin: {
+                operation = "sin";
+                break;
+            }
+            case TrigonometryBlockOperations.Cos: {
+                operation = "abs";
+                break;
+            }
+        }
+
+        state.compilationString += this._declareOutput(output, state) + ` = ${operation}(${this.input.associatedVariableName});\r\n`;
+
+        return this;
+    }
+}
+
+_TypeStore.RegisteredTypes["BABYLON.TrigonometryBlock"] = TrigonometryBlock;

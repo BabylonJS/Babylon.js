@@ -106,6 +106,7 @@ export class NodeMaterial extends PushMaterial {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _optimizers = new Array<NodeMaterialOptimizer>();
+    private _animationFrame = -1;
 
     /** Define the URl to load node editor script */
     public static EditorURL = `https://unpkg.com/babylonjs-node-editor@${Engine.Version}/babylon.nodeEditor.js`;
@@ -252,6 +253,36 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Get a block by its name
+     * @param name defines the name of the block to retrieve
+     * @returns the required block or null if not found
+     */
+    public getBlockByName(name: string) {
+        for (var block of this.attachedBlocks) {
+            if (block.name === name) {
+                return block;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the list of input blocks attached to this material
+     * @returns an array of InputBlocks
+     */
+    public getInputBlocks() {
+        let blocks: InputBlock[] = [];
+        for (var block of this.attachedBlocks) {
+            if (block.isInput) {
+                blocks.push(block as InputBlock);
+            }
+        }
+
+        return blocks;
+    }
+
+    /**
      * Adds a new optimizer to the list of optimizers
      * @param optimizer defines the optimizers to add
      * @returns the current material
@@ -393,6 +424,10 @@ export class NodeMaterial extends PushMaterial {
     private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[]) {
         node.initialize(state);
         node.autoConfigure();
+
+        if (this.attachedBlocks.indexOf(node) === -1) {
+            this.attachedBlocks.push(node);
+        }
 
         for (var input of node.inputs) {
             if (!node.isInput) {
@@ -553,6 +588,19 @@ export class NodeMaterial extends PushMaterial {
             return false;
         }
 
+        var scene = this.getScene();
+        if (this._sharedData.animatedInputs) {
+            let frameId = scene.getFrameId();
+
+            if (this._animationFrame !== frameId) {
+                for (var input of this._sharedData.animatedInputs) {
+                    input.animate(scene);
+                }
+
+                this._animationFrame = frameId;
+            }
+        }
+
         if (subMesh.effect && this.isFrozen) {
             if (this._wasPreviouslyReady) {
                 return true;
@@ -563,7 +611,6 @@ export class NodeMaterial extends PushMaterial {
             subMesh._materialDefines = new NodeMaterialDefines();
         }
 
-        var scene = this.getScene();
         var defines = <NodeMaterialDefines>subMesh._materialDefines;
         if (!this.checkReadyOnEveryCall && subMesh.effect) {
             if (defines._renderId === scene.getRenderId()) {
@@ -1021,6 +1068,20 @@ export class NodeMaterial extends PushMaterial {
         nodeMaterial.loadFromSerialization(source, rootUrl);
 
         return nodeMaterial;
+    }
+
+    /**
+     * Creates a new node material set to default basic configuration
+     * @param name defines the name of the material
+     * @param scene defines the hosting scene
+     * @returns a new NodeMaterial
+     */
+    public static CreateDefault(name: string, scene?: Scene) {
+        let newMaterial = new NodeMaterial(name, scene);
+        newMaterial.setToDefault();
+        newMaterial.build();
+
+        return newMaterial;
     }
 }
 

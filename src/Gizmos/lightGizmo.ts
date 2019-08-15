@@ -158,7 +158,7 @@ export class LightGizmo extends Gizmo {
             return linePivot;
         }
         for (var i = 0; i < 4; i++) {
-            var l = linePivot.clone("lineParentClone");
+            var l = linePivot.clone("lineParentClone")!;
             l.rotation.z = Math.PI / 4;
             l.rotation.y = (Math.PI / 2) + (Math.PI / 2 * i);
 
@@ -265,11 +265,11 @@ export class LightGizmo extends Gizmo {
         var line = Mesh.CreateCylinder(root.name, 6, 0.3, 0.3, 6, 1, scene);
         line.parent = mesh;
 
-        var left = line.clone(root.name);
+        var left = line.clone(root.name)!;
         left.scaling.y = 0.5;
         left.position.x += 1.25;
 
-        var right = line.clone(root.name);
+        var right = line.clone(root.name)!;
         right.scaling.y = 0.5;
         right.position.x += -1.25;
 
