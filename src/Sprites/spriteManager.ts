@@ -56,6 +56,15 @@ export interface ISpriteManager extends IDisposable {
      */
     intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
 
+        /**
+     * Intersects the sprites with a ray
+     * @param ray defines the ray to intersect with
+     * @param camera defines the current active camera
+     * @param predicate defines a predicate used to select candidate sprites
+     * @returns null if no hit or a PickingInfo array
+     */
+    multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]>;
+
     /**
      * Renders the list of sprites on screen.
      */
@@ -399,6 +408,68 @@ export class SpriteManager implements ISpriteManager {
         }
 
         return null;
+    }
+
+    /**
+     * Intersects the sprites with a ray
+     * @param ray defines the ray to intersect with
+     * @param camera defines the current active camera
+     * @param predicate defines a predicate used to select candidate sprites
+     * @returns null if no hit or a PickingInfo array
+     */
+    public multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]> {
+        var count = Math.min(this._capacity, this.sprites.length);
+        var min = Vector3.Zero();
+        var max = Vector3.Zero();
+        var distance: number;
+        var results: Nullable<PickingInfo[]> = [];
+        var pickedPoint = Vector3.Zero();
+        var cameraSpacePosition = Vector3.Zero();
+        var cameraView = camera.getViewMatrix();
+
+        for (var index = 0; index < count; index++) {
+            var sprite = this.sprites[index];
+            if (!sprite) {
+                continue;
+            }
+
+            if (predicate) {
+                if (!predicate(sprite)) {
+                    continue;
+                }
+            } else if (!sprite.isPickable) {
+                continue;
+            }
+
+            Vector3.TransformCoordinatesToRef(sprite.position, cameraView, cameraSpacePosition);
+
+            min.copyFromFloats(cameraSpacePosition.x - sprite.width / 2, cameraSpacePosition.y - sprite.height / 2, cameraSpacePosition.z);
+            max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
+
+            if (ray.intersectsBoxMinMax(min, max)) {
+                distance = Vector3.Distance(cameraSpacePosition, ray.origin);
+
+                var result = new PickingInfo();
+                results.push(result);
+
+                cameraView.invertToRef(TmpVectors.Matrix[0]);
+                result.hit = true;
+                result.pickedSprite = sprite;
+                result.distance = distance;
+
+                // Get picked point
+                let direction = TmpVectors.Vector3[0];
+                direction.copyFrom(ray.direction);
+                direction.normalize();
+                direction.scaleInPlace(distance);
+
+                ray.origin.addToRef(direction, pickedPoint);
+                result.pickedPoint = Vector3.TransformCoordinates(pickedPoint, TmpVectors.Matrix[0]);
+            }
+
+        }
+
+        return results;
     }
 
     /**
