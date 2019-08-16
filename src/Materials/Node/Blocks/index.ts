@@ -16,3 +16,4 @@ export * from "./colorMergerBlock";
 export * from "./vectorMergerBlock";
 export * from "./colorSplitterBlock";
 export * from "./vectorSplitterBlock";
+export * from "./lerpBlock";

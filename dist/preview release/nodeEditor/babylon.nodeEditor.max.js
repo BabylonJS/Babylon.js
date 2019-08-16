@@ -62142,6 +62142,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -62199,6 +62200,8 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NormalizeBlock"]("Normalize");
             case "FresnelBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["FresnelBlock"]("Fresnel");
+            case "LerpBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LerpBlock"]("Fresnel");
         }
         return null;
     };
@@ -64398,7 +64401,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Vertex: ["BonesBlock", "InstancesBlock", "MorphTargetsBlock"],
             Fragment: ["AlphaTestBlock", "FogBlock", "FresnelBlock", "ImageProcessingBlock", "LightBlock", "ReflectionTextureBlock", "TextureBlock"],
             Outputs: ["VertexOutputBlock", "FragmentOutputBlock"],
-            Math: ["AddBlock", "ClampBlock", "CrossBlock", "DotBlock", "MultiplyBlock", "RemapBlock", "NormalizeBlock", "ScaleBlock", "TransformBlock", "TrigonometryBlock"],
+            Math: ["AddBlock", "ClampBlock", "CrossBlock", "DotBlock", "LerpBlock", "MultiplyBlock", "RemapBlock", "NormalizeBlock", "ScaleBlock", "TransformBlock", "TrigonometryBlock"],
             Conversion: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
         };
