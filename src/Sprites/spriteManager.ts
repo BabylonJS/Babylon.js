@@ -346,12 +346,12 @@ export class SpriteManager implements ISpriteManager {
      */
     public intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
         var count = Math.min(this._capacity, this.sprites.length);
-        var min = TmpVectors.Vector3[0].copyFromFloats(0, 0, 0);
-        var max = TmpVectors.Vector3[1].copyFromFloats(0, 0, 0);
+        var min = Vector3.Zero();
+        var max = Vector3.Zero();
         var distance = Number.MAX_VALUE;
         var currentSprite: Nullable<Sprite> = null;
-        var pickedPoint = TmpVectors.Vector3[2].copyFromFloats(0, 0, 0);
-        var cameraSpacePosition = TmpVectors.Vector3[3].copyFromFloats(0, 0, 0);;
+        var pickedPoint = TmpVectors.Vector3[0].copyFromFloats(0, 0, 0);
+        var cameraSpacePosition = TmpVectors.Vector3[1].copyFromFloats(0, 0, 0);
         var cameraView = camera.getViewMatrix();
 
         for (var index = 0; index < count; index++) {
@@ -396,7 +396,7 @@ export class SpriteManager implements ISpriteManager {
             result.distance = distance;
 
             // Get picked point
-            let direction = TmpVectors.Vector3[4];
+            let direction = TmpVectors.Vector3[2];
             direction.copyFrom(ray.direction);
             direction.normalize();
             direction.scaleInPlace(distance);
@@ -419,12 +419,12 @@ export class SpriteManager implements ISpriteManager {
      */
     public multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]> {
         var count = Math.min(this._capacity, this.sprites.length);
-        var min = TmpVectors.Vector3[0].copyFromFloats(0, 0, 0);
-        var max = TmpVectors.Vector3[1].copyFromFloats(0, 0, 0);
+        var min = Vector3.Zero();
+        var max = Vector3.Zero();
         var distance: number;
         var results: Nullable<PickingInfo[]> = [];
-        var pickedPoint = TmpVectors.Vector3[2].copyFromFloats(0, 0, 0);
-        var cameraSpacePosition = TmpVectors.Vector3[3].copyFromFloats(0, 0, 0);;
+        var pickedPoint = TmpVectors.Vector3[0].copyFromFloats(0, 0, 0);
+        var cameraSpacePosition = TmpVectors.Vector3[1].copyFromFloats(0, 0, 0);
         var cameraView = camera.getViewMatrix();
 
         for (var index = 0; index < count; index++) {
@@ -458,7 +458,7 @@ export class SpriteManager implements ISpriteManager {
                 result.distance = distance;
 
                 // Get picked point
-                let direction = TmpVectors.Vector3[4];
+                let direction = TmpVectors.Vector3[2];
                 direction.copyFrom(ray.direction);
                 direction.normalize();
                 direction.scaleInPlace(distance);
