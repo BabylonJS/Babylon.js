@@ -406,6 +406,15 @@ export class Effect implements IDisposable {
      * @returns if the effect is compiled and prepared.
      */
     public isReady(): boolean {
+        try {
+            return this._isReadyInternal();
+        }
+        catch {
+            return false;
+        }
+    }
+
+    private _isReadyInternal(): boolean {
         if (this._isReady) {
             return true;
         }
@@ -524,7 +533,7 @@ export class Effect implements IDisposable {
 
     private _checkIsReady() {
         try {
-            if (this.isReady()) {
+            if (this._isReadyInternal()) {
                 return;
             }
         } catch (e) {

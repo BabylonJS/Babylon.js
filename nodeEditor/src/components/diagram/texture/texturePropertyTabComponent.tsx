@@ -34,7 +34,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
 
         let texture = this.props.node.texture as BaseTexture;
         if (!texture) {
-            this.props.node.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene())
+            this.props.node.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, false)
             texture = this.props.node.texture;
         }
 

@@ -25,6 +25,8 @@ import { FragmentOutputBlock } from './Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { _TypeStore } from '../../Misc/typeStore';
 import { SerializationHelper } from '../../Misc/decorators';
+import { TextureBlock } from './Blocks/Dual/textureBlock';
+import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
 
 // declare NODEEDITOR namespace for compilation issue
 declare var NODEEDITOR: any;
@@ -817,6 +819,14 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Gets the list of texture blocks
+     * @returns an array of texture blocks
+     */
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBlock)[] {
+        return this._sharedData.textureBlocks.filter((tb) => tb.texture);
+    }
+
+    /**
      * Specifies if the material uses a texture
      * @param texture defines the texture to check against the material
      * @returns a boolean specifying if the material uses the texture
@@ -997,6 +1007,27 @@ export class NodeMaterial extends PushMaterial {
         return serializationObject;
     }
 
+    private _restoreConnections(block: NodeMaterialBlock, source: any, map: {[key: number]: NodeMaterialBlock}) {
+        for (var outputPoint of block.outputs) {
+            for (var candidate of source.blocks) {
+                let target = map[candidate.id];
+
+                for (var input of candidate.inputs) {
+                    if (map[input.targetBlockId] === block && input.targetConnectionName === outputPoint.name) {
+                        let inputPoint = target.getInputByName(input.inputName);
+                        if (!inputPoint || inputPoint.isConnected) {
+                            continue;
+                        }
+
+                        outputPoint.connectTo(inputPoint);
+                        this._restoreConnections(target, source, map);
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Clear the current graph and load a new one from a serialization object
      * @param source defines the JSON representation of the material
@@ -1021,25 +1052,15 @@ export class NodeMaterial extends PushMaterial {
 
         // Connections
 
-        // Play them in reverse to make sure types are defined
-        for (var blockIndex = source.blocks.length - 1; blockIndex >= 0; blockIndex--) {
+        // Starts with input blocks only
+        for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
             let parsedBlock = source.blocks[blockIndex];
             let block = map[parsedBlock.id];
 
-            for (var input of parsedBlock.inputs) {
-                if (!input.targetBlockId) {
-                    continue;
-                }
-                let inputPoint = block.getInputByName(input.inputName);
-                let targetBlock = map[input.targetBlockId];
-                if (targetBlock) {
-                    let outputPoint = targetBlock.getOutputByName(input.targetConnectionName);
-
-                    if (inputPoint && outputPoint) {
-                        outputPoint.connectTo(inputPoint);
-                    }
-                }
+            if (!block.isInput) {
+                continue;
             }
+            this._restoreConnections(block, source, map);
         }
 
         // Outputs
