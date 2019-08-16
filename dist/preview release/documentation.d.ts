@@ -28306,6 +28306,7 @@ declare module BABYLON {
          * @returns if the effect is compiled and prepared.
          */
         isReady(): boolean;
+        private _isReadyInternal;
         /**
          * The engine the effect was initialized with.
          * @returns the engine.
@@ -28386,6 +28387,7 @@ declare module BABYLON {
          * @hidden
          */
         _prepareEffect(): void;
+        private _processCompilationErrors;
         /**
          * Checks if the effect is supported. (Must be called after compilation)
          */
@@ -51731,6 +51733,118 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum used to define well known values e.g. values automatically provided by the system
+     */
+    export enum NodeMaterialWellKnownValues {
+        /** World */
+        World = 1,
+        /** View */
+        View = 2,
+        /** Projection */
+        Projection = 3,
+        /** ViewProjection */
+        ViewProjection = 4,
+        /** WorldView */
+        WorldView = 5,
+        /** WorldViewProjection */
+        WorldViewProjection = 6,
+        /** CameraPosition */
+        CameraPosition = 7,
+        /** Fog Color */
+        FogColor = 8
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to read a reflection texture from a sampler
+     */
+    export class ReflectionTextureBlock extends NodeMaterialBlock {
+        private _define3DName;
+        private _defineCubicName;
+        private _defineExplicitName;
+        private _defineProjectionName;
+        private _defineLocalCubicName;
+        private _defineSphericalName;
+        private _definePlanarName;
+        private _defineEquirectangularName;
+        private _defineMirroredEquirectangularFixedName;
+        private _defineEquirectangularFixedName;
+        private _defineSkyboxName;
+        private _cubeSamplerName;
+        private _2DSamplerName;
+        private _positionUVWName;
+        private _directionWName;
+        private _reflectionCoordsName;
+        private _reflection2DCoordsName;
+        private _reflectionColorName;
+        private _reflectionMatrixName;
+        /**
+         * Gets or sets the texture associated with the node
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Create a new TextureBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position input component
+         */
+        readonly position: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world position input component
+         */
+        readonly worldPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world normal input component
+         */
+        readonly worldNormal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world input component
+         */
+        readonly world: NodeMaterialConnectionPoint;
+        /**
+        * Gets the camera (or eye) position component
+        */
+        readonly cameraPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the view input component
+         */
+        readonly view: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb output component
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        /**
+         * Gets the r output component
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g output component
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b output component
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        isReady(): boolean;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        private _injectVertexCode;
+        private _writeOutput;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface used to configure the node material editor
      */
     export interface INodeMaterialEditorOptions {
@@ -51861,7 +51975,7 @@ declare module BABYLON {
          * @param name defines the name of the block to retrieve
          * @returns the required block or null if not found
          */
-        getBlockByName(name: string): NodeMaterialBlock | null;
+        getBlockByName(name: string): Nullable<NodeMaterialBlock>;
         /**
          * Gets the list of input blocks attached to this material
          * @returns an array of InputBlocks
@@ -51948,6 +52062,11 @@ declare module BABYLON {
          */
         getActiveTextures(): BaseTexture[];
         /**
+         * Gets the list of texture blocks
+         * @returns an array of texture blocks
+         */
+        getTextureBlocks(): (TextureBlock | ReflectionTextureBlock)[];
+        /**
          * Specifies if the material uses a texture
          * @param texture defines the texture to check against the material
          * @returns a boolean specifying if the material uses the texture
@@ -51982,6 +52101,7 @@ declare module BABYLON {
          * @returns the serialized material object
          */
         serialize(): any;
+        private _restoreConnections;
         /**
          * Clear the current graph and load a new one from a serialization object
          * @param source defines the JSON representation of the material
@@ -52073,121 +52193,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Enum used to define well known values e.g. values automatically provided by the system
-     */
-    export enum NodeMaterialWellKnownValues {
-        /** World */
-        World = 1,
-        /** View */
-        View = 2,
-        /** Projection */
-        Projection = 3,
-        /** ViewProjection */
-        ViewProjection = 4,
-        /** WorldView */
-        WorldView = 5,
-        /** WorldViewProjection */
-        WorldViewProjection = 6,
-        /** CameraPosition */
-        CameraPosition = 7,
-        /** Fog Color */
-        FogColor = 8
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to read a reflection texture from a sampler
-     */
-    export class ReflectionTextureBlock extends NodeMaterialBlock {
-        private _define3DName;
-        private _defineCubicName;
-        private _defineExplicitName;
-        private _defineProjectionName;
-        private _defineLocalCubicName;
-        private _defineSphericalName;
-        private _definePlanarName;
-        private _defineEquirectangularName;
-        private _defineMirroredEquirectangularFixedName;
-        private _defineEquirectangularFixedName;
-        private _defineSkyboxName;
-        private _cubeSamplerName;
-        private _2DSamplerName;
-        private _positionUVWName;
-        private _directionWName;
-        private _reflectionCoordsName;
-        private _reflection2DCoordsName;
-        private _reflectionColorName;
-        private _reflectionMatrixName;
-        /**
-         * Gets or sets the texture associated with the node
-         */
-        texture: Nullable<BaseTexture>;
-        /**
-         * Create a new TextureBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the world position input component
-         */
-        readonly position: NodeMaterialConnectionPoint;
-        /**
-         * Gets the world position input component
-         */
-        readonly worldPosition: NodeMaterialConnectionPoint;
-        /**
-         * Gets the world normal input component
-         */
-        readonly worldNormal: NodeMaterialConnectionPoint;
-        /**
-         * Gets the world input component
-         */
-        readonly world: NodeMaterialConnectionPoint;
-        /**
-        * Gets the camera (or eye) position component
-        */
-        readonly cameraPosition: NodeMaterialConnectionPoint;
-        /**
-         * Gets the view input component
-         */
-        readonly view: NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb output component
-         */
-        readonly rgb: NodeMaterialConnectionPoint;
-        /**
-         * Gets the r output component
-         */
-        readonly r: NodeMaterialConnectionPoint;
-        /**
-         * Gets the g output component
-         */
-        readonly g: NodeMaterialConnectionPoint;
-        /**
-         * Gets the b output component
-         */
-        readonly b: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
-        isReady(): boolean;
-        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
-        private _injectVertexCode;
-        private _writeOutput;
-        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
-        serialize(): any;
-        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to store shared data between 2 NodeMaterialBuildState
      */
     export class NodeMaterialBuildStateSharedData {
+        /**
+        * Gets the list of emitted varyings
+        */
+        temps: string[];
         /**
          * Gets the list of emitted varyings
          */
@@ -52203,7 +52215,7 @@ declare module BABYLON {
         /**
          * Input blocks
          */
-        textureBlocks: (TextureBlock | ReflectionTextureBlock)[];
+        textureBlocks: (ReflectionTextureBlock | TextureBlock)[];
         /**
          * Bindable blocks (Blocks that need to set data to the effect)
          */
@@ -52370,6 +52382,8 @@ declare module BABYLON {
                 replace: string;
             }[];
         }, storeKey?: string): void;
+        /** @hidden */
+        _registerTempVariable(name: string): boolean;
         /** @hidden */
         _emitVaryingFromString(name: string, type: string, define?: string, notDefine?: boolean): boolean;
         /** @hidden */
@@ -52571,7 +52585,7 @@ declare module BABYLON {
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
          * @returns a copy of the current block
          */
-        clone(scene: Scene, rootUrl?: string): NodeMaterialBlock | null;
+        clone(scene: Scene, rootUrl?: string): Nullable<NodeMaterialBlock>;
         /**
          * Serializes this block in a JSON representation
          * @returns the serialized block object
@@ -53006,11 +53020,11 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to create a Color3/4 out of individual inputs (one for each component)
+     * Block used to compute fresnel value
      */
-    export class ColorMergerBlock extends NodeMaterialBlock {
+    export class FresnelBlock extends NodeMaterialBlock {
         /**
-         * Create a new ColorMergerBlock
+         * Create a new FresnelBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -53020,176 +53034,31 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the r component (input)
+         * Gets the world position input component
          */
-        readonly r: NodeMaterialConnectionPoint;
+        readonly worldPosition: NodeMaterialConnectionPoint;
         /**
-         * Gets the g component (input)
+         * Gets the world normal input component
          */
-        readonly g: NodeMaterialConnectionPoint;
+        readonly worldNormal: NodeMaterialConnectionPoint;
         /**
-         * Gets the b component (input)
-         */
-        readonly b: NodeMaterialConnectionPoint;
+        * Gets the camera (or eye) position component
+        */
+        readonly cameraPosition: NodeMaterialConnectionPoint;
         /**
-         * Gets the a component (input)
-         */
-        readonly a: NodeMaterialConnectionPoint;
+        * Gets the bias input component
+        */
+        readonly bias: NodeMaterialConnectionPoint;
         /**
-         * Gets the rgba component (output)
-         */
-        readonly rgba: NodeMaterialConnectionPoint;
+        * Gets the camera (or eye) position component
+        */
+        readonly power: NodeMaterialConnectionPoint;
         /**
-         * Gets the rgb component (output)
+         * Gets the fresnel output component
          */
-        readonly rgb: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
-     */
-    export class VectorMergerBlock extends NodeMaterialBlock {
-        /**
-         * Create a new VectorMergerBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the x component (input)
-         */
-        readonly x: NodeMaterialConnectionPoint;
-        /**
-         * Gets the y component (input)
-         */
-        readonly y: NodeMaterialConnectionPoint;
-        /**
-         * Gets the z component (input)
-         */
-        readonly z: NodeMaterialConnectionPoint;
-        /**
-         * Gets the w component (input)
-         */
-        readonly w: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyzw component (output)
-         */
-        readonly xyzw: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (output)
-         */
-        readonly xyz: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (output)
-         */
-        readonly xy: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to expand a Color3/4 into 4 outputs (one for each component)
-     */
-    export class ColorSplitterBlock extends NodeMaterialBlock {
-        /**
-         * Create a new ColorSplitterBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the rgba component (input)
-         */
-        readonly rgba: NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb component (input)
-         */
-        readonly rgbIn: NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb component (output)
-         */
-        readonly rgbOut: NodeMaterialConnectionPoint;
-        /**
-         * Gets the r component (output)
-         */
-        readonly r: NodeMaterialConnectionPoint;
-        /**
-         * Gets the g component (output)
-         */
-        readonly g: NodeMaterialConnectionPoint;
-        /**
-         * Gets the b component (output)
-         */
-        readonly b: NodeMaterialConnectionPoint;
-        /**
-         * Gets the a component (output)
-         */
-        readonly a: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to expand a Vector3/4 into 4 outputs (one for each component)
-     */
-    export class VectorSplitterBlock extends NodeMaterialBlock {
-        /**
-         * Create a new VectorSplitterBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the xyzw component (input)
-         */
-        readonly xyzw: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (input)
-         */
-        readonly xyzIn: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (input)
-         */
-        readonly xyIn: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (output)
-         */
-        readonly xyzOut: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (output)
-         */
-        readonly xyOut: NodeMaterialConnectionPoint;
-        /**
-         * Gets the x component (output)
-         */
-        readonly x: NodeMaterialConnectionPoint;
-        /**
-         * Gets the y component (output)
-         */
-        readonly y: NodeMaterialConnectionPoint;
-        /**
-         * Gets the z component (output)
-         */
-        readonly z: NodeMaterialConnectionPoint;
-        /**
-         * Gets the w component (output)
-         */
-        readonly w: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
+        readonly fresnel: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
@@ -53597,6 +53466,194 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to create a Color3/4 out of individual inputs (one for each component)
+     */
+    export class ColorMergerBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ColorMergerBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the r component (input)
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g component (input)
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b component (input)
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        /**
+         * Gets the a component (input)
+         */
+        readonly a: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgba component (output)
+         */
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
+     */
+    export class VectorMergerBlock extends NodeMaterialBlock {
+        /**
+         * Create a new VectorMergerBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the x component (input)
+         */
+        readonly x: NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component (input)
+         */
+        readonly y: NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component (input)
+         */
+        readonly z: NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component (input)
+         */
+        readonly w: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component (output)
+         */
+        readonly xyzw: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         */
+        readonly xyz: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         */
+        readonly xy: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to expand a Color3/4 into 4 outputs (one for each component)
+     */
+    export class ColorSplitterBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ColorSplitterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the rgba component (input)
+         */
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (input)
+         */
+        readonly rgbIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         */
+        readonly rgbOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the r component (output)
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g component (output)
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b component (output)
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        /**
+         * Gets the a component (output)
+         */
+        readonly a: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to expand a Vector3/4 into 4 outputs (one for each component)
+     */
+    export class VectorSplitterBlock extends NodeMaterialBlock {
+        /**
+         * Create a new VectorSplitterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xyzw component (input)
+         */
+        readonly xyzw: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (input)
+         */
+        readonly xyzIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (input)
+         */
+        readonly xyIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         */
+        readonly xyzOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         */
+        readonly xyOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component (output)
+         */
+        readonly x: NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component (output)
+         */
+        readonly y: NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component (output)
+         */
+        readonly z: NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component (output)
+         */
+        readonly w: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }

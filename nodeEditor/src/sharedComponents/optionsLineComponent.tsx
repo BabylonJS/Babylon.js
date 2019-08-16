@@ -11,20 +11,24 @@ class ListLineOption {
 interface IOptionsLineComponentProps {
     label: string,
     target: any,
-    propertyName: string,
+    propertyName?: string,
     options: ListLineOption[],
     noDirectUpdate?: boolean,
     onSelect?: (value: number | string) => void,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
     valuesAreStrings?: boolean
-    defaultIfNull?: number
+    defaultIfNull?: number,
+    getSelection?: (target: any) => number;
 }
 
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string }> {
     private _localChange = false;
 
     private _getValue(props: IOptionsLineComponentProps) {
-        return props.target ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
+        if (props.getSelection) {
+            return props.getSelection(props.target);
+        }
+        return (props.target && props.propertyName) ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
     }
 
     constructor(props: IOptionsLineComponentProps) {
@@ -54,7 +58,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
 
         this.props.onPropertyChangedObservable.notifyObservers({
             object: this.props.target,
-            property: this.props.propertyName,
+            property: this.props.propertyName!,
             value: newValue,
             initialValue: previousValue
         });
@@ -66,7 +70,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
 
         const store = this.state.value;
         if (!this.props.noDirectUpdate) {
-            this.props.target[this.props.propertyName] = value;
+            this.props.target[this.props.propertyName!] = value;
         }
         this.setState({ value: value });
 

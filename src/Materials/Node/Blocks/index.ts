@@ -12,3 +12,7 @@ export * from "./transformBlock";
 export * from "./remapBlock";
 export * from "./normalizeBlock";
 export * from "./trigonometryBlock";
+export * from "./colorMergerBlock";
+export * from "./vectorMergerBlock";
+export * from "./colorSplitterBlock";
+export * from "./vectorSplitterBlock";

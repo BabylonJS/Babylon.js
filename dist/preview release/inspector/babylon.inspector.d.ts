@@ -1291,9 +1291,26 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
-        renderInputValues(): JSX.Element;
+        renderTextures(): JSX.Element | null;
+        renderInputValues(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IMultiMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: BABYLON.MultiMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMaterialPropertyGridComponentProps> {
+        constructor(props: IMultiMaterialPropertyGridComponentProps);
+        onMaterialLink(mat: BABYLON.Material): void;
+        renderChildMaterial(): JSX.Element;
         render(): JSX.Element;
     }
 }

@@ -1679,9 +1679,33 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
-        renderInputValues(): JSX.Element;
+        renderTextures(): JSX.Element | null;
+        renderInputValues(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/multiMaterialPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { Material } from 'babylonjs/Materials/material';
+    import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
+    interface IMultiMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: MultiMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: Observable<any>;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMaterialPropertyGridComponentProps> {
+        constructor(props: IMultiMaterialPropertyGridComponentProps);
+        onMaterialLink(mat: Material): void;
+        renderChildMaterial(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -3584,9 +3608,26 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
-        renderInputValues(): JSX.Element;
+        renderTextures(): JSX.Element | null;
+        renderInputValues(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IMultiMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: BABYLON.MultiMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMaterialPropertyGridComponentProps> {
+        constructor(props: IMultiMaterialPropertyGridComponentProps);
+        onMaterialLink(mat: BABYLON.Material): void;
+        renderChildMaterial(): JSX.Element;
         render(): JSX.Element;
     }
 }
