@@ -27,6 +27,7 @@ import { _TypeStore } from '../../Misc/typeStore';
 import { SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
+import { FileTools } from '../../Misc/fileTools';
 
 // declare NODEEDITOR namespace for compilation issue
 declare var NODEEDITOR: any;
@@ -425,7 +426,7 @@ export class NodeMaterial extends PushMaterial {
 
     private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[]) {
         node.initialize(state);
-        node.autoConfigure();
+        node.autoConfigure(this);
 
         if (this.attachedBlocks.indexOf(node) === -1) {
             this.attachedBlocks.push(node);
@@ -949,6 +950,25 @@ export class NodeMaterial extends PushMaterial {
         // Add to nodes
         this.addOutputNode(vertexOutput);
         this.addOutputNode(fragmentOutput);
+    }
+
+    /**
+     * Loads the current Node Material from a url pointing to a file save by the Node Material Editor
+     * @param url defines the url to load from
+     * @returns a promise that will fullfil when the material is fully loaded
+     */
+    public loadAsync(url: string) {
+        return new Promise((resolve, reject) => {
+            FileTools.LoadFile(url, (data) => {
+                let serializationObject = JSON.parse(data as string);
+
+                this.loadFromSerialization(serializationObject, "");
+
+                resolve();
+            }, undefined, undefined, false, (request, exception) => {
+                reject(exception.message);
+            });
+        });
     }
 
     private _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]) {

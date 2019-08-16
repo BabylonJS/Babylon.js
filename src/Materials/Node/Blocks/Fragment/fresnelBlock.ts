@@ -4,6 +4,9 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockCo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../../Misc/typeStore';
+import { InputBlock } from '../Input/inputBlock';
+import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { NodeMaterial } from '../../nodeMaterial';
 
 /**
  * Block used to compute fresnel value
@@ -77,7 +80,24 @@ export class FresnelBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public autoConfigure(material: NodeMaterial) {
+        if (!this.cameraPosition.isConnected) {
+            let cameraPositionInput = new InputBlock("cameraPosition");
+            cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+            cameraPositionInput.output.connectTo(this.cameraPosition);
+        }
+
+        if (!this.bias.isConnected) {
+            let biasInput = new InputBlock("bias");
+            biasInput.value = 0;
+            biasInput.output.connectTo(this.bias);
+        }
+
+        if (!this.power.isConnected) {
+            let powerInput = new InputBlock("power");
+            powerInput.value = 1;
+            powerInput.output.connectTo(this.power);
+        }
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
