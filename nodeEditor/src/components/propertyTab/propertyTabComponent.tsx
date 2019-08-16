@@ -64,8 +64,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
             serializationObject.locations.push({
                 blockId: block.uniqueId,
-                x: node.x,
-                y: node.y
+                x: node ? node.x : 0,
+                y: node ? node.y : 0
             });
         }
 

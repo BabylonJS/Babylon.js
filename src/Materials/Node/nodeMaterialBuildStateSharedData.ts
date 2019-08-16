@@ -9,6 +9,11 @@ import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
  */
 export class NodeMaterialBuildStateSharedData {
     /**
+    * Gets the list of emitted varyings
+    */
+    public temps = new Array<string>();
+
+    /**
      * Gets the list of emitted varyings
      */
     public varyings = new Array<string>();

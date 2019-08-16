@@ -63957,7 +63957,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 var TexturePropertyTabComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TexturePropertyTabComponent, _super);
     function TexturePropertyTabComponent() {
@@ -63978,7 +63977,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
         var texture = this.props.node.texture;
         if (!texture) {
-            this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Engine"].LastCreatedScene);
+            this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene());
             texture = this.props.node.texture;
         }
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ReadFile(file, function (data) {
@@ -64834,8 +64833,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             }
             serializationObject.locations.push({
                 blockId: block.uniqueId,
-                x: node.x,
-                y: node.y
+                x: node ? node.x : 0,
+                y: node ? node.y : 0
             });
         }
         // Output
