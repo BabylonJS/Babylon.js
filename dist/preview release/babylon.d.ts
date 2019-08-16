@@ -52667,7 +52667,7 @@ declare module BABYLON {
         private _animationType;
         /** @hidden */
         _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
-        /** Gets or sets a boolean indicating that this input can be edited in the Inspector */
+        /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
         /**
          * Gets or sets the connection point type (default is float)
