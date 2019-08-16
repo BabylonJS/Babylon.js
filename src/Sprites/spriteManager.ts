@@ -350,8 +350,8 @@ export class SpriteManager implements ISpriteManager {
         var max = Vector3.Zero();
         var distance = Number.MAX_VALUE;
         var currentSprite: Nullable<Sprite> = null;
-        var pickedPoint = TmpVectors.Vector3[0].copyFromFloats(0, 0, 0);
-        var cameraSpacePosition = TmpVectors.Vector3[1].copyFromFloats(0, 0, 0);
+        var pickedPoint = TmpVectors.Vector3[0];
+        var cameraSpacePosition = TmpVectors.Vector3[1];
         var cameraView = camera.getViewMatrix();
 
         for (var index = 0; index < count; index++) {

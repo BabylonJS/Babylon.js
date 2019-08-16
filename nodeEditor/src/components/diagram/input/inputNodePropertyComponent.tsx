@@ -130,7 +130,10 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextInputLineComponent label="Name" propertyName="name" target={inputBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                    {
+                        !inputBlock.isAttribute &&
+                        <TextInputLineComponent  globalState={this.props.globalState} label="Name" propertyName="name" target={inputBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                    }
                     <TextLineComponent label="Type" value={StringTools.GetBaseType(inputBlock.type)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
