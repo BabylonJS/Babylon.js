@@ -16,6 +16,8 @@ import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
 import { Vector4LineComponent } from '../../../lines/vector4LineComponent';
 import { Vector2LineComponent } from '../../../lines/vector2LineComponent';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
 
 interface INodeMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -26,12 +28,38 @@ interface INodeMaterialPropertyGridComponentProps {
 }
 
 export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
+    private _onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+    
     constructor(props: INodeMaterialPropertyGridComponentProps) {
         super(props);
     }
 
     edit() {
         this.props.material.edit();
+    }
+
+    renderTextures() {
+        const material = this.props.material;
+
+        const onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
+
+        let textureBlocks = material.getTextureBlocks();
+
+        if (!textureBlocks || textureBlocks.length === 0) {
+            return null;
+        }
+
+        return (
+            <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">
+                {
+                    textureBlocks.map((textureBlock, i) => {
+                        return (
+                            <TextureLinkLineComponent label={textureBlock.name} key={textureBlock.texture!.uniqueId + i} texture={textureBlock.texture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                        )
+                    })
+                }
+               </LineContainerComponent>
+        );
     }
 
     renderInputValues() {
@@ -97,7 +125,10 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 </LineContainerComponent>
                 {
                     this.renderInputValues()
-                }                    
+                }      
+                {
+                    this.renderTextures()
+                }                  
             </div>
         );
     }
