@@ -29,7 +29,7 @@ export class RemapPropertyTabComponentProps extends React.Component<IRemapProper
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextInputLineComponent label="Name" propertyName="name" target={remapBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                    <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={remapBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                     <TextLineComponent label="Type" value={remapBlock.getClassName()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">

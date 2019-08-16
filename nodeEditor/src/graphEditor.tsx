@@ -76,6 +76,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _copiedNode: Nullable<DefaultNodeModel> = null;
     private _mouseLocationX = 0;
     private _mouseLocationY = 0;
+    private _onWidgetKeyUpPointer: any;
 
     /** @hidden */
     public _toAdd: LinkModel[] | null = [];
@@ -135,11 +136,22 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         return localNode;
     }
 
+    onWidgetKeyUp(evt: any) {        
+        var widget = (this.refs["test"] as DiagramWidget);
+
+        if (!widget || this.props.globalState.blockKeyboardEvents) {
+            return;
+        }
+
+        widget.onKeyUp(evt)
+    }
+
     componentDidMount() {
         if (this.props.globalState.hostDocument) {
             var widget = (this.refs["test"] as DiagramWidget);
             widget.setState({ document: this.props.globalState.hostDocument })
-            this.props.globalState.hostDocument!.addEventListener("keyup", widget.onKeyUpPointer as any, false);
+            this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this)
+            this.props.globalState.hostDocument!.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
 
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
@@ -147,8 +159,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
     componentWillUnmount() {
         if (this.props.globalState.hostDocument) {
-            var widget = (this.refs["test"] as DiagramWidget);
-            this.props.globalState.hostDocument!.removeEventListener("keyup", widget.onKeyUpPointer as any, false);
+            this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
 
         this._previewManager.dispose();

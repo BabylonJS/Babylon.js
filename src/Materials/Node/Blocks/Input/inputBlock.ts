@@ -27,8 +27,8 @@ export class InputBlock extends NodeMaterialBlock {
     /** @hidden */
     public _wellKnownValue: Nullable<NodeMaterialWellKnownValues> = null;
 
-    /** Gets or sets a boolean indicating that this input can be edited in the Inspector */
-    public visibleInInspector = true;
+    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
+    public visibleInInspector = false;
 
     /**
      * Gets or sets the connection point type (default is float)

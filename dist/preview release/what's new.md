@@ -14,6 +14,7 @@
 
 ## Updates
 - SpritePackedManager extends SpriteManager so that a sprite sheet with different size sprites can be used ([JohnK](https://github.com/BabylonJSGuide))
+- MultiPickSprite and multiPickSpriteWithRay added to sprites ([JohnK](https://github.com/BabylonJSGuide))
 
 ### General
 - Added support for dual shock gamepads ([Deltakosh](https://github.com/deltakosh/))

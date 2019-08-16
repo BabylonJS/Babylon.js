@@ -11213,6 +11213,23 @@ declare module BABYLON {
              * @returns a PickingInfo
              */
             pickSpriteWithRay(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>;
+            /** @hidden */
+            _internalMultiPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]>;
+            /** Launch a ray to try to pick sprites in the scene
+             * @param x position on screen
+             * @param y position on screen
+             * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+             * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+             * @returns a PickingInfo array
+             */
+            multiPickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]>;
+            /** Use the given ray to pick sprites in the scene
+             * @param ray The ray (in world space) to use to pick meshes
+             * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+             * @param camera camera to use. Can be set to null. In this case, the scene.activeCamera will be used
+             * @returns a PickingInfo array
+             */
+            multiPickSpriteWithRay(ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]>;
             /**
              * Force the sprite under the pointer
              * @param sprite defines the sprite to use
@@ -11331,6 +11348,14 @@ declare module BABYLON {
          */
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
         /**
+     * Intersects the sprites with a ray
+     * @param ray defines the ray to intersect with
+     * @param camera defines the current active camera
+     * @param predicate defines a predicate used to select candidate sprites
+     * @returns null if no hit or a PickingInfo array
+     */
+        multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]>;
+        /**
          * Renders the list of sprites on screen.
          */
         render(): void;
@@ -11412,6 +11437,14 @@ declare module BABYLON {
          * @returns null if no hit or a PickingInfo
          */
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+        /**
+         * Intersects the sprites with a ray
+         * @param ray defines the ray to intersect with
+         * @param camera defines the current active camera
+         * @param predicate defines a predicate used to select candidate sprites
+         * @returns null if no hit or a PickingInfo array
+         */
+        multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]>;
         /**
          * Render all child sprites
          */
@@ -28144,7 +28177,7 @@ declare module BABYLON {
         /**
          * Checks to see if more fallbacks are still availible.
          */
-        readonly isMoreFallbacks: boolean;
+        readonly hasMoreFallbacks: boolean;
         /**
          * Removes the defines that should be removed when falling back.
          * @param currentDefines defines the current define statements for the shader.
@@ -52634,7 +52667,7 @@ declare module BABYLON {
         private _animationType;
         /** @hidden */
         _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
-        /** Gets or sets a boolean indicating that this input can be edited in the Inspector */
+        /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
         /**
          * Gets or sets the connection point type (default is float)
@@ -53654,6 +53687,40 @@ declare module BABYLON {
          * Gets the w component (output)
          */
         readonly w: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to lerp 2 values
+     */
+    export class LerpBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new LerpBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        readonly left: NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the gradient operand input component
+         */
+        readonly gradient: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
