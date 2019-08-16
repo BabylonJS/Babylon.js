@@ -87,8 +87,10 @@ declare module "babylonjs-node-editor/sharedComponents/textInputLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
     interface ITextInputLineComponentProps {
         label: string;
+        globalState: GlobalState;
         target?: any;
         propertyName?: string;
         value?: string;
@@ -104,7 +106,7 @@ declare module "babylonjs-node-editor/sharedComponents/textInputLineComponent" {
             value: string;
         }): boolean;
         raiseOnPropertyChanged(newValue: string, previousValue: string): void;
-        updateValue(value: string): void;
+        updateValue(value: string, raisePropertyChanged: boolean): void;
         render(): JSX.Element;
     }
 }
@@ -1195,6 +1197,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _copiedNode;
         private _mouseLocationX;
         private _mouseLocationY;
+        private _onWidgetKeyUpPointer;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -1203,6 +1206,7 @@ declare module "babylonjs-node-editor/graphEditor" {
          */
         createNodeFromObject(options: NodeCreationOptions): DefaultNodeModel;
         addValueNode(type: string): DefaultNodeModel;
+        onWidgetKeyUp(evt: any): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
@@ -1269,6 +1273,7 @@ declare module "babylonjs-node-editor/globalState" {
         onPreviewMeshTypeChanged: Observable<void>;
         onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
+        blockKeyboardEvents: boolean;
         constructor();
     }
 }
@@ -1365,6 +1370,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     interface ITextInputLineComponentProps {
         label: string;
+        globalState: GlobalState;
         target?: any;
         propertyName?: string;
         value?: string;
@@ -1380,7 +1386,7 @@ declare module NODEEDITOR {
             value: string;
         }): boolean;
         raiseOnPropertyChanged(newValue: string, previousValue: string): void;
-        updateValue(value: string): void;
+        updateValue(value: string, raisePropertyChanged: boolean): void;
         render(): JSX.Element;
     }
 }
@@ -2310,6 +2316,7 @@ declare module NODEEDITOR {
         private _copiedNode;
         private _mouseLocationX;
         private _mouseLocationY;
+        private _onWidgetKeyUpPointer;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -2318,6 +2325,7 @@ declare module NODEEDITOR {
          */
         createNodeFromObject(options: NodeCreationOptions): DefaultNodeModel;
         addValueNode(type: string): DefaultNodeModel;
+        onWidgetKeyUp(evt: any): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
@@ -2369,6 +2377,7 @@ declare module NODEEDITOR {
         onPreviewMeshTypeChanged: BABYLON.Observable<void>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
+        blockKeyboardEvents: boolean;
         constructor();
     }
 }

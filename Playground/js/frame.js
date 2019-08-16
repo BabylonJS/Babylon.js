@@ -1,16 +1,10 @@
-﻿import { utils } from "mocha";
-
-// TO DO - Rewrite frame.js to work with the new class architecture.
-
+﻿
 (function() {
     var snippetUrl = "https://snippet.babylonjs.com";
-    var currentSnippetToken;
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
     var refreshAnchor = document.getElementById("refresh");
     var editAnchor = document.getElementById("edit");
-    var scripts;
-    var zipCode;
 
     if (location.href.toLowerCase().indexOf("noui") > -1) {
         fpsLabel.style.visibility = "hidden";
@@ -22,30 +16,6 @@
     }
 
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
-    var loadScript = function(scriptURL, title) {
-        var xhr = new XMLHttpRequest();
-
-        xhr.open('GET', scriptURL, true);
-
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    monacoCreator.BlockEditorChange.lockEditorChange = true;
-                    console.log(xhr.responseText);
-                    jsEditor.setValue(xhr.responseText);
-                    jsEditor.setPosition({ lineNumber: 0, column: 0 });
-                    monacoCreator.BlockEditorChange = false;
-                    compileAndRun();
-
-                    document.getElementById("currentScript").innerHTML = title;
-
-                    currentSnippetToken = null;
-                }
-            }
-        };
-
-        xhr.send(null);
-    };
 
     var showError = function(error) {
         utils.showError(error, null);
@@ -66,8 +36,6 @@
 
             var canvas = document.getElementById("renderCanvas");
 
-            var checkCamera = true;
-            var wrappedEval = false;
             var createEngineFunction = "createDefaultEngine";
             var createSceneFunction;
 
