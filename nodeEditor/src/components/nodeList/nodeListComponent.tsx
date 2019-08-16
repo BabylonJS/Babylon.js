@@ -17,7 +17,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps> 
             Vertex: ["BonesBlock", "InstancesBlock", "MorphTargetsBlock"],
             Fragment: ["AlphaTestBlock", "FogBlock", "FresnelBlock", "ImageProcessingBlock", "LightBlock", "ReflectionTextureBlock", "TextureBlock"],
             Outputs: ["VertexOutputBlock", "FragmentOutputBlock"],
-            Math: ["AddBlock", "ClampBlock", "CrossBlock", "DotBlock", "MultiplyBlock", "RemapBlock", "NormalizeBlock", "ScaleBlock", "TransformBlock", "TrigonometryBlock"],
+            Math: ["AddBlock", "ClampBlock", "CrossBlock", "DotBlock", "LerpBlock", "MultiplyBlock", "RemapBlock", "NormalizeBlock", "ScaleBlock", "TransformBlock", "TrigonometryBlock"],
             Conversion: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
         }

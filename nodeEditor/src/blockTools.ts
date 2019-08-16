@@ -25,6 +25,7 @@ import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
 import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { FresnelBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fresnelBlock';
+import { LerpBlock } from 'babylonjs/Materials/Node/Blocks/lerpBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -81,6 +82,8 @@ export class BlockTools {
                 return new NormalizeBlock("Normalize");
             case "FresnelBlock":
                 return new FresnelBlock("Fresnel");
+            case "LerpBlock":
+                return new LerpBlock("Fresnel");
         }
 
         return null;
