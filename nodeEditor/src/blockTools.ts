@@ -24,6 +24,7 @@ import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
 import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
 import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { FresnelBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fresnelBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -78,6 +79,8 @@ export class BlockTools {
                 return new RemapBlock("Remap");
             case "NormalizeBlock":
                 return new NormalizeBlock("Normalize");
+            case "FresnelBlock":
+                return new FresnelBlock("Fresnel");
         }
 
         return null;
