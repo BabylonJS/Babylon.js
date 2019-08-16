@@ -19,9 +19,10 @@ export class FresnelBlock extends NodeMaterialBlock {
 
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
+
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("bias", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Vertex);
-        this.registerInput("power", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("bias", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("power", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("fresnel", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
     }
@@ -102,7 +103,7 @@ export class FresnelBlock extends NodeMaterialBlock {
             return;
         }
 
-        state._emitFunctionFromInclude("fresnelFunction", comments);
+        state._emitFunctionFromInclude("fresnelFunction", comments, {removeIfDef: true});
 
         if (state._registerTempVariable("viewDirectionW")) {
             state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${worldPosVaryingName});\r\n`;
