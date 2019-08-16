@@ -56,12 +56,13 @@ export class InputNodeWidget extends React.Component<IInputNodeWidgetProps> {
 
         let inputBlock = this.props.node!.inputBlock;
         let value = "";
-        let name = StringTools.GetBaseType(inputBlock.output.type);
+        let name = `${inputBlock.name} (${StringTools.GetBaseType(inputBlock.output.type)})`;
         let color = "";
 
         if (inputBlock) {
             if (inputBlock.isAttribute) {
                 value = "mesh." + inputBlock.name;
+                name = StringTools.GetBaseType(inputBlock.output.type);
             } else if (inputBlock.isWellKnownValue) {
                 switch (inputBlock.wellKnownValue) {
                     case NodeMaterialWellKnownValues.World:

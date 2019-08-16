@@ -74,7 +74,7 @@ export class EffectFallbacks {
     /**
      * Checks to see if more fallbacks are still availible.
      */
-    public get isMoreFallbacks(): boolean {
+    public get hasMoreFallbacks(): boolean {
         return this._currentRank <= this._maxRank;
     }
 
@@ -802,7 +802,7 @@ export class Effect implements IDisposable {
 
         if (fallbacks) {
             this._pipelineContext = null;
-            if (fallbacks.isMoreFallbacks) {
+            if (fallbacks.hasMoreFallbacks) {
                 Logger.Error("Trying next fallback.");
                 this.defines = fallbacks.reduce(this.defines, this);
                 this._prepareEffect();

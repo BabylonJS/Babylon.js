@@ -823,6 +823,10 @@ export class NodeMaterial extends PushMaterial {
      * @returns an array of texture blocks
      */
     public getTextureBlocks(): (TextureBlock | ReflectionTextureBlock)[] {
+        if (!this._sharedData) {
+            return [];
+        }
+
         return this._sharedData.textureBlocks.filter((tb) => tb.texture);
     }
 
