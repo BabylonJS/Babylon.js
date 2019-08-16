@@ -237,7 +237,9 @@ export class LightBlock extends NodeMaterialBlock {
 
         // Code
         if (this._lightId === 0) {
-            state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${"v_" + worldPos.associatedVariableName});\r\n`;
+            if (state._registerTempVariable("viewDirectionW")) {
+                state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${"v_" + worldPos.associatedVariableName});\r\n`;
+            }
             state.compilationString += `lightingInfo info;\r\n`;
             state.compilationString += `float shadow = 1.;\r\n`;
             state.compilationString += `float glossiness = 0.;\r\n`;
@@ -263,9 +265,7 @@ export class LightBlock extends NodeMaterialBlock {
 
         state.compilationString += this._declareOutput(diffuseOutput, state) + ` = diffuseBase;\r\n`;
         if (specularOutput.hasEndpoints) {
-            state.compilationString += `#ifdef SPECULARTERM\r\n`;
             state.compilationString += this._declareOutput(specularOutput, state) + ` = specularBase;\r\n`;
-            state.compilationString += `#endif\r\n`;
         }
 
         return this;

@@ -41,8 +41,12 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             return a.name.localeCompare(b.name);
         });
 
+        if (configurableInputBlocks.length === 0) {
+            return null;
+        }
+
         return (
-            <>
+            <LineContainerComponent globalState={this.props.globalState} title="INPUTS">
                 {
                     configurableInputBlocks.map(block => {
                         switch (block.type) {
@@ -76,8 +80,8 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                             }
                         return null;
                     })
-                }
-            </>
+                }           
+           </LineContainerComponent>
         );
     }
 
@@ -91,11 +95,9 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 <CheckBoxLineComponent label="Ignore alpha" target={material} propertyName="ignoreAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <ButtonLineComponent label="Edit" onClick={() => this.edit()} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="INPUTS">
-                    {
-                        this.renderInputValues()
-                    }                    
-                </LineContainerComponent>
+                {
+                    this.renderInputValues()
+                }                    
             </div>
         );
     }

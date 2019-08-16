@@ -87,6 +87,10 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
 
         let input = this.rgba.isConnected ? this.rgba : this.rgbIn;
 
+        if (!input.isConnected) {
+            return;
+        }
+
         let rgbOutput = this._outputs[0];
         let rOutput = this._outputs[1];
         let gOutput = this._outputs[2];
