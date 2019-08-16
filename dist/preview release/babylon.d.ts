@@ -52128,6 +52128,12 @@ declare module BABYLON {
          * Clear the current material and set it to a default state
          */
         setToDefault(): void;
+        /**
+         * Loads the current Node Material from a url pointing to a file save by the Node Material Editor
+         * @param url defines the url to load from
+         * @returns a promise that will fullfil when the material is fully loaded
+         */
+        loadAsync(url: string): Promise<unknown>;
         private _gatherBlocks;
         /**
          * Serializes this material in a JSON representation
@@ -52585,8 +52591,9 @@ declare module BABYLON {
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         /**
          * Lets the block try to connect some inputs automatically
+         * @param material defines the hosting NodeMaterial
          */
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         /**
          * Function called when a block is declared as repeatable content generator
          * @param vertexShaderState defines the current compilation state for the vertex shader
@@ -53090,7 +53097,7 @@ declare module BABYLON {
          * Gets the fresnel output component
          */
         readonly fresnel: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }

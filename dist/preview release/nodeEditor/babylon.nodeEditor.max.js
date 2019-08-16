@@ -65105,7 +65105,7 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._rightWidth = _dataStorage__WEBPACK_IMPORTED_MODULE_17__["DataStorage"].ReadNumber("RightWidth", 300);
         _this._nodes = new Array();
         _this._blocks = new Array();
-        _this._copiedNode = null;
+        _this._copiedNodes = [];
         _this._mouseLocationX = 0;
         _this._mouseLocationY = 0;
         /** @hidden */
@@ -65157,24 +65157,41 @@ var GraphEditor = /** @class */ (function (_super) {
                 if (!selectedItem.block) {
                     return;
                 }
-                _this._copiedNode = selectedItem;
+                _this._copiedNodes = selectedItems.map(function (i) { return i; });
             }
             else if (evt.key === "v") {
-                if (!_this._copiedNode) {
+                if (!_this._copiedNodes.length) {
                     return;
                 }
-                var block = _this._copiedNode.block;
-                var clone = block.clone(_this.props.globalState.nodeMaterial.getScene());
-                if (!clone) {
-                    return;
-                }
-                var newNode = _this.createNodeFromObject({ nodeMaterialBlock: clone });
                 var rootElement = _this.props.globalState.hostDocument.querySelector(".diagram-container");
                 var zoomLevel = _this._engine.diagramModel.getZoomLevel() / 100.0;
-                var x = (_this._mouseLocationX - rootElement.offsetLeft - _this._engine.diagramModel.getOffsetX() - _this.NodeWidth) / zoomLevel;
-                var y = (_this._mouseLocationY - rootElement.offsetTop - _this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
-                newNode.x = x;
-                newNode.y = y;
+                var currentX = (_this._mouseLocationX - rootElement.offsetLeft - _this._engine.diagramModel.getOffsetX() - _this.NodeWidth) / zoomLevel;
+                var currentY = (_this._mouseLocationY - rootElement.offsetTop - _this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
+                var originalNode = null;
+                for (var _i = 0, _a = _this._copiedNodes; _i < _a.length; _i++) {
+                    var node = _a[_i];
+                    var block = node.block;
+                    if (!block) {
+                        continue;
+                    }
+                    var clone = block.clone(_this.props.globalState.nodeMaterial.getScene());
+                    if (!clone) {
+                        return;
+                    }
+                    var newNode = _this.createNodeFromObject({ nodeMaterialBlock: clone });
+                    var x = 0;
+                    var y = 0;
+                    if (originalNode) {
+                        x = currentX + node.x - originalNode.x;
+                        y = currentY + node.y - originalNode.y;
+                    }
+                    else {
+                        originalNode = node;
+                        x = currentX;
+                        y = currentY;
+                    }
+                    newNode.setPosition(x, y);
+                }
                 _this._engine.repaintCanvas();
             }
         }, false);
@@ -65469,6 +65486,7 @@ var GraphEditor = /** @class */ (function (_super) {
         return this._leftWidth + "px 4px calc(100% - " + (this._leftWidth + 8 + this._rightWidth) + "px) 4px " + this._rightWidth + "px";
     };
     GraphEditor.prototype.emitNewBlock = function (event) {
+        var _this = this;
         var data = event.dataTransfer.getData("babylonjs-material-node");
         var nodeModel = null;
         if (data.indexOf("Block") === -1) {
@@ -65477,15 +65495,36 @@ var GraphEditor = /** @class */ (function (_super) {
         else {
             var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data);
             if (block) {
+                this._toAdd = [];
+                block.autoConfigure(this.props.globalState.nodeMaterial);
                 nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
             }
         }
         ;
         if (nodeModel) {
             var zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
-            var x = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
-            var y = (event.clientY - event.currentTarget.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
-            nodeModel.setPosition(x, y);
+            var x_1 = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
+            var y_1 = (event.clientY - event.currentTarget.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
+            nodeModel.setPosition(x_1, y_1);
+            var block = nodeModel.block;
+            x_1 -= this.NodeWidth + 150;
+            block._inputs.forEach(function (connection) {
+                if (connection.connectedPoint) {
+                    var existingNodes = _this._nodes.filter(function (n) { return n.block === connection._connectedPoint._ownerBlock; });
+                    var connectedNode = existingNodes[0];
+                    if (connectedNode.x === 0 && connectedNode.y === 0) {
+                        connectedNode.setPosition(x_1, y_1);
+                        y_1 += 80;
+                    }
+                }
+            });
+            this._engine.repaintCanvas();
+            setTimeout(function () {
+                var _a;
+                (_a = _this._model).addAll.apply(_a, _this._toAdd);
+                _this._toAdd = null;
+                _this._engine.repaintCanvas();
+            }, 150);
         }
         this.forceUpdate();
     };

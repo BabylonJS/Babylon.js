@@ -1000,7 +1000,7 @@ declare module NODEEDITOR {
         private _nodes;
         private _blocks;
         private _previewManager;
-        private _copiedNode;
+        private _copiedNodes;
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
