@@ -27765,6 +27765,7 @@ declare module BABYLON {
          * @returns if the effect is compiled and prepared.
          */
         isReady(): boolean;
+        private _isReadyInternal;
         /**
          * The engine the effect was initialized with.
          * @returns the engine.
@@ -50953,6 +50954,117 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum used to define well known values e.g. values automatically provided by the system
+     */
+    export enum NodeMaterialWellKnownValues {
+        /** World */
+        World = 1,
+        /** View */
+        View = 2,
+        /** Projection */
+        Projection = 3,
+        /** ViewProjection */
+        ViewProjection = 4,
+        /** WorldView */
+        WorldView = 5,
+        /** WorldViewProjection */
+        WorldViewProjection = 6,
+        /** CameraPosition */
+        CameraPosition = 7,
+        /** Fog Color */
+        FogColor = 8
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to read a reflection texture from a sampler
+     */
+    export class ReflectionTextureBlock extends NodeMaterialBlock {
+        private _define3DName;
+        private _defineCubicName;
+        private _defineExplicitName;
+        private _defineProjectionName;
+        private _defineLocalCubicName;
+        private _defineSphericalName;
+        private _definePlanarName;
+        private _defineEquirectangularName;
+        private _defineMirroredEquirectangularFixedName;
+        private _defineEquirectangularFixedName;
+        private _defineSkyboxName;
+        private _cubeSamplerName;
+        private _2DSamplerName;
+        private _positionUVWName;
+        private _directionWName;
+        private _reflectionCoordsName;
+        private _reflection2DCoordsName;
+        private _reflectionColorName;
+        private _reflectionMatrixName;
+        /**
+         * Gets or sets the texture associated with the node
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Create a new TextureBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position input component
+         */
+        readonly position: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world position input component
+         */
+        readonly worldPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world normal input component
+         */
+        readonly worldNormal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world input component
+         */
+        readonly world: NodeMaterialConnectionPoint;
+        /**
+        * Gets the camera (or eye) position component
+        */
+        readonly cameraPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the view input component
+         */
+        readonly view: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb output component
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        /**
+         * Gets the r output component
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g output component
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b output component
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        isReady(): boolean;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        private _injectVertexCode;
+        private _writeOutput;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;private _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface used to configure the node material editor
      */
     export interface INodeMaterialEditorOptions {
@@ -51081,7 +51193,7 @@ declare module BABYLON {
          * @param name defines the name of the block to retrieve
          * @returns the required block or null if not found
          */
-        getBlockByName(name: string): NodeMaterialBlock | null;
+        getBlockByName(name: string): Nullable<NodeMaterialBlock>;
         /**
          * Gets the list of input blocks attached to this material
          * @returns an array of InputBlocks
@@ -51168,6 +51280,11 @@ declare module BABYLON {
          */
         getActiveTextures(): BaseTexture[];
         /**
+         * Gets the list of texture blocks
+         * @returns an array of texture blocks
+         */
+        getTextureBlocks(): (TextureBlock | ReflectionTextureBlock)[];
+        /**
          * Specifies if the material uses a texture
          * @param texture defines the texture to check against the material
          * @returns a boolean specifying if the material uses the texture
@@ -51202,6 +51319,7 @@ declare module BABYLON {
          * @returns the serialized material object
          */
         serialize(): any;
+        private _restoreConnections;
         /**
          * Clear the current graph and load a new one from a serialization object
          * @param source defines the JSON representation of the material
@@ -51292,117 +51410,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Enum used to define well known values e.g. values automatically provided by the system
-     */
-    export enum NodeMaterialWellKnownValues {
-        /** World */
-        World = 1,
-        /** View */
-        View = 2,
-        /** Projection */
-        Projection = 3,
-        /** ViewProjection */
-        ViewProjection = 4,
-        /** WorldView */
-        WorldView = 5,
-        /** WorldViewProjection */
-        WorldViewProjection = 6,
-        /** CameraPosition */
-        CameraPosition = 7,
-        /** Fog Color */
-        FogColor = 8
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to read a reflection texture from a sampler
-     */
-    export class ReflectionTextureBlock extends NodeMaterialBlock {
-        private _define3DName;
-        private _defineCubicName;
-        private _defineExplicitName;
-        private _defineProjectionName;
-        private _defineLocalCubicName;
-        private _defineSphericalName;
-        private _definePlanarName;
-        private _defineEquirectangularName;
-        private _defineMirroredEquirectangularFixedName;
-        private _defineEquirectangularFixedName;
-        private _defineSkyboxName;
-        private _cubeSamplerName;
-        private _2DSamplerName;
-        private _positionUVWName;
-        private _directionWName;
-        private _reflectionCoordsName;
-        private _reflection2DCoordsName;
-        private _reflectionColorName;
-        private _reflectionMatrixName;
-        /**
-         * Gets or sets the texture associated with the node
-         */
-        texture: Nullable<BaseTexture>;
-        /**
-         * Create a new TextureBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the world position input component
-         */
-        readonly position: NodeMaterialConnectionPoint;
-        /**
-         * Gets the world position input component
-         */
-        readonly worldPosition: NodeMaterialConnectionPoint;
-        /**
-         * Gets the world normal input component
-         */
-        readonly worldNormal: NodeMaterialConnectionPoint;
-        /**
-         * Gets the world input component
-         */
-        readonly world: NodeMaterialConnectionPoint;
-        /**
-        * Gets the camera (or eye) position component
-        */
-        readonly cameraPosition: NodeMaterialConnectionPoint;
-        /**
-         * Gets the view input component
-         */
-        readonly view: NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb output component
-         */
-        readonly rgb: NodeMaterialConnectionPoint;
-        /**
-         * Gets the r output component
-         */
-        readonly r: NodeMaterialConnectionPoint;
-        /**
-         * Gets the g output component
-         */
-        readonly g: NodeMaterialConnectionPoint;
-        /**
-         * Gets the b output component
-         */
-        readonly b: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
-        isReady(): boolean;
-        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
-        private _injectVertexCode;
-        private _writeOutput;
-        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
-        serialize(): any;private _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to store shared data between 2 NodeMaterialBuildState
      */
     export class NodeMaterialBuildStateSharedData {
@@ -51425,7 +51432,7 @@ declare module BABYLON {
         /**
          * Input blocks
          */
-        textureBlocks: (TextureBlock | ReflectionTextureBlock)[];
+        textureBlocks: (ReflectionTextureBlock | TextureBlock)[];
         /**
          * Bindable blocks (Blocks that need to set data to the effect)
          */
@@ -51776,7 +51783,7 @@ declare module BABYLON {
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
          * @returns a copy of the current block
          */
-        clone(scene: Scene, rootUrl?: string): NodeMaterialBlock | null;
+        clone(scene: Scene, rootUrl?: string): Nullable<NodeMaterialBlock>;
         /**
          * Serializes this block in a JSON representation
          * @returns the serialized block object
