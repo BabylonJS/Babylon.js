@@ -27840,6 +27840,7 @@ declare module BABYLON {
          * Prepares the effect
          * @hidden
          */private _prepareEffect(): void;
+        private _processCompilationErrors;
         /**
          * Checks if the effect is supported. (Must be called after compilation)
          */
@@ -51406,6 +51407,10 @@ declare module BABYLON {
      */
     export class NodeMaterialBuildStateSharedData {
         /**
+        * Gets the list of emitted varyings
+        */
+        temps: string[];
+        /**
          * Gets the list of emitted varyings
          */
         varyings: string[];
@@ -51573,6 +51578,7 @@ declare module BABYLON {
                 replace: string;
             }[];
         }, storeKey?: string): void;
+        /** @hidden */private _registerTempVariable(name: string): boolean;
         /** @hidden */private _emitVaryingFromString(name: string, type: string, define?: string, notDefine?: boolean): boolean;
         /** @hidden */private _emitUniformFromString(name: string, type: string, define?: string, notDefine?: boolean): void;
     }
@@ -52196,11 +52202,11 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to create a Color3/4 out of individual inputs (one for each component)
+     * Block used to compute fresnel value
      */
-    export class ColorMergerBlock extends NodeMaterialBlock {
+    export class FresnelBlock extends NodeMaterialBlock {
         /**
-         * Create a new ColorMergerBlock
+         * Create a new FresnelBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -52210,176 +52216,31 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the r component (input)
+         * Gets the world position input component
          */
-        readonly r: NodeMaterialConnectionPoint;
+        readonly worldPosition: NodeMaterialConnectionPoint;
         /**
-         * Gets the g component (input)
+         * Gets the world normal input component
          */
-        readonly g: NodeMaterialConnectionPoint;
+        readonly worldNormal: NodeMaterialConnectionPoint;
         /**
-         * Gets the b component (input)
-         */
-        readonly b: NodeMaterialConnectionPoint;
+        * Gets the camera (or eye) position component
+        */
+        readonly cameraPosition: NodeMaterialConnectionPoint;
         /**
-         * Gets the a component (input)
-         */
-        readonly a: NodeMaterialConnectionPoint;
+        * Gets the bias input component
+        */
+        readonly bias: NodeMaterialConnectionPoint;
         /**
-         * Gets the rgba component (output)
-         */
-        readonly rgba: NodeMaterialConnectionPoint;
+        * Gets the camera (or eye) position component
+        */
+        readonly power: NodeMaterialConnectionPoint;
         /**
-         * Gets the rgb component (output)
+         * Gets the fresnel output component
          */
-        readonly rgb: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
-     */
-    export class VectorMergerBlock extends NodeMaterialBlock {
-        /**
-         * Create a new VectorMergerBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the x component (input)
-         */
-        readonly x: NodeMaterialConnectionPoint;
-        /**
-         * Gets the y component (input)
-         */
-        readonly y: NodeMaterialConnectionPoint;
-        /**
-         * Gets the z component (input)
-         */
-        readonly z: NodeMaterialConnectionPoint;
-        /**
-         * Gets the w component (input)
-         */
-        readonly w: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyzw component (output)
-         */
-        readonly xyzw: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (output)
-         */
-        readonly xyz: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (output)
-         */
-        readonly xy: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to expand a Color3/4 into 4 outputs (one for each component)
-     */
-    export class ColorSplitterBlock extends NodeMaterialBlock {
-        /**
-         * Create a new ColorSplitterBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the rgba component (input)
-         */
-        readonly rgba: NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb component (input)
-         */
-        readonly rgbIn: NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb component (output)
-         */
-        readonly rgbOut: NodeMaterialConnectionPoint;
-        /**
-         * Gets the r component (output)
-         */
-        readonly r: NodeMaterialConnectionPoint;
-        /**
-         * Gets the g component (output)
-         */
-        readonly g: NodeMaterialConnectionPoint;
-        /**
-         * Gets the b component (output)
-         */
-        readonly b: NodeMaterialConnectionPoint;
-        /**
-         * Gets the a component (output)
-         */
-        readonly a: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to expand a Vector3/4 into 4 outputs (one for each component)
-     */
-    export class VectorSplitterBlock extends NodeMaterialBlock {
-        /**
-         * Create a new VectorSplitterBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the xyzw component (input)
-         */
-        readonly xyzw: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (input)
-         */
-        readonly xyzIn: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (input)
-         */
-        readonly xyIn: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (output)
-         */
-        readonly xyzOut: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (output)
-         */
-        readonly xyOut: NodeMaterialConnectionPoint;
-        /**
-         * Gets the x component (output)
-         */
-        readonly x: NodeMaterialConnectionPoint;
-        /**
-         * Gets the y component (output)
-         */
-        readonly y: NodeMaterialConnectionPoint;
-        /**
-         * Gets the z component (output)
-         */
-        readonly z: NodeMaterialConnectionPoint;
-        /**
-         * Gets the w component (output)
-         */
-        readonly w: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
+        readonly fresnel: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
@@ -52786,6 +52647,194 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to create a Color3/4 out of individual inputs (one for each component)
+     */
+    export class ColorMergerBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ColorMergerBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the r component (input)
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g component (input)
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b component (input)
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        /**
+         * Gets the a component (input)
+         */
+        readonly a: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgba component (output)
+         */
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
+     */
+    export class VectorMergerBlock extends NodeMaterialBlock {
+        /**
+         * Create a new VectorMergerBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the x component (input)
+         */
+        readonly x: NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component (input)
+         */
+        readonly y: NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component (input)
+         */
+        readonly z: NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component (input)
+         */
+        readonly w: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component (output)
+         */
+        readonly xyzw: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         */
+        readonly xyz: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         */
+        readonly xy: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to expand a Color3/4 into 4 outputs (one for each component)
+     */
+    export class ColorSplitterBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ColorSplitterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the rgba component (input)
+         */
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (input)
+         */
+        readonly rgbIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         */
+        readonly rgbOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the r component (output)
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g component (output)
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b component (output)
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        /**
+         * Gets the a component (output)
+         */
+        readonly a: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to expand a Vector3/4 into 4 outputs (one for each component)
+     */
+    export class VectorSplitterBlock extends NodeMaterialBlock {
+        /**
+         * Create a new VectorSplitterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xyzw component (input)
+         */
+        readonly xyzw: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (input)
+         */
+        readonly xyzIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (input)
+         */
+        readonly xyIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         */
+        readonly xyzOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         */
+        readonly xyOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component (output)
+         */
+        readonly x: NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component (output)
+         */
+        readonly y: NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component (output)
+         */
+        readonly z: NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component (output)
+         */
+        readonly w: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
