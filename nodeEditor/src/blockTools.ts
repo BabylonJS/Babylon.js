@@ -83,7 +83,7 @@ export class BlockTools {
             case "FresnelBlock":
                 return new FresnelBlock("Fresnel");
             case "LerpBlock":
-                return new LerpBlock("Fresnel");
+                return new LerpBlock("Lerp");
         }
 
         return null;
