@@ -100,6 +100,10 @@ class MenuPG {
                 this.skipNextClick = false;
                 return;
             }
+
+            if (document.getElementById("saveLayer").style.display === "block") {
+                return;
+            }
             this.removeAllOptions();
         }.bind(this));
 

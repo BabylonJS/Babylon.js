@@ -352,8 +352,9 @@ export class NodeMaterialBlock {
 
     /**
      * Lets the block try to connect some inputs automatically
+     * @param material defines the hosting NodeMaterial
      */
-    public autoConfigure() {
+    public autoConfigure(material: NodeMaterial) {
         // Do nothing
     }
 

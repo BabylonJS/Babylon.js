@@ -102,7 +102,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this.xyzw.isConnected ? this.xyzw : this.xyzw.isConnected ? this.xyzIn : this.xyIn;
+        let input = this.xyzw.isConnected ? this.xyzw : this.xyzIn.isConnected ? this.xyzIn : this.xyIn;
 
         let xyzOutput = this._outputs[0];
         let xyOutput = this._outputs[1];
