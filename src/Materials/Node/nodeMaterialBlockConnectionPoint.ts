@@ -218,6 +218,7 @@ export class NodeMaterialConnectionPoint {
         this._endpoints.splice(index, 1);
         endpoint._connectedPoint = null;
         this._enforceAssociatedVariableName = false;
+        endpoint._enforceAssociatedVariableName = false;
         return this;
     }
 

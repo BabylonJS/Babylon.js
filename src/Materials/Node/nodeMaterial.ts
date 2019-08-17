@@ -525,6 +525,8 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Fragment
+        this._fragmentCompilationState.uniforms = this._vertexCompilationState.uniforms.slice(0);
+        this._fragmentCompilationState._uniformDeclaration = this._vertexCompilationState._uniformDeclaration;
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
 
         for (var fragmentOutputNode of fragmentNodes) {
@@ -554,7 +556,26 @@ export class NodeMaterial extends PushMaterial {
         this._buildWasSuccessful = true;
         this.onBuildObservable.notifyObservers(this);
 
-        this._markAllSubMeshesAsAllDirty();
+        // Wipe defines
+        const meshes = this.getScene().meshes;
+        for (var mesh of meshes) {
+            if (!mesh.subMeshes) {
+                continue;
+            }
+            for (var subMesh of mesh.subMeshes) {
+                if (subMesh.getMaterial() !== this) {
+                    continue;
+                }
+
+                if (!subMesh._materialDefines) {
+                    continue;
+                }
+
+                let defines = subMesh._materialDefines;
+                defines.markAllAsDirty();
+                defines.reset();
+            }
+        }
     }
 
     /**
