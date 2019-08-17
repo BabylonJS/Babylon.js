@@ -73,7 +73,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _blocks = new Array<NodeMaterialBlock>();
 
     private _previewManager: PreviewManager;
-    private _copiedNode: Nullable<DefaultNodeModel> = null;
+    private _copiedNodes: DefaultNodeModel[] = [];
     private _mouseLocationX = 0;
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
@@ -117,7 +117,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this.props.globalState.nodeMaterial!.addOutputNode(options.nodeMaterialBlock);
         }
 
-        this._nodes.push(newNode)
+        this._nodes.push(newNode);
         this._model.addAll(newNode);
 
         if (options.nodeMaterialBlock) {
@@ -226,28 +226,46 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     return;
                 }
 
-                this._copiedNode = selectedItem;
+                this._copiedNodes = selectedItems.map(i => (i as DefaultNodeModel)!);
             } else if (evt.key === "v") {
-                if (!this._copiedNode) {
+                if (!this._copiedNodes.length) {
                     return;
                 }
 
-                let block = this._copiedNode.block!;
-                let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
-
-                if (!clone) {
-                    return;
-                }
-                
-                let newNode = this.createNodeFromObject({ nodeMaterialBlock: clone });
                 const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
                 const zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
+                let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
+                let currentY = (this._mouseLocationY - rootElement.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
+                let originalNode: Nullable<DefaultNodeModel> = null;
 
-                let x = (this._mouseLocationX - rootElement.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
-                let y = (this._mouseLocationY - rootElement.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
+                for (var node of this._copiedNodes) {
+                    let block = node.block;
 
-                newNode.x = x;
-                newNode.y = y;
+                    if (!block) {
+                        continue;
+                    }
+
+                    let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
+
+                    if (!clone) {
+                        return;
+                    }
+                    
+                    let newNode = this.createNodeFromObject({ nodeMaterialBlock: clone });
+
+                    let x = 0;
+                    let y = 0;
+                    if (originalNode) {
+                        x = currentX + node.x - originalNode.x;
+                        y = currentY + node.y - originalNode.y;
+                    } else {
+                        originalNode = node;
+                        x = currentX;
+                        y = currentY;
+                    }
+
+                    newNode.setPosition(x, y);
+                }
 
                 this._engine.repaintCanvas();
             }
@@ -281,7 +299,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         try {
-            this.props.globalState.nodeMaterial.build();
+            this.props.globalState.nodeMaterial.build(true);
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
         }
         catch (err) {
@@ -505,9 +523,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (data.indexOf("Block") === -1) {
             nodeModel = this.addValueNode(data);
         } else {
-            let block = BlockTools.GetBlockFromString(data);          
-
-            if (block) {
+            let block = BlockTools.GetBlockFromString(data);   
+            
+            if (block) {                
+                this._toAdd = [];
+                block.autoConfigure(this.props.globalState.nodeMaterial);       
                 nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
             }
         };
@@ -518,6 +538,30 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             let x = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
             let y = (event.clientY - event.currentTarget.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
             nodeModel.setPosition(x, y);
+        
+            let block = nodeModel!.block;
+
+            x -= this.NodeWidth + 150;
+
+            block!._inputs.forEach((connection) => {       
+                if (connection.connectedPoint) {
+                    var existingNodes = this._nodes.filter((n) => { return n.block === (connection as any)._connectedPoint._ownerBlock });
+                    let connectedNode = existingNodes[0];
+
+                    if (connectedNode.x === 0 && connectedNode.y === 0) {
+                        connectedNode.setPosition(x, y);
+                        y += 80;
+                    }
+                }
+            });
+            
+            this._engine.repaintCanvas();
+
+            setTimeout(() => {
+                this._model.addAll(...this._toAdd!);            
+                this._toAdd = null;  
+                this._engine.repaintCanvas();  
+            }, 150);
         }
 
         this.forceUpdate();
