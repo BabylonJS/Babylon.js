@@ -363,6 +363,8 @@ export class SolidParticleSystem implements IDisposable {
 
         this._resetCopy();
         const copy = this._copy;
+        copy.idx = idx;
+        copy.idxInShape = idxInShape;
         if (options && options.positionFunction) {        // call to custom positionFunction
             options.positionFunction(copy, idx, idxInShape);
             this._mustUnrotateFixedNormals = true;
