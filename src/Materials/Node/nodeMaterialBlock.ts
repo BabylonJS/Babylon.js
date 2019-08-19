@@ -22,6 +22,8 @@ export class NodeMaterialBlock {
     private _isFinalMerger = false;
     private _isInput = false;
 
+    protected _codeVariableName = "";
+
     /** @hidden */
     public _inputs = new Array<NodeMaterialConnectionPoint>();
     /** @hidden */
@@ -496,6 +498,78 @@ export class NodeMaterialBlock {
             }
         }
         return false;
+    }
+
+    protected _inputRename(name: string) {
+        return name;
+    }
+
+    protected _outputRename(name: string) {
+        return name;
+    }
+
+    protected _dumpPropertiesCode() {
+        return "";
+    }
+
+    /** @hidden */
+    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
+        alreadyDumped.push(this);
+
+        let codeString: string;
+
+        // Get unique name
+        let nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
+        this._codeVariableName = nameAsVariableName;
+
+        if (uniqueNames.indexOf(this._codeVariableName) !== -1) {
+            let index = 0;
+            do {
+                index++;
+                this._codeVariableName = nameAsVariableName + index;
+            }
+            while (uniqueNames.indexOf(this._codeVariableName) !== -1);
+        }
+
+        uniqueNames.push(this._codeVariableName);
+
+        // Declaration
+        codeString = `\r\nvar ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
+
+        // Properties
+        codeString += this._dumpPropertiesCode();
+
+        // Inputs
+        for (var input of this.inputs) {
+            if (!input.isConnected) {
+                continue;
+            }
+
+            var connectedOutput = input.connectedPoint!;
+            var connectedBlock = connectedOutput.ownerBlock;
+
+            if (alreadyDumped.indexOf(connectedBlock) === -1) {
+                codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
+            }
+
+            codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._outputRename(input.name)});\r\n`;
+        }
+
+        // Outputs
+        for (var output of this.outputs) {
+            if (!output.hasEndpoints) {
+                continue;
+            }
+
+            for (var endpoint of output.endpoints) {
+                var connectedBlock = endpoint.ownerBlock;
+                if (connectedBlock && alreadyDumped.indexOf(connectedBlock) === -1) {
+                    codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
+                }
+            }
+        }
+
+        return codeString;
     }
 
     /**

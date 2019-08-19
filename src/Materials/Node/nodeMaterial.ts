@@ -1010,6 +1010,44 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Generate a string containing the code declaration required to create an equivalent of this material
+     * @returns a string
+     */
+    public generateCode() {
+
+        let alreadyDumped: NodeMaterialBlock[] = [];
+        let vertexBlocks: NodeMaterialBlock[] = [];
+        let uniqueNames: string[] = [];
+        // Gets active blocks
+        for (var outputNode of this._vertexOutputNodes) {
+            this._gatherBlocks(outputNode, vertexBlocks);
+
+        }
+
+        let fragmentBlocks: NodeMaterialBlock[] = [];
+        for (var outputNode of this._fragmentOutputNodes) {
+            this._gatherBlocks(outputNode, fragmentBlocks);
+        }
+
+        // Generate vertex shader
+        let codeString = "var nodeMaterial = new BABYLON.NodeMaterial(`node material`);\r\n";
+        for (var node of vertexBlocks) {
+            if (node.isInput && alreadyDumped.indexOf(node) === -1) {
+                codeString += node._dumpCode(uniqueNames, alreadyDumped);
+            }
+        }
+
+        // Generate fragment shader
+        for (var node of fragmentBlocks) {
+            if (node.isInput && alreadyDumped.indexOf(node) === -1) {
+                codeString += node._dumpCode(uniqueNames, alreadyDumped);
+            }
+        }
+
+        return codeString;
+    }
+
+    /**
      * Serializes this material in a JSON representation
      * @returns the serialized material object
      */

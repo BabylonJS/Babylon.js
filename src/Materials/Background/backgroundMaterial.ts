@@ -1144,6 +1144,27 @@ export class BackgroundMaterial extends PushMaterial {
     }
 
     /**
+     * Checks to see if a texture is used in the material.
+     * @param texture - Base texture to use.
+     * @returns - Boolean specifying if a texture is used in the material.
+     */
+    public hasTexture(texture: BaseTexture): boolean {
+        if (super.hasTexture(texture)) {
+            return true;
+        }
+
+        if (this._reflectionTexture === texture) {
+            return true;
+        }
+
+        if (this._diffuseTexture === texture) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Dispose the material.
      * @param forceDisposeEffect Force disposal of the associated effect.
      * @param forceDisposeTextures Force disposal of the associated textures.

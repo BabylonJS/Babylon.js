@@ -99,6 +99,29 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     public get w(): NodeMaterialConnectionPoint {
         return this._outputs[5];
     }
+
+    protected _inputRename(name: string) {
+        switch (name) {
+            case "xy":
+                return "xyIn";
+            case "xyz":
+                    return "xyzIn";
+            default:
+                return name;
+        }
+    }
+
+    protected _outputRename(name: string) {
+        switch (name) {
+            case "xy":
+                return "xyOut";
+            case "xyz":
+                    return "xyzOut";
+            default:
+                return name;
+        }
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
