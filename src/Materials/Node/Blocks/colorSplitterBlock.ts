@@ -82,6 +82,20 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
         return this._outputs[4];
     }
 
+    protected _inputRename(name: string) {
+        if (name === "rgb") {
+            return "rgbIn";
+        }
+        return name;
+    }
+
+    protected _outputRename(name: string) {
+        if (name === "rgb") {
+            return "rgbOut";
+        }
+        return name;
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 

@@ -43,6 +43,7 @@ import { PreviewMeshControlComponent } from './components/preview/previewMeshCon
 import { TrigonometryNodeFactory } from './components/diagram/trigonometry/trigonometryNodeFactory';
 import { TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
 import { TrigonometryNodeModel } from './components/diagram/trigonometry/trigonometryNodeModel';
+import { AdvancedLinkModel } from './components/diagram/link/advancedLinkModel';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -307,6 +308,23 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
     }
 
+    applyFragmentOutputConstraints(rootInput: DefaultPortModel) {
+        var model = rootInput.parent as GenericNodeModel;
+        for (var inputKey in model.getPorts()) {                                       
+            let input = model.getPorts()[inputKey];
+
+            if (rootInput.name === "rgba" && (inputKey === "a" || inputKey === "rgb")
+                ||
+                (rootInput.name === "a" || rootInput.name === "rgb") && inputKey === "rgba") {
+                    for (var key in input.links) {
+                        let other = input.links[key];
+                        other.remove();
+                    }
+                continue;
+            }
+        }
+    }
+
     build(needToWait = false, locations: Nullable<INodeLocationInfo[]> = null) {
         // setup the diagram model
         this._model = new DiagramModel();
@@ -337,6 +355,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     }                  
 
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                } else {
+
                 }
             },
             linksUpdated: (e) => {
@@ -368,7 +388,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                             setTimeout(() => {
                                 this._model.addLink(link);
                                 input.syncWithNodeMaterialConnectionPoint(input.connection!);
-                                nodeModel.ports.output.syncWithNodeMaterialConnectionPoint(nodeModel.ports.output.connection!);                                 
+                                nodeModel.ports.output.syncWithNodeMaterialConnectionPoint(nodeModel.ports.output.connection!);      
+                                
+                                let isFragmentOutput = (input.parent as DefaultNodeModel).block!.getClassName() === "FragmentOutputBlock";
+
+                                if (isFragmentOutput) {
+                                    this.applyFragmentOutputConstraints(input);
+                                }
 
                                 this.forceUpdate();
                             }, 1);
@@ -379,45 +405,53 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     }
                     this.forceUpdate();
                     return;
-                }
-
-                e.link.addListener({
-                    sourcePortChanged: () => {
-                    },
-                    targetPortChanged: () => {
-                        // Link is created with a target port
-                        var link = DefaultPortModel.SortInputOutput(e.link.sourcePort as DefaultPortModel, e.link.targetPort as DefaultPortModel);
-
-                        if (link) {
-                            if (link.output.connection && link.input.connection) {
-                                // Disconnect previous connection
-                                for (var key in link.input.links) {
-                                    let other = link.input.links[key];
-
-                                    if ((other.getSourcePort() as DefaultPortModel).connection  !== (link.output as DefaultPortModel).connection && 
-                                        (other.getTargetPort() as DefaultPortModel).connection  !== (link.output as DefaultPortModel).connection
-                                    ) {
-                                        other.remove();
+                } else {
+                    e.link.addListener({
+                        sourcePortChanged: () => {
+                        },
+                        targetPortChanged: (evt) => {
+                            // Link is created with a target port
+                            var link = DefaultPortModel.SortInputOutput(e.link.sourcePort as DefaultPortModel, e.link.targetPort as DefaultPortModel);
+    
+                            if (link) {
+                                if (link.output.connection && link.input.connection) {
+                                    let currentBlock = link.input.connection.ownerBlock;
+                                    let isFragmentOutput = currentBlock.getClassName() === "FragmentOutputBlock";
+    
+                                    // Disconnect previous connection
+                                    for (var key in link.input.links) {
+                                        let other = link.input.links[key];
+                                        let sourcePortConnection = (other.getSourcePort() as DefaultPortModel).connection;
+                                        let targetPortConnection = (other.getTargetPort() as DefaultPortModel).connection;
+    
+                                        if (
+                                            sourcePortConnection !== (link.output as DefaultPortModel).connection && 
+                                            targetPortConnection !== (link.output as DefaultPortModel).connection
+                                        ) {
+                                            other.remove();
+                                        }
                                     }
+    
+                                    if (isFragmentOutput) {
+                                        this.applyFragmentOutputConstraints(link.input);
+                                    }
+    
+                                    if (link.output.connection.canConnectTo(link.input.connection)) {
+                                        link.output.connection.connectTo(link.input.connection);
+                                    } else {
+                                        (evt.entity as AdvancedLinkModel).remove();
+                                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Cannot connect two different connection types");    
+                                    }
+    
+                                    this.forceUpdate();
                                 }
-
-                                try {
-                                    link.output.connection.connectTo(link.input.connection);
-                                }        
-                                catch (err) {
-                                    link.output.remove();
-                                    this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
-                                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(err);
+                                if (this.props.globalState.nodeMaterial) {
+                                    this.buildMaterial();
                                 }
-
-                                this.forceUpdate();
-                            }
-                            if (this.props.globalState.nodeMaterial) {
-                                this.buildMaterial();
                             }
                         }
-                    }
-                })
+                    });
+                }             
             }
         });
 
@@ -560,6 +594,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             setTimeout(() => {
                 this._model.addAll(...this._toAdd!);            
                 this._toAdd = null;  
+                nodeModel!.setSelected(true);
+
                 this._engine.repaintCanvas();  
             }, 150);
         }
