@@ -25,7 +25,9 @@ export class TrigonometryPropertyTabComponentProps extends React.Component<ITrig
         var operationOptions: {label: string, value: TrigonometryBlockOperations}[] = [
             {label: "Cos", value: TrigonometryBlockOperations.Cos},
             {label: "Sin", value: TrigonometryBlockOperations.Sin},
-            {label: "Abs", value: TrigonometryBlockOperations.Abs}
+            {label: "Abs", value: TrigonometryBlockOperations.Abs},
+            {label: "Exp", value: TrigonometryBlockOperations.Exp},
+            {label: "Exp2", value: TrigonometryBlockOperations.Exp2}
         ];
         
         return (

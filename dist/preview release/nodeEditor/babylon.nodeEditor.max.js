@@ -64175,7 +64175,9 @@ var TrigonometryPropertyTabComponentProps = /** @class */ (function (_super) {
         var operationOptions = [
             { label: "Cos", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Cos },
             { label: "Sin", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Sin },
-            { label: "Abs", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Abs }
+            { label: "Abs", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Abs },
+            { label: "Exp", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Exp },
+            { label: "Exp2", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Exp2 }
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },

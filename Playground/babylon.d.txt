@@ -52665,7 +52665,11 @@ declare module BABYLON {
         /** Sin */
         Sin = 1,
         /** Abs */
-        Abs = 2
+        Abs = 2,
+        /** Exp */
+        Exp = 3,
+        /** Exp2 */
+        Exp2 = 4
     }
     /**
      * Block used to apply trigonometry operation to floats
