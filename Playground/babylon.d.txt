@@ -8242,7 +8242,7 @@ declare module BABYLON {
         /** @hidden */private _reset: () => void;
         private _defaultUp;
         /**
-         * Instantiates a target camera that takes a meshor position as a target and continues to look at it while it moves.
+         * Instantiates a target camera that takes a mesh or position as a target and continues to look at it while it moves.
          * This is the base of the follow, arc rotate cameras and Free camera
          * @see http://doc.babylonjs.com/features/cameras
          * @param name Defines the name of the camera in the scene
@@ -24975,7 +24975,7 @@ declare module BABYLON {
          */
         shapeId: number;
         /**
-         * Index of the particle in its shape id (Internal use)
+         * Index of the particle in its shape id
          */
         idxInShape: number;
         /**
@@ -42370,7 +42370,7 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
             updatable?: boolean;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON.Debug {
@@ -53326,7 +53326,7 @@ declare module BABYLON {
          * @param keepSubMeshes Specifies if the submeshes should be kept
          * @returns A new Mesh
          */
-        buildMeshGeometry(name: string, scene: Scene, keepSubMeshes: boolean): Mesh;
+        buildMeshGeometry(name: string, scene?: Scene, keepSubMeshes?: boolean): Mesh;
         /**
          * Build Mesh from CSG taking material and transforms into account
          * @param name The name of the Mesh
@@ -53335,7 +53335,7 @@ declare module BABYLON {
          * @param keepSubMeshes Specifies if submeshes should be kept
          * @returns The new Mesh
          */
-        toMesh(name: string, material: Nullable<Material>, scene: Scene, keepSubMeshes: boolean): Mesh;
+        toMesh(name: string, material?: Nullable<Material>, scene?: Scene, keepSubMeshes?: boolean): Mesh;
     }
 }
 declare module BABYLON {
