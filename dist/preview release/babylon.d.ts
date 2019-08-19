@@ -8300,7 +8300,7 @@ declare module BABYLON {
         _reset: () => void;
         private _defaultUp;
         /**
-         * Instantiates a target camera that takes a meshor position as a target and continues to look at it while it moves.
+         * Instantiates a target camera that takes a mesh or position as a target and continues to look at it while it moves.
          * This is the base of the follow, arc rotate cameras and Free camera
          * @see http://doc.babylonjs.com/features/cameras
          * @param name Defines the name of the camera in the scene
@@ -25360,7 +25360,7 @@ declare module BABYLON {
          */
         shapeId: number;
         /**
-         * Index of the particle in its shape id (Internal use)
+         * Index of the particle in its shape id
          */
         idxInShape: number;
         /**
@@ -43101,7 +43101,7 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
             updatable?: boolean;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON.Debug {
@@ -45005,6 +45005,12 @@ declare module BABYLON {
          * @param subMesh The submesh to bind for.
          */
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
         /**
          * Dispose the material.
          * @param forceDisposeEffect Force disposal of the associated effect.
@@ -51656,7 +51662,9 @@ declare module BABYLON {
         /** Detect type based on connection */
         AutoDetect = 1024,
         /** Output type that will be defined by input type */
-        BasedOnInput = 2048
+        BasedOnInput = 2048,
+        /** Output type that will be defined by inverting input type (color <-> vector) */
+        InvertInput = 4096
     }
 }
 declare module BABYLON {
@@ -52136,6 +52144,11 @@ declare module BABYLON {
         loadAsync(url: string): Promise<unknown>;
         private _gatherBlocks;
         /**
+         * Generate a string containing the code declaration required to create an equivalent of this material
+         * @returns a string
+         */
+        generateCode(): string;
+        /**
          * Serializes this material in a JSON representation
          * @returns the serialized material object
          */
@@ -52439,6 +52452,7 @@ declare module BABYLON {
         private _target;
         private _isFinalMerger;
         private _isInput;
+        protected _codeVariableName: string;
         /** @hidden */
         _inputs: NodeMaterialConnectionPoint[];
         /** @hidden */
@@ -52619,6 +52633,11 @@ declare module BABYLON {
          * @returns true if already built
          */
         build(state: NodeMaterialBuildState, contextSwitched?: boolean): boolean;
+        protected _inputRename(name: string): string;
+        protected _outputRename(name: string): string;
+        protected _dumpPropertiesCode(): string;
+        /** @hidden */
+        _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]): string;
         /**
          * Clone the current block to a new identical block
          * @param scene defines the hosting scene
@@ -52763,6 +52782,7 @@ declare module BABYLON {
          * Set the input block to its default value (based on its type)
          */
         setDefaultValue(): void;
+        protected _dumpPropertiesCode(): string;
         private _emit;
         /** @hidden */
         _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix): void;
@@ -53478,7 +53498,11 @@ declare module BABYLON {
         /** Sin */
         Sin = 1,
         /** Abs */
-        Abs = 2
+        Abs = 2,
+        /** Exp */
+        Exp = 3,
+        /** Exp2 */
+        Exp2 = 4
     }
     /**
      * Block used to apply trigonometry operation to floats
@@ -53640,6 +53664,8 @@ declare module BABYLON {
          * Gets the a component (output)
          */
         readonly a: NodeMaterialConnectionPoint;
+        protected _inputRename(name: string): string;
+        protected _outputRename(name: string): string;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
@@ -53694,6 +53720,8 @@ declare module BABYLON {
          * Gets the w component (output)
          */
         readonly w: NodeMaterialConnectionPoint;
+        protected _inputRename(name: string): string;
+        protected _outputRename(name: string): string;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -53784,6 +53812,62 @@ declare module BABYLON {
          * Gets the right operand input component
          */
         readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to step a value
+     */
+    export class StepBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new AddBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the value operand input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the edge operand input component
+         */
+        readonly edge: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to convert color to vector and vice versa
+     */
+    export class TypeConverterBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new TypeConverterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */
@@ -54139,7 +54223,7 @@ declare module BABYLON {
          * @param keepSubMeshes Specifies if the submeshes should be kept
          * @returns A new Mesh
          */
-        buildMeshGeometry(name: string, scene: Scene, keepSubMeshes: boolean): Mesh;
+        buildMeshGeometry(name: string, scene?: Scene, keepSubMeshes?: boolean): Mesh;
         /**
          * Build Mesh from CSG taking material and transforms into account
          * @param name The name of the Mesh
@@ -54148,7 +54232,7 @@ declare module BABYLON {
          * @param keepSubMeshes Specifies if submeshes should be kept
          * @returns The new Mesh
          */
-        toMesh(name: string, material: Nullable<Material>, scene: Scene, keepSubMeshes: boolean): Mesh;
+        toMesh(name: string, material?: Nullable<Material>, scene?: Scene, keepSubMeshes?: boolean): Mesh;
     }
 }
 declare module BABYLON {
