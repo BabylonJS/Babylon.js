@@ -86,7 +86,7 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     { label: "Fog color", value: NodeMaterialWellKnownValues.FogColor }
                 ];
                 break;
-            case NodeMaterialBlockConnectionPointTypes.Color3:
+            case NodeMaterialBlockConnectionPointTypes.Color4:
                 attributeOptions = [
                     { label: "color", value: "color" }
                 ];

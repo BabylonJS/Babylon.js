@@ -45006,6 +45006,12 @@ declare module BABYLON {
          */
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
          * Dispose the material.
          * @param forceDisposeEffect Force disposal of the associated effect.
          * @param forceDisposeTextures Force disposal of the associated textures.
@@ -51656,7 +51662,9 @@ declare module BABYLON {
         /** Detect type based on connection */
         AutoDetect = 1024,
         /** Output type that will be defined by input type */
-        BasedOnInput = 2048
+        BasedOnInput = 2048,
+        /** Output type that will be defined by inverting input type (color <-> vector) */
+        InvertInput = 4096
     }
 }
 declare module BABYLON {
@@ -52136,6 +52144,11 @@ declare module BABYLON {
         loadAsync(url: string): Promise<unknown>;
         private _gatherBlocks;
         /**
+         * Generate a string containing the code declaration required to create an equivalent of this material
+         * @returns a string
+         */
+        generateCode(): string;
+        /**
          * Serializes this material in a JSON representation
          * @returns the serialized material object
          */
@@ -52439,6 +52452,7 @@ declare module BABYLON {
         private _target;
         private _isFinalMerger;
         private _isInput;
+        protected _codeVariableName: string;
         /** @hidden */
         _inputs: NodeMaterialConnectionPoint[];
         /** @hidden */
@@ -52619,6 +52633,11 @@ declare module BABYLON {
          * @returns true if already built
          */
         build(state: NodeMaterialBuildState, contextSwitched?: boolean): boolean;
+        protected _inputRename(name: string): string;
+        protected _outputRename(name: string): string;
+        protected _dumpPropertiesCode(): string;
+        /** @hidden */
+        _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]): string;
         /**
          * Clone the current block to a new identical block
          * @param scene defines the hosting scene
@@ -52763,6 +52782,7 @@ declare module BABYLON {
          * Set the input block to its default value (based on its type)
          */
         setDefaultValue(): void;
+        protected _dumpPropertiesCode(): string;
         private _emit;
         /** @hidden */
         _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix): void;
@@ -53644,6 +53664,8 @@ declare module BABYLON {
          * Gets the a component (output)
          */
         readonly a: NodeMaterialConnectionPoint;
+        protected _inputRename(name: string): string;
+        protected _outputRename(name: string): string;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
@@ -53698,6 +53720,8 @@ declare module BABYLON {
          * Gets the w component (output)
          */
         readonly w: NodeMaterialConnectionPoint;
+        protected _inputRename(name: string): string;
+        protected _outputRename(name: string): string;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -53788,6 +53812,62 @@ declare module BABYLON {
          * Gets the right operand input component
          */
         readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to step a value
+     */
+    export class StepBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new AddBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the value operand input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the edge operand input component
+         */
+        readonly edge: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to convert color to vector and vice versa
+     */
+    export class TypeConverterBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new TypeConverterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */

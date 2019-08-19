@@ -95,12 +95,12 @@ export class BonesBlock extends NodeMaterialBlock {
 
     public autoConfigure() {
         if (!this.matricesIndices.isConnected) {
-            let matricesIndicesInput = new InputBlock("matricesIndices", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
+            let matricesIndicesInput = new InputBlock("matricesIndices");
             matricesIndicesInput.setAsAttribute("matricesIndices");
             matricesIndicesInput.output.connectTo(this.matricesIndices);
         }
         if (!this.matricesWeights.isConnected) {
-            let matricesWeightsInput = new InputBlock("matricesWeights", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
+            let matricesWeightsInput = new InputBlock("matricesWeights");
             matricesWeightsInput.setAsAttribute("matricesWeights");
             matricesWeightsInput.output.connectTo(this.matricesWeights);
         }

@@ -67,6 +67,23 @@ export class NodeMaterialConnectionPoint {
             return this._typeConnectionSource.type;
         }
 
+        if (this._type === NodeMaterialBlockConnectionPointTypes.InvertInput && this._typeConnectionSource) {
+            switch (this._typeConnectionSource.type) {
+                case NodeMaterialBlockConnectionPointTypes.Color3:
+                    return NodeMaterialBlockConnectionPointTypes.Vector3;
+
+                case NodeMaterialBlockConnectionPointTypes.Color4:
+                    return NodeMaterialBlockConnectionPointTypes.Vector4;
+
+                case NodeMaterialBlockConnectionPointTypes.Vector3:
+                    return NodeMaterialBlockConnectionPointTypes.Color3;
+
+                case NodeMaterialBlockConnectionPointTypes.Vector4:
+                    return NodeMaterialBlockConnectionPointTypes.Color4;
+            }
+            return this._typeConnectionSource.type;
+        }
+
         return this._type;
     }
 

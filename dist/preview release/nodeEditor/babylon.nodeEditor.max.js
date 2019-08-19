@@ -62145,6 +62145,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -62208,6 +62210,10 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["DivideBlock"]("Divide");
             case "SubtractBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["SubtractBlock"]("Subtract");
+            case "StepBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["StepBlock"]("Step");
+            case "TypeConverterBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TypeConverterBlock"]("Type converter");
         }
         return null;
     };
@@ -62786,7 +62792,7 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                     { label: "Fog color", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialWellKnownValues"].FogColor }
                 ];
                 break;
-            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color3:
+            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color4:
                 attributeOptions = [
                     { label: "color", value: "color" }
                 ];
@@ -64409,7 +64415,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Vertex: ["BonesBlock", "InstancesBlock", "MorphTargetsBlock"],
             Fragment: ["AlphaTestBlock", "FogBlock", "FresnelBlock", "ImageProcessingBlock", "LightBlock", "ReflectionTextureBlock", "TextureBlock"],
             Outputs: ["VertexOutputBlock", "FragmentOutputBlock"],
-            Math: ["AddBlock", "ClampBlock", "CrossBlock", "DivideBlock", "DotBlock", "LerpBlock", "MultiplyBlock", "RemapBlock", "NormalizeBlock", "ScaleBlock", "SubtractBlock", "TransformBlock", "TrigonometryBlock"],
+            Math: ["AddBlock", "ClampBlock", "CrossBlock", "DivideBlock", "DotBlock", "LerpBlock", "MultiplyBlock", "RemapBlock", "NormalizeBlock", "ScaleBlock", "StepBlock", "SubtractBlock", "TransformBlock", "TrigonometryBlock", "TypeConverterBlock"],
             Conversion: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
         };
@@ -64888,6 +64894,9 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save", onClick: function () {
                             _this.save();
                         } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Generate code", onClick: function () {
+                            _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.nodeMaterial.generateCode(), "code.txt");
+                        } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export shaders", onClick: function () {
                             _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
                         } })))));
@@ -65305,6 +65314,21 @@ var GraphEditor = /** @class */ (function (_super) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"](err, true));
         }
     };
+    GraphEditor.prototype.applyFragmentOutputConstraints = function (rootInput) {
+        var model = rootInput.parent;
+        for (var inputKey in model.getPorts()) {
+            var input = model.getPorts()[inputKey];
+            if (rootInput.name === "rgba" && (inputKey === "a" || inputKey === "rgb")
+                ||
+                    (rootInput.name === "a" || rootInput.name === "rgb") && inputKey === "rgba") {
+                for (var key in input.links) {
+                    var other = input.links[key];
+                    other.remove();
+                }
+                continue;
+            }
+        }
+    };
     GraphEditor.prototype.build = function (needToWait, locations) {
         var _this = this;
         if (needToWait === void 0) { needToWait = false; }
@@ -65333,6 +65357,8 @@ var GraphEditor = /** @class */ (function (_super) {
                         }
                     }
                     _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                }
+                else {
                 }
             },
             linksUpdated: function (e) {
@@ -65363,6 +65389,10 @@ var GraphEditor = /** @class */ (function (_super) {
                                 _this._model.addLink(link_1);
                                 input_1.syncWithNodeMaterialConnectionPoint(input_1.connection);
                                 nodeModel_1.ports.output.syncWithNodeMaterialConnectionPoint(nodeModel_1.ports.output.connection);
+                                var isFragmentOutput = input_1.parent.block.getClassName() === "FragmentOutputBlock";
+                                if (isFragmentOutput) {
+                                    _this.applyFragmentOutputConstraints(input_1);
+                                }
                                 _this.forceUpdate();
                             }, 1);
                             nodeModel_1.ports.output.connection.connectTo(input_1.connection);
@@ -65372,38 +65402,46 @@ var GraphEditor = /** @class */ (function (_super) {
                     _this.forceUpdate();
                     return;
                 }
-                e.link.addListener({
-                    sourcePortChanged: function () {
-                    },
-                    targetPortChanged: function () {
-                        // Link is created with a target port
-                        var link = _components_diagram_port_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
-                        if (link) {
-                            if (link.output.connection && link.input.connection) {
-                                // Disconnect previous connection
-                                for (var key in link.input.links) {
-                                    var other = link.input.links[key];
-                                    if (other.getSourcePort().connection !== link.output.connection &&
-                                        other.getTargetPort().connection !== link.output.connection) {
-                                        other.remove();
+                else {
+                    e.link.addListener({
+                        sourcePortChanged: function () {
+                        },
+                        targetPortChanged: function (evt) {
+                            // Link is created with a target port
+                            var link = _components_diagram_port_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
+                            if (link) {
+                                if (link.output.connection && link.input.connection) {
+                                    var currentBlock = link.input.connection.ownerBlock;
+                                    var isFragmentOutput = currentBlock.getClassName() === "FragmentOutputBlock";
+                                    // Disconnect previous connection
+                                    for (var key in link.input.links) {
+                                        var other = link.input.links[key];
+                                        var sourcePortConnection = other.getSourcePort().connection;
+                                        var targetPortConnection = other.getTargetPort().connection;
+                                        if (sourcePortConnection !== link.output.connection &&
+                                            targetPortConnection !== link.output.connection) {
+                                            other.remove();
+                                        }
                                     }
+                                    if (isFragmentOutput) {
+                                        _this.applyFragmentOutputConstraints(link.input);
+                                    }
+                                    if (link.output.connection.canConnectTo(link.input.connection)) {
+                                        link.output.connection.connectTo(link.input.connection);
+                                    }
+                                    else {
+                                        evt.entity.remove();
+                                        _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Cannot connect two different connection types");
+                                    }
+                                    _this.forceUpdate();
                                 }
-                                try {
-                                    link.output.connection.connectTo(link.input.connection);
+                                if (_this.props.globalState.nodeMaterial) {
+                                    _this.buildMaterial();
                                 }
-                                catch (err) {
-                                    link.output.remove();
-                                    _this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"](err, true));
-                                    _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(err);
-                                }
-                                _this.forceUpdate();
-                            }
-                            if (_this.props.globalState.nodeMaterial) {
-                                _this.buildMaterial();
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         });
         // Load graph of nodes from the material
@@ -65531,6 +65569,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 var _a;
                 (_a = _this._model).addAll.apply(_a, _this._toAdd);
                 _this._toAdd = null;
+                nodeModel.setSelected(true);
                 _this._engine.repaintCanvas();
             }, 150);
         }

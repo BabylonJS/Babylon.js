@@ -28,6 +28,8 @@ import { FresnelBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fresnelBl
 import { LerpBlock } from 'babylonjs/Materials/Node/Blocks/lerpBlock';
 import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
 import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
+import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
+import { TypeConverterBlock } from 'babylonjs/Materials/Node/Blocks/typeConverterBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -89,7 +91,11 @@ export class BlockTools {
             case "DivideBlock":
                 return new DivideBlock("Divide");
             case "SubtractBlock":
-                return new SubtractBlock("Subtract");                
+                return new SubtractBlock("Subtract"); 
+            case "StepBlock":
+                return new StepBlock("Step");                  
+            case "TypeConverterBlock":
+                return new TypeConverterBlock("Type converter");                  
         }
 
         return null;
