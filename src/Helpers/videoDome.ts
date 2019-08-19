@@ -12,7 +12,6 @@ import { Observer } from "../Misc/observable";
 import { Vector3 } from '../Maths/math.vector';
 import { Axis } from '../Maths/math';
 import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
-import { Material } from "../Materials/material";
 
 declare type Camera = import("../Cameras/camera").Camera;
 
