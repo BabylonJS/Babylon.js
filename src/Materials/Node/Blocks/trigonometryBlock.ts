@@ -14,7 +14,11 @@ export enum TrigonometryBlockOperations {
     /** Sin */
     Sin,
     /** Abs */
-    Abs
+    Abs,
+    /** Exp */
+    Exp, 
+    /** Exp2 */
+    Exp2
 }
 
 /**
@@ -79,6 +83,14 @@ export class TrigonometryBlock extends NodeMaterialBlock {
                 operation = "abs";
                 break;
             }
+            case TrigonometryBlockOperations.Exp: {
+                operation = "exp";
+                break;
+            }
+            case TrigonometryBlockOperations.Exp2: {
+                operation = "exp2";
+                break;
+            }                        
         }
 
         state.compilationString += this._declareOutput(output, state) + ` = ${operation}(${this.input.associatedVariableName});\r\n`;
