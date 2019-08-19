@@ -2,6 +2,7 @@ import { Vector4, Vector3, Matrix } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
+import { Nullable } from '../../types';
 
 VertexData.CreateSphere = function(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var segments: number = options.segments || 32;
