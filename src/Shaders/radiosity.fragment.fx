@@ -118,5 +118,5 @@ void main(void) {
     
     vec3 energy = formFactorEnergy();
     glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
-    glFragData[1] = vec4(energy + texture(gatheringBuffer, vUV).xyz, worldPos4.a);    
+    glFragData[1] = vec4(energy * gatheringScale + texture(gatheringBuffer, vUV).xyz, worldPos4.a);    
 }
