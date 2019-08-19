@@ -2,6 +2,17 @@ import { Effect } from "../Materials/effect";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Scene } from "../scene";
 
+import "../Shaders/nextShooter.fragment";
+import "../Shaders/nextShooter.vertex";
+import "../Shaders/buildRadiosity.fragment";
+import "../Shaders/buildRadiosity.vertex";
+import "../Shaders/radiosity.fragment";
+import "../Shaders/radiosity.vertex";
+import "../Shaders/uv2mat.fragment";
+import "../Shaders/uv2mat.vertex";
+import "../Shaders/dilate.fragment";
+import "../Shaders/dilate.vertex";
+
 export class RadiosityEffectsManager {
     public useHemicube: boolean;
     public useDepthCompare: boolean;

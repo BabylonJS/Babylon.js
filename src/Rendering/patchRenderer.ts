@@ -423,7 +423,7 @@ export class PatchRenderer {
     }
 
     
-    public gatherDirectLightOnly(singlePass = true) : { hasShot: boolean, energyShot: number } {
+    public gatherDirectLightOnly() : { hasShot: boolean, energyShot: number } {
         if (!this._radiosityEffectsManager.isReady() || this._isBuildingPatches) {
             if (PatchRenderer.WARNING_LOGS) {
                 console.log("Not ready yet");
