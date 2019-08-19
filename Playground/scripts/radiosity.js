@@ -1,25 +1,34 @@
 ﻿var meshes = [];
-var textureSize = 512;
-var texelWorldSize = 1 / 2;
+var texelSize = 4;
+var worldToTexelRatio = 0.25; // 1 texel for this amount of m
 
-var prepareForBaking = function(mesh) {
-    var scaling = mesh.scaling || new BABYLON.Vector3(1, 1, 1);
+let uvm = new BABYLON.UvMapper();
+
+var prepareUVS = function(ms) {
+    let geometryMeshes = [];
+    for (let i = 0; i < ms.length; i++) {
+        if (ms[i].getVerticesData(BABYLON.VertexBuffer.PositionKind)); {
+            geometryMeshes.push(ms[i]);
+        }
+    }
+
+    let factor = uvm.map(geometryMeshes);
+
+    for (let i = 0; i < geometryMeshes.length; i++) {
+        let mesh = geometryMeshes[i];
+        mesh.__lightmapSize = 1 / factor / worldToTexelRatio;
+        mesh.__lightmapSize = Math.min(1024, Math.max(1, BABYLON.Tools.FloorPOT(mesh.__lightmapSize)));
+        console.log(mesh.__lightmapSize);
+        meshes.push(mesh);
+    }
+}
+
+var addMaterial = function(mesh) {
     mesh.material = new BABYLON.StandardMaterial("gg", scene);
     // mesh.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
     // mesh.material.backFaceCulling = false;
-    var positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-    var uvs = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
-    if (!positions || !uvs) {
-        return;
-    }
-    var indices = mesh.getIndices();
-
-    var uvs = mesh.getVerticesData(BABYLON.VertexBuffer.UVKind)//BABYLON.Tools.WorldUniformUvScaling(positions, uvs, indices, scaling, texelSize);
-    mesh.setVerticesData(BABYLON.VertexBuffer.UV2Kind, uvs);
-    meshes.push(mesh);
-    mesh.__lightmapSize = textureSize;
-    return mesh;
 }
+
 var addGround = function(name, scaling) {
     var ground = BABYLON.Mesh.CreateGround(name, 6, 6, 1, scene);
     if (scaling) {
@@ -46,50 +55,14 @@ var createScene = function() {
     // Default intensity is 1. Let's dim the light a small amount
     light.intensity = 0;
 
-    // Our built-in 'sphere' shape. Params: name, subdivs, size, scene
-    // sphere.material = new BABYLON.StandardMaterial("gg", scene);
-    // sphere.setVerticesData(BABYLON.VertexBuffer.UV2Kind, sphere.getVerticesData(BABYLON.VertexBuffer.UVKind));
+    var lamp =/*BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);*/addGround("lamp", new BABYLON.Vector3(0.25, 0.25, 0.25));
 
-    // // Move the sphere upward 1/2 its height
-    // sphere.position.y = 1;
-    // sphere.position.x = -2;
+    lamp.rotation.x = -3 * Math.PI / 4;
+    lamp.position.copyFromFloats(-5, 10, 10);
+    lamp.color = new BABYLON.Vector3(50, 50, 50);
 
-    // Our built-in 'ground' shape. Params: name, width, depth, subdivs, scene
-
-    // var ground = addGround("floor");
-
-    //var wall = addGround("wall", new BABYLON.Vector3(6, 6, 6));
-    // var wall2 = addGround("wall2");
-    // var wall3 = addGround("wall3");
-    // var wall4 = addGround("wall4");
-    var lamp = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);//addGround("lamp", new BABYLON.Vector3(0.25, 0.25, 0.25));
-    var lamp2 = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);//addGround("lamp", new BABYLON.Vector3(0.25, 0.25, 0.25));
-    // var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
-    // sphere.scaling.scaleInPlace(0.5);
-    // sphere.position.copyFromFloats(1, 2, 0);
-    // prepareForBaking(sphere);
-
-    // var ceiling = addGround("ceiling");
-
-
-    // wall.position.addInPlace(new BABYLON.Vector3(3, 2, 0));
-    // wall2.position.addInPlace(new BABYLON.Vector3(-3, 2, 0));
-    // wall3.position.addInPlace(new BABYLON.Vector3(0, 2, -3));
-    // ground.position.addInPlace(new BABYLON.Vector3(0, -1, 0));
-    // wall.rotation.addInPlace(new BABYLON.Vector3(0, 0, Math.PI / 2));
-    // wall2.rotation.addInPlace(new BABYLON.Vector3(0, -Math.PI, Math.PI / 2));
-    // wall3.rotation.addInPlace(new BABYLON.Vector3(0, Math.PI / 2, Math.PI / 2));
-
-    // lamp.rotation.x = -3 * Math.PI / 4;
-    // lamp.position.copyFromFloats(-5, 10, 10);
-    // lamp.color = new BABYLON.Vector3(2, 2, 100);
-
-    lamp2.rotation.x = -3 * Math.PI / 4;
-    lamp2.position.copyFromFloats(-5, 10, -10);
-    lamp2.color = new BABYLON.Vector3(100, 2, 2);
-
-    // ceiling.position.y += 5;
-    // ceiling.rotation.x = -Math.PI;
+    addMaterial(lamp);
+    prepareUVS([lamp]);
 
     var pr;
     BABYLON.SceneLoader.ImportMesh(
@@ -103,21 +76,18 @@ var createScene = function() {
                     ms[i].rotation.x += Math.PI / 2
                     ms[i].computeWorldMatrix(true);
                 }
-                //prepareForBaking(meshes[i]);
+                addMaterial(ms[i]);
             }
-            pr = new BABYLON.PatchRenderer(scene, ms, texelWorldSize);
-            // pr.createHTScene(1);
-            for (let i = 0; i < scene.meshes.length; i++) {
-                if (!scene.meshes[i].__lightmapSize) {
-                    prepareForBaking(scene.meshes[i]);
-                }
-            }
+            prepareUVS(ms);
+
+            pr = new BABYLON.PatchRenderer(scene, ms, texelSize);
             pr._meshes = meshes;
-        });
+        }
+    );
 
     for (let i = 0; i < meshes.length; i++) {
-            // meshes[i].material.diffuseTexture = new BABYLON.Texture("textures/albedo.png", scene);
-            meshes[i].material.emissiveColor = new BABYLON.Vector3(0.5, 0.5, 0.5);
+        // meshes[i].material.diffuseTexture = new BABYLON.Texture("textures/albedo.png", scene);
+        meshes[i].material.emissiveColor = new BABYLON.Vector3(0.5, 0.5, 0.5);
     }
 
     var renderLoop = function() {
@@ -142,10 +112,6 @@ var createScene = function() {
     //ground.material.diffuseTexture = pr._patchMap;
     var fn = () => {
         pr.createMaps();
-        // var sphere = BABYLON.Mesh.CreateSphere("sphere2", 16, 2, scene);
-        // sphere.position.x += 2;
-        // sphere.setVerticesData(BABYLON.VertexBuffer.UV2Kind, sphere.getVerticesData(BABYLON.VertexBuffer.UVKind));
-
         var frameCount = 0;
         var passes = 0;
         var observer;
@@ -178,7 +144,6 @@ var createScene = function() {
                 passes++;
             }
         });
-        // setInterval(pr.gatherRadiosity.bind(pr), 1000);
     }
 
     var fn2 = () => {
@@ -188,13 +153,8 @@ var createScene = function() {
         }
     }
 
-    // var fn3 = () => {
-
-    // }
-
     setTimeout(fn, 2000);
     setTimeout(fn2, 3000);
-    // setTimeout(fn3, 3000);
 
     scene.onPointerDown = (event) => {
         var pi = scene.pick(event.offsetX, event.offsetY);
@@ -206,19 +166,6 @@ var createScene = function() {
         console.log(pi.pickedMesh);
         console.log(pi.getNormal());
     };
-    // var ssaoRatio = {
-    //     ssaoRatio: 1, // Ratio of the SSAO post-process, in a lower resolution
-    //     blurRatio: 1// Ratio of the combine post-process (combines the SSAO and the scene)
-    // };
-
-    // var ssao = new BABYLON.SSAO2RenderingPipeline("ssao", scene, ssaoRatio);
-    // ssao.radius = 1.0;
-    // ssao.totalStrength = 1.3;
-    // ssao.expensiveBlur = true;
-    // ssao.samples = 32;
-    // ssao.maxZ = 250;
-    // // Attach camera to the SSAO render pipeline
-    // scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
 
     return scene;
 };

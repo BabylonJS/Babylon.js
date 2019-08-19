@@ -10,20 +10,18 @@ import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
-import { Vector3 } from "../Maths/math"
-import { Color4 } from "../Maths/math"
-import { Matrix } from "../Maths/math"
-import { Camera } from "../Cameras/camera"
+import { Vector3 } from "../Maths/math";
+import { Color4 } from "../Maths/math";
+import { Matrix } from "../Maths/math";
+import { Camera } from "../Cameras/camera";
 import { RadiosityUtils } from "./radiosityUtils";
 import { RadiosityEffectsManager } from "./radiosityEffectsManager";
 
 import { Nullable } from "../types";
-// import { Tools } from "../misc/tools"
+import { Tools } from "../misc/tools";
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _DevTools } from '../Misc/devTools';
-import { UvMapper } from "../misc/uvMapper";
-
 
 /**
  * This represents a depth renderer in Babylon.
@@ -66,7 +64,7 @@ class Patch {
     }
 
     public id: number;
-    public position: Vector3
+    public position: Vector3;
     public normal: Vector3;
     public viewMatrix: Matrix;
     public viewMatrixPX: Matrix;
@@ -103,7 +101,7 @@ export class PatchRenderer {
     public useDepthCompare: boolean = true;
     public useHemicube: boolean = true;
     private _cachePatches: boolean = false;
-    private _patchMapResolution: number = 512;
+    private _patchMapResolution: number = 1024;
 
     public static PERFORMANCE_LOGS_LEVEL: number = 1;
     public static RADIOSITY_INFO_LOGS_LEVEL: number = 1;
@@ -141,11 +139,11 @@ export class PatchRenderer {
     }
 
     public getCurrentRenderWidth(): number {
-        return this._currentRenderedMap.getRenderWidth()
+        return this._currentRenderedMap.getRenderWidth();
     }
 
     public getCurrentRenderHeight(): number {
-        return this._currentRenderedMap.getRenderHeight()
+        return this._currentRenderedMap.getRenderHeight();
     }
 
     /**
@@ -155,13 +153,9 @@ export class PatchRenderer {
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
      */
     constructor(scene: Scene, meshes: Mesh[], texelWorldSize: number) {
-
-        // DEBUG UVMapper
-        let uvm = new UvMapper(scene, texelWorldSize);
-        
         this._scene = scene;
         this._near = 0.1;
-        this._far = 1000;
+        this._far = 10000;
         this._texelWorldSize = texelWorldSize;
         this._meshes = meshes;
 
@@ -228,7 +222,7 @@ export class PatchRenderer {
 
         // Culling and reverse (right handed system)
         engine.setState(false, 0, true, scene.useRightHandedSystem); // TODO : BFC
-        engine.setDirectViewport(0, 0, this.getCurrentRenderWidth(), this.getCurrentRenderHeight())
+        engine.setDirectViewport(0, 0, this.getCurrentRenderWidth(), this.getCurrentRenderHeight());
 
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
         var effect = this._radiosityEffectsManager.radiosityEffect;
@@ -256,7 +250,7 @@ export class PatchRenderer {
         // mesh._processRendering(subMesh, effect, Material.PointFillMode, batch, hardwareInstancedRendering,
         //     (isInstance, world) => effect.setMatrix("world", world));
         return true;
-    };
+    }
 
     public createMaps() {
         this._nextShooterTexture = new RenderTargetTexture("nextShooter", 1, this._scene, false, true, Constants.TEXTURETYPE_FLOAT);
@@ -310,7 +304,7 @@ export class PatchRenderer {
                 } else {
                     effect.setFloat("lightStrength", 0.0);
                 }
-            }
+            };
 
             residualTexture.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
                 var index;
@@ -532,7 +526,7 @@ export class PatchRenderer {
         if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
             duration = Date.now() - consumeEnergyDate;
             console.log(`Consuming energy for shooter took ${duration}ms.`);
-            console.log(`Now shooting radiosity for ${patches.length} patches.`)
+            console.log(`Now shooting radiosity for ${patches.length} patches.`);
         }
 
         let shootingDate = Date.now();
@@ -693,7 +687,7 @@ export class PatchRenderer {
         engine.setState(false);
         let gl = engine._gl;
         let fb = this._frameBuffer1;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
         gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, (<InternalTexture>dest._texture)._webGLTexture, 0);
 
         engine.clear(new Color4(0.0, 0.0, 0.0, 0.0), true, true, true);
@@ -804,7 +798,7 @@ export class PatchRenderer {
     }
 
     public buildVisibilityMapCube() {
-        this._patchMap = new RenderTargetTexture("patch", this._patchMapResolution, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false)
+        this._patchMap = new RenderTargetTexture("patch", this._patchMapResolution, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false);
         this._patchMap.renderParticles = false;
         this._patchMap.renderList = this._meshes;
         this._patchMap.activeCamera = null;
@@ -848,9 +842,7 @@ export class PatchRenderer {
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
             mesh._processRendering(subMesh, this._radiosityEffectsManager.uV2Effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                 (isInstance, world) => this._radiosityEffectsManager.uV2Effect.setMatrix("world", world));
-        }
-
-
+        };
 
         let gl = engine._gl;
         let internalTexture = <InternalTexture>this._patchMap._texture;
@@ -933,7 +925,7 @@ export class PatchRenderer {
 
         var renderWithDepth = (subMesh: SubMesh, patch: Patch) => {
             engine.setState(false, 0, true, scene.useRightHandedSystem); // TODO : BFC
-            engine.setDirectViewport(0, 0, this.getCurrentRenderWidth(), this.getCurrentRenderHeight())
+            engine.setDirectViewport(0, 0, this.getCurrentRenderWidth(), this.getCurrentRenderHeight());
             engine.enableEffect(this._radiosityEffectsManager.uV2Effect);
 
             let mesh = subMesh.getRenderingMesh();
@@ -950,7 +942,7 @@ export class PatchRenderer {
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
             mesh._processRendering(subMesh, this._radiosityEffectsManager.uV2Effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                 (isInstance, world) => this._radiosityEffectsManager.uV2Effect.setMatrix("world", world));
-        }
+        };
 
         this._patchMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
             var index;
@@ -966,7 +958,7 @@ export class PatchRenderer {
             }
 
             // console.log(engine.readPixelsFloat(0, 0, this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight()));
-            // Tools.DumpFramebuffer(this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight(), this._scene.getEngine());
+            Tools.DumpFramebuffer(this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight(), this._scene.getEngine());
         };
 
     }

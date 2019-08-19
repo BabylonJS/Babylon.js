@@ -42,15 +42,16 @@ vec3 visible()
   // proj.xyz = proj.zxy;
   proj.y = -proj.y;
   #ifdef DEPTH_COMPARE
-  float depthProj = proj.z;
+  vec3 absProj = abs(proj);
+  float localZ = max(absProj.x, max(absProj.y, absProj.z));
   float farMinusNear = nearFar.y - nearFar.x;
 
   // TODO : there is a more efficient way to project depth without this costly operation for each fragment
-  depthProj = (depthProj * (nearFar.y + nearFar.x) - 2.0 * nearFar.y * nearFar.x) / farMinusNear;
+  float depthProj = ((nearFar.y + nearFar.x) - 2.0 * nearFar.y * nearFar.x / localZ) / farMinusNear;
   // depthProj = depthProj * 0.5 + 0.5;
 
   float depth = texture(itemBuffer, proj).r;
-  return vec3(depthProj - depth <= 1e-6);
+  return vec3(depthProj - depth < 1e-3);
   #else
   return vec3(texture(itemBuffer, proj).xyz == id);
   #endif
@@ -117,5 +118,5 @@ void main(void) {
     
     vec3 energy = formFactorEnergy();
     glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
-    glFragData[1] = vec4(energy * gatheringScale + texture(gatheringBuffer, vUV).xyz, worldPos4.a);
+    glFragData[1] = vec4(energy + texture(gatheringBuffer, vUV).xyz, worldPos4.a);    
 }

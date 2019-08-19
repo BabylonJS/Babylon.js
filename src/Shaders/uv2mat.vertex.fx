@@ -16,7 +16,7 @@ uniform mat4 world;
 out vec2 vUV2;
 
 #ifdef DEPTH_COMPARE
-out float depth;
+out vec4 proj;
 #endif
 
 void main(void) {
@@ -27,7 +27,7 @@ void main(void) {
     vec4 projPos = projection * viewPos;
     gl_Position = projPos;
     #ifdef DEPTH_COMPARE
-        depth = viewPos.z;
+        proj = projPos;
     #endif
     #else
     float farMinusNear = nearFar.y - nearFar.x;
