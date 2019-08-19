@@ -105,7 +105,7 @@ export class SphereBuilder {
      * @returns the sphere mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
      */
-    public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene?: Scene): Mesh {
+    public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         var sphere = new Mesh(name, scene);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
