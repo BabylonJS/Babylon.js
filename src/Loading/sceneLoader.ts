@@ -1,4 +1,4 @@
-import { IFileRequest, Tools } from "../Misc/tools";
+import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { FilesInputStore } from "../Misc/filesInputStore";
 import { Nullable } from "../types";
@@ -16,6 +16,7 @@ import { Skeleton } from "../Bones/skeleton";
 import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 import { SceneLoaderFlags } from "./sceneLoaderFlags";
+import { IFileRequest } from '../Misc/fileRequest';
 /**
  * Class used to represent data loading progression
  */

@@ -434,15 +434,45 @@ declare module "babylonjs-inspector/components/actionTabs/lines/quaternionLineCo
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/textInputLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    interface ITextInputLineComponentProps {
+        label: string;
+        lockObject: LockObject;
+        target?: any;
+        propertyName?: string;
+        value?: string;
+        onChange?: (value: string) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        constructor(props: ITextInputLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
+        updateValue(value: string): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/customPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { IInspectable } from 'babylonjs/Misc/iInspectable';
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     interface ICustomPropertyGridComponentProps {
         globalState: GlobalState;
         target: any;
+        lockObject: LockObject;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class CustomPropertyGridComponent extends React.Component<ICustomPropertyGridComponentProps, {
@@ -974,34 +1004,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/textInputLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
-    interface ITextInputLineComponentProps {
-        label: string;
-        lockObject: LockObject;
-        target?: any;
-        propertyName?: string;
-        value?: string;
-        onChange?: (value: string) => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        constructor(props: ITextInputLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
-        updateValue(value: string): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -1503,7 +1505,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IAnimatable } from 'babylonjs/Misc/tools';
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     interface IAnimationGridComponentProps {
         globalState: GlobalState;
         animatable: IAnimatable;
@@ -1624,6 +1626,44 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/vector4LineComponent" {
+    import * as React from "react";
+    import { Vector4 } from "babylonjs/Maths/math";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    interface IVector4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: Vector4) => void;
+        useEuler?: boolean;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
+        isExpanded: boolean;
+        value: Vector4;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector4LineComponentProps);
+        getCurrentValue(): any;
+        shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: Vector4;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Vector4): void;
+        updateVector4(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        updateStateW(value: number): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -1639,8 +1679,33 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
+        renderTextures(): JSX.Element | null;
+        renderInputValues(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/multiMaterialPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { Material } from 'babylonjs/Materials/material';
+    import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
+    interface IMultiMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: MultiMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: Observable<any>;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMaterialPropertyGridComponentProps> {
+        constructor(props: IMultiMaterialPropertyGridComponentProps);
+        onMaterialLink(mat: Material): void;
+        renderChildMaterial(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -2637,9 +2702,34 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ITextInputLineComponentProps {
+        label: string;
+        lockObject: LockObject;
+        target?: any;
+        propertyName?: string;
+        value?: string;
+        onChange?: (value: string) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        constructor(props: ITextInputLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
+        updateValue(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ICustomPropertyGridComponentProps {
         globalState: GlobalState;
         target: any;
+        lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CustomPropertyGridComponent extends React.Component<ICustomPropertyGridComponentProps, {
@@ -3044,30 +3134,6 @@ declare module INSPECTOR {
         private _onDebugSelectionChangeObservable;
         constructor(props: IBackgroundMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface ITextInputLineComponentProps {
-        label: string;
-        lockObject: LockObject;
-        target?: any;
-        propertyName?: string;
-        value?: string;
-        onChange?: (value: string) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        constructor(props: ITextInputLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
-        updateValue(value: string): void;
         render(): JSX.Element;
     }
 }
@@ -3500,6 +3566,40 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IVector4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector4) => void;
+        useEuler?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector4;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector4LineComponentProps);
+        getCurrentValue(): any;
+        shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector4;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector4): void;
+        updateVector4(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        updateStateW(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface INodeMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: BABYLON.NodeMaterial;
@@ -3508,8 +3608,26 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
+        renderTextures(): JSX.Element | null;
+        renderInputValues(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IMultiMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: BABYLON.MultiMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMaterialPropertyGridComponentProps> {
+        constructor(props: IMultiMaterialPropertyGridComponentProps);
+        onMaterialLink(mat: BABYLON.Material): void;
+        renderChildMaterial(): JSX.Element;
         render(): JSX.Element;
     }
 }

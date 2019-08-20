@@ -1,4 +1,3 @@
-import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { DomManagement } from "../Misc/domManagement";
 import { Nullable } from "../types";
@@ -9,6 +8,8 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { PoseEnabledControllerHelper } from "../Gamepads/Controllers/poseEnabledController";
 import { Xbox360Pad } from "./xboxGamepad";
 import { Gamepad, GenericPad } from "./gamepad";
+import { Engine } from '../Engines/engine';
+import { DualShockPad } from './dualShockGamepad';
 /**
  * Manager for handling gamepads
  */
@@ -102,8 +103,10 @@ export class GamepadManager {
             }
             // Checking if the gamepad connected event is supported (like in Firefox)
             if (this._gamepadEventSupported) {
-                window.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
-                window.addEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent, false);
+                let hostWindow = this._scene ? this._scene.getEngine().getHostWindow() : window;
+
+                hostWindow.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
+                hostWindow.addEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent, false);
             }
             else {
                 this._startMonitoringGamepads();
@@ -172,8 +175,11 @@ export class GamepadManager {
         if (xboxOne || (<string>gamepad.id).search("Xbox 360") !== -1 || (<string>gamepad.id).search("xinput") !== -1) {
             newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
         }
-        // if pose is supported, use the (WebVR) pose enabled controller, ignore DualShock (ps4) as they have a pose but should not be used for webVR
-        else if (gamepad.pose && !dualShock) {
+        else if (dualShock) {
+            newGamepad = new DualShockPad(gamepad.id, gamepad.index, gamepad);
+        }
+        // if pose is supported, use the (WebVR) pose enabled controller
+        else if (gamepad.pose) {
             newGamepad = PoseEnabledControllerHelper.InitiateController(gamepad);
         }
         else {
@@ -211,7 +217,7 @@ export class GamepadManager {
         }
 
         if (this._isMonitoring && !this._scene) {
-            Tools.QueueNewFrame(() => { this._checkGamepadsStatus(); });
+            Engine.QueueNewFrame(() => { this._checkGamepadsStatus(); });
         }
     }
 

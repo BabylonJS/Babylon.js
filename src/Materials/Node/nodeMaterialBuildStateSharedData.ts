@@ -1,10 +1,18 @@
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlock } from './nodeMaterialBlock';
+import { InputBlock } from './Blocks/Input/inputBlock';
+import { TextureBlock } from './Blocks/Dual/textureBlock';
+import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
  */
 export class NodeMaterialBuildStateSharedData {
+    /**
+    * Gets the list of emitted varyings
+    */
+    public temps = new Array<string>();
+
     /**
      * Gets the list of emitted varyings
      */
@@ -16,9 +24,14 @@ export class NodeMaterialBuildStateSharedData {
     public varyingDeclaration = "";
 
     /**
-     * Uniform connection points
+     * Input blocks
      */
-    public uniformConnectionPoints = new Array<NodeMaterialConnectionPoint>();
+    public inputBlocks = new Array<InputBlock>();
+
+    /**
+     * Input blocks
+     */
+    public textureBlocks = new Array<TextureBlock | ReflectionTextureBlock>();
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)
@@ -49,6 +62,11 @@ export class NodeMaterialBuildStateSharedData {
      * List of blocks that can block the isReady function for the material
      */
     public blockingBlocks = new Array<NodeMaterialBlock>();
+
+    /**
+     * Gets the list of animated inputs
+     */
+    public animatedInputs = new Array<InputBlock>();
 
     /**
      * Build Id used to avoid multiple recompilations
@@ -106,6 +124,7 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["matricesWeightsExtra"] = 0;
         this.variableNames["diffuseBase"] = 0;
         this.variableNames["specularBase"] = 0;
+        this.variableNames["worldPos"] = 0;
 
         // Exclude defines
         this.defineNames["MAINUV0"] = 0;

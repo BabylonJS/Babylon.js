@@ -1198,6 +1198,14 @@ declare module "babylonjs-gui/2D/controls/container" {
         protected _adaptWidthToChildren: boolean;
         /** @hidden */
         protected _adaptHeightToChildren: boolean;
+        /**
+         * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+         */
+        logLayoutCycleErrors: boolean;
+        /**
+         * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+         */
+        maxLayoutCycle: number;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
         adaptHeightToChildren: boolean;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
@@ -1614,6 +1622,10 @@ declare module "babylonjs-gui/2D/controls/button" {
          * Function called to generate a pointer up animation
          */
         pointerUpAnimation: () => void;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
         private _image;
         /**
          * Returns the image part of the button (if any)
@@ -1684,6 +1696,10 @@ declare module "babylonjs-gui/2D/controls/stackPanel" {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        /**
+         * Gets or sets a boolean indicating that layou warnings should be ignored
+         */
+        ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         isVertical: boolean;
         /**
@@ -1898,6 +1914,8 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
+        /** Force disable prompt on mobile device */
+        disableMobilePrompt: boolean;
         /** Observable raised when the text changes */
         onTextChangedObservable: Observable<InputText>;
         /** Observable raised just before an entered character is to be added */
@@ -3012,7 +3030,7 @@ declare module "babylonjs-gui/2D/controls/index" {
     export * from "babylonjs-gui/2D/controls/statics";
 }
 declare module "babylonjs-gui/2D/adtInstrumentation" {
-    import { PerfCounter } from "babylonjs/Misc/tools";
+    import { PerfCounter } from "babylonjs/Misc/perfCounter";
     import { IDisposable } from "babylonjs/scene";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
@@ -3472,7 +3490,7 @@ declare module "babylonjs-gui/3D/controls/button3D" {
     }
 }
 declare module "babylonjs-gui/3D/controls/volumeBasedPanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { int } from "babylonjs/types";
     import { Container3D } from "babylonjs-gui/3D/controls/container3D";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
@@ -3523,7 +3541,7 @@ declare module "babylonjs-gui/3D/controls/volumeBasedPanel" {
     }
 }
 declare module "babylonjs-gui/3D/controls/cylinderPanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { float } from "babylonjs/types";
     import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
@@ -5019,6 +5037,14 @@ declare module BABYLON.GUI {
         protected _adaptWidthToChildren: boolean;
         /** @hidden */
         protected _adaptHeightToChildren: boolean;
+        /**
+         * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+         */
+        logLayoutCycleErrors: boolean;
+        /**
+         * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+         */
+        maxLayoutCycle: number;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
         adaptHeightToChildren: boolean;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
@@ -5420,6 +5446,10 @@ declare module BABYLON.GUI {
          * Function called to generate a pointer up animation
          */
         pointerUpAnimation: () => void;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
         private _image;
         /**
          * Returns the image part of the button (if any)
@@ -5488,6 +5518,10 @@ declare module BABYLON.GUI {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        /**
+         * Gets or sets a boolean indicating that layou warnings should be ignored
+         */
+        ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         isVertical: boolean;
         /**
@@ -5688,6 +5722,8 @@ declare module BABYLON.GUI {
         _connectedVirtualKeyboard: BABYLON.Nullable<VirtualKeyboard>;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
+        /** Force disable prompt on mobile device */
+        disableMobilePrompt: boolean;
         /** BABYLON.Observable raised when the text changes */
         onTextChangedObservable: BABYLON.Observable<InputText>;
         /** BABYLON.Observable raised just before an entered character is to be added */

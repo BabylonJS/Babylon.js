@@ -1415,8 +1415,9 @@ declare module BABYLON.GLTF2 {
          * @returns A promise that resolves with the loaded data when the load is complete
          */
         loadBufferViewAsync(context: string, bufferView: IBufferView): Promise<ArrayBufferView>;
-        private _loadIndicesAccessorAsync;
+        private _loadAccessorAsync;
         private _loadFloatAccessorAsync;
+        private _loadIndicesAccessorAsync;
         private _loadVertexBufferViewAsync;
         private _loadVertexAccessorAsync;
         private _loadMaterialMetallicRoughnessPropertiesAsync;
@@ -1491,6 +1492,7 @@ declare module BABYLON.GLTF2 {
         }, pointer: string): void;
         private static _GetTextureWrapMode;
         private static _GetTextureSamplingMode;
+        private static _GetTypedArrayConstructor;
         private static _GetTypedArray;
         private static _GetNumComponents;
         private static _ValidateUri;

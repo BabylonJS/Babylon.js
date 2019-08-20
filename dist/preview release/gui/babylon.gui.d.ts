@@ -1164,6 +1164,14 @@ declare module BABYLON.GUI {
         protected _adaptWidthToChildren: boolean;
         /** @hidden */
         protected _adaptHeightToChildren: boolean;
+        /**
+         * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+         */
+        logLayoutCycleErrors: boolean;
+        /**
+         * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+         */
+        maxLayoutCycle: number;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
         adaptHeightToChildren: boolean;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
@@ -1565,6 +1573,10 @@ declare module BABYLON.GUI {
          * Function called to generate a pointer up animation
          */
         pointerUpAnimation: () => void;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
         private _image;
         /**
          * Returns the image part of the button (if any)
@@ -1633,6 +1645,10 @@ declare module BABYLON.GUI {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        /**
+         * Gets or sets a boolean indicating that layou warnings should be ignored
+         */
+        ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         isVertical: boolean;
         /**
@@ -1833,6 +1849,8 @@ declare module BABYLON.GUI {
         _connectedVirtualKeyboard: BABYLON.Nullable<VirtualKeyboard>;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
+        /** Force disable prompt on mobile device */
+        disableMobilePrompt: boolean;
         /** BABYLON.Observable raised when the text changes */
         onTextChangedObservable: BABYLON.Observable<InputText>;
         /** BABYLON.Observable raised just before an entered character is to be added */

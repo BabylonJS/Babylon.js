@@ -1,13 +1,8 @@
 import { Observer, Observable } from "../Misc/observable";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import { StringDictionary } from "../Misc/stringDictionary";
-import { PromisePolyfill } from "../Misc/promise";
-import { Tools, ICustomAnimationFrameRequester, PerfCounter, IFileRequest } from "../Misc/tools";
 import { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
-import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Matrix, Color3, Color4, Viewport, Vector4 } from "../Maths/math";
-import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Effect, EffectCreationOptions, EffectFallbacks } from "../Materials/effect";
@@ -32,12 +27,27 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { IShaderProcessor } from './Processors/iShaderProcessor';
 import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
+import { PerfCounter } from '../Misc/perfCounter';
+import { IFileRequest } from '../Misc/fileRequest';
+import { ICustomAnimationFrameRequester } from '../Misc/customAnimationFrameRequester';
+import { FileTools } from '../Misc/fileTools';
+import { IViewportLike, IColor4Like } from '../Maths/math.like';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+
+/**
+ * Defines the interface used by objects containing a viewport (like a camera)
+ */
+interface IViewportOwnerLike {
+    /**
+     * Gets or sets the viewport
+     */
+    viewport: IViewportLike;
+}
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -183,6 +193,8 @@ export class EngineCapabilities {
     public parallelShaderCompile: {
         COMPLETION_STATUS_KHR: number;
     };
+    /** Max number of texture samples for MSAA */
+    public maxMSAASamples = 1;
 }
 
 /** Interface defining initialization parameters for Engine class */
@@ -500,14 +512,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.6";
+        return "babylonjs@4.1.0-alpha.15";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.6";
+        return "4.1.0-alpha.15";
     }
 
     /**
@@ -847,7 +859,7 @@ export class Engine {
     private _compiledEffects: { [key: string]: Effect } = {};
     private _vertexAttribArraysEnabled: boolean[] = [];
     /** @hidden */
-    protected _cachedViewport: Nullable<Viewport>;
+    protected _cachedViewport: Nullable<IViewportLike>;
     private _cachedVertexArrayObject: Nullable<WebGLVertexArrayObject>;
     /** @hidden */
     protected _cachedVertexBuffers: any;
@@ -915,7 +927,7 @@ export class Engine {
     /**
      * Gets the current viewport
      */
-    public get currentViewport(): Nullable<Viewport> {
+    public get currentViewport(): Nullable<IViewportLike> {
         return this._cachedViewport;
     }
 
@@ -967,9 +979,6 @@ export class Engine {
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
     constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
-
-        // Register promises
-        PromisePolyfill.Apply();
 
         let canvas: Nullable<HTMLCanvasElement> = null;
         Engine.Instances.push(this);
@@ -1155,8 +1164,9 @@ export class Engine {
             };
 
             if (DomManagement.IsWindowObjectExist()) {
-                window.addEventListener("blur", this._onBlur);
-                window.addEventListener("focus", this._onFocus);
+                let hostWindow = this.getHostWindow();
+                hostWindow.addEventListener("blur", this._onBlur);
+                hostWindow.addEventListener("focus", this._onFocus);
             }
 
             canvas.addEventListener("pointerout", this._onCanvasPointerOut);
@@ -1210,7 +1220,7 @@ export class Engine {
 
                 // Pointer lock
                 if (this.isFullscreen && this._pointerLockRequested && canvas) {
-                    Tools.RequestPointerlock(canvas);
+                    Engine._RequestPointerlock(canvas);
                 }
             };
 
@@ -1459,6 +1469,7 @@ export class Engine {
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
+            this._caps.maxMSAASamples = this._gl.getParameter(this._gl.MAX_SAMPLES);
         } else {
             var drawBuffersExtension = this._gl.getExtension('WEBGL_draw_buffers');
 
@@ -1564,6 +1575,14 @@ export class Engine {
     }
 
     /**
+     * Gets a string idenfifying the name of the class
+     * @returns "Engine" string
+     */
+    public getClassName(): string {
+        return "Engine";
+    }
+
+    /**
      * Returns true if the stencil buffer has been enabled through the creation option of the context.
      */
     public get isStencilEnable(): boolean {
@@ -1630,12 +1649,12 @@ export class Engine {
 
     /**
      * Gets current aspect ratio
-     * @param camera defines the camera to use to get the aspect ratio
+     * @param viewportOwner defines the camera to use to get the aspect ratio
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the aspect ratio
      */
-    public getAspectRatio(camera: Camera, useScreen = false): number {
-        var viewport = camera.viewport;
+    public getAspectRatio(viewportOwner: IViewportOwnerLike, useScreen = false): number {
+        var viewport = viewportOwner.viewport;
         return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
     }
 
@@ -1679,6 +1698,30 @@ export class Engine {
      */
     public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
         return this._renderingCanvas;
+    }
+
+    /**
+     * Gets host window
+     * @returns the host window object
+     */
+    public getHostWindow(): Window {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument && this._renderingCanvas.ownerDocument.defaultView) {
+            return this._renderingCanvas.ownerDocument.defaultView;
+        }
+
+        return window;
+    }
+
+    /**
+     * Gets host document
+     * @returns the host document object
+     */
+    public getHostDocument(): Document {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
+            return this._renderingCanvas.ownerDocument;
+        }
+
+        return document;
     }
 
     /**
@@ -2002,24 +2045,16 @@ export class Engine {
         if (this._activeRenderLoops.length > 0) {
             // Register new frame
             if (this.customAnimationFrameRequester) {
-                this.customAnimationFrameRequester.requestID = this._queueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
+                this.customAnimationFrameRequester.requestID = Engine.QueueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
                 this._frameHandler = this.customAnimationFrameRequester.requestID;
             } else if (this.isVRPresenting()) {
                 this._requestVRFrame();
             } else {
-                this._frameHandler = this._queueNewFrame(this._bindedRenderFunction);
+                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
             }
         } else {
             this._renderingQueueLaunched = false;
         }
-    }
-
-    /**
-     * Can be used to override the current requestAnimationFrame requester.
-     * @hidden
-     */
-    protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
-        return Tools.QueueNewFrame(bindedRenderFunction, requester);
     }
 
     /**
@@ -2036,7 +2071,7 @@ export class Engine {
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
             this._bindedRenderFunction = this._renderLoop.bind(this);
-            this._frameHandler = this._queueNewFrame(this._bindedRenderFunction);
+            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
         }
     }
 
@@ -2060,7 +2095,7 @@ export class Engine {
         if (!this.isFullscreen) {
             this._pointerLockRequested = requestPointerLock;
             if (this._renderingCanvas) {
-                Tools.RequestFullscreen(this._renderingCanvas);
+                Engine._RequestFullscreen(this._renderingCanvas);
             }
         }
     }
@@ -2070,7 +2105,7 @@ export class Engine {
      */
     public exitFullscreen(): void {
         if (this.isFullscreen) {
-            Tools.ExitFullscreen();
+            Engine._ExitFullscreen();
         }
     }
 
@@ -2079,7 +2114,7 @@ export class Engine {
      */
     public enterPointerlock(): void {
         if (this._renderingCanvas) {
-            Tools.RequestPointerlock(this._renderingCanvas);
+            Engine._RequestPointerlock(this._renderingCanvas);
         }
     }
 
@@ -2087,7 +2122,7 @@ export class Engine {
      * Exits Pointerlock mode
      */
     public exitPointerlock(): void {
-        Tools.ExitPointerlock();
+        Engine._ExitPointerlock();
     }
 
     /**
@@ -2097,7 +2132,7 @@ export class Engine {
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
      */
-    public clear(color: Nullable<Color4>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         this.applyStates();
 
         var mode = 0;
@@ -2124,7 +2159,7 @@ export class Engine {
      * @param height defines the height of the clear rectangle
      * @param clearColor defines the clear color
      */
-    public scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void {
+    public scissorClear(x: number, y: number, width: number, height: number, clearColor: IColor4Like): void {
         this.enableScissor(x, y, width, height);
         this.clear(clearColor, true, true, true);
         this.disableScissor();
@@ -2154,7 +2189,7 @@ export class Engine {
         gl.disable(gl.SCISSOR_TEST);
     }
 
-    private _viewportCached = new Vector4(0, 0, 0, 0);
+    private _viewportCached = { x: 0, y: 0, z: 0, w: 0 };
 
     /** @hidden */
     public _viewport(x: number, y: number, width: number, height: number): void {
@@ -2177,7 +2212,7 @@ export class Engine {
      * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
      * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
      */
-    public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
+    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         var width = requiredWidth || this.getRenderWidth();
         var height = requiredHeight || this.getRenderHeight();
         var x = viewport.x || 0;
@@ -2196,7 +2231,7 @@ export class Engine {
      * @param height defines the height of the viewport (in screen space)
      * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
      */
-    public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<Viewport> {
+    public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike> {
         let currentViewport = this._cachedViewport;
         this._cachedViewport = null;
 
@@ -2249,6 +2284,9 @@ export class Engine {
         if (!this._renderingCanvas) {
             return;
         }
+
+        width = width | 0;
+        height = height | 0;
 
         if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
             return;
@@ -3347,7 +3385,7 @@ export class Engine {
             if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
                 let log = this._gl.getShaderInfoLog(vertexShader);
                 if (log) {
-                    throw new Error(log);
+                    throw new Error("VERTEX SHADER " + log);
                 }
             }
 
@@ -3355,7 +3393,7 @@ export class Engine {
             if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
                 let log = this._gl.getShaderInfoLog(fragmentShader);
                 if (log) {
-                    throw new Error(log);
+                    throw new Error("FRAGMENT SHADER " + log);
                 }
             }
 
@@ -3658,19 +3696,6 @@ export class Engine {
     }
 
     /**
-     * Set the value of an uniform to a matrix
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param matrix defines the matrix to store
-     */
-    public setMatrix(uniform: Nullable<WebGLUniformLocation>, matrix: Matrix): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniformMatrix4fv(uniform, false, matrix.toArray() as Float32Array);
-    }
-
-    /**
      * Set the value of an uniform to a matrix (3x3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrix defines the Float32Array representing the 3x3 matrix to store
@@ -3781,38 +3806,11 @@ export class Engine {
     }
 
     /**
-     * Set the value of an uniform to a Color3
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param color3 defines the color to store
-     */
-    public setColor3(uniform: Nullable<WebGLUniformLocation>, color3: Color3): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform3f(uniform, color3.r, color3.g, color3.b);
-    }
-
-    /**
-     * Set the value of an uniform to a Color3 and an alpha value
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param color3 defines the color to store
-     * @param alpha defines the alpha component to store
-     */
-    public setColor4(uniform: Nullable<WebGLUniformLocation>, color3: Color3, alpha: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
-    }
-
-    /**
      * Sets a Color4 on a uniform variable
      * @param uniform defines the uniform location
      * @param color4 defines the value to be set
      */
-    public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void {
+    public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: IColor4Like): void {
         if (!uniform) {
             return;
         }
@@ -4253,7 +4251,6 @@ export class Engine {
                     // Add Back
                     customFallback = true;
                     excludeLoaders.push(loader);
-                    Tools.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
                     this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
                     return;
                 }
@@ -4263,8 +4260,8 @@ export class Engine {
                 if (onLoadObserver) {
                     texture.onLoadedObservable.remove(onLoadObserver);
                 }
-                if (Tools.UseFallbackTexture) {
-                    this.createTexture(Tools.fallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
+                if (EngineStore.UseFallbackTexture) {
+                    this.createTexture(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
                     return;
                 }
             }
@@ -4354,11 +4351,11 @@ export class Engine {
                 if (buffer instanceof HTMLImageElement) {
                     onload(buffer);
                 } else {
-                    Tools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null);
+                    FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null);
                 }
             }
             else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || buffer instanceof Blob) {
-                Tools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null);
+                FileTools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null);
             }
             else {
                 onload(<HTMLImageElement>buffer);
@@ -4479,8 +4476,8 @@ export class Engine {
         texture.baseHeight = height;
 
         if (generateMipMaps) {
-            width = this.needPOTTextures ? Tools.GetExponentOfTwo(width, this._caps.maxTextureSize) : width;
-            height = this.needPOTTextures ? Tools.GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
+            width = this.needPOTTextures ? Engine.GetExponentOfTwo(width, this._caps.maxTextureSize) : width;
+            height = this.needPOTTextures ? Engine.GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
         }
 
         //  this.resetTextureCache();
@@ -4944,7 +4941,7 @@ export class Engine {
 
         var gl = this._gl;
 
-        samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
+        samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
         // Dispose previous render buffers
         if (texture._depthStencilBuffer) {
@@ -5024,8 +5021,8 @@ export class Engine {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }
 
-        const lodMaxWidth = Math.round(Scalar.Log2(texture.width));
-        const lodMaxHeight = Math.round(Scalar.Log2(texture.height));
+        const lodMaxWidth = Math.round(Math.log(texture.width) * Math.LOG2E);
+        const lodMaxHeight = Math.round(Math.log(texture.height) * Math.LOG2E);
         const width = useTextureWidthAndHeight ? texture.width : Math.pow(2, Math.max(lodMaxWidth - lod, 0));
         const height = useTextureWidthAndHeight ? texture.height : Math.pow(2, Math.max(lodMaxHeight - lod, 0));
 
@@ -5144,8 +5141,8 @@ export class Engine {
     private _prepareWebGLTexture(texture: InternalTexture, scene: Nullable<Scene>, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
         processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE): void {
         var maxTextureSize = this.getCaps().maxTextureSize;
-        var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(width, maxTextureSize) : width);
-        var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Tools.GetExponentOfTwo(height, maxTextureSize) : height);
+        var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? Engine.GetExponentOfTwo(width, maxTextureSize) : width);
+        var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? Engine.GetExponentOfTwo(height, maxTextureSize) : height);
 
         var gl = this._gl;
         if (!gl) {
@@ -6402,7 +6399,7 @@ export class Engine {
 
     /** @hidden */
     public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
-        let request = Tools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        let request = FileTools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -6436,6 +6433,161 @@ export class Engine {
             return gl != null && !!window.WebGLRenderingContext;
         } catch (e) {
             return false;
+        }
+    }
+
+    /**
+     * Find the next highest power of two.
+     * @param x Number to start search from.
+     * @return Next highest power of two.
+     */
+    public static CeilingPOT(x: number): number {
+        x--;
+        x |= x >> 1;
+        x |= x >> 2;
+        x |= x >> 4;
+        x |= x >> 8;
+        x |= x >> 16;
+        x++;
+        return x;
+    }
+
+    /**
+     * Find the next lowest power of two.
+     * @param x Number to start search from.
+     * @return Next lowest power of two.
+     */
+    public static FloorPOT(x: number): number {
+        x = x | (x >> 1);
+        x = x | (x >> 2);
+        x = x | (x >> 4);
+        x = x | (x >> 8);
+        x = x | (x >> 16);
+        return x - (x >> 1);
+    }
+
+    /**
+     * Find the nearest power of two.
+     * @param x Number to start search from.
+     * @return Next nearest power of two.
+     */
+    public static NearestPOT(x: number): number {
+        var c = Engine.CeilingPOT(x);
+        var f = Engine.FloorPOT(x);
+        return (c - x) > (x - f) ? f : c;
+    }
+
+    /**
+     * Get the closest exponent of two
+     * @param value defines the value to approximate
+     * @param max defines the maximum value to return
+     * @param mode defines how to define the closest value
+     * @returns closest exponent of two of the given value
+     */
+    public static GetExponentOfTwo(value: number, max: number, mode = Constants.SCALEMODE_NEAREST): number {
+        let pot;
+
+        switch (mode) {
+            case Constants.SCALEMODE_FLOOR:
+                pot = Engine.FloorPOT(value);
+                break;
+            case Constants.SCALEMODE_NEAREST:
+                pot = Engine.NearestPOT(value);
+                break;
+            case Constants.SCALEMODE_CEILING:
+            default:
+                pot = Engine.CeilingPOT(value);
+                break;
+        }
+
+        return Math.min(pot, max);
+    }
+
+    /**
+     * Queue a new function into the requested animation frame pool (ie. this function will be executed byt the browser for the next frame)
+     * @param func - the function to be called
+     * @param requester - the object that will request the next frame. Falls back to window.
+     * @returns frame number
+     */
+    public static QueueNewFrame(func: () => void, requester?: any): number {
+        if (!DomManagement.IsWindowObjectExist()) {
+            return setTimeout(func, 16);
+        }
+
+        if (!requester) {
+            requester = window;
+        }
+
+        if (requester.requestAnimationFrame) {
+            return requester.requestAnimationFrame(func);
+        }
+        else if (requester.msRequestAnimationFrame) {
+            return requester.msRequestAnimationFrame(func);
+        }
+        else if (requester.webkitRequestAnimationFrame) {
+            return requester.webkitRequestAnimationFrame(func);
+        }
+        else if (requester.mozRequestAnimationFrame) {
+            return requester.mozRequestAnimationFrame(func);
+        }
+        else if (requester.oRequestAnimationFrame) {
+            return requester.oRequestAnimationFrame(func);
+        }
+        else {
+            return window.setTimeout(func, 16);
+        }
+    }
+
+    /**
+     * Ask the browser to promote the current element to pointerlock mode
+     * @param element defines the DOM element to promote
+     */
+    static _RequestPointerlock(element: HTMLElement): void {
+        element.requestPointerLock = element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
+        if (element.requestPointerLock) {
+            element.requestPointerLock();
+        }
+    }
+
+    /**
+     * Asks the browser to exit pointerlock mode
+     */
+    static _ExitPointerlock(): void {
+        let anyDoc = document as any;
+        document.exitPointerLock = document.exitPointerLock || anyDoc.msExitPointerLock || anyDoc.mozExitPointerLock || anyDoc.webkitExitPointerLock;
+
+        if (document.exitPointerLock) {
+            document.exitPointerLock();
+        }
+    }
+
+    /**
+     * Ask the browser to promote the current element to fullscreen rendering mode
+     * @param element defines the DOM element to promote
+     */
+    static _RequestFullscreen(element: HTMLElement): void {
+        var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || (<any>element).webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
+        if (!requestFunction) { return; }
+        requestFunction.call(element);
+    }
+
+    /**
+     * Asks the browser to exit fullscreen mode
+     */
+    static _ExitFullscreen(): void {
+        let anyDoc = document as any;
+
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+        else if (anyDoc.mozCancelFullScreen) {
+            anyDoc.mozCancelFullScreen();
+        }
+        else if (anyDoc.webkitCancelFullScreen) {
+            anyDoc.webkitCancelFullScreen();
+        }
+        else if (anyDoc.msCancelFullScreen) {
+            anyDoc.msCancelFullScreen();
         }
     }
 }

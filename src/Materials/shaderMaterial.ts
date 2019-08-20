@@ -1,6 +1,6 @@
 import { SerializationHelper } from "../Misc/decorators";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math";
+import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { BaseSubMesh } from "../Meshes/subMesh";
@@ -11,6 +11,7 @@ import { MaterialHelper } from "./materialHelper";
 import { EffectFallbacks, EffectCreationOptions } from "./effect";
 import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
+import { Color3, Color4 } from '../Maths/math.color';
 
 /**
  * Defines the options associated with the creation of a shader material.

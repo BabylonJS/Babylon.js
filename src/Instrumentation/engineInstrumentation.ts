@@ -1,5 +1,5 @@
 import { Observer } from "../Misc/observable";
-import { PerfCounter } from "../Misc/tools";
+import { PerfCounter } from "../Misc/perfCounter";
 import { Nullable } from "../types";
 import { IDisposable } from "../scene";
 import { Engine } from "../Engines/engine";

@@ -1,7 +1,7 @@
 import { serialize, serializeAsTexture } from "../Misc/decorators";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Vector3 } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
@@ -352,12 +352,21 @@ export class SpotLight extends ShadowLight {
             normalizeDirection = Vector3.Normalize(this.direction);
         }
 
-        this._uniformBuffer.updateFloat4("vLightDirection",
-            normalizeDirection.x,
-            normalizeDirection.y,
-            normalizeDirection.z,
-            this._cosHalfAngle,
-            lightIndex);
+        if (this.getScene().useRightHandedSystem) {
+            this._uniformBuffer.updateFloat4("vLightDirection",
+                -normalizeDirection.x,
+                -normalizeDirection.y,
+                -normalizeDirection.z,
+                this._cosHalfAngle,
+                lightIndex);
+        } else {
+            this._uniformBuffer.updateFloat4("vLightDirection",
+                normalizeDirection.x,
+                normalizeDirection.y,
+                normalizeDirection.z,
+                this._cosHalfAngle,
+                lightIndex);
+        }
 
         this._uniformBuffer.updateFloat4("vLightFalloff",
             this.range,

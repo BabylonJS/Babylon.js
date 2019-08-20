@@ -1,13 +1,13 @@
 import { SerializationHelper, serialize, expandToProperty, serializeAsColor3, serializeAsTexture } from "../../Misc/decorators";
 import { EffectFallbacks } from "../../Materials/effect";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
-import { Color3 } from "../../Maths/math";
+import { Color3 } from '../../Maths/math.color';
 import { Scene } from "../../scene";
 import { MaterialFlags } from "../../Materials/materialFlags";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { IAnimatable } from "../../Misc/tools";
 import { Nullable } from "../../types";
+import { IAnimatable } from '../../Animations/animatable.interface';
 
 /**
  * @hidden

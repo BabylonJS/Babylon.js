@@ -1,7 +1,8 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Vector2, Color4 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
+import { Color4 } from '../Maths/math.color';
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Effect } from "../Materials/effect";

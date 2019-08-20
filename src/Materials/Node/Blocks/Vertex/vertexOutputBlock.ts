@@ -3,6 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockCo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to output the vertex position
@@ -44,3 +45,5 @@ export class VertexOutputBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.VertexOutputBlock"] = VertexOutputBlock;

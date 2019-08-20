@@ -2,7 +2,7 @@ import { Camera } from "../../Cameras/camera";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { VRCameraMetrics } from "./vrCameraMetrics";
 import { Scene } from "../../scene";
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
 
 import "../Inputs/arcRotateCameraVRDeviceOrientationInput";

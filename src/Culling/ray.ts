@@ -1,6 +1,6 @@
 import { DeepImmutable, Nullable, float } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
-import { Matrix, Vector3, Plane, Tmp } from "../Maths/math";
+import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
@@ -8,6 +8,7 @@ import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";
 import { Scene } from '../scene';
 import { Camera } from '../Cameras/camera';
+import { Plane } from '../Maths/math.plane';
 /**
  * Class representing a ray with position and direction
  */
@@ -245,6 +246,36 @@ export class Ray {
             return distance;
         }
     }
+    /**
+     * Calculate the intercept of a ray on a given axis
+     * @param axis to check 'x' | 'y' | 'z'
+     * @param offset from axis interception (i.e. an offset of 1y is intercepted above ground)
+     * @returns a vector containing the coordinates where 'axis' is equal to zero (else offset), or null if there is no intercept.
+     */
+    public intersectsAxis(axis: string, offset: number = 0): Nullable<Vector3> {
+        switch (axis) {
+            case 'y':
+                var t = (this.origin.y - offset) / this.direction.y;
+                if (t > 0) {
+                    return null;
+                }
+                return new Vector3(this.origin.x + (this.direction.x * -t), offset, this.origin.z + (this.direction.z * -t));
+            case 'x':
+                var t = (this.origin.x - offset) / this.direction.x;
+                if (t > 0) {
+                    return null;
+                }
+                return new Vector3(offset, this.origin.y + (this.direction.y * -t), this.origin.z + (this.direction.z * -t));
+            case 'z':
+                var t = (this.origin.z - offset) / this.direction.z;
+                if (t > 0) {
+                    return null;
+                }
+                return new Vector3(this.origin.x + (this.direction.x * -t), this.origin.y + (this.direction.y * -t), offset);
+            default:
+                return null;
+        }
+    }
 
     /**
      * Checks if ray intersects a mesh
@@ -254,7 +285,7 @@ export class Ray {
      */
     public intersectsMesh(mesh: DeepImmutable<AbstractMesh>, fastCheck?: boolean): PickingInfo {
 
-        var tm = Tmp.Matrix[0];
+        var tm = TmpVectors.Matrix[0];
 
         mesh.getWorldMatrix().invertToRef(tm);
 
@@ -321,10 +352,10 @@ export class Ray {
      */
     intersectionSegment(sega: DeepImmutable<Vector3>, segb: DeepImmutable<Vector3>, threshold: number): number {
         const o = this.origin;
-        const u = Tmp.Vector3[0];
-        const rsegb = Tmp.Vector3[1];
-        const v = Tmp.Vector3[2];
-        const w = Tmp.Vector3[3];
+        const u = TmpVectors.Vector3[0];
+        const rsegb = TmpVectors.Vector3[1];
+        const v = TmpVectors.Vector3[2];
+        const w = TmpVectors.Vector3[3];
 
         segb.subtractToRef(sega, u);
 
@@ -392,12 +423,12 @@ export class Ray {
         tc = (Math.abs(tN) < Ray.smallnum ? 0.0 : tN / tD);
 
         // get the difference of the two closest points
-        const qtc = Tmp.Vector3[4];
+        const qtc = TmpVectors.Vector3[4];
         v.scaleToRef(tc, qtc);
-        const qsc = Tmp.Vector3[5];
+        const qsc = TmpVectors.Vector3[5];
         u.scaleToRef(sc, qsc);
         qsc.addInPlace(w);
-        const dP = Tmp.Vector3[6];
+        const dP = TmpVectors.Vector3[6];
         qsc.subtractToRef(qtc, dP); // = S1(sc) - S2(tc)
 
         var isIntersected = (tc > 0) && (tc <= this.length) && (dP.lengthSquared() < (threshold * threshold));   // return intersection result
@@ -513,17 +544,17 @@ export class Ray {
       * @param projection defines the projection matrix to use
       */
     public unprojectRayToRef(sourceX: float, sourceY: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): void {
-        var matrix = Tmp.Matrix[0];
+        var matrix = TmpVectors.Matrix[0];
         world.multiplyToRef(view, matrix);
         matrix.multiplyToRef(projection, matrix);
         matrix.invert();
-        var nearScreenSource = Tmp.Vector3[0];
+        var nearScreenSource = TmpVectors.Vector3[0];
         nearScreenSource.x = sourceX / viewportWidth * 2 - 1;
         nearScreenSource.y = -(sourceY / viewportHeight * 2 - 1);
         nearScreenSource.z = -1.0;
-        var farScreenSource = Tmp.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0);
-        const nearVec3 = Tmp.Vector3[2];
-        const farVec3 = Tmp.Vector3[3];
+        var farScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0);
+        const nearVec3 = TmpVectors.Vector3[2];
+        const farVec3 = TmpVectors.Vector3[3];
         Vector3._UnprojectFromInvertedMatrixToRef(nearScreenSource, matrix, nearVec3);
         Vector3._UnprojectFromInvertedMatrixToRef(farScreenSource, matrix, farVec3);
 
@@ -666,8 +697,8 @@ Scene.prototype._internalPick = function(rayFunction: (world: Matrix) => Ray, pr
 };
 
 Scene.prototype._internalMultiPick = function(rayFunction: (world: Matrix) => Ray,
-        predicate?: (mesh: AbstractMesh) => boolean,
-        trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    predicate?: (mesh: AbstractMesh) => boolean,
+    trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
     if (!PickingInfo) {
         return null;
     }

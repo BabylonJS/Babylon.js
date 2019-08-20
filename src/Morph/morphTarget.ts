@@ -1,4 +1,4 @@
-import { IAnimatable } from "../Misc/tools";
+import { IAnimatable } from '../Animations/animatable.interface';
 import { Observable } from "../Misc/observable";
 import { Nullable, FloatArray } from "../types";
 import { Scene } from "../scene";

@@ -1,10 +1,12 @@
 import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray } from "../types";
-import { Matrix, Vector3, Color3, Vector4 } from "../Maths/math";
+import { Matrix, Vector3, Vector4 } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
 import { Effect } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { Color3 } from '../Maths/math.color';
+import { IMatrixLike } from '../Maths/math.like';
 /**
  * Uniform buffer objects.
  *
@@ -440,8 +442,9 @@ export class UniformBuffer {
         if (!this._dynamic) {
             // Cache for static uniform buffers
             var changed = false;
+
             for (var i = 0; i < size; i++) {
-                if (this._bufferData[location + i] !== data[i]) {
+                if (size === 16 || this._bufferData[location + i] !== data[i]) {
                     changed = true;
                     this._bufferData[location + i] = data[i];
                 }
@@ -454,6 +457,20 @@ export class UniformBuffer {
                 this._bufferData[location + i] = data[i];
             }
         }
+    }
+
+    // Matrix cache
+    private _valueCache: { [key: string]: any } = {};
+    private _cacheMatrix(name: string, matrix: IMatrixLike): boolean {
+        var cache = this._valueCache[name];
+        var flag = matrix.updateFlag;
+        if (cache !== undefined && cache === flag) {
+            return false;
+        }
+
+        this._valueCache[name] = flag;
+
+        return true;
     }
 
     // Update methods
@@ -538,7 +555,9 @@ export class UniformBuffer {
     }
 
     private _updateMatrixForUniform(name: string, mat: Matrix) {
-        this.updateUniform(name, <any>mat.toArray(), 16);
+        if (this._cacheMatrix(name, mat)) {
+            this.updateUniform(name, <any>mat.toArray(), 16);
+        }
     }
 
     private _updateVector3ForEffect(name: string, vector: Vector3) {

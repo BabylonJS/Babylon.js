@@ -1,5 +1,5 @@
 import { Scene } from "../scene";
-import { Vector3, Vector2, Tmp, Vector4 } from "../Maths/math";
+import { Vector3, Vector2, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Mesh } from "../Meshes/mesh";
 
@@ -93,9 +93,9 @@ export class GroundMesh extends Mesh {
      */
     public getHeightAtCoordinates(x: number, z: number): number {
         var world = this.getWorldMatrix();
-        var invMat = Tmp.Matrix[5];
+        var invMat = TmpVectors.Matrix[5];
         world.invertToRef(invMat);
-        var tmpVect = Tmp.Vector3[8];
+        var tmpVect = TmpVectors.Vector3[8];
         Vector3.TransformCoordinatesFromFloatsToRef(x, 0.0, z, invMat, tmpVect); // transform x,z in the mesh local space
         x = tmpVect.x;
         z = tmpVect.z;
@@ -137,9 +137,9 @@ export class GroundMesh extends Mesh {
      */
     public getNormalAtCoordinatesToRef(x: number, z: number, ref: Vector3): GroundMesh {
         var world = this.getWorldMatrix();
-        var tmpMat = Tmp.Matrix[5];
+        var tmpMat = TmpVectors.Matrix[5];
         world.invertToRef(tmpMat);
-        var tmpVect = Tmp.Vector3[8];
+        var tmpVect = TmpVectors.Vector3[8];
         Vector3.TransformCoordinatesFromFloatsToRef(x, 0.0, z, tmpMat, tmpVect); // transform x,z in the mesh local space
         x = tmpVect.x;
         z = tmpVect.z;
@@ -215,15 +215,15 @@ export class GroundMesh extends Mesh {
             return this;
         }
 
-        var v1 = Tmp.Vector3[3];
-        var v2 = Tmp.Vector3[2];
-        var v3 = Tmp.Vector3[1];
-        var v4 = Tmp.Vector3[0];
-        var v1v2 = Tmp.Vector3[4];
-        var v1v3 = Tmp.Vector3[5];
-        var v1v4 = Tmp.Vector3[6];
-        var norm1 = Tmp.Vector3[7];
-        var norm2 = Tmp.Vector3[8];
+        var v1 = TmpVectors.Vector3[3];
+        var v2 = TmpVectors.Vector3[2];
+        var v3 = TmpVectors.Vector3[1];
+        var v4 = TmpVectors.Vector3[0];
+        var v1v2 = TmpVectors.Vector3[4];
+        var v1v3 = TmpVectors.Vector3[5];
+        var v1v4 = TmpVectors.Vector3[6];
+        var norm1 = TmpVectors.Vector3[7];
+        var norm2 = TmpVectors.Vector3[8];
         var i = 0;
         var j = 0;
         var k = 0;

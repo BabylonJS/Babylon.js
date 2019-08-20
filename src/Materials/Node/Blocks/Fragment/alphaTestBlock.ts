@@ -3,6 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockCo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to add an alpha test in the fragment shader
@@ -21,7 +22,8 @@ export class AlphaTestBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4);
+        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4, true);
+        this.registerInput("alpha", NodeMaterialBlockConnectionPointTypes.Float, true);
     }
 
     /**
@@ -39,13 +41,26 @@ export class AlphaTestBlock extends NodeMaterialBlock {
         return this._inputs[0];
     }
 
+    /**
+     * Gets the alpha input component
+     */
+    public get alpha(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         state.sharedData.hints.needAlphaTesting = true;
 
-        state.compilationString += `if (${this.color.associatedVariableName}.a < ${this.alphaCutOff}) discard;\r\n`;
+        if (this.color.connectedPoint) {
+            state.compilationString += `if (${this.color.associatedVariableName}.a < ${this.alphaCutOff}) discard;\r\n`;
+        } else {
+            state.compilationString += `if (${this.alpha.associatedVariableName} < ${this.alphaCutOff}) discard;\r\n`;
+        }
 
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.AlphaTestBlock"] = AlphaTestBlock;

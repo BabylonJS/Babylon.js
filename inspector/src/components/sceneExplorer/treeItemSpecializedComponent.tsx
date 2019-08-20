@@ -84,7 +84,7 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
                 return (<CameraTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} camera={entity as Camera} onClick={() => this.onClick()} />);
             }
 
-            if (className.indexOf("Light") !== -1) {
+            if (className.indexOf("Light", className.length - 5) !== -1) {
                 return (<LightTreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} light={entity as Light} onClick={() => this.onClick()} />);
             }
 

@@ -99,8 +99,18 @@ class NativePipelineContext implements IPipelineContext {
     public nativeProgram: any;
 }
 
+/**
+ * Container for accessors for natively-stored mesh data buffers.
+ */
 class NativeDataBuffer extends DataBuffer {
+    /**
+     * Accessor value used to identify/retrieve a natively-stored index buffer.
+     */
     public nativeIndexBuffer?: any;
+
+    /**
+     * Accessor value used to identify/retrieve a natively-stored vertex buffer.
+     */
     public nativeVertexBuffer?: any;
 }
 
