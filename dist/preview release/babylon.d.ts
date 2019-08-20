@@ -8300,7 +8300,7 @@ declare module BABYLON {
         _reset: () => void;
         private _defaultUp;
         /**
-         * Instantiates a target camera that takes a meshor position as a target and continues to look at it while it moves.
+         * Instantiates a target camera that takes a mesh or position as a target and continues to look at it while it moves.
          * This is the base of the follow, arc rotate cameras and Free camera
          * @see http://doc.babylonjs.com/features/cameras
          * @param name Defines the name of the camera in the scene
@@ -11213,6 +11213,23 @@ declare module BABYLON {
              * @returns a PickingInfo
              */
             pickSpriteWithRay(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>;
+            /** @hidden */
+            _internalMultiPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]>;
+            /** Launch a ray to try to pick sprites in the scene
+             * @param x position on screen
+             * @param y position on screen
+             * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+             * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+             * @returns a PickingInfo array
+             */
+            multiPickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]>;
+            /** Use the given ray to pick sprites in the scene
+             * @param ray The ray (in world space) to use to pick meshes
+             * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+             * @param camera camera to use. Can be set to null. In this case, the scene.activeCamera will be used
+             * @returns a PickingInfo array
+             */
+            multiPickSpriteWithRay(ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]>;
             /**
              * Force the sprite under the pointer
              * @param sprite defines the sprite to use
@@ -11331,6 +11348,14 @@ declare module BABYLON {
          */
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
         /**
+     * Intersects the sprites with a ray
+     * @param ray defines the ray to intersect with
+     * @param camera defines the current active camera
+     * @param predicate defines a predicate used to select candidate sprites
+     * @returns null if no hit or a PickingInfo array
+     */
+        multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]>;
+        /**
          * Renders the list of sprites on screen.
          */
         render(): void;
@@ -11412,6 +11437,14 @@ declare module BABYLON {
          * @returns null if no hit or a PickingInfo
          */
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+        /**
+         * Intersects the sprites with a ray
+         * @param ray defines the ray to intersect with
+         * @param camera defines the current active camera
+         * @param predicate defines a predicate used to select candidate sprites
+         * @returns null if no hit or a PickingInfo array
+         */
+        multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]>;
         /**
          * Render all child sprites
          */
@@ -13831,10 +13864,17 @@ declare module BABYLON {
          */
         getPivotMatrix(): Matrix;
         /**
-         * Prevents the World matrix to be computed any longer.
+         * Instantiate (when possible) or clone that node with its hierarchy
+         * @param newParent defines the new parent to use for the instance (or clone)
+         * @returns an instance (or a clone) of the current node with its hiearchy
+         */
+        instantiateHierarychy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
+        /**
+         * Prevents the World matrix to be computed any longer
+         * @param newWorldMatrix defines an optional matrix to use as world matrix
          * @returns the TransformNode.
          */
-        freezeWorldMatrix(): TransformNode;
+        freezeWorldMatrix(newWorldMatrix?: Nullable<Matrix>): TransformNode;
         /**
          * Allows back the World matrix computation.
          * @returns the TransformNode.
@@ -14057,7 +14097,7 @@ declare module BABYLON {
          * @param doNotCloneChildren Do not clone children hierarchy
          * @returns the new transform node
          */
-        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<TransformNode>;
+        clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<TransformNode>;
         /**
          * Serializes the objects information.
          * @param currentSerializationObject defines the object to serialize in
@@ -18619,7 +18659,7 @@ declare module BABYLON {
          *
          * Returns the Mesh.
          */
-        setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh;
+        setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh;
         /**
          * Updates the existing vertex data of the mesh geometry for the requested `kind`.
          * If the mesh has no geometry, it is simply returned as it is.
@@ -18693,7 +18733,7 @@ declare module BABYLON {
          *
          * Returns the clone.
          */
-        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): InstancedMesh;
+        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
         /**
          * Disposes the InstancedMesh.
          * Returns nothing.
@@ -19050,7 +19090,7 @@ declare module BABYLON {
          * @param useVertexColor defines if this LinesMesh supports vertex color
          * @param useVertexAlpha defines if this LinesMesh supports vertex alpha
          */
-        constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: LinesMesh, doNotCloneChildren?: boolean, 
+        constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: Nullable<LinesMesh>, doNotCloneChildren?: boolean, 
         /**
          * If vertex color should be applied to the mesh
          */
@@ -19078,9 +19118,9 @@ declare module BABYLON {
          */
         readonly checkCollisions: boolean;
         /** @hidden */
-        _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh;
+        _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh;
         /** @hidden */
-        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): LinesMesh;
+        _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh;
         /**
          * Disposes of the line mesh
          * @param doNotRecurse If children should be disposed
@@ -19089,7 +19129,7 @@ declare module BABYLON {
         /**
          * Returns a new LineMesh object cloned from the current one.
          */
-        clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh;
+        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
         /**
          * Creates a new InstancedLinesMesh object from the mesh model.
          * @see http://doc.babylonjs.com/how_to/how_to_use_instances
@@ -23428,6 +23468,7 @@ declare module BABYLON {
          * @param clonePhysicsImpostor When cloning, include cloning mesh physics impostor, default True.
          */
         constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: Nullable<Mesh>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean);
+        instantiateHierarychy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
         /**
          * Gets the class name
          * @returns the string "Mesh".
@@ -23665,7 +23706,7 @@ declare module BABYLON {
          * @param stride defines the data stride size (can be null)
          * @returns the current mesh
          */
-        setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh;
+        setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh;
         /**
          * Flags an associated vertex buffer as updatable
          * @param kind defines which buffer to use (positions, indices, normals, etc). Possible `kind` values :
@@ -23710,7 +23751,7 @@ declare module BABYLON {
          * @param makeItUnique defines if the geometry associated with the mesh must be cloned to make the change only for this mesh (and not all meshes associated with the same geometry)
          * @returns the current mesh
          */
-        updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh;
+        updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh;
         /**
          * This method updates the vertex positions of an updatable mesh according to the `positionFunction` returned values.
          * @see http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions
@@ -23731,7 +23772,7 @@ declare module BABYLON {
          * @param updatable defines if the updated index buffer must be flagged as updatable (default is false)
          * @returns the current mesh
          */
-        setIndices(indices: IndicesArray, totalVertices?: Nullable<number>, updatable?: boolean): Mesh;
+        setIndices(indices: IndicesArray, totalVertices?: Nullable<number>, updatable?: boolean): AbstractMesh;
         /**
          * Update the current index buffer
          * @param indices defines the source data
@@ -23739,7 +23780,7 @@ declare module BABYLON {
          * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
          * @returns the current mesh
          */
-        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): Mesh;
+        updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly?: boolean): AbstractMesh;
         /**
          * Invert the geometry to move from a right handed system to a left handed one.
          * @returns the current mesh
@@ -23868,7 +23909,7 @@ declare module BABYLON {
          * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
          * @returns a new mesh
          */
-        clone(name?: string, newParent?: Node, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean): Mesh;
+        clone(name?: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean): Nullable<AbstractMesh>;
         /**
          * Releases resources associated with this mesh.
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
@@ -25319,7 +25360,7 @@ declare module BABYLON {
          */
         shapeId: number;
         /**
-         * Index of the particle in its shape id (Internal use)
+         * Index of the particle in its shape id
          */
         idxInShape: number;
         /**
@@ -26146,7 +26187,7 @@ declare module BABYLON {
          * @param doNotCloneChildren defines a boolean indicating that children must not be cloned (false by default)
          * @returns the new mesh
          */
-        clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
+        clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
         /**
          * Disposes all the submeshes of the current meshnp
          * @returns the current mesh
@@ -28136,7 +28177,7 @@ declare module BABYLON {
         /**
          * Checks to see if more fallbacks are still availible.
          */
-        readonly isMoreFallbacks: boolean;
+        readonly hasMoreFallbacks: boolean;
         /**
          * Removes the defines that should be removed when falling back.
          * @param currentDefines defines the current define statements for the shader.
@@ -28298,6 +28339,7 @@ declare module BABYLON {
          * @returns if the effect is compiled and prepared.
          */
         isReady(): boolean;
+        private _isReadyInternal;
         /**
          * The engine the effect was initialized with.
          * @returns the engine.
@@ -28378,6 +28420,7 @@ declare module BABYLON {
          * @hidden
          */
         _prepareEffect(): void;
+        private _processCompilationErrors;
         /**
          * Checks if the effect is supported. (Must be called after compilation)
          */
@@ -40882,6 +40925,14 @@ declare module BABYLON {
          */
         onNewMeshSelected: Observable<AbstractMesh>;
         /**
+         * Observable raised when a new mesh is selected based on meshSelectionPredicate.
+         * This observable will provide the mesh and the controller used to select the mesh
+         */
+        onMeshSelectedWithController: Observable<{
+            mesh: AbstractMesh;
+            controller: WebVRController;
+        }>;
+        /**
          * Observable raised when a new mesh is picked based on meshSelectionPredicate
          */
         onNewMeshPicked: Observable<PickingInfo>;
@@ -43050,7 +43101,7 @@ declare module BABYLON {
             frontUVs?: Vector4;
             backUVs?: Vector4;
             updatable?: boolean;
-        }, scene: any): Mesh;
+        }, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON.Debug {
@@ -44954,6 +45005,12 @@ declare module BABYLON {
          * @param subMesh The submesh to bind for.
          */
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
         /**
          * Dispose the material.
          * @param forceDisposeEffect Force disposal of the associated effect.
@@ -51715,6 +51772,118 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum used to define well known values e.g. values automatically provided by the system
+     */
+    export enum NodeMaterialWellKnownValues {
+        /** World */
+        World = 1,
+        /** View */
+        View = 2,
+        /** Projection */
+        Projection = 3,
+        /** ViewProjection */
+        ViewProjection = 4,
+        /** WorldView */
+        WorldView = 5,
+        /** WorldViewProjection */
+        WorldViewProjection = 6,
+        /** CameraPosition */
+        CameraPosition = 7,
+        /** Fog Color */
+        FogColor = 8
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to read a reflection texture from a sampler
+     */
+    export class ReflectionTextureBlock extends NodeMaterialBlock {
+        private _define3DName;
+        private _defineCubicName;
+        private _defineExplicitName;
+        private _defineProjectionName;
+        private _defineLocalCubicName;
+        private _defineSphericalName;
+        private _definePlanarName;
+        private _defineEquirectangularName;
+        private _defineMirroredEquirectangularFixedName;
+        private _defineEquirectangularFixedName;
+        private _defineSkyboxName;
+        private _cubeSamplerName;
+        private _2DSamplerName;
+        private _positionUVWName;
+        private _directionWName;
+        private _reflectionCoordsName;
+        private _reflection2DCoordsName;
+        private _reflectionColorName;
+        private _reflectionMatrixName;
+        /**
+         * Gets or sets the texture associated with the node
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Create a new TextureBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position input component
+         */
+        readonly position: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world position input component
+         */
+        readonly worldPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world normal input component
+         */
+        readonly worldNormal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world input component
+         */
+        readonly world: NodeMaterialConnectionPoint;
+        /**
+        * Gets the camera (or eye) position component
+        */
+        readonly cameraPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the view input component
+         */
+        readonly view: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb output component
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        /**
+         * Gets the r output component
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g output component
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b output component
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        autoConfigure(): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        isReady(): boolean;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        private _injectVertexCode;
+        private _writeOutput;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface used to configure the node material editor
      */
     export interface INodeMaterialEditorOptions {
@@ -51841,6 +52010,17 @@ declare module BABYLON {
          */
         protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
         /**
+         * Get a block by its name
+         * @param name defines the name of the block to retrieve
+         * @returns the required block or null if not found
+         */
+        getBlockByName(name: string): Nullable<NodeMaterialBlock>;
+        /**
+         * Gets the list of input blocks attached to this material
+         * @returns an array of InputBlocks
+         */
+        getInputBlocks(): InputBlock[];
+        /**
          * Adds a new optimizer to the list of optimizers
          * @param optimizer defines the optimizers to add
          * @returns the current material
@@ -51921,6 +52101,11 @@ declare module BABYLON {
          */
         getActiveTextures(): BaseTexture[];
         /**
+         * Gets the list of texture blocks
+         * @returns an array of texture blocks
+         */
+        getTextureBlocks(): (TextureBlock | ReflectionTextureBlock)[];
+        /**
          * Specifies if the material uses a texture
          * @param texture defines the texture to check against the material
          * @returns a boolean specifying if the material uses the texture
@@ -51949,12 +52134,24 @@ declare module BABYLON {
          * Clear the current material and set it to a default state
          */
         setToDefault(): void;
+        /**
+         * Loads the current Node Material from a url pointing to a file save by the Node Material Editor
+         * @param url defines the url to load from
+         * @returns a promise that will fullfil when the material is fully loaded
+         */
+        loadAsync(url: string): Promise<unknown>;
         private _gatherBlocks;
+        /**
+         * Generate a string containing the code declaration required to create an equivalent of this material
+         * @returns a string
+         */
+        generateCode(): string;
         /**
          * Serializes this material in a JSON representation
          * @returns the serialized material object
          */
         serialize(): any;
+        private _restoreConnections;
         /**
          * Clear the current graph and load a new one from a serialization object
          * @param source defines the JSON representation of the material
@@ -51969,6 +52166,13 @@ declare module BABYLON {
          * @returns a new node material
          */
         static Parse(source: any, scene: Scene, rootUrl?: string): NodeMaterial;
+        /**
+         * Creates a new node material set to default basic configuration
+         * @param name defines the name of the material
+         * @param scene defines the hosting scene
+         * @returns a new NodeMaterial
+         */
+        static CreateDefault(name: string, scene?: Scene): NodeMaterial;
     }
 }
 declare module BABYLON {
@@ -52025,123 +52229,13 @@ declare module BABYLON {
          * Gets the a output component
          */
         readonly a: NodeMaterialConnectionPoint;
+        readonly target: NodeMaterialBlockTargets;
         autoConfigure(): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
-        private _injectVertexCode;
-        private _writeOutput;
-        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
-        serialize(): any;
-        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Enum used to define well known values e.g. values automatically provided by the system
-     */
-    export enum NodeMaterialWellKnownValues {
-        /** World */
-        World = 1,
-        /** View */
-        View = 2,
-        /** Projection */
-        Projection = 3,
-        /** ViewProjection */
-        ViewProjection = 4,
-        /** WorldView */
-        WorldView = 5,
-        /** WorldViewProjection */
-        WorldViewProjection = 6,
-        /** CameraPosition */
-        CameraPosition = 7,
-        /** Fog Color */
-        FogColor = 8
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to read a reflection texture from a sampler
-     */
-    export class ReflectionTextureBlock extends NodeMaterialBlock {
-        private _define3DName;
-        private _defineCubicName;
-        private _defineExplicitName;
-        private _defineProjectionName;
-        private _defineLocalCubicName;
-        private _defineSphericalName;
-        private _definePlanarName;
-        private _defineEquirectangularName;
-        private _defineMirroredEquirectangularFixedName;
-        private _defineEquirectangularFixedName;
-        private _defineSkyboxName;
-        private _cubeSamplerName;
-        private _2DSamplerName;
-        private _positionUVWName;
-        private _directionWName;
-        private _reflectionCoordsName;
-        private _reflection2DCoordsName;
-        private _reflectionColorName;
-        private _reflectionMatrixName;
-        /**
-         * Gets or sets the texture associated with the node
-         */
-        texture: Nullable<BaseTexture>;
-        /**
-         * Create a new TextureBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the world position input component
-         */
-        readonly position: NodeMaterialConnectionPoint;
-        /**
-         * Gets the world position input component
-         */
-        readonly worldPosition: NodeMaterialConnectionPoint;
-        /**
-         * Gets the world normal input component
-         */
-        readonly worldNormal: NodeMaterialConnectionPoint;
-        /**
-         * Gets the world input component
-         */
-        readonly world: NodeMaterialConnectionPoint;
-        /**
-        * Gets the camera (or eye) position component
-        */
-        readonly cameraPosition: NodeMaterialConnectionPoint;
-        /**
-         * Gets the view input component
-         */
-        readonly view: NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb output component
-         */
-        readonly rgb: NodeMaterialConnectionPoint;
-        /**
-         * Gets the r output component
-         */
-        readonly r: NodeMaterialConnectionPoint;
-        /**
-         * Gets the g output component
-         */
-        readonly g: NodeMaterialConnectionPoint;
-        /**
-         * Gets the b output component
-         */
-        readonly b: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
-        isReady(): boolean;
-        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        private readonly _isMixed;
         private _injectVertexCode;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
@@ -52154,6 +52248,10 @@ declare module BABYLON {
      * Class used to store shared data between 2 NodeMaterialBuildState
      */
     export class NodeMaterialBuildStateSharedData {
+        /**
+        * Gets the list of emitted varyings
+        */
+        temps: string[];
         /**
          * Gets the list of emitted varyings
          */
@@ -52169,7 +52267,7 @@ declare module BABYLON {
         /**
          * Input blocks
          */
-        textureBlocks: (TextureBlock | ReflectionTextureBlock)[];
+        textureBlocks: (ReflectionTextureBlock | TextureBlock)[];
         /**
          * Bindable blocks (Blocks that need to set data to the effect)
          */
@@ -52337,6 +52435,8 @@ declare module BABYLON {
             }[];
         }, storeKey?: string): void;
         /** @hidden */
+        _registerTempVariable(name: string): boolean;
+        /** @hidden */
         _emitVaryingFromString(name: string, type: string, define?: string, notDefine?: boolean): boolean;
         /** @hidden */
         _emitUniformFromString(name: string, type: string, define?: string, notDefine?: boolean): void;
@@ -52352,6 +52452,7 @@ declare module BABYLON {
         private _target;
         private _isFinalMerger;
         private _isInput;
+        protected _codeVariableName: string;
         /** @hidden */
         _inputs: NodeMaterialConnectionPoint[];
         /** @hidden */
@@ -52431,7 +52532,7 @@ declare module BABYLON {
          * @param name defines the connection point name
          * @param type defines the connection point type
          * @param isOptional defines a boolean indicating that this input can be omitted
-         * @param target defines the target to use to limit the connection point (will be VetexAndFragment by default)
+         * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
          * @returns the current block
          */
         registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional?: boolean, target?: NodeMaterialBlockTargets): this;
@@ -52439,7 +52540,7 @@ declare module BABYLON {
          * Register a new output. Must be called inside a block constructor
          * @param name defines the connection point name
          * @param type defines the connection point type
-         * @param target defines the target to use to limit the connection point (will be VetexAndFragment by default)
+         * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
          * @returns the current block
          */
         registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets): this;
@@ -52504,8 +52605,9 @@ declare module BABYLON {
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         /**
          * Lets the block try to connect some inputs automatically
+         * @param material defines the hosting NodeMaterial
          */
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         /**
          * Function called when a block is declared as repeatable content generator
          * @param vertexShaderState defines the current compilation state for the vertex shader
@@ -52527,10 +52629,15 @@ declare module BABYLON {
         /**
          * Compile the current node and generate the shader code
          * @param state defines the current compilation state (uniforms, samplers, current string)
-         * @param contextSwitched indicates that the previous block was built for a different context (vertex vs. fragment)
+         * @param activeBlocks defines the list of active blocks (i.e. blocks to compile)
          * @returns true if already built
          */
-        build(state: NodeMaterialBuildState, contextSwitched?: boolean): boolean;
+        build(state: NodeMaterialBuildState, activeBlocks: NodeMaterialBlock[]): boolean;
+        protected _inputRename(name: string): string;
+        protected _outputRename(name: string): string;
+        protected _dumpPropertiesCode(): string;
+        /** @hidden */
+        _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]): string;
         /**
          * Clone the current block to a new identical block
          * @param scene defines the hosting scene
@@ -52586,6 +52693,8 @@ declare module BABYLON {
         private _animationType;
         /** @hidden */
         _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
+        visibleInInspector: boolean;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -52673,6 +52782,7 @@ declare module BABYLON {
          * Set the input block to its default value (based on its type)
          */
         setDefaultValue(): void;
+        protected _dumpPropertiesCode(): string;
         private _emit;
         /** @hidden */
         _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix): void;
@@ -52732,7 +52842,7 @@ declare module BABYLON {
         /**
          * Gets a boolean indicating that the current point is connected to an input block
          */
-        readonly isConnectedToInput: boolean;
+        readonly isConnectedToInputBlock: boolean;
         /**
          * Gets a the connected input block (if any)
          */
@@ -52747,6 +52857,8 @@ declare module BABYLON {
         readonly connectedBlocks: Array<NodeMaterialBlock>;
         /** Gets the list of connected endpoints */
         readonly endpoints: NodeMaterialConnectionPoint[];
+        /** Gets a boolean indicating if that output point is connected to at least one input */
+        readonly hasEndpoints: boolean;
         /**
          * Creates a new connection point
          * @param name defines the connection point name
@@ -52968,11 +53080,11 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to create a Color3/4 out of individual inputs (one for each component)
+     * Block used to compute fresnel value
      */
-    export class ColorMergerBlock extends NodeMaterialBlock {
+    export class FresnelBlock extends NodeMaterialBlock {
         /**
-         * Create a new ColorMergerBlock
+         * Create a new FresnelBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -52982,176 +53094,31 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the r component (input)
+         * Gets the world position input component
          */
-        readonly r: NodeMaterialConnectionPoint;
+        readonly worldPosition: NodeMaterialConnectionPoint;
         /**
-         * Gets the g component (input)
+         * Gets the world normal input component
          */
-        readonly g: NodeMaterialConnectionPoint;
+        readonly worldNormal: NodeMaterialConnectionPoint;
         /**
-         * Gets the b component (input)
-         */
-        readonly b: NodeMaterialConnectionPoint;
+        * Gets the camera (or eye) position component
+        */
+        readonly cameraPosition: NodeMaterialConnectionPoint;
         /**
-         * Gets the a component (input)
-         */
-        readonly a: NodeMaterialConnectionPoint;
+        * Gets the bias input component
+        */
+        readonly bias: NodeMaterialConnectionPoint;
         /**
-         * Gets the rgba component (output)
-         */
-        readonly rgba: NodeMaterialConnectionPoint;
+        * Gets the camera (or eye) position component
+        */
+        readonly power: NodeMaterialConnectionPoint;
         /**
-         * Gets the rgb component (output)
+         * Gets the fresnel output component
          */
-        readonly rgb: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
-     */
-    export class VectorMergerBlock extends NodeMaterialBlock {
-        /**
-         * Create a new VectorMergerBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the x component (input)
-         */
-        readonly x: NodeMaterialConnectionPoint;
-        /**
-         * Gets the y component (input)
-         */
-        readonly y: NodeMaterialConnectionPoint;
-        /**
-         * Gets the z component (input)
-         */
-        readonly z: NodeMaterialConnectionPoint;
-        /**
-         * Gets the w component (input)
-         */
-        readonly w: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyzw component (output)
-         */
-        readonly xyzw: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (output)
-         */
-        readonly xyz: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (output)
-         */
-        readonly xy: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to expand a Color3/4 into 4 outputs (one for each component)
-     */
-    export class ColorSplitterBlock extends NodeMaterialBlock {
-        /**
-         * Create a new ColorSplitterBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the rgba component (input)
-         */
-        readonly rgba: NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb component (input)
-         */
-        readonly rgbIn: NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb component (output)
-         */
-        readonly rgbOut: NodeMaterialConnectionPoint;
-        /**
-         * Gets the r component (output)
-         */
-        readonly r: NodeMaterialConnectionPoint;
-        /**
-         * Gets the g component (output)
-         */
-        readonly g: NodeMaterialConnectionPoint;
-        /**
-         * Gets the b component (output)
-         */
-        readonly b: NodeMaterialConnectionPoint;
-        /**
-         * Gets the a component (output)
-         */
-        readonly a: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to expand a Vector3/4 into 4 outputs (one for each component)
-     */
-    export class VectorSplitterBlock extends NodeMaterialBlock {
-        /**
-         * Create a new VectorSplitterBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the xyzw component (input)
-         */
-        readonly xyzw: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (input)
-         */
-        readonly xyzIn: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (input)
-         */
-        readonly xyIn: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (output)
-         */
-        readonly xyzOut: NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (output)
-         */
-        readonly xyOut: NodeMaterialConnectionPoint;
-        /**
-         * Gets the x component (output)
-         */
-        readonly x: NodeMaterialConnectionPoint;
-        /**
-         * Gets the y component (output)
-         */
-        readonly y: NodeMaterialConnectionPoint;
-        /**
-         * Gets the z component (output)
-         */
-        readonly z: NodeMaterialConnectionPoint;
-        /**
-         * Gets the w component (output)
-         */
-        readonly w: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
+        readonly fresnel: NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
@@ -53216,7 +53183,7 @@ declare module BABYLON {
         /**
          * Gets the color input component
          */
-        readonly color: NodeMaterialConnectionPoint;
+        readonly input: NodeMaterialConnectionPoint;
         /**
          * Gets the fog color input component
          */
@@ -53531,7 +53498,17 @@ declare module BABYLON {
         /** Sin */
         Sin = 1,
         /** Abs */
-        Abs = 2
+        Abs = 2,
+        /** Exp */
+        Exp = 3,
+        /** Exp2 */
+        Exp2 = 4,
+        /** Round */
+        Round = 5,
+        /** Floor */
+        Floor = 6,
+        /** Ceiling */
+        Ceiling = 7
     }
     /**
      * Block used to apply trigonometry operation to floats
@@ -53555,6 +53532,322 @@ declare module BABYLON {
          * Gets the input component
          */
         readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to create a Color3/4 out of individual inputs (one for each component)
+     */
+    export class ColorMergerBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ColorMergerBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the r component (input)
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g component (input)
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b component (input)
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        /**
+         * Gets the a component (input)
+         */
+        readonly a: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgba component (output)
+         */
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
+     */
+    export class VectorMergerBlock extends NodeMaterialBlock {
+        /**
+         * Create a new VectorMergerBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the x component (input)
+         */
+        readonly x: NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component (input)
+         */
+        readonly y: NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component (input)
+         */
+        readonly z: NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component (input)
+         */
+        readonly w: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component (output)
+         */
+        readonly xyzw: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         */
+        readonly xyz: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         */
+        readonly xy: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to expand a Color3/4 into 4 outputs (one for each component)
+     */
+    export class ColorSplitterBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ColorSplitterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the rgba component (input)
+         */
+        readonly rgba: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (input)
+         */
+        readonly rgbIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         */
+        readonly rgbOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the r component (output)
+         */
+        readonly r: NodeMaterialConnectionPoint;
+        /**
+         * Gets the g component (output)
+         */
+        readonly g: NodeMaterialConnectionPoint;
+        /**
+         * Gets the b component (output)
+         */
+        readonly b: NodeMaterialConnectionPoint;
+        /**
+         * Gets the a component (output)
+         */
+        readonly a: NodeMaterialConnectionPoint;
+        protected _inputRename(name: string): string;
+        protected _outputRename(name: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to expand a Vector3/4 into 4 outputs (one for each component)
+     */
+    export class VectorSplitterBlock extends NodeMaterialBlock {
+        /**
+         * Create a new VectorSplitterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xyzw component (input)
+         */
+        readonly xyzw: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (input)
+         */
+        readonly xyzIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (input)
+         */
+        readonly xyIn: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         */
+        readonly xyzOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         */
+        readonly xyOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component (output)
+         */
+        readonly x: NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component (output)
+         */
+        readonly y: NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component (output)
+         */
+        readonly z: NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component (output)
+         */
+        readonly w: NodeMaterialConnectionPoint;
+        protected _inputRename(name: string): string;
+        protected _outputRename(name: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to lerp 2 values
+     */
+    export class LerpBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new LerpBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        readonly left: NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the gradient operand input component
+         */
+        readonly gradient: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to divide 2 vectors
+     */
+    export class DivideBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new DivideBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        readonly left: NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to subtract 2 vectors
+     */
+    export class SubtractBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new SubtractBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        readonly left: NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to step a value
+     */
+    export class StepBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new AddBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the value operand input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the edge operand input component
+         */
+        readonly edge: NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */
@@ -53910,7 +54203,7 @@ declare module BABYLON {
          * @param keepSubMeshes Specifies if the submeshes should be kept
          * @returns A new Mesh
          */
-        buildMeshGeometry(name: string, scene: Scene, keepSubMeshes: boolean): Mesh;
+        buildMeshGeometry(name: string, scene?: Scene, keepSubMeshes?: boolean): Mesh;
         /**
          * Build Mesh from CSG taking material and transforms into account
          * @param name The name of the Mesh
@@ -53919,7 +54212,7 @@ declare module BABYLON {
          * @param keepSubMeshes Specifies if submeshes should be kept
          * @returns The new Mesh
          */
-        toMesh(name: string, material: Nullable<Material>, scene: Scene, keepSubMeshes: boolean): Mesh;
+        toMesh(name: string, material?: Nullable<Material>, scene?: Scene, keepSubMeshes?: boolean): Mesh;
     }
 }
 declare module BABYLON {
@@ -55324,6 +55617,13 @@ declare module BABYLON {
          */
         getRandomPointAround(position: Vector3, maxRadius: number): Vector3;
         /**
+         * Compute the final position from a segment made of destination-position
+         * @param position world position
+         * @param destination world position
+         * @returns the resulting point along the navmesh
+         */
+        moveAlong(position: Vector3, destination: Vector3): Vector3;
+        /**
          * Compute a navigation path from start to end. Returns an empty array if no path can be computed
          * @param start world position
          * @param end world position
@@ -55544,6 +55844,13 @@ declare module BABYLON {
          * @returns the closest point to position constrained by the navigation mesh
          */
         getRandomPointAround(position: Vector3, maxRadius: number): Vector3;
+        /**
+         * Compute the final position from a segment made of destination-position
+         * @param position world position
+         * @param destination world position
+         * @returns the resulting point along the navmesh
+         */
+        moveAlong(position: Vector3, destination: Vector3): Vector3;
         /**
          * Compute a navigation path from start to end. Returns an empty array if no path can be computed
          * @param start world position
@@ -58931,6 +59238,7 @@ declare module BABYLON {
         private _motionStrength;
         private _isObjectBasedMotionBlur;
         private _floatTextureType;
+        private _camerasToBeAttached;
         private _ratio;
         private _bloomEnabled;
         private _depthOfFieldEnabled;

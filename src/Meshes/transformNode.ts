@@ -421,12 +421,32 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Prevents the World matrix to be computed any longer.
+     * Instantiate (when possible) or clone that node with its hierarchy
+     * @param newParent defines the new parent to use for the instance (or clone)
+     * @returns an instance (or a clone) of the current node with its hiearchy
+     */
+    public instantiateHierarychy(newParent: Nullable<TransformNode> = null): Nullable<TransformNode> {
+        let clone = this.clone("Clone of " +  (this.name || this.id), newParent || this.parent, true);
+
+        for (var child of this.getChildTransformNodes(true)) {
+            child.instantiateHierarychy(clone);
+        }
+
+        return clone;
+    }
+
+    /**
+     * Prevents the World matrix to be computed any longer
+     * @param newWorldMatrix defines an optional matrix to use as world matrix
      * @returns the TransformNode.
      */
-    public freezeWorldMatrix(): TransformNode {
-        this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
-        this.computeWorldMatrix(true);
+    public freezeWorldMatrix(newWorldMatrix: Nullable<Matrix> = null): TransformNode {
+        if (newWorldMatrix) {
+            this._worldMatrix = this._worldMatrix;
+        } else {
+            this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
+            this.computeWorldMatrix(true);
+        }
         this._isWorldMatrixFrozen = true;
         return this;
     }
@@ -1195,7 +1215,7 @@ export class TransformNode extends Node {
      * @param doNotCloneChildren Do not clone children hierarchy
      * @returns the new transform node
      */
-    public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<TransformNode> {
+    public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<TransformNode> {
         var result = SerializationHelper.Clone(() => new TransformNode(name, this.getScene()), this);
 
         result.name = name;

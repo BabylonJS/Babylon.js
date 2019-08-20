@@ -24,6 +24,7 @@ export class GlobalState {
     onPreviewMeshTypeChanged = new Observable<void>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
     previewMeshType: PreviewMeshType;
+    blockKeyboardEvents = false;
 
     public constructor() {
         this.previewMeshType = DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box);

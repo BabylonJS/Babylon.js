@@ -99,10 +99,33 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     public get w(): NodeMaterialConnectionPoint {
         return this._outputs[5];
     }
+
+    protected _inputRename(name: string) {
+        switch (name) {
+            case "xy":
+                return "xyIn";
+            case "xyz":
+                    return "xyzIn";
+            default:
+                return name;
+        }
+    }
+
+    protected _outputRename(name: string) {
+        switch (name) {
+            case "xy":
+                return "xyOut";
+            case "xyz":
+                    return "xyzOut";
+            default:
+                return name;
+        }
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this.xyzw.isConnected ? this.xyzw : this.xyzw.isConnected ? this.xyzIn : this.xyIn;
+        let input = this.xyzw.isConnected ? this.xyzw : this.xyzIn.isConnected ? this.xyzIn : this.xyIn;
 
         let xyzOutput = this._outputs[0];
         let xyOutput = this._outputs[1];
@@ -111,26 +134,26 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         let zOutput = this._outputs[4];
         let wOutput = this._outputs[5];
 
-        if (xyzOutput.connectedBlocks.length > 0) {
+        if (xyzOutput.hasEndpoints) {
             if (input === this.xyIn) {
                 state.compilationString += this._declareOutput(xyzOutput, state) + ` = vec3(${input.associatedVariableName}, 0.0);\r\n`;
             } else {
                 state.compilationString += this._declareOutput(xyzOutput, state) + ` = ${input.associatedVariableName}.xyz;\r\n`;
             }
         }
-        if (xyOutput.connectedBlocks.length > 0) {
+        if (xyOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(xyOutput, state) + ` = ${input.associatedVariableName}.xy;\r\n`;
         }
-        if (xOutput.connectedBlocks.length > 0) {
+        if (xOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(xOutput, state) + ` = ${input.associatedVariableName}.x;\r\n`;
         }
-        if (yOutput.connectedBlocks.length > 0) {
+        if (yOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(yOutput, state) + ` = ${input.associatedVariableName}.y;\r\n`;
         }
-        if (zOutput.connectedBlocks.length > 0) {
+        if (zOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(zOutput, state) + ` = ${input.associatedVariableName}.z;\r\n`;
         }
-        if (wOutput.connectedBlocks.length > 0) {
+        if (wOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(wOutput, state) + ` = ${input.associatedVariableName}.w;\r\n`;
         }
 

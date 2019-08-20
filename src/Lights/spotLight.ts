@@ -352,12 +352,21 @@ export class SpotLight extends ShadowLight {
             normalizeDirection = Vector3.Normalize(this.direction);
         }
 
-        this._uniformBuffer.updateFloat4("vLightDirection",
-            normalizeDirection.x,
-            normalizeDirection.y,
-            normalizeDirection.z,
-            this._cosHalfAngle,
-            lightIndex);
+        if (this.getScene().useRightHandedSystem) {
+            this._uniformBuffer.updateFloat4("vLightDirection",
+                -normalizeDirection.x,
+                -normalizeDirection.y,
+                -normalizeDirection.z,
+                this._cosHalfAngle,
+                lightIndex);
+        } else {
+            this._uniformBuffer.updateFloat4("vLightDirection",
+                normalizeDirection.x,
+                normalizeDirection.y,
+                normalizeDirection.z,
+                this._cosHalfAngle,
+                lightIndex);
+        }
 
         this._uniformBuffer.updateFloat4("vLightFalloff",
             this.range,

@@ -2,7 +2,6 @@
 import * as React from "react";
 import { Vector2PropertyTabComponent } from '../../propertyTab/properties/vector2PropertyTabComponent';
 import { Vector3PropertyTabComponent } from '../../propertyTab/properties/vector3PropertyTabComponent';
-import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
 import { GlobalState } from '../../../globalState';
 import { InputNodeModel } from './inputNodeModel';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
@@ -15,6 +14,7 @@ import { LineContainerComponent } from '../../../sharedComponents/lineContainerC
 import { StringTools } from '../../../stringTools';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
+import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
 
 interface IInputPropertyTabComponentProps {
     globalState: GlobalState;
@@ -86,7 +86,7 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     { label: "Fog color", value: NodeMaterialWellKnownValues.FogColor }
                 ];
                 break;
-            case NodeMaterialBlockConnectionPointTypes.Color3:
+            case NodeMaterialBlockConnectionPointTypes.Color4:
                 attributeOptions = [
                     { label: "color", value: "color" }
                 ];
@@ -115,26 +115,58 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     break;                
         }
 
+        var modeOptions = [
+            { label: "User-defined", value: 0 }
+        ];
+
+        if (attributeOptions.length > 0) {
+            modeOptions.push({ label: "Mesh attribute", value: 1 });
+        }
+
+        if (wellKnownOptions.length > 0) {
+            modeOptions.push({ label: "Well-known value", value: 2 });
+        }
+
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextInputLineComponent label="Name" propertyName="name" target={inputBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                    {
+                        !inputBlock.isAttribute &&
+                        <TextInputLineComponent  globalState={this.props.globalState} label="Name" propertyName="name" target={inputBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                    }
                     <TextLineComponent label="Type" value={StringTools.GetBaseType(inputBlock.type)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
-                    {
-                        attributeOptions.length > 0 &&
-                        <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {
-                            if (!value) {
-                                inputBlock.isUniform = true;
-                                this.setDefaultValue();
-                            } else {
-                                inputBlock.setAsAttribute(attributeOptions[0].value);
+                    <OptionsLineComponent label="Mode" options={modeOptions} target={inputBlock} 
+                        noDirectUpdate={true}
+                        getSelection={(block) => {
+                            if (block.isAttribute) {
+                                return 1;
                             }
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+
+                            if (block.isWellKnownValue) {
+                                return 2;
+                            }
+
+                            return 0;
+                        }}
+                        onSelect={(value: any) => {
+                            switch (value) {
+                                case 0:
+                                    inputBlock.isUniform = true;
+                                    inputBlock.setAsWellKnownValue(null);
+                                    this.setDefaultValue();
+                                    break;
+                                case 1:
+                                    inputBlock.setAsAttribute(attributeOptions[0].value);
+                                    break;
+                                case 2:
+                                    inputBlock.setAsWellKnownValue(wellKnownOptions[0].value);
+                                    break;
+                            }
                             this.forceUpdate();
-                        }} isSelected={() => inputBlock.isAttribute} />
-                    }
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        }} />
                     {
                         inputBlock.isAttribute &&
                         <OptionsLineComponent label="Attribute" valuesAreStrings={true} options={attributeOptions} target={inputBlock} propertyName="name" onSelect={(value: any) => {
@@ -144,25 +176,16 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                         }} />
                     }
                     {
-                        inputBlock.isUniform && wellKnownOptions.length > 0 &&
-                        <CheckBoxLineComponent label="Is well known value" onSelect={value => {
-                            if (value) {
-                                inputBlock.setAsWellKnownValue(wellKnownOptions[0].value);
-                            } else {
-                                inputBlock.setAsWellKnownValue(null);
-                                this.setDefaultValue();
-                            }
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-                            this.forceUpdate();
-                        }} isSelected={() => inputBlock.isWellKnownValue} />
-                    }
-                    {
                         inputBlock.isUniform && animationOptions.length > 0 &&
                         <OptionsLineComponent label="Animation type" options={animationOptions} target={inputBlock} propertyName="animationType" onSelect={(value: any) => {
                             this.forceUpdate();
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
-                    }                    
+                    }   
+                    {
+                        inputBlock.isUniform && !inputBlock.isWellKnownValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
+                        <CheckBoxLineComponent label="Visible in the Inspector" target={inputBlock} propertyName="visibleInInspector"/>
+                    }                 
                     {
                         inputBlock.isUniform && !inputBlock.isWellKnownValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
                         this.renderValue(this.props.globalState)

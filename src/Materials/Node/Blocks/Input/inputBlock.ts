@@ -27,6 +27,9 @@ export class InputBlock extends NodeMaterialBlock {
     /** @hidden */
     public _wellKnownValue: Nullable<NodeMaterialWellKnownValues> = null;
 
+    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
+    public visibleInInspector = false;
+
     /**
      * Gets or sets the connection point type (default is float)
      */
@@ -68,6 +71,17 @@ export class InputBlock extends NodeMaterialBlock {
                     case "uv2":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
                         return this._type;
+                    case "matricesIndices":
+                    case "matricesWeights":
+                    case "world0":
+                    case "world1":
+                    case "world2":
+                    case "world3":
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
+                        return this._type;
+                    case "color":
+                        this._type = NodeMaterialBlockConnectionPointTypes.Color4;
+                        return this._type;
                 }
             }
 
@@ -83,6 +97,9 @@ export class InputBlock extends NodeMaterialBlock {
                         return this._type;
                     case NodeMaterialWellKnownValues.CameraPosition:
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
+                        return this._type;
+                    case NodeMaterialWellKnownValues.FogColor:
+                        this._type = NodeMaterialBlockConnectionPointTypes.Color3;
                         return this._type;
                 }
             }
@@ -104,7 +121,7 @@ export class InputBlock extends NodeMaterialBlock {
 
         this.setDefaultValue();
 
-        this.registerOutput("output", type);
+        this.registerOutput("output", type, NodeMaterialBlockTargets.Vertex);
     }
 
     /**
@@ -311,6 +328,40 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 
+    protected _dumpPropertiesCode() {
+        if (this.isAttribute) {
+            return `${this._codeVariableName}.setAsAttribute("${this.name}");\r\n`;
+        }
+        if (this.isWellKnownValue) {
+            return `${this._codeVariableName}.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.${NodeMaterialWellKnownValues[this._wellKnownValue!]});\r\n`;
+        }
+        if (this.isUniform) {
+            let valueString = "";
+            switch (this.type) {
+                case NodeMaterialBlockConnectionPointTypes.Float:
+                    valueString = this.value.toString();
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Vector2:
+                    valueString = `new BABYLON.Vector2(${this.value.x}, ${this.value.y})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Vector3:
+                    valueString = `new BABYLON.Vector3(${this.value.x}, ${this.value.y}, ${this.value.z})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Vector4:
+                    valueString = `new BABYLON.Vector4(${this.value.x}, ${this.value.y}, ${this.value.z}, ${this.value.w})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Color3:
+                    valueString = `new BABYLON.Color3(${this.value.r}, ${this.value.g}, ${this.value.b})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Color4:
+                    valueString = `new BABYLON.Color4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
+                    break;
+            }
+            return `${this._codeVariableName}.value = ${valueString};\r\n`;
+        }
+        return "";
+    }
+
     private _emit(state: NodeMaterialBuildState, define?: string) {
         // Uniforms
         if (this.isUniform) {
@@ -478,6 +529,7 @@ export class InputBlock extends NodeMaterialBlock {
         serializationObject.mode = this._mode;
         serializationObject.wellKnownValue = this._wellKnownValue;
         serializationObject.animationType = this._animationType;
+        serializationObject.visibleInInspector = this.visibleInInspector;
 
         if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
             if (this._storedValue.asArray) {
@@ -499,6 +551,7 @@ export class InputBlock extends NodeMaterialBlock {
         this._mode = serializationObject.mode;
         this._wellKnownValue = serializationObject.wellKnownValue;
         this._animationType = serializationObject.animationType;
+        this.visibleInInspector = serializationObject.visibleInInspector;
 
         if (!serializationObject.valueType) {
             return;

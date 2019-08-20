@@ -64,8 +64,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
             serializationObject.locations.push({
                 blockId: block.uniqueId,
-                x: node.x,
-                y: node.y
+                x: node ? node.x : 0,
+                y: node ? node.y : 0
             });
         }
 
@@ -116,6 +116,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent label="Save" onClick={() => {
                             this.save();
+                        }} />
+                        <ButtonLineComponent label="Generate code" onClick={() => {
+                            StringTools.DownloadAsFile(this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
                         }} />
                         <ButtonLineComponent label="Export shaders" onClick={() => {
                             StringTools.DownloadAsFile(this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
