@@ -421,9 +421,15 @@ body {
     cursor: pointer;
     background-color: white;
 }
-.button:hover span {
+
+.button.languageJS:hover span {
     color: #3f3461;
 }
+
+.button.languageTS:hover span {
+    color: #bb464b;
+}
+
 .languageJS .button:hover img {
     filter: invert(17%) sepia(61%) saturate(651%) hue-rotate(214deg) brightness(91%) contrast(84%);
 }
@@ -640,7 +646,7 @@ body {
     height:35px;
     width:100%;
     line-height:35px;
-    background-color: #201936;
+
 }
 
 .navbarBottom #statusBar {
@@ -648,6 +654,10 @@ body {
     color: #E74C3C;
     font-size: 14px;
     padding-left:20px;
+}
+
+.navbarBottom.languageTS #statusBar {
+    color: #3f3461;
 }
 
 .navbarBottom .links {
@@ -661,17 +671,29 @@ body {
     display: inline-block;
     line-height: 35px;
     font-size: 16px;
-    color: white;
 }
+
 .navbarBottom .links .link:hover {
-    background-color:#3F3461;
+    background-color:white;
+    color: #3f3461;
 }
+
 .navbarBottom .links .link a {
     text-decoration: none;
     line-height: 35px;
     padding: 6px 15px;
     font-size: 16px;
     color: white;
+}
+
+.navbarBottom.languageJS .links .link a:hover {
+    background-color:white;
+    color: #3f3461;
+}
+
+.navbarBottom.languageTS .links .link a:hover {
+    background-color:white;
+    color: #bb464b;
 }
 
 /* Save form & co */
