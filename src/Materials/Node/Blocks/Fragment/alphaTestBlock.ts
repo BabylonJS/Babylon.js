@@ -4,6 +4,7 @@ import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../../Misc/typeStore';
+import { Scene } from '../../../../scene';
 
 /**
  * Block used to add an alpha test in the fragment shader
@@ -60,6 +61,26 @@ export class AlphaTestBlock extends NodeMaterialBlock {
         }
 
         return this;
+    }
+      
+    protected _dumpPropertiesCode() {
+        var codeString = `${this._codeVariableName}.alphaCutOff = ${this.alphaCutOff};\r\n`;
+
+        return codeString;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.alphaCutOff = this.alphaCutOff;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.alphaCutOff = serializationObject.alphaCutOff;
     }
 }
 
