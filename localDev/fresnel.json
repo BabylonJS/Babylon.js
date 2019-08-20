@@ -269,8 +269,8 @@
           "targetConnectionName": "output"
         },
         {
-          "name": "color",
-          "inputName": "color",
+          "name": "input",
+          "inputName": "input",
           "targetBlockId": 215,
           "targetConnectionName": "rgb"
         },

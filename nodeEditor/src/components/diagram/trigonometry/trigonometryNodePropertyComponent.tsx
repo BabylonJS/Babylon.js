@@ -27,7 +27,10 @@ export class TrigonometryPropertyTabComponentProps extends React.Component<ITrig
             {label: "Sin", value: TrigonometryBlockOperations.Sin},
             {label: "Abs", value: TrigonometryBlockOperations.Abs},
             {label: "Exp", value: TrigonometryBlockOperations.Exp},
-            {label: "Exp2", value: TrigonometryBlockOperations.Exp2}
+            {label: "Exp2", value: TrigonometryBlockOperations.Exp2},
+            {label: "Round", value: TrigonometryBlockOperations.Round},
+            {label: "Ceiling", value: TrigonometryBlockOperations.Ceiling},
+            {label: "Floor", value: TrigonometryBlockOperations.Floor}
         ];
         
         return (

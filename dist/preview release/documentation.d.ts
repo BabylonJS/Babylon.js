@@ -51662,9 +51662,7 @@ declare module BABYLON {
         /** Detect type based on connection */
         AutoDetect = 1024,
         /** Output type that will be defined by input type */
-        BasedOnInput = 2048,
-        /** Output type that will be defined by inverting input type (color <-> vector) */
-        InvertInput = 4096
+        BasedOnInput = 2048
     }
 }
 declare module BABYLON {
@@ -52629,10 +52627,10 @@ declare module BABYLON {
         /**
          * Compile the current node and generate the shader code
          * @param state defines the current compilation state (uniforms, samplers, current string)
-         * @param contextSwitched indicates that the previous block was built for a different context (vertex vs. fragment)
+         * @param activeBlocks defines the list of active blocks (i.e. blocks to compile)
          * @returns true if already built
          */
-        build(state: NodeMaterialBuildState, contextSwitched?: boolean): boolean;
+        build(state: NodeMaterialBuildState, activeBlocks: NodeMaterialBlock[]): boolean;
         protected _inputRename(name: string): string;
         protected _outputRename(name: string): string;
         protected _dumpPropertiesCode(): string;
@@ -53183,7 +53181,7 @@ declare module BABYLON {
         /**
          * Gets the color input component
          */
-        readonly color: NodeMaterialConnectionPoint;
+        readonly input: NodeMaterialConnectionPoint;
         /**
          * Gets the fog color input component
          */
@@ -53502,7 +53500,13 @@ declare module BABYLON {
         /** Exp */
         Exp = 3,
         /** Exp2 */
-        Exp2 = 4
+        Exp2 = 4,
+        /** Round */
+        Round = 5,
+        /** Floor */
+        Floor = 6,
+        /** Ceiling */
+        Ceiling = 7
     }
     /**
      * Block used to apply trigonometry operation to floats
@@ -53842,32 +53846,6 @@ declare module BABYLON {
          * Gets the edge operand input component
          */
         readonly edge: NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        readonly output: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to convert color to vector and vice versa
-     */
-    export class TypeConverterBlock extends NodeMaterialBlock {
-        /**
-         * Creates a new TypeConverterBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the input component
-         */
-        readonly input: NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */
