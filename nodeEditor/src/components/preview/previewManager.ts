@@ -91,7 +91,7 @@ export class PreviewManager {
         }        
 
         this._material = NodeMaterial.Parse(serializationObject, this._scene);
-        this._material.build(true);
+        this._material.build();
         this._dummy.material = this._material;
     }
 

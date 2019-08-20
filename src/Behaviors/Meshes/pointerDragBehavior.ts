@@ -289,7 +289,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._targetPosition.copyFrom((this.attachedNode).absolutePosition);
 
             // Detatch camera controls
-            if (this.detachCameraControls && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
+            if (this.detachCameraControls && this._scene.activeCamera && this._scene.activeCamera.inputs && !this._scene.activeCamera.leftCamera) {
                 if (this._scene.activeCamera.inputs.attachedElement) {
                     this._attachedElement = this._scene.activeCamera.inputs.attachedElement;
                     this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);

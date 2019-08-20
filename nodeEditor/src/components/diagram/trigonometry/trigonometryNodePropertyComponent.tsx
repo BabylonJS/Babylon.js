@@ -25,13 +25,18 @@ export class TrigonometryPropertyTabComponentProps extends React.Component<ITrig
         var operationOptions: {label: string, value: TrigonometryBlockOperations}[] = [
             {label: "Cos", value: TrigonometryBlockOperations.Cos},
             {label: "Sin", value: TrigonometryBlockOperations.Sin},
-            {label: "Abs", value: TrigonometryBlockOperations.Abs}
+            {label: "Abs", value: TrigonometryBlockOperations.Abs},
+            {label: "Exp", value: TrigonometryBlockOperations.Exp},
+            {label: "Exp2", value: TrigonometryBlockOperations.Exp2},
+            {label: "Round", value: TrigonometryBlockOperations.Round},
+            {label: "Ceiling", value: TrigonometryBlockOperations.Ceiling},
+            {label: "Floor", value: TrigonometryBlockOperations.Floor}
         ];
         
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextInputLineComponent label="Name" propertyName="name" target={trigonometryBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                    <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={trigonometryBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                     <TextLineComponent label="Type" value={trigonometryBlock.getClassName()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">  

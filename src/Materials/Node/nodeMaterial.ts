@@ -25,6 +25,9 @@ import { FragmentOutputBlock } from './Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { _TypeStore } from '../../Misc/typeStore';
 import { SerializationHelper } from '../../Misc/decorators';
+import { TextureBlock } from './Blocks/Dual/textureBlock';
+import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
+import { FileTools } from '../../Misc/fileTools';
 
 // declare NODEEDITOR namespace for compilation issue
 declare var NODEEDITOR: any;
@@ -253,6 +256,36 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Get a block by its name
+     * @param name defines the name of the block to retrieve
+     * @returns the required block or null if not found
+     */
+    public getBlockByName(name: string) {
+        for (var block of this.attachedBlocks) {
+            if (block.name === name) {
+                return block;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the list of input blocks attached to this material
+     * @returns an array of InputBlocks
+     */
+    public getInputBlocks() {
+        let blocks: InputBlock[] = [];
+        for (var block of this.attachedBlocks) {
+            if (block.isInput) {
+                blocks.push(block as InputBlock);
+            }
+        }
+
+        return blocks;
+    }
+
+    /**
      * Adds a new optimizer to the list of optimizers
      * @param optimizer defines the optimizers to add
      * @returns the current material
@@ -393,7 +426,11 @@ export class NodeMaterial extends PushMaterial {
 
     private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[]) {
         node.initialize(state);
-        node.autoConfigure();
+        node.autoConfigure(this);
+
+        if (this.attachedBlocks.indexOf(node) === -1) {
+            this.attachedBlocks.push(node);
+        }
 
         for (var input of node.inputs) {
             if (!node.isInput) {
@@ -484,10 +521,12 @@ export class NodeMaterial extends PushMaterial {
 
         // Vertex
         for (var vertexOutputNode of vertexNodes) {
-            vertexOutputNode.build(this._vertexCompilationState);
+            vertexOutputNode.build(this._vertexCompilationState, vertexNodes);
         }
 
         // Fragment
+        this._fragmentCompilationState.uniforms = this._vertexCompilationState.uniforms.slice(0);
+        this._fragmentCompilationState._uniformDeclaration = this._vertexCompilationState._uniformDeclaration;
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
 
         for (var fragmentOutputNode of fragmentNodes) {
@@ -495,7 +534,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         for (var fragmentOutputNode of fragmentNodes) {
-            fragmentOutputNode.build(this._fragmentCompilationState);
+            fragmentOutputNode.build(this._fragmentCompilationState, fragmentNodes);
         }
 
         // Finalize
@@ -517,7 +556,26 @@ export class NodeMaterial extends PushMaterial {
         this._buildWasSuccessful = true;
         this.onBuildObservable.notifyObservers(this);
 
-        this._markAllSubMeshesAsAllDirty();
+        // Wipe defines
+        const meshes = this.getScene().meshes;
+        for (var mesh of meshes) {
+            if (!mesh.subMeshes) {
+                continue;
+            }
+            for (var subMesh of mesh.subMeshes) {
+                if (subMesh.getMaterial() !== this) {
+                    continue;
+                }
+
+                if (!subMesh._materialDefines) {
+                    continue;
+                }
+
+                let defines = subMesh._materialDefines;
+                defines.markAllAsDirty();
+                defines.reset();
+            }
+        }
     }
 
     /**
@@ -783,6 +841,18 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Gets the list of texture blocks
+     * @returns an array of texture blocks
+     */
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBlock)[] {
+        if (!this._sharedData) {
+            return [];
+        }
+
+        return this._sharedData.textureBlocks.filter((tb) => tb.texture);
+    }
+
+    /**
      * Specifies if the material uses a texture
      * @param texture defines the texture to check against the material
      * @returns a boolean specifying if the material uses the texture
@@ -903,6 +973,25 @@ export class NodeMaterial extends PushMaterial {
         this.addOutputNode(fragmentOutput);
     }
 
+    /**
+     * Loads the current Node Material from a url pointing to a file save by the Node Material Editor
+     * @param url defines the url to load from
+     * @returns a promise that will fullfil when the material is fully loaded
+     */
+    public loadAsync(url: string) {
+        return new Promise((resolve, reject) => {
+            FileTools.LoadFile(url, (data) => {
+                let serializationObject = JSON.parse(data as string);
+
+                this.loadFromSerialization(serializationObject, "");
+
+                resolve();
+            }, undefined, undefined, false, (request, exception) => {
+                reject(exception.message);
+            });
+        });
+    }
+
     private _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]) {
         if (list.indexOf(rootNode) !== -1) {
             return;
@@ -918,6 +1007,44 @@ export class NodeMaterial extends PushMaterial {
                 }
             }
         }
+    }
+
+    /**
+     * Generate a string containing the code declaration required to create an equivalent of this material
+     * @returns a string
+     */
+    public generateCode() {
+
+        let alreadyDumped: NodeMaterialBlock[] = [];
+        let vertexBlocks: NodeMaterialBlock[] = [];
+        let uniqueNames: string[] = [];
+        // Gets active blocks
+        for (var outputNode of this._vertexOutputNodes) {
+            this._gatherBlocks(outputNode, vertexBlocks);
+
+        }
+
+        let fragmentBlocks: NodeMaterialBlock[] = [];
+        for (var outputNode of this._fragmentOutputNodes) {
+            this._gatherBlocks(outputNode, fragmentBlocks);
+        }
+
+        // Generate vertex shader
+        let codeString = "var nodeMaterial = new BABYLON.NodeMaterial(`node material`);\r\n";
+        for (var node of vertexBlocks) {
+            if (node.isInput && alreadyDumped.indexOf(node) === -1) {
+                codeString += node._dumpCode(uniqueNames, alreadyDumped);
+            }
+        }
+
+        // Generate fragment shader
+        for (var node of fragmentBlocks) {
+            if (node.isInput && alreadyDumped.indexOf(node) === -1) {
+                codeString += node._dumpCode(uniqueNames, alreadyDumped);
+            }
+        }
+
+        return codeString;
     }
 
     /**
@@ -963,6 +1090,27 @@ export class NodeMaterial extends PushMaterial {
         return serializationObject;
     }
 
+    private _restoreConnections(block: NodeMaterialBlock, source: any, map: {[key: number]: NodeMaterialBlock}) {
+        for (var outputPoint of block.outputs) {
+            for (var candidate of source.blocks) {
+                let target = map[candidate.id];
+
+                for (var input of candidate.inputs) {
+                    if (map[input.targetBlockId] === block && input.targetConnectionName === outputPoint.name) {
+                        let inputPoint = target.getInputByName(input.inputName);
+                        if (!inputPoint || inputPoint.isConnected) {
+                            continue;
+                        }
+
+                        outputPoint.connectTo(inputPoint);
+                        this._restoreConnections(target, source, map);
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Clear the current graph and load a new one from a serialization object
      * @param source defines the JSON representation of the material
@@ -987,25 +1135,15 @@ export class NodeMaterial extends PushMaterial {
 
         // Connections
 
-        // Play them in reverse to make sure types are defined
-        for (var blockIndex = source.blocks.length - 1; blockIndex >= 0; blockIndex--) {
+        // Starts with input blocks only
+        for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
             let parsedBlock = source.blocks[blockIndex];
             let block = map[parsedBlock.id];
 
-            for (var input of parsedBlock.inputs) {
-                if (!input.targetBlockId) {
-                    continue;
-                }
-                let inputPoint = block.getInputByName(input.inputName);
-                let targetBlock = map[input.targetBlockId];
-                if (targetBlock) {
-                    let outputPoint = targetBlock.getOutputByName(input.targetConnectionName);
-
-                    if (inputPoint && outputPoint) {
-                        outputPoint.connectTo(inputPoint);
-                    }
-                }
+            if (!block.isInput) {
+                continue;
             }
+            this._restoreConnections(block, source, map);
         }
 
         // Outputs
@@ -1034,6 +1172,20 @@ export class NodeMaterial extends PushMaterial {
         nodeMaterial.loadFromSerialization(source, rootUrl);
 
         return nodeMaterial;
+    }
+
+    /**
+     * Creates a new node material set to default basic configuration
+     * @param name defines the name of the material
+     * @param scene defines the hosting scene
+     * @returns a new NodeMaterial
+     */
+    public static CreateDefault(name: string, scene?: Scene) {
+        let newMaterial = new NodeMaterial(name, scene);
+        newMaterial.setToDefault();
+        newMaterial.build();
+
+        return newMaterial;
     }
 }
 

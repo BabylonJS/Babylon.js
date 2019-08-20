@@ -4,7 +4,6 @@ import { GlobalState } from '../../../globalState';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { FileButtonLineComponent } from '../../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
-import { Engine } from 'babylonjs/Engines/engine';
 import { TextureNodeModel } from './textureNodeModel';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
@@ -35,7 +34,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
 
         let texture = this.props.node.texture as BaseTexture;
         if (!texture) {
-            this.props.node.texture = new Texture(null, Engine.LastCreatedScene)
+            this.props.node.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, false)
             texture = this.props.node.texture;
         }
 
@@ -68,7 +67,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
             <div>
                 <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Type" value="Texture" />
-                    <TextInputLineComponent label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                    <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                 </LineContainerComponent>
 
                 <LineContainerComponent title="PROPERTIES">

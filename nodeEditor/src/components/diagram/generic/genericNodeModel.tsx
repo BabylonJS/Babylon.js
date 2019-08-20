@@ -48,7 +48,7 @@ export class GenericNodeModel extends DefaultNodeModel {
         return (
             <div>
             <LineContainerComponent title="GENERAL">
-                <TextInputLineComponent label="Name" propertyName="name" target={this.block!} onChange={() => globalState.onUpdateRequiredObservable.notifyObservers()} />
+                <TextInputLineComponent globalState={globalState} label="Name" propertyName="name" target={this.block!} onChange={() => globalState.onUpdateRequiredObservable.notifyObservers()} />
                 <TextLineComponent label="Type" value={this.block!.getClassName()} />
             </LineContainerComponent>
             {

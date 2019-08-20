@@ -364,6 +364,10 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         const scene = this.scene;
         this._audioEnabled = false;
 
+        if (Engine.audioEngine && Engine.audioEngine.audioContext) {
+            Engine.audioEngine.audioContext.suspend();
+        }
+
         let i: number;
         for (i = 0; i < scene.mainSoundTrack.soundCollection.length; i++) {
             scene.mainSoundTrack.soundCollection[i].pause();
@@ -383,6 +387,10 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     public enableAudio() {
         const scene = this.scene;
         this._audioEnabled = true;
+
+        if (Engine.audioEngine && Engine.audioEngine.audioContext) {
+            Engine.audioEngine.audioContext.resume();
+        }
 
         let i: number;
         for (i = 0; i < scene.mainSoundTrack.soundCollection.length; i++) {

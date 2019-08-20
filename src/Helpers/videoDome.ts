@@ -227,14 +227,18 @@ export class VideoDome extends TransformNode {
         switch (value) {
             case VideoDome.MODE_SIDEBYSIDE:
                 // in half-dome mode the uScale should be double of 360 videos
-                this._videoTexture.uScale = this._halfDome ? 1 : 0.5;
+                // Use 0.99999 to boost perf by not switching program
+                this._videoTexture.uScale = this._halfDome ? 0.99999 : 0.5;
+                const rightOffset = this._halfDome ? 0.0 : 0.5;
+                const leftOffset = this._halfDome ? 0.5 : 0.0;
                 this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
-                    this._videoTexture.uOffset = camera.isRightCamera ? 0.5 : 0.0;
+                    this._videoTexture.uOffset = camera.isRightCamera ? rightOffset : leftOffset;
                 });
                 break;
             case VideoDome.MODE_TOPBOTTOM:
                 // in half-dome mode the vScale should be double of 360 videos
-                this._videoTexture.vScale = this._halfDome ? 1 : 0.5;
+                // Use 0.99999 to boost perf by not switching program
+                this._videoTexture.vScale = this._halfDome ? 0.99999 : 0.5;
                 this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
                     this._videoTexture.vOffset = camera.isRightCamera ? 0.5 : 0.0;
                 });

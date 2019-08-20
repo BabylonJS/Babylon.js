@@ -1541,7 +1541,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param doNotCloneChildren defines a boolean indicating that children must not be cloned (false by default)
      * @returns the new mesh
      */
-    public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
+    public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
         return null;
     }
 

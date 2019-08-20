@@ -14,7 +14,17 @@ export enum TrigonometryBlockOperations {
     /** Sin */
     Sin,
     /** Abs */
-    Abs
+    Abs,
+    /** Exp */
+    Exp,
+    /** Exp2 */
+    Exp2,
+    /** Round */
+    Round,
+    /** Floor */
+    Floor,
+    /** Ceiling */
+    Ceiling,
 }
 
 /**
@@ -77,6 +87,26 @@ export class TrigonometryBlock extends NodeMaterialBlock {
             }
             case TrigonometryBlockOperations.Cos: {
                 operation = "abs";
+                break;
+            }
+            case TrigonometryBlockOperations.Exp: {
+                operation = "exp";
+                break;
+            }
+            case TrigonometryBlockOperations.Exp2: {
+                operation = "exp2";
+                break;
+            }
+            case TrigonometryBlockOperations.Round: {
+                operation = "round";
+                break;
+            }
+            case TrigonometryBlockOperations.Floor: {
+                operation = "floor";
+                break;
+            }
+            case TrigonometryBlockOperations.Ceiling: {
+                operation = "ceil";
                 break;
             }
         }

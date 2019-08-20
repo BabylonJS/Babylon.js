@@ -79,7 +79,7 @@ export class SolidParticle {
      */
     public shapeId: number = 0;
     /**
-     * Index of the particle in its shape id (Internal use)
+     * Index of the particle in its shape id
      */
     public idxInShape: number = 0;
     /**

@@ -74,7 +74,7 @@ export class EffectFallbacks {
     /**
      * Checks to see if more fallbacks are still availible.
      */
-    public get isMoreFallbacks(): boolean {
+    public get hasMoreFallbacks(): boolean {
         return this._currentRank <= this._maxRank;
     }
 
@@ -406,6 +406,15 @@ export class Effect implements IDisposable {
      * @returns if the effect is compiled and prepared.
      */
     public isReady(): boolean {
+        try {
+            return this._isReadyInternal();
+        }
+        catch {
+            return false;
+        }
+    }
+
+    private _isReadyInternal(): boolean {
         if (this._isReady) {
             return true;
         }
@@ -523,9 +532,15 @@ export class Effect implements IDisposable {
     }
 
     private _checkIsReady() {
-        if (this.isReady()) {
+        try {
+            if (this._isReadyInternal()) {
+                return;
+            }
+        } catch (e) {
+            this._processCompilationErrors(e);
             return;
         }
+
         setTimeout(() => {
             this._checkIsReady();
         }, 16);
@@ -687,7 +702,6 @@ export class Effect implements IDisposable {
     public _prepareEffect() {
         let attributesNames = this._attributesNames;
         let defines = this.defines;
-        let fallbacks = this._fallbacks;
         this._valueCache = {};
 
         var previousPipelineContext = this._pipelineContext;
@@ -758,45 +772,51 @@ export class Effect implements IDisposable {
             }
 
         } catch (e) {
-            this._compilationError = e.message;
+           this._processCompilationErrors(e, previousPipelineContext);
+        }
+    }
 
-            // Let's go through fallbacks then
-            Logger.Error("Unable to compile effect:");
-            Logger.Error("Uniforms: " + this._uniformsNames.map(function(uniform) {
-                return " " + uniform;
-            }));
-            Logger.Error("Attributes: " + attributesNames.map(function(attribute) {
-                return " " + attribute;
-            }));
-            Logger.Error("Defines:\r\n" + this.defines);
-            Logger.Error("Error: " + this._compilationError);
-            if (previousPipelineContext) {
-                this._pipelineContext = previousPipelineContext;
-                this._isReady = true;
+    private _processCompilationErrors(e: any, previousPipelineContext: Nullable<IPipelineContext> = null) {
+        this._compilationError = e.message;
+        let attributesNames = this._attributesNames;
+        let fallbacks = this._fallbacks;
+
+        // Let's go through fallbacks then
+        Logger.Error("Unable to compile effect:");
+        Logger.Error("Uniforms: " + this._uniformsNames.map(function(uniform) {
+            return " " + uniform;
+        }));
+        Logger.Error("Attributes: " + attributesNames.map(function(attribute) {
+            return " " + attribute;
+        }));
+        Logger.Error("Defines:\r\n" + this.defines);
+        Logger.Error("Error: " + this._compilationError);
+        if (previousPipelineContext) {
+            this._pipelineContext = previousPipelineContext;
+            this._isReady = true;
+            if (this.onError) {
+                this.onError(this, this._compilationError);
+            }
+            this.onErrorObservable.notifyObservers(this);
+        }
+
+        if (fallbacks) {
+            this._pipelineContext = null;
+            if (fallbacks.hasMoreFallbacks) {
+                Logger.Error("Trying next fallback.");
+                this.defines = fallbacks.reduce(this.defines, this);
+                this._prepareEffect();
+            } else { // Sorry we did everything we can
+
                 if (this.onError) {
                     this.onError(this, this._compilationError);
                 }
                 this.onErrorObservable.notifyObservers(this);
-            }
+                this.onErrorObservable.clear();
 
-            if (fallbacks) {
-                this._pipelineContext = null;
-                if (fallbacks.isMoreFallbacks) {
-                    Logger.Error("Trying next fallback.");
-                    this.defines = fallbacks.reduce(this.defines, this);
-                    this._prepareEffect();
-                } else { // Sorry we did everything we can
-
-                    if (this.onError) {
-                        this.onError(this, this._compilationError);
-                    }
-                    this.onErrorObservable.notifyObservers(this);
-                    this.onErrorObservable.clear();
-
-                    // Unbind mesh reference in fallbacks
-                    if (this._fallbacks) {
-                        this._fallbacks.unBindMesh();
-                    }
+                // Unbind mesh reference in fallbacks
+                if (this._fallbacks) {
+                    this._fallbacks.unBindMesh();
                 }
             }
         }
