@@ -191,7 +191,7 @@ export class NodeMaterialBlock {
      * @param name defines the connection point name
      * @param type defines the connection point type
      * @param isOptional defines a boolean indicating that this input can be omitted
-     * @param target defines the target to use to limit the connection point (will be VetexAndFragment by default)
+     * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
      * @returns the current block
      */
     public registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional: boolean = false, target?: NodeMaterialBlockTargets) {
@@ -211,7 +211,7 @@ export class NodeMaterialBlock {
      * Register a new output. Must be called inside a block constructor
      * @param name defines the connection point name
      * @param type defines the connection point type
-     * @param target defines the target to use to limit the connection point (will be VetexAndFragment by default)
+     * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
      * @returns the current block
      */
     public registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets) {
@@ -383,8 +383,8 @@ export class NodeMaterialBlock {
         return true;
     }
 
-    private _processBuild(block: NodeMaterialBlock, state: NodeMaterialBuildState, input: NodeMaterialConnectionPoint) {
-        block.build(state);
+    private _processBuild(block: NodeMaterialBlock, state: NodeMaterialBuildState, input: NodeMaterialConnectionPoint, activeBlocks: NodeMaterialBlock[]) {
+        block.build(state, activeBlocks);
 
         if (state._vertexState && (block.target & this.target) === 0) { // context switch! We need a varying
             if ((!block.isInput && state.target !== block._buildTarget) // block was already emitted by vertex shader
@@ -402,10 +402,10 @@ export class NodeMaterialBlock {
     /**
      * Compile the current node and generate the shader code
      * @param state defines the current compilation state (uniforms, samplers, current string)
-     * @param contextSwitched indicates that the previous block was built for a different context (vertex vs. fragment)
+     * @param activeBlocks defines the list of active blocks (i.e. blocks to compile)
      * @returns true if already built
      */
-    public build(state: NodeMaterialBuildState, contextSwitched = false): boolean {
+    public build(state: NodeMaterialBuildState, activeBlocks: NodeMaterialBlock[]): boolean {
         if (this._buildId === state.sharedData.buildId) {
             return true;
         }
@@ -431,7 +431,7 @@ export class NodeMaterialBlock {
 
             let block = input.connectedPoint.ownerBlock;
             if (block && block !== this) {
-                this._processBuild(block, state, input);
+                this._processBuild(block, state, input, activeBlocks);
             }
         }
 
@@ -492,8 +492,8 @@ export class NodeMaterialBlock {
             for (var endpoint of output.endpoints) {
                 let block = endpoint.ownerBlock;
 
-                if (block && (block.target & state.target) !== 0) {
-                    this._processBuild(block, state, endpoint);
+                if (block && (block.target & state.target) !== 0 && activeBlocks.indexOf(block) !== -1) {
+                    this._processBuild(block, state, endpoint, activeBlocks);
                 }
             }
         }
@@ -613,6 +613,6 @@ export class NodeMaterialBlock {
 
     /** @hidden */
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
-        this.name = serializationObject.name ;
+        this.name = serializationObject.name;
     }
 }

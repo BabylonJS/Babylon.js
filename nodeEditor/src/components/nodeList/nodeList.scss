@@ -9,6 +9,31 @@
 
     .panes {
         overflow: hidden;
+
+        .filter {
+            display: flex;
+            align-items: stretch;
+    
+            input {
+                width: 100%;
+                margin: 10px 10px 5px 10px;
+                display: block;
+                border: none;
+                padding: 0;
+                border-bottom: solid 1px rgb(51, 122, 183);
+                background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, rgb(51, 122, 183) 4%);
+                background-position: -1000px 0;
+                background-size: 1000px 100%;
+                background-repeat: no-repeat;  
+                color:white;    
+            }
+    
+            input:focus  {
+                box-shadow: none;
+                outline: none;
+                background-position: 0 0;
+            }
+        }
         
         .pane {
             color: white;

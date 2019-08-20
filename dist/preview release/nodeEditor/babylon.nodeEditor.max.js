@@ -5563,7 +5563,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow-x: hidden;\n      overflow-y: auto;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .underline {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n      #nodeList .panes .pane .draggableLine {\n        height: 30px;\n        display: grid;\n        align-items: center;\n        justify-items: stretch;\n        background: #222222;\n        cursor: grab;\n        text-align: center;\n        margin: 0;\n        box-sizing: border-box; }\n        #nodeList .panes .pane .draggableLine:hover {\n          background: #337ab7;\n          color: white; }\n      #nodeList .panes .pane .buttonLine {\n        height: 30px;\n        display: grid;\n        align-items: center;\n        justify-items: stretch; }\n        #nodeList .panes .pane .buttonLine button {\n          background: #222222;\n          margin: 5px 10px 5px 10px;\n          color: white;\n          padding: 4px 5px;\n          opacity: 0.9; }\n        #nodeList .panes .pane .buttonLine button:hover {\n          opacity: 1.0; }\n        #nodeList .panes .pane .buttonLine button:active {\n          background: #282828; }\n        #nodeList .panes .pane .buttonLine button:focus {\n          outline: 0px; }\n      #nodeList .panes .pane .paneContainer {\n        margin-top: 3px;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 100%; }\n        #nodeList .panes .pane .paneContainer .paneContainer-content {\n          grid-row: 1;\n          grid-column: 1; }\n          #nodeList .panes .pane .paneContainer .paneContainer-content .header {\n            display: grid;\n            grid-template-columns: 1fr auto;\n            background: #555555;\n            height: 30px;\n            padding-right: 5px;\n            cursor: pointer; }\n            #nodeList .panes .pane .paneContainer .paneContainer-content .header .title {\n              border-left: 3px solid transparent;\n              padding-left: 5px;\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #nodeList .panes .pane .paneContainer .paneContainer-content .header .collapse {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              justify-items: center;\n              transform-origin: center; }\n              #nodeList .panes .pane .paneContainer .paneContainer-content .header .collapse.closed {\n                transform: rotate(180deg); }\n          #nodeList .panes .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n            border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", ""]);
+exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .filter {\n      display: flex;\n      align-items: stretch; }\n      #nodeList .panes .filter input {\n        width: 100%;\n        margin: 10px 10px 5px 10px;\n        display: block;\n        border: none;\n        padding: 0;\n        border-bottom: solid 1px #337ab7;\n        background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n        background-position: -1000px 0;\n        background-size: 1000px 100%;\n        background-repeat: no-repeat;\n        color: white; }\n      #nodeList .panes .filter input:focus {\n        box-shadow: none;\n        outline: none;\n        background-position: 0 0; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow-x: hidden;\n      overflow-y: auto;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .underline {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n      #nodeList .panes .pane .draggableLine {\n        height: 30px;\n        display: grid;\n        align-items: center;\n        justify-items: stretch;\n        background: #222222;\n        cursor: grab;\n        text-align: center;\n        margin: 0;\n        box-sizing: border-box; }\n        #nodeList .panes .pane .draggableLine:hover {\n          background: #337ab7;\n          color: white; }\n      #nodeList .panes .pane .buttonLine {\n        height: 30px;\n        display: grid;\n        align-items: center;\n        justify-items: stretch; }\n        #nodeList .panes .pane .buttonLine button {\n          background: #222222;\n          margin: 5px 10px 5px 10px;\n          color: white;\n          padding: 4px 5px;\n          opacity: 0.9; }\n        #nodeList .panes .pane .buttonLine button:hover {\n          opacity: 1.0; }\n        #nodeList .panes .pane .buttonLine button:active {\n          background: #282828; }\n        #nodeList .panes .pane .buttonLine button:focus {\n          outline: 0px; }\n      #nodeList .panes .pane .paneContainer {\n        margin-top: 3px;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 100%; }\n        #nodeList .panes .pane .paneContainer .paneContainer-content {\n          grid-row: 1;\n          grid-column: 1; }\n          #nodeList .panes .pane .paneContainer .paneContainer-content .header {\n            display: grid;\n            grid-template-columns: 1fr auto;\n            background: #555555;\n            height: 30px;\n            padding-right: 5px;\n            cursor: pointer; }\n            #nodeList .panes .pane .paneContainer .paneContainer-content .header .title {\n              border-left: 3px solid transparent;\n              padding-left: 5px;\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #nodeList .panes .pane .paneContainer .paneContainer-content .header .collapse {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              justify-items: center;\n              transform-origin: center; }\n              #nodeList .panes .pane .paneContainer .paneContainer-content .header .collapse.closed {\n                transform: rotate(180deg); }\n          #nodeList .panes .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n            border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", ""]);
 
 // exports
 
@@ -62146,7 +62146,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -62212,8 +62211,6 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["SubtractBlock"]("Subtract");
             case "StepBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["StepBlock"]("Step");
-            case "TypeConverterBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TypeConverterBlock"]("Type converter");
         }
         return null;
     };
@@ -64183,7 +64180,10 @@ var TrigonometryPropertyTabComponentProps = /** @class */ (function (_super) {
             { label: "Sin", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Sin },
             { label: "Abs", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Abs },
             { label: "Exp", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Exp },
-            { label: "Exp2", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Exp2 }
+            { label: "Exp2", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Exp2 },
+            { label: "Round", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Round },
+            { label: "Ceiling", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Ceiling },
+            { label: "Floor", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Floor }
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
@@ -64406,30 +64406,50 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__(/*! ./nodeList.scss */ "./components/nodeList/nodeList.scss");
 var NodeListComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeListComponent, _super);
-    function NodeListComponent() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    function NodeListComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { filter: "" };
+        return _this;
     }
+    NodeListComponent.prototype.filterContent = function (filter) {
+        this.setState({ filter: filter });
+    };
     NodeListComponent.prototype.render = function () {
+        var _this = this;
         // Block types used to create the menu from
         var allBlocks = {
-            Vertex: ["BonesBlock", "InstancesBlock", "MorphTargetsBlock"],
-            Fragment: ["AlphaTestBlock", "FogBlock", "FresnelBlock", "ImageProcessingBlock", "LightBlock", "ReflectionTextureBlock", "TextureBlock"],
-            Outputs: ["VertexOutputBlock", "FragmentOutputBlock"],
-            Math: ["AddBlock", "ClampBlock", "CrossBlock", "DivideBlock", "DotBlock", "LerpBlock", "MultiplyBlock", "RemapBlock", "NormalizeBlock", "ScaleBlock", "StepBlock", "SubtractBlock", "TransformBlock", "TrigonometryBlock", "TypeConverterBlock"],
-            Conversion: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
+            Animation: ["BonesBlock", "MorphTargetsBlock"],
+            Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "AlphaTestBlock"],
+            Interpolation: ["LerpBlock"],
+            Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
+            Round: ["StepBlock"],
+            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
+            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock"],
+            Trigonometry: [],
+            Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
+            Mesh_Attributes: ["InstancesBlock"],
+            Matrices: ["Matrix"],
+            Scene_Attributes: ["FogBlock", "ImageProcessingBlock", "LightBlock", "ReflectionTextureBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock"],
         };
         // Create node menu
         var blockMenu = [];
         for (var key in allBlocks) {
-            var blockList = allBlocks[key].map(function (block, i) {
+            var blockList = allBlocks[key].filter(function (b) { return !_this.state.filter || b.toLowerCase().indexOf(_this.state.filter.toLowerCase()) !== -1; })
+                .sort(function (a, b) { return a.localeCompare(b); })
+                .map(function (block, i) {
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block });
             });
-            blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key + " blocks", closed: false }, blockList));
+            if (blockList.length) {
+                blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key.replace("_", " "), closed: false }, blockList));
+            }
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "nodeList", style: { borderRightStyle: "solid", borderColor: "grey", borderWidth: "1px" } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "panes" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" }, blockMenu))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "filter" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onChange: function (evt) { return _this.filterContent(evt.target.value); } })),
+                    blockMenu))));
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -64516,7 +64536,7 @@ var PreviewManager = /** @class */ (function () {
             this._material.dispose();
         }
         this._material = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].Parse(serializationObject, this._scene);
-        this._material.build(true);
+        this._material.build();
         this._dummy.material = this._material;
     };
     PreviewManager.prototype.dispose = function () {
@@ -65423,10 +65443,10 @@ var GraphEditor = /** @class */ (function (_super) {
                                             other.remove();
                                         }
                                     }
-                                    if (isFragmentOutput) {
-                                        _this.applyFragmentOutputConstraints(link.input);
-                                    }
                                     if (link.output.connection.canConnectTo(link.input.connection)) {
+                                        if (isFragmentOutput) {
+                                            _this.applyFragmentOutputConstraints(link.input);
+                                        }
                                         link.output.connection.connectTo(link.input.connection);
                                     }
                                     else {
@@ -65583,6 +65603,11 @@ var GraphEditor = /** @class */ (function (_super) {
                 }, onMouseMove: function (evt) {
                     _this._mouseLocationX = evt.pageX;
                     _this._mouseLocationY = evt.pageY;
+                }, onMouseDown: function (evt) {
+                    if (evt.target.nodeName === "INPUT") {
+                        return;
+                    }
+                    _this.props.globalState.blockKeyboardEvents = false;
                 } },
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_5__["NodeListComponent"], { globalState: this.props.globalState }),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "leftGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt); } }),
