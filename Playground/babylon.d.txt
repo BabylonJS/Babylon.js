@@ -36287,6 +36287,7 @@ private _updateCache(ignoreParentClass?: boolean): void;
         private _storedBeta;
         private _storedRadius;
         private _storedTarget;
+        private _storedTargetScreenOffset;
         /**
          * Stores the current state of the camera (alpha, beta, radius and target)
          * @returns the camera itself
@@ -59197,6 +59198,10 @@ declare module BABYLON {
          * is distorted
          */
         lensFlareDistortionStrength: number;
+        /**
+         * Configures the blur intensity used for for lens flare (halo)
+         */
+        lensFlareBlurWidth: number;
         /**
          * Lens star texture must be used to simulate rays on the flares and is available
          * in the documentation
