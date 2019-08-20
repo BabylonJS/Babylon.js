@@ -83,7 +83,7 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
     }
 
     protected _inputRename(name: string) {
-        if (name === "rgb") {
+        if (name === "rgb ") {
             return "rgbIn";
         }
         return name;
