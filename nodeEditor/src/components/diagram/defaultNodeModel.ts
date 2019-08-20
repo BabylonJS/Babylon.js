@@ -1,10 +1,9 @@
 import { NodeModel, DiagramModel } from "storm-react-diagrams";
 import { Nullable } from 'babylonjs/types';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { GraphEditor, NodeCreationOptions } from '../../graphEditor';
 import { GlobalState } from '../../globalState';
-import { DefaultPortModel } from './defaultPortModel';
+import { DefaultPortModel } from './port/defaultPortModel';
 
 /**
  * Generic node model which stores information about a node editor block
@@ -24,7 +23,7 @@ export class DefaultNodeModel extends NodeModel {
         super(key);
     }
 
-    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
+    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {
         this.block = options.nodeMaterialBlock || null;
 
         if (!options.nodeMaterialBlock) {
@@ -39,9 +38,6 @@ export class DefaultNodeModel extends NodeModel {
 
         // Create input ports and nodes if they exist
         options.nodeMaterialBlock._inputs.forEach((connection) => {
-            if (filterInputs.length > 0 && filterInputs.indexOf(connection.name) === -1) {
-                return;
-            }
 
             var inputPort = new DefaultPortModel(connection.name, "input");
             inputPort.connection = connection;
@@ -52,7 +48,7 @@ export class DefaultNodeModel extends NodeModel {
                 var connectedNode;
                 var existingNodes = nodes.filter((n) => { return n.block === (connection as any)._connectedPoint._ownerBlock });
                 if (existingNodes.length == 0) {
-                    connectedNode = graphEditor.createNodeFromObject({ column: options.column + 1, nodeMaterialBlock: connection.connectedPoint._ownerBlock });
+                    connectedNode = graphEditor.createNodeFromObject({ nodeMaterialBlock: connection.connectedPoint._ownerBlock });
                 } else {
                     connectedNode = existingNodes[0];
                 }
@@ -62,37 +58,6 @@ export class DefaultNodeModel extends NodeModel {
                     graphEditor._toAdd.push(link);
                 } else {
                     model.addAll(link);
-                }
-            } else if (!connection.isUndefined) {
-                // Create value node for the connection
-                var type = ""
-                if (connection.type == NodeMaterialBlockConnectionPointTypes.Texture) {
-                    type = "Texture"
-                } else if (connection.type == NodeMaterialBlockConnectionPointTypes.Matrix) {
-                    type = "Matrix"
-                } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector3OrColor3) {
-                    type = "Vector3"
-                } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector2) {
-                    type = "Vector2"
-                } else if (connection.type & NodeMaterialBlockConnectionPointTypes.Vector3OrColor3OrVector4OrColor4) {
-                    type = "Vector4"
-                }
-                else if (connection.type & NodeMaterialBlockConnectionPointTypes.Float) {
-                    type = "Float"
-                }
-
-                // Create links
-                var localNode = graphEditor.addValueNode(type, options.column + 1, connection);
-                if (localNode) {
-                    var ports = localNode.getPorts()
-                    for (var key in ports) {
-                        let link = (ports[key] as DefaultPortModel).link(inputPort);
-                        if (graphEditor._toAdd) {
-                            graphEditor._toAdd.push(link);
-                        } else {
-                            model.addAll(link);
-                        }
-                    }
                 }
             }
         });

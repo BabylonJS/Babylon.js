@@ -1,6 +1,5 @@
-import { Tools } from "../Misc/tools";
 import { Nullable, IndicesArray, DeepImmutable, FloatArray } from "../types";
-import { Matrix, Vector3, Plane } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "./buffer";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
@@ -8,6 +7,8 @@ import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 import { DataBuffer } from './dataBuffer';
+import { extractMinAndMaxIndexed } from '../Maths/math.functions';
+import { Plane } from '../Maths/math.plane';
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;
@@ -235,7 +236,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
             //the rendering mesh's bounding info can be used, it is the standard submesh for all indices.
             extend = { minimum: boundingInfo.minimum.clone(), maximum: boundingInfo.maximum.clone() };
         } else {
-            extend = Tools.ExtractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount, this._renderingMesh.geometry.boundingBias);
+            extend = extractMinAndMaxIndexed(data, indices, this.indexStart, this.indexCount, this._renderingMesh.geometry.boundingBias);
         }
 
         if (this._boundingInfo) {

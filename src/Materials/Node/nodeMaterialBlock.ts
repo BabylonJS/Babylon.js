@@ -7,14 +7,22 @@ import { Effect, EffectFallbacks } from '../effect';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
 import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
+import { InputBlock } from './Blocks/Input/inputBlock';
+import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
+import { Scene } from '../../scene';
+import { _TypeStore } from '../../Misc/typeStore';
 
 /**
  * Defines a block that can be used inside a node based material
  */
 export class NodeMaterialBlock {
     private _buildId: number;
+    private _buildTarget: NodeMaterialBlockTargets;
     private _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
+    private _isInput = false;
+
+    protected _codeVariableName = "";
 
     /** @hidden */
     public _inputs = new Array<NodeMaterialConnectionPoint>();
@@ -27,10 +35,22 @@ export class NodeMaterialBlock {
     public name: string;
 
     /**
+     * Gets or sets the unique id of the node
+     */
+    public uniqueId: number;
+
+    /**
      * Gets a boolean indicating that this block is an end block (e.g. it is generating a system value)
      */
     public get isFinalMerger(): boolean {
         return this._isFinalMerger;
+    }
+
+    /**
+     * Gets a boolean indicating that this block is an input (e.g. it sends data to the shader)
+     */
+    public get isInput(): boolean {
+        return this._isInput;
     }
 
     /**
@@ -105,15 +125,16 @@ export class NodeMaterialBlock {
      * @param name defines the block name
      * @param target defines the target of that block (Vertex by default)
      * @param isFinalMerger defines a boolean indicating that this block is an end block (e.g. it is generating a system value). Default is false
+     * @param isInput defines a boolean indicating that this block is an input (e.g. it sends data to the shader). Default is false
      */
-    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false) {
+    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false, isInput = false) {
         this.name = name;
 
         this._target = target;
 
-        if (isFinalMerger) {
-            this._isFinalMerger = true;
-        }
+        this._isFinalMerger = isFinalMerger;
+        this._isInput = isInput;
+        this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
     /**
@@ -135,16 +156,17 @@ export class NodeMaterialBlock {
     }
 
     protected _declareOutput(output: NodeMaterialConnectionPoint, state: NodeMaterialBuildState): string {
-        if (output.isVarying) {
-            return `${output.associatedVariableName}`;
-        }
-
         return `${state._getGLType(output.type)} ${output.associatedVariableName}`;
     }
 
     protected _writeVariable(currentPoint: NodeMaterialConnectionPoint): string {
-        let connectionPoint = currentPoint.connectedPoint!;
-        return `${currentPoint.associatedVariableName}${connectionPoint.swizzle ? "." + connectionPoint.swizzle : ""}`;
+        let connectionPoint = currentPoint.connectedPoint;
+
+        if (connectionPoint) {
+            return `${currentPoint.associatedVariableName}`;
+        }
+
+        return `0.`;
     }
 
     protected _writeFloat(value: number) {
@@ -211,8 +233,8 @@ export class NodeMaterialBlock {
      */
     public getFirstAvailableInput(forOutput: Nullable<NodeMaterialConnectionPoint> = null) {
         for (var input of this._inputs) {
-            if (!input.isUniform && !input.isAttribute && !input.connectedPoint) {
-                if (!forOutput || (forOutput.type & input.type) !== 0 || input.type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+            if (!input.connectedPoint) {
+                if (!forOutput || (forOutput.type === input.type) || (input.type === NodeMaterialBlockConnectionPointTypes.AutoDetect)) {
                     return input;
                 }
             }
@@ -228,12 +250,27 @@ export class NodeMaterialBlock {
      */
     public getFirstAvailableOutput(forBlock: Nullable<NodeMaterialBlock> = null) {
         for (var output of this._outputs) {
-            if (!forBlock || !forBlock.target || (forBlock.target & output.target) !== 0) {
+            if (!forBlock || !forBlock.target || forBlock.target === NodeMaterialBlockTargets.Neutral || (forBlock.target & output.target) !== 0) {
                 return output;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Gets the sibling of the given output
+     * @param current defines the current output
+     * @returns the next output in the list or null
+     */
+    public getSiblingOutput(current: NodeMaterialConnectionPoint) {
+        let index = this._outputs.indexOf(current);
+
+        if (index === -1 || index >= this._outputs.length) {
+            return null;
+        }
+
+        return this._outputs[index + 1];
     }
 
     /**
@@ -252,13 +289,19 @@ export class NodeMaterialBlock {
         }
 
         let output = options && options.output ? this.getOutputByName(options.output) : this.getFirstAvailableOutput(other);
-        let input = options && options.input ? other.getInputByName(options.input) : other.getFirstAvailableInput(output);
 
-        if (output && input) {
-            output.swizzle = options ? options.outputSwizzle || "" : "";
-            output.connectTo(input);
-        } else {
-            throw "Unable to find a compatible match";
+        let notFound = true;
+        while (notFound) {
+            let input = options && options.input ? other.getInputByName(options.input) : other.getFirstAvailableInput(output);
+
+            if (output && input && output.canConnectTo(input)) {
+                output.connectTo(input);
+                notFound = false;
+            } else if (!output) {
+                throw "Unable to find a compatible match";
+            } else {
+                output = this.getSiblingOutput(output);
+            }
         }
 
         return this;
@@ -299,9 +342,21 @@ export class NodeMaterialBlock {
     }
 
     /**
-     * Lets the block try to connect some inputs automatically
+     * Initialize defines for shader compilation
+     * @param mesh defines the mesh to be rendered
+     * @param nodeMaterial defines the node material requesting the update
+     * @param defines defines the material defines to be prepared
+     * @param useInstances specifies that instances should be used
      */
-    public autoConfigure() {
+    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+        // Do nothing
+    }
+
+    /**
+     * Lets the block try to connect some inputs automatically
+     * @param material defines the hosting NodeMaterial
+     */
+    public autoConfigure(material: NodeMaterial) {
         // Do nothing
     }
 
@@ -328,41 +383,60 @@ export class NodeMaterialBlock {
         return true;
     }
 
+    private _processBuild(block: NodeMaterialBlock, state: NodeMaterialBuildState, input: NodeMaterialConnectionPoint) {
+        block.build(state);
+
+        if (state._vertexState && (block.target & this.target) === 0) { // context switch! We need a varying
+            if ((!block.isInput && state.target !== block._buildTarget) // block was already emitted by vertex shader
+                || (block.isInput && (block as InputBlock).isAttribute) // block is an attribute
+            ) {
+                let connectedPoint = input.connectedPoint!;
+                state._vertexState._emitVaryingFromString("v_" + connectedPoint.associatedVariableName, state._getGLType(connectedPoint.type));
+                state._vertexState.compilationString += `${"v_" + connectedPoint.associatedVariableName} = ${connectedPoint.associatedVariableName};\r\n`;
+                input.associatedVariableName = "v_" + connectedPoint.associatedVariableName;
+                input._enforceAssociatedVariableName = true;
+            }
+        }
+    }
+
     /**
      * Compile the current node and generate the shader code
      * @param state defines the current compilation state (uniforms, samplers, current string)
-     * @returns the current block
+     * @param contextSwitched indicates that the previous block was built for a different context (vertex vs. fragment)
+     * @returns true if already built
      */
-    public build(state: NodeMaterialBuildState) {
+    public build(state: NodeMaterialBuildState, contextSwitched = false): boolean {
         if (this._buildId === state.sharedData.buildId) {
-            return;
+            return true;
         }
 
         // Check if "parent" blocks are compiled
         for (var input of this._inputs) {
             if (!input.connectedPoint) {
-                if (!input.isOptional && !input.isAttribute && !input.isUniform) { // Emit a warning
+                if (!input.isOptional) { // Emit a warning
                     state.sharedData.checks.notConnectedNonOptionalInputs.push(input);
                 }
                 continue;
             }
 
-            if ((input.target & this.target!) === 0) {
-                continue;
-            }
+            if (this.target !== NodeMaterialBlockTargets.Neutral) {
+                if ((input.target & this.target!) === 0) {
+                    continue;
+                }
 
-            if ((input.target & state.target!) === 0) {
-                continue;
+                if ((input.target & state.target!) === 0) {
+                    continue;
+                }
             }
 
             let block = input.connectedPoint.ownerBlock;
-            if (block && block !== this && block.buildId !== state.sharedData.buildId) {
-                block.build(state);
+            if (block && block !== this) {
+                this._processBuild(block, state, input);
             }
         }
 
         if (this._buildId === state.sharedData.buildId) {
-            return; // Need to check again as inputs can be connected multiple time to this endpoint
+            return true; // Need to check again as inputs can be connected multiple time to this endpoint
         }
 
         // Logs
@@ -370,27 +444,22 @@ export class NodeMaterialBlock {
             console.log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
         }
 
-        /** Prepare outputs */
-        for (var output of this._outputs) {
-            if ((output.target & this.target!) === 0) {
-                continue;
-            }
-            if ((output.target & state.target!) === 0) {
-                continue;
-            }
-            output.associatedVariableName = state._getFreeVariableName(output.name);
-            state._emitVaryings(output);
-        }
+        if (!this.isInput) {
+            /** Prepare outputs */
+            for (var output of this._outputs) {
+                if (this.target !== NodeMaterialBlockTargets.Neutral) {
+                    if ((output.target & this.target!) === 0) {
+                        continue;
+                    }
+                    if ((output.target & state.target!) === 0) {
+                        continue;
+                    }
+                }
 
-        // Build
-        for (var input of this._inputs) {
-            if ((input.target & this.target!) === 0) {
-                continue;
+                if (!output.associatedVariableName) {
+                    output.associatedVariableName = state._getFreeVariableName(output.name);
+                }
             }
-            if ((input.target & state.target!) === 0) {
-                continue;
-            }
-            state._emitUniformOrAttributes(input);
         }
 
         // Checks final outputs
@@ -405,13 +474,14 @@ export class NodeMaterialBlock {
             }
         }
 
-        if (state.sharedData.emitComments) {
+        if (!this.isInput && state.sharedData.emitComments) {
             state.compilationString += `\r\n//${this.name}\r\n`;
         }
 
         this._buildBlock(state);
 
         this._buildId = state.sharedData.buildId;
+        this._buildTarget = state.target;
 
         // Compile connected blocks
         for (var output of this._outputs) {
@@ -419,12 +489,130 @@ export class NodeMaterialBlock {
                 continue;
             }
 
-            for (var block of output.connectedBlocks) {
+            for (var endpoint of output.endpoints) {
+                let block = endpoint.ownerBlock;
+
                 if (block && (block.target & state.target) !== 0) {
-                    block.build(state);
+                    this._processBuild(block, state, endpoint);
                 }
             }
         }
-        return this;
+        return false;
+    }
+
+    protected _inputRename(name: string) {
+        return name;
+    }
+
+    protected _outputRename(name: string) {
+        return name;
+    }
+
+    protected _dumpPropertiesCode() {
+        return "";
+    }
+
+    /** @hidden */
+    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
+        alreadyDumped.push(this);
+
+        let codeString: string;
+
+        // Get unique name
+        let nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
+        this._codeVariableName = nameAsVariableName;
+
+        if (uniqueNames.indexOf(this._codeVariableName) !== -1) {
+            let index = 0;
+            do {
+                index++;
+                this._codeVariableName = nameAsVariableName + index;
+            }
+            while (uniqueNames.indexOf(this._codeVariableName) !== -1);
+        }
+
+        uniqueNames.push(this._codeVariableName);
+
+        // Declaration
+        codeString = `\r\nvar ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
+
+        // Properties
+        codeString += this._dumpPropertiesCode();
+
+        // Inputs
+        for (var input of this.inputs) {
+            if (!input.isConnected) {
+                continue;
+            }
+
+            var connectedOutput = input.connectedPoint!;
+            var connectedBlock = connectedOutput.ownerBlock;
+
+            if (alreadyDumped.indexOf(connectedBlock) === -1) {
+                codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
+            }
+
+            codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._outputRename(input.name)});\r\n`;
+        }
+
+        // Outputs
+        for (var output of this.outputs) {
+            if (!output.hasEndpoints) {
+                continue;
+            }
+
+            for (var endpoint of output.endpoints) {
+                var connectedBlock = endpoint.ownerBlock;
+                if (connectedBlock && alreadyDumped.indexOf(connectedBlock) === -1) {
+                    codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
+                }
+            }
+        }
+
+        return codeString;
+    }
+
+    /**
+     * Clone the current block to a new identical block
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a copy of the current block
+     */
+    public clone(scene: Scene, rootUrl: string = "") {
+        let serializationObject = this.serialize();
+
+        let blockType = _TypeStore.GetClass(serializationObject.customType);
+        if (blockType) {
+            let block: NodeMaterialBlock = new blockType();
+            block._deserialize(serializationObject, scene, rootUrl);
+
+            return block;
+        }
+
+        return null;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        let serializationObject: any = {};
+        serializationObject.customType = "BABYLON." + this.getClassName();
+        serializationObject.id = this.uniqueId;
+        serializationObject.name = this.name;
+
+        serializationObject.inputs = [];
+
+        for (var input of this.inputs) {
+            serializationObject.inputs.push(input.serialize());
+        }
+
+        return serializationObject;
+    }
+
+    /** @hidden */
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        this.name = serializationObject.name ;
     }
 }

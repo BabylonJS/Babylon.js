@@ -18,11 +18,11 @@ export class LightNodeModel extends DefaultNodeModel {
 	 * Light for the node if it exists
 	 */
     public get light(): Nullable<Light> {
-        return this._block.light.value;
+        return this._block.light;
     }
 
     public set light(value: Nullable<Light>) {
-        this._block.light.value = value;
+        this._block.light = value;
     }
 
 	/**
@@ -38,10 +38,10 @@ export class LightNodeModel extends DefaultNodeModel {
         );
     }
 
-    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
+    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {
         this._block = options.nodeMaterialBlock as LightBlock;
 
-        super.prepare(options, nodes, model, graphEditor, filterInputs);
+        super.prepare(options, nodes, model, graphEditor);
     }
 
 }

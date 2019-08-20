@@ -8,6 +8,8 @@ import { GlobalState } from '../../../globalState';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
 import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
+import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
+import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
 
 /**
  * Generic node model which stores information about a node editor block
@@ -37,17 +39,33 @@ export class GenericNodeModel extends DefaultNodeModel {
         super("generic");
     }
 
-    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor, filterInputs: string[]) {
-        super.prepare(options, nodes, model, graphEditor, filterInputs);
+    prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {
+        super.prepare(options, nodes, model, graphEditor);
     }
 
     renderProperties(globalState: GlobalState) {
 
         return (
+            <div>
             <LineContainerComponent title="GENERAL">
-                <TextInputLineComponent label="Name" propertyName="name" target={this.block!} onChange={() => globalState.onUpdateRequiredObservable.notifyObservers()} />
+                <TextInputLineComponent globalState={globalState} label="Name" propertyName="name" target={this.block!} onChange={() => globalState.onUpdateRequiredObservable.notifyObservers()} />
                 <TextLineComponent label="Type" value={this.block!.getClassName()} />
             </LineContainerComponent>
+            {
+                this.block!.getClassName() === "TransformBlock" &&
+                <LineContainerComponent title="PROPERTIES">
+                    <CheckBoxLineComponent label="Transform as direction" onSelect={value => {
+                        let transformBlock = this.block as TransformBlock;
+                        if (value) {
+                            transformBlock.complementW = 0;
+                        } else {
+                            transformBlock.complementW = 1;
+                        }
+                        globalState.onRebuildRequiredObservable.notifyObservers();
+                    }} isSelected={() => (this.block as TransformBlock).complementW === 0} />
+                </LineContainerComponent>
+            }
+            </div>
         );
     }
 }

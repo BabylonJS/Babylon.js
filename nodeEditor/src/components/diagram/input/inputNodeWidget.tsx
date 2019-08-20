@@ -1,18 +1,18 @@
 import * as React from "react";
-import { PortWidget } from "storm-react-diagrams";
 import { InputNodeModel } from './inputNodeModel';
 import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
-import { DefaultPortModel } from '../defaultPortModel';
 import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
-import { Color3 } from 'babylonjs/Maths/math';
+import { Color3, Vector2, Vector3, Vector4 } from 'babylonjs/Maths/math';
 import { StringTools } from '../../../stringTools';
+import { PortHelper } from '../portHelper';
+import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 
 /**
  * GenericNodeWidgetProps
  */
-export interface InputNodeWidgetProps {
+export interface IInputNodeWidgetProps {
     node: Nullable<InputNodeModel>;
     globalState: GlobalState;
 }
@@ -20,12 +20,12 @@ export interface InputNodeWidgetProps {
 /**
  * Used to display a node block for the node editor
  */
-export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
+export class InputNodeWidget extends React.Component<IInputNodeWidgetProps> {
 	/**
 	 * Creates a GenericNodeWidget
 	 * @param props 
 	 */
-    constructor(props: InputNodeWidgetProps) {
+    constructor(props: IInputNodeWidgetProps) {
         super(props);
         this.state = {};
 
@@ -40,64 +40,31 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
     }
 
     renderValue(value: string) {
-        if (value) {
+        if (value !== "") {
             return (
-                <div>
+                <div className="value-text">
                     {value}
                 </div>
             )
-        }
-
-        let connection = this.props.node!.connection;
-        if (!connection || !connection.isUniform) {
-            return null;
-        }
-
-        switch (connection.type) {
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
-            case NodeMaterialBlockConnectionPointTypes.Color4: {
-                let color = connection.value as Color3;
-                return (
-                    <div className="fullColor" style={{ background: color.toHexString() }}></div>
-                )
-            }
         }
 
         return null;
     }
 
     render() {
-        var outputPorts = new Array<JSX.Element>()
-        let port: DefaultPortModel;
-        if (this.props.node) {
-            for (var key in this.props.node.ports) {
-                port = this.props.node.ports[key] as DefaultPortModel;
+        var outputPorts = PortHelper.GenerateOutputPorts(this.props.node, true);
 
-                outputPorts.push(
-                    <div key={key} className="output-port">
-                        <div className="output-port-label">
-                        </div>
-                        <div className="output-port-plug">
-                            <PortWidget key={key} name={port.name} node={this.props.node} />
-                        </div>
-                    </div>
-                );
-                break;
-            }
-        }
-
-        let connection = this.props.node!.connection;
+        let inputBlock = this.props.node!.inputBlock;
         let value = "";
-        let name = "";
+        let name = `${inputBlock.name} (${StringTools.GetBaseType(inputBlock.output.type)})`;
+        let color = "";
 
-        if (connection) {
-            name = StringTools.GetBaseType(connection.type)
-
-            if (connection.isAttribute) {
-                value = "mesh." + connection.name;
-            } else if (connection.isWellKnownValue) {
-                switch (connection.wellKnownValue) {
+        if (inputBlock) {
+            if (inputBlock.isAttribute) {
+                value = "mesh." + inputBlock.name;
+                name = StringTools.GetBaseType(inputBlock.output.type);
+            } else if (inputBlock.isWellKnownValue) {
+                switch (inputBlock.wellKnownValue) {
                     case NodeMaterialWellKnownValues.World:
                         value = "World";
                         break;
@@ -119,9 +86,40 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
                     case NodeMaterialWellKnownValues.CameraPosition:
                         value = "Camera position";
                         break;
-                    case NodeMaterialWellKnownValues.Automatic:
-                        value = "Automatic";
+                    case NodeMaterialWellKnownValues.FogColor:
+                        value = "Fog color";
                         break;
+                }
+            } else {
+                if (!inputBlock || !inputBlock.isUniform) {
+                    return null;
+                }
+
+                switch (inputBlock.type) {
+                    case NodeMaterialBlockConnectionPointTypes.Float:
+                        if (inputBlock.animationType !== AnimatedInputBlockTypes.None) {
+                            value = AnimatedInputBlockTypes[inputBlock.animationType];
+                        } else {
+                            value = inputBlock.value.toFixed(2);
+                        }
+                        break;
+                    case NodeMaterialBlockConnectionPointTypes.Vector2:
+                        let vec2Value = inputBlock.value as Vector2
+                        value = `(${vec2Value.x.toFixed(2)}, ${vec2Value.y.toFixed(2)})`;
+                        break;
+                    case NodeMaterialBlockConnectionPointTypes.Vector3:
+                        let vec3Value = inputBlock.value as Vector3
+                        value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
+                        break;
+                    case NodeMaterialBlockConnectionPointTypes.Vector4:
+                        let vec4Value = inputBlock.value as Vector4
+                        value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
+                        break;                        
+                    case NodeMaterialBlockConnectionPointTypes.Color3:
+                    case NodeMaterialBlockConnectionPointTypes.Color4: {
+                        color = (inputBlock.value as Color3).toHexString();
+                        break;
+                    }
                 }
             }
         } else {
@@ -129,7 +127,9 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
         }
 
         return (
-            <div className={"diagramBlock input" + (connection && connection.isAttribute ? " attribute" : "")}>
+            <div className={"diagramBlock input" + (inputBlock && inputBlock.isAttribute ? " attribute" : "")} style={{
+                background: color
+            }}>
                 <div className="header">
                     {name}
                 </div>

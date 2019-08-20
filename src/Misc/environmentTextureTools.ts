@@ -1,6 +1,6 @@
 import { Nullable } from "../types";
 import { Tools } from "./tools";
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
@@ -322,6 +322,12 @@ export class EnvironmentTextureTools {
         } as any;
     }
 
+    /**
+     * Creates the ArrayBufferViews used for initializing environment texture image data.
+     * @param arrayBuffer the underlying ArrayBuffer to which the views refer
+     * @param info parameters that determine what views will be created for accessing the underlying buffer
+     * @return the views described by info providing access to the underlying buffer
+     */
     public static CreateImageDataArrayBufferViews(arrayBuffer: any, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
         if (info.version !== 1) {
             throw new Error(`Unsupported babylon environment map version "${info.version}"`);

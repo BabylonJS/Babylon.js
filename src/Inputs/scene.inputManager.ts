@@ -3,7 +3,7 @@ import { PointerInfoPre, PointerInfo, PointerEventTypes } from '../Events/pointe
 import { Nullable } from '../types';
 import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { PickingInfo } from '../Collisions/pickingInfo';
-import { Vector2, Matrix } from '../Maths/math';
+import { Vector2, Matrix } from '../Maths/math.vector';
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Constants } from '../Engines/constants';
 import { ActionEvent } from '../Actions/actionEvent';
@@ -803,7 +803,8 @@ export class InputManager {
         }
 
         if (attachUp) {
-            window.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
+            let hostWindow = scene.getEngine().getHostWindow();
+            hostWindow.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
         }
     }
 
@@ -821,6 +822,7 @@ export class InputManager {
 
         // Pointer
         canvas.removeEventListener(eventPrefix + "move", <any>this._onPointerMove);
+        canvas.removeEventListener(this._wheelEventName, <any>this._onPointerMove);
         canvas.removeEventListener(eventPrefix + "down", <any>this._onPointerDown);
         window.removeEventListener(eventPrefix + "up", <any>this._onPointerUp);
 

@@ -1,6 +1,6 @@
 import { Logger } from "../../../Misc/logger";
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
-import { Vector3, Tmp } from "../../../Maths/math";
+import { Vector3, TmpVectors } from "../../../Maths/math.vector";
 import { Camera } from "../../../Cameras/camera";
 import { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
@@ -13,6 +13,8 @@ import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRendere
 import { Scene } from "../../../scene";
 import { _TypeStore } from '../../../Misc/typeStore';
 import { EngineStore } from '../../../Engines/engineStore';
+
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 import "../../../Shaders/ssao2.fragment";
 import "../../../Shaders/ssaoCombine.fragment";
@@ -416,7 +418,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
         this._ssaoCombinePostProcess.onApply = (effect: Effect) => {
             let viewport = this._scene.activeCamera!.viewport;
-            effect.setVector4("viewport", Tmp.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
+            effect.setVector4("viewport", TmpVectors.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
             effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);
         };
         this._ssaoCombinePostProcess.samples = this.textureSamples;

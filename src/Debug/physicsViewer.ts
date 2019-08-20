@@ -4,7 +4,8 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
-import { Quaternion, Color3, Vector3 } from "../Maths/math";
+import { Quaternion, Vector3 } from "../Maths/math.vector";
+import { Color3 } from '../Maths/math.color';
 import { Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial";
@@ -253,7 +254,7 @@ export class PhysicsViewer {
             case PhysicsImpostor.NoImpostor:
                 if (targetMesh) {
                     // Handle compound impostors
-                    var childMeshes = targetMesh.getChildMeshes().filter((c) => {return c.physicsImpostor ? 1 : 0; });
+                    var childMeshes = targetMesh.getChildMeshes().filter((c) => { return c.physicsImpostor ? 1 : 0; });
                     childMeshes.forEach((m) => {
                         var a = this._getDebugBoxMesh(utilityLayerScene);
                         a.parent = m;

@@ -2,8 +2,10 @@ import { NodeMaterialBlock } from '../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to multiply 2 vector4
+ * Block used to multiply 2 values
  */
 export class MultiplyBlock extends NodeMaterialBlock {
     /**
@@ -11,13 +13,14 @@ export class MultiplyBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("left", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("right", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this._inputs[1]._typeConnectionSource = this._inputs[0];
     }
 
     /**
@@ -59,3 +62,5 @@ export class MultiplyBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.MultiplyBlock"] = MultiplyBlock;

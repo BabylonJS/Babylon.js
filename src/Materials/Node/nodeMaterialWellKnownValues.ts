@@ -16,6 +16,6 @@ export enum NodeMaterialWellKnownValues {
     WorldViewProjection = 6,
     /** CameraPosition */
     CameraPosition = 7,
-    /** Will be filled by the block itself */
-    Automatic = 8
+    /** Fog Color */
+    FogColor = 8
 }

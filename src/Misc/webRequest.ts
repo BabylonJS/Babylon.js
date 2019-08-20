@@ -13,7 +13,7 @@ export class WebRequest {
     /**
      * Add callback functions in this array to update all the requests before they get sent to the network
      */
-    public static CustomRequestModifiers = new Array<(request: XMLHttpRequest) => void>();
+    public static CustomRequestModifiers = new Array<(request: XMLHttpRequest, url: string) => void>();
 
     private _injectCustomRequestHeaders(): void {
         for (let key in WebRequest.CustomRequestHeaders) {
@@ -126,7 +126,7 @@ export class WebRequest {
      */
     public open(method: string, url: string): void {
         for (var update of WebRequest.CustomRequestModifiers) {
-            update(this._xhr);
+            update(this._xhr, url);
         }
 
         // Clean url

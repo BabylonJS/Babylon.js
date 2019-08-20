@@ -1,5 +1,5 @@
 import { Collider } from './collider';
-import { Vector3 } from '../Maths/math';
+import { Vector3 } from '../Maths/math.vector';
 import { Nullable } from '../types';
 import { Observer } from '../Misc/observable';
 

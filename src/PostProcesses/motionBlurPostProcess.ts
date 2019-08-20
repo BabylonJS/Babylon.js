@@ -1,6 +1,6 @@
 import { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import { Vector2 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";

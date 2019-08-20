@@ -4,7 +4,7 @@ import { RuntimeAnimation } from "./runtimeAnimation";
 import { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
-import { Matrix, Quaternion, Tmp, Vector3 } from '../Maths/math';
+import { Matrix, Quaternion, Vector3, TmpVectors } from '../Maths/math.vector';
 import { PrecisionDate } from '../Misc/precisionDate';
 import { Bone } from '../Bones/bone';
 import { Node } from "../node";
@@ -748,9 +748,9 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
     originalValue: Matrix
 }): any {
     let normalizer = 1.0;
-    let finalPosition = Tmp.Vector3[0];
-    let finalScaling = Tmp.Vector3[1];
-    let finalQuaternion = Tmp.Quaternion[0];
+    let finalPosition = TmpVectors.Vector3[0];
+    let finalScaling = TmpVectors.Vector3[1];
+    let finalQuaternion = TmpVectors.Quaternion[0];
     let startIndex = 0;
     let originalAnimation = holder.animations[0];
     let originalValue = holder.originalValue;
@@ -778,9 +778,9 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
     for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
         var runtimeAnimation = holder.animations[animIndex];
         var scale = runtimeAnimation.weight / normalizer;
-        let currentPosition = Tmp.Vector3[2];
-        let currentScaling = Tmp.Vector3[3];
-        let currentQuaternion = Tmp.Quaternion[1];
+        let currentPosition = TmpVectors.Vector3[2];
+        let currentScaling = TmpVectors.Vector3[3];
+        let currentQuaternion = TmpVectors.Quaternion[1];
 
         runtimeAnimation.currentValue.decompose(currentScaling, currentQuaternion, currentPosition);
         currentScaling.scaleAndAddToRef(scale, finalScaling);

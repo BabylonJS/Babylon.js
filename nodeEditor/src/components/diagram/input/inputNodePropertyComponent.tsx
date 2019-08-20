@@ -2,18 +2,19 @@
 import * as React from "react";
 import { Vector2PropertyTabComponent } from '../../propertyTab/properties/vector2PropertyTabComponent';
 import { Vector3PropertyTabComponent } from '../../propertyTab/properties/vector3PropertyTabComponent';
-import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
 import { GlobalState } from '../../../globalState';
 import { InputNodeModel } from './inputNodeModel';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { OptionsLineComponent } from '../../../sharedComponents/optionsLineComponent';
 import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
-import { Vector2, Vector3, Matrix } from 'babylonjs/Maths/math';
 import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
 import { Color3PropertyTabComponent } from '../../propertyTab/properties/color3PropertyTabComponent';
 import { FloatPropertyTabComponent } from '../../propertyTab/properties/floatPropertyTabComponent';
 import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
 import { StringTools } from '../../../stringTools';
+import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
+import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
+import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
 
 interface IInputPropertyTabComponentProps {
     globalState: GlobalState;
@@ -27,119 +28,172 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
     }
 
     renderValue(globalState: GlobalState) {
-        let connection = this.props.inputNode.connection!;
-        switch (connection.type) {
+        let inputBlock = this.props.inputNode.inputBlock;
+        switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
                 return (
-                    <FloatPropertyTabComponent globalState={globalState} connection={connection} />
+                    <FloatPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 return (
-                    <Vector2PropertyTabComponent globalState={globalState} connection={connection} />
+                    <Vector2PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
             case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
-                    <Color3PropertyTabComponent globalState={globalState} connection={connection} />
+                    <Color3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
                 return (
-                    <Vector3PropertyTabComponent globalState={globalState} connection={connection} />
+                    <Vector3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
         }
+
         return null;
     }
 
     setDefaultValue() {
-        let connection = this.props.inputNode.connection!;
-        switch (connection.type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
-                connection.value = 0;
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector2:
-                connection.value = Vector2.Zero();
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
-                connection.value = Vector3.Zero();
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Matrix:
-                connection.value = Matrix.Identity();
-                break;
-        }
+        let inputBlock = this.props.inputNode.inputBlock;
+        inputBlock.setDefaultValue();
     }
 
     render() {
-        let connection = this.props.inputNode.connection!;
+        let inputBlock = this.props.inputNode.inputBlock;
 
-        var wellKnownOptions = [
-            { label: "World", value: NodeMaterialWellKnownValues.World },
-            { label: "WorldxView", value: NodeMaterialWellKnownValues.WorldView },
-            { label: "WorldxViewxProjection", value: NodeMaterialWellKnownValues.WorldViewProjection },
-            { label: "View", value: NodeMaterialWellKnownValues.View },
-            { label: "ViewxProjection", value: NodeMaterialWellKnownValues.ViewProjection },
-            { label: "Projection", value: NodeMaterialWellKnownValues.Projection },
-            { label: "Camera position", value: NodeMaterialWellKnownValues.CameraPosition },
-            { label: "Automatic", value: NodeMaterialWellKnownValues.Automatic },
+        var wellKnownOptions: {label: string, value: NodeMaterialWellKnownValues}[] = [];
+        var attributeOptions: {label: string, value: string}[] = [];
+        var animationOptions: {label: string, value: AnimatedInputBlockTypes}[] = [];
+
+        switch(inputBlock.type) {      
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                animationOptions = [
+                    { label: "None", value: AnimatedInputBlockTypes.None },
+                    { label: "Time", value: AnimatedInputBlockTypes.Time },
+                ];
+                break;      
+            case NodeMaterialBlockConnectionPointTypes.Matrix:
+                wellKnownOptions = [
+                    { label: "World", value: NodeMaterialWellKnownValues.World },
+                    { label: "WorldxView", value: NodeMaterialWellKnownValues.WorldView },
+                    { label: "WorldxViewxProjection", value: NodeMaterialWellKnownValues.WorldViewProjection },
+                    { label: "View", value: NodeMaterialWellKnownValues.View },
+                    { label: "ViewxProjection", value: NodeMaterialWellKnownValues.ViewProjection },
+                    { label: "Projection", value: NodeMaterialWellKnownValues.Projection }
+                ];
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                wellKnownOptions = [
+                    { label: "Fog color", value: NodeMaterialWellKnownValues.FogColor }
+                ];
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                attributeOptions = [
+                    { label: "color", value: "color" }
+                ];
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                attributeOptions = [
+                    { label: "uv", value: "uv" },
+                    { label: "uv2", value: "uv2" },
+                ];
+                break;                
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+                wellKnownOptions = [
+                    { label: "Camera position", value: NodeMaterialWellKnownValues.CameraPosition }
+                ];
+                attributeOptions = [
+                    { label: "position", value: "position" },
+                    { label: "normal", value: "normal" },
+                    { label: "tangent", value: "tangent" },        
+                ];
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                    attributeOptions = [
+                        { label: "matricesIndices", value: "matricesIndices" },
+                        { label: "matricesWeights", value: "matricesWeights" }
+                    ];
+                    break;                
+        }
+
+        var modeOptions = [
+            { label: "User-defined", value: 0 }
         ];
 
-        var attributeOptions = [
-            { label: "position", value: "position" },
-            { label: "normal", value: "normal" },
-            { label: "tangent", value: "tangent" },
-            { label: "color", value: "color" },
-            { label: "uv", value: "uv" },
-            { label: "uv2", value: "uv2" },
-        ];
+        if (attributeOptions.length > 0) {
+            modeOptions.push({ label: "Mesh attribute", value: 1 });
+        }
+
+        if (wellKnownOptions.length > 0) {
+            modeOptions.push({ label: "Well-known value", value: 2 });
+        }
 
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextLineComponent label="Type" value={StringTools.GetBaseType(connection.type)} />
+                    {
+                        !inputBlock.isAttribute &&
+                        <TextInputLineComponent  globalState={this.props.globalState} label="Name" propertyName="name" target={inputBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                    }
+                    <TextLineComponent label="Type" value={StringTools.GetBaseType(inputBlock.type)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
-                    <CheckBoxLineComponent label="Is mesh attribute" onSelect={value => {
-                        if (!value) {
-                            connection.isUniform = true;
-                            this.setDefaultValue();
-                        } else {
-                            connection.isAttribute = true;
-                        }
-                        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-                        this.forceUpdate();
-                    }} isSelected={() => connection!.isAttribute} />
+                    <OptionsLineComponent label="Mode" options={modeOptions} target={inputBlock} 
+                        noDirectUpdate={true}
+                        getSelection={(block) => {
+                            if (block.isAttribute) {
+                                return 1;
+                            }
+
+                            if (block.isWellKnownValue) {
+                                return 2;
+                            }
+
+                            return 0;
+                        }}
+                        onSelect={(value: any) => {
+                            switch (value) {
+                                case 0:
+                                    inputBlock.isUniform = true;
+                                    inputBlock.setAsWellKnownValue(null);
+                                    this.setDefaultValue();
+                                    break;
+                                case 1:
+                                    inputBlock.setAsAttribute(attributeOptions[0].value);
+                                    break;
+                                case 2:
+                                    inputBlock.setAsWellKnownValue(wellKnownOptions[0].value);
+                                    break;
+                            }
+                            this.forceUpdate();
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        }} />
                     {
-                        connection.isAttribute &&
-                        <OptionsLineComponent label="Attribute" valuesAreStrings={true} options={attributeOptions} target={connection} propertyName="name" onSelect={(value: any) => {
-                            connection.setAsAttribute(value);
+                        inputBlock.isAttribute &&
+                        <OptionsLineComponent label="Attribute" valuesAreStrings={true} options={attributeOptions} target={inputBlock} propertyName="name" onSelect={(value: any) => {
+                            inputBlock.setAsAttribute(value);
                             this.forceUpdate();
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
                     }
                     {
-                        connection.isUniform &&
-                        <CheckBoxLineComponent label="Is well known value" onSelect={value => {
-                            if (value) {
-                                connection!.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
-                            } else {
-                                connection!.setAsWellKnownValue(null);
-                                this.setDefaultValue();
-                            }
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        inputBlock.isUniform && animationOptions.length > 0 &&
+                        <OptionsLineComponent label="Animation type" options={animationOptions} target={inputBlock} propertyName="animationType" onSelect={(value: any) => {
                             this.forceUpdate();
-                        }} isSelected={() => connection!.isWellKnownValue} />
-                    }
+                            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        }} />
+                    }   
                     {
-                        connection.isUniform && !connection.isWellKnownValue &&
+                        inputBlock.isUniform && !inputBlock.isWellKnownValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
+                        <CheckBoxLineComponent label="Visible in the Inspector" target={inputBlock} propertyName="visibleInInspector"/>
+                    }                 
+                    {
+                        inputBlock.isUniform && !inputBlock.isWellKnownValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
                         this.renderValue(this.props.globalState)
                     }
                     {
-                        connection.isUniform && connection.isWellKnownValue &&
-                        <OptionsLineComponent label="Well known value" options={wellKnownOptions} target={connection} propertyName="wellKnownValue" onSelect={(value: any) => {
-                            connection.setAsWellKnownValue(value);
+                        inputBlock.isUniform && inputBlock.isWellKnownValue &&
+                        <OptionsLineComponent label="Well known value" options={wellKnownOptions} target={inputBlock} propertyName="wellKnownValue" onSelect={(value: any) => {
+                            inputBlock.setAsWellKnownValue(value);
                             this.forceUpdate();
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />

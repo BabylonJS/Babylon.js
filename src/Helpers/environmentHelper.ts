@@ -2,7 +2,8 @@ import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
 import { Scene } from "../scene";
-import { Vector3, Color3, Color4, Plane } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
+import { Color3, Color4 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -16,6 +17,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Meshes/Builders/planeBuilder";
 import "../Meshes/Builders/boxBuilder";
+import { Plane } from '../Maths/math.plane';
 
 /**
  * Represents the different options available during the creation of

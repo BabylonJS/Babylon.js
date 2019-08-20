@@ -10,7 +10,7 @@ var config = require("../../Config/config");
 const indexExlclusion = ["States", "EmitterTypes"];
 const forbiddenImports = ["meshBuilder"];
 
-const mapping = { };
+const mapping = {};
 config.modules.forEach(moduleName => {
     mapping[config[moduleName].build.umd.packageName] = moduleName;
 });
@@ -196,7 +196,7 @@ var validateImports = function(data, fileLocation, options) {
 function gulpValidateImports(options) {
     var globalErrors = [];
 
-    return through.obj(function (file, enc, cb) {
+    return through.obj(function(file, enc, cb) {
         if (file.isNull()) {
             cb(null, file);
             return;
@@ -204,7 +204,7 @@ function gulpValidateImports(options) {
         if (file.isStream()) {
             cb(new PluginError("Validate imports", "Streaming not supported."));
         }
-        
+
         let data = file.contents.toString();
         let result = validateImports(data, file.path, options);
 
@@ -218,20 +218,20 @@ function gulpValidateImports(options) {
         }
 
         return cb();
-    }, 
-    function endStream(cb) {
-        if (globalErrors.length > 0) {
-            for (let error of globalErrors) {
-                colorConsole.error(error.message + " " + error.path);
+    },
+        function endStream(cb) {
+            if (globalErrors.length > 0) {
+                for (let error of globalErrors) {
+                    colorConsole.error(error.message + " " + error.path);
+                }
+                colorConsole.error(`Import validation failed with ${globalErrors.length} errors.`);
+
+                var finalMessage = new PluginError('gulp-validateImports', `gulp-validateImports: ${globalErrors.length} errors found.`);
+                this.emit('error', finalMessage);
             }
-            colorConsole.error(`Import validation failed with ${globalErrors.length} errors.`);
 
-            var finalMessage = new PluginError('gulp-validateImports', `gulp-validateImports: ${globalErrors.length} errors found.`);
-            this.emit('error', finalMessage);
-        }
-
-        cb();
-    });
+            cb();
+        });
 }
 
 module.exports = gulpValidateImports;

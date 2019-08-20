@@ -1,4 +1,4 @@
-import { Vector3, Matrix } from "../../Maths/math";
+import { Vector3, Matrix } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";

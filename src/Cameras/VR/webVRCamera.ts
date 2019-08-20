@@ -4,7 +4,7 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { TargetCamera } from "../../Cameras/targetCamera";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
-import { Quaternion, Matrix, Vector3 } from "../../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../../Maths/math.vector";
 import { Gamepad } from "../../Gamepads/gamepad";
 import { PoseEnabledControllerType } from "../../Gamepads/Controllers/poseEnabledController";
 import { WebVRController } from "../../Gamepads/Controllers/webVRController";
@@ -463,7 +463,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * @param poseData Pose coming from the device
      */
     updateFromDevice(poseData: DevicePose) {
-        if (poseData && poseData.orientation) {
+        if (poseData && poseData.orientation && poseData.orientation.length === 4) {
             this.rawPose = poseData;
             this._deviceRoomRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
 
@@ -508,7 +508,9 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         if (this._vrDevice) {
             this.getEngine().enableVR();
         }
-        window.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
+
+        let hostWindow = this._scene.getEngine().getHostWindow();
+        hostWindow.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
     }
 
     /**

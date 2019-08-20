@@ -31,6 +31,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={transformNode}
+                    lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={transformNode.id} />

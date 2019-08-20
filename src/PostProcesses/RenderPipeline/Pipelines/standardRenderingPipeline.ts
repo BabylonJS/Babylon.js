@@ -1,8 +1,8 @@
 import { Nullable } from "../../../types";
 import { serialize, serializeAsTexture, SerializationHelper } from "../../../Misc/decorators";
-import { IAnimatable } from "../../../Misc/tools";
+import { IAnimatable } from '../../../Animations/animatable.interface';
 import { Logger } from "../../../Misc/logger";
-import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math";
+import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math.vector";
 import { Scalar } from "../../../Maths/math.scalar";
 import { Camera } from "../../../Cameras/camera";
 import { Effect } from "../../../Materials/effect";
@@ -22,6 +22,8 @@ import { _TypeStore } from '../../../Misc/typeStore';
 import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
 
 declare type Animation = import("../../../Animations/animation").Animation;
+
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 import "../../../Shaders/standard.fragment";
 /**
@@ -333,6 +335,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     private _floatTextureType: number;
 
+    private _camerasToBeAttached: Array<Camera> = [];
+
     @serialize()
     private _ratio: number;
 
@@ -548,7 +552,9 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      */
     constructor(name: string, scene: Scene, ratio: number, originalPostProcess: Nullable<PostProcess> = null, cameras?: Camera[]) {
         super(scene.getEngine(), name);
-        this._cameras = cameras || [];
+        this._cameras = cameras || scene.cameras;
+        this._cameras = this._cameras.slice();
+        this._camerasToBeAttached = this._cameras.slice();
 
         // Initialize
         this._scene = scene;
@@ -568,6 +574,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         var scene = this._scene;
 
         this._disposePostProcesses();
+        if (this._cameras !== null) {
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
+            // get back cameras to be used to reattach pipeline
+            this._cameras = this._camerasToBeAttached.slice();
+        }
         this._reset();
 
         // Create pass post-process
