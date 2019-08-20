@@ -121,7 +121,7 @@ export class InputBlock extends NodeMaterialBlock {
 
         this.setDefaultValue();
 
-        this.registerOutput("output", type);
+        this.registerOutput("output", type, NodeMaterialBlockTargets.Vertex);
     }
 
     /**
