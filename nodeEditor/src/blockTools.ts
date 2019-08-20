@@ -17,7 +17,7 @@ import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fr
 import { NormalizeBlock } from 'babylonjs/Materials/Node/Blocks/normalizeBlock';
 import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
 import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
-import { TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
+import { TrigonometryBlock, TrigonometryBlockOperations } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
 import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
 import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
@@ -92,7 +92,47 @@ export class BlockTools {
             case "SubtractBlock":
                 return new SubtractBlock("Subtract"); 
             case "StepBlock":
-                return new StepBlock("Step");                                
+                return new StepBlock("Step");        
+            case "CosBlock": {
+                let cosBlock = new TrigonometryBlock("Cos");
+                cosBlock.operation = TrigonometryBlockOperations.Cos;
+                return cosBlock;
+            }
+            case "SinBlock": {
+                let sinBlock = new TrigonometryBlock("Sin");
+                sinBlock.operation = TrigonometryBlockOperations.Sin;
+                return sinBlock;
+            }
+            case "AbsBlock": {
+                let absBlock = new TrigonometryBlock("Abs");
+                absBlock.operation = TrigonometryBlockOperations.Abs;
+                return absBlock;
+            }
+            case "ExpBlock": {
+                let expBlock = new TrigonometryBlock("Exp");
+                expBlock.operation = TrigonometryBlockOperations.Exp;
+                return expBlock;
+            }
+            case "Exp2Block": {
+                let exp2Block = new TrigonometryBlock("Exp2");
+                exp2Block.operation = TrigonometryBlockOperations.Exp2;
+                return exp2Block;
+            }
+            case "RoundBlock": {
+                let roundBlock = new TrigonometryBlock("Round");
+                roundBlock.operation = TrigonometryBlockOperations.Round;
+                return roundBlock;
+            }
+            case "CeilingBlock": {
+                let ceilingBlock = new TrigonometryBlock("Ceiling");
+                ceilingBlock.operation = TrigonometryBlockOperations.Ceiling;
+                return ceilingBlock;
+            }     
+            case "FloorBlock": {
+                let floorBlock = new TrigonometryBlock("Floor");
+                floorBlock.operation = TrigonometryBlockOperations.Floor;
+                return floorBlock;
+            }                                    
         }
 
         return null;

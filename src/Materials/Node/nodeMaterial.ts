@@ -1112,7 +1112,7 @@ export class NodeMaterial extends PushMaterial {
                             continue;
                         }
 
-                        outputPoint.connectTo(inputPoint);
+                        outputPoint.connectTo(inputPoint, true);
                         this._restoreConnections(target, source, map);
                         continue;
                     }
