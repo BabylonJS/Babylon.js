@@ -1,3 +1,186 @@
+var engine = null;
+
+/**
+ * Compile the script in the editor, and run the preview in the canvas
+ */
+compileAndRun = function(parent, fpsLabel) {
+    // If we need to change the version, don't do this
+    if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null) return;
+
+    try {
+        parent.menuPG.hideWaitDiv();
+
+        if (!BABYLON.Engine.isSupported()) {
+            parent.utils.showError("Your browser does not support WebGL. Please, try to update it, or install a compatible one.", null);
+            return;
+        }
+
+        var showInspector = false;
+        parent.menuPG.showBJSPGMenu();
+        parent.monacoCreator.JsEditor.updateOptions({ readOnly: false });
+
+        if (BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
+            showInspector = true;
+        }
+
+        if (engine) {
+            try {
+                engine.dispose();
+            }
+            catch (ex) { }
+            engine = null;
+        }
+
+        var canvas = document.getElementById("renderCanvas");
+        document.getElementById("errorZone").style.display = 'none';
+        document.getElementById("errorZone").innerHTML = "";
+        document.getElementById("statusBar").innerHTML = "Loading assets... Please wait.";
+        var checkCamera = true;
+        var checkSceneCount = true;
+        var createEngineFunction = "createDefaultEngine";
+        var createSceneFunction;
+
+        parent.monacoCreator.getRunCode(function (code) {
+            var createDefaultEngine = function () {
+                return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+            }
+
+            var scene;
+            var defaultEngineZip = "new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true })";
+
+            if (code.indexOf("createEngine") !== -1) {
+                createEngineFunction = "createEngine";
+            }
+
+            // Check for different typos
+            if (code.indexOf("delayCreateScene") !== -1) { // delayCreateScene
+                createSceneFunction = "delayCreateScene";
+                checkCamera = false;
+            } else if (code.indexOf("createScene") !== -1) { // createScene
+                createSceneFunction = "createScene";
+            } else if (code.indexOf("CreateScene") !== -1) { // CreateScene
+                createSceneFunction = "CreateScene";
+            } else if (code.indexOf("createscene") !== -1) { // createscene
+                createSceneFunction = "createscene";
+            }
+
+            if (!createSceneFunction) {
+                // Just pasted code.
+                engine = createDefaultEngine();
+                scene = new BABYLON.Scene(engine);
+                var runScript = null;
+                eval("runScript = function(scene, canvas) {" + code + "}");
+                runScript(scene, canvas);
+
+                parent.zipTool.ZipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
+            } else {
+                var __createScene = null;
+                if (parent.settingsPG.ScriptLanguage == "JS") {
+                    code += "\n" + "__createScene = " + createSceneFunction + ";";
+                }
+                else {
+                    __createScene = createSceneFunction;
+                    var startCar = code.search('var ' + createSceneFunction);
+                    code = code.substr(0, startCar) + code.substr(startCar + 4);
+                }
+
+                // Execute the code
+                eval(code);
+
+                // Create engine
+                eval("engine = " + createEngineFunction + "()");
+                if (!engine) {
+                    parent.utils.showError("createEngine function must return an engine.", null);
+                    return;
+                }
+
+                // Create scene
+                eval("scene = " + __createScene + "()");
+
+                if (!scene) {
+                    parent.utils.showError(createSceneFunction + " function must return a scene.", null);
+                    return;
+                }
+
+                // if scene returns a promise avoid checks
+                if (scene.then) {
+                    checkCamera = false;
+                    checkSceneCount = false;
+                }
+
+                var createEngineZip = (createEngineFunction === "createEngine")
+                    ? "createEngine()"
+                    : defaultEngineZip;
+
+                parent.zipTool.zipCode =
+                    code + "\r\n\r\n" +
+                    "var engine = " + createEngineZip + ";\r\n" +
+                    "var scene = " + createSceneFunction + "();";
+
+            }
+
+            engine = engine;
+            engine.runRenderLoop(function () {
+                if (engine.scenes.length === 0) {
+                    return;
+                }
+
+                if (canvas.width !== canvas.clientWidth) {
+                    engine.resize();
+                }
+
+                var scene = engine.scenes[0];
+
+                if (scene.activeCamera || scene.activeCameras.length > 0) {
+                    scene.render();
+                }
+
+                fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+            }.bind(this));
+
+            if (checkSceneCount && engine.scenes.length === 0) {
+                parent.utils.showError("You must at least create a scene.", null);
+                return;
+            }
+
+            if (checkCamera && engine.scenes[0].activeCamera == null) {
+                parent.utils.showError("You must at least create a camera.", null);
+                return;
+            } else if (scene.then) {
+                scene.then(function () {
+                    document.getElementById("statusBar").innerHTML = "";
+                });
+            } else {
+                engine.scenes[0].executeWhenReady(function () {
+                    document.getElementById("statusBar").innerHTML = "";
+                });
+            }
+
+            if (scene) {
+                if (showInspector) {
+                    if (scene.then) {
+                        // Handle if scene is a promise
+                        scene.then(function (s) {
+                            if (!s.debugLayer.isVisible()) {
+                                s.debugLayer.show({ embedMode: true });
+                            }
+                        })
+                    } else {
+                        if (!scene.debugLayer.isVisible()) {
+                            scene.debugLayer.show({ embedMode: true });
+                        }
+                    }
+                }
+            }
+        }.bind(this));
+
+    } catch (e) {
+        parent.utils.showError(e.message, e);
+        // Also log error in console to help debug playgrounds
+        console.error(e);
+    }
+};
+
 /**
  * This JS file contains the main function
  */
@@ -11,7 +194,6 @@ class Main {
         this.currentSnippetTitle = null;
         this.currentSnippetDescription = null;
         this.currentSnippetTags = null;
-        this.engine = null;
         this.fpsLabel = document.getElementById("fpsLabel");
         this.scripts;
         this.previousHash = "";
@@ -39,8 +221,8 @@ class Main {
         // Resize the render view when resizing the window
         window.addEventListener("resize",
             function () {
-                if (this.engine) {
-                    this.engine.resize();
+                if (engine) {
+                    engine.resize();
                 }
             }.bind(this)
         );
@@ -59,7 +241,7 @@ class Main {
         // Display BJS version - Need a check in case of version selection
         if (BABYLON) this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
         // Run
-        this.parent.utils.setToMultipleID("runButton", "click", this.compileAndRun.bind(this));
+        this.parent.utils.setToMultipleID("runButton", "click", () => compileAndRun(this.parent, this.fpsLabel));
         // New
         this.parent.utils.setToMultipleID("newButton", "click", function () {
             this.parent.menuPG.removeAllOptions();
@@ -74,7 +256,7 @@ class Main {
         this.parent.utils.setToMultipleID("saveButton", "click", this.askForSave.bind(this));
         // Zip
         this.parent.utils.setToMultipleID("zipButton", "click", function () {
-            this.parent.zipTool.getZip(this.engine);
+            this.parent.zipTool.getZip(engine);
         }.bind(this));
         // Themes
         this.parent.utils.setToMultipleID("darkTheme", "click", function () {
@@ -131,7 +313,7 @@ class Main {
         // FullScreen
         this.parent.utils.setToMultipleID("fullscreenButton", "click", function () {
             this.parent.menuPG.removeAllOptions();
-            this.parent.menuPG.goFullscreen(this.engine);
+            this.parent.menuPG.goFullscreen(engine);
         }.bind(this));
         // Editor fullScreen
         this.parent.utils.setToMultipleID("editorFullscreenButton", "click", function () {
@@ -211,7 +393,7 @@ class Main {
                     this.parent.monacoCreator.JsEditor.setValue(xhr.responseText);
                     this.parent.monacoCreator.JsEditor.setPosition({ lineNumber: 0, column: 0 });
                     this.parent.monacoCreator.BlockEditorChange = false;
-                    this.compileAndRun();
+                    compileAndRun(this.parent, this.fpsLabel);
 
                     this.currentSnippetToken = null;
                 }
@@ -399,7 +581,7 @@ class Main {
         }
         this.parent.monacoCreator.JsEditor.setPosition({ lineNumber: 11, column: 0 });
         this.parent.monacoCreator.JsEditor.focus();
-        this.compileAndRun();
+        compileAndRun(this.parent, this.fpsLabel);
     };
 
     clear() {
@@ -494,7 +676,7 @@ class Main {
                     location.href = newUrl;
                     // Hide the complete title & co message
                     this.hideNoMetadata();
-                    this.compileAndRun();
+                    compileAndRun(this.parent, this.fpsLabel);
                 } else {
                     this.parent.utils.showError("Unable to save your code. It may be too long.", null);
                 }
@@ -527,191 +709,13 @@ class Main {
         }
     };
 
-    /**
-         * Compile the script in the editor, and run the preview in the canvas
-         */
-    compileAndRun() {
-        // If we need to change the version, don't do this
-        if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null) return;
-
-        try {
-            this.parent.menuPG.hideWaitDiv();
-
-            if (!BABYLON.Engine.isSupported()) {
-                this.parent.utils.showError("Your browser does not support WebGL. Please, try to update it, or install a compatible one.", null);
-                return;
-            }
-
-            var showInspector = false;
-            this.parent.menuPG.showBJSPGMenu();
-            this.parent.monacoCreator.JsEditor.updateOptions({ readOnly: false });
-
-            if (BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
-                showInspector = true;
-            }
-
-            if (this.engine) {
-                try {
-                    this.engine.dispose();
-                }
-                catch(ex) {}
-                this.engine = null;
-            }
-
-            var canvas = document.getElementById("renderCanvas");
-            document.getElementById("errorZone").style.display = 'none';
-            document.getElementById("errorZone").innerHTML = "";
-            document.getElementById("statusBar").innerHTML = "Loading assets... Please wait.";
-            var checkCamera = true;
-            var checkSceneCount = true;
-            var createEngineFunction = "createDefaultEngine";
-            var createSceneFunction;
-
-            this.parent.monacoCreator.getRunCode(function (code) {
-                // Need these variables for "eval" purpose
-                var engine = this.engine;
-                var delayCreateScene = null;
-                var createScene = null;
-                var CreateScene = null;
-                var createscene = null;
-
-                var createDefaultEngine = function () {
-                    return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
-                }
-
-                var scene;
-                var defaultEngineZip = "new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true })";
-
-                if (code.indexOf("createEngine") !== -1) {
-                    createEngineFunction = "createEngine";
-                }
-
-                // Check for different typos
-                if (code.indexOf("delayCreateScene") !== -1) { // createScene
-                    createSceneFunction = "delayCreateScene";
-                    checkCamera = false;
-                } else if (code.indexOf("createScene") !== -1) { // createScene
-                    createSceneFunction = "createScene";
-                } else if (code.indexOf("CreateScene") !== -1) { // CreateScene
-                    createSceneFunction = "CreateScene";
-                } else if (code.indexOf("createscene") !== -1) { // createscene
-                    createSceneFunction = "createscene";
-                }
-
-                if (!createSceneFunction) {
-                    // Just pasted code.
-                    engine = createDefaultEngine();
-                    scene = new BABYLON.Scene(engine);
-                    eval("runScript = function(scene, canvas) {" + code + "}");
-                    runScript(scene, canvas);
-
-                    this.parent.zipTool.ZipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
-                } else {
-                    var startCar = code.search('var ' + createSceneFunction);
-                    code = code.substr(0, startCar) + code.substr(startCar + 4);
-
-                    // Execute the code
-                    eval(code);
-                    // Create engine
-                    eval("engine = " + createEngineFunction + "()");
-                    if (!engine) {
-                        this.parent.utils.showError("createEngine function must return an engine.", null);
-                        return;
-                    }
-
-                    // Create scene
-                    eval("scene = " + createSceneFunction + "()");
-
-                    if (!scene) {
-                        this.parent.utils.showError(createSceneFunction + " function must return a scene.", null);
-                        return;
-                    }
-
-                    // if scene returns a promise avoid checks
-                    if (scene.then) {
-                        checkCamera = false;
-                        checkSceneCount = false;
-                    }
-
-                    var createEngineZip = (createEngineFunction === "createEngine")
-                        ? "createEngine()"
-                        : defaultEngineZip;
-
-                    this.parent.zipTool.zipCode =
-                        code + "\r\n\r\n" +
-                        "var engine = " + createEngineZip + ";\r\n" +
-                        "var scene = " + createSceneFunction + "();";
-
-                }
-
-                this.engine = engine;
-                this.engine.runRenderLoop(function () {
-                    if (this.engine.scenes.length === 0) {
-                        return;
-                    }
-
-                    if (canvas.width !== canvas.clientWidth) {
-                        this.engine.resize();
-                    }
-
-                    var scene = this.engine.scenes[0];
-
-                    if (scene.activeCamera || scene.activeCameras.length > 0) {
-                        scene.render();
-                    }
-
-                    this.fpsLabel.innerHTML = this.engine.getFps().toFixed() + " fps";
-                }.bind(this));
-
-                if (checkSceneCount && this.engine.scenes.length === 0) {
-                    this.parent.utils.showError("You must at least create a scene.", null);
-                    return;
-                }
-
-                if (checkCamera && this.engine.scenes[0].activeCamera == null) {
-                    this.parent.utils.showError("You must at least create a camera.", null);
-                    return;
-                } else if (scene.then) {
-                    scene.then(function () {
-                        document.getElementById("statusBar").innerHTML = "";
-                    });
-                } else {
-                    this.engine.scenes[0].executeWhenReady(function () {
-                        document.getElementById("statusBar").innerHTML = "";
-                    });
-                }
-
-                if (scene) {
-                    if (showInspector) {
-                        if (scene.then) {
-                            // Handle if scene is a promise
-                            scene.then(function (s) {
-                                if (!s.debugLayer.isVisible()) {
-                                    s.debugLayer.show({ embedMode: true });
-                                }
-                            })
-                        } else {
-                            if (!scene.debugLayer.isVisible()) {
-                                scene.debugLayer.show({ embedMode: true });
-                            }
-                        }
-                    }
-                }
-            }.bind(this));
-
-        } catch (e) {
-            this.parent.utils.showError(e.message, e);
-            // Also log error in console to help debug playgrounds
-            console.error(e);
-        }
-    };
 
     /**
          * Toggle the code editor
          */
     toggleEditor() {
         var editorButton = document.getElementById("editorButton1280");
-        var scene = this.engine.scenes[0];
+        var scene = engine.scenes[0];
 
         // If the editor is present
         if (editorButton.classList.contains('checked')) {
@@ -723,7 +727,7 @@ class Main {
             this.parent.splitInstance.setSizes([50, 50]);  // Reset
             this.parent.utils.setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
-        this.engine.resize();
+        engine.resize();
 
         if (scene.debugLayer.isVisible()) {
             scene.debugLayer.show({ embedMode: true });
@@ -735,7 +739,7 @@ class Main {
      */
     toggleDebug() {
         // Always showing the debug layer, because you can close it by itself
-        var scene = this.engine.scenes[0];
+        var scene = engine.scenes[0];
         if (scene.debugLayer.isVisible()) {
             scene.debugLayer.hide();
         }
@@ -810,7 +814,7 @@ class Main {
 
                                 this.parent.monacoCreator.JsEditor.setPosition({ lineNumber: 0, column: 0 });
                                 this.parent.monacoCreator.BlockEditorChange = false;
-                                this.compileAndRun();
+                                compileAndRun(this.parent, this.fpsLabel);
                             }
                         }
                     }.bind(this);
