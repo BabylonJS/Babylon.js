@@ -41,6 +41,7 @@ namespace babylon
 
     void RuntimeImpl::Resume()
     {
+        std::unique_lock<std::mutex> lock(m_suspendMutex);
         m_suspended = false;
         m_suspendVariable.notify_one();
     }
