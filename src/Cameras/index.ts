@@ -11,6 +11,7 @@ export * from "./deviceOrientationCamera";
 export * from "./flyCamera";
 export * from "./flyCameraInputsManager";
 export * from "./followCamera";
+export * from "./followCameraInputsManager";
 export * from "./gamepadCamera";
 export * from "./Stereoscopic/index";
 export * from "./universalCamera";
