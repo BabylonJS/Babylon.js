@@ -554,7 +554,7 @@ class Main {
                 try {
                     this.engine.dispose();
                 }
-                catch(ex) {}
+                catch (ex) { }
                 this.engine = null;
             }
 
@@ -587,7 +587,7 @@ class Main {
                 }
 
                 // Check for different typos
-                if (code.indexOf("delayCreateScene") !== -1) { // createScene
+                if (code.indexOf("delayCreateScene") !== -1) { // delayCreateScene
                     createSceneFunction = "delayCreateScene";
                     checkCamera = false;
                 } else if (code.indexOf("createScene") !== -1) { // createScene
@@ -602,16 +602,25 @@ class Main {
                     // Just pasted code.
                     engine = createDefaultEngine();
                     scene = new BABYLON.Scene(engine);
+                    var runScript = null;
                     eval("runScript = function(scene, canvas) {" + code + "}");
                     runScript(scene, canvas);
 
                     this.parent.zipTool.ZipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
                 } else {
-                    var startCar = code.search('var ' + createSceneFunction);
-                    code = code.substr(0, startCar) + code.substr(startCar + 4);
+                    var __createScene = null;
+                    if (this.parent.settingsPG.ScriptLanguage == "JS") {
+                        code += "\n" + "__createScene = " + createSceneFunction + ";";
+                    }
+                    else {
+                        __createScene = createSceneFunction;
+                        var startCar = code.search('var ' + createSceneFunction);
+                        code = code.substr(0, startCar) + code.substr(startCar + 4);
+                    }
 
                     // Execute the code
                     eval(code);
+
                     // Create engine
                     eval("engine = " + createEngineFunction + "()");
                     if (!engine) {
@@ -620,7 +629,7 @@ class Main {
                     }
 
                     // Create scene
-                    eval("scene = " + createSceneFunction + "()");
+                    eval("scene = " + __createScene + "()");
 
                     if (!scene) {
                         this.parent.utils.showError(createSceneFunction + " function must return a scene.", null);
