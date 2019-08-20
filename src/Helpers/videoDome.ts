@@ -230,7 +230,12 @@ export class VideoDome extends TransformNode {
                 // Use 0.99999 to boost perf by not switching program
                 this._videoTexture.uScale = this._halfDome ? 0.99999 : 0.5;
                 this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
-                    this._videoTexture.uOffset = camera.isRightCamera ? 0.5 : 0.0;
+                    if(this._halfDome) {
+                        // due to the way the video is displayed (and half hidden) we need to switch eyes.
+                        this._videoTexture.uOffset = camera.isRightCamera ? 0.0 : 0.5;
+                    } else {
+                        this._videoTexture.uOffset = camera.isRightCamera ? 0.5 : 0.0;
+                    }
                 });
                 break;
             case VideoDome.MODE_TOPBOTTOM:
