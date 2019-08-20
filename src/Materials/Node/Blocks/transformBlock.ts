@@ -106,7 +106,7 @@ export class TransformBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.complementW = ${this.complementW};\r\n`;
 
         return codeString;
-    } 
+    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.TransformBlock"] = TransformBlock;

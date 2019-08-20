@@ -62,7 +62,7 @@ export class AlphaTestBlock extends NodeMaterialBlock {
 
         return this;
     }
-      
+
     protected _dumpPropertiesCode() {
         var codeString = `${this._codeVariableName}.alphaCutOff = ${this.alphaCutOff};\r\n`;
 
