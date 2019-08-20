@@ -214,10 +214,11 @@ export class NodeMaterialConnectionPoint {
     /**
      * Connect this point to another connection point
      * @param connectionPoint defines the other connection point
+     * @param ignoreConstraints defines if the system will ignore connection type constraints (default is false)
      * @returns the current connection point
      */
-    public connectTo(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint {
-        if (!this.canConnectTo(connectionPoint)) {
+    public connectTo(connectionPoint: NodeMaterialConnectionPoint, ignoreConstraints = false): NodeMaterialConnectionPoint {
+        if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
             throw "Cannot connect two different connection types.";
         }
 
