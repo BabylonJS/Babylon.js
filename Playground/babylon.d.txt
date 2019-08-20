@@ -58336,6 +58336,10 @@ declare module BABYLON {
          */
         lensFlareDistortionStrength: number;
         /**
+         * Configures the blur intensity used for for lens flare (halo)
+         */
+        lensFlareBlurWidth: number;
+        /**
          * Lens star texture must be used to simulate rays on the flares and is available
          * in the documentation
          */
