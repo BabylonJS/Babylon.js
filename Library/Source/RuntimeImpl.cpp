@@ -18,6 +18,10 @@ namespace babylon
 
     RuntimeImpl::~RuntimeImpl()
     {
+        if (m_suspended)
+        {
+            Resume();
+        }
         m_cancelSource.cancel();
         m_thread.join();
     }
