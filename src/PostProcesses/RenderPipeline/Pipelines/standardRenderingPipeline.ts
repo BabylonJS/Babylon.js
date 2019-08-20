@@ -254,6 +254,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     @serialize()
     public lensFlareDistortionStrength: number = 16.0;
     /**
+     * Configures the blur intensity used for for lens flare (halo)
+     */
+    @serialize()
+    public lensFlareBlurWidth: number = 512.0;
+    /**
      * Lens star texture must be used to simulate rays on the flares and is available
      * in the documentation
      */
@@ -956,7 +961,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         this.lensFlarePostProcess = new PostProcess("HDRLensFlare", "standard", ["strength", "ghostDispersal", "haloWidth", "resolution", "distortionStrength"], ["lensColorSampler"], ratio / 2, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE", Constants.TEXTURETYPE_UNSIGNED_INT);
         this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlare", () => { return this.lensFlarePostProcess; }, true));
 
-        this._createBlurPostProcesses(scene, ratio / 4, 2);
+        this._createBlurPostProcesses(scene, ratio / 4, 2, "lensFlareBlurWidth");
 
         this.lensFlareComposePostProcess = new PostProcess("HDRLensFlareCompose", "standard", ["lensStarMatrix"], ["otherSampler", "lensDirtSampler", "lensStarSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE_COMPOSE", Constants.TEXTURETYPE_UNSIGNED_INT);
         this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlareCompose", () => { return this.lensFlareComposePostProcess; }, true));
