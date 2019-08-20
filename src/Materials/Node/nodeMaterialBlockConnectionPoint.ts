@@ -67,23 +67,6 @@ export class NodeMaterialConnectionPoint {
             return this._typeConnectionSource.type;
         }
 
-        if (this._type === NodeMaterialBlockConnectionPointTypes.InvertInput && this._typeConnectionSource) {
-            switch (this._typeConnectionSource.type) {
-                case NodeMaterialBlockConnectionPointTypes.Color3:
-                    return NodeMaterialBlockConnectionPointTypes.Vector3;
-
-                case NodeMaterialBlockConnectionPointTypes.Color4:
-                    return NodeMaterialBlockConnectionPointTypes.Vector4;
-
-                case NodeMaterialBlockConnectionPointTypes.Vector3:
-                    return NodeMaterialBlockConnectionPointTypes.Color3;
-
-                case NodeMaterialBlockConnectionPointTypes.Vector4:
-                    return NodeMaterialBlockConnectionPointTypes.Color4;
-            }
-            return this._typeConnectionSource.type;
-        }
-
         return this._type;
     }
 
@@ -197,6 +180,31 @@ export class NodeMaterialConnectionPoint {
      */
     public canConnectTo(connectionPoint: NodeMaterialConnectionPoint) {
         if (this.type !== connectionPoint.type && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+            // Equivalents
+            switch (this.type) {
+                case NodeMaterialBlockConnectionPointTypes.Vector3: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color3) {
+                        return true;
+                    }
+                }
+                case NodeMaterialBlockConnectionPointTypes.Vector4: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color4) {
+                        return true;
+                    }
+                }
+                case NodeMaterialBlockConnectionPointTypes.Color3: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
+                        return true;
+                    }
+                }
+                case NodeMaterialBlockConnectionPointTypes.Color4: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                        return true;
+                    }
+                }
+            }
+
+            // Accepted types
             return (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1);
         }
 
