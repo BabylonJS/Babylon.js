@@ -52239,6 +52239,7 @@ declare module BABYLON {
         private _injectVertexCode;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
@@ -52452,7 +52453,8 @@ declare module BABYLON {
         private _target;
         private _isFinalMerger;
         private _isInput;
-        protected _codeVariableName: string;
+        /** @hidden */
+        _codeVariableName: string;
         /** @hidden */
         _inputs: NodeMaterialConnectionPoint[];
         /** @hidden */
@@ -53366,6 +53368,9 @@ declare module BABYLON {
          */
         readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -53460,6 +53465,9 @@ declare module BABYLON {
          */
         readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
