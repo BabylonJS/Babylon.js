@@ -17,7 +17,10 @@ class SettingsPG {
             '.navbar .select .toDisplay .subSelect .toDisplaySub',
             '#fpsLabel',
             '.save-form',
-            '#switchWrapper'
+            '#switchWrapper',
+            '.navbarBottom',
+            '.navbarBottom .links .link a',
+            '.button'
         ];
         // The elements that will color with theme
         this.elementToTheme = [
