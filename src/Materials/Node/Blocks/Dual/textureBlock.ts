@@ -283,6 +283,16 @@ export class TextureBlock extends NodeMaterialBlock {
         return this;
     }
 
+    protected _dumpPropertiesCode() {
+        if (!this.texture) {
+            return "";
+        }
+
+        var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\r\n`;
+
+        return codeString;
+    }
+
     public serialize(): any {
         let serializationObject = super.serialize();
 
