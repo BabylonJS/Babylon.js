@@ -36287,6 +36287,7 @@ declare module BABYLON {
         private _storedBeta;
         private _storedRadius;
         private _storedTarget;
+        private _storedTargetScreenOffset;
         /**
          * Stores the current state of the camera (alpha, beta, radius and target)
          * @returns the camera itself
