@@ -521,7 +521,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Vertex
         for (var vertexOutputNode of vertexNodes) {
-            vertexOutputNode.build(this._vertexCompilationState);
+            vertexOutputNode.build(this._vertexCompilationState, vertexNodes);
         }
 
         // Fragment
@@ -534,7 +534,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         for (var fragmentOutputNode of fragmentNodes) {
-            fragmentOutputNode.build(this._fragmentCompilationState);
+            fragmentOutputNode.build(this._fragmentCompilationState, fragmentNodes);
         }
 
         // Finalize
