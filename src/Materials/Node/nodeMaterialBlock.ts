@@ -191,7 +191,7 @@ export class NodeMaterialBlock {
      * @param name defines the connection point name
      * @param type defines the connection point type
      * @param isOptional defines a boolean indicating that this input can be omitted
-     * @param target defines the target to use to limit the connection point (will be VetexAndFragment by default)
+     * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
      * @returns the current block
      */
     public registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional: boolean = false, target?: NodeMaterialBlockTargets) {
@@ -211,7 +211,7 @@ export class NodeMaterialBlock {
      * Register a new output. Must be called inside a block constructor
      * @param name defines the connection point name
      * @param type defines the connection point type
-     * @param target defines the target to use to limit the connection point (will be VetexAndFragment by default)
+     * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
      * @returns the current block
      */
     public registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets) {

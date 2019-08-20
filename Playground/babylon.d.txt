@@ -51446,11 +51446,13 @@ declare module BABYLON {
          * Gets the a output component
          */
         readonly a: NodeMaterialConnectionPoint;
+        readonly target: NodeMaterialBlockTargets;
         autoConfigure(): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        private readonly _isMixed;
         private _injectVertexCode;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
@@ -51727,7 +51729,7 @@ declare module BABYLON {
          * @param name defines the connection point name
          * @param type defines the connection point type
          * @param isOptional defines a boolean indicating that this input can be omitted
-         * @param target defines the target to use to limit the connection point (will be VetexAndFragment by default)
+         * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
          * @returns the current block
          */
         registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional?: boolean, target?: NodeMaterialBlockTargets): this;
@@ -51735,7 +51737,7 @@ declare module BABYLON {
          * Register a new output. Must be called inside a block constructor
          * @param name defines the connection point name
          * @param type defines the connection point type
-         * @param target defines the target to use to limit the connection point (will be VetexAndFragment by default)
+         * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
          * @returns the current block
          */
         registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets): this;
