@@ -73,11 +73,15 @@ export class InputBlock extends NodeMaterialBlock {
                         return this._type;
                     case "matricesIndices":
                     case "matricesWeights":
+                    case "world0":
+                    case "world1":
+                    case "world2":
+                    case "world3":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
                         return this._type;
                     case "color":
-                            this._type = NodeMaterialBlockConnectionPointTypes.Color4;
-                            return this._type;
+                        this._type = NodeMaterialBlockConnectionPointTypes.Color4;
+                        return this._type;
                 }
             }
 

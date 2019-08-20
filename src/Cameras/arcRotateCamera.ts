@@ -689,6 +689,7 @@ export class ArcRotateCamera extends TargetCamera {
     private _storedBeta: number;
     private _storedRadius: number;
     private _storedTarget: Vector3;
+    private _storedTargetScreenOffset: Vector2;
 
     /**
      * Stores the current state of the camera (alpha, beta, radius and target)
@@ -699,6 +700,7 @@ export class ArcRotateCamera extends TargetCamera {
         this._storedBeta = this.beta;
         this._storedRadius = this.radius;
         this._storedTarget = this._getTargetPosition().clone();
+        this._storedTargetScreenOffset = this.targetScreenOffset.clone();
 
         return super.storeState();
     }
@@ -712,10 +714,11 @@ export class ArcRotateCamera extends TargetCamera {
             return false;
         }
 
+        this.setTarget(this._storedTarget.clone());
         this.alpha = this._storedAlpha;
         this.beta = this._storedBeta;
         this.radius = this._storedRadius;
-        this.setTarget(this._storedTarget.clone());
+        this.targetScreenOffset = this._storedTargetScreenOffset.clone();
 
         this.inertialAlphaOffset = 0;
         this.inertialBetaOffset = 0;

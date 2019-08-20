@@ -1,10 +1,15 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
-    "tests": [        
+    "tests": [    
         {
-            "title": "Node material",
+            "title": "Node material #1",
+            "playgroundId": "#USQNJ6#3",
+            "referenceImage": "node-material1.png"
+        },     
+        {
+            "title": "Node material #2",
             "playgroundId": "#WYM31D#3",
-            "referenceImage": "node-material.png"
+            "referenceImage": "node-material2.png"
         },
         {
             "title": "Basis loader",

@@ -521,7 +521,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Vertex
         for (var vertexOutputNode of vertexNodes) {
-            vertexOutputNode.build(this._vertexCompilationState);
+            vertexOutputNode.build(this._vertexCompilationState, vertexNodes);
         }
 
         // Fragment
@@ -534,7 +534,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         for (var fragmentOutputNode of fragmentNodes) {
-            fragmentOutputNode.build(this._fragmentCompilationState);
+            fragmentOutputNode.build(this._fragmentCompilationState, fragmentNodes);
         }
 
         // Finalize
@@ -1043,6 +1043,16 @@ export class NodeMaterial extends PushMaterial {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
             }
         }
+
+        for (var node of this._vertexOutputNodes) {
+            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
+        }
+
+        for (var node of this._fragmentOutputNodes) {
+            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
+        }
+
+        codeString += `nodeMaterial.build();\r\n`;
 
         return codeString;
     }

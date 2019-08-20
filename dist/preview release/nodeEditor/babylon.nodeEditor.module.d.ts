@@ -31,9 +31,8 @@ declare module "babylonjs-node-editor/blockTools" {
     import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
     import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
     import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
-    import { TypeConverterBlock } from 'babylonjs/Materials/Node/Blocks/typeConverterBlock';
     export class BlockTools {
-        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | TypeConverterBlock | null;
+        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -312,7 +311,11 @@ declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
     interface INodeListComponentProps {
         globalState: GlobalState;
     }
-    export class NodeListComponent extends React.Component<INodeListComponentProps> {
+    export class NodeListComponent extends React.Component<INodeListComponentProps, {
+        filter: string;
+    }> {
+        constructor(props: INodeListComponentProps);
+        filterContent(filter: string): void;
         render(): JSX.Element;
     }
 }
@@ -1321,7 +1324,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.TypeConverterBlock | null;
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -1566,7 +1569,11 @@ declare module NODEEDITOR {
     interface INodeListComponentProps {
         globalState: GlobalState;
     }
-    export class NodeListComponent extends React.Component<INodeListComponentProps> {
+    export class NodeListComponent extends React.Component<INodeListComponentProps, {
+        filter: string;
+    }> {
+        constructor(props: INodeListComponentProps);
+        filterContent(filter: string): void;
         render(): JSX.Element;
     }
 }
@@ -2412,4 +2419,4 @@ declare module NODEEDITOR {
          */
         static Show(options: INodeEditorOptions): void;
     }
-}
+}

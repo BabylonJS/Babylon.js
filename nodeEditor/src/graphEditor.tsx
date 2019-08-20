@@ -432,11 +432,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                         }
                                     }
     
-                                    if (isFragmentOutput) {
-                                        this.applyFragmentOutputConstraints(link.input);
-                                    }
-    
                                     if (link.output.connection.canConnectTo(link.input.connection)) {
+                                        if (isFragmentOutput) {
+                                            this.applyFragmentOutputConstraints(link.input);
+                                        }
+        
                                         link.output.connection.connectTo(link.input.connection);
                                     } else {
                                         (evt.entity as AdvancedLinkModel).remove();
@@ -613,6 +613,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     onMouseMove={evt => {
                         this._mouseLocationX = evt.pageX;
                         this._mouseLocationY = evt.pageY;
+                    }}
+                    onMouseDown={(evt) => {
+                        if ((evt.target as HTMLElement).nodeName === "INPUT") {
+                            return;
+                        }
+                        this.props.globalState.blockKeyboardEvents = false;
                     }}
                     >
                     {/* Node creation menu */}
