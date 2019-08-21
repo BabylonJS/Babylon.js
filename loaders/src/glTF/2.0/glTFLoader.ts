@@ -1873,12 +1873,7 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(this.loadImageAsync(`/images/${image.index}`, image).then((data) => {
                 const name = image.uri || `${this._fileName}#image${image.index}`;
                 const dataUrl = `data:${this._uniqueRootUrl}${name}`;
-                // TODO: The following line needs to replace the lines below in order to go back into master.
-                // babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
-                babylonTexture.updateURL(
-                    dataUrl,
-                    // TODO: Remove this hack once we can load from Blob objects.
-                    data.buffer);
+                babylonTexture.updateURL(dataUrl, data);
             }));
         }
 
