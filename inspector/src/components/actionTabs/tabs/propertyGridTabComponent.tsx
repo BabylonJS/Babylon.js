@@ -104,7 +104,7 @@ export class PropertyGridTabComponent extends PaneComponent {
         }
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
     }
 

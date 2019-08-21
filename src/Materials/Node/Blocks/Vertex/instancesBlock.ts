@@ -82,7 +82,7 @@ export class InstancesBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.world0.connectedPoint) {
-            let world0Input = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "world0");
+            let world0Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world0");
 
             if (!world0Input) {
                 world0Input = new InputBlock("world0");
@@ -91,7 +91,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world0Input.output.connectTo(this.world0);
         }
         if (!this.world1.connectedPoint) {
-            let world1Input = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "world1");
+            let world1Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world1");
 
             if (!world1Input) {
                 world1Input = new InputBlock("world1");
@@ -100,7 +100,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world1Input.output.connectTo(this.world1);
         }
         if (!this.world2.connectedPoint) {
-            let world2Input = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "world2");
+            let world2Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world2");
 
             if (!world2Input) {
                 world2Input = new InputBlock("world2");
@@ -109,7 +109,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world2Input.output.connectTo(this.world2);
         }
         if (!this.world3.connectedPoint) {
-            let world3Input = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "world3");
+            let world3Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world3");
 
             if (!world3Input) {
                 world3Input = new InputBlock("world3");
@@ -118,7 +118,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world3Input.output.connectTo(this.world3);
         }
         if (!this.world.connectedPoint) {
-            let worldInput = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "world");
+            let worldInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world");
 
             if (!worldInput) {
                 worldInput = new InputBlock("world");

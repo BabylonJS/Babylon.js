@@ -35,7 +35,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         this.state = { isDebugSelected: material && material.reservedDataStore && material.reservedDataStore.debugTexture === texture };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         if (!this.props.onDebugSelectionChangeObservable) {
             return;
         }

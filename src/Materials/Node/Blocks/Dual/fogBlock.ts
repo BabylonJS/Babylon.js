@@ -85,17 +85,17 @@ export class FogBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.view.isConnected) {
-            let viewInput = material.getInputBlockByPredicate(b => b.wellKnownValue === NodeMaterialWellKnownValues.View);
+            let viewInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.View);
 
             if (!viewInput) {
-                viewInput = new InputBlock("view")
+                viewInput = new InputBlock("view");
                 viewInput.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
             }
             viewInput.output.connectTo(this.view);
         }
         if (!this.fogColor.isConnected) {
-            let fogColorInput = material.getInputBlockByPredicate(b => b.wellKnownValue === NodeMaterialWellKnownValues.FogColor);
-            
+            let fogColorInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.FogColor);
+
             if (!fogColorInput) {
                 fogColorInput = new InputBlock("fogColor", undefined, NodeMaterialBlockConnectionPointTypes.Color3);
                 fogColorInput.setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);

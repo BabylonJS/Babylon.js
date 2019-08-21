@@ -147,7 +147,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.uv.isConnected) {
-            let uvInput = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "uv");
+            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
 
             if (!uvInput) {
                 uvInput = new InputBlock("uv");

@@ -28,7 +28,7 @@ export class ToolsTabComponent extends PaneComponent {
         this.state = { tag: "Record video" };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         if (!(BABYLON as any).GLTF2Export) {
             Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => {
             });
