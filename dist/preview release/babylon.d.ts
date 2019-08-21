@@ -51880,7 +51880,7 @@ declare module BABYLON {
          * Gets the b output component
          */
         readonly b: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
@@ -52024,6 +52024,18 @@ declare module BABYLON {
          * @returns the required block or null if not found
          */
         getBlockByName(name: string): Nullable<NodeMaterialBlock>;
+        /**
+         * Get a block by its name
+         * @param predicate defines the predicate used to find the good candidate
+         * @returns the required block or null if not found
+         */
+        getBlockByPredicate(predicate: (block: NodeMaterialBlock) => boolean): Nullable<NodeMaterialBlock>;
+        /**
+         * Get an input block by its name
+         * @param predicate defines the predicate used to find the good candidate
+         * @returns the required input block or null if not found
+         */
+        getInputBlockByPredicate(predicate: (block: InputBlock) => boolean): Nullable<InputBlock>;
         /**
          * Gets the list of input blocks attached to this material
          * @returns an array of InputBlocks
@@ -52239,7 +52251,7 @@ declare module BABYLON {
          */
         readonly a: NodeMaterialConnectionPoint;
         readonly target: NodeMaterialBlockTargets;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         isReady(): boolean;
@@ -52951,7 +52963,7 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
@@ -52998,7 +53010,7 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
@@ -53053,7 +53065,7 @@ declare module BABYLON {
          */
         readonly uvOutput: NodeMaterialConnectionPoint;
         initialize(state: NodeMaterialBuildState): void;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines): void;
@@ -53091,49 +53103,6 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to compute fresnel value
-     */
-    export class FresnelBlock extends NodeMaterialBlock {
-        /**
-         * Create a new FresnelBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the world position input component
-         */
-        readonly worldPosition: NodeMaterialConnectionPoint;
-        /**
-         * Gets the world normal input component
-         */
-        readonly worldNormal: NodeMaterialConnectionPoint;
-        /**
-        * Gets the camera (or eye) position component
-        */
-        readonly cameraPosition: NodeMaterialConnectionPoint;
-        /**
-        * Gets the bias input component
-        */
-        readonly bias: NodeMaterialConnectionPoint;
-        /**
-        * Gets the camera (or eye) position component
-        */
-        readonly power: NodeMaterialConnectionPoint;
-        /**
-         * Gets the fresnel output component
-         */
-        readonly fresnel: NodeMaterialConnectionPoint;
-        autoConfigure(material: NodeMaterial): void;
-        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
@@ -53207,7 +53176,7 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
@@ -53253,7 +53222,7 @@ declare module BABYLON {
          * Gets the specular output component
          */
         readonly specularOutput: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
@@ -53873,6 +53842,102 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the opposite of a value
+     */
+    export class OppositeBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new OppositeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the view direction
+     */
+    export class ViewDirectionBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ViewDirectionBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position component
+         */
+        readonly worldPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the camera position component
+         */
+        readonly cameraPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to compute fresnel value
+     */
+    export class FresnelBlock extends NodeMaterialBlock {
+        /**
+         * Create a new FresnelBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world normal input component
+         */
+        readonly worldNormal: NodeMaterialConnectionPoint;
+        /**
+        * Gets the view direction input component
+        */
+        readonly viewDirection: NodeMaterialConnectionPoint;
+        /**
+        * Gets the bias input component
+        */
+        readonly bias: NodeMaterialConnectionPoint;
+        /**
+        * Gets the camera (or eye) position component
+        */
+        readonly power: NodeMaterialConnectionPoint;
+        /**
+         * Gets the fresnel output component
+         */
+        readonly fresnel: NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }

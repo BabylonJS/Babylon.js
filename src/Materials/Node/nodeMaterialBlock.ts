@@ -398,8 +398,9 @@ export class NodeMaterialBlock {
                 || (block.isInput && (block as InputBlock).isAttribute) // block is an attribute
             ) {
                 let connectedPoint = input.connectedPoint!;
-                state._vertexState._emitVaryingFromString("v_" + connectedPoint.associatedVariableName, state._getGLType(connectedPoint.type));
-                state._vertexState.compilationString += `${"v_" + connectedPoint.associatedVariableName} = ${connectedPoint.associatedVariableName};\r\n`;
+                if (state._vertexState._emitVaryingFromString("v_" + connectedPoint.associatedVariableName, state._getGLType(connectedPoint.type))) {
+                    state._vertexState.compilationString += `${"v_" + connectedPoint.associatedVariableName} = ${connectedPoint.associatedVariableName};\r\n`;
+                }
                 input.associatedVariableName = "v_" + connectedPoint.associatedVariableName;
                 input._enforceAssociatedVariableName = true;
             }

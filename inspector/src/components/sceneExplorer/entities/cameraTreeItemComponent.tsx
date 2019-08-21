@@ -39,7 +39,7 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
         this.setState({ isActive: true });
     }
 
-    componentWillMount() {
+    componentDidMount() {
         const camera = this.props.camera;
         const scene = camera.getScene();
         this._onActiveCameraObserver = scene.onActiveCameraChanged.add(() => {

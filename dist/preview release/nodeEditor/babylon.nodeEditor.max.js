@@ -68344,6 +68344,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -68409,6 +68411,10 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["SubtractBlock"]("Subtract");
             case "StepBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["StepBlock"]("Step");
+            case "OppositeBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["OppositeBlock"]("Opposite");
+            case "ViewDirectionBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ViewDirectionBlock"]("View direction");
             case "CosBlock": {
                 var cosBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Cos");
                 cosBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Cos;
@@ -68595,6 +68601,197 @@ var BlockTools = /** @class */ (function () {
     };
     return BlockTools;
 }());
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/clamp/clampNodeFactory.tsx":
+/*!*******************************************************!*\
+  !*** ./components/diagram/clamp/clampNodeFactory.tsx ***!
+  \*******************************************************/
+/*! exports provided: ClampNodeFactory */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ClampNodeFactory", function() { return ClampNodeFactory; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _clampNodeWidget__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./clampNodeWidget */ "./components/diagram/clamp/clampNodeWidget.tsx");
+/* harmony import */ var _clampNodeModel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./clampNodeModel */ "./components/diagram/clamp/clampNodeModel.tsx");
+
+
+
+
+
+var ClampNodeFactory = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeFactory, _super);
+    function ClampNodeFactory(globalState) {
+        var _this = _super.call(this, "clamp") || this;
+        _this._globalState = globalState;
+        return _this;
+    }
+    ClampNodeFactory.prototype.generateReactWidget = function (diagramEngine, node) {
+        return react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_clampNodeWidget__WEBPACK_IMPORTED_MODULE_3__["ClampNodeWidget"], { node: node, globalState: this._globalState });
+    };
+    ClampNodeFactory.prototype.getNewInstance = function () {
+        return new _clampNodeModel__WEBPACK_IMPORTED_MODULE_4__["ClampNodeModel"]();
+    };
+    return ClampNodeFactory;
+}(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["AbstractNodeFactory"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/clamp/clampNodeModel.tsx":
+/*!*****************************************************!*\
+  !*** ./components/diagram/clamp/clampNodeModel.tsx ***!
+  \*****************************************************/
+/*! exports provided: ClampNodeModel */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ClampNodeModel", function() { return ClampNodeModel; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
+/* harmony import */ var _clampNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./clampNodePropertyComponent */ "./components/diagram/clamp/clampNodePropertyComponent.tsx");
+
+
+
+
+var ClampNodeModel = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeModel, _super);
+    /**
+     * Constructs the node model
+     */
+    function ClampNodeModel() {
+        return _super.call(this, "clamp") || this;
+    }
+    Object.defineProperty(ClampNodeModel.prototype, "clampBlock", {
+        get: function () {
+            return this.block;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ClampNodeModel.prototype.renderProperties = function (globalState) {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_clampNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__["ClampPropertyTabComponentProps"], { globalState: globalState, remapNode: this }));
+    };
+    return ClampNodeModel;
+}(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/clamp/clampNodePropertyComponent.tsx":
+/*!*****************************************************************!*\
+  !*** ./components/diagram/clamp/clampNodePropertyComponent.tsx ***!
+  \*****************************************************************/
+/*! exports provided: ClampPropertyTabComponentProps */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ClampPropertyTabComponentProps", function() { return ClampPropertyTabComponentProps; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
+/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+
+
+
+
+
+
+var ClampPropertyTabComponentProps = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampPropertyTabComponentProps, _super);
+    function ClampPropertyTabComponentProps(props) {
+        return _super.call(this, props) || this;
+    }
+    ClampPropertyTabComponentProps.prototype.forceRebuild = function () {
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+    };
+    ClampPropertyTabComponentProps.prototype.render = function () {
+        var _this = this;
+        var clampBlock = this.props.remapNode.clampBlock;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: clampBlock, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: clampBlock.getClassName() })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "PROPERTIES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { label: "Minimum", propertyName: "minimum", target: clampBlock, onChange: function () { return _this.forceRebuild(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { label: "Maximum", propertyName: "maximum", target: clampBlock, onChange: function () { return _this.forceRebuild(); } }))));
+    };
+    return ClampPropertyTabComponentProps;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/clamp/clampNodeWidget.tsx":
+/*!******************************************************!*\
+  !*** ./components/diagram/clamp/clampNodeWidget.tsx ***!
+  \******************************************************/
+/*! exports provided: ClampNodeWidget */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ClampNodeWidget", function() { return ClampNodeWidget; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
+
+
+
+var ClampNodeWidget = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeWidget, _super);
+    function ClampNodeWidget(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {};
+        if (_this.props.node) {
+            _this.props.node.addListener({
+                selectionChanged: function () {
+                    var selected = _this.props.node.selected;
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(selected ? _this.props.node : null);
+                }
+            });
+        }
+        return _this;
+    }
+    ClampNodeWidget.prototype.renderValue = function (value) {
+        if (value) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value-text" }, value));
+        }
+        return null;
+    };
+    ClampNodeWidget.prototype.render = function () {
+        var inputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateInputPorts(this.props.node, undefined, true);
+        var outputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateOutputPorts(this.props.node, true);
+        var clampBlock = this.props.node.block;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock remap" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, clampBlock.name),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" }, "[" + clampBlock.minimum + ", " + clampBlock.maximum + "]")));
+    };
+    return ClampNodeWidget;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
 
@@ -68830,6 +69027,18 @@ var GenericNodeModel = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { globalState: globalState, label: "Name", propertyName: "name", target: this.block, onChange: function () { return globalState.onUpdateRequiredObservable.notifyObservers(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Type", value: this.block.getClassName() })),
+            this.block.getClassName() === "TransformBlock" &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Transform as direction", onSelect: function (value) {
+                            var transformBlock = _this.block;
+                            if (value) {
+                                transformBlock.complementW = 0;
+                            }
+                            else {
+                                transformBlock.complementW = 1;
+                            }
+                            globalState.onRebuildRequiredObservable.notifyObservers();
+                        }, isSelected: function () { return _this.block.complementW === 0; } })),
             this.block.getClassName() === "TransformBlock" &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Transform as direction", onSelect: function (value) {
@@ -70645,7 +70854,7 @@ var LogComponent = /** @class */ (function (_super) {
         _this.state = { logs: [] };
         return _this;
     }
-    LogComponent.prototype.componentWillMount = function () {
+    LogComponent.prototype.componentDidMount = function () {
         var _this = this;
         this.props.globalState.onLogRequiredObservable.add(function (log) {
             var currentLogs = _this.state.logs;
@@ -70737,7 +70946,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         // Block types used to create the menu from
         var allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock"],
+            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OppositeBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "TimeBlock"],
             Interpolation: ["LerpBlock"],
@@ -70746,7 +70955,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "AlphaTestBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "ReflectionTextureBlock"],
+            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "ReflectionTextureBlock", "ViewDirectionBlock"],
             Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block"],
             Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
         };
@@ -71157,7 +71366,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         _this.state = { currentNode: null };
         return _this;
     }
-    PropertyTabComponent.prototype.componentWillMount = function () {
+    PropertyTabComponent.prototype.componentDidMount = function () {
         var _this = this;
         this.props.globalState.onSelectionChangedObservable.add(function (block) {
             _this.setState({ currentNode: block });
@@ -71410,6 +71619,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./components/preview/previewMeshControlComponent */ "./components/preview/previewMeshControlComponent.tsx");
 /* harmony import */ var _components_diagram_trigonometry_trigonometryNodeFactory__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./components/diagram/trigonometry/trigonometryNodeFactory */ "./components/diagram/trigonometry/trigonometryNodeFactory.tsx");
 /* harmony import */ var _components_diagram_trigonometry_trigonometryNodeModel__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./components/diagram/trigonometry/trigonometryNodeModel */ "./components/diagram/trigonometry/trigonometryNodeModel.tsx");
+/* harmony import */ var _components_diagram_clamp_clampNodeFactory__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./components/diagram/clamp/clampNodeFactory */ "./components/diagram/clamp/clampNodeFactory.tsx");
+/* harmony import */ var _components_diagram_clamp_clampNodeModel__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./components/diagram/clamp/clampNodeModel */ "./components/diagram/clamp/clampNodeModel.tsx");
+
+
+
 
 
 
@@ -71474,6 +71688,7 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._engine.registerNodeFactory(new _components_diagram_input_inputNodeFactory__WEBPACK_IMPORTED_MODULE_11__["InputNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_remap_remapNodeFactory__WEBPACK_IMPORTED_MODULE_21__["RemapNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_trigonometry_trigonometryNodeFactory__WEBPACK_IMPORTED_MODULE_26__["TrigonometryNodeFactory"](_this.props.globalState));
+        _this._engine.registerNodeFactory(new _components_diagram_clamp_clampNodeFactory__WEBPACK_IMPORTED_MODULE_28__["ClampNodeFactory"](_this.props.globalState));
         _this._engine.registerLinkFactory(new _components_diagram_link_advancedLinkFactory__WEBPACK_IMPORTED_MODULE_20__["AdvancedLinkFactory"]());
         _this.props.globalState.onRebuildRequiredObservable.add(function () {
             if (_this.props.globalState.nodeMaterial) {
@@ -71581,6 +71796,9 @@ var GraphEditor = /** @class */ (function (_super) {
         }
         else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["RemapBlock"]) {
             newNode = new _components_diagram_remap_remapNodeModel__WEBPACK_IMPORTED_MODULE_22__["RemapNodeModel"]();
+        }
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["ClampBlock"]) {
+            newNode = new _components_diagram_clamp_clampNodeModel__WEBPACK_IMPORTED_MODULE_29__["ClampNodeModel"]();
         }
         else {
             newNode = new _components_diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_4__["GenericNodeModel"]();
@@ -72127,6 +72345,12 @@ var NodeEditor = /** @class */ (function () {
      * @param options defines the options to use to configure the node editor
      */
     NodeEditor.Show = function (options) {
+        if (this._CurrentState) {
+            var popupWindow = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"]["node-editor"];
+            if (popupWindow) {
+                popupWindow.close();
+            }
+        }
         var hostElement = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"].CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800);
         var globalState = new _globalState__WEBPACK_IMPORTED_MODULE_2__["GlobalState"]();
         globalState.nodeMaterial = options.nodeMaterial;
@@ -72136,6 +72360,7 @@ var NodeEditor = /** @class */ (function () {
             globalState: globalState
         });
         react_dom__WEBPACK_IMPORTED_MODULE_1__["render"](graphEditor, hostElement);
+        this._CurrentState = globalState;
         // Close the popup window when the page is refreshed or scene is disposed
         var popupWindow = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"]["node-editor"];
         if (globalState.nodeMaterial && popupWindow) {

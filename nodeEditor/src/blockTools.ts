@@ -24,7 +24,7 @@ import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
 import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
 import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
-import { FresnelBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fresnelBlock';
+import { FresnelBlock } from 'babylonjs/Materials/Node/Blocks/fresnelBlock';
 import { LerpBlock } from 'babylonjs/Materials/Node/Blocks/lerpBlock';
 import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
 import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
@@ -32,6 +32,8 @@ import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
+import { OppositeBlock } from 'babylonjs/Materials/Node/Blocks/oppositeBlock';
+import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -96,6 +98,10 @@ export class BlockTools {
                 return new SubtractBlock("Subtract"); 
             case "StepBlock":
                 return new StepBlock("Step");        
+            case "OppositeBlock":
+                return new OppositeBlock("Opposite");      
+            case "ViewDirectionBlock":
+                return new ViewDirectionBlock("View direction");                    
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;

@@ -1,7 +1,7 @@
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.InputBlock | null;
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.OppositeBlock | BABYLON.ViewDirectionBlock | BABYLON.InputBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -305,7 +305,7 @@ declare module NODEEDITOR {
         currentNode: BABYLON.Nullable<DefaultNodeModel>;
     }> {
         constructor(props: IPropertyTabComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         load(file: File): void;
         save(): void;
         render(): JSX.Element;
@@ -710,7 +710,7 @@ declare module NODEEDITOR {
         logs: LogEntry[];
     }> {
         constructor(props: ILogComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentDidUpdate(): void;
         render(): JSX.Element;
     }
@@ -985,6 +985,46 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IClampPropertyTabComponentProps {
+        globalState: GlobalState;
+        remapNode: ClampNodeModel;
+    }
+    export class ClampPropertyTabComponentProps extends React.Component<IClampPropertyTabComponentProps> {
+        constructor(props: IClampPropertyTabComponentProps);
+        forceRebuild(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class ClampNodeModel extends DefaultNodeModel {
+        readonly clampBlock: BABYLON.ClampBlock;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface ClampNodeWidgetProps {
+        node: BABYLON.Nullable<ClampNodeModel>;
+        globalState: GlobalState;
+    }
+    export class ClampNodeWidget extends React.Component<ClampNodeWidgetProps> {
+        constructor(props: ClampNodeWidgetProps);
+        renderValue(value: string): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class ClampNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        constructor(globalState: GlobalState);
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: ClampNodeModel): JSX.Element;
+        getNewInstance(): ClampNodeModel;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1090,6 +1130,7 @@ declare module NODEEDITOR {
      * Class used to create a node editor
      */
     export class NodeEditor {
+        private static _CurrentState;
         /**
          * Show the node editor
          * @param options defines the options to use to configure the node editor
