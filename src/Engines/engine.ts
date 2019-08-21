@@ -4194,7 +4194,7 @@ export class Engine {
      */
     public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-        buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
         forcedExtension: Nullable<string> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
         var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
         var fromData = url.substr(0, 5) === "data:";
@@ -4354,7 +4354,7 @@ export class Engine {
                     FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null);
                 }
             }
-            else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || buffer instanceof Blob) {
+            else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
                 FileTools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null);
             }
             else {
