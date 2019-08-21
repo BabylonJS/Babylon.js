@@ -71,7 +71,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         // Output
         let json = JSON.stringify(serializationObject, undefined, 2);
-        StringTools.DownloadAsFile(json, "nodeMaterial.json");
+        StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
     }
 
     render() {
@@ -118,10 +118,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this.save();
                         }} />
                         <ButtonLineComponent label="Generate code" onClick={() => {
-                            StringTools.DownloadAsFile(this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
+                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
                         }} />
                         <ButtonLineComponent label="Export shaders" onClick={() => {
-                            StringTools.DownloadAsFile(this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
+                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
                         }} />
                     </LineContainerComponent>
                 </div>
