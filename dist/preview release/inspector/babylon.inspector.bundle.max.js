@@ -40585,7 +40585,7 @@ var ActionTabsComponent = /** @class */ (function (_super) {
         _this.state = { selectedEntity: null, selectedIndex: initialIndex };
         return _this;
     }
-    ActionTabsComponent.prototype.componentWillMount = function () {
+    ActionTabsComponent.prototype.componentDidMount = function () {
         var _this = this;
         if (this.props.globalState) {
             this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add(function (entity) {
@@ -41561,7 +41561,7 @@ var RadioButtonLineComponent = /** @class */ (function (_super) {
         _this.state = { isSelected: _this.props.isSelected() };
         return _this;
     }
-    RadioButtonLineComponent.prototype.componentWillMount = function () {
+    RadioButtonLineComponent.prototype.componentDidMount = function () {
         var _this = this;
         this._onSelectionChangedObserver = this.props.onSelectionChangedObservable.add(function (value) {
             _this.setState({ isSelected: value === _this });
@@ -42037,7 +42037,7 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         _this.state = { isDebugSelected: material && material.reservedDataStore && material.reservedDataStore.debugTexture === texture };
         return _this;
     }
-    TextureLinkLineComponent.prototype.componentWillMount = function () {
+    TextureLinkLineComponent.prototype.componentDidMount = function () {
         var _this = this;
         if (!this.props.onDebugSelectionChangeObservable) {
             return;
@@ -42572,20 +42572,16 @@ var DebugTabComponent = /** @class */ (function (_super) {
     function DebugTabComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._physicsViewersEnabled = false;
-        return _this;
-    }
-    DebugTabComponent.prototype.componentWillMount = function () {
-        var scene = this.props.scene;
+        var scene = _this.props.scene;
         if (!scene) {
-            return;
+            return _this;
         }
         if (!scene.reservedDataStore) {
             scene.reservedDataStore = {};
         }
-        this._physicsViewersEnabled = scene.reservedDataStore.physicsViewer != null;
-    };
-    DebugTabComponent.prototype.componentWillUnmount = function () {
-    };
+        _this._physicsViewersEnabled = scene.reservedDataStore.physicsViewer != null;
+        return _this;
+    }
     DebugTabComponent.prototype.switchPhysicsViewers = function () {
         this._physicsViewersEnabled = !this._physicsViewersEnabled;
         var scene = this.props.scene;
@@ -42768,7 +42764,7 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
             this.forceUpdate();
         }
     };
-    PropertyGridTabComponent.prototype.componentWillMount = function () {
+    PropertyGridTabComponent.prototype.componentDidMount = function () {
         var _this = this;
         this._timerIntervalId = window.setInterval(function () { return _this.timerRefresh(); }, 500);
     };
@@ -42992,6 +42988,10 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         var animationGroup = _this.props.animationGroup;
         _this.state = { playButtonText: animationGroup.isPlaying ? "Pause" : "Play", currentFrame: 0 };
+        _this.connect(_this.props.animationGroup);
+        _this._onBeforeRenderObserver = _this.props.scene.onBeforeRenderObservable.add(function () {
+            _this.updateCurrentFrame(_this.props.animationGroup);
+        });
         return _this;
     }
     AnimationGroupGridComponent.prototype.disconnect = function (animationGroup) {
@@ -43032,13 +43032,6 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
             this.connect(nextProps.animationGroup);
         }
         return true;
-    };
-    AnimationGroupGridComponent.prototype.componentWillMount = function () {
-        var _this = this;
-        this.connect(this.props.animationGroup);
-        this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(function () {
-            _this.updateCurrentFrame(_this.props.animationGroup);
-        });
     };
     AnimationGroupGridComponent.prototype.componentWillUnmount = function () {
         this.disconnect(this.props.animationGroup);
@@ -43175,7 +43168,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
         }
         this.forceUpdate();
     };
-    AnimationGridComponent.prototype.componentWillMount = function () {
+    AnimationGridComponent.prototype.componentDidMount = function () {
         var _this = this;
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(function () {
             if (!_this._isPlaying || !_this._runningAnimatable) {
@@ -45669,18 +45662,17 @@ __webpack_require__.r(__webpack_exports__);
 var TexturePropertyGridComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TexturePropertyGridComponent, _super);
     function TexturePropertyGridComponent(props) {
-        return _super.call(this, props) || this;
-    }
-    TexturePropertyGridComponent.prototype.componentWillMount = function () {
-        var texture = this.props.texture;
+        var _this = _super.call(this, props) || this;
+        var texture = _this.props.texture;
         if (!texture || !texture.rootContainer) {
-            return;
+            return _this;
         }
         var adt = texture;
-        this._adtInstrumentation = new babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__["AdvancedDynamicTextureInstrumentation"](adt);
-        this._adtInstrumentation.captureRenderTime = true;
-        this._adtInstrumentation.captureLayoutTime = true;
-    };
+        _this._adtInstrumentation = new babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__["AdvancedDynamicTextureInstrumentation"](adt);
+        _this._adtInstrumentation.captureRenderTime = true;
+        _this._adtInstrumentation.captureLayoutTime = true;
+        return _this;
+    }
     TexturePropertyGridComponent.prototype.componentWillUnmount = function () {
         if (this._adtInstrumentation) {
             this._adtInstrumentation.dispose();
@@ -46180,6 +46172,7 @@ var SkeletonPropertyGridComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._skeletonViewersEnabled = false;
         _this._skeletonViewers = new Array();
+        _this.checkSkeletonViewerState(_this.props);
         return _this;
     }
     SkeletonPropertyGridComponent.prototype.switchSkeletonViewers = function () {
@@ -46230,9 +46223,6 @@ var SkeletonPropertyGridComponent = /** @class */ (function (_super) {
             }
         }
         this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
-    };
-    SkeletonPropertyGridComponent.prototype.componentWillMount = function () {
-        this.checkSkeletonViewerState(this.props);
     };
     SkeletonPropertyGridComponent.prototype.shouldComponentUpdate = function (nextProps) {
         if (nextProps.skeleton !== this.props.skeleton) {
@@ -46772,7 +46762,7 @@ var RenderGridPropertyGridComponent = /** @class */ (function (_super) {
         _this.state = { isEnabled: false };
         return _this;
     }
-    RenderGridPropertyGridComponent.prototype.componentWillMount = function () {
+    RenderGridPropertyGridComponent.prototype.componentDidMount = function () {
         var scene = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultKeepDepthUtilityLayer.utilityLayerScene;
         for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
             var mesh = _a[_i];
@@ -47073,28 +47063,26 @@ __webpack_require__.r(__webpack_exports__);
 var StatisticsTabComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](StatisticsTabComponent, _super);
     function StatisticsTabComponent(props) {
-        return _super.call(this, props) || this;
-    }
-    StatisticsTabComponent.prototype.componentWillMount = function () {
-        var _this = this;
-        var scene = this.props.scene;
+        var _this = _super.call(this, props) || this;
+        var scene = _this.props.scene;
         if (!scene) {
-            return;
+            return _this;
         }
-        this._sceneInstrumentation = new babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5__["SceneInstrumentation"](scene);
-        this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
-        this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
-        this._sceneInstrumentation.captureFrameTime = true;
-        this._sceneInstrumentation.captureRenderTime = true;
-        this._sceneInstrumentation.captureInterFrameTime = true;
-        this._sceneInstrumentation.captureParticlesRenderTime = true;
-        this._sceneInstrumentation.captureSpritesRenderTime = true;
-        this._sceneInstrumentation.capturePhysicsTime = true;
-        this._sceneInstrumentation.captureAnimationsTime = true;
-        this._engineInstrumentation = new babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5__["EngineInstrumentation"](scene.getEngine());
-        this._engineInstrumentation.captureGPUFrameTime = true;
-        this._timerIntervalId = window.setInterval(function () { return _this.forceUpdate(); }, 500);
-    };
+        _this._sceneInstrumentation = new babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5__["SceneInstrumentation"](scene);
+        _this._sceneInstrumentation.captureActiveMeshesEvaluationTime = true;
+        _this._sceneInstrumentation.captureRenderTargetsRenderTime = true;
+        _this._sceneInstrumentation.captureFrameTime = true;
+        _this._sceneInstrumentation.captureRenderTime = true;
+        _this._sceneInstrumentation.captureInterFrameTime = true;
+        _this._sceneInstrumentation.captureParticlesRenderTime = true;
+        _this._sceneInstrumentation.captureSpritesRenderTime = true;
+        _this._sceneInstrumentation.capturePhysicsTime = true;
+        _this._sceneInstrumentation.captureAnimationsTime = true;
+        _this._engineInstrumentation = new babylonjs_Instrumentation_engineInstrumentation__WEBPACK_IMPORTED_MODULE_5__["EngineInstrumentation"](scene.getEngine());
+        _this._engineInstrumentation.captureGPUFrameTime = true;
+        _this._timerIntervalId = window.setInterval(function () { return _this.forceUpdate(); }, 500);
+        return _this;
+    }
     StatisticsTabComponent.prototype.componentWillUnmount = function () {
         if (this._sceneInstrumentation) {
             this._sceneInstrumentation.dispose();
@@ -47356,7 +47344,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
         _this.state = { tag: "Record video" };
         return _this;
     }
-    ToolsTabComponent.prototype.componentWillMount = function () {
+    ToolsTabComponent.prototype.componentDidMount = function () {
         if (!BABYLON.GLTF2Export) {
             babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", function () {
             });
@@ -47775,7 +47763,7 @@ var HeaderComponent = /** @class */ (function (_super) {
         _this.state = { isBackVisible: false };
         return _this;
     }
-    HeaderComponent.prototype.componentWillMount = function () {
+    HeaderComponent.prototype.componentDidMount = function () {
         var _this = this;
         if (!this.props.onSelectionChangedObservable) {
             return;
@@ -48059,7 +48047,7 @@ var CameraTreeItemComponent = /** @class */ (function (_super) {
         camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
         this.setState({ isActive: true });
     };
-    CameraTreeItemComponent.prototype.componentWillMount = function () {
+    CameraTreeItemComponent.prototype.componentDidMount = function () {
         var _this = this;
         var camera = this.props.camera;
         var scene = camera.getScene();
@@ -48542,7 +48530,7 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
         }
         return true;
     };
-    SceneTreeItemComponent.prototype.componentWillMount = function () {
+    SceneTreeItemComponent.prototype.componentDidMount = function () {
         var _this = this;
         if (!this.props.onSelectionChangedObservable) {
             return;
@@ -49087,7 +49075,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
         this.forceUpdate();
     };
-    SceneExplorerComponent.prototype.componentWillMount = function () {
+    SceneExplorerComponent.prototype.componentDidMount = function () {
         var _this = this;
         this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add(function (entity) {
             if (_this.state.selectedEntity !== entity) {

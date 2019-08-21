@@ -86,8 +86,8 @@ export class LightBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = material.getInputBlockByPredicate(b => b.wellKnownValue === NodeMaterialWellKnownValues.CameraPosition)
-            
+            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.CameraPosition);
+
             if (!cameraPositionInput) {
                 cameraPositionInput = new InputBlock("cameraPosition");
                 cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);

@@ -146,8 +146,8 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.position.isConnected) {
-            let positionInput = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "position");
-           
+            let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position");
+
             if (!positionInput) {
                 positionInput = new InputBlock("position");
                 positionInput.setAsAttribute();
@@ -156,8 +156,8 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         }
 
         if (!this.world.isConnected) {
-            let worldInput = material.getInputBlockByPredicate(b => b.wellKnownValue === NodeMaterialWellKnownValues.World);
-            
+            let worldInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.World);
+
             if (!worldInput) {
                 worldInput = new InputBlock("world");
                 worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
@@ -166,7 +166,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         }
 
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = material.getInputBlockByPredicate(b => b.wellKnownValue === NodeMaterialWellKnownValues.CameraPosition);
+            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.CameraPosition);
 
             if (!cameraPositionInput) {
                 cameraPositionInput = new InputBlock("cameraPosition");
@@ -176,7 +176,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         }
 
         if (!this.view.isConnected) {
-            let viewInput = material.getInputBlockByPredicate(b => b.wellKnownValue === NodeMaterialWellKnownValues.View);
+            let viewInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.View);
 
             if (!viewInput) {
                 viewInput = new InputBlock("view");

@@ -78,7 +78,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.forceUpdate();
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
             if (this.state.selectedEntity !== entity) {
                 this.setState({ selectedEntity: entity });

@@ -25,7 +25,7 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
         this.state = { isEnabled: false };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         const scene = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
 
         for (var mesh of scene.meshes) {

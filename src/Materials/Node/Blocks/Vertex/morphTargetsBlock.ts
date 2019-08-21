@@ -106,17 +106,17 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.position.isConnected) {
-            let positionInput = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "position");
-           
+            let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position");
+
             if (!positionInput) {
                 positionInput = new InputBlock("position");
                 positionInput.setAsAttribute();
             }
-            positionInput.output.connectTo(this.position);    
+            positionInput.output.connectTo(this.position);
         }
         if (!this.normal.isConnected) {
-            let normalInput = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "normal");
-           
+            let normalInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "normal");
+
             if (!normalInput) {
                 normalInput = new InputBlock("normal");
                 normalInput.setAsAttribute("normal");
@@ -124,8 +124,8 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             normalInput.output.connectTo(this.normal);
         }
         if (!this.tangent.isConnected) {
-            let tangentInput = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "tangent");
-           
+            let tangentInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "tangent");
+
             if (!tangentInput) {
                 tangentInput = new InputBlock("tangent");
                 tangentInput.setAsAttribute("tangent");
@@ -133,8 +133,8 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             tangentInput.output.connectTo(this.tangent);
         }
         if (!this.uv.isConnected) {
-            let uvInput = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "uv");
-           
+            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
+
             if (!uvInput) {
                 uvInput = new InputBlock("uv");
                 uvInput.setAsAttribute("uv");

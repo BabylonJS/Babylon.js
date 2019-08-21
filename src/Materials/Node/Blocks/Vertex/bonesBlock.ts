@@ -95,7 +95,7 @@ export class BonesBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.matricesIndices.isConnected) {
-            let matricesIndicesInput = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "matricesIndices");
+            let matricesIndicesInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "matricesIndices");
 
             if (!matricesIndicesInput) {
                 matricesIndicesInput = new InputBlock("matricesIndices");
@@ -104,7 +104,7 @@ export class BonesBlock extends NodeMaterialBlock {
             matricesIndicesInput.output.connectTo(this.matricesIndices);
         }
         if (!this.matricesWeights.isConnected) {
-            let matricesWeightsInput = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "matricesWeights");
+            let matricesWeightsInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "matricesWeights");
 
             if (!matricesWeightsInput) {
                 matricesWeightsInput = new InputBlock("matricesWeights");
@@ -113,13 +113,13 @@ export class BonesBlock extends NodeMaterialBlock {
             matricesWeightsInput.output.connectTo(this.matricesWeights);
         }
         if (!this.world.isConnected) {
-            let worldInput = material.getInputBlockByPredicate(b => b.wellKnownValue === NodeMaterialWellKnownValues.World);
-            
+            let worldInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.World);
+
             if (!worldInput) {
                 worldInput = new InputBlock("world");
                 worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
             }
-            worldInput.output.connectTo(this.world);            
+            worldInput.output.connectTo(this.world);
         }
     }
 
