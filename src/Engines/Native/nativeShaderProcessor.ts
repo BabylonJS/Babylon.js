@@ -10,6 +10,15 @@ const attributeLocations: { [kind: string]: number } = {
     [VertexBuffer.MatricesIndicesKind]: 8,
     [VertexBuffer.MatricesWeightsKind]: 9,
 };
+// Remap BJS names to bgfx names
+const attributeBGFXName: { [kind: string]: string } = {
+    [VertexBuffer.PositionKind]: "a_position",
+    [VertexBuffer.NormalKind]: "a_normal",
+    [VertexBuffer.TangentKind]: "a_tangent",
+    [VertexBuffer.ColorKind]: "a_color",
+    [VertexBuffer.MatricesIndicesKind]: "a_index",
+    [VertexBuffer.MatricesWeightsKind]: "a_weight",
+};
 
 // Must match bgfx::Attrib::TexCoord0
 const firstGenericAttributeLocation = 10;
@@ -45,7 +54,12 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
                 throw new Error("Exceeded maximum custom attributes");
             }
         }
-
+        let newName = attributeBGFXName[name];
+        if (newName === undefined) {
+            throw new Error("Can't find bgfx name mapping");
+        }
+        attribute = attribute.replace(name, newName);
+        this._replacements.push({ searchValue: new RegExp(`\\b${name}\\b`), replaceValue: `${newName}` });
         return `layout(location=${location}) ${super.attributeProcessor(attribute)}`;
     }
 
@@ -75,6 +89,21 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
                 const binding = this._textureCount++;
                 this._replacements.push({ searchValue: new RegExp(`\\b${name}\\b`), replaceValue: `sampler${suffix}(${name}Texture, ${name})` });
                 return `layout(binding=${binding}) uniform texture${suffix} ${name}Texture;\nlayout(binding=${binding}) uniform sampler ${name};`;
+            }
+            case "float": {
+                this._replacements.push({ searchValue: new RegExp(`\\b${name}\\b`), replaceValue: `${name}.x` });
+                uniform = `uniform vec4 ${name};`;
+                break;
+            }
+            case "vec2": {
+                this._replacements.push({ searchValue: new RegExp(`\\b${name}\\b`), replaceValue: `${name}.xy` });
+                uniform = `uniform vec4 ${name};`;
+                break;
+            }
+            case "vec3": {
+                this._replacements.push({ searchValue: new RegExp(`\\b${name}\\b`), replaceValue: `${name}.xyz` });
+                uniform = `uniform vec4 ${name};`;
+                break;
             }
         }
 
