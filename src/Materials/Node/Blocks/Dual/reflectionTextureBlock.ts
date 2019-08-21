@@ -144,28 +144,44 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         return this._outputs[3];
     }
 
-    public autoConfigure() {
+    public autoConfigure(material: NodeMaterial) {
         if (!this.position.isConnected) {
-            let positionInput = new InputBlock("position");
-            positionInput.setAsAttribute();
+            let positionInput = material.getInputBlockByPredicate(b => b.isAttribute && b.name === "position");
+           
+            if (!positionInput) {
+                positionInput = new InputBlock("position");
+                positionInput.setAsAttribute();
+            }
             positionInput.output.connectTo(this.position);
         }
 
         if (!this.world.isConnected) {
-            let worldInput = new InputBlock("world");
-            worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+            let worldInput = material.getInputBlockByPredicate(b => b.wellKnownValue === NodeMaterialWellKnownValues.World);
+            
+            if (!worldInput) {
+                worldInput = new InputBlock("world");
+                worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+            }
             worldInput.output.connectTo(this.world);
         }
 
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = new InputBlock("cameraPosition");
-            cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+            let cameraPositionInput = material.getInputBlockByPredicate(b => b.wellKnownValue === NodeMaterialWellKnownValues.CameraPosition);
+
+            if (!cameraPositionInput) {
+                cameraPositionInput = new InputBlock("cameraPosition");
+                cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+            }
             cameraPositionInput.output.connectTo(this.cameraPosition);
         }
 
         if (!this.view.isConnected) {
-            let viewInput = new InputBlock("view");
-            viewInput.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+            let viewInput = material.getInputBlockByPredicate(b => b.wellKnownValue === NodeMaterialWellKnownValues.View);
+
+            if (!viewInput) {
+                viewInput = new InputBlock("view");
+                viewInput.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+            }
             viewInput.output.connectTo(this.view);
         }
     }

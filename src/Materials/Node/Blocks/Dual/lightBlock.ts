@@ -84,10 +84,14 @@ export class LightBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
-    public autoConfigure() {
+    public autoConfigure(material: NodeMaterial) {
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = new InputBlock("cameraPosition");
-            cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+            let cameraPositionInput = material.getInputBlockByPredicate(b => b.wellKnownValue === NodeMaterialWellKnownValues.CameraPosition)
+            
+            if (!cameraPositionInput) {
+                cameraPositionInput = new InputBlock("cameraPosition");
+                cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+            }
             cameraPositionInput.output.connectTo(this.cameraPosition);
         }
     }
