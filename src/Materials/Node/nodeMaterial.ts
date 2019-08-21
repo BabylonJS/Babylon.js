@@ -271,6 +271,36 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Get a block by its name
+     * @param predicate defines the predicate used to find the good candidate
+     * @returns the required block or null if not found
+     */
+    public getBlockByPredicate(predicate: (block: NodeMaterialBlock) => boolean) {
+        for (var block of this.attachedBlocks) {
+            if (predicate(block)) {
+                return block;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get an input block by its name
+     * @param predicate defines the predicate used to find the good candidate
+     * @returns the required input block or null if not found
+     */
+    public getInputBlockByPredicate(predicate: (block: InputBlock) => boolean): Nullable<InputBlock> {
+        for (var block of this.attachedBlocks) {
+            if (block.isInput && predicate(block as InputBlock)) {
+                return block as InputBlock;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Gets the list of input blocks attached to this material
      * @returns an array of InputBlocks
      */
