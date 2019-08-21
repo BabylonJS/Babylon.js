@@ -985,6 +985,46 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IClampPropertyTabComponentProps {
+        globalState: GlobalState;
+        remapNode: ClampNodeModel;
+    }
+    export class ClampPropertyTabComponentProps extends React.Component<IClampPropertyTabComponentProps> {
+        constructor(props: IClampPropertyTabComponentProps);
+        forceRebuild(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class ClampNodeModel extends DefaultNodeModel {
+        readonly clampBlock: BABYLON.ClampBlock;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface ClampNodeWidgetProps {
+        node: BABYLON.Nullable<ClampNodeModel>;
+        globalState: GlobalState;
+    }
+    export class ClampNodeWidget extends React.Component<ClampNodeWidgetProps> {
+        constructor(props: ClampNodeWidgetProps);
+        renderValue(value: string): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class ClampNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        constructor(globalState: GlobalState);
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: ClampNodeModel): JSX.Element;
+        getNewInstance(): ClampNodeModel;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1090,6 +1130,7 @@ declare module NODEEDITOR {
      * Class used to create a node editor
      */
     export class NodeEditor {
+        private static _CurrentState;
         /**
          * Show the node editor
          * @param options defines the options to use to configure the node editor
