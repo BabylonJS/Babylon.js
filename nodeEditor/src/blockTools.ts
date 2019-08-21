@@ -29,7 +29,9 @@ import { LerpBlock } from 'babylonjs/Materials/Node/Blocks/lerpBlock';
 import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
 import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
 import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
-import { InputBlock, NodeMaterialWellKnownValues } from 'babylonjs';
+import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
+import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -208,6 +210,11 @@ export class BlockTools {
                 let meshMatrixWeights = new InputBlock("matricesWeights");
                 meshMatrixWeights.setAsAttribute("matricesWeights");
                 return meshMatrixWeights;
+            }                                                     
+            case "TimeBlock": {
+                let timeBlock = new InputBlock("Time", undefined, NodeMaterialBlockConnectionPointTypes.Float);
+                timeBlock.animationType = AnimatedInputBlockTypes.Time;
+                return timeBlock;
             }   
         }
 

@@ -594,6 +594,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             setTimeout(() => {
                 this._model.addAll(...this._toAdd!);            
                 this._toAdd = null;  
+                this._model.clearSelection();
                 nodeModel!.setSelected(true);
 
                 this._engine.repaintCanvas();  
