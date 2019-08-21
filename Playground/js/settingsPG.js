@@ -20,7 +20,7 @@ class SettingsPG {
             '#switchWrapper',
             '.navbarBottom',
             '.navbarBottom .links .link a',
-            '.button'
+            '.buttonPG'
         ];
         // The elements that will color with theme
         this.elementToTheme = [
