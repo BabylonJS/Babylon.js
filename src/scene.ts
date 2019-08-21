@@ -2106,7 +2106,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (index !== -1) {
             // Remove from meshes
             for (var mesh of this.meshes) {
-                mesh._removeLightSource(toRemove);
+                mesh._removeLightSource(toRemove, false);
             }
 
             // Remove from the scene if mesh found
