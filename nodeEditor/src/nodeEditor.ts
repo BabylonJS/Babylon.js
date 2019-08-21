@@ -15,11 +15,20 @@ export interface INodeEditorOptions {
  * Class used to create a node editor
  */
 export class NodeEditor {
+    private static _CurrentState: GlobalState;
+
     /**
      * Show the node editor
      * @param options defines the options to use to configure the node editor
      */
     public static Show(options: INodeEditorOptions) {
+        if (this._CurrentState) {
+            var popupWindow = (Popup as any)["node-editor"];
+            if (popupWindow) {
+                popupWindow.close();
+            }
+        }
+
         let hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800)!;
         let globalState = new GlobalState();
         globalState.nodeMaterial = options.nodeMaterial
@@ -31,6 +40,8 @@ export class NodeEditor {
         });
 
         ReactDOM.render(graphEditor, hostElement);
+
+        this._CurrentState = globalState;
 
         // Close the popup window when the page is refreshed or scene is disposed
         var popupWindow = (Popup as any)["node-editor"];
