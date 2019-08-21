@@ -666,6 +666,7 @@ export class StandardMaterial extends PushMaterial {
     protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
     protected _useLogarithmicDepth: boolean;
+    protected _rebuildInParallel = false;
 
     /**
      * Instantiates a new standard material.
@@ -1020,6 +1021,7 @@ export class StandardMaterial extends PushMaterial {
 
         // Get correct effect
         if (defines.isDirty) {
+            const lightDisposed = defines._areLightsDisposed;
             defines.markAsProcessed();
 
             // Fallbacks
@@ -1167,8 +1169,16 @@ export class StandardMaterial extends PushMaterial {
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;
+                    this._rebuildInParallel = true;
                     defines.markAsUnprocessed();
+
+                    if (lightDisposed) {
+                        // re register in case it takes more than one frame.
+                        defines._areLightsDisposed = true;
+                        return false;
+                    }
                 } else {
+                    this._rebuildInParallel = false;
                     scene.resetCachedMaterial();
                     subMesh.setEffect(effect, defines);
                     this.buildUniformLayout();
@@ -1477,7 +1487,7 @@ export class StandardMaterial extends PushMaterial {
         if (mustRebind || !this.isFrozen) {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
+                MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights, false, this._rebuildInParallel);
             }
 
             // View
