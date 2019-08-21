@@ -22,7 +22,8 @@ export class NodeMaterialBlock {
     private _isFinalMerger = false;
     private _isInput = false;
 
-    protected _codeVariableName = "";
+    /** @hidden */
+    public _codeVariableName = "";
 
     /** @hidden */
     public _inputs = new Array<NodeMaterialConnectionPoint>();
@@ -552,7 +553,7 @@ export class NodeMaterialBlock {
                 codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
             }
 
-            codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._outputRename(input.name)});\r\n`;
+            codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(input.name)});\r\n`;
         }
 
         // Outputs

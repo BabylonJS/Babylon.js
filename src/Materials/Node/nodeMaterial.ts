@@ -1044,6 +1044,16 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
+        for (var node of this._vertexOutputNodes) {
+            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
+        }
+
+        for (var node of this._fragmentOutputNodes) {
+            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
+        }
+
+        codeString += `nodeMaterial.build();\r\n`;
+
         return codeString;
     }
 
@@ -1102,7 +1112,7 @@ export class NodeMaterial extends PushMaterial {
                             continue;
                         }
 
-                        outputPoint.connectTo(inputPoint);
+                        outputPoint.connectTo(inputPoint, true);
                         this._restoreConnections(target, source, map);
                         continue;
                     }
