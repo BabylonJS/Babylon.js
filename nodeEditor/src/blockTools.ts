@@ -29,6 +29,7 @@ import { LerpBlock } from 'babylonjs/Materials/Node/Blocks/lerpBlock';
 import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
 import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
 import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
+import { InputBlock, NodeMaterialWellKnownValues } from 'babylonjs';
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -132,7 +133,82 @@ export class BlockTools {
                 let floorBlock = new TrigonometryBlock("Floor");
                 floorBlock.operation = TrigonometryBlockOperations.Floor;
                 return floorBlock;
-            }                                    
+            }       
+            case "WorldMatrixBlock": {
+                let worldMatrixBlock = new InputBlock("World");
+                worldMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+                return worldMatrixBlock;
+            }             
+            case "WorldViewMatrixBlock": {
+                let worldViewMatrixBlock = new InputBlock("World x View");
+                worldViewMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.WorldView);
+                return worldViewMatrixBlock;
+            }             
+            case "WorldViewProjectionMatrixBlock": {
+                let worldViewProjectionMatrixBlock = new InputBlock("World x View x Projection");
+                worldViewProjectionMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.WorldViewProjection);
+                return worldViewProjectionMatrixBlock;
+            }                    
+            case "ViewMatrixBlock": {
+                let viewMatrixBlock = new InputBlock("View");
+                viewMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+                return viewMatrixBlock;
+            }                          
+            case "ViewProjectionMatrixBlock": {
+                let viewProjectionMatrixBlock = new InputBlock("View x Projection");
+                viewProjectionMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.ViewProjection);
+                return viewProjectionMatrixBlock;
+            }                              
+            case "ProjectionMatrixBlock": {
+                let projectionMatrixBlock = new InputBlock("Projection");
+                projectionMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.Projection);
+                return projectionMatrixBlock;
+            }                                 
+            case "CameraPositionBlock": {
+                let cameraPosition = new InputBlock("Camera position");
+                cameraPosition.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+                return cameraPosition;
+            }                              
+            case "FogColorBlock": {
+                let FogColor = new InputBlock("Fog color");
+                FogColor.setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
+                return FogColor;
+            }                                   
+            case "PositionBlock": {
+                let meshPosition = new InputBlock("position");
+                meshPosition.setAsAttribute("position");
+                return meshPosition;
+            }                                        
+            case "UVBlock": {
+                let meshUV = new InputBlock("uv");
+                meshUV.setAsAttribute("uv");
+                return meshUV;
+            }                                         
+            case "ColorBlock": {
+                let meshColor = new InputBlock("color");
+                meshColor.setAsAttribute("color");
+                return meshColor;
+            }                                              
+            case "NormalBlock": {
+                let meshNormal = new InputBlock("normal");
+                meshNormal.setAsAttribute("normal");
+                return meshNormal;
+            }                                                 
+            case "TangentBlock": {
+                let meshTangent = new InputBlock("tangent");
+                meshTangent.setAsAttribute("tangent");
+                return meshTangent;
+            }                                                  
+            case "MatrixIndicesBlock": {
+                let meshMatrixIndices = new InputBlock("matricesIndices");
+                meshMatrixIndices.setAsAttribute("matricesIndices");
+                return meshMatrixIndices;
+            }                                                    
+            case "MatrixWeightsBlock": {
+                let meshMatrixWeights = new InputBlock("matricesWeights");
+                meshMatrixWeights.setAsAttribute("matricesWeights");
+                return meshMatrixWeights;
+            }   
         }
 
         return null;
