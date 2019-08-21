@@ -483,7 +483,7 @@ export abstract class Light extends Node {
 
         // Remove from meshes
         for (var mesh of this.getScene().meshes) {
-            mesh._removeLightSource(this);
+            mesh._removeLightSource(this, true);
         }
 
         this._uniformBuffer.dispose();
