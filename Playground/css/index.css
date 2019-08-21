@@ -358,7 +358,7 @@ body {
     right: 0;
     top: 0;
 }
-.navbar .category.right .button.selected {
+.navbar .category.right .buttonPG.selected {
     background-color: white;
 }
 .navbar .category.right.languageJS .examplesButton.selected img {
@@ -384,7 +384,7 @@ body {
     float: left;
 }
 
-.button {
+.button, .buttonPG {
     cursor: pointer;
     display: inline-block;
     width: 55px;
@@ -394,7 +394,8 @@ body {
     line-height: 100%;
     text-align: center;
 }
-.button img {
+
+.button img, .buttonPG img {
     height: 100%;
     width: 100%;
 }
@@ -403,37 +404,37 @@ body {
     width: 0;
     margin-left: -20px;
 }
-.languageJS .button img {
+.languageJS .buttonPG img {
     filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg) brightness(101%) contrast(101%);
 }
-.languageTS .button img {
+.languageTS .buttonPG img {
     filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%);
 }
-.button.run img {
+.buttonPG.run img {
     filter: invert(98%) sepia(0%) saturate(7500%) hue-rotate(207deg) brightness(104%) contrast(104%);
 }
-.button i {
+.buttonPG i {
     margin-left: 10px;
     font-size: 14px;
     vertical-align: middle;
 }
-.button:hover {
+.buttonPG:hover {
     cursor: pointer;
     background-color: white;
 }
 
-.button.languageJS:hover span {
+.buttonPG.languageJS:hover span {
     color: #3f3461;
 }
 
-.button.languageTS:hover span {
+.buttonPG.languageTS:hover span {
     color: #bb464b;
 }
 
-.languageJS .button:hover img {
+.languageJS .buttonPG:hover img {
     filter: invert(17%) sepia(61%) saturate(651%) hue-rotate(214deg) brightness(91%) contrast(84%);
 }
-.languageTS .button:hover img {
+.languageTS .buttonPG:hover img {
     filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%);
 }
 
