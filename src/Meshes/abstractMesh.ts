@@ -791,7 +791,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _removeLightSource(light: Light): void {
+    public _removeLightSource(light: Light, dispose: boolean): void {
         var index = this._lightSources.indexOf(light);
 
         if (index === -1) {
@@ -799,7 +799,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
         this._lightSources.splice(index, 1);
 
-        this._markSubMeshesAsLightDirty();
+        this._markSubMeshesAsLightDirty(dispose);
     }
 
     private _markSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
@@ -815,8 +815,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _markSubMeshesAsLightDirty() {
-        this._markSubMeshesAsDirty((defines) => defines.markAsLightDirty());
+    public _markSubMeshesAsLightDirty(dispose: boolean = false) {
+        this._markSubMeshesAsDirty((defines) => defines.markAsLightDirty(dispose));
     }
 
     /** @hidden */

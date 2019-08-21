@@ -70,7 +70,7 @@ export class InstancedMesh extends AbstractMesh {
         // Do nothing as all the work will be done by source mesh
     }
 
-    public _removeLightSource(light: Light): void {
+    public _removeLightSource(light: Light, dispose: boolean): void {
         // Do nothing as all the work will be done by source mesh
     }
 
