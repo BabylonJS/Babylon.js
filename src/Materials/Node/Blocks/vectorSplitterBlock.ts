@@ -102,9 +102,9 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
 
     protected _inputRename(name: string) {
         switch (name) {
-            case "xy":
+            case "xy ":
                 return "xyIn";
-            case "xyz":
+            case "xyz ":
                     return "xyzIn";
             default:
                 return name;

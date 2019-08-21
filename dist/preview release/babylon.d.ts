@@ -36287,6 +36287,7 @@ declare module BABYLON {
         private _storedBeta;
         private _storedRadius;
         private _storedTarget;
+        private _storedTargetScreenOffset;
         /**
          * Stores the current state of the camera (alpha, beta, radius and target)
          * @returns the camera itself
@@ -52239,6 +52240,7 @@ declare module BABYLON {
         private _injectVertexCode;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
@@ -52452,7 +52454,8 @@ declare module BABYLON {
         private _target;
         private _isFinalMerger;
         private _isInput;
-        protected _codeVariableName: string;
+        /** @hidden */
+        _codeVariableName: string;
         /** @hidden */
         _inputs: NodeMaterialConnectionPoint[];
         /** @hidden */
@@ -53366,6 +53369,9 @@ declare module BABYLON {
          */
         readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -53460,6 +53466,9 @@ declare module BABYLON {
          */
         readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -59189,6 +59198,10 @@ declare module BABYLON {
          * is distorted
          */
         lensFlareDistortionStrength: number;
+        /**
+         * Configures the blur intensity used for for lens flare (halo)
+         */
+        lensFlareBlurWidth: number;
         /**
          * Lens star texture must be used to simulate rays on the flares and is available
          * in the documentation
