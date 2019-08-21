@@ -83,15 +83,23 @@ export class FogBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public autoConfigure(material: NodeMaterial) {
         if (!this.view.isConnected) {
-            let viewInput = new InputBlock("view");
-            viewInput.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+            let viewInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.View);
+
+            if (!viewInput) {
+                viewInput = new InputBlock("view");
+                viewInput.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+            }
             viewInput.output.connectTo(this.view);
         }
         if (!this.fogColor.isConnected) {
-            let fogColorInput = new InputBlock("fogColor", undefined, NodeMaterialBlockConnectionPointTypes.Color3);
-            fogColorInput.setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
+            let fogColorInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.FogColor);
+
+            if (!fogColorInput) {
+                fogColorInput = new InputBlock("fogColor", undefined, NodeMaterialBlockConnectionPointTypes.Color3);
+                fogColorInput.setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
+            }
             fogColorInput.output.connectTo(this.fogColor);
         }
     }

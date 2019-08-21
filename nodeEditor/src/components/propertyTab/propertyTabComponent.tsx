@@ -23,7 +23,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.state = { currentNode: null };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.props.globalState.onSelectionChangedObservable.add(block => {
             this.setState({ currentNode: block });
         });

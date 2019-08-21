@@ -31,6 +31,12 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
 
         const animationGroup = this.props.animationGroup;
         this.state = { playButtonText: animationGroup.isPlaying ? "Pause" : "Play", currentFrame: 0 };
+
+        this.connect(this.props.animationGroup);
+
+        this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
+            this.updateCurrentFrame(this.props.animationGroup);
+        });        
     }
 
     disconnect(animationGroup: AnimationGroup) {
@@ -76,14 +82,6 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
             this.connect(nextProps.animationGroup);
         }
         return true;
-    }
-
-    componentWillMount() {
-        this.connect(this.props.animationGroup);
-
-        this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
-            this.updateCurrentFrame(this.props.animationGroup);
-        });
     }
 
     componentWillUnmount() {
