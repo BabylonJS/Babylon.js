@@ -391,7 +391,7 @@ export class NodeMaterialBlock {
         const otherBlockWasGeneratedInVertexShader = block._buildTarget === NodeMaterialBlockTargets.Vertex && block.target !== NodeMaterialBlockTargets.VertexAndFragment;
 
         if (localBlockIsFragment && (
-            ((block.target & this.target) === 0) || 
+            ((block.target & this.target) === 0) ||
             (this.target !== NodeMaterialBlockTargets.VertexAndFragment && otherBlockWasGeneratedInVertexShader)
             )) { // context switch! We need a varying
             if ((!block.isInput && state.target !== block._buildTarget) // block was already emitted by vertex shader
