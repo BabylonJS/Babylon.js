@@ -23,3 +23,5 @@ export * from "./stepBlock";
 export * from "./oppositeBlock";
 export * from "./viewDirectionBlock";
 export * from "./fresnelBlock";
+export * from "./maxBlock";
+export * from "./minBlock";
