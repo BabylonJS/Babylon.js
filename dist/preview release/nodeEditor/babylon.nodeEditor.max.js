@@ -71656,6 +71656,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! storm-react-diagrams/dist/style.min.css */ "../../node_modules/storm-react-diagrams/dist/style.min.css");
 __webpack_require__(/*! ./main.scss */ "./main.scss");
 __webpack_require__(/*! ./components/diagram/diagram.scss */ "./components/diagram/diagram.scss");
@@ -71937,6 +71938,9 @@ var GraphEditor = /** @class */ (function (_super) {
                         if (!e.link.targetPort && e.link.sourcePort && e.link.sourcePort.position === "input") {
                             // Drag from input port, we are going to build an input for it                            
                             var input_1 = e.link.sourcePort;
+                            if (input_1.connection.type == babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["NodeMaterialBlockConnectionPointTypes"].AutoDetect) {
+                                return;
+                            }
                             var nodeModel_1 = _this.addValueNode(_blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetStringFromConnectionNodeType(input_1.connection.type));
                             var link_1 = nodeModel_1.ports.output.link(input_1);
                             nodeModel_1.x = e.link.points[1].x - _this.NodeWidth;

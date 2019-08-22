@@ -384,6 +384,11 @@ export class NodeMaterialBlock {
         return true;
     }
 
+    protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number) {
+        this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+        this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
+    }
+
     private _processBuild(block: NodeMaterialBlock, state: NodeMaterialBuildState, input: NodeMaterialConnectionPoint, activeBlocks: NodeMaterialBlock[]) {
         block.build(state, activeBlocks);
 

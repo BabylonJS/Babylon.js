@@ -29485,6 +29485,7 @@ declare module BABYLON {
         private _displayingPosterTexture;
         private _settings;
         private _createInternalTextureOnEvent;
+        private _frameId;
         /**
          * Creates a video texture.
          * If you want to display a video in your scene, this is the special texture for that.
@@ -52648,6 +52649,7 @@ declare module BABYLON {
          * @returns true if the block is ready
          */
         isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): boolean;
+        protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number): void;
         private _processBuild;
         /**
          * Compile the current node and generate the shader code
@@ -52829,6 +52831,8 @@ declare module BABYLON {
         private _associatedVariableName;
         /** @hidden */
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
+        /** @hidden */
+        _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         private _type;
         /** @hidden */
         _enforceAssociatedVariableName: boolean;
