@@ -288,15 +288,26 @@ class Main {
         }
         // Language (JS / TS)
         this.parent.utils.setToMultipleID("toTSbutton", "click", function () {
-            if (this.parent.settingsPG.ScriptLanguage == "JS") {
+            if(location.hash != null && location.hash != ""){
                 this.parent.settingsPG.ScriptLanguage = "TS";
-                location.reload();
+                window.location = "./";
+            }else{
+                if (this.parent.settingsPG.ScriptLanguage == "JS") {
+                    this.parent.settingsPG.ScriptLanguage = "TS";
+                    location.reload();
+                }
             }
+           
         }.bind(this));
         this.parent.utils.setToMultipleID("toJSbutton", "click", function () {
-            if (this.parent.settingsPG.ScriptLanguage == "TS") {
+            if(location.hash != null && location.hash != ""){
                 this.parent.settingsPG.ScriptLanguage = "JS";
-                location.reload();
+                window.location = "./";
+            }else{
+                if (this.parent.settingsPG.ScriptLanguage == "TS") {
+                    this.parent.settingsPG.ScriptLanguage = "JS";
+                    location.reload();
+                }
             }
         }.bind(this));
         // Safe mode
