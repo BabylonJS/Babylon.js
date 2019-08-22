@@ -7610,6 +7610,8 @@ declare module BABYLON {
         /** @hidden */
         _areLightsDirty: boolean;
         /** @hidden */
+        _areLightsDisposed: boolean;
+        /** @hidden */
         _areAttributesDirty: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
@@ -7650,8 +7652,9 @@ declare module BABYLON {
         markAsImageProcessingDirty(): void;
         /**
          * Marks the material to indicate the lights need to be re-calculated
+         * @param disposed Defines whether the light is dirty due to dispose or not
          */
-        markAsLightDirty(): void;
+        markAsLightDirty(disposed?: boolean): void;
         /**
          * Marks the attribute state as changed
          */
@@ -8955,8 +8958,9 @@ declare module BABYLON {
          * @param effect The effect we are binding the data to
          * @param useSpecular Defines if specular is supported
          * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean): void;
+        static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
         /**
          * Binds the lights information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
@@ -8965,8 +8969,9 @@ declare module BABYLON {
          * @param defines The generated defines for the effect
          * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
          * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number, usePhysicalLightFalloff?: boolean): void;
+        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
         private static _tempFogColor;
         /**
          * Binds the fog information from the scene to the effect for the given mesh.
@@ -18587,7 +18592,7 @@ declare module BABYLON {
         readonly lightSources: Light[];
         _resyncLightSources(): void;
         _resyncLighSource(light: Light): void;
-        _removeLightSource(light: Light): void;
+        _removeLightSource(light: Light, dispose: boolean): void;
         /**
          * If the source mesh receives shadows
          */
@@ -25907,10 +25912,10 @@ declare module BABYLON {
         /** @hidden */
         _unBindEffect(): void;
         /** @hidden */
-        _removeLightSource(light: Light): void;
+        _removeLightSource(light: Light, dispose: boolean): void;
         private _markSubMeshesAsDirty;
         /** @hidden */
-        _markSubMeshesAsLightDirty(): void;
+        _markSubMeshesAsLightDirty(dispose?: boolean): void;
         /** @hidden */
         _markSubMeshesAsAttributesDirty(): void;
         /** @hidden */
@@ -29480,6 +29485,7 @@ declare module BABYLON {
         private _displayingPosterTexture;
         private _settings;
         private _createInternalTextureOnEvent;
+        private _frameId;
         /**
          * Creates a video texture.
          * If you want to display a video in your scene, this is the special texture for that.
@@ -40217,6 +40223,7 @@ declare module BABYLON {
         protected _worldViewProjectionMatrix: Matrix;
         protected _globalAmbientColor: Color3;
         protected _useLogarithmicDepth: boolean;
+        protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new standard material.
          * This is the default material used in Babylon. It is the best trade off between quality
@@ -46893,6 +46900,7 @@ declare module BABYLON {
          * Custom callback helping to override the default shader used in the material.
          */
         customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
+        protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new PBRMaterial instance.
          *
@@ -51717,6 +51725,7 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        protected _dumpPropertiesCode(): string;
     }
 }
 declare module BABYLON {
@@ -51872,7 +51881,7 @@ declare module BABYLON {
          * Gets the b output component
          */
         readonly b: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
@@ -52016,6 +52025,18 @@ declare module BABYLON {
          * @returns the required block or null if not found
          */
         getBlockByName(name: string): Nullable<NodeMaterialBlock>;
+        /**
+         * Get a block by its name
+         * @param predicate defines the predicate used to find the good candidate
+         * @returns the required block or null if not found
+         */
+        getBlockByPredicate(predicate: (block: NodeMaterialBlock) => boolean): Nullable<NodeMaterialBlock>;
+        /**
+         * Get an input block by its name
+         * @param predicate defines the predicate used to find the good candidate
+         * @returns the required input block or null if not found
+         */
+        getInputBlockByPredicate(predicate: (block: InputBlock) => boolean): Nullable<InputBlock>;
         /**
          * Gets the list of input blocks attached to this material
          * @returns an array of InputBlocks
@@ -52231,7 +52252,7 @@ declare module BABYLON {
          */
         readonly a: NodeMaterialConnectionPoint;
         readonly target: NodeMaterialBlockTargets;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         isReady(): boolean;
@@ -52628,6 +52649,7 @@ declare module BABYLON {
          * @returns true if the block is ready
          */
         isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): boolean;
+        protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number): void;
         private _processBuild;
         /**
          * Compile the current node and generate the shader code
@@ -52809,6 +52831,8 @@ declare module BABYLON {
         private _associatedVariableName;
         /** @hidden */
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
+        /** @hidden */
+        _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         private _type;
         /** @hidden */
         _enforceAssociatedVariableName: boolean;
@@ -52882,9 +52906,10 @@ declare module BABYLON {
         /**
          * Connect this point to another connection point
          * @param connectionPoint defines the other connection point
+         * @param ignoreConstraints defines if the system will ignore connection type constraints (default is false)
          * @returns the current connection point
          */
-        connectTo(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint;
+        connectTo(connectionPoint: NodeMaterialConnectionPoint, ignoreConstraints?: boolean): NodeMaterialConnectionPoint;
         /**
          * Disconnect this point from one of his endpoint
          * @param endpoint defines the other connection point
@@ -52942,7 +52967,7 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
@@ -52989,7 +53014,7 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
@@ -53044,7 +53069,7 @@ declare module BABYLON {
          */
         readonly uvOutput: NodeMaterialConnectionPoint;
         initialize(state: NodeMaterialBuildState): void;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines): void;
@@ -53079,49 +53104,9 @@ declare module BABYLON {
          */
         readonly alpha: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to compute fresnel value
-     */
-    export class FresnelBlock extends NodeMaterialBlock {
-        /**
-         * Create a new FresnelBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the world position input component
-         */
-        readonly worldPosition: NodeMaterialConnectionPoint;
-        /**
-         * Gets the world normal input component
-         */
-        readonly worldNormal: NodeMaterialConnectionPoint;
-        /**
-        * Gets the camera (or eye) position component
-        */
-        readonly cameraPosition: NodeMaterialConnectionPoint;
-        /**
-        * Gets the bias input component
-        */
-        readonly bias: NodeMaterialConnectionPoint;
-        /**
-        * Gets the camera (or eye) position component
-        */
-        readonly power: NodeMaterialConnectionPoint;
-        /**
-         * Gets the fresnel output component
-         */
-        readonly fresnel: NodeMaterialConnectionPoint;
-        autoConfigure(material: NodeMaterial): void;
-        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -53195,7 +53180,7 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
@@ -53241,7 +53226,7 @@ declare module BABYLON {
          * Gets the specular output component
          */
         readonly specularOutput: NodeMaterialConnectionPoint;
-        autoConfigure(): void;
+        autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
@@ -53861,6 +53846,102 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the opposite of a value
+     */
+    export class OppositeBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new OppositeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the view direction
+     */
+    export class ViewDirectionBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ViewDirectionBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position component
+         */
+        readonly worldPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the camera position component
+         */
+        readonly cameraPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to compute fresnel value
+     */
+    export class FresnelBlock extends NodeMaterialBlock {
+        /**
+         * Create a new FresnelBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world normal input component
+         */
+        readonly worldNormal: NodeMaterialConnectionPoint;
+        /**
+        * Gets the view direction input component
+        */
+        readonly viewDirection: NodeMaterialConnectionPoint;
+        /**
+        * Gets the bias input component
+        */
+        readonly bias: NodeMaterialConnectionPoint;
+        /**
+        * Gets the camera (or eye) position component
+        */
+        readonly power: NodeMaterialConnectionPoint;
+        /**
+         * Gets the fresnel output component
+         */
+        readonly fresnel: NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }

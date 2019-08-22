@@ -26,13 +26,16 @@ declare module "babylonjs-node-editor/blockTools" {
     import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
     import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
     import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
-    import { FresnelBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fresnelBlock';
+    import { FresnelBlock } from 'babylonjs/Materials/Node/Blocks/fresnelBlock';
     import { LerpBlock } from 'babylonjs/Materials/Node/Blocks/lerpBlock';
     import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
     import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
     import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
+    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { OppositeBlock } from 'babylonjs/Materials/Node/Blocks/oppositeBlock';
+    import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
     export class BlockTools {
-        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | null;
+        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | OppositeBlock | ViewDirectionBlock | InputBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -342,7 +345,7 @@ declare module "babylonjs-node-editor/stringTools" {
          * Download a string into a file that will be saved locally by the browser
          * @param content defines the string to download locally as a file
          */
-        static DownloadAsFile(content: string, filename: string): void;
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
 declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" {
@@ -377,7 +380,7 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
         currentNode: Nullable<DefaultNodeModel>;
     }> {
         constructor(props: IPropertyTabComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         load(file: File): void;
         save(): void;
         render(): JSX.Element;
@@ -848,7 +851,7 @@ declare module "babylonjs-node-editor/components/log/logComponent" {
         logs: LogEntry[];
     }> {
         constructor(props: ILogComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentDidUpdate(): void;
         render(): JSX.Element;
     }
@@ -1174,6 +1177,59 @@ declare module "babylonjs-node-editor/components/diagram/trigonometry/trigonomet
         getNewInstance(): TrigonometryNodeModel;
     }
 }
+declare module "babylonjs-node-editor/components/diagram/clamp/clampNodePropertyComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { ClampNodeModel } from "babylonjs-node-editor/components/diagram/clamp/clampNodeModel";
+    interface IClampPropertyTabComponentProps {
+        globalState: GlobalState;
+        remapNode: ClampNodeModel;
+    }
+    export class ClampPropertyTabComponentProps extends React.Component<IClampPropertyTabComponentProps> {
+        constructor(props: IClampPropertyTabComponentProps);
+        forceRebuild(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/clamp/clampNodeModel" {
+    import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
+    export class ClampNodeModel extends DefaultNodeModel {
+        readonly clampBlock: ClampBlock;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/clamp/clampNodeWidget" {
+    import * as React from "react";
+    import { ClampNodeModel } from "babylonjs-node-editor/components/diagram/clamp/clampNodeModel";
+    import { Nullable } from 'babylonjs/types';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    export interface ClampNodeWidgetProps {
+        node: Nullable<ClampNodeModel>;
+        globalState: GlobalState;
+    }
+    export class ClampNodeWidget extends React.Component<ClampNodeWidgetProps> {
+        constructor(props: ClampNodeWidgetProps);
+        renderValue(value: string): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/clamp/clampNodeFactory" {
+    import * as SRD from "storm-react-diagrams";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { ClampNodeModel } from "babylonjs-node-editor/components/diagram/clamp/clampNodeModel";
+    export class ClampNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        constructor(globalState: GlobalState);
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: ClampNodeModel): JSX.Element;
+        getNewInstance(): ClampNodeModel;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
@@ -1305,6 +1361,7 @@ declare module "babylonjs-node-editor/nodeEditor" {
      * Class used to create a node editor
      */
     export class NodeEditor {
+        private static _CurrentState;
         /**
          * Show the node editor
          * @param options defines the options to use to configure the node editor
@@ -1324,7 +1381,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | null;
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.OppositeBlock | BABYLON.ViewDirectionBlock | BABYLON.InputBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -1598,7 +1655,7 @@ declare module NODEEDITOR {
          * Download a string into a file that will be saved locally by the browser
          * @param content defines the string to download locally as a file
          */
-        static DownloadAsFile(content: string, filename: string): void;
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
 declare module NODEEDITOR {
@@ -1628,7 +1685,7 @@ declare module NODEEDITOR {
         currentNode: BABYLON.Nullable<DefaultNodeModel>;
     }> {
         constructor(props: IPropertyTabComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         load(file: File): void;
         save(): void;
         render(): JSX.Element;
@@ -2033,7 +2090,7 @@ declare module NODEEDITOR {
         logs: LogEntry[];
     }> {
         constructor(props: ILogComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentDidUpdate(): void;
         render(): JSX.Element;
     }
@@ -2308,6 +2365,46 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IClampPropertyTabComponentProps {
+        globalState: GlobalState;
+        remapNode: ClampNodeModel;
+    }
+    export class ClampPropertyTabComponentProps extends React.Component<IClampPropertyTabComponentProps> {
+        constructor(props: IClampPropertyTabComponentProps);
+        forceRebuild(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class ClampNodeModel extends DefaultNodeModel {
+        readonly clampBlock: BABYLON.ClampBlock;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface ClampNodeWidgetProps {
+        node: BABYLON.Nullable<ClampNodeModel>;
+        globalState: GlobalState;
+    }
+    export class ClampNodeWidget extends React.Component<ClampNodeWidgetProps> {
+        constructor(props: ClampNodeWidgetProps);
+        renderValue(value: string): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class ClampNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        constructor(globalState: GlobalState);
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: ClampNodeModel): JSX.Element;
+        getNewInstance(): ClampNodeModel;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -2413,6 +2510,7 @@ declare module NODEEDITOR {
      * Class used to create a node editor
      */
     export class NodeEditor {
+        private static _CurrentState;
         /**
          * Show the node editor
          * @param options defines the options to use to configure the node editor

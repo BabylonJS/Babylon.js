@@ -26,6 +26,8 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
 
     constructor(props: ISkeletonPropertyGridComponentProps) {
         super(props);
+        
+        this.checkSkeletonViewerState(this.props);
     }
 
     switchSkeletonViewers() {
@@ -79,10 +81,6 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         }
 
         this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
-    }
-
-    componentWillMount() {
-        this.checkSkeletonViewerState(this.props);
     }
 
     shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps) {

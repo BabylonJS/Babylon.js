@@ -145,10 +145,14 @@ export class TextureBlock extends NodeMaterialBlock {
         return NodeMaterialBlockTargets.VertexAndFragment;
     }
 
-    public autoConfigure() {
+    public autoConfigure(material: NodeMaterial) {
         if (!this.uv.isConnected) {
-            let uvInput = new InputBlock("uv");
-            uvInput.setAsAttribute();
+            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
+
+            if (!uvInput) {
+                uvInput = new InputBlock("uv");
+                uvInput.setAsAttribute();
+            }
             uvInput.output.connectTo(this.uv);
         }
     }

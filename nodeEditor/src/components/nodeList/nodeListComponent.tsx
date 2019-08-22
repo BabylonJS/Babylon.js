@@ -26,18 +26,18 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "AlphaTestBlock"],
+            Basic_Math: ["AddBlock",  "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OppositeBlock"],
+            Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "TimeBlock"],
             Interpolation: ["LerpBlock"],
+            Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
+            Mesh_Attributes: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock"],
+            Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "AlphaTestBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
-            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
-            Basic_Math: ["AddBlock",  "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock"],
+            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "ReflectionTextureBlock", "ViewDirectionBlock"],
             Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block"],
-            Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Mesh_Attributes: ["InstancesBlock"],
-            Matrices: ["Matrix"],
-            Scene_Attributes: ["FogBlock","ImageProcessingBlock", "LightBlock", "ReflectionTextureBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock"],
+            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
         }
 
         // Create node menu
@@ -65,7 +65,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         <div className="filter">
                             <input type="text" placeholder="Filter" onChange={(evt) => this.filterContent(evt.target.value)} />
                         </div>
-                        {blockMenu}
+                        <div className="list-container">
+                            {blockMenu}
+                        </div>
                     </div>
                 </div>
             </div>

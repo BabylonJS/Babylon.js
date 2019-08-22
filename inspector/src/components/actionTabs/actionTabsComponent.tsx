@@ -50,7 +50,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
         this.state = { selectedEntity: null, selectedIndex: initialIndex }
     }
 
-    componentWillMount() {
+    componentDidMount() {
         if (this.props.globalState) {
             this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
                 this.setState({ selectedEntity: entity, selectedIndex: 0 });

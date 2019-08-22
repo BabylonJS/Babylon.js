@@ -20,6 +20,9 @@ export class NodeMaterialConnectionPoint {
     /** @hidden */
     public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
 
+    /** @hidden */
+    public _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
+
     private _type = NodeMaterialBlockConnectionPointTypes.Float;
 
     /** @hidden */
@@ -38,7 +41,7 @@ export class NodeMaterialConnectionPoint {
             return (this._ownerBlock as InputBlock).associatedVariableName;
         }
 
-        if (!this._enforceAssociatedVariableName && this._connectedPoint) {
+        if ((!this._enforceAssociatedVariableName || !this._associatedVariableName) && this._connectedPoint) {
             return this._connectedPoint.associatedVariableName;
         }
 
@@ -60,6 +63,10 @@ export class NodeMaterialConnectionPoint {
 
             if (this._connectedPoint) {
                 return this._connectedPoint.type;
+            }
+
+            if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
+                return this._linkedConnectionSource.type;
             }
         }
 
