@@ -606,8 +606,8 @@ class Main {
     };
 
     checkSafeMode(message) {
-        if (document.getElementById("safemodeToggle" + this.parent.getCurrentSize) &&
-            document.getElementById("safemodeToggle" + this.parent.getCurrentSize).classList.contains('checked')) {
+        if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()) &&
+            document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
             let confirm = window.confirm(message);
             if (!confirm) {
                 return false;
