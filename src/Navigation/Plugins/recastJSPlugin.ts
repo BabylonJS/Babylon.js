@@ -222,7 +222,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         var crowd = new RecastJSCrowd(this, maxAgents, maxAgentRadius, scene);
         return crowd;
     }
-    
+
     /**
      * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
      * The queries will try to find a solution within those bounds
