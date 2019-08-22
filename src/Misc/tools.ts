@@ -315,7 +315,7 @@ export class Tools {
         var eventPrefix = "pointer";
 
         // Check if pointer events are supported
-        if (DomManagement.IsWindowObjectExist() && !window.PointerEvent && !navigator.pointerEnabled) {
+        if (DomManagement.IsWindowObjectExist() && !window.PointerEvent && DomManagement.IsNavigatorAvailable() && !navigator.pointerEnabled) {
             eventPrefix = "mouse";
         }
 
