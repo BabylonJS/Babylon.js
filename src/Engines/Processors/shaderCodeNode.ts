@@ -18,6 +18,10 @@ export class ShaderCodeNode {
             let value: string = this.line;
             let processor = options.processor;
             if (processor) {
+                if (processor.linePreProcessor) {
+                    value = processor.linePreProcessor(value, options.isFragment);
+                }
+
                 if (processor.attributeProcessor && StringTools.StartsWith(this.line, "attribute")) {
                     value = processor.attributeProcessor(this.line);
                 } else if (processor.varyingProcessor && StringTools.StartsWith(this.line, "varying")) {
