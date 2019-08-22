@@ -59,7 +59,7 @@ var createScene = function() {
 
     lamp.rotation.x = -3 * Math.PI / 4;
     lamp.position.copyFromFloats(-5, 10, 10);
-    lamp.color = new BABYLON.Vector3(50, 50, 50);
+    lamp._color = new BABYLON.Vector3(2, 2, 2);
 
     addMaterial(lamp);
     prepareUVS([lamp]);

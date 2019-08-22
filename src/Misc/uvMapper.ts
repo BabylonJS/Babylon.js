@@ -5,7 +5,28 @@ import { VertexData } from "../meshes/mesh.vertexdata";
 import { IndicesArray, FloatArray } from "../types";
 import { VertexBuffer } from "../meshes/buffer";
 
-// TODO : class recopieuse de vertexData, fusionner le code avec les additionnalVertices etc...
+/*
+* UV Mapper for lightmaps
+* Ported from Blender by Benjamin Guignabert (https://github.com/CraigFeldspar)
+*
+* Original license can be found below :
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+*
+*/
+
 class Face {
     area: number;
     uv: Vector2[];
@@ -26,7 +47,7 @@ class Face {
     vMatricesWeights: Nullable<FloatArray[]>;
     vMatricesIndicesExtra: Nullable<FloatArray[]>;
     vMatricesWeightsExtra: Nullable<FloatArray[]>;
-    edge_keys: string[];
+    edgeKeys: string[];
     no: Vector3;
     index: number;
     meshIndex: number;
@@ -42,7 +63,7 @@ class Face {
         this.v = [];
         this.uv = [];
         this.vNormals = [];
-        this.edge_keys = [];
+        this.edgeKeys = [];
         this.index = indexBegin;
         this.meshIndex = offset;
         for (let i = 0; i < 3; i++) {
@@ -82,7 +103,7 @@ class Face {
                 secondIndex = t;
             }
 
-            this.edge_keys.push(offset + "_" + firstIndex + "_" + secondIndex);
+            this.edgeKeys.push(offset + "_" + firstIndex + "_" + secondIndex);
         }
 
         let faceNormal = Vector3.Cross(this.v[0].v.subtract(this.v[1].v), this.v[2].v.subtract(this.v[1].v));
@@ -322,7 +343,7 @@ let sortAndGetFirst = function(arr: number[][], idx: number) {
     return idx;
 };
 
-let intersect_line_line_2d = function() {
+let intersectLineLine2d = function() {
 
     var r, s,
         denominator,
@@ -370,7 +391,7 @@ function roundTo(a: number, precision: number) {
  *
  * instead use a vector as a matrix.
  */
-function mul_v2_v2_cw(mat: Vector2, vec: Vector2)
+function mulV2V2Cw(mat: Vector2, vec: Vector2)
 {
     return new Vector2(
         mat.x * vec.x + mat.y * vec.y,
@@ -400,13 +421,11 @@ function projectMat(vector: Vector3) {
     return mat.transpose();
 }
 
-// TODO
 const USER_FILL_HOLES = 0;
 const USER_FILL_HOLES_QUALITY = 1;
 const USER_ISLAND_MARGIN = 0;
 const SMALL_NUM = 1e-12;
 
-// Porting smart uv project code from blender
 export class UvMapper {
 
     toV3(v: Vector2) {
@@ -488,16 +507,16 @@ export class UvMapper {
 
     island2Edge(island: Island) {
         let edges: Map<string, MeasuredEdge> = new Map();
-        let unique_points_map: Map<string, Vector2> = new Map();
+        let uniquePointsMap: Map<string, Vector2> = new Map();
         let i1, i2;
 
         for (let i = 0; i < island.length; i++) {
             let f = island[i];
-            let f_uvkey = f.uv;
+            let fUvkey = f.uv;
 
-            let l = f_uvkey.length;
+            let l = fUvkey.length;
             for (let vIdx = 0; vIdx < l; vIdx++) {
-                unique_points_map.set(f_uvkey[vIdx].x + "_" + f_uvkey[vIdx].y, f.uv[vIdx]);
+                uniquePointsMap.set(fUvkey[vIdx].x + "_" + fUvkey[vIdx].y, f.uv[vIdx]);
 
                 if (f.v[vIdx].index > f.v[(vIdx - 1 + l) % l].index) {
                     i1 = (vIdx - 1 + l) % l;
@@ -507,7 +526,7 @@ export class UvMapper {
                     i2 = (vIdx - 1 + l) % l;
                 }
 
-                let key = f_uvkey[i1].x + "_" + f_uvkey[i1].y + "_" + f_uvkey[i2].x + "_" + f_uvkey[i2].y;
+                let key = fUvkey[i1].x + "_" + fUvkey[i1].y + "_" + fUvkey[i2].x + "_" + fUvkey[i2].y;
 
                 if (typeof(edges.get(key)) === "undefined") {
                     edges.set(key, {
@@ -526,7 +545,7 @@ export class UvMapper {
             }
         }
 
-        let length_sorted_edges: MeasuredEdge[] = [];
+        let lengthSortedEdges: MeasuredEdge[] = [];
 
         let keys = edges.keys();
         let k = keys.next();
@@ -534,24 +553,24 @@ export class UvMapper {
             let o = edges.get(k.value) as MeasuredEdge;
 
             let i = 0;
-            while (i < length_sorted_edges.length && length_sorted_edges[i].l > o.l) {
+            while (i < lengthSortedEdges.length && lengthSortedEdges[i].l > o.l) {
                 i++;
             }
-            length_sorted_edges.splice(i, 0, o);
+            lengthSortedEdges.splice(i, 0, o);
             k = keys.next();
         }
 
-        let unique_points = [];
-        let values = unique_points_map.values();
+        let uniquePoints = [];
+        let values = uniquePointsMap.values();
         let iter = values.next();
         while (!iter.done) {
-            unique_points.push(this.toV3(iter.value));
+            uniquePoints.push(this.toV3(iter.value));
             iter = values.next();
         }
 
         return {
-            length_sorted_edges,
-            unique_points
+            lengthSortedEdges,
+            uniquePoints
         };
     }
 
@@ -591,7 +610,7 @@ export class UvMapper {
                 if (!seg.e) {
                     continue;
                 }
-                let inter = intersect_line_line_2d((<Edge>seg.e).v0,
+                let inter = intersectLineLine2d((<Edge>seg.e).v0,
                     (<Edge>seg.e).v1,
                     SourceOffset.add((<Edge>ed.e).v0),
                     SourceOffset.add((<Edge>ed.e).v1));
@@ -622,19 +641,19 @@ export class UvMapper {
         return 0; // NO INTERSECTION
     }
 
-    rotate_uvs(uv_points: Vector2[], angle: number) {
+    rotateUvs(uvPoints: Vector2[], angle: number) {
         // Unefficient v2 -> v3
         if (angle !== 0) {
             let mat = Matrix.RotationZ(-angle);
-            for (let i = 0; i < uv_points.length; i++) {
-                let vec = this.toV3(uv_points[i]);
+            for (let i = 0; i < uvPoints.length; i++) {
+                let vec = this.toV3(uvPoints[i]);
                 let res = Vector3.TransformCoordinates(vec, mat);
-                uv_points[i].copyFromFloats(res.x, res.y);
+                uvPoints[i].copyFromFloats(res.x, res.y);
             }
         }
     }
 
-    convexhull_2d(points: Vector2[]) : Vector2[] {
+    convexhull2d(points: Vector2[]) : Vector2[] {
         if (points.length < 3) {
             return [];
         }
@@ -664,10 +683,10 @@ export class UvMapper {
         return lower.concat(upper);
     }
 
-    fit_aabb_2d(hull: Vector2[]) {
-        let area_best = +Infinity;
+    fitAabb2d(hull: Vector2[]) {
+        let areaBest = +Infinity;
         let area = +Infinity;
-        let dvec_best = new Vector2();
+        let dvecBest = new Vector2();
         let dvec = new Vector2();
         let min = new Vector2(+Infinity, +Infinity);
         let max = new Vector2(-Infinity, -Infinity);
@@ -675,14 +694,14 @@ export class UvMapper {
         let maxBest = new Vector2(-Infinity, -Infinity);
         let n = hull.length;
 
-        let i_prev = n - 1;
+        let iPrev = n - 1;
 
-        let ev_a, ev_b;
+        let evA, evB;
         for (let i = 0; i < n; i++) {
-            ev_a = hull[i];
-            ev_b = hull[i_prev];
+            evA = hull[i];
+            evB = hull[iPrev];
 
-            dvec.copyFrom(ev_a).subtractInPlace(ev_b);
+            dvec.copyFrom(evA).subtractInPlace(evB);
 
             dvec.normalize();
 
@@ -691,7 +710,7 @@ export class UvMapper {
                 max.copyFromFloats(-Infinity, -Infinity);
 
                 for (let j = 0; j < n; j++) {
-                    let tvec = mul_v2_v2_cw(dvec, hull[j]);
+                    let tvec = mulV2V2Cw(dvec, hull[j]);
 
                     min.x = Math.min(min.x, tvec.x);
                     min.y = Math.min(min.y, tvec.y);
@@ -701,23 +720,23 @@ export class UvMapper {
 
                     area = (max.x - min.x) * (max.y - min.y);
 
-                    if (area > area_best) {
+                    if (area > areaBest) {
                         break;
                     }
                 }
 
-                if (area < area_best) {
-                    area_best = area;
-                    dvec_best.copyFrom(dvec);
+                if (area < areaBest) {
+                    areaBest = area;
+                    dvecBest.copyFrom(dvec);
                     minBest.copyFrom(min);
                     maxBest.copyFrom(max);
                 }
             }
 
-            i_prev = i;
+            iPrev = i;
         }
 
-        let angle = (area_best !== +Infinity) ? Math.atan2(dvec_best.y, dvec_best.x) : 0;
+        let angle = (areaBest !== +Infinity) ? Math.atan2(dvecBest.y, dvecBest.x) : 0;
 
         return {
             angle,
@@ -727,8 +746,8 @@ export class UvMapper {
     }
 
     boxFit2D(points: Vector2[]) {
-        let hull = this.convexhull_2d(points);
-        let { angle } = this.fit_aabb_2d(hull);
+        let hull = this.convexhull2d(points);
+        let { angle } = this.fitAabb2d(hull);
 
         return angle;
     }
@@ -771,8 +790,8 @@ export class UvMapper {
             ctx.fill();
         }
 
-        let hull = this.convexhull_2d(points0);
-        let { angle, min, max } = this.fit_aabb_2d(hull);
+        let hull = this.convexhull2d(points0);
+        let { angle, min, max } = this.fitAabb2d(hull);
         let rotation = new Vector2(Math.cos(angle), Math.sin(angle));
 
         ctx.strokeStyle = "green";
@@ -794,11 +813,11 @@ export class UvMapper {
         let base = new Vector2(0, 0);
         let tip = new Vector2(50, 0);
 
-        tip = mul_v2_v2_cw(rotation, tip); //.addInPlace(offset);
-        tl = mul_v2_v2_cw(rotation, tl); //.addInPlace(offset);
-        bl = mul_v2_v2_cw(rotation, bl); //.addInPlace(offset);
-        br = mul_v2_v2_cw(rotation, br); //.addInPlace(offset);
-        tr = mul_v2_v2_cw(rotation, tr); //.addInPlace(offset);
+        tip = mulV2V2Cw(rotation, tip); //.addInPlace(offset);
+        tl = mulV2V2Cw(rotation, tl); //.addInPlace(offset);
+        bl = mulV2V2Cw(rotation, bl); //.addInPlace(offset);
+        br = mulV2V2Cw(rotation, br); //.addInPlace(offset);
+        tr = mulV2V2Cw(rotation, tr); //.addInPlace(offset);
 
         ctx.beginPath();
         ctx.moveTo(tip.x, tip.y);
@@ -867,17 +886,17 @@ export class UvMapper {
     }
 
     optiRotateUvIsland(faces: Face[]) {
-        let uv_points: Vector2[] = [];
+        let uvPoints: Vector2[] = [];
         for (let i = 0; i < faces.length; i++) {
             for (let j = 0; j < faces[i].uv.length; j++) {
-                uv_points.push(faces[i].uv[j]);
+                uvPoints.push(faces[i].uv[j]);
             }
         }
 
-        let angle = this.boxFit2D(uv_points);
+        let angle = this.boxFit2D(uvPoints);
 
         if (angle !== 0) {
-            this.rotate_uvs(uv_points, angle);
+            this.rotateUvs(uvPoints, angle);
         }
 
         let [minx, miny, maxx, maxy] = this.boundsIslands(faces);
@@ -886,7 +905,7 @@ export class UvMapper {
 
         if (h + 1e-5 < w) {
             angle = Math.PI / 2;
-            this.rotate_uvs(uv_points, angle);
+            this.rotateUvs(uvPoints, angle);
         }
     }
 
@@ -921,8 +940,8 @@ export class UvMapper {
 
             // UV Edge list used for intersections as well as unique points.
             let o = this.island2Edge(islandList[islandIdx]);
-            let edges = o.length_sorted_edges;
-            let uniqueEdgePoints = o.unique_points;
+            let edges = o.lengthSortedEdges;
+            let uniqueEdgePoints = o.uniquePoints;
 
             decoratedIslandList.push([islandList[islandIdx], totFaceArea, efficiency, islandBoundsArea, w, h, edges, uniqueEdgePoints]);
         }
@@ -1088,20 +1107,20 @@ export class UvMapper {
                 continue;
             }
 
-            let edge_users: {[key: string] : number[]} = {};
+            let edgeUsers: {[key: string] : number[]} = {};
 
             for (let i = 0; i < faces.length; i++) {
                 let f = faces[i];
 
-                for (let j = 0; j < f.edge_keys.length; j++) {
-                    let ed_key = f.edge_keys[j];
-                    edge_users[ed_key] = edge_users[ed_key] || [];
-                    edge_users[ed_key].push(i);
+                for (let j = 0; j < f.edgeKeys.length; j++) {
+                    let edKey = f.edgeKeys[j];
+                    edgeUsers[edKey] = edgeUsers[edKey] || [];
+                    edgeUsers[edKey].push(i);
                 }
             }
 
-            let face_modes = new Uint8Array(faces.length);
-            face_modes[0] = 1;
+            let faceModes = new Uint8Array(faces.length);
+            faceModes[0] = 1;
 
             let newIsland: Island = [];
             newIsland.push(faces[0]);
@@ -1114,20 +1133,20 @@ export class UvMapper {
                 while (ok) {
                     ok = false;
                     for (let i = 0; i < faces.length; i++) {
-                        if (face_modes[i] === 1) {
-                            for (let j = 0; j < faces[i].edge_keys.length; j++) {
-                                let ed_key = faces[i].edge_keys[j];
-                                for (let k = 0; k < edge_users[ed_key].length; k++) {
-                                    let ii = edge_users[ed_key][k];
+                        if (faceModes[i] === 1) {
+                            for (let j = 0; j < faces[i].edgeKeys.length; j++) {
+                                let edKey = faces[i].edgeKeys[j];
+                                for (let k = 0; k < edgeUsers[edKey].length; k++) {
+                                    let ii = edgeUsers[edKey][k];
 
-                                    if (i !== ii && face_modes[ii] === 0) {
-                                        face_modes[ii] = 1;
+                                    if (i !== ii && faceModes[ii] === 0) {
+                                        faceModes[ii] = 1;
                                         ok = true;
                                         newIsland.push(faces[ii]);
                                     }
                                 }
                             }
-                            face_modes[i] = 2;
+                            faceModes[i] = 2;
                         }
                     }
                 }
@@ -1137,11 +1156,11 @@ export class UvMapper {
                 ok = false;
 
                 for (let i = 0; i < faces.length; i++) {
-                    if (face_modes[i] === 0) {
+                    if (faceModes[i] === 0) {
                         newIsland = [];
                         newIsland.push(faces[i]);
 
-                        face_modes[i] = 1;
+                        faceModes[i] = 1;
                         ok = true;
                         break;
                     }
@@ -1277,17 +1296,17 @@ export class UvMapper {
     }
 
     map(obList: Mesh[],
-        island_margin: number = 0,
-        projection_limit: number = 89,
-        user_area_weight: number = 0,
-        use_aspect: boolean = false,
-        strech_to_bounds: boolean = false,
-        remove_doubles: boolean = true) : number {
-        const USER_PROJECTION_LIMIT_CONVERTED = Math.cos(projection_limit * Math.PI / 180);
-        const USER_PROJECTION_LIMIT_HALF_CONVERTED = Math.cos(projection_limit / 2 * Math.PI / 180);
+        islandMargin: number = 0,
+        projectionLimit: number = 89,
+        userAreaWeight: number = 0,
+        useAspect: boolean = false, // TODO
+        strechToBounds: boolean = false, // TODO
+        removeDoubles: boolean = true) : number {
+        const USER_PROJECTION_LIMIT_CONVERTED = Math.cos(projectionLimit * Math.PI / 180);
+        const USER_PROJECTION_LIMIT_HALF_CONVERTED = Math.cos(projectionLimit / 2 * Math.PI / 180);
         const USER_SHARE_SPACE = true;
 
-        let collected_islandList: Island[] = [];
+        let collectedIslandList: Island[] = [];
         let deletedFaces: Face[] = [];
         let equivalencies = [];
         let worldToTexelRatio = 0;
@@ -1306,9 +1325,8 @@ export class UvMapper {
             }
 
             let indices = m.getIndices() as IndicesArray;
-            let vertices = m.getVerticesData(VertexBuffer.PositionKind) as FloatArray;
 
-            if (remove_doubles) {
+            if (removeDoubles) {
                 let o = this.removeDoubles(m);
                 equivalencies[i] = o.equivalencies;
             } else {
@@ -1353,11 +1371,11 @@ export class UvMapper {
                 }
 
                 let averageVec = new Vector3(0, 0, 0);
-                if (user_area_weight === 0) {
+                if (userAreaWeight === 0) {
                     for (let j = 0; j < newProjectMeshFaces.length; j++) {
                         averageVec.addInPlace(newProjectMeshFaces[j].no);
                     }
-                } else if (user_area_weight === 1) {
+                } else if (userAreaWeight === 1) {
                     for (let j = 0; j < newProjectMeshFaces.length; j++) {
                         averageVec.addInPlace(newProjectMeshFaces[j].no.scale(newProjectMeshFaces[j].area));
                     }
@@ -1365,7 +1383,7 @@ export class UvMapper {
                     for (let j = 0; j < newProjectMeshFaces.length; j++) {
                         averageVec.addInPlace(
                             newProjectMeshFaces[j].no.scale(
-                                newProjectMeshFaces[j].area * user_area_weight + (1 - user_area_weight)));
+                                newProjectMeshFaces[j].area * userAreaWeight + (1 - userAreaWeight)));
                     }
                 }
 
@@ -1383,10 +1401,10 @@ export class UvMapper {
                     // Get the closest vec angle we are to.
                     for (let j = 0; j < projectVecs.length; j++) {
                         let p = projectVecs[j];
-                        let temp_angle_diff = Vector3.Dot(p, tempMeshFaces[fIdx].no);
+                        let tempAngleDiff = Vector3.Dot(p, tempMeshFaces[fIdx].no);
 
-                        if (angleDifference < temp_angle_diff) {
-                            angleDifference = temp_angle_diff;
+                        if (angleDifference < tempAngleDiff) {
+                            angleDifference = tempAngleDiff;
                         }
                     }
 
@@ -1455,18 +1473,16 @@ export class UvMapper {
 
             if (USER_SHARE_SPACE) {
                 let islandList = this.getUvIslands(faceProjectionGroupList, deletedFaces);
-                collected_islandList = collected_islandList.concat(islandList);
+                collectedIslandList = collectedIslandList.concat(islandList);
             } else {
-                collected_islandList = this.getUvIslands(faceProjectionGroupList, deletedFaces);
-                worldToTexelRatio = this.packIslands(collected_islandList);
+                collectedIslandList = this.getUvIslands(faceProjectionGroupList, deletedFaces);
+                worldToTexelRatio = this.packIslands(collectedIslandList);
             }
         }
 
         if (USER_SHARE_SPACE) {
-            worldToTexelRatio = this.packIslands(collected_islandList);
+            worldToTexelRatio = this.packIslands(collectedIslandList);
         }
-
-        // Aspect TODO... not necessary
 
         let newUvs: FloatArray[] = [];
         let indices: IndicesArray[] = [];
@@ -1488,9 +1504,9 @@ export class UvMapper {
             additionnalVertices.push([]);
         }
 
-        for (let i = 0; i < collected_islandList.length; i++) {
-            for (let j = 0; j < collected_islandList[i].length; j++) {
-                let f = collected_islandList[i][j];
+        for (let i = 0; i < collectedIslandList.length; i++) {
+            for (let j = 0; j < collectedIslandList[i].length; j++) {
+                let f = collectedIslandList[i][j];
                 for (let k = 0; k < 3; k++) {
                     if (newUvs[f.meshIndex][indices[f.meshIndex][(f.index + k)] * 2] < 0) {
                         // this vertex doesn't have uv yet, we assign them
@@ -1547,7 +1563,7 @@ export class UvMapper {
                 }
 
                 additionnalVertexData[meshIndex].positions = tempVertices;
-                additionnalVertexData[meshIndex].uvs2 = tempUvs; // TODO let the possibilité to chose uv channel to replace
+                additionnalVertexData[meshIndex].uvs2 = tempUvs; // TODO let the possibility to choose which uv channel to replace, or straight return uv array
                 additionnalVertexData[meshIndex].indices = [];
             }
 
@@ -1609,7 +1625,7 @@ export class UvMapper {
             islandIdx++;
         }
 
-        let packDimension = BoxPacker.Box_pack_2d(packBoxes);
+        let packDimension = BoxPacker.BoxPack2d(packBoxes);
 
         islandIdx = islandList.length;
         let xFactor = 1, yFactor = 1;
@@ -1639,19 +1655,6 @@ export class UvMapper {
 
         return xFactor;
     }
-
-    constructor() {
-        // this.debPointInTri2D();
-        // this.debugFitAABB();
-        // let sphere = MeshBuilder.CreateSphere("aa", { diameter: 1, segments: 30 }, scene);
-        // let cylinder = MeshBuilder.CreateCylinder("aa", { diameter: 1 }, scene);
-        // cylinder.position.addInPlace(new Vector3(0, 5, 1));
-        // cylinder.scaling.scaleInPlace(5);
-        // let mat = new StandardMaterial("test", scene);
-        // sphere.material = mat;
-        // mat.emissiveTexture = new Texture("./LogoPBT.png", scene);
-        // mat.emissiveColor = new Color3(1, 0, 0);
-    }
 }
 
 declare interface Box {
@@ -1664,7 +1667,7 @@ declare interface Box {
 
 class BoxPacker {
 
-    public static Box_pack_2d(boxes: Box[]) {
+    public static BoxPack2d(boxes: Box[]) {
         // calculate total box area and maximum box width
         let area = 0;
         let maxWidth = 0;
