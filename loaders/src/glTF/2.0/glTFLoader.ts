@@ -1546,6 +1546,13 @@ export class GLTFLoader implements IGLTFLoader {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });
         }
+        // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
+        // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
+        else if (kind === VertexBuffer.MatricesIndicesKind) {
+            accessor._babylonVertexBuffer = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
+                return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
+            });
+        }
         else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
             accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView, kind).then((babylonBuffer) => {
@@ -1866,7 +1873,7 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(this.loadImageAsync(`/images/${image.index}`, image).then((data) => {
                 const name = image.uri || `${this._fileName}#image${image.index}`;
                 const dataUrl = `data:${this._uniqueRootUrl}${name}`;
-                babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
+                babylonTexture.updateURL(dataUrl, data);
             }));
         }
 

@@ -64,21 +64,7 @@ export class GenericNodeModel extends DefaultNodeModel {
                         globalState.onRebuildRequiredObservable.notifyObservers();
                     }} isSelected={() => (this.block as TransformBlock).complementW === 0} />
                 </LineContainerComponent>
-            }
-            {
-                this.block!.getClassName() === "TransformBlock" &&
-                <LineContainerComponent title="PROPERTIES">
-                    <CheckBoxLineComponent label="Transform as direction" onSelect={value => {
-                        let transformBlock = this.block as TransformBlock;
-                        if (value) {
-                            transformBlock.complementW = 0;
-                        } else {
-                            transformBlock.complementW = 1;
-                        }
-                        globalState.onRebuildRequiredObservable.notifyObservers();
-                    }} isSelected={() => (this.block as TransformBlock).complementW === 0} />
-                </LineContainerComponent>
-            }            
+            }        
             </div>
         );
     }

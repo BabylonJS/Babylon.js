@@ -213,7 +213,7 @@ export class Texture extends BaseTexture {
     protected _initialSamplingMode = Texture.BILINEAR_SAMPLINGMODE;
 
     /** @hidden */
-    public _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null;
+    public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null;
     private _deleteBuffer: boolean = false;
     protected _format: Nullable<number> = null;
     private _delayedOnLoad: Nullable<() => void> = null;
@@ -270,7 +270,7 @@ export class Texture extends BaseTexture {
      * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      */
-    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | Engine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
+    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | Engine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
         super((sceneOrEngine && sceneOrEngine.getClassName() === "Scene") ? (sceneOrEngine as Scene) : null);
 
         this.name = url || "";
@@ -361,7 +361,7 @@ export class Texture extends BaseTexture {
      * @param buffer the buffer of the texture (defaults to null)
      * @param onLoad callback called when the texture is loaded  (defaults to null)
      */
-    public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, onLoad?: () => void): void {
+    public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, onLoad?: () => void): void {
         if (this.url) {
             this.releaseInternalTexture();
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);

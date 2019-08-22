@@ -457,6 +457,7 @@ export class NodeMaterial extends PushMaterial {
     private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[]) {
         node.initialize(state);
         node.autoConfigure(this);
+        node._preparationId = this._buildId;
 
         if (this.attachedBlocks.indexOf(node) === -1) {
             this.attachedBlocks.push(node);
@@ -473,7 +474,11 @@ export class NodeMaterial extends PushMaterial {
                 if (block !== node) {
                     if (block.target === NodeMaterialBlockTargets.VertexAndFragment) {
                         nodesToProcessForOtherBuildState.push(block);
-                    }
+                    } else if (state.target ===  NodeMaterialBlockTargets.Fragment
+                        && block.target === NodeMaterialBlockTargets.Vertex
+                        && block._preparationId !== this._buildId) {
+                            nodesToProcessForOtherBuildState.push(block);
+                        }
                     this._initializeBlock(block, state, nodesToProcessForOtherBuildState);
                 }
             }
