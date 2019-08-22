@@ -657,7 +657,7 @@ export class UniformBuffer {
         this._currentEffect.setMatrix(name, mat);
     }
 
-    private _updateMatrixForUniform(name: string, mat: Matrix) {
+    private _updateMatrixForUniform(name: string, mat: IMatrixLike) {
         if (this._cacheMatrix(name, mat)) {
             this.updateUniform(name, <any>mat.toArray(), 16);
         }
