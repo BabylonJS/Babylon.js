@@ -293,10 +293,21 @@ class Main {
                 window.location = "./";
             }else{
                 if (this.parent.settingsPG.ScriptLanguage == "JS") {
-                    this.parent.settingsPG.ScriptLanguage = "TS";
-                    location.reload();
                     //revert in case the reload is cancel due to safe mode
-                    this.parent.settingsPG.ScriptLanguage = "JS";
+                    if(document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')){
+                        // Message before unload
+                        var languageTSswapper =  function () {
+                            this.parent.settingsPG.ScriptLanguage = "TS";
+                            window.removeEventListener('unload', languageTSswapper.bind(this));
+                        };
+                        window.addEventListener('unload',languageTSswapper.bind(this));
+                        
+                        location.reload();
+                    }
+                    else {
+                        this.parent.settingsPG.ScriptLanguage = "TS";
+                        location.reload();
+                    }
                 }
             }
            
@@ -307,10 +318,21 @@ class Main {
                 window.location = "./";
             }else{
                 if (this.parent.settingsPG.ScriptLanguage == "TS") {
-                    this.parent.settingsPG.ScriptLanguage = "JS";
-                    location.reload();
                     //revert in case the reload is cancel due to safe mode
-                    this.parent.settingsPG.ScriptLanguage = "TS";
+                    if(document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')){
+                        // Message before unload
+                        var LanguageJSswapper =  function () {
+                            this.parent.settingsPG.ScriptLanguage = "JS";
+                            window.removeEventListener('unload', LanguageJSswapper.bind(this));
+                        };
+                        window.addEventListener('unload',LanguageJSswapper.bind(this));
+                        
+                        location.reload();
+                    }
+                    else {
+                        this.parent.settingsPG.ScriptLanguage = "JS";
+                        location.reload();
+                    }
                 }
             }
         }.bind(this));
