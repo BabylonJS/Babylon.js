@@ -18,6 +18,8 @@ export class DotBlock extends NodeMaterialBlock {
         this.registerInput("left", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
+
+        this._linkConnectionTypes(0, 1);
     }
 
     /**

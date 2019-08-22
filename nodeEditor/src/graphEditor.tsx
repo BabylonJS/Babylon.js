@@ -44,6 +44,9 @@ import { TrigonometryNodeFactory } from './components/diagram/trigonometry/trigo
 import { TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
 import { TrigonometryNodeModel } from './components/diagram/trigonometry/trigonometryNodeModel';
 import { AdvancedLinkModel } from './components/diagram/link/advancedLinkModel';
+import { ClampNodeFactory } from './components/diagram/clamp/clampNodeFactory';
+import { ClampNodeModel } from './components/diagram/clamp/clampNodeModel';
+import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -110,6 +113,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             newNode = new TrigonometryNodeModel();                    
         } else if (options.nodeMaterialBlock instanceof RemapBlock) {
             newNode = new RemapNodeModel();
+        } else if (options.nodeMaterialBlock instanceof ClampBlock) {
+            newNode = new ClampNodeModel();
         } else {
             newNode = new GenericNodeModel();
         }
@@ -178,6 +183,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine.registerNodeFactory(new InputNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new RemapNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new TrigonometryNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new ClampNodeFactory(this.props.globalState));
         this._engine.registerLinkFactory(new AdvancedLinkFactory());
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
@@ -379,6 +385,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                         if (!e.link.targetPort && e.link.sourcePort && (e.link.sourcePort as DefaultPortModel).position === "input") {
                             // Drag from input port, we are going to build an input for it                            
                             let input = e.link.sourcePort as DefaultPortModel;
+
+                            if (input.connection!.type == NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+                                return;
+                            }
+
                             let nodeModel = this.addValueNode(BlockTools.GetStringFromConnectionNodeType(input.connection!.type));
                             let link = nodeModel.ports.output.link(input);
 
@@ -594,6 +605,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             setTimeout(() => {
                 this._model.addAll(...this._toAdd!);            
                 this._toAdd = null;  
+                this._model.clearSelection();
                 nodeModel!.setSelected(true);
 
                 this._engine.repaintCanvas();  

@@ -48,10 +48,10 @@ class MonacoCreator {
     /**
      * Load the Monaco Node module.
      */
-    loadMonaco() {
+    loadMonaco(typings) {
         var xhr = new XMLHttpRequest();
 
-        xhr.open('GET', "babylon.d.txt", true);
+        xhr.open('GET', typings || "babylon.d.txt", true);
 
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {

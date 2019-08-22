@@ -37,9 +37,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     constructor(props: ITexturePropertyGridComponentProps) {
         super(props);
-    }
 
-    componentWillMount() {
         const texture = this.props.texture;
 
         if (!texture || !(texture as any).rootContainer) {

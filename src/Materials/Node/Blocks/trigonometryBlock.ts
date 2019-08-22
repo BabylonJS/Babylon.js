@@ -85,7 +85,7 @@ export class TrigonometryBlock extends NodeMaterialBlock {
                 operation = "sin";
                 break;
             }
-            case TrigonometryBlockOperations.Cos: {
+            case TrigonometryBlockOperations.Abs: {
                 operation = "abs";
                 break;
             }

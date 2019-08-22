@@ -5,23 +5,20 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to lerp 2 values
+ * Block used to get the opposite of a value
  */
-export class LerpBlock extends NodeMaterialBlock {
+export class OppositeBlock extends NodeMaterialBlock {
     /**
-     * Creates a new LerpBlock
+     * Creates a new OppositeBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("left", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("gradient", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
-        this._linkConnectionTypes(0, 1);
     }
 
     /**
@@ -29,28 +26,14 @@ export class LerpBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "LerpBlock";
+        return "OppositeBlock";
     }
 
     /**
-     * Gets the left operand input component
+     * Gets the input component
      */
-    public get left(): NodeMaterialConnectionPoint {
+    public get input(): NodeMaterialConnectionPoint {
         return this._inputs[0];
-    }
-
-    /**
-     * Gets the right operand input component
-     */
-    public get right(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the gradient operand input component
-     */
-    public get gradient(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
     }
 
     /**
@@ -65,10 +48,10 @@ export class LerpBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = mix(${this.left.associatedVariableName} , ${this.right.associatedVariableName}, ${this.gradient.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = 1. - ${this.input.associatedVariableName};\r\n`;
 
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.LerpBlock"] = LerpBlock;
+_TypeStore.RegisteredTypes["BABYLON.OppositeBlock"] = OppositeBlock;
