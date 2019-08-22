@@ -3857,6 +3857,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var matWeightIdx = 0;
         var inf: number;
+        var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
         for (var index = 0; index < positionsData.length; index += 3, matWeightIdx += 4) {
             var weight: number;
             for (inf = 0; inf < 4; inf++) {
@@ -3879,6 +3881,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             Vector3.TransformCoordinatesFromFloatsToRef(internalDataInfo._sourcePositions[index], internalDataInfo._sourcePositions[index + 1], internalDataInfo._sourcePositions[index + 2], finalMatrix, tempVector3);
             tempVector3.toArray(positionsData, index);
 
+            minimum.minimizeInPlaceFromFloats(tempVector3.x, tempVector3.y, tempVector3.z);
+            maximum.maximizeInPlaceFromFloats(tempVector3.x, tempVector3.y, tempVector3.z);
+
             Vector3.TransformNormalFromFloatsToRef(internalDataInfo._sourceNormals[index], internalDataInfo._sourceNormals[index + 1], internalDataInfo._sourceNormals[index + 2], finalMatrix, tempVector3);
             tempVector3.toArray(normalsData, index);
 
@@ -3887,6 +3892,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         this.updateVerticesData(VertexBuffer.PositionKind, positionsData);
         this.updateVerticesData(VertexBuffer.NormalKind, normalsData);
+
+        this._boundingInfo = new BoundingInfo(minimum, maximum);
+        this._updateBoundingInfo();
 
         return this;
     }
