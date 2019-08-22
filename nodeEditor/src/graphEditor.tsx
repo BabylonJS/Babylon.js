@@ -385,6 +385,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                         if (!e.link.targetPort && e.link.sourcePort && (e.link.sourcePort as DefaultPortModel).position === "input") {
                             // Drag from input port, we are going to build an input for it                            
                             let input = e.link.sourcePort as DefaultPortModel;
+
+                            if (input.connection!.type == NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+                                return;
+                            }
+
                             let nodeModel = this.addValueNode(BlockTools.GetStringFromConnectionNodeType(input.connection!.type));
                             let link = nodeModel.ports.output.link(input);
 

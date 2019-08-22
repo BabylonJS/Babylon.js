@@ -232,13 +232,13 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
         let worldPosVaryingName = "v_" + this.worldPosition.associatedVariableName;
-        if (state._emitVaryingFromString(worldPosVaryingName, "vec3")) {
-            state.compilationString += `${worldPosVaryingName} = ${this.worldPosition.associatedVariableName}.xyz;\r\n`;
+        if (state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
+            state.compilationString += `${worldPosVaryingName} = ${this.worldPosition.associatedVariableName};\r\n`;
         }
 
         let worldNormalVaryingName = "v_" + this.worldNormal.associatedVariableName;
-        if (state._emitVaryingFromString(worldNormalVaryingName, "vec3")) {
-            state.compilationString += `${worldNormalVaryingName} = ${this.worldNormal.associatedVariableName}.xyz;\r\n`;
+        if (state._emitVaryingFromString(worldNormalVaryingName, "vec4")) {
+            state.compilationString += `${worldNormalVaryingName} = ${this.worldNormal.associatedVariableName};\r\n`;
         }
 
         this._positionUVWName = state._getFreeVariableName("positionUVW");
@@ -314,7 +314,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._reflectionMatrixName, "mat4");
 
         // Code
-        let worldPos = `vec4(v_${this.worldPosition.associatedVariableName}, 1.0)`;
+        let worldPos = `v_${this.worldPosition.associatedVariableName}`;
         let worldNormal = "v_" + this.worldNormal.associatedVariableName + ".xyz";
         let reflectionMatrix = this._reflectionMatrixName;
         let direction = `normalize(${this._directionWName})`;
