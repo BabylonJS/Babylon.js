@@ -32,7 +32,6 @@ export class ShaderCodeNode {
                     } else { // Uniform buffer
                         if (processor.uniformBufferProcessor) {
                             value = processor.uniformBufferProcessor(this.line, options.isFragment, options.processingContext);
-                            // TODO WEBGPU. Move into context, this is not an option.
                             options.lookForClosingBracketForUniformBuffer = true;
                         }
                     }
