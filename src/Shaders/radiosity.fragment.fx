@@ -1,4 +1,4 @@
-﻿#version 300 es
+#version 300 es
 
 layout(location = 0) out vec4 glFragData[2];
 
@@ -21,6 +21,7 @@ uniform vec3 shootNormal;  // world-space normal of shooter
 uniform vec3 shootEnergy;  // energy from shooter residual texture
 uniform float shootDArea;  // the delta area of the shooter
 uniform float gatheringScale;  // scaling of the value written to gathering texture
+uniform float residualScale;  // scaling of the value read to residual texture
 uniform vec2 nearFar;
 
 uniform vec3 recvColor;  // reflectivity
@@ -109,14 +110,14 @@ vec3 formFactorEnergy()
 
 void main(void) {
     // Draw in residual AND gathering with multidraw buffer at uv position
-    id = texture(idBuffer, vUV).xyz; 
+    id = texture(idBuffer, vUV).xyz;
     vec4 worldPos4 = texture(worldPosBuffer, vUV);
     worldPos = worldPos4.xyz;
     // worldPos.x -= 1.5 / 16.;
     // worldPos.z += 1.5 / 16.;
     worldNormal = texture(worldNormalBuffer, vUV).xyz;
-    
+
     vec3 energy = formFactorEnergy();
-    glFragData[0] = vec4(energy + texture(residualBuffer, vUV).xyz, worldPos4.a);
-    glFragData[1] = vec4(energy * gatheringScale + texture(gatheringBuffer, vUV).xyz, worldPos4.a);    
+    glFragData[0] = vec4(energy + residualScale * texture(residualBuffer, vUV).xyz, worldPos4.a);
+    glFragData[1] = vec4(energy * gatheringScale + texture(gatheringBuffer, vUV).xyz, worldPos4.a);
 }

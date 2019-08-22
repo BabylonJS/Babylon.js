@@ -107,6 +107,9 @@ export class PatchRenderer {
     public static RADIOSITY_INFO_LOGS_LEVEL: number = 1;
     public static WARNING_LOGS: number = 1;
 
+    private static DIRECT_PASS = 0;
+    private static INDIRECT_PASS = 1;
+
     private _activeShooters: Mesh[] = [];
     private _scene: Scene;
     // private _htScene: Scene; // Higher tesselated scene
@@ -133,6 +136,14 @@ export class PatchRenderer {
 
     private _radiosityEffectsManager: RadiosityEffectsManager;
 
+    private _renderState: {
+        pass: number,
+        shooterMeshes: Mesh[],
+        shooterPatches: Nullable<Patch[]>,
+        shooterIndex: number,
+        overTime: number
+    };
+
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _DevTools.WarnImport("patchRendererSceneComponent");
@@ -158,6 +169,8 @@ export class PatchRenderer {
         this._far = 10000;
         this._texelWorldSize = texelWorldSize;
         this._meshes = meshes;
+
+        this.resetRenderState();
 
         // PatchRenderer._SceneComponentInitialization(this._scene);
         Patch.projectionMatrix = Matrix.PerspectiveFovLH(Patch.fov,
@@ -199,6 +212,16 @@ export class PatchRenderer {
         // this.createHTScene();
 
         this._radiosityEffectsManager = new RadiosityEffectsManager(this._scene, this.useHemicube, this.useDepthCompare);
+    }
+
+    public resetRenderState() : void {
+        this._renderState = {
+            pass: PatchRenderer.DIRECT_PASS,
+            shooterPatches: null,
+            shooterIndex: 0,
+            shooterMeshes: [],
+            overTime: 0
+        };
     }
 
     public createHTScene(areaThreshold: number) {
@@ -422,7 +445,69 @@ export class PatchRenderer {
         // mrt.internalTextures[6] = it;
     }
 
-    
+    private _cleanAfterRender(dateBegin: number, duration: number) {
+        var engine = this._scene.getEngine();
+        engine.restoreDefaultFramebuffer();
+        engine.setViewport((<Camera>this._scene.activeCamera).viewport);
+
+        this._renderState.overTime -= duration - (Date.now() - dateBegin);
+    }
+
+    public gatherFor(duration: number) : boolean {
+        let dateBegin = Date.now();
+
+        if (!this._renderState.shooterPatches || ! this._renderState.shooterPatches.length) {
+            if (!this._renderState.shooterMeshes.length) {
+                if (this._renderState.pass === PatchRenderer.DIRECT_PASS) {
+                    this.nextShooter(true);
+                    this._renderState.shooterMeshes = this._activeShooters.slice(); // TODO : mesh ? submesh ?
+                } else {
+                    let sm = this.nextShooter(false);
+                    this._renderState.shooterMeshes = [sm.getRenderingMesh()]; // TODO : mesh ? submesh ?
+                }
+            }
+
+            this._renderState.shooterPatches = this.getNextPatches(this._renderState.shooterMeshes[0].subMeshes[0]);
+
+            if (!this._renderState.shooterPatches) {
+                // Gathering is over
+                this._cleanAfterRender(dateBegin, duration);
+                return false;
+            }
+        }
+
+        while (Date.now() - dateBegin < (duration - this._renderState.overTime)) {
+            if (this._renderState.shooterIndex >= this._renderState.shooterPatches.length) {
+                // We are over with this emitting mesh
+                this._renderState.shooterMeshes.shift();
+                this._renderState.shooterPatches = null;
+                this._renderState.shooterIndex = 0;
+                // We are shortening this pass to avoid being out of time budget
+                this._cleanAfterRender(dateBegin, duration);
+                return true;
+            }
+            this.renderPatches(this._renderState.shooterPatches, this._renderState.shooterMeshes[0].subMeshes[0], this._renderState.shooterIndex, this._renderState.shooterIndex + 1);
+            this._renderState.shooterIndex++;
+        }
+
+
+        this._cleanAfterRender(dateBegin, duration);
+        return true;
+    }
+
+    public getNextPatches(subMesh: SubMesh, energyLeftThreshold = 1) {
+        let o = this.updatePatches(subMesh);
+        let patches = o.patches;
+        let energyLeft = o.energyLeft;
+
+        if (energyLeft < energyLeftThreshold) {
+            return null;
+        }
+        this.consumeEnergyInTexture(subMesh);
+
+        return patches;
+    }
+
     public gatherDirectLightOnly() : { hasShot: boolean, energyShot: number } {
         if (!this._radiosityEffectsManager.isReady() || this._isBuildingPatches) {
             if (PatchRenderer.WARNING_LOGS) {
@@ -466,7 +551,7 @@ export class PatchRenderer {
         };
     }
 
-    
+
     public gatherRadiosity(): boolean {
         if (this._isCurrentlyGathering) {
             if (PatchRenderer.WARNING_LOGS) {
@@ -551,10 +636,10 @@ export class PatchRenderer {
         return true;
     }
 
-    private renderPatches(patches: Patch[], shooter: SubMesh) {
+    private renderPatches(patches: Patch[], shooter: SubMesh, indexBegin = 0, indexEnd = patches.length) {
         let duration;
 
-        for (let i = 0; i < patches.length; i++) {
+        for (let i = indexBegin; i < indexEnd; i++) {
             this._currentPatch = patches[i];
 
             let patchMapDate = Date.now();
