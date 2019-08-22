@@ -65,7 +65,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         <div className="filter">
                             <input type="text" placeholder="Filter" onChange={(evt) => this.filterContent(evt.target.value)} />
                         </div>
-                        {blockMenu}
+                        <div className="list-container">
+                            {blockMenu}
+                        </div>
                     </div>
                 </div>
             </div>

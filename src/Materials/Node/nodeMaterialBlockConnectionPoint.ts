@@ -41,7 +41,7 @@ export class NodeMaterialConnectionPoint {
             return (this._ownerBlock as InputBlock).associatedVariableName;
         }
 
-        if (!this._enforceAssociatedVariableName && this._connectedPoint) {
+        if ((!this._enforceAssociatedVariableName || !this._associatedVariableName) && this._connectedPoint) {
             return this._connectedPoint.associatedVariableName;
         }
 
