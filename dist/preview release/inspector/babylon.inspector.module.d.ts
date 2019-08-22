@@ -950,11 +950,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
     }
     export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, {
         displayNormals: boolean;
+        displayVertexColors: boolean;
     }> {
         constructor(props: IMeshPropertyGridComponentProps);
         renderWireframeOver(): void;
         renderNormalVectors(): void;
         displayNormals(): void;
+        displayVertexColors(): void;
         onMaterialLink(): void;
         onSourceMeshLink(): void;
         convertPhysicsTypeToString(): string;
@@ -3089,11 +3091,13 @@ declare module INSPECTOR {
     }
     export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, {
         displayNormals: boolean;
+        displayVertexColors: boolean;
     }> {
         constructor(props: IMeshPropertyGridComponentProps);
         renderWireframeOver(): void;
         renderNormalVectors(): void;
         displayNormals(): void;
+        displayVertexColors(): void;
         onMaterialLink(): void;
         onSourceMeshLink(): void;
         convertPhysicsTypeToString(): string;

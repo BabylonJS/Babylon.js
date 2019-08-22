@@ -45885,7 +45885,8 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
     function MeshPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
-            displayNormals: false
+            displayNormals: false,
+            displayVertexColors: false
         };
         return _this;
     }
@@ -45954,10 +45955,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var _this = this;
         var mesh = this.props.mesh;
         var scene = mesh.getScene();
-        if (!mesh.material) {
-            return;
-        }
-        if (mesh.material.getClassName() === "NormalMaterial") {
+        if (mesh.material && mesh.material.getClassName() === "NormalMaterial") {
             mesh.material.dispose();
             mesh.material = mesh.reservedDataStore.originalMaterial;
             mesh.reservedDataStore.originalMaterial = null;
@@ -45977,10 +45975,38 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             mesh.reservedDataStore.originalMaterial = mesh.material;
             var normalMaterial = new BABYLON.NormalMaterial("normalMaterial", scene);
             normalMaterial.disableLighting = true;
-            normalMaterial.sideOrientation = mesh.material.sideOrientation;
+            if (mesh.material) {
+                normalMaterial.sideOrientation = mesh.material.sideOrientation;
+            }
             normalMaterial.reservedDataStore = { hidden: true };
             mesh.material = normalMaterial;
             this.setState({ displayNormals: true });
+        }
+    };
+    MeshPropertyGridComponent.prototype.displayVertexColors = function () {
+        var mesh = this.props.mesh;
+        var scene = mesh.getScene();
+        if (mesh.material && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial) {
+            mesh.material.dispose();
+            mesh.material = mesh.reservedDataStore.originalMaterial;
+            mesh.reservedDataStore.originalMaterial = null;
+            this.setState({ displayVertexColors: false });
+        }
+        else {
+            if (!mesh.reservedDataStore) {
+                mesh.reservedDataStore = {};
+            }
+            mesh.reservedDataStore.originalMaterial = mesh.material;
+            var vertexColorMaterial = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("vertex colors", scene);
+            vertexColorMaterial.disableLighting = true;
+            vertexColorMaterial.emissiveColor = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Color3"].White();
+            if (mesh.material) {
+                vertexColorMaterial.sideOrientation = mesh.material.sideOrientation;
+            }
+            vertexColorMaterial.reservedDataStore = { hidden: true, isVertexColorMaterial: true };
+            mesh.useVertexColors = true;
+            mesh.material = vertexColorMaterial;
+            this.setState({ displayVertexColors: true });
         }
     };
     MeshPropertyGridComponent.prototype.onMaterialLink = function () {
@@ -46030,6 +46056,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var mesh = this.props.mesh;
         var scene = mesh.getScene();
         var displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
+        var displayVertexColors = mesh.material != null && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial;
         var renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
         var renderWireframeOver = (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) ? true : false;
         var morphTargets = [];
@@ -46059,7 +46086,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has skeleton", value: mesh.skeleton ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Is enabled", isSelected: function () { return mesh.isEnabled(); }, onSelect: function (value) { return mesh.setEnabled(value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Is pickable", target: mesh, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                mesh.material &&
+                mesh.material && (!mesh.material.reservedDataStore || !mesh.material.reservedDataStore.hidden) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Material", value: mesh.material.name, onLink: function () { return _this.onMaterialLink(); } }),
                 mesh.isAnInstance &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Source", value: mesh.sourceMesh.name, onLink: function () { return _this.onSourceMeshLink(); } })),
@@ -46125,8 +46152,8 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render outline", target: mesh, propertyName: "renderOutline", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_11__["Color3LineComponent"], { label: "Outline color", target: mesh, propertyName: "outlineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEBUG", closed: true },
-                mesh.material &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display normals", isSelected: function () { return displayNormals; }, onSelect: function () { return _this.displayNormals(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display normals", isSelected: function () { return displayNormals; }, onSelect: function () { return _this.displayNormals(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display vertex colors", isSelected: function () { return displayVertexColors; }, onSelect: function () { return _this.displayVertexColors(); } }),
                 mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].NormalKind) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render vertex normals", isSelected: function () { return renderNormalVectors; }, onSelect: function () { return _this.renderNormalVectors(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Render wireframe over mesh", isSelected: function () { return renderWireframeOver; }, onSelect: function () { return _this.renderWireframeOver(); } }))));
