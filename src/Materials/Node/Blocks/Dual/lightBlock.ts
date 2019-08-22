@@ -84,10 +84,14 @@ export class LightBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
-    public autoConfigure() {
+    public autoConfigure(material: NodeMaterial) {
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = new InputBlock("cameraPosition");
-            cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.CameraPosition);
+
+            if (!cameraPositionInput) {
+                cameraPositionInput = new InputBlock("cameraPosition");
+                cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+            }
             cameraPositionInput.output.connectTo(this.cameraPosition);
         }
     }
@@ -167,13 +171,13 @@ export class LightBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         let worldPosVaryingName = "v_" + worldPos.associatedVariableName;
-        if (state._emitVaryingFromString(worldPosVaryingName, "vec3")) {
-            state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
+        if (state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
+            state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName};\r\n`;
         }
 
         let worldNormalVaryingName = "v_" + worldNormal.associatedVariableName;
-        if (state._emitVaryingFromString(worldNormalVaryingName, "vec3")) {
-            state.compilationString += `${worldNormalVaryingName} = ${worldNormal.associatedVariableName}.xyz;\r\n`;
+        if (state._emitVaryingFromString(worldNormalVaryingName, "vec4")) {
+            state.compilationString += `${worldNormalVaryingName} = ${worldNormal.associatedVariableName};\r\n`;
         }
 
         if (this.light) {
@@ -212,13 +216,13 @@ export class LightBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
             replaceStrings: [
-                { search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName }
+                { search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName + ".xyz" }
             ]
         });
 
         state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
             replaceStrings: [
-                { search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName }
+                { search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName + ".xyz" }
             ]
         });
 
@@ -237,13 +241,15 @@ export class LightBlock extends NodeMaterialBlock {
 
         // Code
         if (this._lightId === 0) {
-            state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${"v_" + worldPos.associatedVariableName});\r\n`;
+            if (state._registerTempVariable("viewDirectionW")) {
+                state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${"v_" + worldPos.associatedVariableName}.xyz);\r\n`;
+            }
             state.compilationString += `lightingInfo info;\r\n`;
             state.compilationString += `float shadow = 1.;\r\n`;
             state.compilationString += `float glossiness = 0.;\r\n`;
             state.compilationString += `vec3 diffuseBase = vec3(0., 0., 0.);\r\n`;
             state.compilationString += `vec3 specularBase = vec3(0., 0., 0.);\r\n`;
-            state.compilationString += `vec3 normalW = v_${this.worldNormal.associatedVariableName};\r\n`;
+            state.compilationString += `vec3 normalW = v_${this.worldNormal.associatedVariableName}.xyz;\r\n`;
         }
 
         if (this.light) {
@@ -262,9 +268,9 @@ export class LightBlock extends NodeMaterialBlock {
         let specularOutput = this.specularOutput;
 
         state.compilationString += this._declareOutput(diffuseOutput, state) + ` = diffuseBase;\r\n`;
-        state.compilationString += `#ifdef SPECULARTERM\r\n`;
-        state.compilationString += this._declareOutput(specularOutput, state) + ` = specularBase;\r\n`;
-        state.compilationString += `#endif\r\n`;
+        if (specularOutput.hasEndpoints) {
+            state.compilationString += this._declareOutput(specularOutput, state) + ` = specularBase;\r\n`;
+        }
 
         return this;
     }

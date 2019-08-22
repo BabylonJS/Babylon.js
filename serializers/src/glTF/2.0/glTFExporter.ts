@@ -226,7 +226,7 @@ export class _Exporter {
         this._samplers = [];
         this._animations = [];
         this._imageData = {};
-        this._convertToRightHandedSystem = this._babylonScene.useRightHandedSystem ? false : true;
+        this._convertToRightHandedSystem = !this._babylonScene.useRightHandedSystem;
         this._options = options || {};
         this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
 
@@ -1184,7 +1184,7 @@ export class _Exporter {
                         meshPrimitive.indices = this._accessors.length - 1;
                     }
                     if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
-                        let sideOrientation = babylonMaterial.sideOrientation;
+                        let sideOrientation = bufferMesh.overrideMaterialSideOrientation !== null ? bufferMesh.overrideMaterialSideOrientation : babylonMaterial.sideOrientation;
 
                         // Only reverse the winding if we have a clockwise winding
                         if (sideOrientation === Material.ClockWiseSideOrientation) {

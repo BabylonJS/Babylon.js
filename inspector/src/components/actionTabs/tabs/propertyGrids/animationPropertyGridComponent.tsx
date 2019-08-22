@@ -89,7 +89,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         this.forceUpdate();
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
             if (!this._isPlaying || !this._runningAnimatable) {
                 return;

@@ -155,7 +155,7 @@ export class InternalTexture {
     /** @hidden */
     public _dataSource = InternalTexture.DATASOURCE_UNKNOWN;
     /** @hidden */
-    public _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null;
+    public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null;
     /** @hidden */
     public _bufferView: Nullable<ArrayBufferView> = null;
     /** @hidden */

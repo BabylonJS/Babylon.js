@@ -25,7 +25,7 @@ export class TransformBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Neutral);
+        super(name, NodeMaterialBlockTargets.Vertex);
 
         this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("transform", NodeMaterialBlockConnectionPointTypes.Matrix);
@@ -97,7 +97,15 @@ export class TransformBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.complementZ = serializationObject.complementZ !== undefined ? serializationObject.complementZ : 0.0;
-        this.complementW = serializationObject.complementZ !== undefined ? serializationObject.complementW : 1.0;
+        this.complementW = serializationObject.complementW !== undefined ? serializationObject.complementW : 1.0;
+    }
+
+    protected _dumpPropertiesCode() {
+        var codeString = `${this._codeVariableName}.complementZ = ${this.complementZ};\r\n`;
+
+        codeString += `${this._codeVariableName}.complementW = ${this.complementW};\r\n`;
+
+        return codeString;
     }
 }
 

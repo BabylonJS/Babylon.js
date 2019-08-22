@@ -2106,7 +2106,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (index !== -1) {
             // Remove from meshes
             for (var mesh of this.meshes) {
-                mesh._removeLightSource(toRemove);
+                mesh._removeLightSource(toRemove, false);
             }
 
             // Remove from the scene if mesh found
@@ -3153,7 +3153,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh): void {
-        if (initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+        if (initialMesh.hasInstances || initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
             for (let step of this._evaluateSubMeshStage) {
                 step.action(mesh, subMesh);
             }

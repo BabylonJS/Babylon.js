@@ -309,7 +309,7 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
                 this._calculatedPosition.addInPlace(this.position);
             }
             let pose = this.rawPose;
-            if (poseData.orientation && pose.orientation) {
+            if (poseData.orientation && pose.orientation && pose.orientation.length === 4) {
                 this._deviceRoomRotationQuaternion.copyFromFloats(pose.orientation[0], pose.orientation[1], -pose.orientation[2], -pose.orientation[3]);
                 if (this._mesh) {
                     if (this._mesh.getScene().useRightHandedSystem) {

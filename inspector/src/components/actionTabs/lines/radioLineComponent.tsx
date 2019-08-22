@@ -18,7 +18,7 @@ export class RadioButtonLineComponent extends React.Component<IRadioButtonLineCo
         this.state = { isSelected: this.props.isSelected() };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this._onSelectionChangedObserver = this.props.onSelectionChangedObservable.add((value) => {
             this.setState({ isSelected: value === this });
         });

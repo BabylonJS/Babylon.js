@@ -284,12 +284,17 @@ export class SolidParticleSystem implements IDisposable {
             barycenter.scaleInPlace(1 / shape.length);
 
             // shift the shape from its barycenter to the origin
+            // and compute the BBox required for intersection.
+            var minimum: Vector3 = new Vector3(Infinity, Infinity, Infinity);
+            var maximum: Vector3 = new Vector3(-Infinity, -Infinity, -Infinity);
             for (v = 0; v < shape.length; v++) {
                 shape[v].subtractInPlace(barycenter);
+                minimum.minimizeInPlaceFromFloats(shape[v].x, shape[v].y, shape[v].z);
+                maximum.maximizeInPlaceFromFloats(shape[v].x, shape[v].y, shape[v].z);
             }
             var bInfo;
             if (this._particlesIntersect) {
-                bInfo = new BoundingInfo(barycenter, barycenter);
+                bInfo = new BoundingInfo(minimum, maximum);
             }
             var modelShape = new ModelShape(this._shapeCounter, shape, size * 3, shapeUV, null, null);
 
@@ -363,6 +368,8 @@ export class SolidParticleSystem implements IDisposable {
 
         this._resetCopy();
         const copy = this._copy;
+        copy.idx = idx;
+        copy.idxInShape = idxInShape;
         if (options && options.positionFunction) {        // call to custom positionFunction
             options.positionFunction(copy, idx, idxInShape);
             this._mustUnrotateFixedNormals = true;

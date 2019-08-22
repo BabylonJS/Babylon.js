@@ -732,6 +732,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
 
+    protected _rebuildInParallel = false;
+
     /**
      * Instantiates a new PBRMaterial instance.
      *
@@ -1007,15 +1009,24 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             Logger.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
         }
 
-        let previousEffect = subMesh.effect;
+        const previousEffect = subMesh.effect;
+        const lightDisposed = defines._areLightsDisposed;
         let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
 
         if (effect) {
             // Use previous effect while new one is compiling
             if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                 effect = previousEffect;
+                this._rebuildInParallel = true;
                 defines.markAsUnprocessed();
+
+                if (lightDisposed) {
+                    // re register in case it takes more than one frame.
+                    defines._areLightsDisposed = true;
+                    return false;
+                }
             } else {
+                this._rebuildInParallel = false;
                 scene.resetCachedMaterial();
                 subMesh.setEffect(effect, defines);
                 this.buildUniformLayout();
@@ -1910,7 +1921,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (mustRebind || !this.isFrozen) {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights, this._lightFalloff !== PBRBaseMaterial.LIGHTFALLOFF_STANDARD);
+                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights, this._lightFalloff !== PBRBaseMaterial.LIGHTFALLOFF_STANDARD, this._rebuildInParallel);
             }
 
             // View

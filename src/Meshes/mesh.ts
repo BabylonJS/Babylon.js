@@ -33,6 +33,7 @@ import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from './meshLODLevel';
 import { Path3D } from '../Maths/math.path';
 import { Plane } from '../Maths/math.plane';
+import { TransformNode } from './transformNode';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -268,6 +269,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._onBeforeDrawObserver = this.onBeforeDrawObservable.add(callback);
     }
 
+    public get hasInstances(): boolean {
+        return this.instances.length > 0;
+    }
+
     // Members
 
     /**
@@ -491,6 +496,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     // Methods
+    public instantiateHierarychy(newParent: Nullable<TransformNode> = null): Nullable<TransformNode> {
+        let instance = this.createInstance("instance of " + (this.name || this.id));
+
+        instance.parent = newParent || this.parent;
+        instance.position = this.position.clone();
+        instance.scaling = this.scaling.clone();
+        if (this.rotationQuaternion)  {
+            instance.rotationQuaternion = this.rotationQuaternion.clone();
+        } else {
+            instance.rotation = this.rotation.clone();
+        }
+
+        for (var child of this.getChildTransformNodes(true)) {
+            child.instantiateHierarychy(instance);
+        }
+
+        return instance;
+    }
 
     /**
      * Gets the class name
@@ -1136,7 +1159,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param stride defines the data stride size (can be null)
      * @returns the current mesh
      */
-    public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): Mesh {
+    public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): AbstractMesh {
         if (!this._geometry) {
             var vertexData = new VertexData();
             vertexData.set(data, kind);
@@ -1212,7 +1235,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param makeItUnique defines if the geometry associated with the mesh must be cloned to make the change only for this mesh (and not all meshes associated with the same geometry)
      * @returns the current mesh
      */
-    public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
+    public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh {
         if (!this._geometry) {
             return this;
         }
@@ -1278,7 +1301,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param updatable defines if the updated index buffer must be flagged as updatable (default is false)
      * @returns the current mesh
      */
-    public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): Mesh {
+    public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): AbstractMesh {
         if (!this._geometry) {
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -1300,7 +1323,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
      * @returns the current mesh
      */
-    public updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): Mesh {
+    public updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): AbstractMesh {
         if (!this._geometry) {
             return this;
         }
@@ -1667,9 +1690,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
                 sideOrientation = this._effectiveMaterial.sideOrientation;
-                if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
-                    sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
-                }
+            }
+            if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
+                sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
             }
             instanceDataStorage.sideOrientation = sideOrientation!;
         } else {
@@ -2096,7 +2119,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
      * @returns a new mesh
      */
-    public clone(name: string = "", newParent?: Node, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
+    public clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Nullable<AbstractMesh> {
         return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren, clonePhysicsImpostor);
     }
 

@@ -7,11 +7,12 @@ import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/
 import { Color3, Vector2, Vector3, Vector4 } from 'babylonjs/Maths/math';
 import { StringTools } from '../../../stringTools';
 import { PortHelper } from '../portHelper';
+import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 
 /**
  * GenericNodeWidgetProps
  */
-export interface InputNodeWidgetProps {
+export interface IInputNodeWidgetProps {
     node: Nullable<InputNodeModel>;
     globalState: GlobalState;
 }
@@ -19,12 +20,12 @@ export interface InputNodeWidgetProps {
 /**
  * Used to display a node block for the node editor
  */
-export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
+export class InputNodeWidget extends React.Component<IInputNodeWidgetProps> {
 	/**
 	 * Creates a GenericNodeWidget
 	 * @param props 
 	 */
-    constructor(props: InputNodeWidgetProps) {
+    constructor(props: IInputNodeWidgetProps) {
         super(props);
         this.state = {};
 
@@ -55,12 +56,13 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
 
         let inputBlock = this.props.node!.inputBlock;
         let value = "";
-        let name = StringTools.GetBaseType(inputBlock.output.type);
+        let name = `${inputBlock.name} (${StringTools.GetBaseType(inputBlock.output.type)})`;
         let color = "";
 
         if (inputBlock) {
             if (inputBlock.isAttribute) {
                 value = "mesh." + inputBlock.name;
+                name = StringTools.GetBaseType(inputBlock.output.type);
             } else if (inputBlock.isWellKnownValue) {
                 switch (inputBlock.wellKnownValue) {
                     case NodeMaterialWellKnownValues.World:
@@ -95,19 +97,23 @@ export class InputNodeWidget extends React.Component<InputNodeWidgetProps> {
 
                 switch (inputBlock.type) {
                     case NodeMaterialBlockConnectionPointTypes.Float:
-                        value = inputBlock.value;
+                        if (inputBlock.animationType !== AnimatedInputBlockTypes.None) {
+                            value = AnimatedInputBlockTypes[inputBlock.animationType];
+                        } else {
+                            value = inputBlock.value.toFixed(2);
+                        }
                         break;
                     case NodeMaterialBlockConnectionPointTypes.Vector2:
                         let vec2Value = inputBlock.value as Vector2
-                        value = `(${vec2Value.x}, ${vec2Value.y})`;
+                        value = `(${vec2Value.x.toFixed(2)}, ${vec2Value.y.toFixed(2)})`;
                         break;
                     case NodeMaterialBlockConnectionPointTypes.Vector3:
                         let vec3Value = inputBlock.value as Vector3
-                        value = `(${vec3Value.x}, ${vec3Value.y}, ${vec3Value.z})`;
+                        value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
                         break;
                     case NodeMaterialBlockConnectionPointTypes.Vector4:
                         let vec4Value = inputBlock.value as Vector4
-                        value = `(${vec4Value.x}, ${vec4Value.y}, ${vec4Value.z}, ${vec4Value.w})`;
+                        value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
                         break;                        
                     case NodeMaterialBlockConnectionPointTypes.Color3:
                     case NodeMaterialBlockConnectionPointTypes.Color4: {

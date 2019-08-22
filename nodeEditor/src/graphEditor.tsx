@@ -40,6 +40,16 @@ import { GraphHelper } from './graphHelper';
 import { PreviewManager } from './components/preview/previewManager';
 import { INodeLocationInfo } from './nodeLocationInfo';
 import { PreviewMeshControlComponent } from './components/preview/previewMeshControlComponent';
+import { TrigonometryNodeFactory } from './components/diagram/trigonometry/trigonometryNodeFactory';
+import { TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
+import { TrigonometryNodeModel } from './components/diagram/trigonometry/trigonometryNodeModel';
+import { AdvancedLinkModel } from './components/diagram/link/advancedLinkModel';
+import { ClampNodeFactory } from './components/diagram/clamp/clampNodeFactory';
+import { ClampNodeModel } from './components/diagram/clamp/clampNodeModel';
+import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
+import { LightInformationNodeFactory } from './components/diagram/lightInformation/lightInformationNodeFactory';
+import { LightInformationNodeModel } from './components/diagram/lightInformation/lightInformationNodeModel';
+import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -70,8 +80,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _blocks = new Array<NodeMaterialBlock>();
 
     private _previewManager: PreviewManager;
-
-    private _copiedNode: Nullable<DefaultNodeModel> = null;
+    private _copiedNodes: DefaultNodeModel[] = [];
+    private _mouseLocationX = 0;
+    private _mouseLocationY = 0;
+    private _onWidgetKeyUpPointer: any;
 
     /** @hidden */
     public _toAdd: LinkModel[] | null = [];
@@ -99,9 +111,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         } else if (options.nodeMaterialBlock instanceof LightBlock) {
             newNode = new LightNodeModel();
         } else if (options.nodeMaterialBlock instanceof InputBlock) {
-            newNode = new InputNodeModel();        
+            newNode = new InputNodeModel();     
+        } else if (options.nodeMaterialBlock instanceof TrigonometryBlock) {
+            newNode = new TrigonometryNodeModel();                    
         } else if (options.nodeMaterialBlock instanceof RemapBlock) {
             newNode = new RemapNodeModel();
+        } else if (options.nodeMaterialBlock instanceof ClampBlock) {
+            newNode = new ClampNodeModel();        
+        } else if (options.nodeMaterialBlock instanceof LightInformationBlock) {
+            newNode = new LightInformationNodeModel();
         } else {
             newNode = new GenericNodeModel();
         }
@@ -110,7 +128,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this.props.globalState.nodeMaterial!.addOutputNode(options.nodeMaterialBlock);
         }
 
-        this._nodes.push(newNode)
+        this._nodes.push(newNode);
         this._model.addAll(newNode);
 
         if (options.nodeMaterialBlock) {
@@ -129,11 +147,22 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         return localNode;
     }
 
+    onWidgetKeyUp(evt: any) {        
+        var widget = (this.refs["test"] as DiagramWidget);
+
+        if (!widget || this.props.globalState.blockKeyboardEvents) {
+            return;
+        }
+
+        widget.onKeyUp(evt)
+    }
+
     componentDidMount() {
         if (this.props.globalState.hostDocument) {
             var widget = (this.refs["test"] as DiagramWidget);
             widget.setState({ document: this.props.globalState.hostDocument })
-            this.props.globalState.hostDocument!.addEventListener("keyup", widget.onKeyUpPointer as any, false);
+            this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this)
+            this.props.globalState.hostDocument!.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
 
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
@@ -141,8 +170,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
     componentWillUnmount() {
         if (this.props.globalState.hostDocument) {
-            var widget = (this.refs["test"] as DiagramWidget);
-            this.props.globalState.hostDocument!.removeEventListener("keyup", widget.onKeyUpPointer as any, false);
+            this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
 
         this._previewManager.dispose();
@@ -159,6 +187,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine.registerNodeFactory(new LightNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new InputNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new RemapNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new TrigonometryNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new ClampNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new LightInformationNodeFactory(this.props.globalState));
         this._engine.registerLinkFactory(new AdvancedLinkFactory());
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
@@ -191,7 +222,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             return this._nodes.filter(n => n.block === block)[0];
         }
 
-        this.props.globalState.hostDocument!.addEventListener("keyup", evt => {
+        this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             if (!evt.ctrlKey) {
                 return;
             }
@@ -208,23 +239,46 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     return;
                 }
 
-                this._copiedNode = selectedItem;
+                this._copiedNodes = selectedItems.map(i => (i as DefaultNodeModel)!);
             } else if (evt.key === "v") {
-                if (!this._copiedNode) {
+                if (!this._copiedNodes.length) {
                     return;
                 }
 
-                let block = this._copiedNode.block!;
-                let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
+                const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
+                const zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
+                let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
+                let currentY = (this._mouseLocationY - rootElement.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
+                let originalNode: Nullable<DefaultNodeModel> = null;
 
-                if (!clone) {
-                    return;
+                for (var node of this._copiedNodes) {
+                    let block = node.block;
+
+                    if (!block) {
+                        continue;
+                    }
+
+                    let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
+
+                    if (!clone) {
+                        return;
+                    }
+                    
+                    let newNode = this.createNodeFromObject({ nodeMaterialBlock: clone });
+
+                    let x = 0;
+                    let y = 0;
+                    if (originalNode) {
+                        x = currentX + node.x - originalNode.x;
+                        y = currentY + node.y - originalNode.y;
+                    } else {
+                        originalNode = node;
+                        x = currentX;
+                        y = currentY;
+                    }
+
+                    newNode.setPosition(x, y);
                 }
-                
-                let newNode = this.createNodeFromObject({ nodeMaterialBlock: clone });
-
-                newNode.x = this._copiedNode.x;
-                newNode.y = this._copiedNode.y + this._copiedNode.height + 10;
 
                 this._engine.repaintCanvas();
             }
@@ -252,19 +306,34 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
     }
 
- 
-
     buildMaterial() {
         if (!this.props.globalState.nodeMaterial) {
             return;
         }
 
         try {
-            this.props.globalState.nodeMaterial.build();
+            this.props.globalState.nodeMaterial.build(true);
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
         }
         catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
+        }
+    }
+
+    applyFragmentOutputConstraints(rootInput: DefaultPortModel) {
+        var model = rootInput.parent as GenericNodeModel;
+        for (var inputKey in model.getPorts()) {                                       
+            let input = model.getPorts()[inputKey];
+
+            if (rootInput.name === "rgba" && (inputKey === "a" || inputKey === "rgb")
+                ||
+                (rootInput.name === "a" || rootInput.name === "rgb") && inputKey === "rgba") {
+                    for (var key in input.links) {
+                        let other = input.links[key];
+                        other.remove();
+                    }
+                continue;
+            }
         }
     }
 
@@ -298,6 +367,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     }                  
 
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                } else {
+
                 }
             },
             linksUpdated: (e) => {
@@ -320,6 +391,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                         if (!e.link.targetPort && e.link.sourcePort && (e.link.sourcePort as DefaultPortModel).position === "input") {
                             // Drag from input port, we are going to build an input for it                            
                             let input = e.link.sourcePort as DefaultPortModel;
+
+                            if (input.connection!.type == NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+                                return;
+                            }
+
                             let nodeModel = this.addValueNode(BlockTools.GetStringFromConnectionNodeType(input.connection!.type));
                             let link = nodeModel.ports.output.link(input);
 
@@ -329,7 +405,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                             setTimeout(() => {
                                 this._model.addLink(link);
                                 input.syncWithNodeMaterialConnectionPoint(input.connection!);
-                                nodeModel.ports.output.syncWithNodeMaterialConnectionPoint(nodeModel.ports.output.connection!);                                 
+                                nodeModel.ports.output.syncWithNodeMaterialConnectionPoint(nodeModel.ports.output.connection!);      
+                                
+                                let isFragmentOutput = (input.parent as DefaultNodeModel).block!.getClassName() === "FragmentOutputBlock";
+
+                                if (isFragmentOutput) {
+                                    this.applyFragmentOutputConstraints(input);
+                                }
 
                                 this.forceUpdate();
                             }, 1);
@@ -340,45 +422,53 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     }
                     this.forceUpdate();
                     return;
-                }
-
-                e.link.addListener({
-                    sourcePortChanged: () => {
-                    },
-                    targetPortChanged: () => {
-                        // Link is created with a target port
-                        var link = DefaultPortModel.SortInputOutput(e.link.sourcePort as DefaultPortModel, e.link.targetPort as DefaultPortModel);
-
-                        if (link) {
-                            if (link.output.connection && link.input.connection) {
-                                // Disconnect previous connection
-                                for (var key in link.input.links) {
-                                    let other = link.input.links[key];
-
-                                    if ((other.getSourcePort() as DefaultPortModel).connection  !== (link.output as DefaultPortModel).connection && 
-                                        (other.getTargetPort() as DefaultPortModel).connection  !== (link.output as DefaultPortModel).connection
-                                    ) {
-                                        other.remove();
+                } else {
+                    e.link.addListener({
+                        sourcePortChanged: () => {
+                        },
+                        targetPortChanged: (evt) => {
+                            // Link is created with a target port
+                            var link = DefaultPortModel.SortInputOutput(e.link.sourcePort as DefaultPortModel, e.link.targetPort as DefaultPortModel);
+    
+                            if (link) {
+                                if (link.output.connection && link.input.connection) {
+                                    let currentBlock = link.input.connection.ownerBlock;
+                                    let isFragmentOutput = currentBlock.getClassName() === "FragmentOutputBlock";
+    
+                                    // Disconnect previous connection
+                                    for (var key in link.input.links) {
+                                        let other = link.input.links[key];
+                                        let sourcePortConnection = (other.getSourcePort() as DefaultPortModel).connection;
+                                        let targetPortConnection = (other.getTargetPort() as DefaultPortModel).connection;
+    
+                                        if (
+                                            sourcePortConnection !== (link.output as DefaultPortModel).connection && 
+                                            targetPortConnection !== (link.output as DefaultPortModel).connection
+                                        ) {
+                                            other.remove();
+                                        }
                                     }
+    
+                                    if (link.output.connection.canConnectTo(link.input.connection)) {
+                                        if (isFragmentOutput) {
+                                            this.applyFragmentOutputConstraints(link.input);
+                                        }
+        
+                                        link.output.connection.connectTo(link.input.connection);
+                                    } else {
+                                        (evt.entity as AdvancedLinkModel).remove();
+                                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Cannot connect two different connection types");    
+                                    }
+    
+                                    this.forceUpdate();
                                 }
-
-                                try {
-                                    link.output.connection.connectTo(link.input.connection);
-                                }        
-                                catch (err) {
-                                    link.output.remove();
-                                    this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
-                                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(err);
+                                if (this.props.globalState.nodeMaterial) {
+                                    this.buildMaterial();
                                 }
-
-                                this.forceUpdate();
-                            }
-                            if (this.props.globalState.nodeMaterial) {
-                                this.buildMaterial();
                             }
                         }
-                    }
-                })
+                    });
+                }             
             }
         });
 
@@ -484,9 +574,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (data.indexOf("Block") === -1) {
             nodeModel = this.addValueNode(data);
         } else {
-            let block = BlockTools.GetBlockFromString(data);          
-
-            if (block) {
+            let block = BlockTools.GetBlockFromString(data);   
+            
+            if (block) {                
+                this._toAdd = [];
+                block.autoConfigure(this.props.globalState.nodeMaterial);       
                 nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
             }
         };
@@ -497,6 +589,33 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             let x = (event.clientX - event.currentTarget.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
             let y = (event.clientY - event.currentTarget.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
             nodeModel.setPosition(x, y);
+        
+            let block = nodeModel!.block;
+
+            x -= this.NodeWidth + 150;
+
+            block!._inputs.forEach((connection) => {       
+                if (connection.connectedPoint) {
+                    var existingNodes = this._nodes.filter((n) => { return n.block === (connection as any)._connectedPoint._ownerBlock });
+                    let connectedNode = existingNodes[0];
+
+                    if (connectedNode.x === 0 && connectedNode.y === 0) {
+                        connectedNode.setPosition(x, y);
+                        y += 80;
+                    }
+                }
+            });
+            
+            this._engine.repaintCanvas();
+
+            setTimeout(() => {
+                this._model.addAll(...this._toAdd!);            
+                this._toAdd = null;  
+                this._model.clearSelection();
+                nodeModel!.setSelected(true);
+
+                this._engine.repaintCanvas();  
+            }, 150);
         }
 
         this.forceUpdate();
@@ -508,8 +627,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 <div id="node-editor-graph-root" style={
                     {
                         gridTemplateColumns: this.buildColumnLayout()
-                    }
-                }>
+                    }}
+                    onMouseMove={evt => {
+                        this._mouseLocationX = evt.pageX;
+                        this._mouseLocationY = evt.pageY;
+                    }}
+                    onMouseDown={(evt) => {
+                        if ((evt.target as HTMLElement).nodeName === "INPUT") {
+                            return;
+                        }
+                        this.props.globalState.blockKeyboardEvents = false;
+                    }}
+                    >
                     {/* Node creation menu */}
                     <NodeListComponent globalState={this.props.globalState} />
 

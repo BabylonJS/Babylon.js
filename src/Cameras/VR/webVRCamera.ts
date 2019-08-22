@@ -463,7 +463,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * @param poseData Pose coming from the device
      */
     updateFromDevice(poseData: DevicePose) {
-        if (poseData && poseData.orientation) {
+        if (poseData && poseData.orientation && poseData.orientation.length === 4) {
             this.rawPose = poseData;
             this._deviceRoomRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
 

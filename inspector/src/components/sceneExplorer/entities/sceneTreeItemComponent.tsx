@@ -69,7 +69,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         return true;
     }
 
-    componentWillMount() {
+    componentDidMount() {
         if (!this.props.onSelectionChangedObservable) {
             return;
         }

@@ -363,6 +363,14 @@ export abstract class Light extends Node {
     public abstract transferToEffect(effect: Effect, lightIndex: string): Light;
 
     /**
+     * Sets the passed Effect "effect" with the Light information.
+     * @param effect The effect to update
+     * @param lightDataUniformName The uniform used to store light data (position or direction)
+     * @returns The light
+     */
+    public abstract transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light;
+
+    /**
      * Returns the string "Light".
      * @returns the class name
      */
@@ -483,7 +491,7 @@ export abstract class Light extends Node {
 
         // Remove from meshes
         for (var mesh of this.getScene().meshes) {
-            mesh._removeLightSource(this);
+            mesh._removeLightSource(this, true);
         }
 
         this._uniformBuffer.dispose();

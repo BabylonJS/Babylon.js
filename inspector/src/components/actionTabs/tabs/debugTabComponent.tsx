@@ -13,9 +13,7 @@ export class DebugTabComponent extends PaneComponent {
 
     constructor(props: IPaneComponentProps) {
         super(props);
-    }
 
-    componentWillMount() {
         const scene = this.props.scene;
 
         if (!scene) {
@@ -27,9 +25,6 @@ export class DebugTabComponent extends PaneComponent {
         }
 
         this._physicsViewersEnabled = scene.reservedDataStore.physicsViewer != null;
-    }
-
-    componentWillUnmount() {
     }
 
     switchPhysicsViewers() {
