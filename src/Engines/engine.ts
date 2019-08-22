@@ -2045,16 +2045,24 @@ export class Engine {
         if (this._activeRenderLoops.length > 0) {
             // Register new frame
             if (this.customAnimationFrameRequester) {
-                this.customAnimationFrameRequester.requestID = Engine.QueueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
+                this.customAnimationFrameRequester.requestID = this._queueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
                 this._frameHandler = this.customAnimationFrameRequester.requestID;
             } else if (this.isVRPresenting()) {
                 this._requestVRFrame();
             } else {
-                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+                this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
             }
         } else {
             this._renderingQueueLaunched = false;
         }
+    }
+
+    /**
+     * Can be used to override the current requestAnimationFrame requester.
+     * @hidden
+     */
+    protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
+        return Engine.QueueNewFrame(bindedRenderFunction, requester);
     }
 
     /**
@@ -2071,7 +2079,7 @@ export class Engine {
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
             this._bindedRenderFunction = this._renderLoop.bind(this);
-            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+            this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
         }
     }
 
@@ -4291,7 +4299,15 @@ export class Engine {
                     onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
                 });
             } else {
-                callback(buffer as ArrayBuffer);
+                //callback(buffer as ArrayBuffer);
+                if (buffer instanceof ArrayBuffer) {
+                    callback(buffer);
+                }
+                else {
+                    if (onError) {
+                        onError("Unable to load: only ArrayBuffer supported here", null);
+                    }
+                }
             }
         } else {
             var onload = (img: HTMLImageElement) => {
