@@ -708,7 +708,7 @@ export class Engine {
     public _gl: WebGLRenderingContext;
     private _renderingCanvas: Nullable<HTMLCanvasElement>;
     private _windowIsBackground = false;
-    private _webGLVersion = 1.0;
+    protected _webGLVersion = 1.0;
 
     protected _highPrecisionShadersAllowed = true;
     /** @hidden */
@@ -764,7 +764,7 @@ export class Engine {
     public _caps: EngineCapabilities;
     private _pointerLockRequested: boolean;
     private _isStencilEnable: boolean;
-    private _colorWrite = true;
+    protected _colorWrite = true;
 
     private _loadingScreen: ILoadingScreen;
 
@@ -2045,16 +2045,24 @@ export class Engine {
         if (this._activeRenderLoops.length > 0) {
             // Register new frame
             if (this.customAnimationFrameRequester) {
-                this.customAnimationFrameRequester.requestID = Engine.QueueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
+                this.customAnimationFrameRequester.requestID = this._queueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
                 this._frameHandler = this.customAnimationFrameRequester.requestID;
             } else if (this.isVRPresenting()) {
                 this._requestVRFrame();
             } else {
-                this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+                this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
             }
         } else {
             this._renderingQueueLaunched = false;
         }
+    }
+
+    /**
+     * Can be used to override the current requestAnimationFrame requester.
+     * @hidden
+     */
+    protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
+        return Engine.QueueNewFrame(bindedRenderFunction, requester);
     }
 
     /**
@@ -2071,7 +2079,7 @@ export class Engine {
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
             this._bindedRenderFunction = this._renderLoop.bind(this);
-            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+            this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
         }
     }
 
@@ -2676,40 +2684,38 @@ export class Engine {
 
         this.bindIndexBuffer(dataBuffer);
 
-        // Check for 32 bits indices
-        var arrayBuffer;
-        var need32Bits = false;
+        const data = this._normalizeIndexData(indices);
+        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, data, updatable ? this._gl.DYNAMIC_DRAW : this._gl.STATIC_DRAW);
+        this._resetIndexBufferBinding();
+        dataBuffer.references = 1;
+        dataBuffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
+        return dataBuffer;
+    }
 
+    protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array
+    {
         if (indices instanceof Uint16Array) {
-            arrayBuffer = indices;
-        } else {
-            //check 32 bit support
-            if (this._caps.uintIndices) {
-                if (indices instanceof Uint32Array) {
-                    arrayBuffer = indices;
-                    need32Bits = true;
-                } else {
-                    //number[] or Int32Array, check if 32 bit is necessary
-                    for (var index = 0; index < indices.length; index++) {
-                        if (indices[index] > 65535) {
-                            need32Bits = true;
-                            break;
-                        }
-                    }
+            return indices;
+        }
 
-                    arrayBuffer = need32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
-                }
+        // Check 32 bit support
+        if (this._caps.uintIndices) {
+            if (indices instanceof Uint32Array) {
+                return indices;
             } else {
-                //no 32 bit support, force conversion to 16 bit (values greater 16 bit are lost)
-                arrayBuffer = new Uint16Array(indices);
+                // number[] or Int32Array, check if 32 bit is necessary
+                for (var index = 0; index < indices.length; index++) {
+                    if (indices[index] > 65535) {
+                        return new Uint32Array(indices);
+                    }
+                }
+
+                return new Uint16Array(indices);
             }
         }
 
-        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, updatable ? this._gl.DYNAMIC_DRAW : this._gl.STATIC_DRAW);
-        this._resetIndexBufferBinding();
-        dataBuffer.references = 1;
-        dataBuffer.is32Bits = need32Bits;
-        return dataBuffer;
+        // No 32 bit support, force conversion to 16 bit (values greater 16 bit are lost)
+        return new Uint16Array(indices);
     }
 
     /**
@@ -2997,11 +3003,15 @@ export class Engine {
         buffer.references--;
 
         if (buffer.references === 0) {
-            this._gl.deleteBuffer(buffer.underlyingResource);
+            this._deleteBuffer(buffer);
             return true;
         }
 
         return false;
+    }
+
+    protected _deleteBuffer(buffer: DataBuffer): void {
+        this._gl.deleteBuffer(buffer.underlyingResource);
     }
 
     /**
@@ -3252,8 +3262,12 @@ export class Engine {
         return effect;
     }
 
+    protected static _concatenateShader(source: string, defines: Nullable<string>, shaderVersion: string = ""): string {
+        return shaderVersion + (defines ? defines + "\n" : "") + source;
+    }
+
     private _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader {
-        return this._compileRawShader(shaderVersion + (defines ? defines + "\n" : "") + source, type);
+        return this._compileRawShader(Engine._concatenateShader(source, defines, shaderVersion), type);
     }
 
     private _compileRawShader(source: string, type: string): WebGLShader {
@@ -3318,7 +3332,7 @@ export class Engine {
      * Creates a new pipeline context
      * @returns the new pipeline
      */
-    public createPipelineContext() {
+    public createPipelineContext(): IPipelineContext {
         var pipelineContext = new WebGLPipelineContext();
         pipelineContext.engine = this;
 
@@ -4188,7 +4202,7 @@ export class Engine {
      */
     public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-        buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
         forcedExtension: Nullable<string> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
         var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
         var fromData = url.substr(0, 5) === "data:";
@@ -4285,7 +4299,15 @@ export class Engine {
                     onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
                 });
             } else {
-                callback(buffer as ArrayBuffer);
+                //callback(buffer as ArrayBuffer);
+                if (buffer instanceof ArrayBuffer) {
+                    callback(buffer);
+                }
+                else {
+                    if (onError) {
+                        onError("Unable to load: only ArrayBuffer supported here", null);
+                    }
+                }
             }
         } else {
             var onload = (img: HTMLImageElement) => {
@@ -4348,7 +4370,7 @@ export class Engine {
                     FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null);
                 }
             }
-            else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || buffer instanceof Blob) {
+            else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
                 FileTools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null);
             }
             else {
@@ -5106,7 +5128,7 @@ export class Engine {
         throw _DevTools.WarnImport("Engine.RawTexture");
     }
 
-    private _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<Scene>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void {
+    protected _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<Scene>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void {
         var gl = this._gl;
         if (!gl) {
             return;
@@ -5228,11 +5250,9 @@ export class Engine {
 
     /** @hidden */
     public _releaseTexture(texture: InternalTexture): void {
-        var gl = this._gl;
-
         this._releaseFramebufferObjects(texture);
 
-        gl.deleteTexture(texture._webGLTexture);
+        this._deleteTexture(texture._webGLTexture);
 
         // Unbind channels
         this.unbindAllTextures();
@@ -5277,14 +5297,18 @@ export class Engine {
         });
     }
 
-    private setProgram(program: WebGLProgram): void {
+    protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
+        this._gl.deleteTexture(texture);
+    }
+
+    protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
             this._gl.useProgram(program);
             this._currentProgram = program;
         }
     }
 
-    private _boundUniforms: { [key: number]: WebGLUniformLocation } = {};
+    protected _boundUniforms: { [key: number]: WebGLUniformLocation } = {};
 
     /**
      * Binds an effect to the webGL context
@@ -5292,7 +5316,7 @@ export class Engine {
      */
     public bindSamplers(effect: Effect): void {
         let webGLPipelineContext = effect.getPipelineContext() as WebGLPipelineContext;
-        this.setProgram(webGLPipelineContext.program!);
+        this._setProgram(webGLPipelineContext.program!);
         var samplers = effect.getSamplers();
         for (var index = 0; index < samplers.length; index++) {
             var uniform = effect.getUniform(samplers[index]);
@@ -5455,7 +5479,7 @@ export class Engine {
         return this._gl.REPEAT;
     }
 
-    private _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
+    protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
         // Not ready?
         if (!texture) {
             if (this._boundTexturesCache[channel] != null) {
@@ -5580,6 +5604,8 @@ export class Engine {
         if (channel === undefined || !uniform) {
             return;
         }
+
+        this._boundUniforms[channel] = uniform;
 
         if (!this._textureUnits || this._textureUnits.length !== textures.length) {
             this._textureUnits = new Int32Array(textures.length);
