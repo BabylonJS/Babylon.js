@@ -67,7 +67,7 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | Blob, mipMap: boolean): void;
+    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean): void;
     loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): void;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
@@ -928,6 +928,8 @@ export class NativeEngine extends Engine {
 
             if (buffer instanceof ArrayBuffer) {
                 onload(buffer);
+            } else if (ArrayBuffer.isView(buffer)) {
+                onload(buffer.buffer);
             } else if (buffer instanceof Blob) {
                 throw new Error("Loading texture from Blob not yet implemented.");
             } else if (!fromData) {
