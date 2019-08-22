@@ -1108,6 +1108,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _nodes;
         private _blocks;
         private _previewManager;
+        private _copiedNode;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -2152,6 +2153,7 @@ declare module NODEEDITOR {
         private _nodes;
         private _blocks;
         private _previewManager;
+        private _copiedNode;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
