@@ -548,7 +548,7 @@ export class Effect implements IDisposable {
 
     /** @hidden */
     public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
-        if (DomManagement.IsWindowObjectExist()) {
+        if (typeof(HTMLElement) !== "undefined") {
             // DOM element ?
             if (vertex instanceof HTMLElement) {
                 var vertexCode = DomManagement.GetDOMTextContent(vertex);
@@ -590,7 +590,7 @@ export class Effect implements IDisposable {
 
     /** @hidden */
     public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
-        if (DomManagement.IsWindowObjectExist()) {
+        if (typeof(HTMLElement) !== "undefined") {
             // DOM element ?
             if (fragment instanceof HTMLElement) {
                 var fragmentCode = DomManagement.GetDOMTextContent(fragment);

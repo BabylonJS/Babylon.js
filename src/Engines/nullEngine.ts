@@ -485,15 +485,7 @@ export class NullEngine extends Engine {
         this._bindTextureDirectly(0, texture);
     }
 
-    /** @hidden */
-    public _releaseBuffer(buffer: DataBuffer): boolean {
-        buffer.references--;
-
-        if (buffer.references === 0) {
-            return true;
-        }
-
-        return false;
+    protected _deleteBuffer(buffer: WebGLBuffer): void {
     }
 
     public releaseEffects() {
