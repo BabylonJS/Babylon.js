@@ -38,7 +38,7 @@ export class TextureBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.VertexAndFragment);
 
-        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.VertexAndFragment);
 
         this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -49,8 +49,6 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color3);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color4);
     }
 
     /**
@@ -110,10 +108,51 @@ export class TextureBlock extends NodeMaterialBlock {
         return this._outputs[5];
     }
 
-    public autoConfigure() {
+    public get target() {
         if (!this.uv.isConnected) {
-            let uvInput = new InputBlock("uv");
-            uvInput.setAsAttribute();
+            return NodeMaterialBlockTargets.VertexAndFragment;
+        }
+
+        if (this.uv.sourceBlock!.isInput) {
+            return NodeMaterialBlockTargets.VertexAndFragment;
+        }
+
+        let parent = this.uv.connectedPoint;
+
+        while (parent) {
+            if (parent.target === NodeMaterialBlockTargets.Fragment) {
+                return NodeMaterialBlockTargets.Fragment;
+            }
+
+            if (parent.target === NodeMaterialBlockTargets.Vertex) {
+                return NodeMaterialBlockTargets.VertexAndFragment;
+            }
+
+            if (parent.target === NodeMaterialBlockTargets.Neutral || parent.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                let parentBlock = parent.ownerBlock;
+
+                parent = null;
+                for (var input of parentBlock.inputs) {
+                    if (input.connectedPoint) {
+                        parent = input.connectedPoint;
+                        break;
+                    }
+                }
+            }
+
+        }
+
+        return NodeMaterialBlockTargets.VertexAndFragment;
+    }
+
+    public autoConfigure(material: NodeMaterial) {
+        if (!this.uv.isConnected) {
+            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
+
+            if (!uvInput) {
+                uvInput = new InputBlock("uv");
+                uvInput.setAsAttribute();
+            }
             uvInput.output.connectTo(this.uv);
         }
     }
@@ -156,9 +195,15 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        effect.setFloat(this._textureInfoName, this.texture.level);
-        effect.setMatrix(this._textureTransformName, this.texture.getTextureMatrix());
+        if (this._isMixed) {
+            effect.setFloat(this._textureInfoName, this.texture.level);
+            effect.setMatrix(this._textureTransformName, this.texture.getTextureMatrix());
+        }
         effect.setTexture(this._samplerName, this.texture);
+    }
+
+    private get _isMixed() {
+        return this.target !== NodeMaterialBlockTargets.Fragment;
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
@@ -195,6 +240,12 @@ export class TextureBlock extends NodeMaterialBlock {
 
     private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string) {
         let uvInput = this.uv;
+
+        if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+            state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}).${swizzle};\r\n`;
+            return;
+        }
+
         const complement = ` * ${this._textureInfoName}`;
 
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
@@ -221,18 +272,29 @@ export class TextureBlock extends NodeMaterialBlock {
         state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
 
         // Fragment
-        state.sharedData.blocksWithDefines.push(this);
         state.sharedData.bindableBlocks.push(this);
-
-        state._emitUniformFromString(this._textureInfoName, "float");
+        if (this._isMixed) {
+            state.sharedData.blocksWithDefines.push(this);
+            state._emitUniformFromString(this._textureInfoName, "float");
+        }
 
         for (var output of this._outputs) {
-            if (output.connectedBlocks.length) {
+            if (output.hasEndpoints) {
                 this._writeOutput(state, output, output.name);
             }
         }
 
         return this;
+    }
+
+    protected _dumpPropertiesCode() {
+        if (!this.texture) {
+            return "";
+        }
+
+        var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\r\n`;
+
+        return codeString;
     }
 
     public serialize(): any {

@@ -8,3 +8,4 @@ export * from "./WebGL/webGLPipelineContext";
 export * from "./WebGPU/webgpuConstants";
 export * from "./webgpuEngine";
 export * from "./WebGL/webGL2ShaderProcessors";
+export * from "./nativeEngine";

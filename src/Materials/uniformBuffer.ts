@@ -488,8 +488,9 @@ export class UniformBuffer {
         if (!this._dynamic) {
             // Cache for static uniform buffers
             var changed = false;
+
             for (var i = 0; i < size; i++) {
-                if (this._bufferData[location + i] !== data[i]) {
+                if (size === 16 || this._bufferData[location + i] !== data[i]) {
                     changed = true;
                     this._bufferData[location + i] = data[i];
                 }
@@ -551,6 +552,20 @@ export class UniformBuffer {
                 this._bufferData[location + i] = data[i];
             }
         }
+    }
+
+    // Matrix cache
+    private _valueCache: { [key: string]: any } = {};
+    private _cacheMatrix(name: string, matrix: IMatrixLike): boolean {
+        var cache = this._valueCache[name];
+        var flag = matrix.updateFlag;
+        if (cache !== undefined && cache === flag) {
+            return false;
+        }
+
+        this._valueCache[name] = flag;
+
+        return true;
     }
 
     // Update methods
@@ -642,8 +657,10 @@ export class UniformBuffer {
         this._currentEffect.setMatrix(name, mat);
     }
 
-    private _updateMatrixForUniform(name: string, mat: IMatrixLike) {
-        this.updateUniform(name, <any>mat.toArray(), 16);
+    private _updateMatrixForUniform(name: string, mat: Matrix) {
+        if (this._cacheMatrix(name, mat)) {
+            this.updateUniform(name, <any>mat.toArray(), 16);
+        }
     }
 
     private _updateMatricesForEffect(name: string, mat: Float32Array) {

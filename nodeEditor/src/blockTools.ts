@@ -16,12 +16,25 @@ import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertex
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { NormalizeBlock } from 'babylonjs/Materials/Node/Blocks/normalizeBlock';
 import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
+import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
+import { TrigonometryBlock, TrigonometryBlockOperations } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
 import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
 import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
 import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
 import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { FresnelBlock } from 'babylonjs/Materials/Node/Blocks/fresnelBlock';
+import { LerpBlock } from 'babylonjs/Materials/Node/Blocks/lerpBlock';
+import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
+import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
+import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
+import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
+import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
+import { OppositeBlock } from 'babylonjs/Materials/Node/Blocks/oppositeBlock';
+import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
+import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -60,6 +73,8 @@ export class BlockTools {
                 return new AddBlock("Add");
             case "ClampBlock":
                 return new ClampBlock("Clamp");
+            case "ScaleBlock":
+                return new ScaleBlock("Scale");
             case "CrossBlock":
                 return new CrossBlock("Dot");
             case "DotBlock":
@@ -68,10 +83,148 @@ export class BlockTools {
                 return new MultiplyBlock("Multiply");
             case "TransformBlock":
                 return new TransformBlock("Transform");
+            case "TrigonometryBlock":
+                return new TrigonometryBlock("Trigonometry");
             case "RemapBlock":
                 return new RemapBlock("Remap");
             case "NormalizeBlock":
                 return new NormalizeBlock("Normalize");
+            case "FresnelBlock":
+                return new FresnelBlock("Fresnel");
+            case "LerpBlock":
+                return new LerpBlock("Lerp");
+            case "DivideBlock":
+                return new DivideBlock("Divide");
+            case "SubtractBlock":
+                return new SubtractBlock("Subtract"); 
+            case "StepBlock":
+                return new StepBlock("Step");        
+            case "OppositeBlock":
+                return new OppositeBlock("Opposite");      
+            case "ViewDirectionBlock":
+                return new ViewDirectionBlock("View direction");    
+            case "LightInformationBlock":
+                return new LightInformationBlock("Light information");                                    
+            case "CosBlock": {
+                let cosBlock = new TrigonometryBlock("Cos");
+                cosBlock.operation = TrigonometryBlockOperations.Cos;
+                return cosBlock;
+            }
+            case "SinBlock": {
+                let sinBlock = new TrigonometryBlock("Sin");
+                sinBlock.operation = TrigonometryBlockOperations.Sin;
+                return sinBlock;
+            }
+            case "AbsBlock": {
+                let absBlock = new TrigonometryBlock("Abs");
+                absBlock.operation = TrigonometryBlockOperations.Abs;
+                return absBlock;
+            }
+            case "ExpBlock": {
+                let expBlock = new TrigonometryBlock("Exp");
+                expBlock.operation = TrigonometryBlockOperations.Exp;
+                return expBlock;
+            }
+            case "Exp2Block": {
+                let exp2Block = new TrigonometryBlock("Exp2");
+                exp2Block.operation = TrigonometryBlockOperations.Exp2;
+                return exp2Block;
+            }
+            case "RoundBlock": {
+                let roundBlock = new TrigonometryBlock("Round");
+                roundBlock.operation = TrigonometryBlockOperations.Round;
+                return roundBlock;
+            }
+            case "CeilingBlock": {
+                let ceilingBlock = new TrigonometryBlock("Ceiling");
+                ceilingBlock.operation = TrigonometryBlockOperations.Ceiling;
+                return ceilingBlock;
+            }     
+            case "FloorBlock": {
+                let floorBlock = new TrigonometryBlock("Floor");
+                floorBlock.operation = TrigonometryBlockOperations.Floor;
+                return floorBlock;
+            }       
+            case "WorldMatrixBlock": {
+                let worldMatrixBlock = new InputBlock("World");
+                worldMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+                return worldMatrixBlock;
+            }             
+            case "WorldViewMatrixBlock": {
+                let worldViewMatrixBlock = new InputBlock("World x View");
+                worldViewMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.WorldView);
+                return worldViewMatrixBlock;
+            }             
+            case "WorldViewProjectionMatrixBlock": {
+                let worldViewProjectionMatrixBlock = new InputBlock("World x View x Projection");
+                worldViewProjectionMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.WorldViewProjection);
+                return worldViewProjectionMatrixBlock;
+            }                    
+            case "ViewMatrixBlock": {
+                let viewMatrixBlock = new InputBlock("View");
+                viewMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+                return viewMatrixBlock;
+            }                          
+            case "ViewProjectionMatrixBlock": {
+                let viewProjectionMatrixBlock = new InputBlock("View x Projection");
+                viewProjectionMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.ViewProjection);
+                return viewProjectionMatrixBlock;
+            }                              
+            case "ProjectionMatrixBlock": {
+                let projectionMatrixBlock = new InputBlock("Projection");
+                projectionMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.Projection);
+                return projectionMatrixBlock;
+            }                                 
+            case "CameraPositionBlock": {
+                let cameraPosition = new InputBlock("Camera position");
+                cameraPosition.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+                return cameraPosition;
+            }                              
+            case "FogColorBlock": {
+                let FogColor = new InputBlock("Fog color");
+                FogColor.setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
+                return FogColor;
+            }                                   
+            case "PositionBlock": {
+                let meshPosition = new InputBlock("position");
+                meshPosition.setAsAttribute("position");
+                return meshPosition;
+            }                                        
+            case "UVBlock": {
+                let meshUV = new InputBlock("uv");
+                meshUV.setAsAttribute("uv");
+                return meshUV;
+            }                                         
+            case "ColorBlock": {
+                let meshColor = new InputBlock("color");
+                meshColor.setAsAttribute("color");
+                return meshColor;
+            }                                              
+            case "NormalBlock": {
+                let meshNormal = new InputBlock("normal");
+                meshNormal.setAsAttribute("normal");
+                return meshNormal;
+            }                                                 
+            case "TangentBlock": {
+                let meshTangent = new InputBlock("tangent");
+                meshTangent.setAsAttribute("tangent");
+                return meshTangent;
+            }                                                  
+            case "MatrixIndicesBlock": {
+                let meshMatrixIndices = new InputBlock("matricesIndices");
+                meshMatrixIndices.setAsAttribute("matricesIndices");
+                return meshMatrixIndices;
+            }                                                    
+            case "MatrixWeightsBlock": {
+                let meshMatrixWeights = new InputBlock("matricesWeights");
+                meshMatrixWeights.setAsAttribute("matricesWeights");
+                return meshMatrixWeights;
+            }                                                     
+            case "TimeBlock": {
+                let timeBlock = new InputBlock("Time", undefined, NodeMaterialBlockConnectionPointTypes.Float);
+                timeBlock.animationType = AnimatedInputBlockTypes.Time;
+                return timeBlock;
+            }   
         }
 
         return null;

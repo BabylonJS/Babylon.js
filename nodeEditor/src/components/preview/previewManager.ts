@@ -70,16 +70,16 @@ export class PreviewManager {
         
         switch (this._globalState.previewMeshType) {
             case PreviewMeshType.Box:
-                this._dummy = Mesh.CreateBox("dummy", 2, this._scene);
+                this._dummy = Mesh.CreateBox("dummy-box", 2, this._scene);
                 break;
             case PreviewMeshType.Sphere:
-                this._dummy = Mesh.CreateSphere("dummy", 32, 2, this._scene);
+                this._dummy = Mesh.CreateSphere("dummy-sphere", 32, 2, this._scene);
                 break;
             case PreviewMeshType.Torus:
-                this._dummy = Mesh.CreateTorus("dummy", 2, 0.5, 32, this._scene);
+                this._dummy = Mesh.CreateTorus("dummy-torus", 2, 0.5, 32, this._scene);
                 break;
                 case PreviewMeshType.Cylinder:
-                this._dummy = Mesh.CreateCylinder("dummy", 2, 1, 1.2, 32, 1, this._scene);
+                this._dummy = Mesh.CreateCylinder("dummy-cylinder", 2, 1, 1.2, 32, 1, this._scene);
                 break;                
         }
         this._dummy.material = this._material;
@@ -91,7 +91,7 @@ export class PreviewManager {
         }        
 
         this._material = NodeMaterial.Parse(serializationObject, this._scene);
-        this._material.build(true);
+        this._material.build();
         this._dummy.material = this._material;
     }
 

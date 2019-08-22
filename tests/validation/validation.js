@@ -200,7 +200,7 @@ function runTest(index, done) {
     resultCanvas.className = "resultImage";
     container.appendChild(resultCanvas);
 
-    title.innerHTML = test.title;
+    title.innerHTML = "#" + index + "> " + test.title;
 
     console.log("Running " + test.title);
 

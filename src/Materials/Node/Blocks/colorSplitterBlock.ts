@@ -82,10 +82,28 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
         return this._outputs[4];
     }
 
+    protected _inputRename(name: string) {
+        if (name === "rgb ") {
+            return "rgbIn";
+        }
+        return name;
+    }
+
+    protected _outputRename(name: string) {
+        if (name === "rgb") {
+            return "rgbOut";
+        }
+        return name;
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let input = this.rgba.isConnected ? this.rgba : this.rgbIn;
+
+        if (!input.isConnected) {
+            return;
+        }
 
         let rgbOutput = this._outputs[0];
         let rOutput = this._outputs[1];
@@ -93,19 +111,19 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
         let bOutput = this._outputs[3];
         let aOutput = this._outputs[4];
 
-        if (rgbOutput.connectedBlocks.length > 0) {
+        if (rgbOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(rgbOutput, state) + ` = ${input.associatedVariableName}.rgb;\r\n`;
         }
-        if (rOutput.connectedBlocks.length > 0) {
+        if (rOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(rOutput, state) + ` = ${input.associatedVariableName}.r;\r\n`;
         }
-        if (gOutput.connectedBlocks.length > 0) {
+        if (gOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(gOutput, state) + ` = ${input.associatedVariableName}.g;\r\n`;
         }
-        if (bOutput.connectedBlocks.length > 0) {
+        if (bOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(bOutput, state) + ` = ${input.associatedVariableName}.b;\r\n`;
         }
-        if (aOutput.connectedBlocks.length > 0) {
+        if (aOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(aOutput, state) + ` = ${input.associatedVariableName}.a;\r\n`;
         }
 

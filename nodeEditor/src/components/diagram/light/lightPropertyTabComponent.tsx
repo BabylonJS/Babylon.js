@@ -25,8 +25,8 @@ export class LightPropertyTabComponent extends React.Component<ILightPropertyTab
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextLineComponent label="Type" value="Light" />
-                    <TextInputLineComponent label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                    <TextLineComponent label="Type" value="LightBlock" />
+                    <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                 </LineContainerComponent>
 
                 <LineContainerComponent title="PROPERTIES">

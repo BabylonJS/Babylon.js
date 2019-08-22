@@ -104,25 +104,41 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state._excludeVariableName("morphTargetInfluences");
     }
 
-    public autoConfigure() {
+    public autoConfigure(material: NodeMaterial) {
         if (!this.position.isConnected) {
-            let positionInput = new InputBlock("position");
-            positionInput.setAsAttribute("position");
+            let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position");
+
+            if (!positionInput) {
+                positionInput = new InputBlock("position");
+                positionInput.setAsAttribute();
+            }
             positionInput.output.connectTo(this.position);
         }
         if (!this.normal.isConnected) {
-            let normalInput = new InputBlock("normal");
-            normalInput.setAsAttribute("normal");
+            let normalInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "normal");
+
+            if (!normalInput) {
+                normalInput = new InputBlock("normal");
+                normalInput.setAsAttribute("normal");
+            }
             normalInput.output.connectTo(this.normal);
         }
         if (!this.tangent.isConnected) {
-            let tangentInput = new InputBlock("tangent");
-            tangentInput.setAsAttribute("tangent");
+            let tangentInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "tangent");
+
+            if (!tangentInput) {
+                tangentInput = new InputBlock("tangent");
+                tangentInput.setAsAttribute("tangent");
+            }
             tangentInput.output.connectTo(this.tangent);
         }
         if (!this.uv.isConnected) {
-            let uvInput = new InputBlock("uv");
-            uvInput.setAsAttribute("uv");
+            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
+
+            if (!uvInput) {
+                uvInput = new InputBlock("uv");
+                uvInput.setAsAttribute("uv");
+            }
             uvInput.output.connectTo(this.uv);
         }
     }

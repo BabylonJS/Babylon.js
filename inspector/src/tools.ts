@@ -19,7 +19,7 @@ export class Tools {
         }
 
         const children = item.getChildren ? item.getChildren() : item.children;
-        if (children) {
+        if (children && item.getClassName() !== "MultiMaterial") {
             for (var child of children) {
                 if (Tools.LookForItem(child, selectedEntity)) {
                     return true;

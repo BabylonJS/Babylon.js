@@ -70,7 +70,7 @@ export class InstancedMesh extends AbstractMesh {
         // Do nothing as all the work will be done by source mesh
     }
 
-    public _removeLightSource(light: Light): void {
+    public _removeLightSource(light: Light, dispose: boolean): void {
         // Do nothing as all the work will be done by source mesh
     }
 
@@ -185,7 +185,7 @@ export class InstancedMesh extends AbstractMesh {
      *
      * Returns the Mesh.
      */
-    public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh {
+    public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh {
         if (this.sourceMesh) {
             this.sourceMesh.setVerticesData(kind, data, updatable, stride);
         }
@@ -369,7 +369,7 @@ export class InstancedMesh extends AbstractMesh {
      *
      * Returns the clone.
      */
-    public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): InstancedMesh {
+    public clone(name: string, newParent: Nullable<Node>= null, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
         var result = this._sourceMesh.createInstance(name);
 
         // Deep copy

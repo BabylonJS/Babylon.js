@@ -1393,7 +1393,7 @@ var _Exporter = /** @class */ (function () {
         this._samplers = [];
         this._animations = [];
         this._imageData = {};
-        this._convertToRightHandedSystem = this._babylonScene.useRightHandedSystem ? false : true;
+        this._convertToRightHandedSystem = !this._babylonScene.useRightHandedSystem;
         this._options = options || {};
         this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
         this._glTFMaterialExporter = new _glTFMaterialExporter__WEBPACK_IMPORTED_MODULE_1__["_GLTFMaterialExporter"](this);
@@ -2337,7 +2337,7 @@ var _Exporter = /** @class */ (function () {
                         meshPrimitive.indices = this._accessors.length - 1;
                     }
                     if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
-                        var sideOrientation = babylonMaterial.sideOrientation;
+                        var sideOrientation = bufferMesh.overrideMaterialSideOrientation !== null ? bufferMesh.overrideMaterialSideOrientation : babylonMaterial.sideOrientation;
                         // Only reverse the winding if we have a clockwise winding
                         if (sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].ClockWiseSideOrientation) {
                             var byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;

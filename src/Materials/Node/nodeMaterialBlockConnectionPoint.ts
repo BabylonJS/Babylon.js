@@ -20,6 +20,9 @@ export class NodeMaterialConnectionPoint {
     /** @hidden */
     public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
 
+    /** @hidden */
+    public _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
+
     private _type = NodeMaterialBlockConnectionPointTypes.Float;
 
     /** @hidden */
@@ -38,7 +41,7 @@ export class NodeMaterialConnectionPoint {
             return (this._ownerBlock as InputBlock).associatedVariableName;
         }
 
-        if (!this._enforceAssociatedVariableName && this._connectedPoint) {
+        if ((!this._enforceAssociatedVariableName || !this._associatedVariableName) && this._connectedPoint) {
             return this._connectedPoint.associatedVariableName;
         }
 
@@ -60,6 +63,10 @@ export class NodeMaterialConnectionPoint {
 
             if (this._connectedPoint) {
                 return this._connectedPoint.type;
+            }
+
+            if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
+                return this._linkedConnectionSource.type;
             }
         }
 
@@ -102,7 +109,7 @@ export class NodeMaterialConnectionPoint {
     /**
      * Gets a boolean indicating that the current point is connected to an input block
      */
-    public get isConnectedToInput(): boolean {
+    public get isConnectedToInputBlock(): boolean {
         return this.connectedPoint !== null && this.connectedPoint.ownerBlock.isInput;
     }
 
@@ -110,7 +117,7 @@ export class NodeMaterialConnectionPoint {
      * Gets a the connected input block (if any)
      */
     public get connectInputBlock(): Nullable<InputBlock> {
-        if (!this.isConnectedToInput) {
+        if (!this.isConnectedToInputBlock) {
             return null;
         }
 
@@ -147,7 +154,12 @@ export class NodeMaterialConnectionPoint {
 
     /** Gets the list of connected endpoints */
     public get endpoints() {
-        return this, this._endpoints;
+        return this._endpoints;
+    }
+
+    /** Gets a boolean indicating if that output point is connected to at least one input */
+    public get hasEndpoints(): boolean {
+        return this._endpoints && this._endpoints.length > 0;
     }
 
     /**
@@ -175,6 +187,31 @@ export class NodeMaterialConnectionPoint {
      */
     public canConnectTo(connectionPoint: NodeMaterialConnectionPoint) {
         if (this.type !== connectionPoint.type && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+            // Equivalents
+            switch (this.type) {
+                case NodeMaterialBlockConnectionPointTypes.Vector3: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color3) {
+                        return true;
+                    }
+                }
+                case NodeMaterialBlockConnectionPointTypes.Vector4: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color4) {
+                        return true;
+                    }
+                }
+                case NodeMaterialBlockConnectionPointTypes.Color3: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
+                        return true;
+                    }
+                }
+                case NodeMaterialBlockConnectionPointTypes.Color4: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                        return true;
+                    }
+                }
+            }
+
+            // Accepted types
             return (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1);
         }
 
@@ -184,10 +221,11 @@ export class NodeMaterialConnectionPoint {
     /**
      * Connect this point to another connection point
      * @param connectionPoint defines the other connection point
+     * @param ignoreConstraints defines if the system will ignore connection type constraints (default is false)
      * @returns the current connection point
      */
-    public connectTo(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint {
-        if (!this.canConnectTo(connectionPoint)) {
+    public connectTo(connectionPoint: NodeMaterialConnectionPoint, ignoreConstraints = false): NodeMaterialConnectionPoint {
+        if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
             throw "Cannot connect two different connection types.";
         }
 
@@ -213,6 +251,7 @@ export class NodeMaterialConnectionPoint {
         this._endpoints.splice(index, 1);
         endpoint._connectedPoint = null;
         this._enforceAssociatedVariableName = false;
+        endpoint._enforceAssociatedVariableName = false;
         return this;
     }
 

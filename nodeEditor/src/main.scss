@@ -43,6 +43,8 @@
     display: grid;
     grid-template-rows: 1fr 30px auto;
     grid-template-columns: 100%;
+    height: 100%;
+    overflow-y: auto;
 
     #propertyTab {
         grid-row: 1;

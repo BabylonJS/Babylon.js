@@ -81,6 +81,8 @@ export class CubeTexture extends BaseTexture {
     }
 
     private _noMipmap: boolean;
+
+    @serialize("files")
     private _files: string[];
     private _extensions: string[];
 
@@ -317,7 +319,7 @@ export class CubeTexture extends BaseTexture {
             if (parsedTexture.prefiltered) {
                 prefiltered = parsedTexture.prefiltered;
             }
-            return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions, false, null, null, null, undefined, prefiltered);
+            return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions, false, parsedTexture.files || null, null, null, undefined, prefiltered);
         }, parsedTexture, scene);
 
         // Local Cubemaps

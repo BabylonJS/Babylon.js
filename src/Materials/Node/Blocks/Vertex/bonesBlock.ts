@@ -93,20 +93,32 @@ export class BonesBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public autoConfigure(material: NodeMaterial) {
         if (!this.matricesIndices.isConnected) {
-            let matricesIndicesInput = new InputBlock("matricesIndices", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
-            matricesIndicesInput.setAsAttribute("matricesIndices");
+            let matricesIndicesInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "matricesIndices");
+
+            if (!matricesIndicesInput) {
+                matricesIndicesInput = new InputBlock("matricesIndices");
+                matricesIndicesInput.setAsAttribute("matricesIndices");
+            }
             matricesIndicesInput.output.connectTo(this.matricesIndices);
         }
         if (!this.matricesWeights.isConnected) {
-            let matricesWeightsInput = new InputBlock("matricesWeights", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
-            matricesWeightsInput.setAsAttribute("matricesWeights");
+            let matricesWeightsInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "matricesWeights");
+
+            if (!matricesWeightsInput) {
+                matricesWeightsInput = new InputBlock("matricesWeights");
+                matricesWeightsInput.setAsAttribute("matricesWeights");
+            }
             matricesWeightsInput.output.connectTo(this.matricesWeights);
         }
         if (!this.world.isConnected) {
-            let worldInput = new InputBlock("world", undefined, NodeMaterialBlockConnectionPointTypes.Matrix);
-            worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+            let worldInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.World);
+
+            if (!worldInput) {
+                worldInput = new InputBlock("world");
+                worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+            }
             worldInput.output.connectTo(this.world);
         }
     }

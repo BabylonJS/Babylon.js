@@ -272,6 +272,16 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
+    public _registerTempVariable(name: string) {
+        if (this.sharedData.temps.indexOf(name) !== -1) {
+            return false;
+        }
+
+        this.sharedData.temps.push(name);
+        return true;
+    }
+
+    /** @hidden */
     public _emitVaryingFromString(name: string, type: string, define: string = "", notDefine = false) {
         if (this.sharedData.varyings.indexOf(name) !== -1) {
             return false;

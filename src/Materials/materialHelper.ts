@@ -75,9 +75,7 @@ export class MaterialHelper {
     public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
         var matrix = texture.getTextureMatrix();
 
-        if (!matrix.isIdentityAs3x2()) {
-            uniformBuffer.updateMatrix(key + "Matrix", matrix);
-        }
+        uniformBuffer.updateMatrix(key + "Matrix", matrix);
     }
 
     /**
@@ -681,12 +679,15 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
      * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false): void {
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
         let iAsString = lightIndex.toString();
 
         let scaledIntensity = light.getScaledIntensity();
-        light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
+        if (!rebuildInParallel) {
+            light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
+        }
 
         MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
@@ -712,14 +713,15 @@ export class MaterialHelper {
      * @param defines The generated defines for the effect
      * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
      * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false): void {
+    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
         let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff);
+            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff, rebuildInParallel);
         }
     }
 

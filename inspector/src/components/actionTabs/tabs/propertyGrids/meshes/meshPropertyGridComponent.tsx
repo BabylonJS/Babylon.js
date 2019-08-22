@@ -35,13 +35,15 @@ interface IMeshPropertyGridComponentProps {
 }
 
 export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, {
-    displayNormals: boolean
+    displayNormals: boolean,
+    displayVertexColors: boolean
 }> {
     constructor(props: IMeshPropertyGridComponentProps) {
         super(props);
 
         this.state = {
-            displayNormals: false
+            displayNormals: false,
+            displayVertexColors: false
         };
     }
 
@@ -57,7 +59,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             return;
         }
 
-        var wireframeOver = mesh.clone();
+        var wireframeOver = mesh.clone()!;
         wireframeOver.reservedDataStore = { hidden: true };
 
         // Sets up the mesh to be attached to the parent.
@@ -129,11 +131,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
     displayNormals() {
         const mesh = this.props.mesh;
         const scene = mesh.getScene();
-        if (!mesh.material) {
-            return;
-        }
 
-        if (mesh.material.getClassName() === "NormalMaterial") {
+        if (mesh.material && mesh.material.getClassName() === "NormalMaterial") {
             mesh.material.dispose();
 
             mesh.material = mesh.reservedDataStore.originalMaterial;
@@ -156,10 +155,42 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             mesh.reservedDataStore.originalMaterial = mesh.material;
             const normalMaterial = new (BABYLON as any).NormalMaterial("normalMaterial", scene);
             normalMaterial.disableLighting = true;
-            normalMaterial.sideOrientation = mesh.material.sideOrientation;
+            if (mesh.material) {
+                normalMaterial.sideOrientation = mesh.material.sideOrientation;
+            }
             normalMaterial.reservedDataStore = { hidden: true };
             mesh.material = normalMaterial;
             this.setState({ displayNormals: true });
+        }
+    }
+
+    displayVertexColors() {
+        const mesh = this.props.mesh;
+        const scene = mesh.getScene();
+
+        if (mesh.material && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial) {
+            mesh.material.dispose();
+
+            mesh.material = mesh.reservedDataStore.originalMaterial;
+            mesh.reservedDataStore.originalMaterial = null;
+            this.setState({ displayVertexColors: false });
+        } else {
+
+            if (!mesh.reservedDataStore) {
+                mesh.reservedDataStore = {};
+            }
+
+            mesh.reservedDataStore.originalMaterial = mesh.material;
+            const vertexColorMaterial = new StandardMaterial("vertex colors", scene);
+            vertexColorMaterial.disableLighting = true;
+            vertexColorMaterial.emissiveColor = Color3.White();
+            if (mesh.material) {
+                vertexColorMaterial.sideOrientation = mesh.material.sideOrientation;
+            }
+            vertexColorMaterial.reservedDataStore = { hidden: true, isVertexColorMaterial: true };
+            mesh.useVertexColors = true;
+            mesh.material = vertexColorMaterial;
+            this.setState({ displayVertexColors: true });
         }
     }
 
@@ -216,6 +247,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         const scene = mesh.getScene();
 
         const displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
+        const displayVertexColors = mesh.material != null && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial;
         const renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
         const renderWireframeOver = (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) ? true : false;
 
@@ -254,7 +286,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <CheckBoxLineComponent label="Is enabled" isSelected={() => mesh.isEnabled()} onSelect={(value) => mesh.setEnabled(value)} />
                     <CheckBoxLineComponent label="Is pickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
-                        mesh.material &&
+                        mesh.material && (!mesh.material.reservedDataStore || !mesh.material.reservedDataStore.hidden) &&
                         <TextLineComponent label="Material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
                     }
                     {
@@ -355,10 +387,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <Color3LineComponent label="Outline color" target={mesh} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="DEBUG" closed={true}>
-                    {
-                        mesh.material &&
-                        <CheckBoxLineComponent label="Display normals" isSelected={() => displayNormals} onSelect={() => this.displayNormals()} />
-                    }
+                    <CheckBoxLineComponent label="Display normals" isSelected={() => displayNormals} onSelect={() => this.displayNormals()} />
+                    <CheckBoxLineComponent label="Display vertex colors" isSelected={() => displayVertexColors} onSelect={() => this.displayVertexColors()} />
                     {
                         mesh.isVerticesDataPresent(VertexBuffer.NormalKind) &&
                         <CheckBoxLineComponent label="Render vertex normals" isSelected={() => renderNormalVectors} onSelect={() => this.renderNormalVectors()} />
