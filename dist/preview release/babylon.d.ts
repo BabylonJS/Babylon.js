@@ -9856,6 +9856,13 @@ declare module BABYLON {
          */
         abstract transferToEffect(effect: Effect, lightIndex: string): Light;
         /**
+         * Sets the passed Effect "effect" with the Light information.
+         * @param effect The effect to update
+         * @param lightDataUniformName The uniform used to store light data (position or direction)
+         * @returns The light
+         */
+        abstract transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light;
+        /**
          * Returns the string "Light".
          * @returns the class name
          */
@@ -14482,6 +14489,7 @@ declare module BABYLON {
          * @returns The hemispheric light
          */
         transferToEffect(effect: Effect, lightIndex: string): HemisphericLight;
+        transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): this;
         /**
          * Computes the world matrix of the node
          * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
@@ -44450,6 +44458,7 @@ declare module BABYLON {
          * @returns The directional light
          */
         transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
+        transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light;
         /**
          * Gets the minZ used for shadow according to both the scene and the light.
          *
@@ -44633,6 +44642,7 @@ declare module BABYLON {
          * @returns The spot light
          */
         transferToEffect(effect: Effect, lightIndex: string): SpotLight;
+        transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): this;
         /**
          * Disposes the light and the associated resources.
          */
@@ -49784,6 +49794,7 @@ declare module BABYLON {
          * @returns The point light
          */
         transferToEffect(effect: Effect, lightIndex: string): PointLight;
+        transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): this;
         /**
          * Prepares the list of defines specific to the light type.
          * @param defines the list of defines
@@ -52481,6 +52492,8 @@ declare module BABYLON {
         _inputs: NodeMaterialConnectionPoint[];
         /** @hidden */
         _outputs: NodeMaterialConnectionPoint[];
+        /** @hidden */
+        _preparationId: number;
         /**
          * Gets or sets the name of the block
          */
@@ -53074,6 +53087,45 @@ declare module BABYLON {
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get data information from a light
+     */
+    export class LightInformationBlock extends NodeMaterialBlock {
+        private _lightDataDefineName;
+        private _lightColorDefineName;
+        /**
+         * Gets or sets the light associated with this block
+         */
+        light: Nullable<Light>;
+        /**
+         * Creates a new LightInformationBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position input component
+         */
+        readonly worldPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the direction output component
+         */
+        readonly direction: NodeMaterialConnectionPoint;
+        /**
+         * Gets the direction output component
+         */
+        readonly color: NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {

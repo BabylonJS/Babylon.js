@@ -392,6 +392,24 @@ export class SpotLight extends ShadowLight {
         return this;
     }
 
+    public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
+        var normalizeDirection;
+
+        if (this.computeTransformedInformation()) {
+            normalizeDirection = Vector3.Normalize(this.transformedDirection);
+        } else {
+            normalizeDirection = Vector3.Normalize(this.direction);
+        }
+
+        if (this.getScene().useRightHandedSystem) {
+            effect.setFloat3(lightDataUniformName, -normalizeDirection.x, -normalizeDirection.y, -normalizeDirection.z);
+        } else {
+            effect.setFloat3(lightDataUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z);
+        }
+
+        return this;
+    }
+
     /**
      * Disposes the light and the associated resources.
      */

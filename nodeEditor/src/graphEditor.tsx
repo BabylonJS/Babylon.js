@@ -47,6 +47,9 @@ import { AdvancedLinkModel } from './components/diagram/link/advancedLinkModel';
 import { ClampNodeFactory } from './components/diagram/clamp/clampNodeFactory';
 import { ClampNodeModel } from './components/diagram/clamp/clampNodeModel';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
+import { LightInformationNodeFactory } from './components/diagram/lightInformation/lightInformationNodeFactory';
+import { LightInformationNodeModel } from './components/diagram/lightInformation/lightInformationNodeModel';
+import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -114,7 +117,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         } else if (options.nodeMaterialBlock instanceof RemapBlock) {
             newNode = new RemapNodeModel();
         } else if (options.nodeMaterialBlock instanceof ClampBlock) {
-            newNode = new ClampNodeModel();
+            newNode = new ClampNodeModel();        
+        } else if (options.nodeMaterialBlock instanceof LightInformationBlock) {
+            newNode = new LightInformationNodeModel();
         } else {
             newNode = new GenericNodeModel();
         }
@@ -184,6 +189,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine.registerNodeFactory(new RemapNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new TrigonometryNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new ClampNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new LightInformationNodeFactory(this.props.globalState));
         this._engine.registerLinkFactory(new AdvancedLinkFactory());
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
