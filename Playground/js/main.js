@@ -295,6 +295,8 @@ class Main {
                 if (this.parent.settingsPG.ScriptLanguage == "JS") {
                     this.parent.settingsPG.ScriptLanguage = "TS";
                     location.reload();
+                    //revert in case the reload is cancel due to safe mode
+                    this.parent.settingsPG.ScriptLanguage = "JS";
                 }
             }
            
@@ -307,6 +309,8 @@ class Main {
                 if (this.parent.settingsPG.ScriptLanguage == "TS") {
                     this.parent.settingsPG.ScriptLanguage = "JS";
                     location.reload();
+                    //revert in case the reload is cancel due to safe mode
+                    this.parent.settingsPG.ScriptLanguage = "TS";
                 }
             }
         }.bind(this));
