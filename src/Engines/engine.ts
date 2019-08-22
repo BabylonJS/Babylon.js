@@ -5605,8 +5605,6 @@ export class Engine {
             return;
         }
 
-        this._boundUniforms[channel] = uniform;
-
         if (!this._textureUnits || this._textureUnits.length !== textures.length) {
             this._textureUnits = new Int32Array(textures.length);
         }
