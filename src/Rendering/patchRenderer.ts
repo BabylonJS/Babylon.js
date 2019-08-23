@@ -18,16 +18,7 @@ import { RadiosityUtils } from "./radiosityUtils";
 import { RadiosityEffectsManager } from "./radiosityEffectsManager";
 
 import { Nullable } from "../types";
-import { Tools } from "../misc/tools";
-import { _DevTools } from '../Misc/devTools';
-
-/**
- * Patch Renderer
- * Creates patches from uv-mapped (lightmapped) geometry.
- * Renders hemicubes or spheres from patches
- * Shoots light from emissive patches
- * Can be used as direct light baking, or radiosity light baking solution
- */
+// import { Tools } from "../misc/tools";
 
 class Patch {
     constructor(p: Vector3, n: Vector3, id: number, residualEnergy: Vector3) {
@@ -74,28 +65,33 @@ class Patch {
     public static projectionMatrixNY: Matrix;
 }
 
-declare module "../meshes/submesh" {
-    export interface SubMesh {
-    }
-}
-
 declare module "../meshes/mesh" {
     export interface Mesh {
-        /** @hidden Used in light tranfer computations */
+        /** @hidden */
         __lightmapSize: {
             width: number,
             height: number
         };
-        /** @hidden Used in light tranfer computations */
+        /** @hidden */
         __lightMapId: Vector3;
-        /** @hidden Used in light tranfer computations */
+        /** @hidden */
         __patchOffset: number;
         _color: Vector3; // TODO color 3
         lightStrength: Vector3; // TODO unused
         residualTexture: MultiRenderTarget;
+        /** @hidden */
         radiosityPatches: Patch[];
     }
 }
+
+/**
+ * Patch Renderer
+ * Creates patches from uv-mapped (lightmapped) geometry.
+ * Renders hemicubes or spheres from patches
+ * Shoots light from emissive patches
+ * Can be used as direct light baking, or radiosity light baking solution
+ */
+
 export class PatchRenderer {
 
     public useDepthCompare: boolean = true;
@@ -150,12 +146,6 @@ export class PatchRenderer {
         return this._currentRenderedMap.getRenderHeight();
     }
 
-    /**
-     * Instantiates a patch renderer
-     * @param scene The scene the renderer belongs to
-     * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
-     * @param camera The camera to be used to render the depth map (default: scene's active camera)
-     */
     constructor(scene: Scene, meshes: Mesh[], texelWorldSize: number) {
         this._scene = scene;
         this._near = 0.1;
@@ -322,7 +312,7 @@ export class PatchRenderer {
                 this._scene.getEngine().clear(new Color4(0.0, 0.0, 0.0, 0.0), true, true, true);
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
-                    this._currentRenderedMap = (<any>opaqueSubMeshes.data[index].getMesh()).residualTexture;
+                    this._currentRenderedMap = opaqueSubMeshes.data[index].getRenderingMesh().residualTexture;
                     if (this._renderRadiosity(uniformCb, opaqueSubMeshes.data[index], opaqueSubMeshes.data[index])) {
                         this._scene.onAfterRenderObservable.add(this.buildPatchesForSubMesh.bind(this, opaqueSubMeshes.data[index]), -1, false, null, true);
                     }
@@ -330,7 +320,7 @@ export class PatchRenderer {
                 }
 
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
-                    this._currentRenderedMap = (<any>alphaTestSubMeshes.data[index].getMesh()).residualTexture;
+                    this._currentRenderedMap = alphaTestSubMeshes.data[index].getRenderingMesh().residualTexture;
                     if (this._renderRadiosity(uniformCb, alphaTestSubMeshes.data[index], alphaTestSubMeshes.data[index])) {
                         this._scene.onAfterRenderObservable.add(this.buildPatchesForSubMesh.bind(this, alphaTestSubMeshes.data[index]), -1, false, null, true);
                     }
@@ -356,7 +346,7 @@ export class PatchRenderer {
 
     public renderToRadiosityTexture(mesh: Mesh, patch: Patch, doNotWriteToGathering = false) {
         var area = this._texelWorldSize * this._texelWorldSize * Math.PI / 8; // TODO : check why /4 diverges
-        var mrt: MultiRenderTarget = (<any>mesh).residualTexture;
+        var mrt: MultiRenderTarget = mesh.residualTexture;
         var destResidualTexture = mrt.textures[5]._texture as InternalTexture;
         var destGatheringTexture = mrt.textures[6]._texture as InternalTexture;
         var engine = this._scene.getEngine();
@@ -407,7 +397,7 @@ export class PatchRenderer {
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
             mesh._bind(subMesh, this._radiosityEffectsManager.shootEffect, Material.TriangleFillMode);
             mesh._processRendering(subMesh, this._radiosityEffectsManager.shootEffect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => this._radiosityEffectsManager.shootEffect.setMatrix("world", world));    
+                (isInstance, world) => this._radiosityEffectsManager.shootEffect.setMatrix("world", world));
         }
 
         // Twice, for mipmaps
@@ -698,7 +688,6 @@ export class PatchRenderer {
     }
 
     public nextShooter(trackShooters = false): Nullable<Mesh> {
-        // TODO : turn into postprocess
         var engine = this._scene.getEngine();
         engine.enableEffect(this._radiosityEffectsManager.nextShooterEffect);
         engine.setState(false);
@@ -715,14 +704,14 @@ export class PatchRenderer {
 
         for (let i = 0; i < this._meshes.length; i++) {
             var mesh = this._meshes[i];
-            var mrt: MultiRenderTarget = (<any>mesh).residualTexture;
+            var mrt: MultiRenderTarget = mesh.residualTexture;
 
             if (!mrt) {
                 continue;
             }
 
             var unshotTexture: Texture = mrt.textures[3];
-            var polygonId = (<any>mesh).__lightMapId; // TODO : prettify
+            var polygonId = mesh.__lightMapId; // TODO : prettify
             var lod = Math.round(Math.log(mrt.getRenderWidth()) / Math.log(2));
             this._radiosityEffectsManager.nextShooterEffect.setVector3("polygonId", polygonId);
             this._radiosityEffectsManager.nextShooterEffect.setTexture("unshotRadiositySampler", unshotTexture);
@@ -761,7 +750,7 @@ export class PatchRenderer {
     }
 
     public dilate(padding: number = 1, origin: Texture, dest: Texture) {
-        // TODO : turn into postprocess
+        // TODO padding unused
         var engine = this._scene.getEngine();
         engine.enableEffect(this._radiosityEffectsManager.dilateEffect);
         engine.setState(false);
@@ -876,6 +865,23 @@ export class PatchRenderer {
         return { patches, energyLeft };
     }
 
+    private _renderSubMesh = (subMesh: SubMesh, effect: Effect) => {
+        let engine = this._scene.getEngine();
+        let mesh = subMesh.getRenderingMesh();
+        mesh._bind(subMesh, effect, Material.TriangleFillMode);
+
+        var batch = mesh._getInstancesRenderList(subMesh._id);
+
+        if (batch.mustReturn) {
+            return;
+        }
+
+        // Draw triangles
+        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+        mesh._processRendering(subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+            (isInstance, world) => effect.setMatrix("world", world));
+    };
+
     public buildVisibilityMapCube() {
         this._patchMap = new RenderTargetTexture("patch", this._patchMapResolution, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false);
         this._patchMap.renderParticles = false;
@@ -885,43 +891,20 @@ export class PatchRenderer {
         this._patchMap.useCameraPostProcesses = false;
     }
 
+    private _setCubeVisibilityUniforms(effect: Effect, patch: Patch, mesh: Mesh, view: Matrix, projection: Matrix) {
+        if (this.useHemicube) {
+            effect.setMatrix("view", view);
+            effect.setMatrix("projection", projection);
+        } else {
+            effect.setMatrix("view", patch.viewMatrix);
+        }
+        effect.setFloat2("nearFar", this._near, this._far);
+        effect.setTexture("itemBuffer", mesh.residualTexture.textures[2]);
+    }
+
     public renderVisibilityMapCube() {
         let scene = this._scene;
         let engine = this._scene.getEngine();
-
-        var uniformCb = (effect: Effect, data: any[]) => {
-            var patch = data[0] as Patch;
-            var mesh = data[1].getMesh();
-
-            if (this.useHemicube) {
-                effect.setMatrix("view", data[2]);
-                effect.setMatrix("projection", data[3]);
-            } else {
-                effect.setMatrix("view", patch.viewMatrix);
-            }
-            effect.setFloat2("nearFar", this._near, this._far);
-            effect.setTexture("itemBuffer", mesh.residualTexture.textures[2]);
-
-        };
-
-        var renderWithDepth = (subMesh: SubMesh, patch: Patch, view: Matrix, projection: Matrix) => {
-            engine.enableEffect(this._radiosityEffectsManager.uV2Effect);
-
-            let mesh = subMesh.getRenderingMesh();
-            mesh._bind(subMesh, this._radiosityEffectsManager.uV2Effect, Material.TriangleFillMode);
-            uniformCb(this._radiosityEffectsManager.uV2Effect, [this._currentPatch, subMesh, view, projection]);
-
-            var batch = mesh._getInstancesRenderList(subMesh._id);
-
-            if (batch.mustReturn) {
-                return;
-            }
-
-            // Draw triangles
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-            mesh._processRendering(subMesh, this._radiosityEffectsManager.uV2Effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => this._radiosityEffectsManager.uV2Effect.setMatrix("world", world));
-        };
 
         let gl = engine._gl;
         let internalTexture = <InternalTexture>this._patchMap._texture;
@@ -964,6 +947,9 @@ export class PatchRenderer {
             gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
             gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
         ];
+
+        engine.enableEffect(this._radiosityEffectsManager.uV2Effect);
+
         for (let j = 0; j < 5; j++) {
             // Full cube viewport when rendering the front face
             engine.setDirectViewport(viewportOffsets[j][0] * this._patchMap.getRenderWidth(), viewportOffsets[j][1] * this._patchMap.getRenderHeight(), this._patchMap.getRenderWidth() * viewportMultipliers[j][0], this._patchMap.getRenderHeight() * viewportMultipliers[j][1]);
@@ -971,79 +957,63 @@ export class PatchRenderer {
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, cubeSides[j], internalTexture._webGLTexture, 0);
             engine.clear(new Color4(0, 0, 0, 0), true, true);
             for (let i = 0; i < this._meshes.length; i++) {
-                // TODO : mesh ? submesh ?
-                renderWithDepth(this._meshes[i].subMeshes[0], this._currentPatch, viewMatrices[j], projectionMatrices[j]);
+                for (let k = 0; k < this._meshes[i].subMeshes.length; k++) {
+                    this._setCubeVisibilityUniforms(this._radiosityEffectsManager.uV2Effect, this._currentPatch, this._meshes[i], viewMatrices[j], projectionMatrices[j]);
+                    this._renderSubMesh(this._meshes[i].subMeshes[k], this._radiosityEffectsManager.uV2Effect, this._currentPatch, viewMatrices[j], projectionMatrices[j]);
+                }
             }
-            // console.log(engine.readPixelsFloat(0, 0, this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight()));
             // Tools.DumpFramebuffer(this._patchMap.getRenderWidth(), this._patchMap.getRenderHeight(), this._scene.getEngine());
         }
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
 
+    private _setVisibilityUniforms(effect: Effect, patch: Patch, mesh: Mesh) {
+        effect.setMatrix("view", patch.viewMatrix);
+        effect.setFloat2("nearFar", this._near, this._far);
+        effect.setTexture("itemBuffer", mesh.residualTexture.textures[2]);
     }
 
     public buildVisibilityMap() {
-        this._patchMap = new RenderTargetTexture("patch", 512, this._scene, false, true,
-            this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
+        this._patchMap = new RenderTargetTexture(
+            "patch",
+            512,
+            this._scene,
+            false,
+            true,
+            this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT,
+            false,
+            Texture.NEAREST_SAMPLINGMODE);
         this._patchMap.renderParticles = false;
         this._patchMap.renderList = this._meshes;
         this._patchMap.activeCamera = null;
         this._patchMap.ignoreCameraViewport = true;
         this._patchMap.useCameraPostProcesses = false;
 
-        let scene = this._scene;
-        let engine = this._scene.getEngine();
-
-        var uniformCb = (effect: Effect, data: any[]) => {
-            var patch = data[0];
-            var mesh = data[1].getMesh();
-
-            effect.setMatrix("view", patch.viewMatrix);
-            effect.setFloat2("nearFar", this._near, this._far);
-            effect.setTexture("itemBuffer", mesh.residualTexture.textures[2]);
-        };
-
-        var renderWithDepth = (subMesh: SubMesh, patch: Patch) => {
+        this._patchMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
+            let index;
+            let scene = this._scene;
+            let engine = this._scene.getEngine();
             engine.setState(false, 0, true, scene.useRightHandedSystem); // TODO : BFC
             engine.setDirectViewport(0, 0, this.getCurrentRenderWidth(), this.getCurrentRenderHeight());
-            engine.enableEffect(this._radiosityEffectsManager.uV2Effect);
+            engine.clear(new Color4(0, 0, 0, 0), true, true);
 
-            let mesh = subMesh.getRenderingMesh();
-            mesh._bind(subMesh, this._radiosityEffectsManager.uV2Effect, Material.TriangleFillMode);
-            uniformCb(this._radiosityEffectsManager.uV2Effect, [this._currentPatch, subMesh]);
-
-            var batch = mesh._getInstancesRenderList(subMesh._id);
-
-            if (batch.mustReturn) {
-                return;
-            }
-
-            // Draw triangles
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-            mesh._processRendering(subMesh, this._radiosityEffectsManager.uV2Effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => this._radiosityEffectsManager.uV2Effect.setMatrix("world", world));
-        };
-
-        this._patchMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
-            var index;
             this._currentRenderedMap = this._patchMap;
-            this._scene.getEngine().clear(new Color4(0, 0, 0, 0), true, true);
 
             for (index = 0; index < opaqueSubMeshes.length; index++) {
-                renderWithDepth(opaqueSubMeshes.data[index], this._currentPatch);
+                this._setVisibilityUniforms(this._radiosityEffectsManager.uV2Effect, this._currentPatch, opaqueSubMeshes.data[index].getRenderingMesh());
+                this._renderSubMesh(opaqueSubMeshes.data[index], this._currentPatch);
             }
 
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
-                renderWithDepth(alphaTestSubMeshes.data[index], this._currentPatch);
+                this._setVisibilityUniforms(this._radiosityEffectsManager.uV2Effect, this._currentPatch, opaqueSubMeshes.data[index].getRenderingMesh());
+                this._renderSubMesh(alphaTestSubMeshes.data[index], this._currentPatch);
             }
-
-            // console.log(engine.readPixelsFloat(0, 0, this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight()));
-            Tools.DumpFramebuffer(this._currentRenderedMap.getRenderWidth(), this._currentRenderedMap.getRenderHeight(), this._scene.getEngine());
         };
 
     }
 
     /**
-     * Disposes of the depth renderer.
+     * Disposes of the patch renderer.
      */
     public dispose(): void {
         this._patchMap.dispose();
