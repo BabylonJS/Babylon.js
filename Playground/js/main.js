@@ -631,6 +631,10 @@ class Main {
         this.parent.monacoCreator.JsEditor.focus();
     };
 
+    compileAndRunFromOutside() {
+        compileAndRun(this.parent, this.fpsLabel);
+    };
+
     checkSafeMode(message) {
         if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()) &&
             document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
