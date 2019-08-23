@@ -12,6 +12,14 @@ export class DomManagement {
     }
 
     /**
+     * Checks if the navigator object exists
+     * @returns true if the navigator object exists
+     */
+    public static IsNavigatorAvailable(): boolean {
+        return (typeof navigator) !== "undefined";
+    }
+
+    /**
      * Extracts text content from a DOM element hierarchy
      * @param element defines the root element
      * @returns a string

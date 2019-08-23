@@ -34,8 +34,11 @@ declare module "babylonjs-node-editor/blockTools" {
     import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
     import { OppositeBlock } from 'babylonjs/Materials/Node/Blocks/oppositeBlock';
     import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
+    import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
+    import { MaxBlock } from 'babylonjs/Materials/Node/Blocks/maxBlock';
+    import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
     export class BlockTools {
-        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | OppositeBlock | ViewDirectionBlock | InputBlock | null;
+        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | OppositeBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | InputBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -1230,6 +1233,90 @@ declare module "babylonjs-node-editor/components/diagram/clamp/clampNodeFactory"
         getNewInstance(): ClampNodeModel;
     }
 }
+declare module "babylonjs-node-editor/components/diagram/lightInformation/lightInformationPropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { LightInformationNodeModel } from "babylonjs-node-editor/components/diagram/lightInformation/lightInformationNodeModel";
+    interface ILightPropertyTabComponentProps {
+        globalState: GlobalState;
+        node: LightInformationNodeModel;
+    }
+    export class LightInformationPropertyTabComponent extends React.Component<ILightPropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/lightInformation/lightInformationNodeModel" {
+    import { Nullable } from 'babylonjs/types';
+    import { Light } from 'babylonjs/Lights/light';
+    import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { NodeCreationOptions, GraphEditor } from "babylonjs-node-editor/graphEditor";
+    import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
+    export class LightInformationNodeModel extends DefaultNodeModel {
+        private _block;
+        /**
+         * Light for the node if it exists
+         */
+        light: Nullable<Light>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/lightInformation/lightInformationNodeWidget" {
+    import * as React from "react";
+    import { LightInformationNodeModel } from "babylonjs-node-editor/components/diagram/lightInformation/lightInformationNodeModel";
+    import { Nullable } from 'babylonjs/types';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface ILightInformationNodeWidgetProps {
+        node: Nullable<LightInformationNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class LightInformationNodeWidget extends React.Component<ILightInformationNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: ILightInformationNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/lightInformation/lightInformationNodeFactory" {
+    import * as SRD from "storm-react-diagrams";
+    import { LightInformationNodeModel } from "babylonjs-node-editor/components/diagram/lightInformation/lightInformationNodeModel";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class LightInformationNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a LightNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: LightInformationNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns light node model
+         */
+        getNewInstance(): LightInformationNodeModel;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
@@ -1381,7 +1468,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.OppositeBlock | BABYLON.ViewDirectionBlock | BABYLON.InputBlock | null;
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.OppositeBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.InputBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -2402,6 +2489,74 @@ declare module NODEEDITOR {
         constructor(globalState: GlobalState);
         generateReactWidget(diagramEngine: SRD.DiagramEngine, node: ClampNodeModel): JSX.Element;
         getNewInstance(): ClampNodeModel;
+    }
+}
+declare module NODEEDITOR {
+    interface ILightPropertyTabComponentProps {
+        globalState: GlobalState;
+        node: LightInformationNodeModel;
+    }
+    export class LightInformationPropertyTabComponent extends React.Component<ILightPropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class LightInformationNodeModel extends DefaultNodeModel {
+        private _block;
+        /**
+         * BABYLON.Light for the node if it exists
+         */
+        light: BABYLON.Nullable<BABYLON.Light>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface ILightInformationNodeWidgetProps {
+        node: BABYLON.Nullable<LightInformationNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class LightInformationNodeWidget extends React.Component<ILightInformationNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: ILightInformationNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class LightInformationNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a LightNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: LightInformationNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns light node model
+         */
+        getNewInstance(): LightInformationNodeModel;
     }
 }
 declare module NODEEDITOR {

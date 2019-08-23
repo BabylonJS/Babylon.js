@@ -60,7 +60,7 @@ interface BufferImageData {
  * Defines the specular data enclosed in the file.
  * This corresponds to the version 1 of the data.
  */
-interface EnvironmentTextureSpecularInfoV1 {
+export interface EnvironmentTextureSpecularInfoV1 {
     /**
      * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
      */
@@ -323,6 +323,38 @@ export class EnvironmentTextureTools {
     }
 
     /**
+     * Creates the ArrayBufferViews used for initializing environment texture image data.
+     * @param arrayBuffer the underlying ArrayBuffer to which the views refer
+     * @param info parameters that determine what views will be created for accessing the underlying buffer
+     * @return the views described by info providing access to the underlying buffer
+     */
+    public static CreateImageDataArrayBufferViews(arrayBuffer: any, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
+        if (info.version !== 1) {
+            throw new Error(`Unsupported babylon environment map version "${info.version}"`);
+        }
+
+        const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
+
+        // Double checks the enclosed info
+        let mipmapsCount = Scalar.Log2(info.width);
+        mipmapsCount = Math.round(mipmapsCount) + 1;
+        if (specularInfo.mipmaps.length !== 6 * mipmapsCount) {
+            throw new Error(`Unsupported specular mipmaps number "${specularInfo.mipmaps.length}"`);
+        }
+
+        const imageData = new Array<Array<ArrayBufferView>>(mipmapsCount);
+        for (let i = 0; i < mipmapsCount; i++) {
+            imageData[i] = new Array<ArrayBufferView>(6);
+            for (let face = 0; face < 6; face++) {
+                const imageInfo = specularInfo.mipmaps[i * 6 + face];
+                imageData[i][face] = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
+            }
+        }
+
+        return imageData;
+    }
+
+    /**
      * Uploads the texture info contained in the env file to the GPU.
      * @param texture defines the internal texture to upload to
      * @param arrayBuffer defines the buffer cotaining the data to load
@@ -334,29 +366,15 @@ export class EnvironmentTextureTools {
             throw new Error(`Unsupported babylon environment map version "${info.version}"`);
         }
 
-        let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
+        const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
         if (!specularInfo) {
             // Nothing else parsed so far
             return Promise.resolve();
         }
 
-        // Double checks the enclosed info
-        let mipmapsCount = Scalar.Log2(info.width);
-        mipmapsCount = Math.round(mipmapsCount) + 1;
-        if (specularInfo.mipmaps.length !== 6 * mipmapsCount) {
-            throw new Error(`Unsupported specular mipmaps number "${specularInfo.mipmaps.length}"`);
-        }
-
         texture._lodGenerationScale = specularInfo.lodGenerationScale;
 
-        const imageData = new Array<Array<ArrayBufferView>>(mipmapsCount);
-        for (let i = 0; i < mipmapsCount; i++) {
-            imageData[i] = new Array<ArrayBufferView>(6);
-            for (let face = 0; face < 6; face++) {
-                const imageInfo = specularInfo.mipmaps[i * 6 + face];
-                imageData[i][face] = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
-            }
-        }
+        const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(arrayBuffer, info);
 
         return EnvironmentTextureTools.UploadLevelsAsync(texture, imageData);
     }

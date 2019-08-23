@@ -30,6 +30,9 @@ export class NodeMaterialBlock {
     /** @hidden */
     public _outputs = new Array<NodeMaterialConnectionPoint>();
 
+    /** @hidden */
+    public _preparationId: number;
+
     /**
      * Gets or sets the name of the block
      */

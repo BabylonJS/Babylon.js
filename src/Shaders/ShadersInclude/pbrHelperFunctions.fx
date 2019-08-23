@@ -7,7 +7,7 @@
 
 float convertRoughnessToAverageSlope(float roughness)
 {
-    // Calculate AlphaG as square of roughness; add epsilon to avoid numerical issues
+    // Calculate AlphaG as square of roughness (add epsilon to avoid numerical issues)
     return square(roughness) + MINIMUMVARIANCE;
 }
 
