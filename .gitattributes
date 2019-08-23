@@ -1,0 +1,4 @@
+*           text=auto
+*.txt       text
+*.cpp       text
+*.h         text
