@@ -4,6 +4,7 @@ import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
+import { Scene } from '../../../scene';
 
 /**
  * Operations supported by the Trigonometry block
@@ -114,6 +115,20 @@ export class TrigonometryBlock extends NodeMaterialBlock {
         state.compilationString += this._declareOutput(output, state) + ` = ${operation}(${this.input.associatedVariableName});\r\n`;
 
         return this;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.operation = this.operation;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.operation = serializationObject.operation;
     }
 }
 
