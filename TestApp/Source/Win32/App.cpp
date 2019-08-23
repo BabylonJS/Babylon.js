@@ -19,6 +19,7 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 std::unique_ptr<babylon::RuntimeWin32> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
+
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
