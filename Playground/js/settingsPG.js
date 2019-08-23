@@ -163,7 +163,7 @@ class SettingsPG {
                 localStorage.removeItem("bjs-playground-apiversion");
                 localStorage.removeItem("bjs-playground-apiversion-tempcode");
 
-                this.parent.main.compileAndRun();
+                this.parent.main.compileAndRunFromOutside();
             }.bind(this);
 
             document.head.appendChild(newBJSscript);
