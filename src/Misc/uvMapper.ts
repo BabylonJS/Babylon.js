@@ -1309,7 +1309,7 @@ export class UvMapper {
         let collectedIslandList: Island[] = [];
         let deletedFaces: Face[] = [];
         let equivalencies = [];
-        let worldToTexelRatio = 0;
+        let worldToUVRatio = 0;
 
         if (USER_SHARE_SPACE) {
             // Sort by name so we get consistent results
@@ -1476,12 +1476,12 @@ export class UvMapper {
                 collectedIslandList = collectedIslandList.concat(islandList);
             } else {
                 collectedIslandList = this.getUvIslands(faceProjectionGroupList, deletedFaces);
-                worldToTexelRatio = this.packIslands(collectedIslandList);
+                worldToUVRatio = this.packIslands(collectedIslandList);
             }
         }
 
         if (USER_SHARE_SPACE) {
-            worldToTexelRatio = this.packIslands(collectedIslandList);
+            worldToUVRatio = this.packIslands(collectedIslandList);
         }
 
         let newUvs: FloatArray[] = [];
@@ -1576,9 +1576,7 @@ export class UvMapper {
             newUvs[meshIndex] = verticesData.uvs2;
         }
 
-        this.debugUvs(newUvs, indices);
-
-        return worldToTexelRatio;
+        return worldToUVRatio;
     }
 
     packIslands(islandList: Island[]) : number {

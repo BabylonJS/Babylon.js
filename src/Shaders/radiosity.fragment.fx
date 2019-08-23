@@ -103,7 +103,7 @@ vec3 formFactorEnergy()
   // Modulate shooter's energy by the receiver's reflectivity
   // and the area of the shooter.
 
-  vec3 delta = 1. * shootEnergy * shootDArea * fij; // * recvColor
+  vec3 delta = shootEnergy * shootDArea * fij; // * recvColor
 
   return delta;
 }

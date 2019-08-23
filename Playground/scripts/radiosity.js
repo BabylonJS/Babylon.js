@@ -1,6 +1,4 @@
 ﻿var meshes = [];
-var texelSize = 4;
-var worldToTexelRatio = 0.25; // 1 texel for this amount of m
 
 let uvm = new BABYLON.UvMapper();
 
@@ -12,19 +10,22 @@ var prepareUVS = function(ms) {
         }
     }
 
-    let factor = uvm.map(geometryMeshes);
+    let worldToUVRatio = uvm.map(geometryMeshes);
 
     for (let i = 0; i < geometryMeshes.length; i++) {
         let mesh = geometryMeshes[i];
-        mesh.__lightmapSize = 1 / factor / worldToTexelRatio;
-        mesh.__lightmapSize = Math.min(1024, Math.max(1, BABYLON.Tools.FloorPOT(mesh.__lightmapSize)));
-        console.log(mesh.__lightmapSize);
+        // mesh.__lightmapSize = 1 / factor / worldToTexelRatio;
+        // mesh.__lightmapSize = Math.min(1024, Math.max(1, BABYLON.Tools.FloorPOT(mesh.__lightmapSize)));
+        mesh.__lightmapSize = mesh.__lightmapSize || 128;
+        mesh.__texelWorldSize = 1 / ( worldToUVRatio * mesh.__lightmapSize);
+        console.log(mesh.__texelWorldSize);
         meshes.push(mesh);
     }
 }
 
 var addMaterial = function(mesh) {
     mesh.material = new BABYLON.StandardMaterial("gg", scene);
+    mesh.material.diffuseColor = new BABYLON.Color3(1, 0.3, 0.3);
     // mesh.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
     // mesh.material.backFaceCulling = false;
 }
@@ -59,7 +60,8 @@ var createScene = function() {
 
     lamp.rotation.x = -3 * Math.PI / 4;
     lamp.position.copyFromFloats(-5, 10, 10);
-    lamp._color = new BABYLON.Vector3(2, 2, 2);
+    lamp._color = new BABYLON.Vector3(100, 100, 100);
+    lamp.__lightmapSize = 4;
 
     addMaterial(lamp);
     prepareUVS([lamp]);
@@ -80,7 +82,7 @@ var createScene = function() {
             }
             prepareUVS(ms);
 
-            pr = new BABYLON.PatchRenderer(scene, ms, texelSize);
+            pr = new BABYLON.PatchRenderer(scene, ms);
             pr._meshes = meshes;
         }
     );
@@ -115,34 +117,16 @@ var createScene = function() {
         var frameCount = 0;
         var passes = 0;
         var observer;
-        var directLightShot = false;
+        var energyLeft = false;
         observer = scene.onAfterRenderTargetsRenderObservable.add(() => {
             frameCount++;
-            if (true && (frameCount % 60) === 0) {
-                engine.stopRenderLoop();
-                if (!directLightShot) {
-                    var { hasShot, energyShot } = pr.gatherDirectLightOnly();
-                    if (hasShot) {
-                        console.log("Direct light shot ! ");
-                        directLightShot = true;
-                    }
-                } else {
-                    if (false) {
-                        var energyLeft = pr.gatherRadiosity();
-
-                        if (!energyLeft || passes > 6) {
-                            console.log("Converged ! ");
-                            scene.onAfterRenderTargetsRenderObservable.remove(observer);
-                        }
-                    }
-                }
-                
-                engine.runRenderLoop(renderLoop);
-
-
-
-                passes++;
+            energyLeft = pr.gatherFor(2, 1);
+            if (!energyLeft) {
+                console.log("Converged ! ");
+                scene.onAfterRenderTargetsRenderObservable.remove(observer);
             }
+        
+            passes++;
         });
     }
 
