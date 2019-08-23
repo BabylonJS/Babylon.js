@@ -226,6 +226,24 @@ export class DirectionalLight extends ShadowLight {
         return this;
     }
 
+    public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light {
+        if (this.computeTransformedInformation()) {
+            if (this.getScene().useRightHandedSystem) {
+                effect.setFloat3(lightDataUniformName, -this.transformedDirection.x, -this.transformedDirection.y, -this.transformedDirection.z);
+            } else {
+                effect.setFloat3(lightDataUniformName, this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z);
+            }
+            return this;
+        }
+        if (this.getScene().useRightHandedSystem) {
+            effect.setFloat3(lightDataUniformName, -this.direction.x, -this.direction.y, -this.direction.z);
+        } else {
+            effect.setFloat3(lightDataUniformName, this.direction.x, this.direction.y, this.direction.z);
+        }
+
+        return this;
+    }
+
     /**
      * Gets the minZ used for shadow according to both the scene and the light.
      *

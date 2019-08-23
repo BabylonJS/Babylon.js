@@ -77,11 +77,11 @@ export class FileTools {
      * @param offlineProvider offline provider for caching
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement {
+    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement {
         let url: string;
         let usingObjectURL = false;
 
-        if (input instanceof ArrayBuffer) {
+        if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
             url = URL.createObjectURL(new Blob([input]));
             usingObjectURL = true;
         }

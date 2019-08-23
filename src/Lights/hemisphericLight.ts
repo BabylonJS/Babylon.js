@@ -101,6 +101,12 @@ export class HemisphericLight extends Light {
         return this;
     }
 
+    public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
+        var normalizeDirection = Vector3.Normalize(this.direction);
+        effect.setFloat3(lightDataUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z);
+        return this;
+    }
+
     /**
      * Computes the world matrix of the node
      * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch

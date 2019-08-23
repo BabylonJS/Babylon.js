@@ -34,6 +34,9 @@ import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMateri
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 import { OppositeBlock } from 'babylonjs/Materials/Node/Blocks/oppositeBlock';
 import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
+import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
+import { MaxBlock } from 'babylonjs/Materials/Node/Blocks/maxBlock';
+import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -101,7 +104,13 @@ export class BlockTools {
             case "OppositeBlock":
                 return new OppositeBlock("Opposite");      
             case "ViewDirectionBlock":
-                return new ViewDirectionBlock("View direction");                    
+                return new ViewDirectionBlock("View direction");    
+            case "LightInformationBlock":
+                return new LightInformationBlock("Light information");         
+            case "MaxBlock":
+                return new MaxBlock("Max");       
+            case "MinBlock":
+                return new MinBlock("Min");                                                  
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;
