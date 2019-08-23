@@ -224,6 +224,28 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     }
 
     /**
+     * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
+     * The queries will try to find a solution within those bounds
+     * default is (1,1,1)
+     * @param extent x,y,z value that define the extent around the queries point of reference
+     */
+    setDefaultQueryExtent(extent: Vector3): void
+    {
+        let ext = new this.bjsRECAST.Vec3(extent.x, extent.y, extent.z);
+        this.navMesh.setDefaultQueryExtent(ext);
+    }
+
+    /**
+     * Get the Bounding box extent specified by setDefaultQueryExtent
+     * @returns the box extent values
+     */
+    getDefaultQueryExtent(): Vector3
+    {
+        let p = this.navMesh.getDefaultQueryExtent();
+        return new Vector3(p.x, p.y, p.z);
+    }
+
+    /**
      * Disposes
      */
     public dispose() {
@@ -380,6 +402,28 @@ export class RecastJSCrowd implements ICrowd {
         {
             this.transforms[index].position = this.getAgentPosition(this.agents[index]);
         }
+    }
+
+    /**
+     * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
+     * The queries will try to find a solution within those bounds
+     * default is (1,1,1)
+     * @param extent x,y,z value that define the extent around the queries point of reference
+     */
+    setDefaultQueryExtent(extent: Vector3): void
+    {
+        let ext = new this.bjsRECASTPlugin.bjsRECAST.Vec3(extent.x, extent.y, extent.z);
+        this.recastCrowd.setDefaultQueryExtent(ext);
+    }
+
+    /**
+     * Get the Bounding box extent specified by setDefaultQueryExtent
+     * @returns the box extent values
+     */
+    getDefaultQueryExtent(): Vector3
+    {
+        let p = this.recastCrowd.getDefaultQueryExtent();
+        return new Vector3(p.x, p.y, p.z);
     }
 
     /**
