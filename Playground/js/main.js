@@ -288,15 +288,52 @@ class Main {
         }
         // Language (JS / TS)
         this.parent.utils.setToMultipleID("toTSbutton", "click", function () {
-            if (this.parent.settingsPG.ScriptLanguage == "JS") {
+            if(location.hash != null && location.hash != ""){
                 this.parent.settingsPG.ScriptLanguage = "TS";
-                location.reload();
+                window.location = "./";
+            }else{
+                if (this.parent.settingsPG.ScriptLanguage == "JS") {
+                    //revert in case the reload is cancel due to safe mode
+                    if(document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')){
+                        // Message before unload
+                        var languageTSswapper =  function () {
+                            this.parent.settingsPG.ScriptLanguage = "TS";
+                            window.removeEventListener('unload', languageTSswapper.bind(this));
+                        };
+                        window.addEventListener('unload',languageTSswapper.bind(this));
+                        
+                        location.reload();
+                    }
+                    else {
+                        this.parent.settingsPG.ScriptLanguage = "TS";
+                        location.reload();
+                    }
+                }
             }
+           
         }.bind(this));
         this.parent.utils.setToMultipleID("toJSbutton", "click", function () {
-            if (this.parent.settingsPG.ScriptLanguage == "TS") {
+            if(location.hash != null && location.hash != ""){
                 this.parent.settingsPG.ScriptLanguage = "JS";
-                location.reload();
+                window.location = "./";
+            }else{
+                if (this.parent.settingsPG.ScriptLanguage == "TS") {
+                    //revert in case the reload is cancel due to safe mode
+                    if(document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')){
+                        // Message before unload
+                        var LanguageJSswapper =  function () {
+                            this.parent.settingsPG.ScriptLanguage = "JS";
+                            window.removeEventListener('unload', LanguageJSswapper.bind(this));
+                        };
+                        window.addEventListener('unload',LanguageJSswapper.bind(this));
+                        
+                        location.reload();
+                    }
+                    else {
+                        this.parent.settingsPG.ScriptLanguage = "JS";
+                        location.reload();
+                    }
+                }
             }
         }.bind(this));
         // Safe mode
@@ -594,9 +631,13 @@ class Main {
         this.parent.monacoCreator.JsEditor.focus();
     };
 
+    compileAndRunFromOutside() {
+        compileAndRun(this.parent, this.fpsLabel);
+    };
+
     checkSafeMode(message) {
-        if (document.getElementById("safemodeToggle" + this.parent.getCurrentSize) &&
-            document.getElementById("safemodeToggle" + this.parent.getCurrentSize).classList.contains('checked')) {
+        if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()) &&
+            document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
             let confirm = window.confirm(message);
             if (!confirm) {
                 return false;
