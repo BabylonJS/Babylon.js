@@ -14867,7 +14867,7 @@ var GUI3DManager = /** @class */ (function () {
         this.onPickedPointChangedObservable.notifyObservers(null);
     };
     GUI3DManager.prototype._doPicking = function (pi) {
-        if (!this._utilityLayer || !this._utilityLayer.utilityLayerScene.activeCamera) {
+        if (!this._utilityLayer || !this._utilityLayer.shouldRender || !this._utilityLayer.utilityLayerScene.activeCamera) {
             return false;
         }
         var pointerEvent = (pi.event);

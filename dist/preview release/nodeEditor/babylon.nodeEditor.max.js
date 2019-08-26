@@ -68466,42 +68466,42 @@ var BlockTools = /** @class */ (function () {
             }
             case "WorldMatrixBlock": {
                 var worldMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World");
-                worldMatrixBlock.setAsWellKnownValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialWellKnownValues"].World);
+                worldMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World);
                 return worldMatrixBlock;
             }
             case "WorldViewMatrixBlock": {
                 var worldViewMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World x View");
-                worldViewMatrixBlock.setAsWellKnownValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialWellKnownValues"].WorldView);
+                worldViewMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].WorldView);
                 return worldViewMatrixBlock;
             }
             case "WorldViewProjectionMatrixBlock": {
                 var worldViewProjectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World x View x Projection");
-                worldViewProjectionMatrixBlock.setAsWellKnownValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialWellKnownValues"].WorldViewProjection);
+                worldViewProjectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].WorldViewProjection);
                 return worldViewProjectionMatrixBlock;
             }
             case "ViewMatrixBlock": {
                 var viewMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("View");
-                viewMatrixBlock.setAsWellKnownValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialWellKnownValues"].View);
+                viewMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].View);
                 return viewMatrixBlock;
             }
             case "ViewProjectionMatrixBlock": {
                 var viewProjectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("View x Projection");
-                viewProjectionMatrixBlock.setAsWellKnownValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialWellKnownValues"].ViewProjection);
+                viewProjectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].ViewProjection);
                 return viewProjectionMatrixBlock;
             }
             case "ProjectionMatrixBlock": {
                 var projectionMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Projection");
-                projectionMatrixBlock.setAsWellKnownValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialWellKnownValues"].Projection);
+                projectionMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].Projection);
                 return projectionMatrixBlock;
             }
             case "CameraPositionBlock": {
                 var cameraPosition = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Camera position");
-                cameraPosition.setAsWellKnownValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialWellKnownValues"].CameraPosition);
+                cameraPosition.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].CameraPosition);
                 return cameraPosition;
             }
             case "FogColorBlock": {
                 var FogColor = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Fog color");
-                FogColor.setAsWellKnownValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialWellKnownValues"].FogColor);
+                FogColor.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].FogColor);
                 return FogColor;
             }
             case "PositionBlock": {
@@ -69288,7 +69288,7 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
     InputPropertyTabComponentProps.prototype.render = function () {
         var _this = this;
         var inputBlock = this.props.inputNode.inputBlock;
-        var wellKnownOptions = [];
+        var systemValuesOptions = [];
         var attributeOptions = [];
         var animationOptions = [];
         switch (inputBlock.type) {
@@ -69299,18 +69299,18 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                 ];
                 break;
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Matrix:
-                wellKnownOptions = [
-                    { label: "World", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialWellKnownValues"].World },
-                    { label: "WorldxView", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialWellKnownValues"].WorldView },
-                    { label: "WorldxViewxProjection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialWellKnownValues"].WorldViewProjection },
-                    { label: "View", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialWellKnownValues"].View },
-                    { label: "ViewxProjection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialWellKnownValues"].ViewProjection },
-                    { label: "Projection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialWellKnownValues"].Projection }
+                systemValuesOptions = [
+                    { label: "World", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].World },
+                    { label: "World x View", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].WorldView },
+                    { label: "World x ViewxProjection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].WorldViewProjection },
+                    { label: "View", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].View },
+                    { label: "View x Projection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].ViewProjection },
+                    { label: "Projection", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].Projection }
                 ];
                 break;
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                wellKnownOptions = [
-                    { label: "Fog color", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialWellKnownValues"].FogColor }
+                systemValuesOptions = [
+                    { label: "Fog color", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].FogColor }
                 ];
                 break;
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Color4:
@@ -69325,8 +69325,8 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                 ];
                 break;
             case babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-                wellKnownOptions = [
-                    { label: "Camera position", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialWellKnownValues"].CameraPosition }
+                systemValuesOptions = [
+                    { label: "Camera position", value: babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].CameraPosition }
                 ];
                 attributeOptions = [
                     { label: "position", value: "position" },
@@ -69347,8 +69347,8 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
         if (attributeOptions.length > 0) {
             modeOptions.push({ label: "Mesh attribute", value: 1 });
         }
-        if (wellKnownOptions.length > 0) {
-            modeOptions.push({ label: "Well-known value", value: 2 });
+        if (systemValuesOptions.length > 0) {
+            modeOptions.push({ label: "System value", value: 2 });
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_9__["LineContainerComponent"], { title: "GENERAL" },
@@ -69360,7 +69360,7 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                         if (block.isAttribute) {
                             return 1;
                         }
-                        if (block.isWellKnownValue) {
+                        if (block.isSystemValue) {
                             return 2;
                         }
                         return 0;
@@ -69368,14 +69368,14 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                         switch (value) {
                             case 0:
                                 inputBlock.isUniform = true;
-                                inputBlock.setAsWellKnownValue(null);
+                                inputBlock.setAsSystemValue(null);
                                 _this.setDefaultValue();
                                 break;
                             case 1:
                                 inputBlock.setAsAttribute(attributeOptions[0].value);
                                 break;
                             case 2:
-                                inputBlock.setAsWellKnownValue(wellKnownOptions[0].value);
+                                inputBlock.setAsSystemValue(systemValuesOptions[0].value);
                                 break;
                         }
                         _this.forceUpdate();
@@ -69392,13 +69392,13 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                             _this.forceUpdate();
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         } }),
-                inputBlock.isUniform && !inputBlock.isWellKnownValue && inputBlock.animationType === babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Visible in the Inspector", target: inputBlock, propertyName: "visibleInInspector" }),
-                inputBlock.isUniform && !inputBlock.isWellKnownValue && inputBlock.animationType === babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
                     this.renderValue(this.props.globalState),
-                inputBlock.isUniform && inputBlock.isWellKnownValue &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Well known value", options: wellKnownOptions, target: inputBlock, propertyName: "wellKnownValue", onSelect: function (value) {
-                            inputBlock.setAsWellKnownValue(value);
+                inputBlock.isUniform && inputBlock.isSystemValue &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "System value", options: systemValuesOptions, target: inputBlock, propertyName: "systemValue", onSelect: function (value) {
+                            inputBlock.setAsSystemValue(value);
                             _this.forceUpdate();
                             _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         } }))));
@@ -69423,8 +69423,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialWellKnownValues */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialSystemValues */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
 
@@ -69473,30 +69473,30 @@ var InputNodeWidget = /** @class */ (function (_super) {
                 value = "mesh." + inputBlock.name;
                 name = _stringTools__WEBPACK_IMPORTED_MODULE_3__["StringTools"].GetBaseType(inputBlock.output.type);
             }
-            else if (inputBlock.isWellKnownValue) {
-                switch (inputBlock.wellKnownValue) {
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialWellKnownValues"].World:
+            else if (inputBlock.isSystemValue) {
+                switch (inputBlock.systemValue) {
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].World:
                         value = "World";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialWellKnownValues"].WorldView:
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].WorldView:
                         value = "World x View";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialWellKnownValues"].WorldViewProjection:
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].WorldViewProjection:
                         value = "World x View x Projection";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialWellKnownValues"].View:
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].View:
                         value = "View";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialWellKnownValues"].ViewProjection:
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].ViewProjection:
                         value = "View x Projection";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialWellKnownValues"].Projection:
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].Projection:
                         value = "Projection";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialWellKnownValues"].CameraPosition:
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].CameraPosition:
                         value = "Camera position";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialWellKnownValues"].FogColor:
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].FogColor:
                         value = "Fog color";
                         break;
                 }
@@ -69506,28 +69506,28 @@ var InputNodeWidget = /** @class */ (function (_super) {
                     return null;
                 }
                 switch (inputBlock.type) {
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Float:
-                        if (inputBlock.animationType !== babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["AnimatedInputBlockTypes"].None) {
-                            value = babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["AnimatedInputBlockTypes"][inputBlock.animationType];
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Float:
+                        if (inputBlock.animationType !== babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["AnimatedInputBlockTypes"].None) {
+                            value = babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["AnimatedInputBlockTypes"][inputBlock.animationType];
                         }
                         else {
                             value = inputBlock.value.toFixed(2);
                         }
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                         var vec2Value = inputBlock.value;
                         value = "(" + vec2Value.x.toFixed(2) + ", " + vec2Value.y.toFixed(2) + ")";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector3:
                         var vec3Value = inputBlock.value;
                         value = "(" + vec3Value.x.toFixed(2) + ", " + vec3Value.y.toFixed(2) + ", " + vec3Value.z.toFixed(2) + ")";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector4:
                         var vec4Value = inputBlock.value;
                         value = "(" + vec4Value.x.toFixed(2) + ", " + vec4Value.y.toFixed(2) + ", " + vec4Value.z.toFixed(2) + ", " + vec4Value.w.toFixed(2) + ")";
                         break;
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                    case babylonjs_Materials_Node_nodeMaterialWellKnownValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color4: {
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color3:
+                    case babylonjs_Materials_Node_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color4: {
                         color = inputBlock.value.toHexString();
                         break;
                     }

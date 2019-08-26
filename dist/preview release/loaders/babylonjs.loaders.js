@@ -1115,7 +1115,7 @@ var OBJFileLoader = /** @class */ (function () {
         var lines = data.split('\n');
         //Look at each line
         for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].trim();
+            var line = lines[i].trim().replace(/\s\s/g, " ");
             var result;
             //Comment or newLine
             if (line.length === 0 || line.charAt(0) === '#') {

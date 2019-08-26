@@ -113,6 +113,8 @@ export class NodeMaterialBuildState {
 
     /** @hidden */
     public _getFreeVariableName(prefix: string): string {
+        prefix = prefix.replace(/[^a-zA-Z_]+/g, "");
+
         if (this.sharedData.variableNames[prefix] === undefined) {
             this.sharedData.variableNames[prefix] = 0;
 
