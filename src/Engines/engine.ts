@@ -512,14 +512,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.16";
+        return "babylonjs@4.1.0-alpha.17";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.16";
+        return "4.1.0-alpha.17";
     }
 
     /**
@@ -5460,7 +5460,7 @@ export class Engine {
 
     private _bindSamplerUniformToChannel(sourceSlot: number, destination: number) {
         let uniform = this._boundUniforms[sourceSlot];
-        if (uniform._currentState === destination) {
+        if (!uniform || uniform._currentState === destination) {
             return;
         }
         this._gl.uniform1i(uniform, destination);

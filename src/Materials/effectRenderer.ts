@@ -100,6 +100,14 @@ export class EffectRenderer {
     }
 
     /**
+     * Binds the embedded attributes buffer to the effect.
+     * @param effect Defines the effect to bind the attributes for
+     */
+    public bindBuffers(effect: Effect): void {
+        this.engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
+    }
+
+    /**
      * Sets the current effect wrapper to use during draw.
      * The effect needs to be ready before calling this api.
      * This also sets the default full screen position attribute.
@@ -107,7 +115,7 @@ export class EffectRenderer {
      */
     public applyEffectWrapper(effectWrapper: EffectWrapper): void {
         this.engine.enableEffect(effectWrapper.effect);
-        this.engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effectWrapper.effect);
+        this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});
     }
 
@@ -244,6 +252,7 @@ export class EffectWrapper {
      */
     constructor(creationOptions: EffectWrapperCreationOptions) {
         let effectCreationOptions: any;
+        const uniformNames = creationOptions.uniformNames || [];
         if (creationOptions.vertexShader) {
             effectCreationOptions = {
                 fragmentSource: creationOptions.fragmentShader,
@@ -252,16 +261,24 @@ export class EffectWrapper {
             };
         }
         else {
+            // Default scale to use in post process vertex shader.
+            uniformNames.push("scale");
+
             effectCreationOptions = {
                 fragmentSource: creationOptions.fragmentShader,
                 vertex: "postprocess",
                 spectorName: creationOptions.name || "effectWrapper"
             };
+
+            // Sets the default scale to identity for the post process vertex shader.
+            this.onApplyObservable.add(() => {
+                this.effect.setFloat2("scale", 1, 1);
+            });
         }
 
         this.effect = new Effect(effectCreationOptions,
             creationOptions.attributeNames || ["position"],
-            creationOptions.uniformNames || ["scale"],
+            uniformNames,
             creationOptions.samplerNames,
             creationOptions.engine);
     }

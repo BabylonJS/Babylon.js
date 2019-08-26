@@ -1,7 +1,7 @@
 /**
- * Enum used to define well known values e.g. values automatically provided by the system
+ * Enum used to define system values e.g. values automatically provided by the system
  */
-export enum NodeMaterialWellKnownValues {
+export enum NodeMaterialSystemValues {
     /** World */
     World = 1,
     /** View */

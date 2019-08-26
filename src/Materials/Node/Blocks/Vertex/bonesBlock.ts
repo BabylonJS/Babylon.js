@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { NodeMaterialSystemValues } from '../../nodeMaterialSystemValues';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { Mesh } from '../../../../Meshes/mesh';
@@ -113,11 +113,11 @@ export class BonesBlock extends NodeMaterialBlock {
             matricesWeightsInput.output.connectTo(this.matricesWeights);
         }
         if (!this.world.isConnected) {
-            let worldInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.World);
+            let worldInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.World);
 
             if (!worldInput) {
                 worldInput = new InputBlock("world");
-                worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+                worldInput.setAsSystemValue(NodeMaterialSystemValues.World);
             }
             worldInput.output.connectTo(this.world);
         }
