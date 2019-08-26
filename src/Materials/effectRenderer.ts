@@ -277,8 +277,8 @@ export class EffectWrapper {
         }
 
         this.effect = new Effect(effectCreationOptions,
-            uniformNames,
             creationOptions.attributeNames || ["position"],
+            uniformNames,
             creationOptions.samplerNames,
             creationOptions.engine);
     }
