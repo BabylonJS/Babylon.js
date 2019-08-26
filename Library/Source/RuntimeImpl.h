@@ -54,7 +54,7 @@ namespace babylon
         std::mutex m_taskMutex;
         std::mutex m_suspendMutex;
         std::condition_variable m_suspendVariable;
-        bool m_suspended = false;
+        bool m_suspended{ false };
 
         std::unique_ptr<NativeEngine> m_engine{};
 
