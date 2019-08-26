@@ -5460,7 +5460,7 @@ export class Engine {
 
     private _bindSamplerUniformToChannel(sourceSlot: number, destination: number) {
         let uniform = this._boundUniforms[sourceSlot];
-        if (uniform._currentState === destination) {
+        if (!uniform || uniform._currentState === destination) {
             return;
         }
         this._gl.uniform1i(uniform, destination);
