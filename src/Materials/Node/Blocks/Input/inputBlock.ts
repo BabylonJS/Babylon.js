@@ -384,7 +384,7 @@ export class InputBlock extends NodeMaterialBlock {
 
             // well known
             let hints = state.sharedData.hints;
-            if (this._systemValue !== null) {
+            if (this._systemValue !== null && this._systemValue !== undefined) {
                 switch (this._systemValue) {
                     case NodeMaterialSystemValues.WorldView:
                         hints.needWorldViewMatrix = true;
