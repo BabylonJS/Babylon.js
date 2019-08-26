@@ -74,10 +74,10 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 systemValuesOptions = [
                     { label: "World", value: NodeMaterialSystemValues.World },
-                    { label: "WorldxView", value: NodeMaterialSystemValues.WorldView },
-                    { label: "WorldxViewxProjection", value: NodeMaterialSystemValues.WorldViewProjection },
+                    { label: "World x View", value: NodeMaterialSystemValues.WorldView },
+                    { label: "World x ViewxProjection", value: NodeMaterialSystemValues.WorldViewProjection },
                     { label: "View", value: NodeMaterialSystemValues.View },
-                    { label: "ViewxProjection", value: NodeMaterialSystemValues.ViewProjection },
+                    { label: "View x Projection", value: NodeMaterialSystemValues.ViewProjection },
                     { label: "Projection", value: NodeMaterialSystemValues.Projection }
                 ];
                 break;
