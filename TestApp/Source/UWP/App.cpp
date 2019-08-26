@@ -1,4 +1,4 @@
-﻿#include "App.h"
+#include "App.h"
 
 #include <pplawait.h>
 #include <winrt/Windows.ApplicationModel.h>

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <Shared/InputManager.h>
 #include <Babylon/RuntimeUWP.h>
