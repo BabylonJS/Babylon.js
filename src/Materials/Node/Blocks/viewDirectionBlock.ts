@@ -5,7 +5,7 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { NodeMaterial } from '../nodeMaterial';
-import { NodeMaterialWellKnownValues } from '../nodeMaterialWellKnownValues';
+import { NodeMaterialSystemValues } from '../nodeMaterialSystemValues';
 import { InputBlock } from './Input/inputBlock';
 /**
  * Block used to get the view direction
@@ -55,11 +55,11 @@ export class ViewDirectionBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.CameraPosition);
+            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition);
 
             if (!cameraPositionInput) {
                 cameraPositionInput = new InputBlock("cameraPosition");
-                cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+                cameraPositionInput.setAsSystemValue(NodeMaterialSystemValues.CameraPosition);
             }
             cameraPositionInput.output.connectTo(this.cameraPosition);
         }

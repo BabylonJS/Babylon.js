@@ -64,7 +64,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
 
     renderInputValues() {
         let configurableInputBlocks = this.props.material.getInputBlocks().filter(block => {
-            return block.visibleInInspector && block.isUniform && !block.isWellKnownValue
+            return block.visibleInInspector && block.isUniform && !block.isSystemValue
         }).sort( (a, b) => {
             return a.name.localeCompare(b.name);
         });
