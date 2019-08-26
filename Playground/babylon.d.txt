@@ -18571,9 +18571,10 @@ declare module BABYLON {
          * @param name Define the name of the material in the scene
          * @param scene Define the scene the material belongs to
          * @param shaderPath Defines  the route to the shader code in one of three ways:
-         *     - object - { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
-         *     - object - { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in <script> tags
-         *     - string - "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+         *  * object: { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
+         *  * object: { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in script tags
+         *  * object: { vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" } using with strings containing the shaders code
+         *  * string: "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
          * @param options Define the options used to create the shader
          */
         constructor(name: string, scene: Scene, shaderPath: any, options?: Partial<IShaderMaterialOptions>);
@@ -51291,9 +51292,9 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Enum used to define well known values e.g. values automatically provided by the system
+     * Enum used to define system values e.g. values automatically provided by the system
      */
-    export enum NodeMaterialWellKnownValues {
+    export enum NodeMaterialSystemValues {
         /** World */
         World = 1,
         /** View */
@@ -52200,7 +52201,7 @@ declare module BABYLON {
         private _valueCallback;
         private _type;
         private _animationType;
-        /** @hidden */private _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        /** @hidden */private _systemValue: Nullable<NodeMaterialSystemValues>;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
         /**
@@ -52225,11 +52226,11 @@ declare module BABYLON {
          */
         setAsAttribute(attributeName?: string): InputBlock;
         /**
-         * Set the source of this connection point to a well known value
-         * @param value define the well known value to use (world, view, etc...) or null to switch to manual value
+         * Set the source of this connection point to a system value
+         * @param value define the system value to use (world, view, etc...) or null to switch to manual value
          * @returns the current connection point
          */
-        setAsWellKnownValue(value: Nullable<NodeMaterialWellKnownValues>): InputBlock;
+        setAsSystemValue(value: Nullable<NodeMaterialSystemValues>): InputBlock;
         /**
          * Gets or sets the value of that point.
          * Please note that this value will be ignored if valueCallback is defined
@@ -52268,13 +52269,13 @@ declare module BABYLON {
          */
         isVarying: boolean;
         /**
-         * Gets a boolean indicating that the current connection point is a well known value
+         * Gets a boolean indicating that the current connection point is a system value
          */
-        readonly isWellKnownValue: boolean;
+        readonly isSystemValue: boolean;
         /**
-         * Gets or sets the current well known value or null if not defined as well know value
+         * Gets or sets the current well known value or null if not defined as a system value
          */
-        wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        systemValue: Nullable<NodeMaterialSystemValues>;
         /**
          * Gets the current class name
          * @returns the class name
@@ -53552,6 +53553,11 @@ declare module BABYLON {
          * @param viewport Defines the viewport to set (defaults to 0 0 1 1)
          */
         setViewport(viewport?: Viewport): void;
+        /**
+         * Binds the embedded attributes buffer to the effect.
+         * @param effect Defines the effect to bind the attributes for
+         */
+        bindBuffers(effect: Effect): void;
         /**
          * Sets the current effect wrapper to use during draw.
          * The effect needs to be ready before calling this api.
