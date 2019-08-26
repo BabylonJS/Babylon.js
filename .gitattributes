@@ -1,4 +1,5 @@
-*           text=auto
-*.txt       text
-*.cpp       text
-*.h         text
+*.cpp diff
+*.h diff
+*.java diff
+*.txt diff
+

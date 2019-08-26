@@ -1,4 +1,4 @@
-﻿#include "Babylon/Runtime.h"
+#include "Babylon/Runtime.h"
 #include "Babylon/RuntimeUWP.h"
 #include "RuntimeImpl.h"
 

@@ -1,4 +1,4 @@
-﻿#include <Babylon/RuntimeAndroid.h>
+#include <Babylon/RuntimeAndroid.h>
 #include "RuntimeImpl.h"
 //#include <filesystem>
 
