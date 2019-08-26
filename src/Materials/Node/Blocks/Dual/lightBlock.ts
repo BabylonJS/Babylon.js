@@ -8,7 +8,7 @@ import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
-import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { NodeMaterialSystemValues } from '../../nodeMaterialSystemValues';
 import { InputBlock } from '../Input/inputBlock';
 import { Light } from '../../../../Lights/light';
 import { Nullable } from '../../../../types';
@@ -86,11 +86,11 @@ export class LightBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.CameraPosition);
+            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition);
 
             if (!cameraPositionInput) {
                 cameraPositionInput = new InputBlock("cameraPosition");
-                cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+                cameraPositionInput.setAsSystemValue(NodeMaterialSystemValues.CameraPosition);
             }
             cameraPositionInput.output.connectTo(this.cameraPosition);
         }
