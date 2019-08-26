@@ -591,8 +591,6 @@ class Main {
                         }
                     }
 
-                    // Restore theme
-                    this.parent.settingsPG.restoreTheme(this.parent.monacoCreator);
                     // Restore language
                     this.parent.settingsPG.setScriptLanguage();
                 }
