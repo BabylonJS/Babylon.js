@@ -1,4 +1,4 @@
-﻿#include <Babylon/RuntimeWin32.h>
+#include <Babylon/RuntimeWin32.h>
 #include "RuntimeImpl.h"
 #include <filesystem>
 
