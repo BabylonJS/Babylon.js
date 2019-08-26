@@ -277,6 +277,7 @@ export class SolidParticleSystem implements IDisposable {
             var shapeUV: number[] = this._uvsToShapeUV(facetUV);
 
             // compute the barycenter of the shape
+            barycenter.copyFromFloats(0, 0, 0);
             var v: number;
             for (v = 0; v < shape.length; v++) {
                 barycenter.addInPlace(shape[v]);
