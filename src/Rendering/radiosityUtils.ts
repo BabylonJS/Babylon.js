@@ -23,7 +23,6 @@ class RadiosityUtils {
     }
 
     public static retesselateMesh(mesh: AbstractMesh, areaThreshold: number, scene: Scene): AbstractMesh {
-        // TODO : edge length threshold should be more adapted
         var indices = mesh.getIndices();
         var vertices = mesh.getVerticesData(VertexBuffer.PositionKind);
         var normals = mesh.getVerticesData(VertexBuffer.NormalKind);

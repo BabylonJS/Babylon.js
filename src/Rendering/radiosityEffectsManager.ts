@@ -32,7 +32,7 @@ export class RadiosityEffectsManager {
         this.useHemicube = useHemicube;
         this.useDepthCompare = useDepthCompare;
 
-        this._prepareBuffers();
+        this.prepareBuffers();
         this.createEffects();
     }
 
@@ -44,7 +44,7 @@ export class RadiosityEffectsManager {
         return this._indexBuffer;
     }
 
-    public createEffects(): Promise<void> {
+    private createEffects(): Promise<void> {
 
         return new Promise((resolve, reject) => {
             let interval = setInterval(() => {
@@ -76,7 +76,7 @@ export class RadiosityEffectsManager {
                 this.isDilateEffectReady();
     }
 
-    private _prepareBuffers(): void {
+    private prepareBuffers(): void {
         if (this._vertexBuffer) {
             return;
         }

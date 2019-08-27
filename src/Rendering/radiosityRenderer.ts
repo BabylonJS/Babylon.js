@@ -97,10 +97,11 @@ declare module "../meshes/mesh" {
  * Can be used as direct light baking, or radiosity light baking solution
  */
 
-export class PatchRenderer {
+export class RadiosityRenderer {
 
     public useDepthCompare: boolean = true;
     public useHemicube: boolean = true;
+    public meshes: Mesh[];
     private _cachePatches: boolean = false;
     private _filterMinEnergy: number = 1e-5;
     private _patchMapResolution: number = 1024;
@@ -114,7 +115,6 @@ export class PatchRenderer {
 
     private _activeShooters: Mesh[] = [];
     private _scene: Scene;
-    private _meshes: Mesh[];
     private _patchMap: RenderTargetTexture;
 
     private _near: number;
@@ -154,11 +154,11 @@ export class PatchRenderer {
         return a * a * Math.PI / 4;
     }
 
-    constructor(scene: Scene, meshes: Mesh[]) {
+    constructor(scene: Scene, meshes?: Mesh[]) {
         this._scene = scene;
         this._near = 0.1;
+        this.meshes = meshes || [];
         this._far = 10000;
-        this._meshes = meshes;
 
         this.resetRenderState();
 
@@ -192,7 +192,6 @@ export class PatchRenderer {
             0, -1, 0, 1
         ));
 
-        // scene.getEngine().disableTextureBindingOptimization = true;
         this._frameBuffer0 = <WebGLFramebuffer>(scene.getEngine()._gl.createFramebuffer());
         this._frameBuffer1 = <WebGLFramebuffer>(scene.getEngine()._gl.createFramebuffer());
 
@@ -201,7 +200,7 @@ export class PatchRenderer {
 
     public resetRenderState(): void {
         this._renderState = {
-            nextPass: PatchRenderer.DIRECT_PASS,
+            nextPass: RadiosityRenderer.DIRECT_PASS,
             shooterPatches: null,
             shooterIndex: 0,
             shooterMeshes: [],
@@ -215,8 +214,8 @@ export class PatchRenderer {
         for (let i = scene.meshes.length - 1; i >= 0; i--) {
             RadiosityUtils.retesselateMesh(scene.meshes[i], areaThreshold, this._scene);
         }
+        this.meshes = <Mesh[]>(scene.meshes);
 
-        this._meshes = <Mesh[]>(scene.meshes);
     }
 
     private renderPatchInfo = (uniformCallback: (effect: Effect, ...args: any[]) => void,
@@ -229,7 +228,7 @@ export class PatchRenderer {
         var batch = mesh._getInstancesRenderList(subMesh._id);
 
         // Culling and reverse (right handed system)
-        engine.setState(false, 0, true, scene.useRightHandedSystem); // TODO : BFC
+        engine.setState(false, 0, true, scene.useRightHandedSystem); // TODO : BFC ?
         engine.setDirectViewport(0, 0, this.getCurrentRenderWidth(), this.getCurrentRenderHeight());
 
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
@@ -262,8 +261,8 @@ export class PatchRenderer {
 
     public createMaps() {
         this._nextShooterTexture = new RenderTargetTexture("nextShooter", 1, this._scene, false, true, Constants.TEXTURETYPE_FLOAT);
+        var meshes = this.meshes;
         this._isBuildingPatches = true;
-        var meshes = this._meshes;
 
         for (let i = 0; i < meshes.length; i++) {
             var mesh = meshes[i];
@@ -294,7 +293,6 @@ export class PatchRenderer {
             this._meshMap[this._patchOffset] = meshes[i];
             mesh.__lightMapId = RadiosityUtils.encodeId(this._patchOffset).scaleInPlace(1 / 255);
 
-            // TODO : merge functions ?
             var uniformCb = (effect: Effect, data: any[]): void => {
                 var mesh = (<SubMesh>data[0]).getRenderingMesh();
                 var width = mesh.__lightmapSize.width;
@@ -338,7 +336,7 @@ export class PatchRenderer {
             this._scene.customRenderTargets.push(residualTexture);
             this._patchMaps.push(residualTexture);
 
-            if (PatchRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 2) {
+            if (RadiosityRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 2) {
                 console.log(`Offset ${this._patchOffset} is for mesh : ${mesh.name}.`);
             }
             this._patchOffset += 1;
@@ -375,7 +373,7 @@ export class PatchRenderer {
         this._radiosityEffectsManager.shootEffect.setFloat("shootDArea", deltaArea);
         this._radiosityEffectsManager.shootEffect.setMatrix("view", patch.viewMatrix);
 
-        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 3) {
+        if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 3) {
             console.log(`Lightmap size for this submesh : ${mrt.getSize().width} x ${mrt.getSize().height}`);
         }
 
@@ -424,14 +422,6 @@ export class PatchRenderer {
         var it = mrt.internalTextures[3];
         mrt.internalTextures[3] = mrt.internalTextures[5];
         mrt.internalTextures[5] = it;
-
-        // t = mrt.textures[4];
-        // mrt.textures[4] = mrt.textures[6];
-        // mrt.textures[6] = t;
-
-        // it = mrt.internalTextures[4];
-        // mrt.internalTextures[4] = mrt.internalTextures[6];
-        // mrt.internalTextures[6] = it;
     }
 
     private cleanAfterRender(dateBegin = 0, duration = 0) {
@@ -449,10 +439,10 @@ export class PatchRenderer {
 
         if (!this._renderState.shooterPatches || !this._renderState.shooterPatches.length) {
             if (!this._renderState.shooterMeshes.length) {
-                if (this._renderState.nextPass === PatchRenderer.DIRECT_PASS) {
+                if (this._renderState.nextPass === RadiosityRenderer.DIRECT_PASS) {
                     this.nextShooter(true);
                     this._renderState.shooterMeshes = this._activeShooters.slice();
-                    this._renderState.nextPass = PatchRenderer.INDIRECT_PASS;
+                    this._renderState.nextPass = RadiosityRenderer.INDIRECT_PASS;
                 } else {
                     let m = this.nextShooter(false);
                     if (!m) {
@@ -504,13 +494,9 @@ export class PatchRenderer {
         return patches;
     }
 
-    public isReady() {
-        return (this._radiosityEffectsManager.isReady() && !this._isBuildingPatches);
-    }
-
     public gatherDirectLightOnly(energyLeftThreshold = 1): boolean {
         if (!this.isReady()) {
-            if (PatchRenderer.WARNING_LOGS) {
+            if (RadiosityRenderer.WARNING_LOGS) {
                 console.log("Not ready yet");
             }
 
@@ -543,7 +529,7 @@ export class PatchRenderer {
 
     public gatherRadiosity(energyLeftThreshold = 1): boolean {
         if (!this.isReady()) {
-            if (PatchRenderer.WARNING_LOGS) {
+            if (RadiosityRenderer.WARNING_LOGS) {
                 console.log("Not ready yet");
             }
             return true;
@@ -553,20 +539,20 @@ export class PatchRenderer {
         let dateBegin = Date.now();
         let nextShooterDate = Date.now();
 
-        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
-            console.log(`BEGINNING RADIOSITY PASS FOR ${this._meshes.length} MESHES...`);
+        if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+            console.log(`BEGINNING RADIOSITY PASS FOR ${this.meshes.length} MESHES...`);
         }
 
         var shooter = this.nextShooter();
 
         if (!shooter) {
-            if (PatchRenderer.WARNING_LOGS) {
+            if (RadiosityRenderer.WARNING_LOGS) {
                 console.log("No shooter");
             }
             return true;
         }
 
-        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+        if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
             duration = Date.now() - nextShooterDate;
             console.log(`Find next shooter took ${duration}ms.`);
         }
@@ -579,7 +565,7 @@ export class PatchRenderer {
             return false;
         }
 
-        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+        if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
             duration = Date.now() - updatePatchDate;
             console.log(`Updating patches and consuming energy for shooter took ${duration}ms.`);
             console.log(`Now shooting radiosity for ${patches.length} patches.`);
@@ -589,7 +575,7 @@ export class PatchRenderer {
 
         this.renderPatches(patches, shooter);
 
-        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+        if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
             duration = Date.now() - shootingDate;
             console.log(`Shooting radiosity for all patches took ${duration}ms.`);
             console.log(`Currently shooting ${patches.length * 1000 / duration} patches/s.`);
@@ -604,6 +590,10 @@ export class PatchRenderer {
         return true;
     }
 
+    public isReady() {
+        return (this._radiosityEffectsManager.isReady() && !this._isBuildingPatches);
+    }
+
     private renderPatches(patches: Patch[], shooter: Mesh, indexBegin = 0, indexEnd = patches.length) {
         let duration;
 
@@ -611,7 +601,7 @@ export class PatchRenderer {
             this._currentPatch = patches[i];
 
             if (this._filterMinEnergy && !this._cachePatches && this._currentPatch.getResidualEnergySum() * shooter.__texelWorldSize * shooter.__texelWorldSize < this._filterMinEnergy) {
-                if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+                if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
                     this._renderState.shooterIndex = patches.length;
                     console.log(`Ended pass early after treating ${i} shooters amongst ${patches.length} shooters.`);
                     return;
@@ -626,7 +616,7 @@ export class PatchRenderer {
                 this._patchMap.render(false);
             }
 
-            if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 2) {
+            if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 2) {
                 duration = Date.now() - patchMapDate;
                 console.log(`Rendering patch map for 1 patch took ${duration}ms.`);
             }
@@ -640,7 +630,7 @@ export class PatchRenderer {
                 let subMeshDate = Date.now();
                 this.renderToRadiosityTexture(this._patchedMeshes[j], patches[i], this.squareToDiskArea(shooter.__texelWorldSize));
 
-                if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 3) {
+                if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 3) {
                     duration = Date.now() - subMeshDate;
                     console.log(`Shooting radiosity for ${this._patchedMeshes[j].name} took ${duration}ms.`);
                 }
@@ -648,7 +638,7 @@ export class PatchRenderer {
 
             // return false;
 
-            if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 2) {
+            if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 2) {
                 duration = Date.now() - patchShooting;
                 console.log(`Total shooting radiosity for ${this._patchedMeshes.length} submeshes took ${duration}ms.`);
             }
@@ -690,8 +680,8 @@ export class PatchRenderer {
             this._activeShooters.length = 0;
         }
 
-        for (let i = 0; i < this._meshes.length; i++) {
-            var mesh = this._meshes[i];
+        for (let i = 0; i < this.meshes.length; i++) {
+            var mesh = this.meshes[i];
             var mrt: MultiRenderTarget = mesh.residualTexture;
 
             if (!mrt) {
@@ -709,7 +699,7 @@ export class PatchRenderer {
             engine.setDirectViewport(0, 0, 1, 1);
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
 
-            if (PatchRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 2) {
+            if (RadiosityRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 2) {
                 console.log(`Mesh ${mesh.name} has for Lod ${lod} and dimensions : ${mrt.getRenderWidth()} x ${mrt.getRenderWidth()}`);
                 console.log("Current value of the nextShooter texture readback : ");
                 console.log(engine.readPixelsFloat(0, 0, 1, 1));
@@ -718,7 +708,7 @@ export class PatchRenderer {
             if (trackShooters) {
                 let invEnergy = engine.readPixelsFloat(0, 0, 1, 1)[3];
                 if (invEnergy !== 1) {
-                    this._activeShooters.push(this._meshes[i]);
+                    this._activeShooters.push(this.meshes[i]);
                 }
                 engine.clear(new Color4(0.0, 0.0, 0.0, 0.0), true, true, true);
             }
@@ -727,7 +717,7 @@ export class PatchRenderer {
         var pixels = engine.readPixelsFloat(0, 0, 1, 1);
         let id = Math.round(RadiosityUtils.decodeId(Vector3.FromArray(pixels)) * 255);
         let shaderValue = (1 / (pixels[3] / 255) - 1) / 3;
-        if (PatchRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 1) {
+        if (RadiosityRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 1) {
             console.log("Next shooter ID : " + id);
             console.log("Residual energy gathered from shader : " + shaderValue);
         }
@@ -823,7 +813,7 @@ export class PatchRenderer {
         var energyLeft = 0;
         var currentIndex = 0;
 
-        if (PatchRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
+        if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 1) {
             console.log(`Updating ${residualEnergy.length / 4} patches...`);
         }
 
@@ -846,8 +836,9 @@ export class PatchRenderer {
             currentIndex++;
         }
 
-        if (PatchRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 1) {
-            console.log("Residual energy gathered from surface : " + (energyLeft * this.squareToDiskArea(mesh.__texelWorldSize)));
+        energyLeft *= this.squareToDiskArea(mesh.__texelWorldSize);
+        if (RadiosityRenderer.RADIOSITY_INFO_LOGS_LEVEL >= 1) {
+            console.log("Residual energy gathered from surface : " + energyLeft);
         }
 
         if (this._filterMinEnergy && ! this._cachePatches) {
@@ -876,8 +867,8 @@ export class PatchRenderer {
 
     private buildVisibilityMapCube() {
         this._patchMap = new RenderTargetTexture("patch", this._patchMapResolution, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false);
+        this._patchMap.renderList = this.meshes;
         this._patchMap.renderParticles = false;
-        this._patchMap.renderList = this._meshes;
         this._patchMap.activeCamera = null;
         this._patchMap.ignoreCameraViewport = true;
         this._patchMap.useCameraPostProcesses = false;
@@ -905,10 +896,10 @@ export class PatchRenderer {
         engine.setState(false, 0, true, scene.useRightHandedSystem); // TODO : BFC
 
         let viewMatrices = [this._currentPatch.viewMatrix,
-        this._currentPatch.viewMatrixPX,
-        this._currentPatch.viewMatrixNX,
-        this._currentPatch.viewMatrixPY,
-        this._currentPatch.viewMatrixNY
+            this._currentPatch.viewMatrixPX,
+            this._currentPatch.viewMatrixNX,
+            this._currentPatch.viewMatrixPY,
+            this._currentPatch.viewMatrixNY
         ];
 
         let projectionMatrices = [Patch.projectionMatrix,
@@ -948,10 +939,10 @@ export class PatchRenderer {
             // Render on each face of the hemicube
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, cubeSides[j], internalTexture._webGLTexture, 0);
             engine.clear(new Color4(0, 0, 0, 0), true, true);
-            for (let i = 0; i < this._meshes.length; i++) {
-                for (let k = 0; k < this._meshes[i].subMeshes.length; k++) {
-                    this._setCubeVisibilityUniforms(this._radiosityEffectsManager.uV2Effect, this._currentPatch, this._meshes[i], viewMatrices[j], projectionMatrices[j]);
-                    this.renderSubMesh(this._meshes[i].subMeshes[k], this._radiosityEffectsManager.uV2Effect);
+            for (let i = 0; i < this.meshes.length; i++) {
+                for (let k = 0; k < this.meshes[i].subMeshes.length; k++) {
+                    this._setCubeVisibilityUniforms(this._radiosityEffectsManager.uV2Effect, this._currentPatch, this.meshes[i], viewMatrices[j], projectionMatrices[j]);
+                    this.renderSubMesh(this.meshes[i].subMeshes[k], this._radiosityEffectsManager.uV2Effect);
                 }
             }
             // Tools.DumpFramebuffer(this._patchMap.getRenderWidth(), this._patchMap.getRenderHeight(), this._scene.getEngine());
@@ -975,8 +966,8 @@ export class PatchRenderer {
             this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT,
             false,
             Texture.NEAREST_SAMPLINGMODE);
+        this._patchMap.renderList = this.meshes;
         this._patchMap.renderParticles = false;
-        this._patchMap.renderList = this._meshes;
         this._patchMap.activeCamera = null;
         this._patchMap.ignoreCameraViewport = true;
         this._patchMap.useCameraPostProcesses = false;
@@ -1005,9 +996,13 @@ export class PatchRenderer {
     }
 
     /**
-     * Disposes of the patch renderer.
+     * Disposes of the radiosity renderer.
      */
     public dispose(): void {
+        var gl = this._scene.getEngine()._gl;
         this._patchMap.dispose();
+        this._nextShooterTexture.dispose();
+        gl.deleteFramebuffer(this._frameBuffer0);
+        gl.deleteFramebuffer(this._frameBuffer1);
     }
 }
