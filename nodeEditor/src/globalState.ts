@@ -25,8 +25,8 @@ export class GlobalState {
     onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
     previewMeshType: PreviewMeshType;
     blockKeyboardEvents = false;
-
-    customSave?: {label: string, callback: (nodeMaterial: NodeMaterial) => void};
+    
+    customSave?: {label: string, action: (data: string) => void};
 
     public constructor() {
         this.previewMeshType = DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box);
