@@ -8,7 +8,8 @@ import { Popup } from "../src/sharedComponents/popup"
  * Interface used to specify creation options for the node editor
  */
 export interface INodeEditorOptions {
-    nodeMaterial: NodeMaterial
+    nodeMaterial: NodeMaterial,
+    hostElement?: HTMLElement
 }
 
 /**
@@ -29,7 +30,12 @@ export class NodeEditor {
             }
         }
 
-        let hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800)!;
+        let hostElement = options.hostElement;
+        
+        if (!hostElement) {
+            hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800)!;
+        }
+        
         let globalState = new GlobalState();
         globalState.nodeMaterial = options.nodeMaterial
         globalState.hostElement = hostElement;
