@@ -9,6 +9,7 @@ import { StringTools } from '../../stringTools';
 import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
 import { INodeLocationInfo } from '../../nodeLocationInfo';
+import { SerializationTools } from '../../serializationTools';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -32,45 +33,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     load(file: File) {
         Tools.ReadFile(file, (data) => {
             let decoder = new TextDecoder("utf-8");
-            let serializationObject = JSON.parse(decoder.decode(data));
+            SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
 
-            this.props.globalState.nodeMaterial!.loadFromSerialization(serializationObject, "");
-
-            // Check for id mapping
-            if (serializationObject.locations && serializationObject.map) {
-                let map: {[key: number]: number} = serializationObject.map;
-                let locations: INodeLocationInfo[] = serializationObject.locations;
-
-                for (var location of locations) {
-                    location.blockId = map[location.blockId];
-                }
-            }
-            
-            this.props.globalState.onResetRequiredObservable.notifyObservers(serializationObject.locations);
         }, undefined, true);
     }
 
     save() {
-        let material = this.props.globalState.nodeMaterial;
-        let serializationObject = material.serialize();
-
-        // Store node locations
-        for (var block of material.attachedBlocks) {
-            let node = this.props.globalState.onGetNodeFromBlock(block);
-
-            if (!serializationObject.locations) {
-                serializationObject.locations = [];
-            }
-
-            serializationObject.locations.push({
-                blockId: block.uniqueId,
-                x: node ? node.x : 0,
-                y: node ? node.y : 0
-            });
-        }
-
-        // Output
-        let json = JSON.stringify(serializationObject, undefined, 2);
+        let json = SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
     }
 
@@ -126,7 +95,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         {
                             this.props.globalState.customSave && 
                             <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
-                                this.props.globalState.customSave!.callback(this.props.globalState.nodeMaterial);
+                                this.props.globalState.customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState));
                             }} />
                         }
                     </LineContainerComponent>
