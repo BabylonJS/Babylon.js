@@ -2,7 +2,6 @@ if (BABYLON.Engine.isSupported()) {
     var canvas = document.createElement("canvas");
     var engine = new BABYLON.Engine(canvas, false);
 
-    BABYLONDEVTOOLS.Loader.debugShortcut(engine);
 
     var scene = new BABYLON.Scene(engine);
 
