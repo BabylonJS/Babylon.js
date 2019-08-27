@@ -63,6 +63,7 @@
 - Added `ShadowGenerator.onAfterShadowMapRenderObservable` and `ShadowGenerator.onAfterShadowMapMeshRenderObservable` ([Deltakosh](https://github.com/deltakosh/))
 - Added support for side by side and top bottom images in the `PhotoDome` ([Deltakosh](https://github.com/deltakosh/))
 - Added playground ts-local (TypeScript support for local playground) ([pjoe](https://github.com/pjoe/))
+- Added RGBD Texture tools [Sebavan](https://github.com/sebavan/)
 
 ### Meshes
 - Added `TransformNode.instantiateHierarchy()` which try to instantiate (or clone) a node and its entire hiearchy ([Deltakosh](https://github.com/deltakosh/))

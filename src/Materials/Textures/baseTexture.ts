@@ -209,7 +209,7 @@ export class BaseTexture implements IAnimatable {
     public gammaSpace = true;
 
     /**
-     * Gets or set whether or not the texture contains RGBD data.
+     * Gets or sets whether or not the texture contains RGBD data.
      */
     public get isRGBD(): boolean {
         return this._texture != null && this._texture._isRGBD;
