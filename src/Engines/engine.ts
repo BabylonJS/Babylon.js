@@ -2705,7 +2705,7 @@ export class Engine {
             } else {
                 // number[] or Int32Array, check if 32 bit is necessary
                 for (var index = 0; index < indices.length; index++) {
-                    if (indices[index] > 65535) {
+                    if (indices[index] >= 65535) {
                         return new Uint32Array(indices);
                     }
                 }
