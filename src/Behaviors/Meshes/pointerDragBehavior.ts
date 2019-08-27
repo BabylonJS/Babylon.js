@@ -143,7 +143,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      * Attaches the drag behavior the passed in mesh
      * @param ownerNode The mesh that will be dragged around once attached
      */
-    public attach(ownerNode: AbstractMesh): void {
+    public attach(ownerNode: AbstractMesh, predicate?: (m: AbstractMesh) => boolean): void {
         this._scene = ownerNode.getScene();
         this.attachedNode = ownerNode;
 
@@ -165,7 +165,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         // State of the drag
         this.lastDragPosition = new Vector3(0, 0, 0);
 
-        var pickPredicate = (m: AbstractMesh) => {
+        var pickPredicate = !!predicate ? predicate : (m: AbstractMesh) => {
             return this.attachedNode == m || m.isDescendantOf(this.attachedNode);
         };
 
