@@ -142,6 +142,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     /**
      * Attaches the drag behavior the passed in mesh
      * @param ownerNode The mesh that will be dragged around once attached
+     * @param predicate Predicate to use for pick filtering
      */
     public attach(ownerNode: AbstractMesh, predicate?: (m: AbstractMesh) => boolean): void {
         this._scene = ownerNode.getScene();
