@@ -766,6 +766,14 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
+     * Gets the texture used for Screen Space Reflection roughness.
+     * @returns the texture to use for Screen Space Reflection roughness.
+     */
+    public getSpecularTestTexture(): Nullable<BaseTexture> {
+        return this._specularTexture;
+    }
+
+    /**
      * Get if the submesh is ready to be used and all its information available.
      * Child classes can use it to update shaders
      * @param mesh defines the mesh to check

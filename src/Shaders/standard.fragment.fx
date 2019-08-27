@@ -9,6 +9,17 @@ void main(void)
 }
 #endif
 
+#if defined(MERGE_POST_PROCESS)
+uniform sampler2D otherSampler;
+
+void main(void)
+{
+	vec4 color = texture2D(textureSampler, vUV);
+	vec4 other = texture2D(otherSampler, vUV);
+	gl_FragColor = vec4(color.rgb + other.rgb, color.a);
+}
+#endif
+
 #if defined(DOWN_SAMPLE_X4)
 uniform vec2 dsOffsets[16];
 

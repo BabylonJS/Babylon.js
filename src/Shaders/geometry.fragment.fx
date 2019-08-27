@@ -15,9 +15,16 @@ varying vec4 vCurrentPosition;
 varying vec4 vPreviousPosition;
 #endif
 
+#ifdef ROUGHNESS
+uniform sampler2D roughnessSampler;
+#endif
+
 #ifdef ALPHATEST
-varying vec2 vUV;
 uniform sampler2D diffuseSampler;
+#endif
+
+#if defined(ALPHATEST) || defined(ROUGHNESS)
+varying vec2 vUV;
 #endif
 
 #include<mrtFragmentDeclaration>[RENDER_TARGET_COUNT]
@@ -28,7 +35,7 @@ void main() {
 		discard;
 #endif
 
-    gl_FragData[0] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
+    gl_FragData[0] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, vViewPos.w);
     //color0 = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
     gl_FragData[1] = vec4(normalize(vNormalV), 1.0);
     //color2 = vec4(vPositionV, 1.0);
@@ -45,5 +52,34 @@ void main() {
     velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
     gl_FragData[VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
+    #endif
+
+    #ifdef ROUGHNESS
+        #ifdef HAS_SPECULAR
+            // Specular
+            vec4 roughness = vec4(texture2D(roughnessSampler, vUV).rgb, 1.0);
+        #elif HAS_METALLIC
+            // Metallic
+            vec4 roughness = vec4(1.0);
+            vec4 surfaceMetallicColorMap = texture2D(roughnessSampler, vUV);
+
+            #ifdef METALLNESSSTOREINMETALMAPBLUE
+                roughness.r *= surfaceMetallicColorMap.b;
+            #else
+                roughness.r *= surfaceMetallicColorMap.r;
+            #endif
+
+            #ifdef ROUGHNESSSTOREINMETALMAPALPHA
+                roughness.g *= surfaceMetallicColorMap.a;
+            #else
+                #ifdef ROUGHNESSSTOREINMETALMAPGREEN
+                    roughness.g *= surfaceMetallicColorMap.g;
+                #endif
+            #endif
+        #else
+            vec4 roughness = vec4(0.0, 0.0, 0.0, 1.0);
+        #endif
+
+        gl_FragData[ROUGHNESS_INDEX] = roughness;
     #endif
 }

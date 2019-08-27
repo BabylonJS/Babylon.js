@@ -656,6 +656,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
+     * Gets the texture used for Screen Space Reflection roughness.
+     * @returns the texture to use for Screen Space Reflection roughness.
+     */
+    public getSpecularTestTexture(): Nullable<BaseTexture> {
+        return this._reflectivityTexture;
+    }
+
+    /**
      * Stores the available render targets.
      */
     private _renderTargets = new SmartArray<RenderTargetTexture>(16);

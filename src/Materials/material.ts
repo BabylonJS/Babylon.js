@@ -679,6 +679,14 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Gets the texture used for Screen Space Reflection roughness.
+     * @returns the texture to use for Screen Space Reflection roughness.
+     */
+    public getSpecularTestTexture(): Nullable<BaseTexture> {
+        return null;
+    }
+
+    /**
      * Marks the material to indicate that it needs to be re-calculated
      */
     public markDirty(): void {

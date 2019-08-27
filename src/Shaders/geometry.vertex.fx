@@ -11,9 +11,11 @@ precision highp int;
 attribute vec3 position;
 attribute vec3 normal;
 
-#if defined(ALPHATEST) || defined(NEED_UV)
+#ifdef NEED_UV
 varying vec2 vUV;
+#ifdef ALPHATEST
 uniform mat4 diffuseMatrix;
+#endif
 #ifdef UV1
 attribute vec2 uv;
 #endif
@@ -110,12 +112,20 @@ void main(void)
 
 	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 
-#if defined(ALPHATEST) || defined(BASIC_RENDER)
-#ifdef UV1
-	vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
-#endif
-#ifdef UV2
-	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
-#endif
-#endif
+	#ifdef NEED_UV
+	#ifdef UV1
+		#ifdef ALPHATEST
+		vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
+		#else
+		vUV = uv;
+		#endif
+	#endif
+	#ifdef UV2
+		#ifdef ALPHATEST
+		vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
+		#else
+		vUV = uv2;
+		#endif
+	#endif
+	#endif
 }
