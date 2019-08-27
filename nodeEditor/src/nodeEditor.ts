@@ -4,8 +4,8 @@ import { GlobalState } from './globalState';
 import { GraphEditor } from './graphEditor';
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Popup } from "../src/sharedComponents/popup"
-import { Observable } from 'babylonjs';
 import { SerializationTools } from './serializationTools';
+import { Observable } from 'babylonjs/Misc/observable';
 /**
  * Interface used to specify creation options for the node editor
  */
