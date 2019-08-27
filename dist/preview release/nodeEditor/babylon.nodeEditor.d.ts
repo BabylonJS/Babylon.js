@@ -1193,6 +1193,7 @@ declare module NODEEDITOR {
      */
     export interface INodeEditorOptions {
         nodeMaterial: BABYLON.NodeMaterial;
+        hostElement?: HTMLElement;
     }
     /**
      * Class used to create a node editor

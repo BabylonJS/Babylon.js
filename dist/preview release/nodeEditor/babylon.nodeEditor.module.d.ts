@@ -1443,6 +1443,7 @@ declare module "babylonjs-node-editor/nodeEditor" {
      */
     export interface INodeEditorOptions {
         nodeMaterial: NodeMaterial;
+        hostElement?: HTMLElement;
     }
     /**
      * Class used to create a node editor
@@ -2660,6 +2661,7 @@ declare module NODEEDITOR {
      */
     export interface INodeEditorOptions {
         nodeMaterial: BABYLON.NodeMaterial;
+        hostElement?: HTMLElement;
     }
     /**
      * Class used to create a node editor

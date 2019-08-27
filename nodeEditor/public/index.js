@@ -1,7 +1,7 @@
 if (BABYLON.Engine.isSupported()) {
+    var canvas = document.createElement("canvas");
     var engine = new BABYLON.Engine(canvas, false);
 
-    BABYLONDEVTOOLS.Loader.debugShortcut(engine);
 
     var scene = new BABYLON.Scene(engine);
 
@@ -9,7 +9,9 @@ if (BABYLON.Engine.isSupported()) {
     nodeMaterial.setToDefault();
     nodeMaterial.build(true);
 
-    BABYLON.NodeEditor.Show({nodeMaterial: nodeMaterial});
+    var hostElement = document.getElementById("host-element");
+
+    BABYLON.NodeEditor.Show({nodeMaterial: nodeMaterial, hostElement: hostElement});
 }
 else {
     alert('Babylon.js is not supported.')
