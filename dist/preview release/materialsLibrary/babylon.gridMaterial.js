@@ -395,8 +395,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var name = 'gridVertexShader';
-var shader = "precision highp float;\n\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n\nuniform mat4 projection;\nuniform mat4 world;\nuniform mat4 view;\nuniform mat4 worldView;\n\nvarying vec3 vPosition;\nvarying vec3 vNormal;\n#include<fogVertexDeclaration>\n#ifdef OPACITY\nvarying vec2 vOpacityUV;\nuniform mat4 opacityMatrix;\nuniform vec2 vOpacityInfos;\n#endif\nvoid main(void) {\n#ifdef FOG\nvec4 worldPos=world*vec4(position,1.0);\n#endif\n#include<fogVertex>\nvec4 cameraSpacePosition=worldView*vec4(position,1.0);\ngl_Position=projection*cameraSpacePosition;\n#ifdef OPACITY\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\nif (vOpacityInfos.x == 0.)\n{\nvOpacityUV=vec2(opacityMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvOpacityUV=vec2(opacityMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\nvPosition=position;\nvNormal=normal;\n}";
+var shader = "precision highp float;\n\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#include<instancesDeclaration>\n\nuniform mat4 projection;\nuniform mat4 world;\nuniform mat4 view;\n\nvarying vec3 vPosition;\nvarying vec3 vNormal;\n#include<fogVertexDeclaration>\n#ifdef OPACITY\nvarying vec2 vOpacityUV;\nuniform mat4 opacityMatrix;\nuniform vec2 vOpacityInfos;\n#endif\nvoid main(void) {\n#include<instancesVertex>\n#ifdef FOG\nvec4 worldPos=finalWorld*vec4(position,1.0);\n#endif\n#include<fogVertex>\nvec4 cameraSpacePosition=view*finalWorld*vec4(position,1.0);\ngl_Position=projection*cameraSpacePosition;\n#ifdef OPACITY\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\nif (vOpacityInfos.x == 0.)\n{\nvOpacityUV=vec2(opacityMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvOpacityUV=vec2(opacityMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\nvPosition=position;\nvNormal=normal;\n}";
 babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__["Effect"].ShadersStore[name] = shader;
 /** @hidden */
 var gridVertexShader = { name: name, shader: shader };
@@ -441,6 +443,7 @@ var GridMaterialDefines = /** @class */ (function (_super) {
         _this.PREMULTIPLYALPHA = false;
         _this.UV1 = false;
         _this.UV2 = false;
+        _this.INSTANCES = false;
         _this.rebuild();
         return _this;
     }
@@ -543,6 +546,8 @@ var GridMaterial = /** @class */ (function (_super) {
             }
         }
         babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, false, defines);
+        // Values that need to be evaluated on every frame
+        babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForFrameBoundValues(scene, scene.getEngine(), defines, !!useInstances);
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
@@ -556,9 +561,10 @@ var GridMaterial = /** @class */ (function (_super) {
             if (defines.UV2) {
                 attribs.push(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind);
             }
+            babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareAttributesForInstances(attribs, defines);
             // Defines
             var join = defines.toString();
-            subMesh.setEffect(scene.getEngine().createEffect("grid", attribs, ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view",
+            subMesh.setEffect(scene.getEngine().createEffect("grid", attribs, ["projection", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view",
                 "opacityMatrix", "vOpacityInfos"], ["opacitySampler"], join, undefined, this.onCompiled, this.onError), defines);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
@@ -580,8 +586,9 @@ var GridMaterial = /** @class */ (function (_super) {
         }
         this._activeEffect = effect;
         // Matrices
-        this.bindOnlyWorldMatrix(world);
-        this._activeEffect.setMatrix("worldView", world.multiply(scene.getViewMatrix()));
+        if (!defines.INSTANCES) {
+            this.bindOnlyWorldMatrix(world);
+        }
         this._activeEffect.setMatrix("view", scene.getViewMatrix());
         this._activeEffect.setMatrix("projection", scene.getProjectionMatrix());
         // Uniforms
