@@ -179,7 +179,7 @@ export class GridMaterial extends PushMaterial {
             if (defines.UV2) {
                 attribs.push(VertexBuffer.UV2Kind);
             }
-            
+
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
             // Defines
