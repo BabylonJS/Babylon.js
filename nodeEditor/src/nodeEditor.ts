@@ -4,13 +4,16 @@ import { GlobalState } from './globalState';
 import { GraphEditor } from './graphEditor';
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Popup } from "../src/sharedComponents/popup"
+import { Observable } from 'babylonjs';
+import { SerializationTools } from './serializationTools';
 /**
  * Interface used to specify creation options for the node editor
  */
 export interface INodeEditorOptions {
     nodeMaterial: NodeMaterial,
     hostElement?: HTMLElement,
-    customSave?: {label: string, callback: (nodeMaterial: NodeMaterial) => void};
+    customSave?: {label: string, action: (data: string) => void};
+    customLoadObservable?: Observable<any>
 }
 
 /**
@@ -48,6 +51,12 @@ export class NodeEditor {
         });
 
         ReactDOM.render(graphEditor, hostElement);
+
+        if (options.customLoadObservable) {
+            options.customLoadObservable.add(data => {
+                SerializationTools.Deserialize(data, globalState);
+            })
+        }
 
         this._CurrentState = globalState;
 
