@@ -71664,7 +71664,11 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export shaders", onClick: function () {
                             _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
-                        } })))));
+                        } }),
+                    this.props.globalState.customSave &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, onClick: function () {
+                                _this.props.globalState.customSave.callback(_this.props.globalState.nodeMaterial);
+                            } })))));
     };
     return PropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -72590,6 +72594,7 @@ var NodeEditor = /** @class */ (function () {
         globalState.nodeMaterial = options.nodeMaterial;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument;
+        globalState.customSave = options.customSave;
         var graphEditor = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_graphEditor__WEBPACK_IMPORTED_MODULE_3__["GraphEditor"], {
             globalState: globalState
         });
