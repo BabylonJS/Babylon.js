@@ -8,7 +8,6 @@ import { LineContainerComponent } from '../../sharedComponents/lineContainerComp
 import { StringTools } from '../../stringTools';
 import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
-import { INodeLocationInfo } from '../../nodeLocationInfo';
 import { SerializationTools } from '../../serializationTools';
 require("./propertyTab.scss");
 
