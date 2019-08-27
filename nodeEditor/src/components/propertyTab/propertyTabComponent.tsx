@@ -123,6 +123,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <ButtonLineComponent label="Export shaders" onClick={() => {
                             StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
                         }} />
+                        {
+                            this.props.globalState.customSave && 
+                            <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
+                                this.props.globalState.customSave!.callback(this.props.globalState.nodeMaterial);
+                            }} />
+                        }
                     </LineContainerComponent>
                 </div>
             </div>

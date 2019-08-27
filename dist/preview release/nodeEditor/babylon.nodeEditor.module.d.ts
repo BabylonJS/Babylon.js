@@ -1427,6 +1427,10 @@ declare module "babylonjs-node-editor/globalState" {
         onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
         blockKeyboardEvents: boolean;
+        customSave?: {
+            label: string;
+            callback: (nodeMaterial: NodeMaterial) => void;
+        };
         constructor();
     }
 }
@@ -1444,6 +1448,10 @@ declare module "babylonjs-node-editor/nodeEditor" {
     export interface INodeEditorOptions {
         nodeMaterial: NodeMaterial;
         hostElement?: HTMLElement;
+        customSave?: {
+            label: string;
+            callback: (nodeMaterial: NodeMaterial) => void;
+        };
     }
     /**
      * Class used to create a node editor
@@ -2646,6 +2654,10 @@ declare module NODEEDITOR {
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
         blockKeyboardEvents: boolean;
+        customSave?: {
+            label: string;
+            callback: (nodeMaterial: BABYLON.NodeMaterial) => void;
+        };
         constructor();
     }
 }
@@ -2662,6 +2674,10 @@ declare module NODEEDITOR {
     export interface INodeEditorOptions {
         nodeMaterial: BABYLON.NodeMaterial;
         hostElement?: HTMLElement;
+        customSave?: {
+            label: string;
+            callback: (nodeMaterial: BABYLON.NodeMaterial) => void;
+        };
     }
     /**
      * Class used to create a node editor
