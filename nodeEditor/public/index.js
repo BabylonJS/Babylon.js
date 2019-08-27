@@ -3,6 +3,9 @@ var currentSnippetToken;
 var previousHash = "";
 var nodeMaterial;
 
+var customLoadObservable = new BABYLON.Observable();
+var editorDisplayed = false;
+
 var cleanHash = function () {
     var splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
@@ -26,7 +29,14 @@ var checkHash = function () {
                     if (xmlHttp.readyState == 4) {
                         if (xmlHttp.status == 200) {
                             var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
-                            nodeMaterial.loadFromSerialization(snippet.nodeMaterial);
+
+                            if (editorDisplayed) {
+                                customLoadObservable.notifyObservers(snippet.nodeMaterial);
+                            } else {
+                                nodeMaterial.loadFromSerialization(snippet.nodeMaterial);
+                                nodeMaterial.build(true);
+                                showEditor();
+                            }
                         }
                     }
                 }
@@ -44,24 +54,17 @@ var checkHash = function () {
     setTimeout(checkHash, 200);
 }
 
-// Let's start
-if (BABYLON.Engine.isSupported()) {
-    var canvas = document.createElement("canvas");
-    var engine = new BABYLON.Engine(canvas, false);
-    var scene = new BABYLON.Scene(engine);
-
-    nodeMaterial = new BABYLON.NodeMaterial("node");
-    nodeMaterial.setToDefault();
-    nodeMaterial.build(true);
-
+var showEditor = function() {
+    editorDisplayed = true;
     var hostElement = document.getElementById("host-element");
 
     BABYLON.NodeEditor.Show({
         nodeMaterial: nodeMaterial, 
         hostElement: hostElement,
+        customLoadObservable: customLoadObservable,
         customSave: {
             label: "Save as unique URL",
-            callback: () => {
+            action: (data) => {
                 var xmlHttp = new XMLHttpRequest();
                 xmlHttp.onreadystatechange = function () {
                     if (xmlHttp.readyState == 4) {
@@ -86,7 +89,7 @@ if (BABYLON.Engine.isSupported()) {
     
                 var dataToSend = {
                     payload : JSON.stringify({
-                        nodeMaterial: nodeMaterial.serialize() 
+                        nodeMaterial: data
                     }),
                     name: "",
                     description: "",
@@ -97,6 +100,23 @@ if (BABYLON.Engine.isSupported()) {
             }
         }
     });
+}
+
+// Let's start
+if (BABYLON.Engine.isSupported()) {
+    var canvas = document.createElement("canvas");
+    var engine = new BABYLON.Engine(canvas, false);
+    var scene = new BABYLON.Scene(engine);
+
+    nodeMaterial = new BABYLON.NodeMaterial("node");
+
+    // Set to default
+    if (!location.hash) {
+        nodeMaterial.setToDefault();
+        nodeMaterial.build(true);
+        showEditor();
+    }
+
 }
 else {
     alert('Babylon.js is not supported.')

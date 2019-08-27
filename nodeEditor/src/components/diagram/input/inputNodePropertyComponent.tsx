@@ -137,6 +137,10 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     <TextLineComponent label="Type" value={StringTools.GetBaseType(inputBlock.type)} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
+                    {
+                        inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
+                        <CheckBoxLineComponent label="Visible in the Inspector" target={inputBlock} propertyName="visibleInInspector"/>
+                    }                 
                     <OptionsLineComponent label="Mode" options={modeOptions} target={inputBlock} 
                         noDirectUpdate={true}
                         getSelection={(block) => {
@@ -182,10 +186,6 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
                     }   
-                    {
-                        inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
-                        <CheckBoxLineComponent label="Visible in the Inspector" target={inputBlock} propertyName="visibleInInspector"/>
-                    }                 
                     {
                         inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
                         this.renderValue(this.props.globalState)
