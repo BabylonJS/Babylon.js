@@ -3,10 +3,10 @@ import { Nullable } from "babylonjs/types";
 import { Observer, Observable } from "babylonjs/Misc/observable";
 
 interface IRadioButtonLineComponentProps {
-    onSelectionChangedObservable: Observable<RadioButtonLineComponent>,
-    label: string,
-    isSelected: () => boolean,
-    onSelect: () => void
+    onSelectionChangedObservable: Observable<RadioButtonLineComponent>;
+    label: string;
+    isSelected: () => boolean;
+    onSelect: () => void;
 }
 
 export class RadioButtonLineComponent extends React.Component<IRadioButtonLineComponentProps, { isSelected: boolean }> {
@@ -18,7 +18,7 @@ export class RadioButtonLineComponent extends React.Component<IRadioButtonLineCo
         this.state = { isSelected: this.props.isSelected() };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this._onSelectionChangedObserver = this.props.onSelectionChangedObservable.add((value) => {
             this.setState({ isSelected: value === this });
         });

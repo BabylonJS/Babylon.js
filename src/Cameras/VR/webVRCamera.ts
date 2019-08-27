@@ -4,7 +4,7 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { TargetCamera } from "../../Cameras/targetCamera";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
-import { Quaternion, Matrix, Vector3 } from "../../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../../Maths/math.vector";
 import { Gamepad } from "../../Gamepads/gamepad";
 import { PoseEnabledControllerType } from "../../Gamepads/Controllers/poseEnabledController";
 import { WebVRController } from "../../Gamepads/Controllers/webVRController";
@@ -18,6 +18,9 @@ import { VRMultiviewToSingleviewPostProcess } from '../../PostProcesses/vrMultiv
 
 // Side effect import to define the stereoscopic mode.
 import "../RigModes/webVRRigMode";
+
+// Side effect import to add webvr support to engine
+import "../../Engines/Extensions/engine.webVR";
 
 Node.AddNodeConstructor("WebVRFreeCamera", (name, scene) => {
     return () => new WebVRFreeCamera(name, Vector3.Zero(), scene);
@@ -287,7 +290,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             if (!this.getScene().getEngine().getCaps().multiview) {
                 Logger.Warn("Multiview is not supported, falling back to standard rendering");
                 this._useMultiviewToSingleView = false;
-            }else {
+            } else {
                 this._useMultiviewToSingleView = true;
                 this._rigPostProcess = new VRMultiviewToSingleviewPostProcess("VRMultiviewToSingleview", this, 1.0);
             }
@@ -404,7 +407,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
     private _leftController: Nullable<WebVRController>;
     /**
-     * The controller corrisponding to the users left hand.
+     * The controller corresponding to the users left hand.
      */
     public get leftController(): Nullable<WebVRController> {
         if (!this._leftController) {
@@ -416,7 +419,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
     private _rightController: Nullable<WebVRController>;
     /**
-     * The controller corrisponding to the users right hand.
+     * The controller corresponding to the users right hand.
      */
     public get rightController(): Nullable<WebVRController> {
         if (!this._rightController) {
@@ -429,7 +432,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     /**
      * Casts a ray forward from the vrCamera's gaze.
      * @param length Length of the ray (default: 100)
-     * @returns the ray corrisponding to the gaze
+     * @returns the ray corresponding to the gaze
      */
     public getForwardRay(length = 100): Ray {
         if (this.leftCamera) {
@@ -460,7 +463,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * @param poseData Pose coming from the device
      */
     updateFromDevice(poseData: DevicePose) {
-        if (poseData && poseData.orientation) {
+        if (poseData && poseData.orientation && poseData.orientation.length === 4) {
             this.rawPose = poseData;
             this._deviceRoomRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
 
@@ -505,7 +508,9 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         if (this._vrDevice) {
             this.getEngine().enableVR();
         }
-        window.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
+
+        let hostWindow = this._scene.getEngine().getHostWindow();
+        hostWindow.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
     }
 
     /**

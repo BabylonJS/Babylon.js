@@ -26,6 +26,11 @@
     }
 }
 
+.react-contextmenu.context-menu.react-contextmenu--visible {
+    z-index: 99;
+    transform: scale(1);
+}
+
 #sceneExplorer {
     background: #333333;
     height: 100%;
@@ -58,6 +63,7 @@
             grid-column: 1; 
             width: 24px;
             height: 24px;
+            left:0;
             display: flex;
             align-self: center;   
             justify-self: center;

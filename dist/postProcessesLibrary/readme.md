@@ -9,8 +9,8 @@ For usage documentation please visit http://doc.babylonjs.com/extensions and cho
 
 Compiled js files (minified and source) are offered on our public CDN here:
 
-* https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.js
-* https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js
+* https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.js
+* https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js
 
 ## NPM
 

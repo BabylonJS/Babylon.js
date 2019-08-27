@@ -1,4 +1,4 @@
-import { Tmp, Vector3 } from "babylonjs/Maths/math";
+import { TmpVectors, Vector3 } from "babylonjs/Maths/math";
 
 import { Container3D } from "./container3D";
 import { Control3D } from "./control3D";
@@ -16,7 +16,7 @@ export class PlanePanel extends VolumeBasedPanel {
         }
 
         control.position = nodePosition.clone();
-        let target = Tmp.Vector3[0];
+        let target = TmpVectors.Vector3[0];
 
         target.copyFrom(nodePosition);
 

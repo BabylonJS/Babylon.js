@@ -14,11 +14,6 @@ export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
     /**
      * @hidden
      */
-    public _keyboardInput: Nullable<FreeCameraKeyboardMoveInput> = null;
-
-    /**
-     * @hidden
-     */
     public _mouseInput: Nullable<FreeCameraMouseInput> = null;
     /**
      * Instantiates a new FreeCameraInputsManager.
@@ -68,5 +63,13 @@ export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
     addTouch(): FreeCameraInputsManager {
         this.add(new FreeCameraTouchInput());
         return this;
+    }
+
+    /**
+     * Remove all attached input methods from a camera
+     */
+    public clear(): void {
+        super.clear();
+        this._mouseInput = null;
     }
 }

@@ -3,7 +3,7 @@ import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImp
 import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../../Physics/physicsJoint";
 import { PhysicsEngine } from "../../Physics/physicsEngine";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Vector3, Quaternion } from "../../Maths/math";
+import { Vector3, Quaternion } from "../../Maths/math.vector";
 import { Nullable } from "../../types";
 import { Logger } from "../../Misc/logger";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";

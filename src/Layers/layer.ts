@@ -1,7 +1,8 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Vector2, Color4 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
+import { Color4 } from '../Maths/math.color';
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Effect } from "../Materials/effect";
@@ -16,6 +17,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
 import "../Shaders/layer.fragment";
 import "../Shaders/layer.vertex";
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 /**
  * This represents a full screen 2d layer.
@@ -78,7 +80,7 @@ export class Layer {
 
     private _scene: Scene;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
     private _alphaTestEffect: Effect;
 

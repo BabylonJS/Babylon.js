@@ -1,6 +1,7 @@
 import { Nullable } from "babylonjs/types";
 import { SerializationHelper } from "babylonjs/Misc/decorators";
-import { Color3, Matrix } from "babylonjs/Maths/math";
+import { Matrix } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { IShadowLight } from "babylonjs/Lights/shadowLight";
 import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
@@ -90,17 +91,17 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
         // Ensure that active light is the first shadow light
         if (this._activeLight) {
-            for (var light of mesh._lightSources) {
+            for (var light of mesh.lightSources) {
                 if (light.shadowEnabled) {
                     if (this._activeLight === light) {
                         break; // We are good
                     }
 
-                    var lightPosition = mesh._lightSources.indexOf(this._activeLight);
+                    var lightPosition = mesh.lightSources.indexOf(this._activeLight);
 
                     if (lightPosition !== -1) {
-                        mesh._lightSources.splice(lightPosition, 1);
-                        mesh._lightSources.splice(0, 0, this._activeLight);
+                        mesh.lightSources.splice(lightPosition, 1);
+                        mesh.lightSources.splice(0, 0, this._activeLight);
                     }
                     break;
                 }

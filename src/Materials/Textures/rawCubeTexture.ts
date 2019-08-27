@@ -3,9 +3,11 @@ import { EnvironmentTextureTools } from "../../Misc/environmentTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { CubeTexture } from "../../Materials/Textures/cubeTexture";
+import { InternalTexture } from "./internalTexture";
+import { CubeTexture } from "./cubeTexture";
 import { Constants } from "../../Engines/constants";
+import "../../Engines/Extensions/engine.rawTexture";
+
 /**
  * Raw cube texture where the raw buffers are passed in
  */

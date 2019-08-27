@@ -50,6 +50,8 @@ export class InputText extends Control implements IFocusableControl {
 
     /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
     public promptMessage = "Please enter text:";
+    /** Force disable prompt on mobile device */
+    public disableMobilePrompt = false;
 
     /** Observable raised when the text changes */
     public onTextChangedObservable = new Observable<InputText>();
@@ -364,7 +366,7 @@ export class InputText extends Control implements IFocusableControl {
 
         this.onFocusObservable.notifyObservers(this);
 
-        if (navigator.userAgent.indexOf("Mobile") !== -1) {
+        if (navigator.userAgent.indexOf("Mobile") !== -1 && !this.disableMobilePrompt) {
             let value = prompt(this.promptMessage);
 
             if (value !== null) {
@@ -758,7 +760,7 @@ export class InputText extends Control implements IFocusableControl {
         this._isTextHighlightOn = false;
         //when write permission to clipbaord data is denied
         try {
-            ev.clipboardData.setData("text/plain", this._highlightedText);
+            ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
         }
         catch { } //pass
         this._host.clipboardData = this._highlightedText;
@@ -773,7 +775,7 @@ export class InputText extends Control implements IFocusableControl {
         this._cursorOffset = this.text.length - this._startHighlightIndex;
         //when write permission to clipbaord data is denied
         try {
-            ev.clipboardData.setData("text/plain", this._highlightedText);
+            ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
         }
         catch { } //pass
 
@@ -993,13 +995,13 @@ export class InputText extends Control implements IFocusableControl {
 
         return true;
     }
-    public _onPointerMove(target: Control, coordinates: Vector2): void {
+    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void {
         if (this._host.focusedControl === this && this._isPointerDown) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
             this._updateValueFromCursorIndex(this._cursorOffset);
         }
-        super._onPointerMove(target, coordinates);
+        super._onPointerMove(target, coordinates, pointerId);
     }
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {

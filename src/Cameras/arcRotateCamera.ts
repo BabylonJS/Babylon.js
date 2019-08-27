@@ -2,7 +2,7 @@ import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Vector2, Epsilon } from "../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -15,6 +15,7 @@ import { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraP
 import { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
 import { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
 import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
+import { Epsilon } from '../Maths/math.constants';
 
 declare type Collider = import("../Collisions/collider").Collider;
 
@@ -72,6 +73,45 @@ export class ArcRotateCamera extends TargetCamera {
 
     public set position(newPosition: Vector3) {
         this.setPosition(newPosition);
+    }
+
+    @serializeAsVector3("upVector")
+    protected _upVector = Vector3.Up();
+
+    protected _upToYMatrix: Matrix;
+    protected _YToUpMatrix: Matrix;
+
+    /**
+     * The vector the camera should consider as up. (default is Vector3(0, 1, 0) as returned by Vector3.Up())
+     * Setting this will copy the given vector to the camera's upVector, and set rotation matrices to and from Y up.
+     * DO NOT set the up vector using copyFrom or copyFromFloats, as this bypasses setting the above matrices.
+     */
+    set upVector(vec: Vector3) {
+        if (!this._upToYMatrix) {
+            this._YToUpMatrix = new Matrix();
+            this._upToYMatrix = new Matrix();
+
+            this._upVector = Vector3.Zero();
+        }
+
+        vec.normalize();
+        this._upVector.copyFrom(vec);
+        this.setMatUp();
+    }
+
+    get upVector() {
+        return this._upVector;
+    }
+
+    /**
+     * Sets the Y-up to camera up-vector rotation matrix, and the up-vector to Y-up rotation matrix.
+     */
+    public setMatUp() {
+        // from y-up to custom-up (used in _getViewMatrix)
+        Matrix.RotationAlignToRef(Vector3.UpReadOnly, this._upVector, this._YToUpMatrix);
+
+        // from custom-up to y-up (used in rebuildAnglesAndRadius)
+        Matrix.RotationAlignToRef(this._upVector, Vector3.UpReadOnly, this._upToYMatrix);
     }
 
     /**
@@ -574,8 +614,6 @@ export class ArcRotateCamera extends TargetCamera {
     protected _targetBoundingCenter: Nullable<Vector3>;
 
     private _computationVector: Vector3 = Vector3.Zero();
-    private _tempAxisVector: Vector3;
-    private _tempAxisRotationMatrix: Matrix;
 
     /**
      * Instantiates a new ArcRotateCamera in a given scene
@@ -651,6 +689,7 @@ export class ArcRotateCamera extends TargetCamera {
     private _storedBeta: number;
     private _storedRadius: number;
     private _storedTarget: Vector3;
+    private _storedTargetScreenOffset: Vector2;
 
     /**
      * Stores the current state of the camera (alpha, beta, radius and target)
@@ -661,6 +700,7 @@ export class ArcRotateCamera extends TargetCamera {
         this._storedBeta = this.beta;
         this._storedRadius = this.radius;
         this._storedTarget = this._getTargetPosition().clone();
+        this._storedTargetScreenOffset = this.targetScreenOffset.clone();
 
         return super.storeState();
     }
@@ -674,10 +714,11 @@ export class ArcRotateCamera extends TargetCamera {
             return false;
         }
 
+        this.setTarget(this._storedTarget.clone());
         this.alpha = this._storedAlpha;
         this.beta = this._storedBeta;
         this.radius = this._storedRadius;
-        this.setTarget(this._storedTarget.clone());
+        this.targetScreenOffset = this._storedTargetScreenOffset.clone();
 
         this.inertialAlphaOffset = 0;
         this.inertialBetaOffset = 0;
@@ -859,6 +900,12 @@ export class ArcRotateCamera extends TargetCamera {
      */
     public rebuildAnglesAndRadius(): void {
         this._position.subtractToRef(this._getTargetPosition(), this._computationVector);
+
+        // need to rotate to Y up equivalent if up vector not Axis.Y
+        if (this._upVector.x !== 0 || this._upVector.y !== 1.0 || this._upVector.z !== 0) {
+            Vector3.TransformCoordinatesToRef(this._computationVector, this._upToYMatrix, this._computationVector);
+        }
+
         this.radius = this._computationVector.length();
 
         if (this.radius === 0) {
@@ -866,7 +913,11 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         // Alpha
-        this.alpha = Math.acos(this._computationVector.x / Math.sqrt(Math.pow(this._computationVector.x, 2) + Math.pow(this._computationVector.z, 2)));
+        if (this._computationVector.x === 0 && this._computationVector.z === 0) {
+            this.alpha = Math.PI / 2; // avoid division by zero when looking along up axis, and set to acos(0)
+        } else {
+            this.alpha = Math.acos(this._computationVector.x / Math.sqrt(Math.pow(this._computationVector.x, 2) + Math.pow(this._computationVector.z, 2)));
+        }
 
         if (this._computationVector.z < 0) {
             this.alpha = 2 * Math.PI - this.alpha;
@@ -942,22 +993,8 @@ export class ArcRotateCamera extends TargetCamera {
         this._computationVector.copyFromFloats(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb);
 
         // Rotate according to up vector
-        if (this.upVector.x !== 0 || this.upVector.y !== 1.0 || this.upVector.z !== 0) {
-
-            if (!this._tempAxisVector) {
-                this._tempAxisVector = new Vector3();
-                this._tempAxisRotationMatrix = new Matrix();
-            }
-
-            Vector3.CrossToRef(Vector3.Up(), this.upVector, this._tempAxisVector);
-            this._tempAxisVector.normalize();
-
-            let angle = Math.acos(Vector3.Dot(Vector3.UpReadOnly, this.upVector));
-
-            Matrix.RotationAxisToRef(this._tempAxisVector, angle, this._tempAxisRotationMatrix);
-
-            this._tempAxisVector.copyFrom(this._computationVector);
-            Vector3.TransformCoordinatesToRef(this._tempAxisVector, this._tempAxisRotationMatrix, this._computationVector);
+        if (this._upVector.x !== 0 || this._upVector.y !== 1.0 || this._upVector.z !== 0) {
+            Vector3.TransformCoordinatesToRef(this._computationVector, this._YToUpMatrix, this._computationVector);
         }
 
         target.addToRef(this._computationVector, this._newPosition);
@@ -975,7 +1012,6 @@ export class ArcRotateCamera extends TargetCamera {
 
             var up = this.upVector;
             if (this.allowUpsideDown && sinb < 0) {
-                up = up.clone();
                 up = up.negate();
             }
 

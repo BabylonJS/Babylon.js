@@ -2,7 +2,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Nullable } from "../types";
 import { Sprite } from "../Sprites/sprite";
 import { Scene } from "../scene";
-import { Vector2 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 
 /**
  * Interface used to define ActionEvent
@@ -59,7 +59,7 @@ export class ActionEvent implements IActionEvent {
      */
     public static CreateNew(source: AbstractMesh, evt?: Event, additionalData?: any): ActionEvent {
         var scene = source.getScene();
-        return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt, additionalData);
+        return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer || source, evt, additionalData);
     }
 
     /**

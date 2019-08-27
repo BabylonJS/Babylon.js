@@ -1,7 +1,8 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty } from "../Misc/decorators";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Vector3, Color3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
+import { Color3 } from "../Maths/math.color";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
@@ -362,6 +363,14 @@ export abstract class Light extends Node {
     public abstract transferToEffect(effect: Effect, lightIndex: string): Light;
 
     /**
+     * Sets the passed Effect "effect" with the Light information.
+     * @param effect The effect to update
+     * @param lightDataUniformName The uniform used to store light data (position or direction)
+     * @returns The light
+     */
+    public abstract transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light;
+
+    /**
      * Returns the string "Light".
      * @returns the class name
      */
@@ -482,7 +491,7 @@ export abstract class Light extends Node {
 
         // Remove from meshes
         for (var mesh of this.getScene().meshes) {
-            mesh._removeLightSource(this);
+            mesh._removeLightSource(this, true);
         }
 
         this._uniformBuffer.dispose();
@@ -607,6 +616,16 @@ export abstract class Light extends Node {
             light._waitingParentId = parsedLight.parentId;
         }
 
+        // Falloff
+        if (parsedLight.falloffType !== undefined) {
+            light.falloffType = parsedLight.falloffType;
+        }
+
+        // Lightmaps
+        if (parsedLight.lightmapMode !== undefined) {
+            light.lightmapMode = parsedLight.lightmapMode;
+        }
+
         // Animations
         if (parsedLight.animations) {
             for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
@@ -688,7 +707,7 @@ export abstract class Light extends Node {
      */
     public _markMeshesAsLightDirty() {
         for (var mesh of this.getScene().meshes) {
-            if (mesh._lightSources.indexOf(this) !== -1) {
+            if (mesh.lightSources.indexOf(this) !== -1) {
                 mesh._markSubMeshesAsLightDirty();
             }
         }

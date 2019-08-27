@@ -18,6 +18,10 @@ export class ShaderAlebdoParts {
     public Fragment_Custom_Albedo: string;
     // lights
     public Fragment_Before_Lights: string;
+    // roughness
+    public Fragment_Custom_MetallicRoughness: string;
+    // microsurface
+    public Fragment_Custom_MicroSurface: string;
     // fog
     public Fragment_Before_Fog: string;
     // alpha
@@ -135,6 +139,8 @@ export class PBRCustomMaterial extends PBRMaterial {
             .replace('#define CUSTOM_FRAGMENT_UPDATE_ALBEDO', (this.CustomParts.Fragment_Custom_Albedo ? this.CustomParts.Fragment_Custom_Albedo : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_ALPHA', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_LIGHTS', (this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : ""))
+            .replace('#define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS', (this.CustomParts.Fragment_Custom_MetallicRoughness ? this.CustomParts.Fragment_Custom_MetallicRoughness : ""))
+            .replace('#define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE', (this.CustomParts.Fragment_Custom_MicroSurface ? this.CustomParts.Fragment_Custom_MicroSurface : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', (this.CustomParts.Fragment_Before_Fog ? this.CustomParts.Fragment_Before_Fog : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
 
@@ -201,6 +207,16 @@ export class PBRCustomMaterial extends PBRMaterial {
 
     public Fragment_Before_Lights(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_Lights = shaderPart;
+        return this;
+    }
+
+    public Fragment_Custom_MetallicRoughness(shaderPart: string): PBRCustomMaterial {
+        this.CustomParts.Fragment_Custom_MetallicRoughness = shaderPart;
+        return this;
+    }
+
+    public Fragment_Custom_MicroSurface(shaderPart: string): PBRCustomMaterial {
+        this.CustomParts.Fragment_Custom_MicroSurface = shaderPart;
         return this;
     }
 

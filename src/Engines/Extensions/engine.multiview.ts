@@ -4,9 +4,10 @@ import { Scene } from "../../scene";
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Nullable } from '../../types';
 import { RenderTargetTexture } from '../../Materials/Textures/renderTargetTexture';
-import { Matrix, Tmp, Frustum } from '../../Maths/math';
+import { Matrix, TmpVectors } from '../../Maths/math.vector';
 import { UniformBuffer } from '../../Materials/uniformBuffer';
 import { MultiviewRenderTarget } from '../../Materials/Textures/MultiviewRenderTarget';
+import { Frustum } from '../../Maths/math.frustum';
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -56,8 +57,8 @@ Engine.prototype.bindMultiviewFramebuffer = function(multiviewTexture: InternalT
     this.bindFramebuffer(multiviewTexture, undefined, undefined, undefined, true);
     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, multiviewTexture._framebuffer);
     if (multiviewTexture._colorTextureArray && multiviewTexture._depthStencilTextureArray) {
-        ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
-        ext.framebufferTextureMultiviewWEBGL(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
+        ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
+        ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
     } else {
         throw "Invalid multiview frame buffer";
     }
@@ -92,10 +93,10 @@ Camera.prototype._multiviewTexture = null;
 
 Camera.prototype._resizeOrCreateMultiviewTexture = function(width: number, height: number) {
     if (!this._multiviewTexture) {
-        this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), {width: width, height: height});
-    }else if (this._multiviewTexture.getRenderWidth() != width || this._multiviewTexture.getRenderHeight() != height) {
+        this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), { width: width, height: height });
+    } else if (this._multiviewTexture.getRenderWidth() != width || this._multiviewTexture.getRenderHeight() != height) {
         this._multiviewTexture.dispose();
-        this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), {width: width, height: height});
+        this._multiviewTexture = new MultiviewRenderTarget(this.getScene(), { width: width, height: height });
     }
 };
 
@@ -128,8 +129,8 @@ Scene.prototype._updateMultiviewUbo = function(viewR?: Matrix, projectionR?: Mat
     }
 
     if (viewR && projectionR) {
-        viewR.multiplyToRef(projectionR, Tmp.Matrix[0]);
-        Frustum.GetRightPlaneToRef(Tmp.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
+        viewR.multiplyToRef(projectionR, TmpVectors.Matrix[0]);
+        Frustum.GetRightPlaneToRef(TmpVectors.Matrix[0], this._frustumPlanes[3]); // Replace right plane by second camera right plane
     }
 
     if (this._multiviewSceneUbo) {

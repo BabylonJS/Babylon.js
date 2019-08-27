@@ -99,7 +99,6 @@ function saveRenderImage(data, canvas) {
 }
 
 function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
-    seed = 100000;
     var renderData = getRenderData(canvas, engine);
     var testRes = true;
 
@@ -148,7 +147,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
             currentScene.activeCamera.useAutoRotationBehavior = false;
         }
         engine.runRenderLoop(function() {
-            try {                
+            try {
                 currentScene.render();
                 renderCount--;
 
@@ -170,6 +169,9 @@ function runTest(index, done) {
     if (index >= config.tests.length) {
         done(false);
     }
+
+    // Clear the plugin activated observables in case it is registered in the test.
+    BABYLON.SceneLoader.OnPluginActivatedObservable.clear();
 
     var test = config.tests[index];
     var container = document.createElement("div");
@@ -198,7 +200,7 @@ function runTest(index, done) {
     resultCanvas.className = "resultImage";
     container.appendChild(resultCanvas);
 
-    title.innerHTML = test.title;
+    title.innerHTML = "#" + index + "> " + test.title;
 
     console.log("Running " + test.title);
 
@@ -214,6 +216,8 @@ function runTest(index, done) {
         container.appendChild(renderImage);
 
         location.href = "#" + container.id;
+       
+        seed = 100000;
 
         if (test.sceneFolder) {
             BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function(newScene) {
@@ -265,6 +269,16 @@ function runTest(index, done) {
                             code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
                             code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
                             code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
+
+                            if (test.replace) {
+                                var split = test.replace.split(",");
+                                for (var i = 0; i < split.length; i += 2) {
+                                    var source = split[i].trim();
+                                    var destination = split[i + 1].trim();
+                                    code = code.replace(source, destination);
+                                }
+                            }
+
                             currentScene = eval(code + "\r\ncreateScene(engine)");
 
                             if (currentScene.then) {
@@ -314,7 +328,6 @@ function runTest(index, done) {
                         var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
                         scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
                         scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/Assets/");
-                        scriptToRun = scriptToRun.replace(/\/Assets\//g, config.root + "/Assets/");
 
                         if (test.replace) {
                             var split = test.replace.split(",");

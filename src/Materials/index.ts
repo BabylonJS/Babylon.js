@@ -15,3 +15,5 @@ export * from "./standardMaterial";
 export * from "./Textures/index";
 export * from "./uniformBuffer";
 export * from "./materialFlags";
+export * from "./Node/index";
+export * from "./effectRenderer";

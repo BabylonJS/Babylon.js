@@ -1,7 +1,7 @@
 import { serialize, serializeAsTexture } from "../Misc/decorators";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Vector3 } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
@@ -10,6 +10,7 @@ import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
+import { Texture } from '../Materials/Textures/texture';
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
@@ -171,8 +172,19 @@ export class SpotLight extends ShadowLight {
     * Sets the projection texture of the light.
     */
     public set projectionTexture(value: Nullable<BaseTexture>) {
+        if (this._projectionTexture === value) {
+            return;
+        }
         this._projectionTexture = value;
         this._projectionTextureDirty = true;
+        if (this._projectionTexture && !this._projectionTexture.isReady()) {
+            let texture = this._projectionTexture as Texture;
+            if (texture.onLoadObservable) {
+                texture.onLoadObservable.addOnce(() => {
+                    this._markMeshesAsLightDirty();
+                });
+            }
+        }
     }
 
     private _projectionTextureViewLightDirty = true;
@@ -340,12 +352,21 @@ export class SpotLight extends ShadowLight {
             normalizeDirection = Vector3.Normalize(this.direction);
         }
 
-        this._uniformBuffer.updateFloat4("vLightDirection",
-            normalizeDirection.x,
-            normalizeDirection.y,
-            normalizeDirection.z,
-            this._cosHalfAngle,
-            lightIndex);
+        if (this.getScene().useRightHandedSystem) {
+            this._uniformBuffer.updateFloat4("vLightDirection",
+                -normalizeDirection.x,
+                -normalizeDirection.y,
+                -normalizeDirection.z,
+                this._cosHalfAngle,
+                lightIndex);
+        } else {
+            this._uniformBuffer.updateFloat4("vLightDirection",
+                normalizeDirection.x,
+                normalizeDirection.y,
+                normalizeDirection.z,
+                this._cosHalfAngle,
+                lightIndex);
+        }
 
         this._uniformBuffer.updateFloat4("vLightFalloff",
             this.range,
@@ -371,6 +392,24 @@ export class SpotLight extends ShadowLight {
         return this;
     }
 
+    public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
+        var normalizeDirection;
+
+        if (this.computeTransformedInformation()) {
+            normalizeDirection = Vector3.Normalize(this.transformedDirection);
+        } else {
+            normalizeDirection = Vector3.Normalize(this.direction);
+        }
+
+        if (this.getScene().useRightHandedSystem) {
+            effect.setFloat3(lightDataUniformName, -normalizeDirection.x, -normalizeDirection.y, -normalizeDirection.z);
+        } else {
+            effect.setFloat3(lightDataUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z);
+        }
+
+        return this;
+    }
+
     /**
      * Disposes the light and the associated resources.
      */
@@ -388,6 +427,6 @@ export class SpotLight extends ShadowLight {
      */
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["SPOTLIGHT" + lightIndex] = true;
-        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture ? true : false;
+        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture && this.projectionTexture.isReady() ? true : false;
     }
 }

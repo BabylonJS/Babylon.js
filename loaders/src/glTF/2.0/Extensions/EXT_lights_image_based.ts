@@ -130,7 +130,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
                 }
 
                 const sphericalHarmonics = SphericalHarmonics.FromArray(light.irradianceCoefficients);
-                sphericalHarmonics.scale(light.intensity);
+                sphericalHarmonics.scaleInPlace(light.intensity);
 
                 sphericalHarmonics.convertIrradianceToLambertianRadiance();
                 const sphericalPolynomial = SphericalPolynomial.FromHarmonics(sphericalHarmonics);

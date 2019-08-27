@@ -251,7 +251,7 @@ export class AssetContainer extends AbstractScene {
 
         for (let key in this) {
             if (this.hasOwnProperty(key)) {
-                (<any>this)[key] = (<any>this)[key] || [];
+                (<any>this)[key] = (<any>this)[key] || (key === "environmentTexture" ? null : []);
                 this._moveAssets((<any>this.scene)[key], (<any>this)[key], (<any>keepAssets)[key]);
             }
         }

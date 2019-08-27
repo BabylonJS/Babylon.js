@@ -1,6 +1,7 @@
 import { Nullable } from "../../types";
 import { Engine } from "../../Engines/engine";
 import { _TimeToken } from "../../Instrumentation/timeToken";
+import { DataBuffer } from '../../Meshes/dataBuffer';
 
 /** @hidden */
 export var _forceTransformFeedbackToBundle = true;
@@ -48,7 +49,7 @@ declare module "../../Engines/engine" {
          * Bind a webGL buffer for a transform feedback operation
          * @param value defines the webGL buffer to bind
          */
-        bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void;
+        bindTransformFeedbackBuffer(value: Nullable<DataBuffer>): void;
     }
 }
 
@@ -76,6 +77,6 @@ Engine.prototype.setTranformFeedbackVaryings = function(program: WebGLProgram, v
     this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
 };
 
-Engine.prototype.bindTransformFeedbackBuffer = function(value: Nullable<WebGLBuffer>): void {
-    this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value);
+Engine.prototype.bindTransformFeedbackBuffer = function(value: Nullable<DataBuffer>): void {
+    this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value ? value.underlyingResource : null);
 };

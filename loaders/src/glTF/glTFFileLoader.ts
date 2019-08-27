@@ -1,5 +1,3 @@
-import { IGLTFValidationResults, IGLTFValidationOptions } from "babylonjs-gltf2interface";
-
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Tools } from "babylonjs/Misc/tools";
@@ -14,12 +12,12 @@ import { SceneLoader, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoade
 import { AssetContainer } from "babylonjs/assetContainer";
 import { Scene, IDisposable } from "babylonjs/scene";
 
+import * as GLTF2 from "babylonjs-gltf2interface";
+
 /**
  * glTF validator object
  */
-declare var GLTFValidator: {
-    validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
-};
+declare var GLTFValidator: GLTF2.IGLTFValidator;
 
 /**
  * Mode that determines the coordinate system to use.
@@ -399,14 +397,14 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /**
      * Observable raised after validation when validate is set to true. The event data is the result of the validation.
      */
-    public readonly onValidatedObservable = new Observable<IGLTFValidationResults>();
+    public readonly onValidatedObservable = new Observable<GLTF2.IGLTFValidationResults>();
 
-    private _onValidatedObserver: Nullable<Observer<IGLTFValidationResults>>;
+    private _onValidatedObserver: Nullable<Observer<GLTF2.IGLTFValidationResults>>;
 
     /**
      * Callback raised after a loader extension is created.
      */
-    public set onValidated(callback: (results: IGLTFValidationResults) => void) {
+    public set onValidated(callback: (results: GLTF2.IGLTFValidationResults) => void) {
         if (this._onValidatedObserver) {
             this.onValidatedObservable.remove(this._onValidatedObserver);
         }
@@ -574,9 +572,9 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     private _parseAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, fileName?: string): Promise<IGLTFLoaderData> {
         return Promise.resolve().then(() => {
-            const unpacked = (data instanceof ArrayBuffer) ? this._unpackBinary(data) : { json: data, bin: null };
+            return this._validateAsync(scene, data, rootUrl, fileName).then(() => {
+                const unpacked = (data instanceof ArrayBuffer) ? this._unpackBinary(data) : { json: data, bin: null };
 
-            return this._validateAsync(scene, unpacked.json, rootUrl, fileName).then(() => {
                 this._startPerformanceCounter("Parse JSON");
                 this._log(`JSON length: ${unpacked.json.length}`);
 
@@ -595,14 +593,14 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    private _validateAsync(scene: Scene, json: string, rootUrl: string, fileName?: string): Promise<void> {
+    private _validateAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, fileName?: string): Promise<void> {
         if (!this.validate || typeof GLTFValidator === "undefined") {
             return Promise.resolve();
         }
 
         this._startPerformanceCounter("Validate JSON");
 
-        const options: IGLTFValidationOptions = {
+        const options: GLTF2.IGLTFValidationOptions = {
             externalResourceFunction: (uri) => {
                 return this.preprocessUrlAsync(rootUrl + uri)
                     .then((url) => scene._loadFileAsync(url, true, true))
@@ -614,9 +612,12 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             options.uri = (rootUrl === "file:" ? fileName : `${rootUrl}${fileName}`);
         }
 
-        return GLTFValidator.validateString(json, options).then((result) => {
-            this._endPerformanceCounter("Validate JSON");
+        const promise = (data instanceof ArrayBuffer)
+            ? GLTFValidator.validateBytes(new Uint8Array(data), options)
+            : GLTFValidator.validateString(data, options);
 
+        return promise.then((result) => {
+            this._endPerformanceCounter("Validate JSON");
             this.onValidatedObservable.notifyObservers(result);
             this.onValidatedObservable.clear();
         }, (reason) => {

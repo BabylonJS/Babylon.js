@@ -134,7 +134,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
     }
 
     /**
-     * Adds all the element from the container to the scene
+     * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
     public addFromContainer(container: AbstractScene): void {
@@ -189,9 +189,11 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         return true;
     }
 
-    private _renderMainTexture(camera: Camera): void {
+    private _renderMainTexture(camera: Camera): boolean {
         this._renderEffects = false;
         this._needStencil = false;
+
+        let needRebind = false;
 
         let layers = this.scene.effectLayers;
         if (layers && layers.length > 0) {
@@ -209,12 +211,15 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
                     if (renderTarget._shouldRender()) {
                         this.scene.incrementRenderId();
                         renderTarget.render(false, false);
+                        needRebind = true;
                     }
                 }
             }
 
             this.scene.incrementRenderId();
         }
+
+        return needRebind;
     }
 
     private _setStencil() {

@@ -4,7 +4,7 @@ import { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import { Nullable, int, float } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Color3, Vector4 } from "../../Maths/math";
+import { Matrix, Vector3, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Meshes/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -24,6 +24,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/ind
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from "../../Misc/typeStore";
 import { MaterialFlags } from "../materialFlags";
+import { Color3 } from '../../Maths/math.color';
 
 import "../../Shaders/background.fragment";
 import "../../Shaders/background.vertex";
@@ -848,10 +849,6 @@ export class BackgroundMaterial extends PushMaterial {
 
             MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
 
-            if (defines.NUM_BONE_INFLUENCERS > 0) {
-                fallbacks.addCPUSkinningFallback(0, mesh);
-            }
-
             //Attributes
             var attribs = [VertexBuffer.PositionKind];
 
@@ -1144,6 +1141,27 @@ export class BackgroundMaterial extends PushMaterial {
         this._uniformBuffer.update();
 
         this._afterBind(mesh, this._activeEffect);
+    }
+
+    /**
+     * Checks to see if a texture is used in the material.
+     * @param texture - Base texture to use.
+     * @returns - Boolean specifying if a texture is used in the material.
+     */
+    public hasTexture(texture: BaseTexture): boolean {
+        if (super.hasTexture(texture)) {
+            return true;
+        }
+
+        if (this._reflectionTexture === texture) {
+            return true;
+        }
+
+        if (this._diffuseTexture === texture) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

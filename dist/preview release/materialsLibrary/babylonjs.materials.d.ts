@@ -103,6 +103,8 @@ declare module BABYLON {
         Fragment_MainBegin: string;
         Fragment_Custom_Albedo: string;
         Fragment_Before_Lights: string;
+        Fragment_Custom_MetallicRoughness: string;
+        Fragment_Custom_MicroSurface: string;
         Fragment_Before_Fog: string;
         Fragment_Custom_Alpha: string;
         Fragment_Before_FragColor: string;
@@ -135,6 +137,8 @@ declare module BABYLON {
         Fragment_Custom_Albedo(shaderPart: string): PBRCustomMaterial;
         Fragment_Custom_Alpha(shaderPart: string): PBRCustomMaterial;
         Fragment_Before_Lights(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MetallicRoughness(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MicroSurface(shaderPart: string): PBRCustomMaterial;
         Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial;
         Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial;
         Vertex_Begin(shaderPart: string): PBRCustomMaterial;
@@ -938,6 +942,11 @@ declare module BABYLON {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        /**
+         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * will avoid calculating useless pixels in the pixel shader of the water material.
+         */
+        disableClipPlane: boolean;
         protected _renderTargets: BABYLON.SmartArray<BABYLON.RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
@@ -948,6 +957,8 @@ declare module BABYLON {
         private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
+        private _imageProcessingConfiguration;
+        private _imageProcessingObserver;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */

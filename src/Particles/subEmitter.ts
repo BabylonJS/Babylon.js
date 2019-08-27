@@ -1,4 +1,4 @@
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { _DevTools } from '../Misc/devTools';
@@ -77,6 +77,7 @@ export class SubEmitter {
         var clone = new SubEmitter(this.particleSystem.clone("", emitter));
 
         // Clone properties
+        clone.particleSystem.name += "Clone";
         clone.type = this.type;
         clone.inheritDirection = this.inheritDirection;
         clone.inheritedVelocityAmount = this.inheritedVelocityAmount;

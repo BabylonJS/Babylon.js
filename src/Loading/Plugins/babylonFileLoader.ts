@@ -2,7 +2,8 @@ import { Logger } from "../../Misc/logger";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
-import { Vector3, Color3, Color4 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
+import { Color3, Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Geometry } from "../../Meshes/geometry";
@@ -29,6 +30,7 @@ import { AmmoJSPlugin } from "../../Physics/Plugins/ammoJSPlugin";
 import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { _TypeStore } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
+import { StringTools } from '../../Misc/stringTools';
 
 /** @hidden */
 export var _BabylonLoaderRegistered = true;
@@ -61,6 +63,42 @@ var logOperation = (operation: string, producer: { file: string, name: string, v
     return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
 };
 
+var loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
+    const mastermesh: Mesh = mesh as Mesh;
+
+    // Every value specified in the ids array of the lod data points to another mesh which should be used as the lower LOD level.
+    // The distances (or coverages) array values specified are used along with the lod mesh ids as a hint to determine the switching threshold for the various LODs.
+    if (mesh._waitingData.lods) {
+        if (mesh._waitingData.lods.ids && mesh._waitingData.lods.ids.length > 0) {
+            const lodmeshes: string[] = mesh._waitingData.lods.ids;
+            const wasenabled: boolean = mastermesh.isEnabled(false);
+            if (mesh._waitingData.lods.distances) {
+                const distances: number[] = mesh._waitingData.lods.distances;
+                if (distances.length >= lodmeshes.length) {
+                    const culling: number = (distances.length > lodmeshes.length) ? distances[distances.length - 1] : 0;
+                    mastermesh.setEnabled(false);
+                    for (let index = 0; index < lodmeshes.length; index++) {
+                        const lodid: string = lodmeshes[index];
+                        const lodmesh: Mesh = scene.getMeshByID(lodid) as Mesh;
+                        if (lodmesh != null) {
+                            mastermesh.addLODLevel(distances[index], lodmesh);
+                        }
+                    }
+                    if (culling > 0) {
+                        mastermesh.addLODLevel(culling, null);
+                    }
+                    if (wasenabled === true) {
+                        mastermesh.setEnabled(true);
+                    }
+                } else {
+                    Tools.Warn("Invalid level of detail distances for " + mesh.name);
+                }
+            }
+        }
+        mesh._waitingData.lods = null;
+    }
+};
+
 var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     var container = new AssetContainer(scene);
 
@@ -89,7 +127,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 }
                 scene.environmentTexture = hdrTexture;
             } else {
-                if (Tools.EndsWith(parsedData.environmentTexture, ".env")) {
+                if (StringTools.EndsWith(parsedData.environmentTexture, ".env")) {
                     var compressedTexture = new CubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
                     if (parsedData.environmentTextureRotationY) {
                         compressedTexture.rotationY = parsedData.environmentTextureRotationY;
@@ -109,6 +147,11 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 scene.createDefaultSkybox(scene.environmentTexture, isPBR, skyboxScale, skyboxBlurLevel);
             }
             container.environmentTexture = scene.environmentTexture;
+        }
+
+        // Environment Intensity
+        if (parsedData.environmentIntensity !== undefined && parsedData.environmentIntensity !== null) {
+            scene.environmentIntensity = parsedData.environmentIntensity;
         }
 
         // Lights
@@ -290,7 +333,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             }
         }
 
-        // Connect parents & children and parse actions
+        // Connect parents & children and parse actions and lods
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             var transformNode = scene.transformNodes[index];
             if (transformNode._waitingParentId) {
@@ -304,14 +347,36 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
                 mesh._waitingParentId = null;
             }
+            if (mesh._waitingData.lods) {
+                loadDetailLevels(scene, mesh);
+            }
+        }
+
+        // link skeleton transform nodes
+        for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
+            var skeleton = scene.skeletons[index];
+            if (skeleton._hasWaitingData) {
+                if (skeleton.bones != null) {
+                    skeleton.bones.forEach((bone) => {
+                        if (bone._waitingTransformNodeId) {
+                            var linkTransformNode = scene.getLastEntryByID(bone._waitingTransformNodeId) as TransformNode;
+                            if (linkTransformNode) {
+                                bone.linkTransformNode(linkTransformNode);
+                            }
+                            bone._waitingTransformNodeId = null;
+                        }
+                    });
+                }
+                skeleton._hasWaitingData = null;
+            }
         }
 
         // freeze world matrix application
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             var currentMesh = scene.meshes[index];
-            if (currentMesh._waitingFreezeWorldMatrix) {
+            if (currentMesh._waitingData.freezeWorldMatrix) {
                 currentMesh.freezeWorldMatrix();
-                currentMesh._waitingFreezeWorldMatrix = null;
+                currentMesh._waitingData.freezeWorldMatrix = null;
             } else {
                 currentMesh.computeWorldMatrix(true);
             }
@@ -352,9 +417,9 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         // Actions (scene) Done last as it can access other objects.
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             var mesh = scene.meshes[index];
-            if (mesh._waitingActions) {
-                ActionManager.Parse(mesh._waitingActions, mesh, scene);
-                mesh._waitingActions = null;
+            if (mesh._waitingData.actions) {
+                ActionManager.Parse(mesh._waitingData.actions, mesh, scene);
+                mesh._waitingData.actions = null;
             }
         }
         if (parsedData.actions !== undefined && parsedData.actions !== null) {
@@ -517,7 +582,7 @@ SceneLoader.RegisterPlugin({
                     }
                 }
 
-                // Connecting parents
+                // Connecting parents and lods
                 var currentMesh: AbstractMesh;
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
@@ -525,14 +590,36 @@ SceneLoader.RegisterPlugin({
                         currentMesh.parent = scene.getLastEntryByID(currentMesh._waitingParentId);
                         currentMesh._waitingParentId = null;
                     }
+                    if (currentMesh._waitingData.lods) {
+                        loadDetailLevels(scene, currentMesh);
+                    }
+                }
+
+                // link skeleton transform nodes
+                for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
+                    var skeleton = scene.skeletons[index];
+                    if (skeleton._hasWaitingData) {
+                        if (skeleton.bones != null) {
+                            skeleton.bones.forEach((bone) => {
+                                if (bone._waitingTransformNodeId) {
+                                    var linkTransformNode = scene.getLastEntryByID(bone._waitingTransformNodeId) as TransformNode;
+                                    if (linkTransformNode) {
+                                        bone.linkTransformNode(linkTransformNode);
+                                    }
+                                    bone._waitingTransformNodeId = null;
+                                }
+                            });
+                        }
+                        skeleton._hasWaitingData = null;
+                    }
                 }
 
                 // freeze and compute world matrix application
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
-                    if (currentMesh._waitingFreezeWorldMatrix) {
+                    if (currentMesh._waitingData.freezeWorldMatrix) {
                         currentMesh.freezeWorldMatrix();
-                        currentMesh._waitingFreezeWorldMatrix = null;
+                        currentMesh._waitingData.freezeWorldMatrix = null;
                     } else {
                         currentMesh.computeWorldMatrix(true);
                     }
@@ -664,7 +751,7 @@ SceneLoader.RegisterPlugin({
                     }
                     scene.environmentTexture = hdrTexture;
                 } else {
-                    if (Tools.EndsWith(parsedData.environmentTexture, ".env")) {
+                    if (StringTools.EndsWith(parsedData.environmentTexture, ".env")) {
                         var compressedTexture = new CubeTexture(rootUrl + parsedData.environmentTexture, scene);
                         if (parsedData.environmentTextureRotationY) {
                             compressedTexture.rotationY = parsedData.environmentTextureRotationY;

@@ -6,26 +6,39 @@ import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
+import { SliderLineComponent } from './sliderLineComponent';
+import { Tools } from 'babylonjs/Misc/tools';
 
 interface IVector3LineComponentProps {
-    label: string,
-    target: any,
-    propertyName: string,
-    onChange?: (newvalue: Vector3) => void,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    label: string;
+    target: any;
+    propertyName: string;
+    step?: number;
+    onChange?: (newvalue: Vector3) => void;
+    useEuler?: boolean,
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, { isExpanded: boolean, value: Vector3 }> {
+
+    static defaultProps = {
+        step: 0.001, // cm
+    };
+
     private _localChange = false;
 
     constructor(props: IVector3LineComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, value: this.props.target[this.props.propertyName].clone() }
+        this.state = { isExpanded: false, value: this.getCurrentValue().clone() }
+    }
+
+    getCurrentValue() {
+        return this.props.target[this.props.propertyName];
     }
 
     shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: { isExpanded: boolean, value: Vector3 }) {
-        const nextPropsValue = nextProps.target[nextProps.propertyName];
+        const nextPropsValue = this.getCurrentValue();
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
             nextState.value = nextPropsValue.clone();
@@ -56,37 +69,34 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         });
     }
 
+    updateVector3() {
+        const store = this.props.target[this.props.propertyName].clone();
+        this.props.target[this.props.propertyName] = this.state.value;
+
+        this.setState({ value: store });
+
+        this.raiseOnPropertyChanged(store);
+    }
+
     updateStateX(value: number) {
         this._localChange = true;
 
-        const store = this.state.value.clone();
-        this.props.target[this.props.propertyName].x = value;
         this.state.value.x = value;
-        this.setState({ value: this.state.value });
-
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     }
 
     updateStateY(value: number) {
         this._localChange = true;
 
-        const store = this.state.value.clone();
-        this.props.target[this.props.propertyName].y = value;
         this.state.value.y = value;
-        this.setState({ value: this.state.value });
-
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     }
 
     updateStateZ(value: number) {
         this._localChange = true;
 
-        const store = this.state.value.clone();
-        this.props.target[this.props.propertyName].z = value;
         this.state.value.z = value;
-        this.setState({ value: this.state.value });
-
-        this.raiseOnPropertyChanged(store);
+        this.updateVector3();
     }
 
     render() {
@@ -99,19 +109,33 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                         {this.props.label}
                     </div>
                     <div className="vector">
-                        {`X: ${this.state.value.x.toFixed(2)}, Y: ${this.state.value.y.toFixed(2)}, Z: ${this.state.value.z.toFixed(2)}`}
-
+                        {
+                            !this.props.useEuler &&
+                            `X: ${this.state.value.x.toFixed(2)}, Y: ${this.state.value.y.toFixed(2)}, Z: ${this.state.value.z.toFixed(2)}`
+                        }
+                        {
+                            this.props.useEuler &&
+                            `X: ${Tools.ToDegrees(this.state.value.x).toFixed(2)}, Y: ${Tools.ToDegrees(this.state.value.y).toFixed(2)}, Z: ${Tools.ToDegrees(this.state.value.z).toFixed(2)}`
+                        }
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
                     </div>
                 </div>
                 {
-                    this.state.isExpanded &&
+                    this.state.isExpanded && !this.props.useEuler &&
                     <div className="secondLine">
-                        <NumericInputComponent label="x" value={this.state.value.x} onChange={value => this.updateStateX(value)} />
-                        <NumericInputComponent label="y" value={this.state.value.y} onChange={value => this.updateStateY(value)} />
-                        <NumericInputComponent label="z" value={this.state.value.z} onChange={value => this.updateStateZ(value)} />
+                        <NumericInputComponent label="x" step={this.props.step} value={this.state.value.x} onChange={value => this.updateStateX(value)} />
+                        <NumericInputComponent label="y" step={this.props.step} value={this.state.value.y} onChange={value => this.updateStateY(value)} />
+                        <NumericInputComponent label="z" step={this.props.step} value={this.state.value.z} onChange={value => this.updateStateZ(value)} />
+                    </div>
+                }
+                {
+                    this.state.isExpanded && this.props.useEuler &&
+                    <div className="secondLine">
+                        <SliderLineComponent label="x" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.x)} onChange={value => this.updateStateX(Tools.ToRadians(value))} />
+                        <SliderLineComponent label="y" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.y)} onChange={value => this.updateStateY(Tools.ToRadians(value))} />
+                        <SliderLineComponent label="z" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.z)} onChange={value => this.updateStateZ(Tools.ToRadians(value))} />
                     </div>
                 }
             </div>

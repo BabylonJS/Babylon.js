@@ -1,7 +1,7 @@
 Babylon.js inspector module
 =====================
 
-For usage documentation please visit http://doc.babylonjs.com/how_to/debug_layer and search "inspector".
+For usage documentation please visit http://doc.babylonjs.com/how_to/debug_layer.
 
 # Installation instructions
 
@@ -13,7 +13,7 @@ If you wish however to use a different version of the inspector or host it on yo
 
 The latest compiled js file is offered on our public CDN here:
 
-* https://cdn.babylonjs.com/inspector/babylonjs.inspector.bundle.js
+* https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js
 
 ## NPM
 

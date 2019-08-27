@@ -3,9 +3,9 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface IMessageLineComponentProps {
-    text: string,
-    color?: string,
-    icon?: IconProp
+    text: string;
+    color?: string;
+    icon?: IconProp;
 }
 
 export class MessageLineComponent extends React.Component<IMessageLineComponentProps> {

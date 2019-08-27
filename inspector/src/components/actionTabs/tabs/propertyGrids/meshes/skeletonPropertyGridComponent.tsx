@@ -26,6 +26,8 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
 
     constructor(props: ISkeletonPropertyGridComponentProps) {
         super(props);
+        
+        this.checkSkeletonViewerState(this.props);
     }
 
     switchSkeletonViewers() {
@@ -81,10 +83,6 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
     }
 
-    componentWillMount() {
-        this.checkSkeletonViewerState(this.props);
-    }
-
     shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps) {
         if (nextProps.skeleton !== this.props.skeleton) {
             this.checkSkeletonViewerState(nextProps);
@@ -99,6 +97,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={skeleton}
+                    lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={skeleton.id} />

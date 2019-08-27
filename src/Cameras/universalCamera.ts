@@ -2,8 +2,10 @@ import { TouchCamera } from "./touchCamera";
 import { Node } from "../node";
 import { FreeCameraGamepadInput } from "../Cameras/Inputs/freeCameraGamepadInput";
 import { Scene } from "../scene";
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { Camera } from "./camera";
+
+import "../Gamepads/gamepadSceneComponent";
 
 Node.AddNodeConstructor("FreeCamera", (name, scene) => {
     // Forcing to use the Universal camera

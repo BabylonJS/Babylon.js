@@ -121,7 +121,7 @@ export interface ISceneComponent {
  */
 export interface ISceneSerializableComponent extends ISceneComponent {
     /**
-     * Adds all the element from the container to the scene
+     * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
     addFromContainer(container: AbstractScene): void;
@@ -159,6 +159,11 @@ export type ActiveMeshStageAction = (sourceMesh: AbstractMesh, mesh: AbstractMes
  * Strong typing of a Camera related stage step action
  */
 export type CameraStageAction = (camera: Camera) => void;
+
+/**
+ * Strong typing of a Camera Frame buffer related stage step action
+ */
+export type CameraStageFrameBufferAction = (camera: Camera) => boolean;
 
 /**
  * Strong typing of a Render Target related stage step action

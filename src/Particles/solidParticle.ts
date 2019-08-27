@@ -1,10 +1,12 @@
 import { Nullable } from "../types";
-import { Color4, Vector3, Matrix, Tmp, Quaternion, Vector4, Plane } from "../Maths/math";
+import { Vector3, Matrix, TmpVectors, Quaternion, Vector4 } from "../Maths/math.vector";
+import { Color4 } from '../Maths/math.color';
 import { Mesh } from "../Meshes/mesh";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { BoundingSphere } from "../Culling/boundingSphere";
 import { SolidParticleSystem } from "./solidParticleSystem";
 import { AbstractMesh } from '../Meshes/abstractMesh';
+import { Plane } from '../Maths/math.plane';
 /**
  * Represents one particle of a solid particle system.
  */
@@ -77,7 +79,7 @@ export class SolidParticle {
      */
     public shapeId: number = 0;
     /**
-     * Index of the particle in its shape id (Internal use)
+     * Index of the particle in its shape id
      */
     public idxInShape: number = 0;
     /**
@@ -212,7 +214,7 @@ export class SolidParticle {
             quaternion = this.rotationQuaternion;
         }
         else {
-            quaternion = Tmp.Quaternion[0];
+            quaternion = TmpVectors.Quaternion[0];
             const rotation = this.rotation;
             Quaternion.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, quaternion);
         }

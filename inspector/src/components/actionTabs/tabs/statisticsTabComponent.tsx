@@ -18,9 +18,7 @@ export class StatisticsTabComponent extends PaneComponent {
 
     constructor(props: IPaneComponentProps) {
         super(props);
-    }
 
-    componentWillMount() {
         const scene = this.props.scene;
 
         if (!scene) {
@@ -82,7 +80,6 @@ export class StatisticsTabComponent extends PaneComponent {
                     <TextLineComponent label="Active bones" value={scene.getActiveBones().toString()} />
                     <TextLineComponent label="Active particles" value={scene.getActiveParticles().toString()} />
                     <TextLineComponent label="Draw calls" value={sceneInstrumentation.drawCallsCounter.current.toString()} />
-                    <TextLineComponent label="Texture collisions" value={sceneInstrumentation.textureCollisionsCounter.current.toString()} />
                     <TextLineComponent label="Total lights" value={scene.lights.length.toString()} />
                     <TextLineComponent label="Total vertices" value={scene.getTotalVertices().toString()} />
                     <TextLineComponent label="Total materials" value={scene.materials.length.toString()} />

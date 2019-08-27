@@ -85,6 +85,10 @@ import { SpotLight } from 'babylonjs/Lights/spotLight';
 import { SpotLightPropertyGridComponent } from './propertyGrids/lights/spotLightPropertyGridComponent';
 import { LensRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline';
 import { LensRenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent';
+import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+import { NodeMaterialPropertyGridComponent } from './propertyGrids/materials/nodeMaterialPropertyGridComponent';
+import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
+import { MultiMaterialPropertyGridComponent } from './propertyGrids/materials/multiMaterialPropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -100,7 +104,7 @@ export class PropertyGridTabComponent extends PaneComponent {
         }
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
     }
 
@@ -203,9 +207,29 @@ export class PropertyGridTabComponent extends PaneComponent {
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
+            if (className === "MultiMaterial") {
+                const material = entity as MultiMaterial;
+                return (<MultiMaterialPropertyGridComponent
+                    globalState={this.props.globalState}
+                    material={material}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
             if (className === "StandardMaterial") {
                 const material = entity as StandardMaterial;
                 return (<StandardMaterialPropertyGridComponent
+                    globalState={this.props.globalState}
+                    material={material}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "NodeMaterial") {
+                const material = entity as NodeMaterial;
+                return (<NodeMaterialPropertyGridComponent
                     globalState={this.props.globalState}
                     material={material}
                     lockObject={this._lockObject}

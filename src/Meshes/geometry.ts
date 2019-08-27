@@ -1,6 +1,7 @@
 import { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
 import { Scene } from "../scene";
-import { Vector3, Vector2, Color4 } from "../Maths/math";
+import { Vector3, Vector2 } from "../Maths/math.vector";
+import { Color4 } from '../Maths/math.color';
 import { Engine } from "../Engines/engine";
 import { IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -12,6 +13,8 @@ import { BoundingInfo } from "../Culling/boundingInfo";
 import { Constants } from "../Engines/constants";
 import { Tools } from "../Misc/tools";
 import { Tags } from "../Misc/tags";
+import { DataBuffer } from './dataBuffer';
+import { extractMinAndMax } from '../Maths/math.functions';
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
@@ -55,7 +58,7 @@ export class Geometry implements IGetSetVerticesData {
     private _boundingBias: Vector2;
     /** @hidden */
     public _delayInfo: Array<string>;
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _indexBufferIsUpdatable = false;
     /** @hidden */
     public _boundingInfo: Nullable<BoundingInfo>;
@@ -285,7 +288,7 @@ export class Geometry implements IGetSetVerticesData {
 
     /**
      * Update a specific vertex buffer
-     * This function will directly update the underlying WebGLBuffer according to the passed numeric array or Float32Array
+     * This function will directly update the underlying DataBuffer according to the passed numeric array or Float32Array
      * It will do nothing if the buffer is not updatable
      * @param kind defines the data kind (Position, normal, etc...)
      * @param data defines the data to use
@@ -351,7 +354,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<WebGLBuffer>): void {
+    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>): void {
         if (!effect) {
             return;
         }
@@ -615,7 +618,7 @@ export class Geometry implements IGetSetVerticesData {
      * Gets the index buffer
      * @return the index buffer
      */
-    public getIndexBuffer(): Nullable<WebGLBuffer> {
+    public getIndexBuffer(): Nullable<DataBuffer> {
         if (!this.isReady()) {
             return null;
         }
@@ -692,7 +695,7 @@ export class Geometry implements IGetSetVerticesData {
             data = this.getVerticesData(VertexBuffer.PositionKind)!;
         }
 
-        this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
+        this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
     }
 
     private _applyToMesh(mesh: Mesh): void {

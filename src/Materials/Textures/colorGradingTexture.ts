@@ -1,6 +1,6 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix } from "../../Maths/math";
+import { Matrix } from "../../Maths/math.vector";
 import { Engine } from "../../Engines/engine";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";

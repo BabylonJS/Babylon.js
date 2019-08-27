@@ -513,6 +513,34 @@ describe('Babylon Scene Loader', function() {
             });
         });
 
+        it('Load Box with extras', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/Box/", "Box_extras.gltf", scene).then((scene) => {
+                expect(scene.meshes.length, "scene.meshes.length").to.equal(2);
+                expect(scene.materials.length, "scene.materials.length").to.equal(1);
+                const mesh = scene.getMeshByName("Box001");
+                expect(mesh, "Box001").to.exist;
+                expect(mesh.metadata, "Box001 metadata").to.exist;
+                expect(mesh.metadata.gltf, "Box001 metadata.gltf").to.exist;
+                expect(mesh.metadata.gltf.extras, "Box001 metadata.gltf.extras").to.exist;
+                expect(mesh.metadata.gltf.extras.kind, "Box001 extras.kind").to.equal("nice cube");
+                expect(mesh.metadata.gltf.extras.magic, "Box001 extras.magic").to.equal(42);
+                const camera = scene.getCameraByName("Camera");
+                expect(camera, "Camera").to.exist;
+                expect(camera.metadata, "Camera metadata").to.exist;
+                expect(mesh.metadata.gltf, "Camera metadata.gltf").to.exist;
+                expect(mesh.metadata.gltf.extras, "Camera metadata.gltf.extras").to.exist;
+                expect(camera.metadata.gltf.extras.custom, "Camera extras.custom").to.equal("cameraProp");
+                const material = scene.getMaterialByName("01___Default")
+                expect(material, "Material").to.exist;
+                expect(material.metadata, "Material metadata").to.exist;
+                expect(mesh.metadata.gltf, "Material metadata.gltf").to.exist;
+                expect(mesh.metadata.gltf.extras, "Material metadata.gltf.extras").to.exist;
+                expect(material.metadata.gltf.extras.custom, "Material extras.custom").to.equal("materialProp");
+
+            });
+        });
+
         // TODO: test animation group callback
         // TODO: test material instancing
         // TODO: test KHR_materials_pbrSpecularGlossiness
@@ -539,12 +567,12 @@ describe('Babylon Scene Loader', function() {
             `;
 
             var scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, () => { }, ".obj").then(container => {
                 expect(container.meshes.length).to.eq(1);
                 let tetrahedron = container.meshes[0];
 
-                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-                var colors : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                var positions: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var colors: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.ColorKind);
 
                 expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
                 assert.isNull(colors, 'expecting colors vertex buffer to be null')
@@ -569,11 +597,11 @@ describe('Babylon Scene Loader', function() {
             `;
 
             var scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, () => { }, ".obj").then(container => {
                 expect(container.meshes.length).to.eq(1);
                 let tetrahedron = container.meshes[0];
 
-                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var positions: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
 
                 expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
             })

@@ -9,7 +9,6 @@ import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
-import { AxesViewerComponent } from "./axesViewerComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
@@ -32,6 +31,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={transformNode}
+                    lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={transformNode.id} />
@@ -43,16 +43,13 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                     <Vector3LineComponent label="Position" target={transformNode} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         !transformNode.rotationQuaternion &&
-                        <Vector3LineComponent label="Rotation" target={transformNode} propertyName="rotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Vector3LineComponent label="Rotation" useEuler={this.props.globalState.onlyUseEulers} target={transformNode} propertyName="rotation" step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     {
                         transformNode.rotationQuaternion &&
-                        <QuaternionLineComponent label="Rotation" target={transformNode} propertyName="rotationQuaternion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <QuaternionLineComponent label="Rotation" useEuler={this.props.globalState.onlyUseEulers} target={transformNode} propertyName="rotationQuaternion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     <Vector3LineComponent label="Scaling" target={transformNode} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="DEBUG" closed={true}>
-                    <AxesViewerComponent globalState={this.props.globalState} node={transformNode} />
                 </LineContainerComponent>
             </div>
         );

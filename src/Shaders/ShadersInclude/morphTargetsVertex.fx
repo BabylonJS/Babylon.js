@@ -8,4 +8,8 @@
 	#ifdef MORPHTARGETS_TANGENT
 	tangentUpdated.xyz += (tangent{X} - tangent.xyz) * morphTargetInfluences[{X}];
 	#endif
+
+    #ifdef MORPHTARGETS_UV
+	uvUpdated += (uv_{X} - uv) * morphTargetInfluences[{X}];
+	#endif
 #endif

@@ -856,7 +856,7 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
-     * Interface for glTF validation results
+     * The glTF validation results
      */
     interface IGLTFValidationResults {
         info: {
@@ -885,7 +885,7 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
-     * Interface for glTF validation options
+     * The glTF validation options
      */
     interface IGLTFValidationOptions {
         uri?: string;
@@ -897,57 +897,10 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
-     * glTF validator object Tyyings
+     * The glTF validator object
      */
-    interface IGLTFValidatorTypings {
+    interface IGLTFValidator {
+        validateBytes: (data: Uint8Array, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
         validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
     }
-}
-
-/**
- * Interface for glTF validation results
- */
-interface IGLTFValidationResults {
-    info: {
-        generator: string;
-        hasAnimations: boolean;
-        hasDefaultScene: boolean;
-        hasMaterials: boolean;
-        hasMorphTargets: boolean;
-        hasSkins: boolean;
-        hasTextures: boolean;
-        maxAttributesUsed: number;
-        primitivesCount: number
-    };
-    issues: {
-        messages: Array<string>;
-        numErrors: number;
-        numHints: number;
-        numInfos: number;
-        numWarnings: number;
-        truncated: boolean
-    };
-    mimeType: string;
-    uri: string;
-    validatedAt: string;
-    validatorVersion: string;
-}
-
-/**
- * Interface for glTF validation options
- */
-interface IGLTFValidationOptions {
-    uri?: string;
-    externalResourceFunction?: (uri: string) => Promise<Uint8Array>;
-    validateAccessorData?: boolean;
-    maxIssues?: number;
-    ignoredIssues?: Array<string>;
-    severityOverrides?: Object;
-}
-
-/**
- * glTF validator object Tyyings
- */
-interface IGLTFValidatorTypings {
-    validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
 }

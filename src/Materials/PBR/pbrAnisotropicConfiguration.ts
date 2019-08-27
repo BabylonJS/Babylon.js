@@ -3,13 +3,13 @@ import { EffectFallbacks } from "../../Materials/effect";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { VertexBuffer } from "../../Meshes/buffer";
-import { Vector2 } from "../../Maths/math";
+import { Vector2 } from "../../Maths/math.vector";
 import { Scene } from "../../scene";
 import { MaterialFlags } from "../../Materials/materialFlags";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { IAnimatable } from "../../Misc/tools";
 import { Nullable } from "../../types";
+import { IAnimatable } from '../../Animations/animatable.interface';
 
 /**
  * @hidden
@@ -29,11 +29,11 @@ export interface IMaterialAnisotropicDefines {
  */
 export class PBRAnisotropicConfiguration {
 
-    @serialize()
     private _isEnabled = false;
     /**
      * Defines if the anisotropy is enabled in the material.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
@@ -50,13 +50,13 @@ export class PBRAnisotropicConfiguration {
     @serializeAsVector2()
     public direction = new Vector2(1, 0);
 
-    @serializeAsTexture()
     private _texture: Nullable<BaseTexture> = null;
     /**
      * Stores the anisotropy values in a texture.
      * rg is direction (like normal from -1 to 1)
      * b is a intensity
      */
+    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
 
@@ -263,8 +263,10 @@ export class PBRAnisotropicConfiguration {
     /**
      * Parses a anisotropy Configuration from a serialized object.
      * @param source - Serialized object.
+     * @param scene Defines the scene we are parsing for
+     * @param rootUrl Defines the rootUrl to load from
      */
-    public parse(source: any): void {
-        SerializationHelper.Parse(() => this, source, null);
+    public parse(source: any, scene: Scene, rootUrl: string): void {
+        SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }

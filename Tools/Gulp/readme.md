@@ -25,7 +25,7 @@ npm update
 ## Build all the distributed files and tests (release build):
 
 ```
-gulp
+npm run build
 ```
 Will generate all the files of the dist/preview release folder.
 

@@ -9,6 +9,8 @@ import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cube
 import { Scene } from '../scene';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 
+import "../Engines/Extensions/engine.cubeTexture";
+
 // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
 // All values and structures referenced from:
 // http://msdn.microsoft.com/en-us/library/bb943991.aspx/
@@ -68,6 +70,7 @@ var FOURCC_DX10 = FourCCToInt32("DX10");
 var FOURCC_D3DFMT_R16G16B16A16F = 113;
 var FOURCC_D3DFMT_R32G32B32A32F = 116;
 
+var DXGI_FORMAT_R32G32B32A32_FLOAT = 2;
 var DXGI_FORMAT_R16G16B16A16_FLOAT = 10;
 var DXGI_FORMAT_B8G8R8X8_UNORM = 88;
 
@@ -188,6 +191,10 @@ export class DDSTools {
             case FOURCC_DX10:
                 if (dxgiFormat === DXGI_FORMAT_R16G16B16A16_FLOAT) {
                     textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+                    break;
+                }
+                if (dxgiFormat === DXGI_FORMAT_R32G32B32A32_FLOAT) {
+                    textureType = Constants.TEXTURETYPE_FLOAT;
                     break;
                 }
         }
@@ -499,6 +506,7 @@ export class DDSTools {
                     let supported = false;
                     switch (info.dxgiFormat) {
                         case DXGI_FORMAT_R16G16B16A16_FLOAT:
+                        case DXGI_FORMAT_R32G32B32A32_FLOAT:
                             computeFormats = true;
                             supported = true;
                             break;
@@ -533,7 +541,8 @@ export class DDSTools {
             mipmapCount = Math.max(1, header[off_mipmapCount]);
         }
 
-        for (var face = 0; face < faces; face++) {
+        const startFace = currentFace || 0;
+        for (var face = startFace; face < faces; face++) {
             width = header[off_width];
             height = header[off_height];
 

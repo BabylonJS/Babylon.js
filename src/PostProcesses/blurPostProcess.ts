@@ -1,4 +1,4 @@
-import { Vector2 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Camera } from "../Cameras/camera";

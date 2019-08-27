@@ -2,7 +2,7 @@ import { Nullable } from "../types";
 import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh";
-import { Vector3, Tmp } from "../Maths/math";
+import { Vector3, TmpVectors } from "../Maths/math.vector";
 import { IDisposable } from "../scene";
 import { Observer } from "../Misc/observable";
 import { Effect } from "../Materials/effect";
@@ -14,25 +14,10 @@ import { Node } from "../node";
 
 import "../Shaders/line.fragment";
 import "../Shaders/line.vertex";
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
-        /**
-         * Disables the mesh edge rendering mode
-         * @returns the currentAbstractMesh
-         */
-        disableEdgesRendering(): AbstractMesh;
-
-        /**
-         * Enables the edge rendering mode on the mesh.
-         * This mode makes the mesh edges visible
-         * @param epsilon defines the maximal distance between two angles to detect a face
-         * @param checkVerticesInsteadOfIndices indicates that we should check vertex list directly instead of faces
-         * @returns the currentAbstractMesh
-         * @see https://www.babylonjs-playground.com/#19O9TU#0
-         */
-        enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
-
         /**
          * Gets the edgesRenderer associated with the mesh
          */
@@ -154,7 +139,7 @@ export class EdgesRenderer implements IEdgesRenderer {
     protected _indicesCount: number;
 
     protected _lineShader: ShaderMaterial;
-    protected _ib: WebGLBuffer;
+    protected _ib: DataBuffer;
     protected _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
     protected _checkVerticesInsteadOfIndices = false;
 
@@ -242,7 +227,9 @@ export class EdgesRenderer implements IEdgesRenderer {
             this._buffers[VertexBuffer.NormalKind] = null;
         }
 
-        this._source.getScene().getEngine()._releaseBuffer(this._ib);
+        if (this._ib) {
+            this._source.getScene().getEngine()._releaseBuffer(this._ib);
+        }
         this._lineShader.dispose();
     }
 
@@ -530,8 +517,8 @@ export class LineEdgesRenderer extends EdgesRenderer {
             return;
         }
 
-        const p0 = Tmp.Vector3[0];
-        const p1 = Tmp.Vector3[1];
+        const p0 = TmpVectors.Vector3[0];
+        const p1 = TmpVectors.Vector3[1];
         const len = indices.length - 1;
         for (let i = 0, offset = 0; i < len; i += 2, offset += 4) {
             Vector3.FromArrayToRef(positions, 3 * indices[i], p0);

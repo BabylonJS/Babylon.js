@@ -22,6 +22,10 @@ export enum InspectableType {
      * Color3
      */
     Color3 = 4,
+    /**
+     * String
+     */
+    String = 5
 }
 
 /**

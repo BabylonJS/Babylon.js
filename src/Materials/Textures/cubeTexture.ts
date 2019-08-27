@@ -2,13 +2,15 @@ import { serialize, serializeAsMatrix, SerializationHelper } from "../../Misc/de
 import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3 } from "../../Maths/math";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
+
+import "../../Engines/Extensions/engine.cubeTexture";
 
 /**
  * Class for creating a cube texture
@@ -79,6 +81,8 @@ export class CubeTexture extends BaseTexture {
     }
 
     private _noMipmap: boolean;
+
+    @serialize("files")
     private _files: string[];
     private _extensions: string[];
 
@@ -213,6 +217,13 @@ export class CubeTexture extends BaseTexture {
     }
 
     /**
+     * Gets a boolean indicating if the cube texture contains prefiltered mips (used to simulate roughness with PBR)
+     */
+    public get isPrefiltered(): boolean {
+        return this._prefiltered;
+    }
+
+    /**
      * Get the current class name of the texture useful for serialization or dynamic coding.
      * @returns "CubeTexture"
      */
@@ -232,6 +243,7 @@ export class CubeTexture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
+        this.name = url;
         this.url = url;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
         this._prefiltered = false;
@@ -265,7 +277,7 @@ export class CubeTexture extends BaseTexture {
                 this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, this.lodGenerationScale, this.lodGenerationOffset, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
             }
             else {
-                this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, undefined, this._format, forcedExtension);
+                this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);
             }
         }
     }
@@ -307,7 +319,7 @@ export class CubeTexture extends BaseTexture {
             if (parsedTexture.prefiltered) {
                 prefiltered = parsedTexture.prefiltered;
             }
-            return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions, false, null, null, null, undefined, prefiltered);
+            return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions, false, parsedTexture.files || null, null, null, undefined, prefiltered);
         }, parsedTexture, scene);
 
         // Local Cubemaps

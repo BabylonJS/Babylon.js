@@ -1,5 +1,6 @@
 import { Nullable } from "../types";
-import { Color4 } from "../Maths/math";
+import { Color4 } from "../Maths/math.color";
+import { Mesh } from "../Meshes/mesh";
 import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SmartArray } from "../Misc/smartArray";
@@ -8,6 +9,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
+import { MaterialHelper } from "../Materials/materialHelper";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 
@@ -23,6 +25,11 @@ export class DepthRenderer {
     private _scene: Scene;
     private _depthMap: RenderTargetTexture;
     private _effect: Effect;
+    private readonly _storeNonLinearDepth: boolean;
+    private readonly _clearColor: Color4;
+
+    /** Get if the depth renderer is using packed depth or not */
+    public readonly isPacked: boolean;
 
     private _cachedDefines: string;
     private _camera: Nullable<Camera>;
@@ -44,16 +51,29 @@ export class DepthRenderer {
      * @param scene The scene the renderer belongs to
      * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
+     * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
      */
-    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null) {
+    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, storeNonLinearDepth = false) {
         this._scene = scene;
+        this._storeNonLinearDepth = storeNonLinearDepth;
+        this.isPacked = type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        if (this.isPacked) {
+            this._clearColor = new Color4(1.0, 1.0, 1.0, 1.0);
+        }
+        else {
+            this._clearColor = new Color4(1.0, 0.0, 0.0, 1.0);
+        }
+
         DepthRenderer._SceneComponentInitialization(this._scene);
 
         this._camera = camera;
         var engine = scene.getEngine();
 
         // Render target
-        this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type);
+        var format = (this.isPacked || engine.webGLVersion === 1) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
+        this._depthMap = new RenderTargetTexture("depthMap", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
+            false, undefined, undefined, undefined, undefined,
+            format);
         this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.wrapV = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.refreshRate = 1;
@@ -67,7 +87,7 @@ export class DepthRenderer {
 
         // set default depth value to 1.0 (far away)
         this._depthMap.onClearObservable.add((engine) => {
-            engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
+            engine.clear(this._clearColor, true, true, true);
         });
 
         // Custom render function
@@ -76,6 +96,8 @@ export class DepthRenderer {
             var scene = this._scene;
             var engine = scene.getEngine();
             let material = subMesh.getMaterial();
+
+            mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
             if (!material) {
                 return;
@@ -116,6 +138,9 @@ export class DepthRenderer {
                 if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                     this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                 }
+
+                // Morph targets
+                MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
 
                 // Draw
                 mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
@@ -189,13 +214,34 @@ export class DepthRenderer {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
 
+        // Morph targets
+        const morphTargetManager = (mesh as Mesh).morphTargetManager;
+        let numMorphInfluencers = 0;
+        if (morphTargetManager) {
+            if (morphTargetManager.numInfluencers > 0) {
+                numMorphInfluencers = morphTargetManager.numInfluencers;
+
+                defines.push("#define MORPHTARGETS");
+                defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
+
+                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
+            }
+        }
+
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+            MaterialHelper.PushAttributesForInstances(attribs);
+        }
+
+        // None linear depth
+        if (this._storeNonLinearDepth) {
+            defines.push("#define NONLINEARDEPTH");
+        }
+
+        // Float Mode
+        if (this.isPacked) {
+            defines.push("#define PACKED");
         }
 
         // Get correct effect
@@ -204,8 +250,9 @@ export class DepthRenderer {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("depth",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues"],
-                ["diffuseSampler"], join);
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences"],
+                ["diffuseSampler"], join,
+                undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 
         return this._effect.isReady();

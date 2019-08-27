@@ -1,7 +1,8 @@
-import { Vector3, Color4 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { ActionManager } from "../Actions/actionManager";
 import { ISpriteManager } from "./spriteManager";
+import { Color4 } from '../Maths/math.color';
 
 /**
  * Class used to represent a sprite
@@ -19,7 +20,9 @@ export class Sprite {
     /** Gets or sets rotation angle */
     public angle = 0;
     /** Gets or sets the cell index in the sprite sheet */
-    public cellIndex = 0;
+    public cellIndex: number;
+    /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
+    public cellRef: string;
     /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
     public invertU = 0;
     /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */
@@ -93,7 +96,13 @@ export class Sprite {
         this._delay = delay;
         this._animationStarted = true;
 
-        this._direction = from < to ? 1 : -1;
+        if (from < to) {
+            this._direction = 1;
+        } else {
+            this._direction = -1;
+            this._toIndex = from;
+            this._fromIndex = to;
+        }
 
         this.cellIndex = from;
         this._time = 0;
@@ -116,9 +125,9 @@ export class Sprite {
         if (this._time > this._delay) {
             this._time = this._time % this._delay;
             this.cellIndex += this._direction;
-            if (this.cellIndex > this._toIndex) {
+            if (this._direction > 0 && this.cellIndex > this._toIndex || this._direction < 0 && this.cellIndex < this._fromIndex) {
                 if (this._loopAnimation) {
-                    this.cellIndex = this._fromIndex;
+                    this.cellIndex = this._direction > 0 ? this._fromIndex : this._toIndex;
                 } else {
                     this.cellIndex = this._toIndex;
                     this._animationStarted = false;

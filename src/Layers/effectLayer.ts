@@ -5,7 +5,8 @@ import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Color4, ISize } from "../Maths/math";
+import { ISize } from "../Maths/math.size";
+import { Color4 } from '../Maths/math.color';
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -18,7 +19,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index"
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Effect } from "../Materials/effect";
+import { Effect, EffectFallbacks } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Constants } from "../Engines/constants";
@@ -26,6 +27,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
 import { _DevTools } from '../Misc/devTools';
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -70,7 +72,7 @@ export interface IEffectLayerOptions {
 export abstract class EffectLayer {
 
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _cachedDefines: string;
     private _effectLayerMapGenerationEffect: Effect;
     private _effectLayerOptions: IEffectLayerOptions;
@@ -118,6 +120,9 @@ export abstract class EffectLayer {
     @serialize()
     public get renderingGroupId(): number {
         return this._effectLayerOptions.renderingGroupId;
+    }
+    public set renderingGroupId(renderingGroupId: number) {
+        this._effectLayerOptions.renderingGroupId = renderingGroupId;
     }
 
     /**
@@ -170,7 +175,7 @@ export abstract class EffectLayer {
 
         // Generate Buffers
         this._generateIndexBuffer();
-        this._genrateVertexBuffer();
+        this._generateVertexBuffer();
     }
 
     /**
@@ -269,7 +274,7 @@ export abstract class EffectLayer {
     /**
      * Generates the vertex buffer of the full screen quad blending to the main canvas.
      */
-    private _genrateVertexBuffer(): void {
+    private _generateVertexBuffer(): void {
         // VBO
         var vertices = [];
         vertices.push(1, 1);
@@ -294,8 +299,8 @@ export abstract class EffectLayer {
             this._mainTextureDesiredSize.width = this._engine.getRenderWidth() * this._effectLayerOptions.mainTextureRatio;
             this._mainTextureDesiredSize.height = this._engine.getRenderHeight() * this._effectLayerOptions.mainTextureRatio;
 
-            this._mainTextureDesiredSize.width = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize) : this._mainTextureDesiredSize.width;
-            this._mainTextureDesiredSize.height = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize) : this._mainTextureDesiredSize.height;
+            this._mainTextureDesiredSize.width = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize) : this._mainTextureDesiredSize.width;
+            this._mainTextureDesiredSize.height = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize) : this._mainTextureDesiredSize.height;
         }
 
         this._mainTextureDesiredSize.width = Math.floor(this._mainTextureDesiredSize.width);
@@ -348,9 +353,13 @@ export abstract class EffectLayer {
                 this._renderSubMesh(alphaTestSubMeshes.data[index]);
             }
 
+            const previousAlphaMode = engine.getAlphaMode();
+
             for (index = 0; index < transparentSubMeshes.length; index++) {
-                this._renderSubMesh(transparentSubMeshes.data[index]);
+                this._renderSubMesh(transparentSubMeshes.data[index], true);
             }
+
+            engine.setAlphaMode(previousAlphaMode);
         };
 
         this._mainTexture.onClearObservable.add((engine: Engine) => {
@@ -463,6 +472,7 @@ export abstract class EffectLayer {
         }
 
         // Bones
+        const fallbacks = new EffectFallbacks();
         if (mesh.useBones && mesh.computeBonesUsingShaders) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
@@ -470,8 +480,19 @@ export abstract class EffectLayer {
                 attribs.push(VertexBuffer.MatricesIndicesExtraKind);
                 attribs.push(VertexBuffer.MatricesWeightsExtraKind);
             }
+
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            defines.push("#define BonesPerMesh " + (mesh.skeleton ? (mesh.skeleton.bones.length + 1) : 0));
+
+            let skeleton = mesh.skeleton;
+            if (skeleton && skeleton.isUsingTextureForMatrices) {
+                defines.push("#define BONETEXTURE");
+            } else {
+                defines.push("#define BonesPerMesh " + (skeleton ? (skeleton.bones.length + 1) : 0));
+            }
+
+            if (mesh.numBoneInfluencers > 0) {
+                fallbacks.addCPUSkinningFallback(0, mesh);
+            }
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
@@ -484,17 +505,14 @@ export abstract class EffectLayer {
                 defines.push("#define MORPHTARGETS");
                 morphInfluencers = manager.numInfluencers;
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
-                MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, { "NUM_MORPH_INFLUENCERS": morphInfluencers });
+                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
             }
         }
 
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            attribs.push("world0");
-            attribs.push("world1");
-            attribs.push("world2");
-            attribs.push("world3");
+            MaterialHelper.PushAttributesForInstances(attribs);
         }
 
         this._addCustomEffectDefines(defines);
@@ -506,10 +524,10 @@ export abstract class EffectLayer {
             this._effectLayerMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration",
                 attribs,
                 ["world", "mBones", "viewProjection",
-                    "color", "morphTargetInfluences",
+                    "glowColor", "morphTargetInfluences", "boneTextureWidth",
                     "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity"],
-                ["diffuseSampler", "emissiveSampler", "opacitySampler"], join,
-                undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
+                ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler"], join,
+                fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
         }
 
         return this._effectLayerMapGenerationEffect.isReady();
@@ -620,7 +638,7 @@ export abstract class EffectLayer {
     /**
      * Renders the submesh passed in parameter to the generation map.
      */
-    protected _renderSubMesh(subMesh: SubMesh): void {
+    protected _renderSubMesh(subMesh: SubMesh, enableAlphaMode: boolean = false): void {
         if (!this.shouldRender()) {
             return;
         }
@@ -629,6 +647,8 @@ export abstract class EffectLayer {
         var mesh = subMesh.getRenderingMesh();
         var scene = this._scene;
         var engine = scene.getEngine();
+
+        mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
         if (!material) {
             return;
@@ -653,7 +673,7 @@ export abstract class EffectLayer {
             return;
         }
 
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
 
         this._setEmissiveTextureAndColor(mesh, subMesh, material);
 
@@ -663,7 +683,7 @@ export abstract class EffectLayer {
 
             this._effectLayerMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-            this._effectLayerMapGenerationEffect.setFloat4("color",
+            this._effectLayerMapGenerationEffect.setFloat4("glowColor",
                 this._emissiveTextureAndColor.color.r,
                 this._emissiveTextureAndColor.color.g,
                 this._emissiveTextureAndColor.color.b,
@@ -702,11 +722,28 @@ export abstract class EffectLayer {
 
             // Bones
             if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                this._effectLayerMapGenerationEffect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                const skeleton = mesh.skeleton;
+
+                if (skeleton.isUsingTextureForMatrices) {
+                    const boneTexture = skeleton.getTransformMatrixTexture(mesh);
+                    if (!boneTexture) {
+                        return;
+                    }
+
+                    this._effectLayerMapGenerationEffect.setTexture("boneSampler", boneTexture);
+                    this._effectLayerMapGenerationEffect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                } else {
+                    this._effectLayerMapGenerationEffect.setMatrices("mBones", skeleton.getTransformMatrices((mesh)));
+                }
             }
 
             // Morph targets
             MaterialHelper.BindMorphTargetParameters(mesh, this._effectLayerMapGenerationEffect);
+
+            // Alpha mode
+            if (enableAlphaMode) {
+                engine.setAlphaMode(material.alphaMode);
+            }
 
             // Draw
             mesh._processRendering(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode, batch, hardwareInstancedRendering,

@@ -8,14 +8,20 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 
 interface IVector2LineComponentProps {
-    label: string,
-    target: any,
-    propertyName: string,
-    onChange?: (newvalue: Vector2) => void,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    label: string;
+    target: any;
+    propertyName: string;
+    step?: number;
+    onChange?: (newvalue: Vector2) => void;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, { isExpanded: boolean, value: Vector2 }> {
+
+    static defaultProps = {
+        step: 0.001, // cm
+    };
+
     private _localChange = false;
 
     constructor(props: IVector2LineComponentProps) {
@@ -98,8 +104,8 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
                 {
                     this.state.isExpanded &&
                     <div className="secondLine">
-                        <NumericInputComponent label="x" value={this.state.value.x} onChange={value => this.updateStateX(value)} />
-                        <NumericInputComponent label="y" value={this.state.value.y} onChange={value => this.updateStateY(value)} />
+                        <NumericInputComponent label="x" step={this.props.step} value={this.state.value.x} onChange={value => this.updateStateX(value)} />
+                        <NumericInputComponent label="y" step={this.props.step} value={this.state.value.y} onChange={value => this.updateStateY(value)} />
                     </div>
                 }
             </div>
