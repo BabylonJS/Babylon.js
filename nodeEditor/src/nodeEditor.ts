@@ -9,7 +9,8 @@ import { Popup } from "../src/sharedComponents/popup"
  */
 export interface INodeEditorOptions {
     nodeMaterial: NodeMaterial,
-    hostElement?: HTMLElement
+    hostElement?: HTMLElement,
+    customSave?: {label: string, callback: (nodeMaterial: NodeMaterial) => void};
 }
 
 /**
@@ -40,6 +41,7 @@ export class NodeEditor {
         globalState.nodeMaterial = options.nodeMaterial
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
+        globalState.customSave = options.customSave;
 
         const graphEditor = React.createElement(GraphEditor, {
             globalState: globalState
