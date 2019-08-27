@@ -72582,7 +72582,10 @@ var NodeEditor = /** @class */ (function () {
                 popupWindow.close();
             }
         }
-        var hostElement = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"].CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800);
+        var hostElement = options.hostElement;
+        if (!hostElement) {
+            hostElement = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"].CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800);
+        }
         var globalState = new _globalState__WEBPACK_IMPORTED_MODULE_2__["GlobalState"]();
         globalState.nodeMaterial = options.nodeMaterial;
         globalState.hostElement = hostElement;
