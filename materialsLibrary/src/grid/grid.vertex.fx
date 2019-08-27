@@ -14,7 +14,6 @@ attribute vec2 uv2;
 
 // Uniforms
 uniform mat4 projection;
-uniform mat4 world;
 uniform mat4 view;
 
 // Varying

@@ -36053,8 +36053,9 @@ declare module BABYLON {
         /**
          * Attaches the drag behavior the passed in mesh
          * @param ownerNode The mesh that will be dragged around once attached
+         * @param predicate Predicate to use for pick filtering
          */
-        attach(ownerNode: AbstractMesh): void;
+        attach(ownerNode: AbstractMesh, predicate?: (m: AbstractMesh) => boolean): void;
         /**
          * Force relase the drag action by code.
          */

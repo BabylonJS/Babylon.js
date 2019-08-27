@@ -371,6 +371,14 @@ declare module "babylonjs-node-editor/nodeLocationInfo" {
         y: number;
     }
 }
+declare module "babylonjs-node-editor/serializationTools" {
+    import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    export class SerializationTools {
+        static Serialize(material: NodeMaterial, globalState: GlobalState): string;
+        static Deserialize(serializationObject: any, globalState: GlobalState): void;
+    }
+}
 declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1065,7 +1073,8 @@ declare module "babylonjs-node-editor/components/preview/previewMeshType" {
         Sphere = 0,
         Box = 1,
         Torus = 2,
-        Cylinder = 3
+        Cylinder = 3,
+        Plane = 4
     }
 }
 declare module "babylonjs-node-editor/components/preview/previewManager" {
@@ -1427,6 +1436,10 @@ declare module "babylonjs-node-editor/globalState" {
         onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
         blockKeyboardEvents: boolean;
+        customSave?: {
+            label: string;
+            action: (data: string) => void;
+        };
         constructor();
     }
 }
@@ -1438,11 +1451,18 @@ declare module "babylonjs-node-editor/sharedComponents/popup" {
 }
 declare module "babylonjs-node-editor/nodeEditor" {
     import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
+    import { Observable } from 'babylonjs/Misc/observable';
     /**
      * Interface used to specify creation options for the node editor
      */
     export interface INodeEditorOptions {
         nodeMaterial: NodeMaterial;
+        hostElement?: HTMLElement;
+        customSave?: {
+            label: string;
+            action: (data: string) => void;
+        };
+        customLoadObservable?: Observable<any>;
     }
     /**
      * Class used to create a node editor
@@ -1762,6 +1782,12 @@ declare module NODEEDITOR {
         blockId: number;
         x: number;
         y: number;
+    }
+}
+declare module NODEEDITOR {
+    export class SerializationTools {
+        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState): string;
+        static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }
 }
 declare module NODEEDITOR {
@@ -2353,7 +2379,8 @@ declare module NODEEDITOR {
         Sphere = 0,
         Box = 1,
         Torus = 2,
-        Cylinder = 3
+        Cylinder = 3,
+        Plane = 4
     }
 }
 declare module NODEEDITOR {
@@ -2645,6 +2672,10 @@ declare module NODEEDITOR {
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
         blockKeyboardEvents: boolean;
+        customSave?: {
+            label: string;
+            action: (data: string) => void;
+        };
         constructor();
     }
 }
@@ -2660,6 +2691,12 @@ declare module NODEEDITOR {
      */
     export interface INodeEditorOptions {
         nodeMaterial: BABYLON.NodeMaterial;
+        hostElement?: HTMLElement;
+        customSave?: {
+            label: string;
+            action: (data: string) => void;
+        };
+        customLoadObservable?: BABYLON.Observable<any>;
     }
     /**
      * Class used to create a node editor
