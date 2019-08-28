@@ -186,7 +186,7 @@ export class NodeMaterialBuildState {
         }
 
         this.extensions[name] = extension;
-    }    
+    }
 
     /** @hidden */
     public _emitFunction(name: string, code: string, comments: string) {

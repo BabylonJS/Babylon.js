@@ -20,8 +20,8 @@ export class PertubNormalBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment);
 
         // Vertex
-        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);        
-        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);        
+        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("normalMapColor", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("strength", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
@@ -43,7 +43,7 @@ export class PertubNormalBlock extends NodeMaterialBlock {
      */
     public get worldPosition(): NodeMaterialConnectionPoint {
         return this._inputs[0];
-    }    
+    }
 
     /**
      * Gets the world normal input component
@@ -57,8 +57,8 @@ export class PertubNormalBlock extends NodeMaterialBlock {
      */
     public get uv(): NodeMaterialConnectionPoint {
         return this._inputs[2];
-    }    
-    
+    }
+
     /**
     * Gets the normal map color input component
     */
@@ -100,12 +100,12 @@ export class PertubNormalBlock extends NodeMaterialBlock {
             strengthInput.value = 1.0;
             strengthInput.output.connectTo(this.strength);
         }
-    }    
+    }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let comments = `//${this.name}`;        
+        let comments = `//${this.name}`;
         let uv = this.uv;
         let worldPosition = this.worldPosition;
         let worldNormal = this.worldNormal;
@@ -119,8 +119,8 @@ export class PertubNormalBlock extends NodeMaterialBlock {
                 { search: /vTangentSpaceParams/g, replace: "vec2(1.0, 1.0)"},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"}
             ]
-        });      
-        state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\r\n";    
+        });
+        state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\r\n";
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
                 { search: /perturbNormal\(TBN,vBumpUV\+uvOffset\)/g, replace: `perturbNormal(TBN, ${this.normalMapColor.associatedVariableName})` },
