@@ -980,14 +980,14 @@ export class NodeMaterial extends PushMaterial {
         positionInput.setAsAttribute("position");
 
         var worldInput = new InputBlock("world");
-        worldInput.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.World);
+        worldInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.World);
 
         var worldPos = new TransformBlock("worldPos");
         positionInput.connectTo(worldPos);
         worldInput.connectTo(worldPos);
 
         var viewProjectionInput = new InputBlock("viewProjection");
-        viewProjectionInput.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.ViewProjection);
+        viewProjectionInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.ViewProjection);
 
         var worldPosdMultipliedByViewProjection = new TransformBlock("worldPos * viewProjectionTransform");
         worldPos.connectTo(worldPosdMultipliedByViewProjection);

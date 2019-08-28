@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBlockConnectionPointMode } from '../../NodeMaterialBlockConnectionPointMode';
-import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { NodeMaterialSystemValues } from '../../nodeMaterialSystemValues';
 import { Nullable } from '../../../../types';
 import { Effect } from '../../../../Materials/effect';
 import { Matrix, Vector2, Vector3, Vector4 } from '../../../../Maths/math.vector';
@@ -25,7 +25,7 @@ export class InputBlock extends NodeMaterialBlock {
     private _animationType = AnimatedInputBlockTypes.None;
 
     /** @hidden */
-    public _wellKnownValue: Nullable<NodeMaterialWellKnownValues> = null;
+    public _systemValue: Nullable<NodeMaterialSystemValues> = null;
 
     /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
     public visibleInInspector = false;
@@ -85,20 +85,20 @@ export class InputBlock extends NodeMaterialBlock {
                 }
             }
 
-            if (this.isWellKnownValue) {
-                switch (this._wellKnownValue) {
-                    case NodeMaterialWellKnownValues.World:
-                    case NodeMaterialWellKnownValues.WorldView:
-                    case NodeMaterialWellKnownValues.WorldViewProjection:
-                    case NodeMaterialWellKnownValues.View:
-                    case NodeMaterialWellKnownValues.ViewProjection:
-                    case NodeMaterialWellKnownValues.Projection:
+            if (this.isSystemValue) {
+                switch (this._systemValue) {
+                    case NodeMaterialSystemValues.World:
+                    case NodeMaterialSystemValues.WorldView:
+                    case NodeMaterialSystemValues.WorldViewProjection:
+                    case NodeMaterialSystemValues.View:
+                    case NodeMaterialSystemValues.ViewProjection:
+                    case NodeMaterialSystemValues.Projection:
                         this._type = NodeMaterialBlockConnectionPointTypes.Matrix;
                         return this._type;
-                    case NodeMaterialWellKnownValues.CameraPosition:
+                    case NodeMaterialSystemValues.CameraPosition:
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
                         return this._type;
-                    case NodeMaterialWellKnownValues.FogColor:
+                    case NodeMaterialSystemValues.FogColor:
                         this._type = NodeMaterialBlockConnectionPointTypes.Color3;
                         return this._type;
                 }
@@ -145,12 +145,12 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Set the source of this connection point to a well known value
-     * @param value define the well known value to use (world, view, etc...) or null to switch to manual value
+     * Set the source of this connection point to a system value
+     * @param value define the system value to use (world, view, etc...) or null to switch to manual value
      * @returns the current connection point
      */
-    public setAsWellKnownValue(value: Nullable<NodeMaterialWellKnownValues>): InputBlock {
-        this.wellKnownValue = value;
+    public setAsSystemValue(value: Nullable<NodeMaterialSystemValues>): InputBlock {
+        this.systemValue = value;
         return this;
     }
 
@@ -249,23 +249,23 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets a boolean indicating that the current connection point is a well known value
+     * Gets a boolean indicating that the current connection point is a system value
      */
-    public get isWellKnownValue(): boolean {
-        return this._wellKnownValue != null;
+    public get isSystemValue(): boolean {
+        return this._systemValue != null;
     }
 
     /**
-     * Gets or sets the current well known value or null if not defined as well know value
+     * Gets or sets the current well known value or null if not defined as a system value
      */
-    public get wellKnownValue(): Nullable<NodeMaterialWellKnownValues> {
-        return this._wellKnownValue;
+    public get systemValue(): Nullable<NodeMaterialSystemValues> {
+        return this._systemValue;
     }
 
-    public set wellKnownValue(value: Nullable<NodeMaterialWellKnownValues>) {
+    public set systemValue(value: Nullable<NodeMaterialSystemValues>) {
         this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
         this.associatedVariableName = "";
-        this._wellKnownValue = value;
+        this._systemValue = value;
     }
 
     /**
@@ -332,8 +332,8 @@ export class InputBlock extends NodeMaterialBlock {
         if (this.isAttribute) {
             return `${this._codeVariableName}.setAsAttribute("${this.name}");\r\n`;
         }
-        if (this.isWellKnownValue) {
-            return `${this._codeVariableName}.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.${NodeMaterialWellKnownValues[this._wellKnownValue!]});\r\n`;
+        if (this.isSystemValue) {
+            return `${this._codeVariableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\r\n`;
         }
         if (this.isUniform) {
             let valueString = "";
@@ -384,12 +384,12 @@ export class InputBlock extends NodeMaterialBlock {
 
             // well known
             let hints = state.sharedData.hints;
-            if (this._wellKnownValue !== null) {
-                switch (this._wellKnownValue) {
-                    case NodeMaterialWellKnownValues.WorldView:
+            if (this._systemValue !== null && this._systemValue !== undefined) {
+                switch (this._systemValue) {
+                    case NodeMaterialSystemValues.WorldView:
                         hints.needWorldViewMatrix = true;
                         break;
-                    case NodeMaterialWellKnownValues.WorldViewProjection:
+                    case NodeMaterialSystemValues.WorldViewProjection:
                         hints.needWorldViewProjectionMatrix = true;
                         break;
                 }
@@ -428,19 +428,19 @@ export class InputBlock extends NodeMaterialBlock {
 
     /** @hidden */
     public _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix) {
-        if (!this._wellKnownValue) {
+        if (!this._systemValue) {
             return;
         }
 
         let variableName = this.associatedVariableName;
-        switch (this._wellKnownValue) {
-            case NodeMaterialWellKnownValues.World:
+        switch (this._systemValue) {
+            case NodeMaterialSystemValues.World:
                 effect.setMatrix(variableName, world);
                 break;
-            case NodeMaterialWellKnownValues.WorldView:
+            case NodeMaterialSystemValues.WorldView:
                 effect.setMatrix(variableName, worldView);
                 break;
-            case NodeMaterialWellKnownValues.WorldViewProjection:
+            case NodeMaterialSystemValues.WorldViewProjection:
                 effect.setMatrix(variableName, worldViewProjection);
                 break;
         }
@@ -453,25 +453,25 @@ export class InputBlock extends NodeMaterialBlock {
         }
 
         let variableName = this.associatedVariableName;
-        if (this._wellKnownValue) {
-            switch (this._wellKnownValue) {
-                case NodeMaterialWellKnownValues.World:
-                case NodeMaterialWellKnownValues.WorldView:
-                case NodeMaterialWellKnownValues.WorldViewProjection:
+        if (this._systemValue) {
+            switch (this._systemValue) {
+                case NodeMaterialSystemValues.World:
+                case NodeMaterialSystemValues.WorldView:
+                case NodeMaterialSystemValues.WorldViewProjection:
                     return;
-                case NodeMaterialWellKnownValues.View:
+                case NodeMaterialSystemValues.View:
                     effect.setMatrix(variableName, scene.getViewMatrix());
                     break;
-                case NodeMaterialWellKnownValues.Projection:
+                case NodeMaterialSystemValues.Projection:
                     effect.setMatrix(variableName, scene.getProjectionMatrix());
                     break;
-                case NodeMaterialWellKnownValues.ViewProjection:
+                case NodeMaterialSystemValues.ViewProjection:
                     effect.setMatrix(variableName, scene.getTransformMatrix());
                     break;
-                case NodeMaterialWellKnownValues.CameraPosition:
+                case NodeMaterialSystemValues.CameraPosition:
                     effect.setVector3(variableName, scene.activeCamera!.globalPosition);
                     break;
-                case NodeMaterialWellKnownValues.FogColor:
+                case NodeMaterialSystemValues.FogColor:
                     effect.setColor3(variableName, scene.fogColor);
                     break;
             }
@@ -515,7 +515,7 @@ export class InputBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (this.isUniform || this.isWellKnownValue) {
+        if (this.isUniform || this.isSystemValue) {
             state.sharedData.inputBlocks.push(this);
         }
 
@@ -527,7 +527,7 @@ export class InputBlock extends NodeMaterialBlock {
 
         serializationObject.type = this.type;
         serializationObject.mode = this._mode;
-        serializationObject.wellKnownValue = this._wellKnownValue;
+        serializationObject.systemValue = this._systemValue;
         serializationObject.animationType = this._animationType;
         serializationObject.visibleInInspector = this.visibleInInspector;
 
@@ -549,7 +549,7 @@ export class InputBlock extends NodeMaterialBlock {
 
         this._type = serializationObject.type;
         this._mode = serializationObject.mode;
-        this._wellKnownValue = serializationObject.wellKnownValue;
+        this._systemValue = serializationObject.systemValue || serializationObject.wellKnownValue;
         this._animationType = serializationObject.animationType;
         this.visibleInInspector = serializationObject.visibleInInspector;
 

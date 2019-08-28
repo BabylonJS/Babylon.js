@@ -5,7 +5,7 @@ import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { NodeMaterialSystemValues } from '../../nodeMaterialSystemValues';
 import { InputBlock } from '../Input/inputBlock';
 import { _TypeStore } from '../../../../Misc/typeStore';
 
@@ -122,7 +122,7 @@ export class InstancesBlock extends NodeMaterialBlock {
 
             if (!worldInput) {
                 worldInput = new InputBlock("world");
-                worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+                worldInput.setAsSystemValue(NodeMaterialSystemValues.World);
             }
             worldInput.output.connectTo(this.world);
         }

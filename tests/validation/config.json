@@ -3,14 +3,19 @@
     "tests": [    
         {
             "title": "Node material #1",
-            "playgroundId": "#USQNJ6#3",
+            "playgroundId": "#USQNJ6#4",
             "referenceImage": "node-material1.png"
         },     
         {
             "title": "Node material #2",
-            "playgroundId": "#WYM31D#3",
+            "playgroundId": "#WYM31D#4",
             "referenceImage": "node-material2.png"
         },
+        {
+            "title": "Node material #3",
+            "playgroundId": "#LWGVT0#1",
+            "referenceImage": "node-material3.png"
+        },          
         {
             "title": "Basis loader",
             "playgroundId": "#4RN0VF#0",

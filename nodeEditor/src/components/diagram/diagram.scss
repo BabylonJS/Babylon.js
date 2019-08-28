@@ -97,7 +97,8 @@
         border-top-left-radius: 16px;
         font-size: 16px;
         text-align: center;
-        margin-top: -1px;
+        margin-top: -1px;    
+        transform: scaleX(1.001);
         
         white-space: nowrap;
         text-overflow: ellipsis;
