@@ -631,14 +631,20 @@ export class HighlightLayer extends EffectLayer {
                 color: color,
                 // Lambda required for capture due to Observable this context
                 observerHighlight: mesh.onBeforeBindObservable.add((mesh: Mesh) => {
-                    if (this._excludedMeshes && this._excludedMeshes[mesh.uniqueId]) {
-                        this._defaultStencilReference(mesh);
-                    }
-                    else {
-                        mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
+                    if (this.isEnabled) {
+                        if (this._excludedMeshes && this._excludedMeshes[mesh.uniqueId]) {
+                            this._defaultStencilReference(mesh);
+                        }
+                        else {
+                            mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
+                        }
                     }
                 }),
-                observerDefault: mesh.onAfterRenderObservable.add(this._defaultStencilReference),
+                observerDefault: mesh.onAfterRenderObservable.add((mesh: Mesh) => {
+                    if (this.isEnabled) {
+                        this._defaultStencilReference(mesh);
+                    }
+                }),
                 glowEmissiveOnly: glowEmissiveOnly
             };
 

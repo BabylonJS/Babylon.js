@@ -459,7 +459,9 @@ declare module "babylonjs-materials/grid/grid.fragment" {
     };
 }
 declare module "babylonjs-materials/grid/grid.vertex" {
+    import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     /** @hidden */
     export var gridVertexShader: {

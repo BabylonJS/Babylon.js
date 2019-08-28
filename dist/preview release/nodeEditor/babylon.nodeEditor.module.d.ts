@@ -35,8 +35,11 @@ declare module "babylonjs-node-editor/blockTools" {
     import { OppositeBlock } from 'babylonjs/Materials/Node/Blocks/oppositeBlock';
     import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
     import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
+    import { MaxBlock } from 'babylonjs/Materials/Node/Blocks/maxBlock';
+    import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
+    import { PertubNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/pertubNormalBlock';
     export class BlockTools {
-        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | OppositeBlock | ViewDirectionBlock | LightInformationBlock | InputBlock | null;
+        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | OppositeBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | PertubNormalBlock | InputBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -367,6 +370,14 @@ declare module "babylonjs-node-editor/nodeLocationInfo" {
         blockId: number;
         x: number;
         y: number;
+    }
+}
+declare module "babylonjs-node-editor/serializationTools" {
+    import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    export class SerializationTools {
+        static Serialize(material: NodeMaterial, globalState: GlobalState): string;
+        static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }
 }
 declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
@@ -1063,7 +1074,8 @@ declare module "babylonjs-node-editor/components/preview/previewMeshType" {
         Sphere = 0,
         Box = 1,
         Torus = 2,
-        Cylinder = 3
+        Cylinder = 3,
+        Plane = 4
     }
 }
 declare module "babylonjs-node-editor/components/preview/previewManager" {
@@ -1425,6 +1437,10 @@ declare module "babylonjs-node-editor/globalState" {
         onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
         blockKeyboardEvents: boolean;
+        customSave?: {
+            label: string;
+            action: (data: string) => void;
+        };
         constructor();
     }
 }
@@ -1436,11 +1452,18 @@ declare module "babylonjs-node-editor/sharedComponents/popup" {
 }
 declare module "babylonjs-node-editor/nodeEditor" {
     import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
+    import { Observable } from 'babylonjs/Misc/observable';
     /**
      * Interface used to specify creation options for the node editor
      */
     export interface INodeEditorOptions {
         nodeMaterial: NodeMaterial;
+        hostElement?: HTMLElement;
+        customSave?: {
+            label: string;
+            action: (data: string) => void;
+        };
+        customLoadObservable?: Observable<any>;
     }
     /**
      * Class used to create a node editor
@@ -1466,7 +1489,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.OppositeBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.InputBlock | null;
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.OppositeBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.PertubNormalBlock | BABYLON.InputBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -1760,6 +1783,12 @@ declare module NODEEDITOR {
         blockId: number;
         x: number;
         y: number;
+    }
+}
+declare module NODEEDITOR {
+    export class SerializationTools {
+        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState): string;
+        static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }
 }
 declare module NODEEDITOR {
@@ -2351,7 +2380,8 @@ declare module NODEEDITOR {
         Sphere = 0,
         Box = 1,
         Torus = 2,
-        Cylinder = 3
+        Cylinder = 3,
+        Plane = 4
     }
 }
 declare module NODEEDITOR {
@@ -2643,6 +2673,10 @@ declare module NODEEDITOR {
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
         blockKeyboardEvents: boolean;
+        customSave?: {
+            label: string;
+            action: (data: string) => void;
+        };
         constructor();
     }
 }
@@ -2658,6 +2692,12 @@ declare module NODEEDITOR {
      */
     export interface INodeEditorOptions {
         nodeMaterial: BABYLON.NodeMaterial;
+        hostElement?: HTMLElement;
+        customSave?: {
+            label: string;
+            action: (data: string) => void;
+        };
+        customLoadObservable?: BABYLON.Observable<any>;
     }
     /**
      * Class used to create a node editor

@@ -1115,7 +1115,7 @@ var OBJFileLoader = /** @class */ (function () {
         var lines = data.split('\n');
         //Look at each line
         for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].trim();
+            var line = lines[i].trim().replace(/\s\s/g, " ");
             var result;
             //Comment or newLine
             if (line.length === 0 || line.charAt(0) === '#') {
@@ -1479,6 +1479,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STLFileLoader", function() { return STLFileLoader; });
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__);
+
 
 
 
@@ -6636,6 +6637,13 @@ var GLTFLoader = /** @class */ (function () {
                 return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), data, kind, false);
             });
         }
+        // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
+        // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
+        else if (kind === babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].MatricesIndicesKind) {
+            accessor._babylonVertexBuffer = this._loadFloatAccessorAsync("/accessors/" + accessor.index, accessor).then(function (data) {
+                return new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"](_this._babylonScene.getEngine(), data, kind, false);
+            });
+        }
         else {
             var bufferView_2 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
             accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync(bufferView_2, kind).then(function (babylonBuffer) {
@@ -6906,7 +6914,7 @@ var GLTFLoader = /** @class */ (function () {
             promises.push(this.loadImageAsync("/images/" + image.index, image).then(function (data) {
                 var name = image.uri || _this._fileName + "#image" + image.index;
                 var dataUrl = "data:" + _this._uniqueRootUrl + name;
-                babylonTexture.updateURL(dataUrl, new Blob([data], { type: image.mimeType }));
+                babylonTexture.updateURL(dataUrl, data);
             }));
         }
         babylonTexture.wrapU = samplerData.wrapU;

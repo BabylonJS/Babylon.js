@@ -874,7 +874,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         var lines = data.split('\n');
         //Look at each line
         for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].trim();
+            var line = lines[i].trim().replace(/\s\s/g, " ");
             var result;
 
             //Comment or newLine

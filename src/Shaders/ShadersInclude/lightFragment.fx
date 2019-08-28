@@ -185,15 +185,15 @@
                 specularBase += computeCustomSpecularLighting(info, specularBase, shadow);
             #endif
         #elif defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X})
-            diffuseBase += lightmapColor * shadow;
+            diffuseBase += lightmapColor.rgb * shadow;
             #ifdef SPECULARTERM
                 #ifndef LIGHTMAPNOSPECULAR{X}
-                    specularBase += info.specular * shadow * lightmapColor;
+                    specularBase += info.specular * shadow * lightmapColor.rgb;
                 #endif
             #endif
             #ifdef CLEARCOAT
                 #ifndef LIGHTMAPNOSPECULAR{X}
-                    clearCoatBase += info.clearCoat.rgb * shadow * lightmapColor;
+                    clearCoatBase += info.clearCoat.rgb * shadow * lightmapColor.rgb;
                 #endif
             #endif
             #ifdef SHEEN
