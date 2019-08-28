@@ -3958,7 +3958,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (meshes[index]) {
                     totalVertices += meshes[index].getTotalVertices();
 
-                    if (totalVertices > 65536) {
+                    if (totalVertices >= 65536) {
                         Logger.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
                         return null;
                     }

@@ -1,82 +1,12 @@
-import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
-import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
-import { PostProcess } from "../PostProcesses/postProcess";
-import "../Shaders/rgbdDecode.fragment";
+import { RGBDTextureTools } from "./rgbdTextureTools";
 
 /**
  * Class used to host texture specific utilities
  */
 export class BRDFTextureTools {
-
-    /**
-     * Expand the BRDF Texture from RGBD to Half Float if necessary.
-     * @param texture the texture to expand.
-     */
-    private static _ExpandDefaultBRDFTexture(texture: InternalTexture) {
-        // Gets everything ready.
-        let engine = texture.getEngine();
-        let caps = engine.getCaps();
-        let expandTexture = false;
-
-        // If half float available we can uncompress the texture
-        if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
-            expandTexture = true;
-            texture.type = Constants.TEXTURETYPE_HALF_FLOAT;
-        }
-        // If full float available we can uncompress the texture
-        else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
-            expandTexture = true;
-            texture.type = Constants.TEXTURETYPE_FLOAT;
-        }
-
-        // Expand the texture if possible
-        if (expandTexture) {
-            // Do not use during decode.
-            texture.isReady = false;
-
-            // Simply run through the decode PP.
-            const rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, engine, false, undefined, texture.type, undefined, null, false);
-            texture._isRGBD = false;
-            texture.invertY = false;
-
-            // Hold the output of the decoding.
-            const expandedTexture = engine.createRenderTargetTexture(texture.width, {
-                generateDepthBuffer: false,
-                generateMipMaps: false,
-                generateStencilBuffer: false,
-                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                type: texture.type,
-                format: Constants.TEXTUREFORMAT_RGBA
-            });
-
-            rgbdPostProcess.getEffect().executeWhenCompiled(() => {
-                // PP Render Pass
-                rgbdPostProcess.onApply = (effect) => {
-                    effect._bindTexture("textureSampler", texture);
-                    effect.setFloat2("scale", 1, 1);
-                };
-                engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
-
-                // Cleanup
-                engine.restoreDefaultFramebuffer();
-                engine._releaseTexture(texture);
-                engine._releaseFramebufferObjects(expandedTexture);
-                if (rgbdPostProcess) {
-                    rgbdPostProcess.dispose();
-                }
-
-                // Internal Swap
-                expandedTexture._swapAndDie(texture);
-
-                // Ready to get rolling again.
-                texture.isReady = true;
-            });
-        }
-    }
-
     /**
      * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
      * @param scene defines the hosting scene
@@ -89,16 +19,14 @@ export class BRDFTextureTools {
             scene.useDelayedTextureLoading = false;
 
             var texture = Texture.CreateFromBase64String(this._environmentBRDFBase64Texture, "EnvironmentBRDFTexture", scene, true, false, Texture.BILINEAR_SAMPLINGMODE);
-            texture._texture!._isRGBD = true;
+            texture.isRGBD = true;
             texture.wrapU = Texture.CLAMP_ADDRESSMODE;
             texture.wrapV = Texture.CLAMP_ADDRESSMODE;
             scene.environmentBRDFTexture = texture;
 
             scene.useDelayedTextureLoading = useDelayedTextureLoading;
 
-            texture.onLoadObservable.addOnce(() => {
-                this._ExpandDefaultBRDFTexture(texture._texture!);
-            });
+            RGBDTextureTools.ExpandRGBDTexture(texture);
         }
 
         return scene.environmentBRDFTexture;

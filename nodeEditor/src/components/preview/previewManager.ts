@@ -78,10 +78,13 @@ export class PreviewManager {
             case PreviewMeshType.Torus:
                 this._dummy = Mesh.CreateTorus("dummy-torus", 2, 0.5, 32, this._scene);
                 break;
-                case PreviewMeshType.Cylinder:
+            case PreviewMeshType.Cylinder:
                 this._dummy = Mesh.CreateCylinder("dummy-cylinder", 2, 1, 1.2, 32, 1, this._scene);
                 break;                
-        }
+            case PreviewMeshType.Plane:
+                this._dummy = Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene);
+                break;                
+            }
         this._dummy.material = this._material;
     }
 
