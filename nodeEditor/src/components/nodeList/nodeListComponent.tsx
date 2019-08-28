@@ -26,7 +26,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Basic_Math: ["AddBlock",  "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OppositeBlock"],
+            Basic_Math: ["AddBlock",  "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OppositeBlock", "MaxBlock", "MinBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "TimeBlock"],
             Interpolation: ["LerpBlock"],
@@ -35,7 +35,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "AlphaTestBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ReflectionTextureBlock", "ViewDirectionBlock"],
+            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ReflectionTextureBlock", "ViewDirectionBlock", "PerturbNormalBlock"],
             Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block"],
             Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
         }
@@ -59,7 +59,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         return (
-            <div id="nodeList" style={{ borderRightStyle: "solid", borderColor: "grey", borderWidth: "1px" }} >
+            <div id="nodeList">
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">
