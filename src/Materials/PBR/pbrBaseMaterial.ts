@@ -114,6 +114,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public LIGHTMAPDIRECTUV = 0;
     public USELIGHTMAPASSHADOWMAP = false;
     public GAMMALIGHTMAP = false;
+    public RGBDLIGHTMAP = false;
 
     public REFLECTION = false;
     public REFLECTIONMAP_3D = false;
@@ -1396,6 +1397,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                     defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
                     defines.GAMMALIGHTMAP = this._lightmapTexture.gammaSpace;
+                    defines.RGBDLIGHTMAP = this._lightmapTexture.isRGBD;
                 } else {
                     defines.LIGHTMAP = false;
                 }
