@@ -37,6 +37,7 @@ import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectio
 import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
 import { MaxBlock } from 'babylonjs/Materials/Node/Blocks/maxBlock';
 import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
+import { PertubNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/pertubNormalBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -110,7 +111,9 @@ export class BlockTools {
             case "MaxBlock":
                 return new MaxBlock("Max");       
             case "MinBlock":
-                return new MinBlock("Min");                                                  
+                return new MinBlock("Min");        
+            case "PertubNormalBlock":                                          
+                return new PertubNormalBlock("Perturb normal");        
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;

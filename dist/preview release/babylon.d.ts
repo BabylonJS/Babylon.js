@@ -53589,6 +53589,28 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to pertub normals based on a normal map
+     */
+    export class PertubNormalBlock extends NodeMaterialBlock {
+        /**
+         * Create a new PertubNormalBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to multiply 2 values
      */
     export class MultiplyBlock extends NodeMaterialBlock {

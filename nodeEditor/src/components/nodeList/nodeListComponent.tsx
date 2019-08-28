@@ -35,7 +35,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "AlphaTestBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ReflectionTextureBlock", "ViewDirectionBlock"],
+            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ReflectionTextureBlock", "ViewDirectionBlock", "PertubNormalBlock"],
             Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block"],
             Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
         }
