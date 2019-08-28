@@ -372,14 +372,14 @@ export class WebGPUEngine extends Engine {
             }
             this._mainTexture = this._device.createTexture(mainTextureDescriptor);
             this._mainColorAttachments = [{
-                attachment: this._mainTexture.createDefaultView(),
+                attachment: this._mainTexture.createView(),
                 loadValue: new Color4(0, 0, 0, 1),
                 storeOp: WebGPUConstants.GPUStoreOp_store
             }];
         }
         else {
             this._mainColorAttachments = [{
-                attachment: this._swapChain.getCurrentTexture().createDefaultView(),
+                attachment: this._swapChain.getCurrentTexture().createView(),
                 loadValue: new Color4(0, 0, 0, 1),
                 storeOp: WebGPUConstants.GPUStoreOp_store
             }];
@@ -400,7 +400,7 @@ export class WebGPUEngine extends Engine {
         }
         this._depthTexture = this._device.createTexture(depthTextureDescriptor);
         this._mainDepthAttachment = {
-            attachment: this._depthTexture.createDefaultView(),
+            attachment: this._depthTexture.createView(),
 
             depthLoadValue: this._clearDepthValue,
             depthStoreOp: WebGPUConstants.GPUStoreOp_store,
@@ -1213,7 +1213,7 @@ export class WebGPUEngine extends Engine {
                 this._uploadMipMapsFromWebglTexture(mipMaps, webglEngineTexture, gpuTexture, width, height, -1);
             }
 
-            texture._webGPUTextureView = gpuTexture.createDefaultView();
+            texture._webGPUTextureView = gpuTexture.createView();
 
             webglEngineTexture.dispose();
 
@@ -1508,10 +1508,10 @@ export class WebGPUEngine extends Engine {
 
         // Resolve in case of MSAA
         if (this._options.antialiasing) {
-            this._mainColorAttachments[0].resolveTarget = this._swapChain.getCurrentTexture().createDefaultView();
+            this._mainColorAttachments[0].resolveTarget = this._swapChain.getCurrentTexture().createView();
         }
         else {
-            this._mainColorAttachments[0].attachment = this._swapChain.getCurrentTexture().createDefaultView();
+            this._mainColorAttachments[0].attachment = this._swapChain.getCurrentTexture().createView();
         }
 
         this._currentRenderPass = this._renderEncoder.beginRenderPass({
