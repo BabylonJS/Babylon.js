@@ -121,7 +121,6 @@ export class FogBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             state.sharedData.blocksWithDefines.push(this);
             state.sharedData.bindableBlocks.push(this);
