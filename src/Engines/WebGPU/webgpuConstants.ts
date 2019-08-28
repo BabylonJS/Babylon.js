@@ -31,8 +31,6 @@ export class WebGPUConstants {
     public static readonly GPUTextureFormat_r8uint: GPUTextureFormat = "r8uint";
     public static readonly GPUTextureFormat_r8sint: GPUTextureFormat = "r8sint";
     /* Normal 16 bit formats */
-    public static readonly GPUTextureFormat_r16unorm: GPUTextureFormat = "r16unorm";
-    public static readonly GPUTextureFormat_r16snorm: GPUTextureFormat = "r16snorm";
     public static readonly GPUTextureFormat_r16uint: GPUTextureFormat = "r16uint";
     public static readonly GPUTextureFormat_r16sint: GPUTextureFormat = "r16sint";
     public static readonly GPUTextureFormat_r16float: GPUTextureFormat = "r16float";
@@ -44,8 +42,6 @@ export class WebGPUConstants {
     public static readonly GPUTextureFormat_r32uint: GPUTextureFormat = "r32uint";
     public static readonly GPUTextureFormat_r32sint: GPUTextureFormat = "r32sint";
     public static readonly GPUTextureFormat_r32float: GPUTextureFormat = "r32float";
-    public static readonly GPUTextureFormat_rg16unorm: GPUTextureFormat = "rg16unorm";
-    public static readonly GPUTextureFormat_rg16snorm: GPUTextureFormat = "rg16snorm";
     public static readonly GPUTextureFormat_rg16uint: GPUTextureFormat = "rg16uint";
     public static readonly GPUTextureFormat_rg16sint: GPUTextureFormat = "rg16sint";
     public static readonly GPUTextureFormat_rg16float: GPUTextureFormat = "rg16float";
@@ -63,8 +59,6 @@ export class WebGPUConstants {
     public static readonly GPUTextureFormat_rg32uint: GPUTextureFormat = "rg32uint";
     public static readonly GPUTextureFormat_rg32sint: GPUTextureFormat = "rg32sint";
     public static readonly GPUTextureFormat_rg32float: GPUTextureFormat = "rg32float";
-    public static readonly GPUTextureFormat_rgba16unorm: GPUTextureFormat = "rgba16unorm";
-    public static readonly GPUTextureFormat_rgba16snorm: GPUTextureFormat = "rgba16snorm";
     public static readonly GPUTextureFormat_rgba16uint: GPUTextureFormat = "rgba16uint";
     public static readonly GPUTextureFormat_rgba16sint: GPUTextureFormat = "rgba16sint";
     public static readonly GPUTextureFormat_rgba16float: GPUTextureFormat = "rgba16float";
