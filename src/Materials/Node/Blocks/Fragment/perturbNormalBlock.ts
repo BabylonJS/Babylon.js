@@ -11,23 +11,23 @@ import { InputBlock } from '../Input/inputBlock';
 /**
  * Block used to pertub normals based on a normal map
  */
-export class PertubNormalBlock extends NodeMaterialBlock {
+export class PerturbNormalBlock extends NodeMaterialBlock {
     /**
-     * Create a new PertubNormalBlock
+     * Create a new PerturbNormalBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         // Vertex
-        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("normalMapColor", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("strength", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false);
+        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false);
+        this.registerInput("normalMapColor", NodeMaterialBlockConnectionPointTypes.Color3, false);
+        this.registerInput("strength", NodeMaterialBlockConnectionPointTypes.Float, false);
 
         // Fragment
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 
     /**
@@ -35,7 +35,7 @@ export class PertubNormalBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "PertubNormalBlock";
+        return "PerturbNormalBlock";
     }
 
     /**
@@ -136,4 +136,4 @@ export class PertubNormalBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PertubNormalBlock"] = PertubNormalBlock;
+_TypeStore.RegisteredTypes["BABYLON.PerturbNormalBlock"] = PerturbNormalBlock;
