@@ -18,6 +18,7 @@ import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetC
 import { IPipelineContext } from './IPipelineContext';
 import { WebRequest } from '../Misc/webRequest';
 import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
+import { Logger } from "../Misc/logger";
 
 interface INativeEngine {
     requestAnimationFrame(callback: () => void): void;
@@ -76,6 +77,10 @@ interface INativeEngine {
     setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
     setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
+
+    createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMipMaps: boolean): WebGLFramebuffer;
+    bindFrameBuffer(frameBuffer: WebGLFramebuffer): void;
+    unbindFrameBuffer(frameBuffer: WebGLFramebuffer): void;
 
     drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
     draw(fillMode: number, vertexStart: number, vertexCount: number): void;
@@ -142,6 +147,10 @@ class NativeAddressMode {
     public static readonly CLAMP = 2;
     public static readonly BORDER = 3;
     public static readonly MIRROR_ONCE = 4;
+}
+
+class NativeTextureFormat {
+    public static readonly RGBA = 0;
 }
 
 /** @hidden */
@@ -1079,7 +1088,16 @@ export class NativeEngine extends Engine {
         }
     }
 
-    public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
+    private static _GetNativeTextureFormat(format: number): number {
+        switch (format) {
+            case Engine.TEXTUREFORMAT_RGBA:
+                return NativeTextureFormat.RGBA;
+            default:
+                throw new Error("Unexpected texture format: " + format + ".");
+        }
+    }
+
+    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
         let fullOptions = new RenderTargetCreationOptions();
 
         if (options !== undefined && typeof options === "object") {
@@ -1087,21 +1105,46 @@ export class NativeEngine extends Engine {
             fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
             fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
             fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
-            fullOptions.samplingMode = options.samplingMode === undefined ? Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            fullOptions.samplingMode = options.samplingMode === undefined ? Engine.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            fullOptions.format = options.format === undefined ? Engine.TEXTUREFORMAT_RGBA : options.format;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.generateDepthBuffer = true;
             fullOptions.generateStencilBuffer = false;
             fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-            fullOptions.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+            fullOptions.samplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
+            fullOptions.format = Engine.TEXTUREFORMAT_RGBA;
+        }
+
+        if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+            // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+            fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+        else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+            fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
         }
         var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
 
-        var width = size.width || size;
-        var height = size.height || size;
+        var width = (<{ width: number, height: number }>size).width || <number>size;
+        var height = (<{ width: number, height: number }>size).height || <number>size;
 
-        texture._depthStencilBuffer = {};
-        texture._framebuffer = {};
+        if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+            Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+        }
+
+        var framebuffer = this._native.createFrameBuffer(
+            texture._webGLTexture!,
+            width,
+            height,
+            NativeEngine._GetNativeTextureFormat(fullOptions.format),
+            fullOptions.samplingMode!,
+            fullOptions.generateStencilBuffer ? true : false,
+            fullOptions.generateDepthBuffer,
+            fullOptions.generateMipMaps ? true : false);
+
+        texture._framebuffer = framebuffer;
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.width = width;
@@ -1111,6 +1154,7 @@ export class NativeEngine extends Engine {
         texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
         texture.samplingMode = fullOptions.samplingMode;
         texture.type = fullOptions.type;
+        texture.format = fullOptions.format;
         texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
         texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
@@ -1128,11 +1172,30 @@ export class NativeEngine extends Engine {
     }
 
     public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
-        throw new Error("bindFramebuffer not yet implemented.");
+        if (faceIndex) {
+            throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
+        }
+
+        if (requiredWidth || requiredHeight) {
+            throw new Error("Required width/height for frame buffers not yet supported in NativeEngine.");
+        }
+
+        if (forceFullscreenViewport) {
+            throw new Error("forceFullscreenViewport for frame buffers not yet supported in NativeEngine.");
+        }
+
+        this._native.bindFrameBuffer(texture._framebuffer!);
     }
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
-        throw new Error("unBindFramebuffer not yet implemented.");
+        if (disableGenerateMipMaps) {
+            Logger.Warn("Disabling mipmap generation not yet supported in NativeEngine. Ignoring.");
+        }
+
+        if (onBeforeUnbind) {
+            onBeforeUnbind();
+        }
+        this._native.unbindFrameBuffer(texture._framebuffer!);
     }
 
     public createDynamicVertexBuffer(data: DataArray): DataBuffer {
