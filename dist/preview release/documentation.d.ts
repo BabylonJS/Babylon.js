@@ -22033,7 +22033,7 @@ declare module BABYLON {
      * @see http://doc.babylonjs.com/how_to/how_to_use_lod
      */
     export class MeshLODLevel {
-        /** Defines the distance where this level should star being displayed */
+        /** Defines the distance where this level should start being displayed */
         distance: number;
         /** Defines the mesh to use to render this level */
         mesh: Nullable<Mesh>;
@@ -22043,7 +22043,7 @@ declare module BABYLON {
          * @param mesh defines the mesh to use to render this level
          */
         constructor(
-        /** Defines the distance where this level should star being displayed */
+        /** Defines the distance where this level should start being displayed */
         distance: number, 
         /** Defines the mesh to use to render this level */
         mesh: Nullable<Mesh>);
