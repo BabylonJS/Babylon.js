@@ -1,5 +1,6 @@
 import { Effect } from "../Materials/effect";
 import { VertexBuffer } from "../Meshes/buffer";
+import { DataBuffer } from "../Meshes/databuffer";
 import { Scene } from "../scene";
 
 import "../Shaders/nextShooter.fragment";
@@ -8,25 +9,55 @@ import "../Shaders/buildRadiosity.fragment";
 import "../Shaders/buildRadiosity.vertex";
 import "../Shaders/radiosity.fragment";
 import "../Shaders/radiosity.vertex";
-import "../Shaders/uv2mat.fragment";
-import "../Shaders/uv2mat.vertex";
+import "../Shaders/visibility.fragment";
+import "../Shaders/visibility.vertex";
 import "../Shaders/dilate.fragment";
 import "../Shaders/dilate.vertex";
 
+/**
+  * Creates various effects to solve radiosity.
+  */
 export class RadiosityEffectsManager {
+    /**
+      * If true, uses hemicube instead of hemispherical projection
+      */
     public useHemicube: boolean;
+    /**
+      * If true, uses depth instead of surface id for visibility
+      */
     public useDepthCompare: boolean;
-    public uV2Effect: Effect;
+    /**
+      * Effect for visibility
+      */
+    public visibilityEffect: Effect;
+    /**
+      * Effect for building radiosity info for surfaces
+      */
     public radiosityEffect: Effect;
+    /**
+      * Effect to shoot radiosity on surface from a patch
+      */
     public shootEffect: Effect;
+    /**
+      * Effect to determinate the next shooter (the one that currently retains the most radiance)
+      */
     public nextShooterEffect: Effect;
+    /**
+      * Effect to dilate the lightmap. Useful to avoid seams.
+      */
     public dilateEffect: Effect;
 
     private _vertexBuffer: VertexBuffer;
-    private _indexBuffer: WebGLBuffer;
+    private _indexBuffer: DataBuffer;
 
     private _scene: Scene;
 
+    /**
+      * Creates the manager
+      * @param scene The current scene
+      * @param useHemicube If true, uses hemicube instead of hemispherical projection
+      * @param useDepthCompare If true, uses depth instead of surface id for visibility
+      */
     constructor(scene: Scene, useHemicube: boolean, useDepthCompare: boolean) {
         this._scene = scene;
         this.useHemicube = useHemicube;
@@ -36,11 +67,17 @@ export class RadiosityEffectsManager {
         this.createEffects();
     }
 
+    /**
+      * Gets a screen quad vertex buffer
+      */
     public get screenQuadVB(): VertexBuffer {
         return this._vertexBuffer;
     }
 
-    public get screenQuadIB(): WebGLBuffer {
+    /**
+      * Gets a screen quad index buffer
+      */
+    public get screenQuadIB(): DataBuffer {
         return this._indexBuffer;
     }
 
@@ -52,7 +89,7 @@ export class RadiosityEffectsManager {
                     this.isNextShooterEffectReady(),
                     this.isRadiosityDataEffectReady(),
                     this.isShootEffectReady(),
-                    this.isUV2EffectReady(),
+                    this.isVisiblityEffectReady(),
                     this.isDilateEffectReady()
                 ];
 
@@ -68,11 +105,15 @@ export class RadiosityEffectsManager {
         });
     }
 
+    /**
+      * Checks the ready state of all the effets
+      * @returns true if all the effects are ready
+      */
     public isReady(): boolean {
         return 	this.isNextShooterEffectReady() &&
                 this.isRadiosityDataEffectReady() &&
                 this.isShootEffectReady() &&
-                this.isUV2EffectReady() &&
+                this.isVisiblityEffectReady() &&
                 this.isDilateEffectReady();
     }
 
@@ -108,12 +149,10 @@ export class RadiosityEffectsManager {
     }
 
     /**
-	 * Creates the patch rendering effect and checks if the effect is ready.
-	 * @param subMesh The submesh to be used to render the depth map of
-	 * @param useInstances If multiple world instances should be used
-	 * @returns if the depth renderer is ready to render the depth map
+	 * Checks the ready state of the visibility effect
+	 * @returns true if the visibility effect is ready
 	 */
-    public isUV2EffectReady(): boolean {
+    public isVisiblityEffectReady(): boolean {
         let attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
         let uniforms = ["world", "mBones", "nearFar"];
         let defines = [];
@@ -130,14 +169,18 @@ export class RadiosityEffectsManager {
         // Get correct effect
         var join = defines.join("\n");
 
-        this.uV2Effect = this._scene.getEngine().createEffect("uv2mat",
+        this.visibilityEffect = this._scene.getEngine().createEffect("visibility",
             attribs,
             uniforms,
             ["diffuseSampler", "itemBuffer"], join);
 
-        return this.uV2Effect.isReady();
+        return this.visibilityEffect.isReady();
     }
 
+    /**
+     * Checks the ready state of the shoot effect
+     * @returns true if the shoot effect is ready
+     */
     public isShootEffectReady(): boolean {
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
         var uniforms = ["view", "shootPos", "shootNormal", "shootEnergy", "shootDArea", "nearFar", "gatheringScale", "residualScale"];
@@ -159,6 +202,10 @@ export class RadiosityEffectsManager {
         return this.shootEffect.isReady();
     }
 
+    /**
+     * Checks the ready state of the radiosity data effect
+     * @returns true if the radiosity data effect is ready
+     */
     public isRadiosityDataEffectReady(): boolean {
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind, VertexBuffer.UV2Kind];
 
@@ -170,6 +217,10 @@ export class RadiosityEffectsManager {
         return this.radiosityEffect.isReady();
     }
 
+    /**
+     * Checks the ready state of the next shooter effect
+     * @returns true if the next shooter effect is ready
+     */
     public isNextShooterEffectReady(): boolean {
         this.nextShooterEffect = this._scene.getEngine().createEffect("nextShooter",
             [VertexBuffer.PositionKind],
@@ -179,6 +230,10 @@ export class RadiosityEffectsManager {
         return this.nextShooterEffect.isReady();
     }
 
+    /**
+     * Checks the ready state of the dilate effect
+     * @returns true if the dilate effect is ready
+     */
     public isDilateEffectReady(): boolean {
         this.dilateEffect = this._scene.getEngine().createEffect("dilate",
             [VertexBuffer.PositionKind],

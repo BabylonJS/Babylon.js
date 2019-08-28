@@ -4,11 +4,14 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { Scene } from "../scene";
 import { Mesh } from "../Meshes/mesh";
 
+/**
+ * Utilities for the radiosity solver
+ */
 class RadiosityUtils {
 
-    public static _tempEdgeBuffer: number[] = [-1, -1];
+    private static _tempEdgeBuffer: number[] = [-1, -1];
 
-    public static appendToNew(arr: Float32Array | number[], newValues: number[]): Float32Array {
+    private static appendToNew(arr: Float32Array | number[], newValues: number[]): Float32Array {
         var newArr = new Float32Array(arr.length + newValues.length);
 
         for (let i = 0; i < arr.length; i++) {
@@ -22,7 +25,14 @@ class RadiosityUtils {
         return newArr;
     }
 
-    public static retesselateMesh(mesh: AbstractMesh, areaThreshold: number, scene: Scene): AbstractMesh {
+    /**
+     * Recursively subdivides triangles in a mesh, so their area is under a fixed threshold
+     * @param mesh The mesh
+     * @param areaThreshold Area threshold
+     * @param scene Current scene
+     * @returns Another mesh, with higher or equal level of tesselation
+     */
+    public static RetesselateMesh(mesh: AbstractMesh, areaThreshold: number, scene: Scene): AbstractMesh {
         var indices = mesh.getIndices();
         var vertices = mesh.getVerticesData(VertexBuffer.PositionKind);
         var normals = mesh.getVerticesData(VertexBuffer.NormalKind);
@@ -121,7 +131,7 @@ class RadiosityUtils {
         return m;
     }
 
-    public static subdiviseRec(v0: Vector3,
+    private static subdiviseRec(v0: Vector3,
         v1: Vector3,
         v2: Vector3,
         n0: Vector3,
@@ -187,7 +197,7 @@ class RadiosityUtils {
         return RadiosityUtils.subdiviseRec(nv1[0], nv1[1], nv1[2], nn1[0], nn1[1], nn1[2], nuv1[0], nuv1[1], nuv1[2], ni1[0], ni1[1], ni1[2], areaThreshold, buffer, normBuffer, uvBuffer, indices, indexPointer);
     }
 
-    public static findBiggestSide(v0: Vector3, v1: Vector3, v2: Vector3): number[] {
+    private static findBiggestSide(v0: Vector3, v1: Vector3, v2: Vector3): number[] {
         // TODO : buffer this
         let l10 = v1.subtract(v0).lengthSquared();
         let l20 = v2.subtract(v0).lengthSquared();
@@ -208,7 +218,7 @@ class RadiosityUtils {
         return RadiosityUtils._tempEdgeBuffer;
     }
 
-    public static triangleArea(v0: Vector3, v1: Vector3, v2: Vector3) {
+    private static triangleArea(v0: Vector3, v1: Vector3, v2: Vector3) {
         // TODO : buffer this
         let v10 = v1.subtract(v0);
         let v20 = v2.subtract(v0);
@@ -216,7 +226,12 @@ class RadiosityUtils {
         return 0.5 * c.length();
     }
 
-    public static encodeId(n: number) {
+    /**
+     * Encodes a number into a Vector3
+     * @param n Numeric id
+     * @returns Encoded id
+     */
+    public static EncodeId(n: number) {
         var id = new Vector3();
         var remain = n;
         id.x = remain % 256;
@@ -228,7 +243,12 @@ class RadiosityUtils {
         return id;
     }
 
-    public static decodeId(v: Vector3) {
+    /**
+     * Decodes a number from a Vector3
+     * @param v Encoded number
+     * @returns Decoded id
+     */
+    public static DecodeId(v: Vector3) {
         return (v.x + 256 * v.y + 65536 * v.z);
     }
 }

@@ -577,6 +577,7 @@ class Main {
                                     case 31: newPG = "#TAFSN0#2"; break; // WebVR
                                     case 32: newPG = "#3VMTI9#0"; break; // GUI
                                     case 33: newPG = "#7149G4#0"; break; // Physics
+                                    case 34: newPG = "#VRLE1V#2"; break; // Radiosity
 
                                     default: newPG = ""; break;
                                 }

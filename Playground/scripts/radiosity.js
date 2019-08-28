@@ -18,8 +18,14 @@ var prepareUVS = function(ms) {
 
     for (let i = 0; i < geometryMeshes.length; i++) {
         let mesh = geometryMeshes[i];
-        mesh.__lightmapSize = mesh.__lightmapSize || 256;
-        mesh.__texelWorldSize = 1 / ( worldToUVRatio * mesh.__lightmapSize);
+        if (!mesh.radiosityInfo) {
+            mesh.initForRadiosity();
+        }
+        mesh.radiosityInfo.lightmapSize = mesh.radiosityInfo.lightmapSize || {
+            width: 256,
+            height: 256
+        };
+        mesh.radiosityInfo.texelWorldSize = 1 / ( worldToUVRatio * mesh.radiosityInfo.lightmapSize.width);
         meshes.push(mesh);
     }
 }
@@ -33,8 +39,11 @@ var addAreaLight = function(name, scaling) {
     if (scaling) {
         ground.scaling = scaling;        
     }
-
-    ground.__lightmapSize = 4;
+    ground.initForRadiosity();
+    ground.radiosityInfo.lightmapSize = {
+        width: 4,
+        height: 4
+    };
     addMaterial(ground);
     prepareUVS([ground]);
     return ground;
@@ -53,14 +62,14 @@ var createScene = function() {
     var areaLight = addAreaLight("areaLight", new BABYLON.Vector3(0.25, 0.25, 0.25));
     areaLight.rotation.x = -3 * Math.PI / 4;
     areaLight.position.copyFromFloats(-5, 10, 10);
-    areaLight._color = new BABYLON.Vector3(10, 10, 10);
+    areaLight.radiosityInfo.color = new BABYLON.Vector3(10, 10, 10);
 
     var pr;
 
     BABYLON.SceneLoader.ImportMesh(
         "",
         "",
-        "untitled.babylon",
+        "scenes/openroom.babylon",
         scene,
         (ms) => {
             for (let i = 0; i < ms.length; i++) {
@@ -83,7 +92,7 @@ var createScene = function() {
 
                 if (!wasPreviouslyReady) {
                     for (let i = 0; i < meshes.length; i++) {
-                        meshes[i].material.emissiveTexture = meshes[i].residualTexture.textures[4];
+                        meshes[i].material.emissiveTexture = meshes[i].getRadiosityTexture();
                         meshes[i].material.emissiveTexture.coordinatesIndex = 1;
                     }
                     wasPreviouslyReady = true;

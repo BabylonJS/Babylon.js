@@ -5,53 +5,103 @@ import { VertexData } from "../meshes/mesh.vertexdata";
 import { IndicesArray, FloatArray } from "../types";
 import { VertexBuffer } from "../meshes/buffer";
 
-/*
-* UV Mapper for lightmaps
-* Ported from Blender by Benjamin Guignabert (https://github.com/CraigFeldspar)
-*
-* Original license can be found below :
-*
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software Foundation,
-* Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-*
-*/
-
+/**
+ * Face with 3 vertices
+ */
 class Face {
+    /**
+     * Face area
+     */
     area: number;
+    /**
+     * Face uvs (length = 3 * 2)
+     */
     uv: Vector2[];
+    /**
+     * Vertices, with index embedding
+     */
     v: {
         v: Vector3,
         index: number
     }[];
+    /**
+     * Normals
+     */
     vNormals: Nullable<FloatArray[]>;
+    /**
+     * Tangents
+     */
     vTangents: Nullable<FloatArray[]>;
+    /**
+     * UV
+     */
     vUv: Nullable<FloatArray[]>;
+    /**
+     * UV2
+     */
     vUv2: Nullable<FloatArray[]>;
+    /**
+     * UV3
+     */
     vUv3: Nullable<FloatArray[]>;
+    /**
+     * UV4
+     */
     vUv4: Nullable<FloatArray[]>;
+    /**
+     * UV5
+     */
     vUv5: Nullable<FloatArray[]>;
+    /**
+     * UV6
+     */
     vUv6: Nullable<FloatArray[]>;
+    /**
+     * Colors
+     */
     vColors: Nullable<FloatArray[]>;
+    /**
+     * Matrices indices
+     */
     vMatricesIndices: Nullable<FloatArray[]>;
+    /**
+     * Matrices weights
+     */
     vMatricesWeights: Nullable<FloatArray[]>;
+    /**
+     * Matrices indices extra
+     */
     vMatricesIndicesExtra: Nullable<FloatArray[]>;
+    /**
+     * Matrices weights extra
+     */
     vMatricesWeightsExtra: Nullable<FloatArray[]>;
+    /**
+     * Edge key for edge dictionnary
+     */
     edgeKeys: string[];
+    /**
+     * Face normal
+     */
     no: Vector3;
+    /**
+     * Face index
+     */
     index: number;
+    /**
+     * Mesh index
+     */
     meshIndex: number;
 
+    /**
+    * Creates a Face from a specific index in a vertex data object
+    * @param indexBegin First index in the list of indices
+    * @param vertexData Vertex data
+    * @param offset Mesh offset when uv mapping several meshes on the same uv layout
+    * @param matrix World matrix of the mesh. If not specified, identity matrix is taken
+    * @param equivalencies A list of vertex equivalencies
+    * in case 2 vertices share the same position, it's useful to group them out in the uv layout
+    */
     constructor(indexBegin: number,
         vertexData: VertexData,
         offset: number = 0,
@@ -67,7 +117,7 @@ class Face {
         this.index = indexBegin;
         this.meshIndex = offset;
         for (let i = 0; i < 3; i++) {
-            Face.extractVertex(this,
+            Face.ExtractVertex(this,
                 i + indexBegin,
                 matrix,
                 indices,
@@ -113,93 +163,126 @@ class Face {
         this.area = area;
     }
 
+    /**
+     * Pushes a vertex from this face to a vertex data object
+     * @param vertexData The vertex data
+     * @param idx the vertex index, between 0 and 2 included
+     */
     public pushVertexToVertexData(vertexData: VertexData, idx: number) {
         if (this.vNormals) {
             for (let i = 0; i < this.vNormals[idx].length; i++) {
-                (<number[]>vertexData.normals).push(this.vNormals[idx][i])
+                (<number[]>vertexData.normals).push(this.vNormals[idx][i]);
             }
         }
 
         if (this.vTangents) {
             for (let i = 0; i < this.vTangents[idx].length; i++) {
-                (<number[]>vertexData.tangents).push(this.vTangents[idx][i])
+                (<number[]>vertexData.tangents).push(this.vTangents[idx][i]);
             }
         }
 
         if (this.vUv) {
             for (let i = 0; i < this.vUv[idx].length; i++) {
-                (<number[]>vertexData.uvs).push(this.vUv[idx][i])
+                (<number[]>vertexData.uvs).push(this.vUv[idx][i]);
             }
         }
 
         if (this.vUv2) {
             for (let i = 0; i < this.vUv2[idx].length; i++) {
-                (<number[]>vertexData.uvs2).push(this.vUv2[idx][i])
+                (<number[]>vertexData.uvs2).push(this.vUv2[idx][i]);
             }
         }
 
         if (this.vUv3) {
             for (let i = 0; i < this.vUv3[idx].length; i++) {
-                (<number[]>vertexData.uvs3).push(this.vUv3[idx][i])
+                (<number[]>vertexData.uvs3).push(this.vUv3[idx][i]);
             }
         }
 
         if (this.vUv4) {
             for (let i = 0; i < this.vUv4[idx].length; i++) {
-                (<number[]>vertexData.uvs4).push(this.vUv4[idx][i])
+                (<number[]>vertexData.uvs4).push(this.vUv4[idx][i]);
             }
         }
 
         if (this.vUv5) {
             for (let i = 0; i < this.vUv5[idx].length; i++) {
-                (<number[]>vertexData.uvs5).push(this.vUv5[idx][i])
+                (<number[]>vertexData.uvs5).push(this.vUv5[idx][i]);
             }
         }
 
         if (this.vUv6) {
             for (let i = 0; i < this.vUv6[idx].length; i++) {
-                (<number[]>vertexData.uvs6).push(this.vUv6[idx][i])
+                (<number[]>vertexData.uvs6).push(this.vUv6[idx][i]);
             }
         }
 
         if (this.vColors) {
             for (let i = 0; i < this.vColors[idx].length; i++) {
-                (<number[]>vertexData.colors).push(this.vColors[idx][i])
+                (<number[]>vertexData.colors).push(this.vColors[idx][i]);
             }
         }
 
         if (this.vMatricesIndices) {
             for (let i = 0; i < this.vMatricesIndices[idx].length; i++) {
-                (<number[]>vertexData.matricesIndices).push(this.vMatricesIndices[idx][i])
+                (<number[]>vertexData.matricesIndices).push(this.vMatricesIndices[idx][i]);
             }
         }
 
         if (this.vMatricesWeights) {
             for (let i = 0; i < this.vMatricesWeights[idx].length; i++) {
-                (<number[]>vertexData.matricesWeights).push(this.vMatricesWeights[idx][i])
+                (<number[]>vertexData.matricesWeights).push(this.vMatricesWeights[idx][i]);
             }
         }
 
         if (this.vMatricesIndicesExtra) {
             for (let i = 0; i < this.vMatricesIndicesExtra[idx].length; i++) {
-                (<number[]>vertexData.matricesIndicesExtra).push(this.vMatricesIndicesExtra[idx][i])
+                (<number[]>vertexData.matricesIndicesExtra).push(this.vMatricesIndicesExtra[idx][i]);
             }
         }
 
         if (this.vMatricesWeightsExtra) {
             for (let i = 0; i < this.vMatricesWeightsExtra[idx].length; i++) {
-                (<number[]>vertexData.matricesWeightsExtra).push(this.vMatricesWeightsExtra[idx][i])
+                (<number[]>vertexData.matricesWeightsExtra).push(this.vMatricesWeightsExtra[idx][i]);
             }
         }
     }
 
-    public static extractSlice(vb: FloatArray, kind: string, idx: number) {
+    /**
+     * Helper function to extract a slice from a float array.
+     * @param vb The array
+     * @param kind The kind of float array we are dealing with
+     * @param idx The index at which we want the slice
+     * @returns the slice
+     */
+    public static ExtractSlice(vb: FloatArray, kind: string, idx: number) : FloatArray {
         let stride = VertexBuffer.DeduceStride(kind);
         let sl = vb.slice(idx * stride, idx * stride + stride);
         return sl;
     }
 
-    public static extractVertex(
+    /**
+     * Adds a vertex to a face from multiple arrays that are inside a vertex data object
+     * @param f Face to push the vertex to
+     * @param i Index in the indices array
+     * @param matrix World matrix. If null, identity is used.
+     * @param indices indices
+     * @param positions positions
+     * @param normals normals
+     * @param tangents tangents
+     * @param uvs uvs
+     * @param uvs2 uvs2
+     * @param uvs3 uvs3
+     * @param uvs4 uvs4
+     * @param uvs5 uvs5
+     * @param uvs6 uvs6
+     * @param colors colors
+     * @param matricesIndices matrices Indices
+     * @param matricesWeights matrices Weights    
+     * @param matricesIndicesExtra matrices Indices extra
+     * @param matricesWeightsExtra matrices Weights extra
+     */
+    public static ExtractVertex(
         f: Face,
         i: number,
         matrix: Nullable<Matrix>,
@@ -230,97 +313,111 @@ class Face {
         });
 
         if (normals) {
-            let sl = Face.extractSlice(normals, VertexBuffer.NormalKind, idx);
+            let sl = Face.ExtractSlice(normals, VertexBuffer.NormalKind, idx);
             f.vNormals = f.vNormals || [];
             f.vNormals.push(sl);
         }
 
         if (tangents) {
-            let sl = Face.extractSlice(tangents, VertexBuffer.TangentKind, idx);
+            let sl = Face.ExtractSlice(tangents, VertexBuffer.TangentKind, idx);
             f.vTangents = f.vTangents || [];
             f.vTangents.push(sl);
         }
 
         if (uvs) {
-            let sl = Face.extractSlice(uvs, VertexBuffer.UVKind, idx);
+            let sl = Face.ExtractSlice(uvs, VertexBuffer.UVKind, idx);
             f.vUv = f.vUv || [];
             f.vUv.push(sl);
         }
 
         if (uvs2) {
-            let sl = Face.extractSlice(uvs2, VertexBuffer.UV2Kind, idx);
+            let sl = Face.ExtractSlice(uvs2, VertexBuffer.UV2Kind, idx);
             f.vUv2 = f.vUv2 || [];
             f.vUv2.push(sl);
         }
 
         if (uvs3) {
-            let sl = Face.extractSlice(uvs3, VertexBuffer.UV3Kind, idx);
+            let sl = Face.ExtractSlice(uvs3, VertexBuffer.UV3Kind, idx);
             f.vUv3 = f.vUv3 || [];
             f.vUv3.push(sl);
         }
 
         if (uvs4) {
-            let sl = Face.extractSlice(uvs4, VertexBuffer.UV4Kind, idx);
+            let sl = Face.ExtractSlice(uvs4, VertexBuffer.UV4Kind, idx);
             f.vUv4 = f.vUv4 || [];
             f.vUv4.push(sl);
         }
 
         if (uvs5) {
-            let sl = Face.extractSlice(uvs5, VertexBuffer.UV5Kind, idx);
+            let sl = Face.ExtractSlice(uvs5, VertexBuffer.UV5Kind, idx);
             f.vUv5 = f.vUv5 || [];
             f.vUv5.push(sl);
         }
 
         if (uvs6) {
-            let sl = Face.extractSlice(uvs6, VertexBuffer.UV6Kind, idx);
+            let sl = Face.ExtractSlice(uvs6, VertexBuffer.UV6Kind, idx);
             f.vUv6 = f.vUv6 || [];
             f.vUv6.push(sl);
         }
 
         if (colors) {
-            let sl = Face.extractSlice(colors, VertexBuffer.ColorKind, idx);
+            let sl = Face.ExtractSlice(colors, VertexBuffer.ColorKind, idx);
             f.vColors = f.vColors || [];
             f.vColors.push(sl);
         }
 
         if (matricesIndices) {
-            let sl = Face.extractSlice(matricesIndices, VertexBuffer.MatricesIndicesKind, idx);
+            let sl = Face.ExtractSlice(matricesIndices, VertexBuffer.MatricesIndicesKind, idx);
             f.vMatricesIndices = f.vMatricesIndices || [];
             f.vMatricesIndices.push(sl);
         }
 
         if (matricesWeights) {
-            let sl = Face.extractSlice(matricesWeights, VertexBuffer.MatricesWeightsKind, idx);
+            let sl = Face.ExtractSlice(matricesWeights, VertexBuffer.MatricesWeightsKind, idx);
             f.vMatricesWeights = f.vMatricesWeights || [];
             f.vMatricesWeights.push(sl);
         }
 
         if (matricesIndicesExtra) {
-            let sl = Face.extractSlice(matricesIndicesExtra, VertexBuffer.MatricesIndicesExtraKind, idx);
+            let sl = Face.ExtractSlice(matricesIndicesExtra, VertexBuffer.MatricesIndicesExtraKind, idx);
             f.vMatricesIndicesExtra = f.vMatricesIndicesExtra || [];
             f.vMatricesIndicesExtra.push(sl);
         }
 
         if (matricesWeightsExtra) {
-            let sl = Face.extractSlice(matricesWeightsExtra, VertexBuffer.MatricesWeightsExtraKind, idx);
+            let sl = Face.ExtractSlice(matricesWeightsExtra, VertexBuffer.MatricesWeightsExtraKind, idx);
             f.vMatricesWeightsExtra = f.vMatricesWeightsExtra || [];
             f.vMatricesWeightsExtra.push(sl);
         }
     }
 }
 
+
+/**
+ * An edge in an uv layout
+ */
 declare interface Edge {
     v0: Vector2;
     v1: Vector2;
 }
 
+/**
+ * Basic vertex information
+ */
 declare interface VertexInfo {
     vertex: Vector3;
     normal: Nullable<Vector3>;
     index: number;
 }
+
+/**
+ * An edge with its embedded length
+ */
 declare interface MeasuredEdge { l: number; e: Nullable<Edge>; }
 
+/**
+ * An UV Island (array of faces)
+ */
 declare type Island = Face[];
 
 // 0: island
@@ -331,8 +428,14 @@ declare type Island = Face[];
 // 5: h
 // 6: edges
 // 7: uniqueEdgesPoints
+/**
+ * Island info, in an array for performance storage
+ */
 declare type IslandInfo = any[];
 
+/**
+ * Helper
+ */
 let sortAndGetFirst = function(arr: number[][], idx: number) {
     if (arr[idx] && arr[idx].length) {
         arr[idx].sort((a, b) => a - b);
@@ -343,6 +446,9 @@ let sortAndGetFirst = function(arr: number[][], idx: number) {
     return idx;
 };
 
+/**
+ * Helper
+ */
 let intersectLineLine2d = function() {
 
     var r, s,
@@ -372,10 +478,16 @@ let intersectLineLine2d = function() {
             };
 }();
 
+/**
+ * Helper
+ */
 function cross(a: Vector2, b: Vector2, o: Vector2) {
    return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
 }
 
+/**
+ * Helper
+ */
 function roundTo(a: number, precision: number) {
     if (!precision) {
         return a;
@@ -384,6 +496,7 @@ function roundTo(a: number, precision: number) {
 }
 
 /**
+ * Helper
  * Avoid doing:
  *
  * angle = atan2f(dvec[0], dvec[1]);
@@ -399,6 +512,9 @@ function mulV2V2Cw(mat: Vector2, vec: Vector2)
     );
 }
 
+/**
+ * Helper
+ */
 function projectMat(vector: Vector3) {
     let lastAxis = vector.clone().normalize();
 
@@ -426,14 +542,35 @@ const USER_FILL_HOLES_QUALITY = 1;
 const USER_ISLAND_MARGIN = 0;
 const SMALL_NUM = 1e-12;
 
+/**
+* UV Mapper for lightmaps
+* Ported from Blender by Benjamin Guignabert (https://github.com/CraigFeldspar)
+*
+* Original license can be found below :
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+*
+*/
 export class UvMapper {
 
-    toV3(v: Vector2) {
+    private toV3(v: Vector2) {
         return new Vector3(v.x, v.y, 0);
     }
 
     // Straight port from blender, not memory efficient, can be improved
-    public pointInTri2D(v: Vector3, v1: Vector3, v2: Vector3, v3: Vector3) {
+    private pointInTri2D(v: Vector3, v1: Vector3, v2: Vector3, v3: Vector3) {
         let side1 = v2.subtract(v1);
         let side2 = v3.subtract(v1);
 
@@ -453,29 +590,7 @@ export class UvMapper {
         return 0 <= uvw.x && 0 <= uvw.y && uvw.x + uvw.y <= 1;
     }
 
-    debPointInTri2D() {
-        let v1 = new Vector3(0, 0, 0);
-        let v2 = new Vector3(1, 0, 0);
-        let v3 = new Vector3(0, 1, 0);
-
-        let V0 = new Vector3(0, 0, 0); // true
-        let V1 = new Vector3(-1, 0, 0); // false
-        let V2 = new Vector3(0, 0.1, 0.1); // true
-        let V3 = new Vector3(1, 0, 0); // true
-        let V4 = new Vector3(0.5, 0.5, 0); // true
-        let V5 = new Vector3(0.500001, 0.500001, 0); // false
-        let V6 = new Vector3(1.000001, 0, 0); // false
-
-        console.log(this.pointInTri2D(V0, v1, v2, v3) + " should be true");
-        console.log(this.pointInTri2D(V1, v1, v2, v3) + " should be false");
-        console.log(this.pointInTri2D(V2, v1, v2, v3) + " should be true");
-        console.log(this.pointInTri2D(V3, v1, v2, v3) + " should be true");
-        console.log(this.pointInTri2D(V4, v1, v2, v3) + " should be true");
-        console.log(this.pointInTri2D(V5, v1, v2, v3) + " should be false");
-        console.log(this.pointInTri2D(V6, v1, v2, v3) + " should be false");
-    }
-
-    boundsIslands(faces: Face[]) {
+    private boundsIslands(faces: Face[]) {
         let minx = faces[0].uv[0].x;
         let maxx = minx;
         let miny = faces[0].uv[0].y;
@@ -505,7 +620,7 @@ export class UvMapper {
         return [minx, miny, maxx, maxy];
     }
 
-    island2Edge(island: Island) {
+    private island2Edge(island: Island) {
         let edges: Map<string, MeasuredEdge> = new Map();
         let uniquePointsMap: Map<string, Vector2> = new Map();
         let i1, i2;
@@ -574,7 +689,7 @@ export class UvMapper {
         };
     }
 
-    pointInIsland(pt: Vector3, island: Island) : boolean {
+    private pointInIsland(pt: Vector3, island: Island) : boolean {
         let vec1 = new Vector3();
         let vec2 = new Vector3();
         let vec3 = new Vector3();
@@ -596,7 +711,7 @@ export class UvMapper {
     }
 
     // box is (left,bottom, right, top)
-    islandIntersectUvIsland(source: IslandInfo, target: IslandInfo, SourceOffset: Vector2) : number {
+    private islandIntersectUvIsland(source: IslandInfo, target: IslandInfo, SourceOffset: Vector2) : number {
         let edgeLoopsSource = source[6] as MeasuredEdge[];
         let edgeLoopsTarget = target[6] as MeasuredEdge[];
 
@@ -641,7 +756,7 @@ export class UvMapper {
         return 0; // NO INTERSECTION
     }
 
-    rotateUvs(uvPoints: Vector2[], angle: number) {
+    private rotateUvs(uvPoints: Vector2[], angle: number) {
         // Unefficient v2 -> v3
         if (angle !== 0) {
             let mat = Matrix.RotationZ(-angle);
@@ -653,7 +768,7 @@ export class UvMapper {
         }
     }
 
-    convexhull2d(points: Vector2[]) : Vector2[] {
+    private convexhull2d(points: Vector2[]) : Vector2[] {
         if (points.length < 3) {
             return [];
         }
@@ -683,7 +798,7 @@ export class UvMapper {
         return lower.concat(upper);
     }
 
-    fitAabb2d(hull: Vector2[]) {
+    private fitAabb2d(hull: Vector2[]) {
         let areaBest = +Infinity;
         let area = +Infinity;
         let dvecBest = new Vector2();
@@ -745,147 +860,147 @@ export class UvMapper {
         };
     }
 
-    boxFit2D(points: Vector2[]) {
+    private boxFit2D(points: Vector2[]) {
         let hull = this.convexhull2d(points);
         let { angle } = this.fitAabb2d(hull);
 
         return angle;
     }
 
-    debugFitAABB() {
-        let canvas = document.createElement("canvas");
-        let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+    // private debugFitAABB() {
+    //     let canvas = document.createElement("canvas");
+    //     let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-        document.body.appendChild(canvas);
-        canvas.width = 300;
-        canvas.height = 300;
-        canvas.style.position = "absolute";
-        canvas.style.zIndex = "10";
-        canvas.style.top = "0px";
-        canvas.style.left = "0px";
+    //     document.body.appendChild(canvas);
+    //     canvas.width = 300;
+    //     canvas.height = 300;
+    //     canvas.style.position = "absolute";
+    //     canvas.style.zIndex = "10";
+    //     canvas.style.top = "0px";
+    //     canvas.style.left = "0px";
 
-        ctx.clearRect(0, 0, 300, 300);
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, 300, 300);
-        ctx.fillStyle = "red";
-        ctx.translate(150, 150);
+    //     ctx.clearRect(0, 0, 300, 300);
+    //     ctx.fillStyle = "white";
+    //     ctx.fillRect(0, 0, 300, 300);
+    //     ctx.fillStyle = "red";
+    //     ctx.translate(150, 150);
 
-        let points0 = [
-            // new Vector2(0, 0),
-            // new Vector2(25, 25),
-            // new Vector2(-50, -35),
-            // new Vector2(125, 32),
-            // new Vector2(-85, 82),
-            // new Vector2(0, 100),
-        ];
+    //     let points0 = [
+    //         // new Vector2(0, 0),
+    //         // new Vector2(25, 25),
+    //         // new Vector2(-50, -35),
+    //         // new Vector2(125, 32),
+    //         // new Vector2(-85, 82),
+    //         // new Vector2(0, 100),
+    //     ];
 
-        for (let i = 0; i < 16; i++) {
-            points0.push(new Vector2(Math.random() * 200 - 100, Math.random() * 200 - 100));
-        }
+    //     for (let i = 0; i < 16; i++) {
+    //         points0.push(new Vector2(Math.random() * 200 - 100, Math.random() * 200 - 100));
+    //     }
 
-        // Draw points
-        for (let i = 0; i < points0.length; i++) {
-            ctx.moveTo(points0[i].x, points0[i].y);
-            ctx.arc(points0[i].x, points0[i].y, 3, 0, 2 * Math.PI);
-            ctx.fill();
-        }
+    //     // Draw points
+    //     for (let i = 0; i < points0.length; i++) {
+    //         ctx.moveTo(points0[i].x, points0[i].y);
+    //         ctx.arc(points0[i].x, points0[i].y, 3, 0, 2 * Math.PI);
+    //         ctx.fill();
+    //     }
 
-        let hull = this.convexhull2d(points0);
-        let { angle, min, max } = this.fitAabb2d(hull);
-        let rotation = new Vector2(Math.cos(angle), Math.sin(angle));
+    //     let hull = this.convexhull2d(points0);
+    //     let { angle, min, max } = this.fitAabb2d(hull);
+    //     let rotation = new Vector2(Math.cos(angle), Math.sin(angle));
 
-        ctx.strokeStyle = "green";
-        ctx.beginPath();
-        ctx.moveTo(hull[0].x, hull[0].y);
-        for (let i = 1; i < hull.length; i++) {
-            ctx.lineTo(hull[i].x, hull[i].y);
-        }
-        ctx.lineTo(hull[0].x, hull[0].y);
+    //     ctx.strokeStyle = "green";
+    //     ctx.beginPath();
+    //     ctx.moveTo(hull[0].x, hull[0].y);
+    //     for (let i = 1; i < hull.length; i++) {
+    //         ctx.lineTo(hull[i].x, hull[i].y);
+    //     }
+    //     ctx.lineTo(hull[0].x, hull[0].y);
 
-        ctx.stroke();
+    //     ctx.stroke();
 
-        ctx.strokeStyle = "blue";
+    //     ctx.strokeStyle = "blue";
 
-        let tl = new Vector2(min.x, min.y);
-        let bl = new Vector2(min.x, max.y);
-        let br = new Vector2(max.x, max.y);
-        let tr = new Vector2(max.x, min.y);
-        let base = new Vector2(0, 0);
-        let tip = new Vector2(50, 0);
+    //     let tl = new Vector2(min.x, min.y);
+    //     let bl = new Vector2(min.x, max.y);
+    //     let br = new Vector2(max.x, max.y);
+    //     let tr = new Vector2(max.x, min.y);
+    //     let base = new Vector2(0, 0);
+    //     let tip = new Vector2(50, 0);
 
-        tip = mulV2V2Cw(rotation, tip); //.addInPlace(offset);
-        tl = mulV2V2Cw(rotation, tl); //.addInPlace(offset);
-        bl = mulV2V2Cw(rotation, bl); //.addInPlace(offset);
-        br = mulV2V2Cw(rotation, br); //.addInPlace(offset);
-        tr = mulV2V2Cw(rotation, tr); //.addInPlace(offset);
+    //     tip = mulV2V2Cw(rotation, tip); //.addInPlace(offset);
+    //     tl = mulV2V2Cw(rotation, tl); //.addInPlace(offset);
+    //     bl = mulV2V2Cw(rotation, bl); //.addInPlace(offset);
+    //     br = mulV2V2Cw(rotation, br); //.addInPlace(offset);
+    //     tr = mulV2V2Cw(rotation, tr); //.addInPlace(offset);
 
-        ctx.beginPath();
-        ctx.moveTo(tip.x, tip.y);
-        ctx.lineTo(base.x, base.y);
-        ctx.stroke();
+    //     ctx.beginPath();
+    //     ctx.moveTo(tip.x, tip.y);
+    //     ctx.lineTo(base.x, base.y);
+    //     ctx.stroke();
 
-        ctx.moveTo(tl.x, tl.y);
-        ctx.lineTo(bl.x, bl.y);
-        ctx.lineTo(br.x, br.y);
-        ctx.lineTo(tr.x, tr.y);
-        ctx.lineTo(tl.x, tl.y);
-        ctx.stroke();
-    }
+    //     ctx.moveTo(tl.x, tl.y);
+    //     ctx.lineTo(bl.x, bl.y);
+    //     ctx.lineTo(br.x, br.y);
+    //     ctx.lineTo(tr.x, tr.y);
+    //     ctx.lineTo(tl.x, tl.y);
+    //     ctx.stroke();
+    // }
 
-    debugUvs(uvsArray: FloatArray[], indicesArray: IndicesArray[]) {
-        let canvas = document.createElement("canvas");
-        let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+    // private debugUvs(uvsArray: FloatArray[], indicesArray: IndicesArray[]) {
+    //     let canvas = document.createElement("canvas");
+    //     let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-        document.body.appendChild(canvas);
-        canvas.width = 300;
-        canvas.height = 300;
-        canvas.style.position = "absolute";
-        canvas.style.zIndex = "10";
-        canvas.style.top = "0px";
-        canvas.style.left = "0px";
+    //     document.body.appendChild(canvas);
+    //     canvas.width = 300;
+    //     canvas.height = 300;
+    //     canvas.style.position = "absolute";
+    //     canvas.style.zIndex = "10";
+    //     canvas.style.top = "0px";
+    //     canvas.style.left = "0px";
 
-        ctx.clearRect(0, 0, 300, 300);
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, 300, 300);
-        ctx.fillStyle = "red";
-        ctx.scale(300, 300);
-        ctx.lineWidth = 0.001;
+    //     ctx.clearRect(0, 0, 300, 300);
+    //     ctx.fillStyle = "white";
+    //     ctx.fillRect(0, 0, 300, 300);
+    //     ctx.fillStyle = "red";
+    //     ctx.scale(300, 300);
+    //     ctx.lineWidth = 0.001;
 
-        ctx.strokeStyle = "green";
-        for (let j = 0; j < uvsArray.length; j++) {
-            let uvs = uvsArray[j];
-            let indices = indicesArray[j];
-            for (let i = 0; i < indices.length; i += 3) {
-                let lessThanZeroCount = 0;
-                if (uvs[indices[i] * 2] < 0) {
-                    lessThanZeroCount++;
-                }
-                if (uvs[indices[i + 1] * 2] < 0) {
-                    lessThanZeroCount++;
-                }
-                if (uvs[indices[i + 2] * 2] < 0) {
-                    lessThanZeroCount++;
-                }
+    //     ctx.strokeStyle = "green";
+    //     for (let j = 0; j < uvsArray.length; j++) {
+    //         let uvs = uvsArray[j];
+    //         let indices = indicesArray[j];
+    //         for (let i = 0; i < indices.length; i += 3) {
+    //             let lessThanZeroCount = 0;
+    //             if (uvs[indices[i] * 2] < 0) {
+    //                 lessThanZeroCount++;
+    //             }
+    //             if (uvs[indices[i + 1] * 2] < 0) {
+    //                 lessThanZeroCount++;
+    //             }
+    //             if (uvs[indices[i + 2] * 2] < 0) {
+    //                 lessThanZeroCount++;
+    //             }
 
-                if (lessThanZeroCount > 1) {
-                    debugger;
-                } else if (lessThanZeroCount === 1) {
-                    debugger;
-                }
+    //             if (lessThanZeroCount > 1) {
+    //                 debugger;
+    //             } else if (lessThanZeroCount === 1) {
+    //                 debugger;
+    //             }
 
-                ctx.beginPath();
-                ctx.moveTo(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
-                ctx.lineTo(uvs[indices[i + 1] * 2], uvs[indices[i + 1] * 2 + 1]);
-                ctx.lineTo(uvs[indices[i + 2] * 2], uvs[indices[i + 2] * 2 + 1]);
-                ctx.lineTo(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
-                ctx.stroke();
-                // ctx.fill();
-            }
-        }
+    //             ctx.beginPath();
+    //             ctx.moveTo(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
+    //             ctx.lineTo(uvs[indices[i + 1] * 2], uvs[indices[i + 1] * 2 + 1]);
+    //             ctx.lineTo(uvs[indices[i + 2] * 2], uvs[indices[i + 2] * 2 + 1]);
+    //             ctx.lineTo(uvs[indices[i] * 2], uvs[indices[i] * 2 + 1]);
+    //             ctx.stroke();
+    //             // ctx.fill();
+    //         }
+    //     }
 
-    }
+    // }
 
-    optiRotateUvIsland(faces: Face[]) {
+    private optiRotateUvIsland(faces: Face[]) {
         let uvPoints: Vector2[] = [];
         for (let i = 0; i < faces.length; i++) {
             for (let j = 0; j < faces[i].uv.length; j++) {
@@ -909,7 +1024,7 @@ export class UvMapper {
         }
     }
 
-    mergeUvIslands(islandList: Island[]) {
+    private mergeUvIslands(islandList: Island[]) {
         let decoratedIslandList: IslandInfo[] = [];
 
         let islandIdx = islandList.length;
@@ -1094,7 +1209,7 @@ export class UvMapper {
         }
     }
 
-    getUvIslands(faceGroups: Face[][], deletedFaces: Face[]) {
+    private getUvIslands(faceGroups: Face[][], deletedFaces: Face[]) {
         let islandList: Island[] = [];
 
         let faceGroupIdx = faceGroups.length;
@@ -1175,7 +1290,7 @@ export class UvMapper {
         return islandList;
     }
 
-    removeDoubles(mesh: Mesh) {
+    private removeDoubles(mesh: Mesh) {
         // memory footprint seems huge, but it's better to have speed here
         const PRECISION = 1e-12;
         let indices = mesh.getIndices() as IndicesArray;
@@ -1249,7 +1364,7 @@ export class UvMapper {
         };
     }
 
-    initVertexDataFromAvailableData(oldVertexData: VertexData) : VertexData {
+    private initVertexDataFromAvailableData(oldVertexData: VertexData) : VertexData {
         let vertexData = new VertexData();
 
         if (oldVertexData.normals) {
@@ -1295,7 +1410,19 @@ export class UvMapper {
         return vertexData;
     }
 
-    map(obList: Mesh[],
+    /**
+     * Builds unique uvs in texture space, ready for lightmapping
+     * @param obList All the meshes to pack in the same uv space
+     * @param islandMargin Relative margin between islands
+     * @param projectionLimit Angle limit (in deg) to create a seam
+     * @param userAreaWeight Add a weight on triangle areas to limit distortion
+     * @param useAspect Unused parameter (TODO)
+     * @param strechToBounds Unused parameter (TODO)
+     * @param removeDoubles If some vertices share the same position, mergin them reduces the number of islands in uv space, thus saving space and reducing seams
+     * set to true to activate the vertex merging.
+     * @returns An average world space to uv space ratio, resulting of the uv layout.
+     */
+    public map(obList: Mesh[],
         islandMargin: number = 0,
         projectionLimit: number = 89,
         userAreaWeight: number = 0,
@@ -1579,7 +1706,7 @@ export class UvMapper {
         return worldToUVRatio;
     }
 
-    packIslands(islandList: Island[]) : number {
+    private packIslands(islandList: Island[]) : number {
         if (USER_FILL_HOLES) {
             this.mergeUvIslands(islandList);
         }
@@ -1663,8 +1790,15 @@ declare interface Box {
     islandIdx?: number;
 }
 
+/**
+ * Helper that pack boxes into texture space
+ */
 class BoxPacker {
 
+    /**
+     * Pack boxes into texture space
+     * @param boxes Boxes
+     */
     public static BoxPack2d(boxes: Box[]) {
         // calculate total box area and maximum box width
         let area = 0;
