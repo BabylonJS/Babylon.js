@@ -173,8 +173,11 @@ namespace babylon
                 action();
             });
         };
-
+#ifdef __APPLE__
+        babylon::Env env{ ".", std::move(executeOnScriptThread) };
+#else
         babylon::Env env{ GetModulePath().u8string().data(), std::move(executeOnScriptThread) };
+#endif
         m_env = &env;
         auto hostScopeGuard = gsl::finally([this] { m_env = nullptr; });
 
