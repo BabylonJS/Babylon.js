@@ -33,6 +33,7 @@ export * from "./typeStore";
 export * from "./webRequest";
 export * from "./iInspectable";
 export * from "./brdfTextureTools";
+export * from "./rgbdTextureTools";
 export * from "./gradients";
 export * from "./perfCounter";
 export * from "./fileRequest";
