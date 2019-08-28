@@ -71,6 +71,9 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
 
+    /** MISC. */
+    public BUMPDIRECTUV = 0;
+
     constructor() {
         super();
         this.rebuild();

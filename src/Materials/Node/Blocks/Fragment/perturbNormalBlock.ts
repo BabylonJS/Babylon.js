@@ -7,11 +7,21 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { InputBlock } from '../Input/inputBlock';
+import { Effect } from '../../../effect';
+import { Mesh } from '../../../../Meshes/mesh';
+import { Scene } from '../../../../scene';
 
 /**
  * Block used to pertub normals based on a normal map
  */
 export class PerturbNormalBlock extends NodeMaterialBlock {
+    private _tangentSpaceParameterName = "";
+
+    /** Gets or sets a boolean indicating that normal should be inverted on X axis */
+    public invertX = false;
+    /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
+    public invertY = false;
+
     /**
      * Create a new PerturbNormalBlock
      * @param name defines the block name
@@ -84,6 +94,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         defines.setValue("BUMP", true);
     }
 
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+        effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? -1 : 1, this.invertY ? -1 : 1);
+    }
+
     public autoConfigure(material: NodeMaterial) {
         if (!this.uv.isConnected) {
             let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
@@ -111,12 +125,17 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         let worldNormal = this.worldNormal;
 
         state.sharedData.blocksWithDefines.push(this);
+        state.sharedData.bindableBlocks.push(this);
+
+        this._tangentSpaceParameterName = state._getFreeDefineName("tangentSpaceParameter");
+
+        state._emitUniformFromString(this._tangentSpaceParameterName, "vec2");
 
         state._emitExtension("bump", "#extension GL_OES_standard_derivatives : enable");
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
             replaceStrings: [
                 { search: /vBumpInfos.y/g, replace: `1.0 / ${this.strength.associatedVariableName}`},
-                { search: /vTangentSpaceParams/g, replace: "vec2(1.0, 1.0)"},
+                { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"}
             ]
         });
@@ -133,6 +152,30 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         });
 
         return this;
+    }
+
+    protected _dumpPropertiesCode() {
+        var codeString = `${this._codeVariableName}.invertX = ${this.invertX};\r\n`;
+
+        codeString += `${this._codeVariableName}.invertY = ${this.invertY};\r\n`;
+
+        return codeString;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.invertX = this.invertX;
+        serializationObject.invertY = this.invertY;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.invertX = serializationObject.invertX;
+        this.invertY = serializationObject.invertY;
     }
 }
 
