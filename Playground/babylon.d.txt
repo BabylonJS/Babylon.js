@@ -52676,9 +52676,9 @@ declare module BABYLON {
     /**
      * Block used to pertub normals based on a normal map
      */
-    export class PertubNormalBlock extends NodeMaterialBlock {
+    export class PerturbNormalBlock extends NodeMaterialBlock {
         /**
-         * Create a new PertubNormalBlock
+         * Create a new PerturbNormalBlock
          * @param name defines the block name
          */
         constructor(name: string);
