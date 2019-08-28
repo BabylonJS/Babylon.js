@@ -279,6 +279,11 @@ declare module BABYLON {
          */
         static IsWindowObjectExist(): boolean;
         /**
+         * Checks if the navigator object exists
+         * @returns true if the navigator object exists
+         */
+        static IsNavigatorAvailable(): boolean;
+        /**
          * Extracts text content from a DOM element hierarchy
          * @param element defines the root element
          * @returns a string
@@ -4739,7 +4744,7 @@ declare module BABYLON {
          * @param offlineProvider offline provider for caching
          * @returns the HTMLImageElement of the loaded image
          */
-        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
+        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
         /**
          * Loads a file
          * @param fileToLoad defines the file to load
@@ -15693,7 +15698,7 @@ declare module BABYLON {
         /** @hidden */
         protected _initialSamplingMode: number;
         /** @hidden */
-        _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
+        _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>;
         private _deleteBuffer;
         protected _format: Nullable<number>;
         private _delayedOnLoad;
@@ -15731,14 +15736,14 @@ declare module BABYLON {
          * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
          * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
          */
-        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | Engine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number);
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | Engine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
          * @param buffer the buffer of the texture (defaults to null)
          * @param onLoad callback called when the texture is loaded  (defaults to null)
          */
-        updateURL(url: string, buffer?: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>, onLoad?: () => void): void;
+        updateURL(url: string, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, onLoad?: () => void): void;
         /**
          * Finish the loading sequence of a texture flagged as delayed load.
          * @hidden
@@ -18827,9 +18832,10 @@ declare module BABYLON {
          * @param name Define the name of the material in the scene
          * @param scene Define the scene the material belongs to
          * @param shaderPath Defines  the route to the shader code in one of three ways:
-         *     - object - { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
-         *     - object - { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in <script> tags
-         *     - string - "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+         *  * object: { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
+         *  * object: { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in script tags
+         *  * object: { vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" } using with strings containing the shaders code
+         *  * string: "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
          * @param options Define the options used to create the shader
          */
         constructor(name: string, scene: Scene, shaderPath: any, options?: Partial<IShaderMaterialOptions>);
@@ -22027,7 +22033,7 @@ declare module BABYLON {
      * @see http://doc.babylonjs.com/how_to/how_to_use_lod
      */
     export class MeshLODLevel {
-        /** Defines the distance where this level should star being displayed */
+        /** Defines the distance where this level should start being displayed */
         distance: number;
         /** Defines the mesh to use to render this level */
         mesh: Nullable<Mesh>;
@@ -22037,7 +22043,7 @@ declare module BABYLON {
          * @param mesh defines the mesh to use to render this level
          */
         constructor(
-        /** Defines the distance where this level should star being displayed */
+        /** Defines the distance where this level should start being displayed */
         distance: number, 
         /** Defines the mesh to use to render this level */
         mesh: Nullable<Mesh>);
@@ -27683,9 +27689,9 @@ declare module BABYLON {
          */
         gammaSpace: boolean;
         /**
-         * Gets whether or not the texture contains RGBD data.
+         * Gets or sets whether or not the texture contains RGBD data.
          */
-        readonly isRGBD: boolean;
+        isRGBD: boolean;
         /**
          * Is Z inverted in the texture (useful in a cube texture).
          */
@@ -28050,7 +28056,7 @@ declare module BABYLON {
         /** @hidden */
         _dataSource: number;
         /** @hidden */
-        _buffer: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>;
+        _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>;
         /** @hidden */
         _bufferView: Nullable<ArrayBufferView>;
         /** @hidden */
@@ -30117,7 +30123,7 @@ declare module BABYLON {
         _gl: WebGLRenderingContext;
         private _renderingCanvas;
         private _windowIsBackground;
-        private _webGLVersion;
+        protected _webGLVersion: number;
         protected _highPrecisionShadersAllowed: boolean;
         /** @hidden */
         readonly _shouldUseHighPrecisionShader: boolean;
@@ -30158,7 +30164,7 @@ declare module BABYLON {
         _caps: EngineCapabilities;
         private _pointerLockRequested;
         private _isStencilEnable;
-        private _colorWrite;
+        protected _colorWrite: boolean;
         private _loadingScreen;
         /** @hidden */
         _drawCalls: PerfCounter;
@@ -30586,6 +30592,11 @@ declare module BABYLON {
         /** @hidden */
         _renderLoop(): void;
         /**
+         * Can be used to override the current requestAnimationFrame requester.
+         * @hidden
+         */
+        protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number;
+        /**
          * Register and execute a render loop. The engine can have more than one render function
          * @param renderFunction defines the function to continuously execute
          */
@@ -30770,6 +30781,7 @@ declare module BABYLON {
          * @returns a new webGL buffer
          */
         createIndexBuffer(indices: IndicesArray, updatable?: boolean): DataBuffer;
+        protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array;
         /**
          * Bind a webGL buffer to the webGL context
          * @param buffer defines the buffer to bind
@@ -30851,6 +30863,7 @@ declare module BABYLON {
         releaseVertexArrayObject(vao: WebGLVertexArrayObject): void;
         /** @hidden */
         _releaseBuffer(buffer: DataBuffer): boolean;
+        protected _deleteBuffer(buffer: DataBuffer): void;
         /**
          * Creates a webGL buffer to use with instanciation
          * @param capacity defines the size of the buffer
@@ -30931,6 +30944,7 @@ declare module BABYLON {
          * @returns the new Effect
          */
         createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
+        protected static _concatenateShader(source: string, defines: Nullable<string>, shaderVersion?: string): string;
         private _compileShader;
         private _compileRawShader;
         /**
@@ -30958,7 +30972,7 @@ declare module BABYLON {
          * Creates a new pipeline context
          * @returns the new pipeline
          */
-        createPipelineContext(): WebGLPipelineContext;
+        createPipelineContext(): IPipelineContext;
         private _createShaderProgram;
         private _finalizePipelineContext;
         /** @hidden */
@@ -31247,7 +31261,7 @@ declare module BABYLON {
          * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | HTMLImageElement | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>): InternalTexture;
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>): InternalTexture;
         /**
          * @hidden
          * Rescales a texture
@@ -31370,7 +31384,7 @@ declare module BABYLON {
          * @hidden
          */
         _setCubeMapTextureParams(loadMipmap: boolean): void;
-        private _prepareWebGLTextureContinuation;
+        protected _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<Scene>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void;
         private _prepareWebGLTexture;
         /** @hidden */
         _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView;
@@ -31378,8 +31392,11 @@ declare module BABYLON {
         _releaseFramebufferObjects(texture: InternalTexture): void;
         /** @hidden */
         _releaseTexture(texture: InternalTexture): void;
-        private setProgram;
-        private _boundUniforms;
+        protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
+        protected _setProgram(program: WebGLProgram): void;
+        protected _boundUniforms: {
+            [key: number]: WebGLUniformLocation;
+        };
         /**
          * Binds an effect to the webGL context
          * @param effect defines the effect to bind
@@ -31422,7 +31439,7 @@ declare module BABYLON {
         setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>): void;
         private _bindSamplerUniformToChannel;
         private _getTextureWrapMode;
-        private _setTexture;
+        protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray?: boolean, depthStencilTexture?: boolean): boolean;
         /**
          * Sets an array of texture to the webGL context
          * @param channel defines the channel where the texture array must be set
@@ -36735,8 +36752,9 @@ declare module BABYLON {
         /**
          * Attaches the drag behavior the passed in mesh
          * @param ownerNode The mesh that will be dragged around once attached
+         * @param predicate Predicate to use for pick filtering
          */
-        attach(ownerNode: AbstractMesh): void;
+        attach(ownerNode: AbstractMesh, predicate?: (m: AbstractMesh) => boolean): void;
         /**
          * Force relase the drag action by code.
          */
@@ -43490,8 +43508,7 @@ declare module BABYLON {
         _bindTextureDirectly(target: number, texture: InternalTexture): boolean;
         /** @hidden */
         _bindTexture(channel: number, texture: InternalTexture): void;
-        /** @hidden */
-        _releaseBuffer(buffer: DataBuffer): boolean;
+        protected _deleteBuffer(buffer: WebGLBuffer): void;
         releaseEffects(): void;
         displayLoadingUI(): void;
         hideLoadingUI(): void;
@@ -43810,6 +43827,424 @@ declare module BABYLON {
              */
             updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
         }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var rgbdEncodePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var rgbdDecodePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Raw texture data and descriptor sufficient for WebGL texture upload
+     */
+    export interface EnvironmentTextureInfo {
+        /**
+         * Version of the environment map
+         */
+        version: number;
+        /**
+         * Width of image
+         */
+        width: number;
+        /**
+         * Irradiance information stored in the file.
+         */
+        irradiance: any;
+        /**
+         * Specular information stored in the file.
+         */
+        specular: any;
+    }
+    /**
+     * Defines One Image in the file. It requires only the position in the file
+     * as well as the length.
+     */
+    interface BufferImageData {
+        /**
+         * Length of the image data.
+         */
+        length: number;
+        /**
+         * Position of the data from the null terminator delimiting the end of the JSON.
+         */
+        position: number;
+    }
+    /**
+     * Defines the specular data enclosed in the file.
+     * This corresponds to the version 1 of the data.
+     */
+    export interface EnvironmentTextureSpecularInfoV1 {
+        /**
+         * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
+         */
+        specularDataPosition?: number;
+        /**
+         * This contains all the images data needed to reconstruct the cubemap.
+         */
+        mipmaps: Array<BufferImageData>;
+        /**
+         * Defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness.
+         */
+        lodGenerationScale: number;
+    }
+    /**
+     * Sets of helpers addressing the serialization and deserialization of environment texture
+     * stored in a BabylonJS env file.
+     * Those files are usually stored as .env files.
+     */
+    export class EnvironmentTextureTools {
+        /**
+         * Magic number identifying the env file.
+         */
+        private static _MagicBytes;
+        /**
+         * Gets the environment info from an env file.
+         * @param data The array buffer containing the .env bytes.
+         * @returns the environment file info (the json header) if successfully parsed.
+         */
+        static GetEnvInfo(data: ArrayBuffer): Nullable<EnvironmentTextureInfo>;
+        /**
+         * Creates an environment texture from a loaded cube texture.
+         * @param texture defines the cube texture to convert in env file
+         * @return a promise containing the environment data if succesfull.
+         */
+        static CreateEnvTextureAsync(texture: CubeTexture): Promise<ArrayBuffer>;
+        /**
+         * Creates a JSON representation of the spherical data.
+         * @param texture defines the texture containing the polynomials
+         * @return the JSON representation of the spherical info
+         */
+        private static _CreateEnvTextureIrradiance;
+        /**
+         * Creates the ArrayBufferViews used for initializing environment texture image data.
+         * @param arrayBuffer the underlying ArrayBuffer to which the views refer
+         * @param info parameters that determine what views will be created for accessing the underlying buffer
+         * @return the views described by info providing access to the underlying buffer
+         */
+        static CreateImageDataArrayBufferViews(arrayBuffer: any, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>>;
+        /**
+         * Uploads the texture info contained in the env file to the GPU.
+         * @param texture defines the internal texture to upload to
+         * @param arrayBuffer defines the buffer cotaining the data to load
+         * @param info defines the texture info retrieved through the GetEnvInfo method
+         * @returns a promise
+         */
+        static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void>;
+        /**
+         * Uploads the levels of image data to the GPU.
+         * @param texture defines the internal texture to upload to
+         * @param imageData defines the array buffer views of image data [mipmap][face]
+         * @returns a promise
+         */
+        static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][]): Promise<void>;
+        /**
+         * Uploads spherical polynomials information to the texture.
+         * @param texture defines the texture we are trying to upload the information to
+         * @param info defines the environment texture info retrieved through the GetEnvInfo method
+         */
+        static UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void;
+        /** @hidden */
+        static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void>;
+    }
+}
+declare module BABYLON {
+    /**
+     * Contains position and normal vectors for a vertex
+     */
+    export class PositionNormalVertex {
+        /** the position of the vertex (defaut: 0,0,0) */
+        position: Vector3;
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal: Vector3;
+        /**
+         * Creates a PositionNormalVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         */
+        constructor(
+        /** the position of the vertex (defaut: 0,0,0) */
+        position?: Vector3, 
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal?: Vector3);
+        /**
+         * Clones the PositionNormalVertex
+         * @returns the cloned PositionNormalVertex
+         */
+        clone(): PositionNormalVertex;
+    }
+    /**
+     * Contains position, normal and uv vectors for a vertex
+     */
+    export class PositionNormalTextureVertex {
+        /** the position of the vertex (defaut: 0,0,0) */
+        position: Vector3;
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal: Vector3;
+        /** the uv of the vertex (default: 0,0) */
+        uv: Vector2;
+        /**
+         * Creates a PositionNormalTextureVertex
+         * @param position the position of the vertex (defaut: 0,0,0)
+         * @param normal the normal of the vertex (defaut: 0,1,0)
+         * @param uv the uv of the vertex (default: 0,0)
+         */
+        constructor(
+        /** the position of the vertex (defaut: 0,0,0) */
+        position?: Vector3, 
+        /** the normal of the vertex (defaut: 0,1,0) */
+        normal?: Vector3, 
+        /** the uv of the vertex (default: 0,0) */
+        uv?: Vector2);
+        /**
+         * Clones the PositionNormalTextureVertex
+         * @returns the cloned PositionNormalTextureVertex
+         */
+        clone(): PositionNormalTextureVertex;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class NativeShaderProcessor extends WebGL2ShaderProcessor {
+        private _genericAttributeLocation;
+        private _varyingLocationCount;
+        private _varyingLocationMap;
+        private _replacements;
+        private _textureCount;
+        private _uniforms;
+        lineProcessor(line: string): string;
+        attributeProcessor(attribute: string): string;
+        varyingProcessor(varying: string, isFragment: boolean): string;
+        uniformProcessor(uniform: string): string;
+        preProcessor(code: string, defines: string[], isFragment: boolean): string;
+        postProcessor(code: string, defines: string[], isFragment: boolean): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Container for accessors for natively-stored mesh data buffers.
+     */
+    class NativeDataBuffer extends DataBuffer {
+        /**
+         * Accessor value used to identify/retrieve a natively-stored index buffer.
+         */
+        nativeIndexBuffer?: any;
+        /**
+         * Accessor value used to identify/retrieve a natively-stored vertex buffer.
+         */
+        nativeVertexBuffer?: any;
+    }
+    /** @hidden */
+    export class NativeEngine extends Engine {
+        private readonly _native;
+        getHardwareScalingLevel(): number;
+        constructor();
+        /**
+         * Can be used to override the current requestAnimationFrame requester.
+         * @hidden
+         */
+        protected _queueNewFrame(bindedRenderFunction: any, requester: any): number;
+        clear(color: Color4, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+        createIndexBuffer(indices: IndicesArray): NativeDataBuffer;
+        createVertexBuffer(data: DataArray): NativeDataBuffer;
+        recordVertexArrayObject(vertexBuffers: {
+            [key: string]: VertexBuffer;
+        }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject;
+        bindVertexArrayObject(vertexArray: WebGLVertexArrayObject): void;
+        releaseVertexArrayObject(vertexArray: WebGLVertexArrayObject): void;
+        getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[];
+        /**
+         * Draw a list of indexed primitives
+         * @param fillMode defines the primitive to use
+         * @param indexStart defines the starting index
+         * @param indexCount defines the number of index to draw
+         * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+         */
+        drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void;
+        /**
+         * Draw a list of unindexed primitives
+         * @param fillMode defines the primitive to use
+         * @param verticesStart defines the index of first vertex to draw
+         * @param verticesCount defines the count of vertices to draw
+         * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+         */
+        drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
+        createPipelineContext(): IPipelineContext;
+        _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>): void;
+        /** @hidden */
+        _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean;
+        /** @hidden */
+        _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void): void;
+        createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): any;
+        createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): any;
+        protected _setProgram(program: WebGLProgram): void;
+        _releaseEffect(effect: Effect): void;
+        _deletePipelineContext(pipelineContext: IPipelineContext): void;
+        getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): WebGLUniformLocation[];
+        bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void;
+        bindSamplers(effect: Effect): void;
+        setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void;
+        getRenderWidth(useScreen?: boolean): number;
+        getRenderHeight(useScreen?: boolean): number;
+        setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        /**
+         * Set the z offset to apply to current rendering
+         * @param value defines the offset to apply
+         */
+        setZOffset(value: number): void;
+        /**
+         * Gets the current value of the zOffset
+         * @returns the current zOffset state
+         */
+        getZOffset(): number;
+        /**
+         * Enable or disable depth buffering
+         * @param enable defines the state to set
+         */
+        setDepthBuffer(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if depth writing is enabled
+         * @returns the current depth writing state
+         */
+        getDepthWrite(): boolean;
+        /**
+         * Enable or disable depth writing
+         * @param enable defines the state to set
+         */
+        setDepthWrite(enable: boolean): void;
+        /**
+         * Enable or disable color writing
+         * @param enable defines the state to set
+         */
+        setColorWrite(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if color writing is enabled
+         * @returns the current color writing state
+         */
+        getColorWrite(): boolean;
+        /**
+         * Sets alpha constants used by some alpha blending modes
+         * @param r defines the red component
+         * @param g defines the green component
+         * @param b defines the blue component
+         * @param a defines the alpha component
+         */
+        setAlphaConstants(r: number, g: number, b: number, a: number): void;
+        /**
+         * Sets the current alpha mode
+         * @param mode defines the mode to use (one of the BABYLON.Engine.ALPHA_XXX)
+         * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+         */
+        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
+        /**
+         * Gets the current alpha mode
+         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+         * @returns the current alpha mode
+         */
+        getAlphaMode(): number;
+        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setArray(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray2(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray3(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray4(uniform: WebGLUniformLocation, array: number[]): void;
+        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
+        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setFloat(uniform: WebGLUniformLocation, value: number): void;
+        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
+        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
+        setBool(uniform: WebGLUniformLocation, bool: number): void;
+        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
+        setColor3(uniform: WebGLUniformLocation, color3: Color3): void;
+        setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void;
+        wipeCaches(bruteForce?: boolean): void;
+        _createTexture(): WebGLTexture;
+        protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
+        /**
+         * Usually called from BABYLON.Texture.ts.
+         * Passed information to create a WebGLTexture
+         * @param urlArg defines a value which contains one of the following:
+         * * A conventional http URL, e.g. 'http://...' or 'file://...'
+         * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
+         * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
+         * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
+         * @param invertY when true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file
+         * @param scene needed for loading to the correct scene
+         * @param samplingMode mode with should be used sample / access the texture (Default: BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
+         * @param onLoad optional callback to be called upon successful completion
+         * @param onError optional callback to be called upon failure
+         * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), or a Blob
+         * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
+         * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
+         * @param forcedExtension defines the extension to use to pick the right loader
+         * @returns a InternalTexture for assignment back into BABYLON.Texture
+         */
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>): InternalTexture;
+        /**
+         * Creates a cube texture
+         * @param rootUrl defines the url where the files to load is located
+         * @param scene defines the current scene
+         * @param files defines the list of files to load (1 per face)
+         * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+         * @param onLoad defines an optional callback raised when the texture is loaded
+         * @param onError defines an optional callback raised if there is an issue to load the texture
+         * @param format defines the format of the data
+         * @param forcedExtension defines the extension to use to pick the right loader
+         * @param createPolynomials if a polynomial sphere should be created for the cube texture
+         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+         * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+         * @returns the cube texture as an InternalTexture
+         */
+        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>): InternalTexture;
+        private _getSamplingFilter;
+        createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
+        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
+        unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+        createDynamicVertexBuffer(data: DataArray): DataBuffer;
+        updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
+        /**
+         * Updates a dynamic vertex buffer.
+         * @param vertexBuffer the vertex buffer to update
+         * @param data the data used to update the vertex buffer
+         * @param byteOffset the byte offset of the data (optional)
+         * @param byteLength the byte length of the data (optional)
+         */
+        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
+        protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray?: boolean, depthStencilTexture?: boolean): boolean;
+        private _updateAnisotropicLevel;
+        private _getAddressMode;
+        /** @hidden */
+        _bindTexture(channel: number, texture: InternalTexture): void;
+        protected _deleteBuffer(buffer: NativeDataBuffer): void;
+        releaseEffects(): void;
+        /** @hidden */
+        _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
+        /** @hidden */
+        _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
+        /** @hidden */
+        _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
+        /** @hidden */
+        _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
+    }
 }
 declare module BABYLON {
     /**
@@ -45442,22 +45877,22 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export var rgbdDecodePixelShader: {
-        name: string;
-        shader: string;
-    };
+    /**
+     * Class used to host RGBD texture specific utilities
+     */
+    export class RGBDTextureTools {
+        /**
+         * Expand the RGBD Texture from RGBD to Half Float if possible.
+         * @param texture the texture to expand.
+         */
+        static ExpandRGBDTexture(texture: Texture): void;
+    }
 }
 declare module BABYLON {
     /**
      * Class used to host texture specific utilities
      */
     export class BRDFTextureTools {
-        /**
-         * Expand the BRDF Texture from RGBD to Half Float if necessary.
-         * @param texture the texture to expand.
-         */
-        private static _ExpandDefaultBRDFTexture;
         /**
          * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
          * @param scene defines the hosting scene
@@ -46430,6 +46865,7 @@ declare module BABYLON {
         LIGHTMAPDIRECTUV: number;
         USELIGHTMAPASSHADOWMAP: boolean;
         GAMMALIGHTMAP: boolean;
+        RGBDLIGHTMAP: boolean;
         REFLECTION: boolean;
         REFLECTIONMAP_3D: boolean;
         REFLECTIONMAP_SPHERICAL: boolean;
@@ -47610,88 +48046,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export var rgbdEncodePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Raw texture data and descriptor sufficient for WebGL texture upload
-     */
-    export interface EnvironmentTextureInfo {
-        /**
-         * Version of the environment map
-         */
-        version: number;
-        /**
-         * Width of image
-         */
-        width: number;
-        /**
-         * Irradiance information stored in the file.
-         */
-        irradiance: any;
-        /**
-         * Specular information stored in the file.
-         */
-        specular: any;
-    }
-    /**
-     * Sets of helpers addressing the serialization and deserialization of environment texture
-     * stored in a BabylonJS env file.
-     * Those files are usually stored as .env files.
-     */
-    export class EnvironmentTextureTools {
-        /**
-         * Magic number identifying the env file.
-         */
-        private static _MagicBytes;
-        /**
-         * Gets the environment info from an env file.
-         * @param data The array buffer containing the .env bytes.
-         * @returns the environment file info (the json header) if successfully parsed.
-         */
-        static GetEnvInfo(data: ArrayBuffer): Nullable<EnvironmentTextureInfo>;
-        /**
-         * Creates an environment texture from a loaded cube texture.
-         * @param texture defines the cube texture to convert in env file
-         * @return a promise containing the environment data if succesfull.
-         */
-        static CreateEnvTextureAsync(texture: CubeTexture): Promise<ArrayBuffer>;
-        /**
-         * Creates a JSON representation of the spherical data.
-         * @param texture defines the texture containing the polynomials
-         * @return the JSON representation of the spherical info
-         */
-        private static _CreateEnvTextureIrradiance;
-        /**
-         * Uploads the texture info contained in the env file to the GPU.
-         * @param texture defines the internal texture to upload to
-         * @param arrayBuffer defines the buffer cotaining the data to load
-         * @param info defines the texture info retrieved through the GetEnvInfo method
-         * @returns a promise
-         */
-        static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void>;
-        /**
-         * Uploads the levels of image data to the GPU.
-         * @param texture defines the internal texture to upload to
-         * @param imageData defines the array buffer views of image data [mipmap][face]
-         * @returns a promise
-         */
-        static UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][]): Promise<void>;
-        /**
-         * Uploads spherical polynomials information to the texture.
-         * @param texture defines the texture we are trying to upload the information to
-         * @param info defines the environment texture info retrieved through the GetEnvInfo method
-         */
-        static UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void;
-        /** @hidden */
-        static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void>;
-    }
-}
-declare module BABYLON {
     /**
      * Implementation of the ENV Texture Loader.
      * @hidden
@@ -47998,61 +48352,6 @@ declare module BABYLON {
              */
             createDefaultXRExperienceAsync(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
         }
-}
-declare module BABYLON {
-    /**
-     * Contains position and normal vectors for a vertex
-     */
-    export class PositionNormalVertex {
-        /** the position of the vertex (defaut: 0,0,0) */
-        position: Vector3;
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal: Vector3;
-        /**
-         * Creates a PositionNormalVertex
-         * @param position the position of the vertex (defaut: 0,0,0)
-         * @param normal the normal of the vertex (defaut: 0,1,0)
-         */
-        constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
-        position?: Vector3, 
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal?: Vector3);
-        /**
-         * Clones the PositionNormalVertex
-         * @returns the cloned PositionNormalVertex
-         */
-        clone(): PositionNormalVertex;
-    }
-    /**
-     * Contains position, normal and uv vectors for a vertex
-     */
-    export class PositionNormalTextureVertex {
-        /** the position of the vertex (defaut: 0,0,0) */
-        position: Vector3;
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal: Vector3;
-        /** the uv of the vertex (default: 0,0) */
-        uv: Vector2;
-        /**
-         * Creates a PositionNormalTextureVertex
-         * @param position the position of the vertex (defaut: 0,0,0)
-         * @param normal the normal of the vertex (defaut: 0,1,0)
-         * @param uv the uv of the vertex (default: 0,0)
-         */
-        constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
-        position?: Vector3, 
-        /** the normal of the vertex (defaut: 0,1,0) */
-        normal?: Vector3, 
-        /** the uv of the vertex (default: 0,0) */
-        uv?: Vector2);
-        /**
-         * Clones the PositionNormalTextureVertex
-         * @returns the cloned PositionNormalTextureVertex
-         */
-        clone(): PositionNormalTextureVertex;
-    }
 }
 declare module BABYLON {
     /**
@@ -51793,9 +52092,9 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Enum used to define well known values e.g. values automatically provided by the system
+     * Enum used to define system values e.g. values automatically provided by the system
      */
-    export enum NodeMaterialWellKnownValues {
+    export enum NodeMaterialSystemValues {
         /** World */
         World = 1,
         /** View */
@@ -52401,6 +52700,12 @@ declare module BABYLON {
             [key: string]: string;
         };
         /**
+         * Gets the list of emitted extensions
+         */
+        extensions: {
+            [key: string]: string;
+        };
+        /**
          * Gets the target of the compilation state
          */
         target: NodeMaterialBlockTargets;
@@ -52446,6 +52751,8 @@ declare module BABYLON {
         _excludeVariableName(name: string): void;
         /** @hidden */
         _getGLType(type: NodeMaterialBlockConnectionPointTypes): string;
+        /** @hidden */
+        _emitExtension(name: string, extension: string): void;
         /** @hidden */
         _emitFunction(name: string, code: string, comments: string): void;
         /** @hidden */
@@ -52730,7 +53037,7 @@ declare module BABYLON {
         private _type;
         private _animationType;
         /** @hidden */
-        _wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        _systemValue: Nullable<NodeMaterialSystemValues>;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
         /**
@@ -52755,11 +53062,11 @@ declare module BABYLON {
          */
         setAsAttribute(attributeName?: string): InputBlock;
         /**
-         * Set the source of this connection point to a well known value
-         * @param value define the well known value to use (world, view, etc...) or null to switch to manual value
+         * Set the source of this connection point to a system value
+         * @param value define the system value to use (world, view, etc...) or null to switch to manual value
          * @returns the current connection point
          */
-        setAsWellKnownValue(value: Nullable<NodeMaterialWellKnownValues>): InputBlock;
+        setAsSystemValue(value: Nullable<NodeMaterialSystemValues>): InputBlock;
         /**
          * Gets or sets the value of that point.
          * Please note that this value will be ignored if valueCallback is defined
@@ -52798,13 +53105,13 @@ declare module BABYLON {
          */
         isVarying: boolean;
         /**
-         * Gets a boolean indicating that the current connection point is a well known value
+         * Gets a boolean indicating that the current connection point is a system value
          */
-        readonly isWellKnownValue: boolean;
+        readonly isSystemValue: boolean;
         /**
-         * Gets or sets the current well known value or null if not defined as well know value
+         * Gets or sets the current well known value or null if not defined as a system value
          */
-        wellKnownValue: Nullable<NodeMaterialWellKnownValues>;
+        systemValue: Nullable<NodeMaterialSystemValues>;
         /**
          * Gets the current class name
          * @returns the class name
@@ -53197,6 +53504,50 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to pertub normals based on a normal map
+     */
+    export class PerturbNormalBlock extends NodeMaterialBlock {
+        /**
+         * Create a new PerturbNormalBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position input component
+         */
+        readonly worldPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world normal input component
+         */
+        readonly worldNormal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the uv input component
+         */
+        readonly uv: NodeMaterialConnectionPoint;
+        /**
+        * Gets the normal map color input component
+        */
+        readonly normalMapColor: NodeMaterialConnectionPoint;
+        /**
+        * Gets the strength input component
+        */
+        readonly strength: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
@@ -53583,6 +53934,8 @@ declare module BABYLON {
          */
         readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -53999,6 +54352,66 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to get the max of 2 values
+     */
+    export class MaxBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new MaxBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        readonly left: NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the min of 2 values
+     */
+    export class MinBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new MinBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        readonly left: NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Effect Render Options
      */
     export interface IEffectRendererOptions {
@@ -54034,6 +54447,11 @@ declare module BABYLON {
          * @param viewport Defines the viewport to set (defaults to 0 0 1 1)
          */
         setViewport(viewport?: Viewport): void;
+        /**
+         * Binds the embedded attributes buffer to the effect.
+         * @param effect Defines the effect to bind the attributes for
+         */
+        bindBuffers(effect: Effect): void;
         /**
          * Sets the current effect wrapper to use during draw.
          * The effect needs to be ready before calling this api.
@@ -55786,6 +56204,18 @@ declare module BABYLON {
          */
         createCrowd(maxAgents: number, maxAgentRadius: number, scene: Scene): ICrowd;
         /**
+         * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
+         * The queries will try to find a solution within those bounds
+         * default is (1,1,1)
+         * @param extent x,y,z value that define the extent around the queries point of reference
+         */
+        setDefaultQueryExtent(extent: Vector3): void;
+        /**
+         * Get the Bounding box extent specified by setDefaultQueryExtent
+         * @returns the box extent values
+         */
+        getDefaultQueryExtent(): Vector3;
+        /**
          * Release all resources
          */
         dispose(): void;
@@ -55836,6 +56266,18 @@ declare module BABYLON {
          * @param destination targeted world position
          */
         agentGoto(index: number, destination: Vector3): void;
+        /**
+         * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
+         * The queries will try to find a solution within those bounds
+         * default is (1,1,1)
+         * @param extent x,y,z value that define the extent around the queries point of reference
+         */
+        setDefaultQueryExtent(extent: Vector3): void;
+        /**
+         * Get the Bounding box extent specified by setDefaultQueryExtent
+         * @returns the box extent values
+         */
+        getDefaultQueryExtent(): Vector3;
         /**
          * Release all resources
          */
@@ -56009,6 +56451,18 @@ declare module BABYLON {
          */
         createCrowd(maxAgents: number, maxAgentRadius: number, scene: Scene): ICrowd;
         /**
+         * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
+         * The queries will try to find a solution within those bounds
+         * default is (1,1,1)
+         * @param extent x,y,z value that define the extent around the queries point of reference
+         */
+        setDefaultQueryExtent(extent: Vector3): void;
+        /**
+         * Get the Bounding box extent specified by setDefaultQueryExtent
+         * @returns the box extent values
+         */
+        getDefaultQueryExtent(): Vector3;
+        /**
          * Disposes
          */
         dispose(): void;
@@ -56097,6 +56551,18 @@ declare module BABYLON {
          * @param deltaTime in seconds
          */
         update(deltaTime: number): void;
+        /**
+         * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
+         * The queries will try to find a solution within those bounds
+         * default is (1,1,1)
+         * @param extent x,y,z value that define the extent around the queries point of reference
+         */
+        setDefaultQueryExtent(extent: Vector3): void;
+        /**
+         * Get the Bounding box extent specified by setDefaultQueryExtent
+         * @returns the box extent values
+         */
+        getDefaultQueryExtent(): Vector3;
         /**
          * Release all resources
          */

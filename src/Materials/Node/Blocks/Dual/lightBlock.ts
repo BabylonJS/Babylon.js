@@ -8,7 +8,7 @@ import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
-import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { NodeMaterialSystemValues } from '../../nodeMaterialSystemValues';
 import { InputBlock } from '../Input/inputBlock';
 import { Light } from '../../../../Lights/light';
 import { Nullable } from '../../../../types';
@@ -34,7 +34,7 @@ export class LightBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.VertexAndFragment);
 
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
-        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
 
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuseOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -86,11 +86,11 @@ export class LightBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.CameraPosition);
+            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition);
 
             if (!cameraPositionInput) {
                 cameraPositionInput = new InputBlock("cameraPosition");
-                cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+                cameraPositionInput.setAsSystemValue(NodeMaterialSystemValues.CameraPosition);
             }
             cameraPositionInput.output.connectTo(this.cameraPosition);
         }
@@ -147,8 +147,6 @@ export class LightBlock extends NodeMaterialBlock {
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
         let worldPos = this.worldPosition;
-        let worldNormal = this.worldNormal;
-
         let comments = `//${this.name}`;
 
         // Declaration
@@ -173,11 +171,6 @@ export class LightBlock extends NodeMaterialBlock {
         let worldPosVaryingName = "v_" + worldPos.associatedVariableName;
         if (state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
             state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName};\r\n`;
-        }
-
-        let worldNormalVaryingName = "v_" + worldNormal.associatedVariableName;
-        if (state._emitVaryingFromString(worldNormalVaryingName, "vec4")) {
-            state.compilationString += `${worldNormalVaryingName} = ${worldNormal.associatedVariableName};\r\n`;
         }
 
         if (this.light) {
@@ -249,7 +242,7 @@ export class LightBlock extends NodeMaterialBlock {
             state.compilationString += `float glossiness = 0.;\r\n`;
             state.compilationString += `vec3 diffuseBase = vec3(0., 0., 0.);\r\n`;
             state.compilationString += `vec3 specularBase = vec3(0., 0., 0.);\r\n`;
-            state.compilationString += `vec3 normalW = v_${this.worldNormal.associatedVariableName}.xyz;\r\n`;
+            state.compilationString += `vec3 normalW = ${this.worldNormal.associatedVariableName}.xyz;\r\n`;
         }
 
         if (this.light) {

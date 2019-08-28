@@ -45127,7 +45127,7 @@ var NodeMaterialPropertyGridComponent = /** @class */ (function (_super) {
     NodeMaterialPropertyGridComponent.prototype.renderInputValues = function () {
         var _this = this;
         var configurableInputBlocks = this.props.material.getInputBlocks().filter(function (block) {
-            return block.visibleInInspector && block.isUniform && !block.isWellKnownValue;
+            return block.visibleInInspector && block.isUniform && !block.isSystemValue;
         }).sort(function (a, b) {
             return a.name.localeCompare(b.name);
         });
@@ -45972,7 +45972,9 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             if (!mesh.reservedDataStore) {
                 mesh.reservedDataStore = {};
             }
-            mesh.reservedDataStore.originalMaterial = mesh.material;
+            if (!mesh.reservedDataStore.originalMaterial) {
+                mesh.reservedDataStore.originalMaterial = mesh.material;
+            }
             var normalMaterial = new BABYLON.NormalMaterial("normalMaterial", scene);
             normalMaterial.disableLighting = true;
             if (mesh.material) {
@@ -45996,7 +45998,9 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             if (!mesh.reservedDataStore) {
                 mesh.reservedDataStore = {};
             }
-            mesh.reservedDataStore.originalMaterial = mesh.material;
+            if (!mesh.reservedDataStore.originalMaterial) {
+                mesh.reservedDataStore.originalMaterial = mesh.material;
+            }
             var vertexColorMaterial = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("vertex colors", scene);
             vertexColorMaterial.disableLighting = true;
             vertexColorMaterial.emissiveColor = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Color3"].White();
@@ -46056,7 +46060,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var mesh = this.props.mesh;
         var scene = mesh.getScene();
         var displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
-        var displayVertexColors = mesh.material != null && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial;
+        var displayVertexColors = !!(mesh.material != null && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial);
         var renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
         var renderWireframeOver = (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) ? true : false;
         var morphTargets = [];
