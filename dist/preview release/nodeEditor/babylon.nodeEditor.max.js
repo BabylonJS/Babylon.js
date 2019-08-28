@@ -69050,7 +69050,11 @@ var GenericNodeModel = /** @class */ (function (_super) {
                                 transformBlock.complementW = 1;
                             }
                             globalState.onRebuildRequiredObservable.notifyObservers();
-                        }, isSelected: function () { return _this.block.complementW === 0; } }))));
+                        }, isSelected: function () { return _this.block.complementW === 0; } })),
+            this.block.getClassName() === "PerturbNormalBlock" &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Invert X axis", target: this.block, propertyName: "invertX", onValueChanged: function () { return globalState.onRebuildRequiredObservable.notifyObservers(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Invert Y axis", target: this.block, propertyName: "invertY", onValueChanged: function () { return globalState.onRebuildRequiredObservable.notifyObservers(); } }))));
     };
     return GenericNodeModel;
 }(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));

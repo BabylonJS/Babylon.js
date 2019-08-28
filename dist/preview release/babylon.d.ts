@@ -52237,6 +52237,8 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        /** MISC. */
+        BUMPDIRECTUV: number;
         constructor();
         setValue(name: string, value: boolean): void;
     }
@@ -53507,6 +53509,11 @@ declare module BABYLON {
      * Block used to pertub normals based on a normal map
      */
     export class PerturbNormalBlock extends NodeMaterialBlock {
+        private _tangentSpaceParameterName;
+        /** Gets or sets a boolean indicating that normal should be inverted on X axis */
+        invertX: boolean;
+        /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
+        invertY: boolean;
         /**
          * Create a new PerturbNormalBlock
          * @param name defines the block name
@@ -53542,8 +53549,12 @@ declare module BABYLON {
          */
         readonly output: NodeMaterialConnectionPoint;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
