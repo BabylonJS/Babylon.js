@@ -85,18 +85,18 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <ButtonLineComponent label="Save" onClick={() => {
                             this.save();
                         }} />
-                        <ButtonLineComponent label="Generate code" onClick={() => {
-                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
-                        }} />
-                        <ButtonLineComponent label="Export shaders" onClick={() => {
-                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
-                        }} />
                         {
                             this.props.globalState.customSave && 
                             <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
                                 this.props.globalState.customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState));
                             }} />
                         }
+                        <ButtonLineComponent label="Generate code" onClick={() => {
+                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
+                        }} />
+                        <ButtonLineComponent label="Export shaders" onClick={() => {
+                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
+                        }} />
                     </LineContainerComponent>
                 </div>
             </div>
