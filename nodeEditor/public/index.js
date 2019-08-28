@@ -31,7 +31,7 @@ var checkHash = function () {
                             var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
 
                             if (editorDisplayed) {
-                                customLoadObservable.notifyObservers(snippet.nodeMaterial);
+                                customLoadObservable.notifyObservers(JSON.parse(snippet.nodeMaterial));
                             } else {
                                 nodeMaterial.loadFromSerialization(snippet.nodeMaterial);
                                 nodeMaterial.build(true);

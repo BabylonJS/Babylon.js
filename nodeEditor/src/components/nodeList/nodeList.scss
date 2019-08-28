@@ -49,7 +49,7 @@
             .list-container {
                 overflow-x: hidden;
                 overflow-y: auto;
-                height: 100%;
+                height: calc(100% - 32px);
 
                 .underline {
                     border-bottom: 0.5px solid rgba(255, 255, 255, 0.5);

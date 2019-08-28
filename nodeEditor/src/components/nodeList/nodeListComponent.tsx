@@ -59,7 +59,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         return (
-            <div id="nodeList" style={{ borderRightStyle: "solid", borderColor: "grey", borderWidth: "1px" }} >
+            <div id="nodeList">
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">
