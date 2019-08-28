@@ -176,45 +176,45 @@ type GPUVertexFormat =
 type GPUTextureAspect = "all" | "stencil-only" | "depth-only";
 
 type GPUBufferUsageFlags = number;
-enum GPUBufferUsage {
-  NONE = 0x0000,
-  MAP_READ = 0x0001,
-  MAP_WRITE = 0x0002,
-  COPY_SRC = 0x0004,
-  COPY_DST = 0x0008,
-  INDEX = 0x0010,
-  VERTEX = 0x0020,
-  UNIFORM = 0x0040,
-  STORAGE = 0x0080
-}
+// enum GPUBufferUsage {
+//   NONE = 0x0000,
+//   MAP_READ = 0x0001,
+//   MAP_WRITE = 0x0002,
+//   COPY_SRC = 0x0004,
+//   COPY_DST = 0x0008,
+//   INDEX = 0x0010,
+//   VERTEX = 0x0020,
+//   UNIFORM = 0x0040,
+//   STORAGE = 0x0080
+// }
 
 type GPUColorWriteFlags = number;
-enum GPUColorWrite {
-  NONE = 0x0,
-  RED = 0x1,
-  GREEN = 0x2,
-  BLUE = 0x4,
-  ALPHA = 0x8,
-  ALL = 0xf
-}
+// enum GPUColorWrite {
+//   NONE = 0x0,
+//   RED = 0x1,
+//   GREEN = 0x2,
+//   BLUE = 0x4,
+//   ALPHA = 0x8,
+//   ALL = 0xf
+// }
 
 type GPUShaderStageFlags = number;
-enum GPUShaderStage {
-  NONE = 0x0,
-  VERTEX = 0x1,
-  FRAGMENT = 0x2,
-  COMPUTE = 0x4
-}
+// enum GPUShaderStage {
+//   NONE = 0x0,
+//   VERTEX = 0x1,
+//   FRAGMENT = 0x2,
+//   COMPUTE = 0x4
+// }
 
 type GPUTextureUsageFlags = number;
-enum GPUTextureUsage {
-  NONE = 0x00,
-  COPY_SRC = 0x01,
-  COPY_DST = 0x02,
-  SAMPLED = 0x04,
-  STORAGE = 0x08,
-  OUTPUT_ATTACHMENT = 0x10
-}
+// enum GPUTextureUsage {
+//   NONE = 0x00,
+//   COPY_SRC = 0x01,
+//   COPY_DST = 0x02,
+//   SAMPLED = 0x04,
+//   STORAGE = 0x08,
+//   OUTPUT_ATTACHMENT = 0x10
+// }
 
 interface GPUBindGroupBinding {
   binding: number;
