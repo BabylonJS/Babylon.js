@@ -9,6 +9,8 @@ import { SceneLoader, ISceneLoaderPlugin, ISceneLoaderPluginExtensions } from "b
 import { AssetContainer } from "babylonjs/assetContainer";
 import { Scene } from "babylonjs/scene";
 
+import "babylonjs/Helpers/sceneHelpers";
+
 /**
  * STL file type loader.
  * This is a babylon scene loader plugin.
