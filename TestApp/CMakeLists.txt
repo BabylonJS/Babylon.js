@@ -43,22 +43,20 @@ elseif(BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
 elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
     set(PLIST_FILE "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Info.plist")
 
-    file(GLOB STORYBOARDS
-        LIST_DIRECTORIES FALSE
-        "${CMAKE_CURRENT_LIST_DIR}/ource/macOS/Base.lproj/*.storyboard")
-        
+    set(STORYBOARD "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Base.lproj/Main.storyboard")
+    set(RESOURCE_FILES ${STORYBOARD})
+
     set(SOURCES
         ${SOURCES}
         "Source/macOS/main.m"
         "Source/macOS/AppDelegate.m"
         "Source/macOS/AppDelegate.h"
         "Source/macOS/ViewController.m"
-        "Source/macOS/ViewController.h"
-        "Source/macOS/Info.plist")        
+        "Source/macOS/ViewController.h")        
 endif()
 
 set(WIN32_EXECUTABLE TRUE)
-add_executable(TestApp WIN32 ${SOURCES})
+add_executable(TestApp WIN32 ${SOURCES} ${RESOURCE_FILES})
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT TestApp)
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
