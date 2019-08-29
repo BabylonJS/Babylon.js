@@ -246,7 +246,7 @@ vec4 color = vec4(finalDiffuse + finalSpecular, alpha);
 // We first move from gamma to linear.
 #ifdef IMAGEPROCESSINGPOSTPROCESS
 	color.rgb = toLinearSpace(color.rgb);
-#elif IMAGEPROCESSING
+#elif defined(IMAGEPROCESSING)
     color.rgb = toLinearSpace(color.rgb);
     color = applyImageProcessing(color);
 #endif
