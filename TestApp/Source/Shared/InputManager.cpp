@@ -1,5 +1,5 @@
 #include "InputManager.h"
-
+#include <functional>
 InputManager::InputManager(const Napi::CallbackInfo& info)
     : Napi::ObjectWrap<InputManager>{ info }
     , m_buffer{ static_cast<InputManager::InputBuffer*>(info.Data()) }

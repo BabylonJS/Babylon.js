@@ -1,6 +1,5 @@
 #pragma once
 
-#include <napi/env.h>
 #include <functional>
 #include <memory>
 #include <string>
@@ -9,7 +8,8 @@ namespace babylon
 {
     class RuntimeImpl;
     using MessageLogger = void(*)(const char* message);
-
+    class Env;
+    
     class Runtime
     {
     public:

@@ -51,6 +51,8 @@ elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
         "Source/macOS/main.m"
         "Source/macOS/AppDelegate.m"
         "Source/macOS/AppDelegate.h"
+        "Source/macOS/Helper.cpp"
+        "Source/macOS/Helper.h"        
         "Source/macOS/ViewController.m"
         "Source/macOS/ViewController.h")        
 endif()
@@ -79,8 +81,7 @@ set_target_properties(TestApp PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST "${PLIST_FILE}"
     XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
     RESOURCE "${RESOURCE_FILES}"
-    FOLDER "TestApp"
-)
+    FOLDER "TestApp")
 endif()
 
 if(WINDOWS_STORE)
