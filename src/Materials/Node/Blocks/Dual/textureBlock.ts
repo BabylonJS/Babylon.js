@@ -109,6 +109,8 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public get target() {
+        // TextureBlock has a special optimizations for uvs that come from the vertex shaders as they can be packed into a single varyings.
+        // But we need to detect uvs coming from fragment then
         if (!this.uv.isConnected) {
             return NodeMaterialBlockTargets.VertexAndFragment;
         }

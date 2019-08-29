@@ -52237,6 +52237,8 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        /** MISC. */
+        BUMPDIRECTUV: number;
         constructor();
         setValue(name: string, value: boolean): void;
     }
@@ -52700,6 +52702,12 @@ declare module BABYLON {
             [key: string]: string;
         };
         /**
+         * Gets the list of emitted extensions
+         */
+        extensions: {
+            [key: string]: string;
+        };
+        /**
          * Gets the target of the compilation state
          */
         target: NodeMaterialBlockTargets;
@@ -52745,6 +52753,8 @@ declare module BABYLON {
         _excludeVariableName(name: string): void;
         /** @hidden */
         _getGLType(type: NodeMaterialBlockConnectionPointTypes): string;
+        /** @hidden */
+        _emitExtension(name: string, extension: string): void;
         /** @hidden */
         _emitFunction(name: string, code: string, comments: string): void;
         /** @hidden */
@@ -53492,6 +53502,59 @@ declare module BABYLON {
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to pertub normals based on a normal map
+     */
+    export class PerturbNormalBlock extends NodeMaterialBlock {
+        private _tangentSpaceParameterName;
+        /** Gets or sets a boolean indicating that normal should be inverted on X axis */
+        invertX: boolean;
+        /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
+        invertY: boolean;
+        /**
+         * Create a new PerturbNormalBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position input component
+         */
+        readonly worldPosition: NodeMaterialConnectionPoint;
+        /**
+         * Gets the world normal input component
+         */
+        readonly worldNormal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the uv input component
+         */
+        readonly uv: NodeMaterialConnectionPoint;
+        /**
+        * Gets the normal map color input component
+        */
+        readonly normalMapColor: NodeMaterialConnectionPoint;
+        /**
+        * Gets the strength input component
+        */
+        readonly strength: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
