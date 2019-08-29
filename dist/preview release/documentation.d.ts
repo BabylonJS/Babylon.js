@@ -41024,6 +41024,10 @@ declare module BABYLON {
          */
         updateGazeTrackerColor: boolean;
         /**
+         * If the controller laser color should be updated when selecting meshes
+         */
+        updateControllerLaserColor: boolean;
+        /**
          * The gaze tracking mesh corresponding to the left controller
          */
         readonly leftControllerGazeTrackerMesh: Nullable<Mesh>;
