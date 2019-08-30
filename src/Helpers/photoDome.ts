@@ -75,6 +75,12 @@ export class PhotoDome extends TransformNode {
      * The surface used for the skybox
      */
     protected _mesh: Mesh;
+    /**
+     * Gets the mesh used for the skybox.
+     */
+    public get mesh(): Mesh {
+        return this._mesh;
+    }
 
     /**
      * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
