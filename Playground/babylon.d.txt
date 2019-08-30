@@ -43461,7 +43461,11 @@ declare module BABYLON {
          */
         createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>): InternalTexture;
         private _getSamplingFilter;
-        createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        private static _GetNativeTextureFormat;
+        createRenderTargetTexture(size: number | {
+            width: number;
+            height: number;
+        }, options: boolean | RenderTargetCreationOptions): InternalTexture;
         updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
         bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
         unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
@@ -45080,6 +45084,10 @@ declare module BABYLON {
          * The surface used for the skybox
          */
         protected _mesh: Mesh;
+        /**
+         * Gets the mesh used for the skybox.
+         */
+        readonly mesh: Mesh;
         /**
          * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
          * Also see the options.resolution property.
