@@ -228,17 +228,19 @@ class Main {
         );
 
         // Restore BJS version if needed
+        var restoreVersionResult = true;
         if (this.parent.settingsPG.restoreVersion() == false) {
             // Check if there a hash in the URL
             this.checkHash();
+            restoreVersionResult = false;
         }
 
         // Load scripts list
-        this.loadScriptsList();
+        this.loadScriptsList(restoreVersionResult);
 
         // -------------------- UI --------------------
 
-        // Display BJS version - Need a check in case of version selection
+        // Display BJS version
         if (BABYLON) this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
         // Run
         this.parent.utils.setToMultipleID("runButton", "click", () => compileAndRun(this.parent, this.fpsLabel));
@@ -442,7 +444,7 @@ class Main {
     /**
      * Load the examples scripts list in the database
      */
-    loadScriptsList() {
+    loadScriptsList(restoreVersionResult) {
         var exampleList = document.getElementById("exampleList");
 
         var xhr = new XMLHttpRequest();
@@ -534,7 +536,7 @@ class Main {
                         exampleList.appendChild(noResultContainer);
                     }
 
-                    if (!location.hash) {
+                    if (!location.hash && restoreVersionResult == false) {
                         // Query string
                         var queryString = window.location.search;
 

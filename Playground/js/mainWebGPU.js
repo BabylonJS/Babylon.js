@@ -251,9 +251,11 @@ class Main {
         );
 
         // Restore BJS version if needed
+        var restoreVersionResult = true;
         if (this.parent.settingsPG.restoreVersion() == false) {
             // Check if there a hash in the URL
             this.checkHash();
+            restoreVersionResult = false;
         }
 
         // Load scripts list
@@ -428,7 +430,7 @@ class Main {
     /**
      * Load the examples scripts list in the database
      */
-    loadScriptsList() {
+    loadScriptsList(restoreVersionResult) {
         var exampleList = document.getElementById("exampleList");
 
         var xhr = new XMLHttpRequest();
@@ -520,7 +522,7 @@ class Main {
                         exampleList.appendChild(noResultContainer);
                     }
 
-                    if (!location.hash) {
+                    if (!location.hash && restoreVersionResult == false) {
                         // Query string
                         var queryString = window.location.search;
 
