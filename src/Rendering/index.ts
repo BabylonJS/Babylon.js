@@ -5,7 +5,6 @@ export * from "./edgesRenderer";
 export * from "./geometryBufferRenderer";
 export * from "./geometryBufferRendererSceneComponent";
 export * from "./outlineRenderer";
-export * from "./radiosityRenderer";
 export * from "./renderingGroup";
 export * from "./renderingManager";
 export * from "./utilityLayerRenderer";

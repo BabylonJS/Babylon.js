@@ -30,6 +30,7 @@ export * from "./Particles/index";
 export * from "./Physics/index";
 export * from "./PostProcesses/index";
 export * from "./Probes/index";
+export * from "./Radiosity/index";
 export * from "./Rendering/index";
 export * from "./scene";
 export * from "./sceneComponent";
