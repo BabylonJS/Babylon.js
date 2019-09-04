@@ -299,6 +299,10 @@ export class InputBlock extends NodeMaterialBlock {
         return `#ifdef ${define}\r\n`;
     }
 
+    public initialize(state: NodeMaterialBuildState) {
+        this.associatedVariableName = "";
+    }
+
     /**
      * Set the input block to its default value (based on its type)
      */
