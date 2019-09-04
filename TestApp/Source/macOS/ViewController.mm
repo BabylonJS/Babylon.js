@@ -7,13 +7,21 @@
 //
 
 #import "ViewController.h"
-#include "Helper.h"
+#import <Babylon/RuntimeApple.h>
+#import <Shared/InputManager.h>
+
+std::unique_ptr<babylon::RuntimeApple> runtime{};
+std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
+
 
 @implementation ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    InitRuntime();
+
+    runtime = std::make_unique<babylon::RuntimeApple>(nullptr, ".");
+    inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
+    InputManager::Initialize(*runtime, *inputBuffer);
 }
 
 
