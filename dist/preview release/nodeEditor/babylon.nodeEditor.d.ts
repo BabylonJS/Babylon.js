@@ -927,6 +927,7 @@ declare module NODEEDITOR {
          */
         constructor(props: RemapNodeWidgetProps);
         renderValue(value: string): JSX.Element | null;
+        extractInputValue(connectionPoint: BABYLON.NodeMaterialConnectionPoint): any;
         render(): JSX.Element;
     }
 }

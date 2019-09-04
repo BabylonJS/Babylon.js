@@ -1101,6 +1101,7 @@ declare module "babylonjs-node-editor/components/diagram/remap/remapNodeWidget" 
     import { RemapNodeModel } from "babylonjs-node-editor/components/diagram/remap/remapNodeModel";
     import { Nullable } from 'babylonjs/types';
     import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
     /**
      * RemapNodeWidgetProps
      */
@@ -1118,6 +1119,7 @@ declare module "babylonjs-node-editor/components/diagram/remap/remapNodeWidget" 
          */
         constructor(props: RemapNodeWidgetProps);
         renderValue(value: string): JSX.Element | null;
+        extractInputValue(connectionPoint: NodeMaterialConnectionPoint): any;
         render(): JSX.Element;
     }
 }
@@ -2520,6 +2522,7 @@ declare module NODEEDITOR {
          */
         constructor(props: RemapNodeWidgetProps);
         renderValue(value: string): JSX.Element | null;
+        extractInputValue(connectionPoint: BABYLON.NodeMaterialConnectionPoint): any;
         render(): JSX.Element;
     }
 }

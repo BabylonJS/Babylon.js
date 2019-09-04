@@ -386,6 +386,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                 link.output.connection.disconnectFrom(link.input.connection);
                                 link.input.syncWithNodeMaterialConnectionPoint(link.input.connection);
                                 link.output.syncWithNodeMaterialConnectionPoint(link.output.connection);
+                                
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                             }
                         }
                     } else {
