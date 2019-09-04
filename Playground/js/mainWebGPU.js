@@ -5,7 +5,7 @@ var engine = null;
  */
 compileAndRun = function(parent, fpsLabel) {
     // If we need to change the version, don't do this
-    if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null) return;
+    if (parent.settingsPG.mustModifyBJSversion()) return;
 
     try {
         parent.menuPG.hideWaitDiv();
@@ -471,7 +471,7 @@ class Main {
         var exampleList = document.getElementById("exampleList");
 
         var xhr = new XMLHttpRequest();
-        //Open Typescript or Javascript examples
+        // Open Typescript or Javascript examples
         if (exampleList.className != 'typescript') {
             xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list.json', true);
         }
@@ -535,6 +535,10 @@ class Main {
                                 examplePGLink.classList.add("itemLinePGLink");
                                 examplePGLink.innerText = "Display";
                                 examplePGLink.href = this.scripts[i].samples[ii].PGID;
+                                examplePGLink.addEventListener("click", function() {
+                                    location.href = this.href;
+                                    location.reload();
+                                });
 
                                 exampleContentLink.appendChild(exampleTitle);
                                 exampleContentLink.appendChild(exampleDescr);
@@ -711,7 +715,6 @@ class Main {
         document.getElementById("saveFormDescription").readOnly = true;
         document.getElementById("saveFormTags").readOnly = true;
         document.getElementById("saveFormButtonOk").style.display = "none";
-        this.parent.utils.setToMultipleID("metadataButton", "display", "inline-block");
     };
 
     /*
