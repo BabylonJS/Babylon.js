@@ -55,6 +55,10 @@ elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
         "Source/macOS/ViewController.h")        
 endif()
 
+if(APPLE)
+find_library(JSCORE_LIBRARY JavaScriptCore)
+endif()
+
 set(WIN32_EXECUTABLE TRUE)
 add_executable(TestApp WIN32 ${SOURCES} ${RESOURCE_FILES})
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT TestApp)
@@ -71,7 +75,7 @@ endif()
 
 target_include_directories(TestApp PRIVATE "Source")
 
-target_link_libraries(TestApp PRIVATE Library)
+target_link_libraries(TestApp PRIVATE Library ${JSCORE_LIBRARY})
 
 if(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
     set_target_properties(TestApp PROPERTIES
