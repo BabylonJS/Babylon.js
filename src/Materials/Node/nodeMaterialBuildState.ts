@@ -110,7 +110,7 @@ export class NodeMaterialBuildState {
 
         for (var extensionName in this.extensions) {
             let extension = this.extensions[extensionName];
-            this.compilationString = `${extension}\r\n${this.compilationString}`;
+            this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;
         }
 
         this._builtCompilationString = this.compilationString;

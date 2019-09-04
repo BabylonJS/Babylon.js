@@ -29,11 +29,12 @@ var checkHash = function () {
                     if (xmlHttp.readyState == 4) {
                         if (xmlHttp.status == 200) {
                             var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
+                            let serializationObject = JSON.parse(snippet.nodeMaterial);
 
                             if (editorDisplayed) {
-                                customLoadObservable.notifyObservers(JSON.parse(snippet.nodeMaterial));
+                                customLoadObservable.notifyObservers(serializationObject);
                             } else {
-                                nodeMaterial.loadFromSerialization(snippet.nodeMaterial);
+                                nodeMaterial.loadFromSerialization(serializationObject);
                                 nodeMaterial.build(true);
                                 showEditor();
                             }
@@ -105,7 +106,7 @@ var showEditor = function() {
 // Let's start
 if (BABYLON.Engine.isSupported()) {
     var canvas = document.createElement("canvas");
-    var engine = new BABYLON.Engine(canvas, false);
+    var engine = new BABYLON.Engine(canvas, false, {disableWebGL2Support: true});
     var scene = new BABYLON.Scene(engine);
 
     nodeMaterial = new BABYLON.NodeMaterial("node");

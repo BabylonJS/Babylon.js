@@ -64,7 +64,14 @@ export class GenericNodeModel extends DefaultNodeModel {
                         globalState.onRebuildRequiredObservable.notifyObservers();
                     }} isSelected={() => (this.block as TransformBlock).complementW === 0} />
                 </LineContainerComponent>
-            }        
+            }                    
+            {
+                this.block!.getClassName() === "PerturbNormalBlock" &&
+                <LineContainerComponent title="PROPERTIES">
+                    <CheckBoxLineComponent label="Invert X axis" target={this.block} propertyName="invertX" onValueChanged={() => globalState.onRebuildRequiredObservable.notifyObservers()} />
+                    <CheckBoxLineComponent label="Invert Y axis" target={this.block} propertyName="invertY" onValueChanged={() => globalState.onRebuildRequiredObservable.notifyObservers()}/>                    
+                </LineContainerComponent>
+            }   
             </div>
         );
     }
