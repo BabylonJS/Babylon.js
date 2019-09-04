@@ -18,7 +18,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         }
 
         this.props.globalState.previewMeshType = newOne;
-        this.props.globalState.onPreviewMeshTypeChanged.notifyObservers();
+        this.props.globalState.onPreviewCommandActivated.notifyObservers();
 
         DataStorage.StoreNumber("PreviewMeshType", newOne);
 

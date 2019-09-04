@@ -9,11 +9,12 @@ import { Vector3 } from 'babylonjs/Maths/math.vector';
 import { HemisphericLight } from 'babylonjs/Lights/hemisphericLight';
 import { ArcRotateCamera } from 'babylonjs/Cameras/arcRotateCamera';
 import { PreviewMeshType } from './previewMeshType';
+import { Animation } from 'babylonjs/Animations/animation';
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
     private _onBuildObserver: Nullable<Observer<NodeMaterial>>;    
-    private _onPreviewMeshTypeChangedObserver: Nullable<Observer<void>>;
+    private _onPreviewCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
@@ -21,7 +22,8 @@ export class PreviewManager {
     private _dummy: Mesh;
     private _camera: ArcRotateCamera;
     private _material: NodeMaterial;
-    private _globalState: GlobalState;    
+    private _globalState: GlobalState;   
+    private _currentType: number; 
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeMaterial = globalState.nodeMaterial;
@@ -32,7 +34,7 @@ export class PreviewManager {
             this._updatePreview(serializationObject);
         });
 
-        this._onPreviewMeshTypeChangedObserver = globalState.onPreviewMeshTypeChanged.add(() => {
+        this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add(() => {
             this._refreshPreviewMesh();
         });
 
@@ -64,28 +66,40 @@ export class PreviewManager {
     }
 
     private _refreshPreviewMesh() {    
-        if (this._dummy) {
-            this._dummy.dispose();
-        }
-        
-        switch (this._globalState.previewMeshType) {
-            case PreviewMeshType.Box:
-                this._dummy = Mesh.CreateBox("dummy-box", 2, this._scene);
-                break;
-            case PreviewMeshType.Sphere:
-                this._dummy = Mesh.CreateSphere("dummy-sphere", 32, 2, this._scene);
-                break;
-            case PreviewMeshType.Torus:
-                this._dummy = Mesh.CreateTorus("dummy-torus", 2, 0.5, 32, this._scene);
-                break;
-            case PreviewMeshType.Cylinder:
-                this._dummy = Mesh.CreateCylinder("dummy-cylinder", 2, 1, 1.2, 32, 1, this._scene);
-                break;                
-            case PreviewMeshType.Plane:
-                this._dummy = Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene);
-                break;                
+        this._scene.stopAllAnimations();
+
+        if (this._currentType !== this._globalState.previewMeshType) {
+
+            this._currentType = this._globalState.previewMeshType;
+            if (this._dummy) {
+                this._dummy.dispose();
             }
-        this._dummy.material = this._material;
+        
+            switch (this._globalState.previewMeshType) {
+                case PreviewMeshType.Box:
+                    this._dummy = Mesh.CreateBox("dummy-box", 2, this._scene);
+                    break;
+                case PreviewMeshType.Sphere:
+                    this._dummy = Mesh.CreateSphere("dummy-sphere", 32, 2, this._scene);
+                    break;
+                case PreviewMeshType.Torus:
+                    this._dummy = Mesh.CreateTorus("dummy-torus", 2, 0.5, 32, this._scene);
+                    break;
+                case PreviewMeshType.Cylinder:
+                    this._dummy = Mesh.CreateCylinder("dummy-cylinder", 2, 1, 1.2, 32, 1, this._scene);
+                    break;                
+                case PreviewMeshType.Plane:
+                    this._dummy = Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene);
+                    break;                
+                }
+            this._dummy.material = this._material;
+        }
+
+        if (this._globalState.rotatePreview) {
+            Animation.CreateAndStartAnimation("turnTable", this._dummy, "rotation.y", 60, 360, this._dummy.rotation.y, this._dummy.rotation.y + 2 * Math.PI, 1);
+        }
+
+        this._scene.clearColor = this._globalState.backgroundColor;
     }
 
     private _updatePreview(serializationObject: any) {
@@ -100,7 +114,7 @@ export class PreviewManager {
 
     public dispose() {
         this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
-        this._globalState.onPreviewMeshTypeChanged.remove(this._onPreviewMeshTypeChangedObserver);
+        this._globalState.onPreviewCommandActivated.remove(this._onPreviewCommandActivatedObserver);
         this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
 
         if (this._material) {

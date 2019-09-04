@@ -53444,11 +53444,11 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to get the opposite of a value
+     * Block used to get the opposite (1 - x) of a value
      */
-    export class OppositeBlock extends NodeMaterialBlock {
+    export class OneMinusBlock extends NodeMaterialBlock {
         /**
-         * Creates a new OppositeBlock
+         * Creates a new OneMinusBlock
          * @param name defines the block name
          */
         constructor(name: string);
