@@ -32,7 +32,7 @@ import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/nodeMaterialSystemValues';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
-import { OppositeBlock } from 'babylonjs/Materials/Node/Blocks/oppositeBlock';
+import { OneMinusBlock } from 'babylonjs/Materials/Node/Blocks/oneMinusBlock';
 import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
 import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
 import { MaxBlock } from 'babylonjs/Materials/Node/Blocks/maxBlock';
@@ -102,8 +102,8 @@ export class BlockTools {
                 return new SubtractBlock("Subtract"); 
             case "StepBlock":
                 return new StepBlock("Step");        
-            case "OppositeBlock":
-                return new OppositeBlock("Opposite");      
+            case "OneMinusBlock":
+                return new OneMinusBlock("One minus");      
             case "ViewDirectionBlock":
                 return new ViewDirectionBlock("View direction");    
             case "LightInformationBlock":

@@ -50,6 +50,7 @@ import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
 import { LightInformationNodeFactory } from './components/diagram/lightInformation/lightInformationNodeFactory';
 import { LightInformationNodeModel } from './components/diagram/lightInformation/lightInformationNodeModel';
 import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
+import { PreviewAreaComponent } from './components/preview/previewAreaComponent';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -674,9 +675,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     <div className="right-panel">
                         <PropertyTabComponent globalState={this.props.globalState} />
                         <PreviewMeshControlComponent globalState={this.props.globalState} />
-                        <div id="preview" style={{height: this._rightWidth + "px"}}>
-                            <canvas id="preview-canvas"/>
-                        </div>
+                        <PreviewAreaComponent globalState={this.props.globalState} width={this._rightWidth}/>
                     </div>
 
                     <LogComponent globalState={this.props.globalState} />
