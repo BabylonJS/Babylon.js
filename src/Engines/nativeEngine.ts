@@ -150,7 +150,8 @@ class NativeAddressMode {
 }
 
 class NativeTextureFormat {
-    public static readonly RGBA = 0;
+    public static readonly RGBA8 = 0;
+    public static readonly RGBA32F = 1;
 }
 
 /** @hidden */
@@ -1088,12 +1089,15 @@ export class NativeEngine extends Engine {
         }
     }
 
-    private static _GetNativeTextureFormat(format: number): number {
-        switch (format) {
-            case Engine.TEXTUREFORMAT_RGBA:
-                return NativeTextureFormat.RGBA;
-            default:
-                throw new Error("Unexpected texture format: " + format + ".");
+    private static _GetNativeTextureFormat(format: number, type: number): number {
+        if (format == Engine.TEXTUREFORMAT_RGBA && type == Engine.TEXTURETYPE_UNSIGNED_INT) {
+            return NativeTextureFormat.RGBA8;
+        }
+        else if (format == Engine.TEXTUREFORMAT_RGBA && type == Engine.TEXTURETYPE_FLOAT) {
+            return NativeTextureFormat.RGBA32F;
+        }
+        else {
+            throw new Error("Unexpected texture format or type: format " + format + ", type " + type + ".");
         }
     }
 
@@ -1138,7 +1142,7 @@ export class NativeEngine extends Engine {
             texture._webGLTexture!,
             width,
             height,
-            NativeEngine._GetNativeTextureFormat(fullOptions.format),
+            NativeEngine._GetNativeTextureFormat(fullOptions.format, fullOptions.type),
             fullOptions.samplingMode!,
             fullOptions.generateStencilBuffer ? true : false,
             fullOptions.generateDepthBuffer,
