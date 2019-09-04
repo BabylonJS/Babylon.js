@@ -688,7 +688,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distance > distanceToCamera) {
             if (this.onLODLevelSelection) {
-                this.onLODLevelSelection(distanceToCamera, this, internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].mesh);
+                this.onLODLevelSelection(distanceToCamera, this, this);
             }
             return this;
         }

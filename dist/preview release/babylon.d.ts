@@ -41024,6 +41024,10 @@ declare module BABYLON {
          */
         updateGazeTrackerColor: boolean;
         /**
+         * If the controller laser color should be updated when selecting meshes
+         */
+        updateControllerLaserColor: boolean;
+        /**
          * The gaze tracking mesh corresponding to the left controller
          */
         readonly leftControllerGazeTrackerMesh: Nullable<Mesh>;
@@ -44215,7 +44219,11 @@ declare module BABYLON {
          */
         createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>): InternalTexture;
         private _getSamplingFilter;
-        createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        private static _GetNativeTextureFormat;
+        createRenderTargetTexture(size: number | {
+            width: number;
+            height: number;
+        }, options: boolean | RenderTargetCreationOptions): InternalTexture;
         updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
         bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
         unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
@@ -45840,6 +45848,10 @@ declare module BABYLON {
          * The surface used for the skybox
          */
         protected _mesh: Mesh;
+        /**
+         * Gets the mesh used for the skybox.
+         */
+        readonly mesh: Mesh;
         /**
          * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
          * Also see the options.resolution property.
@@ -52237,6 +52249,8 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        /** MISC. */
+        BUMPDIRECTUV: number;
         constructor();
         setValue(name: string, value: boolean): void;
     }
@@ -53507,6 +53521,11 @@ declare module BABYLON {
      * Block used to pertub normals based on a normal map
      */
     export class PerturbNormalBlock extends NodeMaterialBlock {
+        private _tangentSpaceParameterName;
+        /** Gets or sets a boolean indicating that normal should be inverted on X axis */
+        invertX: boolean;
+        /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
+        invertY: boolean;
         /**
          * Create a new PerturbNormalBlock
          * @param name defines the block name
@@ -53542,8 +53561,12 @@ declare module BABYLON {
          */
         readonly output: NodeMaterialConnectionPoint;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
