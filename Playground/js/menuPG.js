@@ -86,7 +86,7 @@ class MenuPG {
 
         // Message before unload
         window.addEventListener('beforeunload', function () {
-            if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null) return;
+            if (this.parent.settingsPG.mustModifyBJSversion()) return;
             this.exitPrompt();
         }.bind(this));
 
@@ -130,7 +130,7 @@ class MenuPG {
                 newButton.classList.add("option");
                 if(CONFIG_last_versions[j][0] == "Latest") newButton.innerText = "Latest";
                 else newButton.innerText = "v" + CONFIG_last_versions[j][0];
-                newButton.value = CONFIG_last_versions[j][1];
+                newButton.value = CONFIG_last_versions[j][0];
 
                 newButton.addEventListener("click", function (evt) {
                     this.parent.settingsPG.setBJSversion(evt, this.parent.monacoCreator.getCode());
