@@ -74,12 +74,12 @@ target_include_directories(TestApp PRIVATE "Source")
 target_link_libraries(TestApp PRIVATE Library)
 
 if(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
-set_target_properties(TestApp PROPERTIES
-    MACOSX_BUNDLE true
-    MACOSX_BUNDLE_INFO_PLIST "${PLIST_FILE}"
-    XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
-    RESOURCE "${RESOURCE_FILES}"
-    FOLDER "TestApp")
+    set_target_properties(TestApp PROPERTIES
+        MACOSX_BUNDLE true
+        MACOSX_BUNDLE_INFO_PLIST "${PLIST_FILE}"
+        XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
+        RESOURCE "${RESOURCE_FILES}"
+        FOLDER "TestApp")
 endif()
 
 if(WINDOWS_STORE)
