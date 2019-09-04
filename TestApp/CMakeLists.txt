@@ -53,7 +53,7 @@ elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
         "Source/macOS/AppDelegate.h"
         "Source/macOS/Helper.cpp"
         "Source/macOS/Helper.h"        
-        "Source/macOS/ViewController.m"
+        "Source/macOS/ViewController.mm"
         "Source/macOS/ViewController.h")        
 endif()
 
