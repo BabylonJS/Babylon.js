@@ -1090,8 +1090,7 @@ export class NativeEngine extends Engine {
     }
 
     private static _GetNativeTextureFormat(format: number, type: number): number {
-        if (format == Engine.TEXTUREFORMAT_RGBA && (type == Engine.TEXTURETYPE_UNSIGNED_INT || type == Engine.TEXTURETYPE_UNSIGNED_BYTE)) {
-            // Note: Babylon considers TEXTURETYPE_UNSIGNED_INT and TEXTURETYPE_UNSIGNED_BYTE to be synonyms.
+        if (format == Engine.TEXTUREFORMAT_RGBA && type == Engine.TEXTURETYPE_UNSIGNED_INT) {
             return NativeTextureFormat.RGBA8;
         }
         else if (format == Engine.TEXTUREFORMAT_RGBA && type == Engine.TEXTURETYPE_FLOAT) {
