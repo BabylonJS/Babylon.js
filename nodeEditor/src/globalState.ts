@@ -29,7 +29,7 @@ export class GlobalState {
     backgroundColor: Color4;
     blockKeyboardEvents = false;
     
-    customSave?: {label: string, action: (data: string) => void};
+    customSave?: {label: string, action: (data: string) => Promise<void>};
 
     public constructor() {
         this.previewMeshType = DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box);

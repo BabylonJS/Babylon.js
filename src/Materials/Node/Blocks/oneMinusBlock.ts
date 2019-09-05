@@ -55,3 +55,4 @@ export class OneMinusBlock extends NodeMaterialBlock {
 }
 
 _TypeStore.RegisteredTypes["BABYLON.OneMinusBlock"] = OneMinusBlock;
+_TypeStore.RegisteredTypes["BABYLON.OppositeBlock"] = OneMinusBlock; // Backward compatibility

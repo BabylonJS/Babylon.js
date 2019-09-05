@@ -68392,7 +68392,7 @@ var BlockTools = /** @class */ (function () {
             case "ScaleBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ScaleBlock"]("Scale");
             case "CrossBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["CrossBlock"]("Dot");
+                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["CrossBlock"]("Cross");
             case "DotBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["DotBlock"]("Dot");
             case "MultiplyBlock":
@@ -71375,7 +71375,7 @@ var PreviewManager = /** @class */ (function () {
             this._dummy.material = this._material;
         }
         if (this._globalState.rotatePreview) {
-            babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Animation"].CreateAndStartAnimation("turnTable", this._dummy, "rotation.y", 60, 360, this._dummy.rotation.y, this._dummy.rotation.y + 2 * Math.PI, 1);
+            babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Animation"].CreateAndStartAnimation("turnTable", this._dummy, "rotation.y", 60, 1200, this._dummy.rotation.y, this._dummy.rotation.y + 2 * Math.PI, 1);
         }
         this._scene.clearColor = this._globalState.backgroundColor;
     };
@@ -71779,6 +71779,15 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         var json = _serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
         _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
     };
+    PropertyTabComponent.prototype.customSave = function () {
+        var _this = this;
+        this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Saving your material to Babylon.js snippet server...", isError: false });
+        this.props.globalState.customSave.action(_serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(function () {
+            _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Material saved successfully", isError: false });
+        }).catch(function (err) {
+            _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: err, isError: true });
+        });
+    };
     PropertyTabComponent.prototype.render = function () {
         var _this = this;
         if (this.state.currentNode) {
@@ -71812,7 +71821,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         } }),
                     this.props.globalState.customSave &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, onClick: function () {
-                                _this.props.globalState.customSave.action(_serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(_this.props.globalState.nodeMaterial, _this.props.globalState));
+                                _this.customSave();
                             } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Generate code", onClick: function () {
                             _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.generateCode(), "code.txt");
@@ -72773,7 +72782,7 @@ var NodeEditor = /** @class */ (function () {
                     popupWindow.close();
                 }
             });
-            window.onbeforeunload = function (event) {
+            window.onbeforeunload = function () {
                 var popupWindow = _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"]["node-editor"];
                 if (popupWindow) {
                     popupWindow.close();
