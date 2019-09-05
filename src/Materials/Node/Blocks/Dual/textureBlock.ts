@@ -253,7 +253,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._transformedUVName}).${swizzle}${complement};\r\n`;
         state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${"vMain" + uvInput.associatedVariableName}).${swizzle}${complement};\r\n`;
+        state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._mainUVName}).${swizzle}${complement};\r\n`;
         state.compilationString += `#endif\r\n`;
     }
 
@@ -295,6 +295,8 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\r\n`;
+        codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\r\n`;
+        codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\r\n`;
 
         return codeString;
     }

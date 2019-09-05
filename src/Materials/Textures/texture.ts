@@ -691,6 +691,13 @@ export class Texture extends BaseTexture {
             }
         }, parsedTexture, scene);
 
+        // Clear cache
+        if (texture && texture._texture) {
+            texture._texture._cachedWrapU = null;
+            texture._texture._cachedWrapV = null;
+            texture._texture._cachedWrapR = null;
+        }
+
         // Update Sampling Mode
         if (parsedTexture.samplingMode) {
             var sampling: number = parsedTexture.samplingMode;
@@ -698,7 +705,6 @@ export class Texture extends BaseTexture {
                 texture.updateSamplingMode(sampling);
             }
         }
-
         // Animations
         if (texture && parsedTexture.animations) {
             for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
