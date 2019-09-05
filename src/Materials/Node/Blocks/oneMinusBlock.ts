@@ -5,11 +5,11 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to get the opposite of a value
+ * Block used to get the opposite (1 - x) of a value
  */
-export class OppositeBlock extends NodeMaterialBlock {
+export class OneMinusBlock extends NodeMaterialBlock {
     /**
-     * Creates a new OppositeBlock
+     * Creates a new OneMinusBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -26,7 +26,7 @@ export class OppositeBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "OppositeBlock";
+        return "OneMinusBlock";
     }
 
     /**
@@ -54,4 +54,4 @@ export class OppositeBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.OppositeBlock"] = OppositeBlock;
+_TypeStore.RegisteredTypes["BABYLON.OneMinusBlock"] = OneMinusBlock;
