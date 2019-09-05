@@ -82,7 +82,7 @@ var showEditor = function() {
                                 resolve();
                             }
                             else {
-                                reject(`Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB) because of embedded textures. Please reduce texture sizes and try again.`);
+                                reject(`Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`);
                             }
                         }
                     }
