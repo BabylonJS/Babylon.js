@@ -467,9 +467,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         for (var input of node.inputs) {
-            if (!node.isInput) {
-                input.associatedVariableName = "";
-            }
+            input.associatedVariableName = "";
 
             let connectedPoint = input.connectedPoint;
             if (connectedPoint) {

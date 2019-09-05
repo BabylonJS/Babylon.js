@@ -53137,6 +53137,7 @@ declare module BABYLON {
          */
         animate(scene: Scene): void;
         private _emitDefine;
+        initialize(state: NodeMaterialBuildState): void;
         /**
          * Set the input block to its default value (based on its type)
          */
@@ -53873,6 +53874,22 @@ declare module BABYLON {
          */
         readonly input: NodeMaterialConnectionPoint;
         /**
+         * Gets the source min input component
+         */
+        readonly sourceMin: NodeMaterialConnectionPoint;
+        /**
+         * Gets the source max input component
+         */
+        readonly sourceMax: NodeMaterialConnectionPoint;
+        /**
+         * Gets the target min input component
+         */
+        readonly targetMin: NodeMaterialConnectionPoint;
+        /**
+         * Gets the target max input component
+         */
+        readonly targetMax: NodeMaterialConnectionPoint;
+        /**
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
@@ -54279,11 +54296,11 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to get the opposite of a value
+     * Block used to get the opposite (1 - x) of a value
      */
-    export class OppositeBlock extends NodeMaterialBlock {
+    export class OneMinusBlock extends NodeMaterialBlock {
         /**
-         * Creates a new OppositeBlock
+         * Creates a new OneMinusBlock
          * @param name defines the block name
          */
         constructor(name: string);

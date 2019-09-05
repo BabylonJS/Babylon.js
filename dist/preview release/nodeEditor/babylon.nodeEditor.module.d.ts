@@ -32,14 +32,14 @@ declare module "babylonjs-node-editor/blockTools" {
     import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
     import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
     import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-    import { OppositeBlock } from 'babylonjs/Materials/Node/Blocks/oppositeBlock';
+    import { OneMinusBlock } from 'babylonjs/Materials/Node/Blocks/oneMinusBlock';
     import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
     import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
     import { MaxBlock } from 'babylonjs/Materials/Node/Blocks/maxBlock';
     import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
     import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/perturbNormalBlock';
     export class BlockTools {
-        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | OppositeBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | PerturbNormalBlock | InputBlock | null;
+        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | OneMinusBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | PerturbNormalBlock | InputBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -765,6 +765,94 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/floatPro
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/vector4LineComponent" {
+    import * as React from "react";
+    import { Vector4 } from "babylonjs/Maths/math";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    interface IVector4LineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        value?: Vector4;
+        step?: number;
+        onChange?: (newvalue: Vector4) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
+        isExpanded: boolean;
+        value: Vector4;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector4LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: Vector4;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Vector4): void;
+        updateVector4(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        updateStateW(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/propertyTab/properties/vector4PropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    interface IVector4PropertyTabComponentProps {
+        globalState: GlobalState;
+        inputBlock: InputBlock;
+    }
+    export class Vector4PropertyTabComponent extends React.Component<IVector4PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/matrixLineComponent" {
+    import * as React from "react";
+    import { Vector3, Matrix, Vector4 } from "babylonjs/Maths/math";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    interface IMatrixLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newValue: Matrix) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, {
+        value: Matrix;
+    }> {
+        private _localChange;
+        constructor(props: IMatrixLineComponentProps);
+        shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: {
+            value: Matrix;
+        }): boolean;
+        raiseOnPropertyChanged(previousValue: Vector3): void;
+        updateMatrix(): void;
+        updateRow(value: Vector4, row: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/propertyTab/properties/matrixPropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    interface IMatrixPropertyTabComponentProps {
+        globalState: GlobalState;
+        inputBlock: InputBlock;
+    }
+    export class MatrixPropertyTabComponent extends React.Component<IMatrixPropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/diagram/input/inputNodePropertyComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1013,6 +1101,7 @@ declare module "babylonjs-node-editor/components/diagram/remap/remapNodeWidget" 
     import { RemapNodeModel } from "babylonjs-node-editor/components/diagram/remap/remapNodeModel";
     import { Nullable } from 'babylonjs/types';
     import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
     /**
      * RemapNodeWidgetProps
      */
@@ -1030,6 +1119,7 @@ declare module "babylonjs-node-editor/components/diagram/remap/remapNodeWidget" 
          */
         constructor(props: RemapNodeWidgetProps);
         renderValue(value: string): JSX.Element | null;
+        extractInputValue(connectionPoint: NodeMaterialConnectionPoint): any;
         render(): JSX.Element;
     }
 }
@@ -1083,7 +1173,7 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
     export class PreviewManager {
         private _nodeMaterial;
         private _onBuildObserver;
-        private _onPreviewMeshTypeChangedObserver;
+        private _onPreviewCommandActivatedObserver;
         private _onUpdateRequiredObserver;
         private _engine;
         private _scene;
@@ -1092,6 +1182,7 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
         private _camera;
         private _material;
         private _globalState;
+        private _currentType;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _refreshPreviewMesh;
         private _updatePreview;
@@ -1327,6 +1418,19 @@ declare module "babylonjs-node-editor/components/diagram/lightInformation/lightI
         getNewInstance(): LightInformationNodeModel;
     }
 }
+declare module "babylonjs-node-editor/components/preview/previewAreaComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    interface IPreviewAreaComponent {
+        globalState: GlobalState;
+        width: number;
+    }
+    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent> {
+        changeAnimation(): void;
+        changeBackground(value: string): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
@@ -1421,6 +1525,7 @@ declare module "babylonjs-node-editor/globalState" {
     import { INodeLocationInfo } from "babylonjs-node-editor/nodeLocationInfo";
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     import { PreviewMeshType } from "babylonjs-node-editor/components/preview/previewMeshType";
+    import { Color4 } from 'babylonjs/Maths/math.color';
     export class GlobalState {
         nodeMaterial: NodeMaterial;
         hostElement: HTMLElement;
@@ -1433,9 +1538,11 @@ declare module "babylonjs-node-editor/globalState" {
         onReOrganizedRequiredObservable: Observable<void>;
         onLogRequiredObservable: Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: Observable<string>;
-        onPreviewMeshTypeChanged: Observable<void>;
+        onPreviewCommandActivated: Observable<void>;
         onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
+        rotatePreview: boolean;
+        backgroundColor: Color4;
         blockKeyboardEvents: boolean;
         customSave?: {
             label: string;
@@ -1489,7 +1596,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.OppositeBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.PerturbNormalBlock | BABYLON.InputBlock | null;
+        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.OneMinusBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.PerturbNormalBlock | BABYLON.InputBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -2122,6 +2229,80 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IVector4LineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        value?: BABYLON.Vector4;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector4) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector4;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector4LineComponentProps);
+        shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector4;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector4): void;
+        updateVector4(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        updateStateW(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IVector4PropertyTabComponentProps {
+        globalState: GlobalState;
+        inputBlock: BABYLON.InputBlock;
+    }
+    export class Vector4PropertyTabComponent extends React.Component<IVector4PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IMatrixLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newValue: BABYLON.Matrix) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, {
+        value: BABYLON.Matrix;
+    }> {
+        private _localChange;
+        constructor(props: IMatrixLineComponentProps);
+        shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: {
+            value: BABYLON.Matrix;
+        }): boolean;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
+        updateMatrix(): void;
+        updateRow(value: BABYLON.Vector4, row: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IMatrixPropertyTabComponentProps {
+        globalState: GlobalState;
+        inputBlock: BABYLON.InputBlock;
+    }
+    export class MatrixPropertyTabComponent extends React.Component<IMatrixPropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface IInputPropertyTabComponentProps {
         globalState: GlobalState;
         inputNode: InputNodeModel;
@@ -2341,6 +2522,7 @@ declare module NODEEDITOR {
          */
         constructor(props: RemapNodeWidgetProps);
         renderValue(value: string): JSX.Element | null;
+        extractInputValue(connectionPoint: BABYLON.NodeMaterialConnectionPoint): any;
         render(): JSX.Element;
     }
 }
@@ -2388,7 +2570,7 @@ declare module NODEEDITOR {
     export class PreviewManager {
         private _nodeMaterial;
         private _onBuildObserver;
-        private _onPreviewMeshTypeChangedObserver;
+        private _onPreviewCommandActivatedObserver;
         private _onUpdateRequiredObserver;
         private _engine;
         private _scene;
@@ -2397,6 +2579,7 @@ declare module NODEEDITOR {
         private _camera;
         private _material;
         private _globalState;
+        private _currentType;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _refreshPreviewMesh;
         private _updatePreview;
@@ -2588,6 +2771,17 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IPreviewAreaComponent {
+        globalState: GlobalState;
+        width: number;
+    }
+    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent> {
+        changeAnimation(): void;
+        changeBackground(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -2669,9 +2863,11 @@ declare module NODEEDITOR {
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
-        onPreviewMeshTypeChanged: BABYLON.Observable<void>;
+        onPreviewCommandActivated: BABYLON.Observable<void>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
+        rotatePreview: boolean;
+        backgroundColor: BABYLON.Color4;
         blockKeyboardEvents: boolean;
         customSave?: {
             label: string;
