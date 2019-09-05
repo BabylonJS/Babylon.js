@@ -2,7 +2,7 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircle, faRing, faCube, faHockeyPuck, faSquareFull } from '@fortawesome/free-solid-svg-icons';
+import { faCircle, faRing, faCube, faHockeyPuck, faSquareFull, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { PreviewMeshType } from './previewMeshType';
 import { DataStorage } from '../../dataStorage';
 
@@ -25,6 +25,10 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         this.forceUpdate();
     }
 
+    useCustomMesh(evt: any) {
+        this.props.globalState.previewMeshType = PreviewMeshType.Custom;
+    }
+
     render() {
         return (
             <div id="preview-mesh-bar">
@@ -42,6 +46,12 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                 </div>
                 <div onClick={() => this.changeMeshType(PreviewMeshType.Plane)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Plane ? " selected" : "")}>
                     <FontAwesomeIcon icon={faSquareFull} />
+                </div>                
+                <div className={"button align"}>
+                    <label htmlFor="file-picker" id="file-picker-label">
+                        <FontAwesomeIcon icon={faPlus} />
+                    </label>
+                    <input ref="file-picker" id="file-picker" type="file" onChange={evt => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
                 </div>
             </div>
         );
