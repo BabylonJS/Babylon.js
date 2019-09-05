@@ -2,6 +2,7 @@ var wireframe = false;
 var turntable = false;
 var logfps = true;
 var ibl = false;
+var rtt = false;
 
 function CreateBoxAsync() {
     BABYLON.Mesh.CreateBox("box1", 0.7);
@@ -86,6 +87,26 @@ CreateBoxAsync().then(function () {
         for (var index = 0; index < scene.meshes.length; index++) {
             scene.meshes[0].material = material;
         }
+    }
+
+    if (rtt) {
+        var rttTexture = new BABYLON.RenderTargetTexture("rtt", 1024, scene);
+        scene.meshes.forEach(mesh => {
+            rttTexture.renderList.push(mesh);
+        });
+        rttTexture.activeCamera = scene.activeCamera;
+        rttTexture.vScale = -1;
+
+        scene.customRenderTargets.push(rttTexture);
+
+        var rttMaterial = new BABYLON.StandardMaterial("rttMaterial", scene);
+        rttMaterial.diffuseTexture = rttTexture;
+
+        var plane = BABYLON.MeshBuilder.CreatePlane("rttPlane", { width: 4, height: 4 }, scene);
+        plane.position.y = 1;
+        plane.position.z = -5;
+        plane.rotation.y = Math.PI;
+        plane.material = rttMaterial;
     }
 
     if (turntable) {

@@ -26,6 +26,7 @@ namespace bgfx
 #include <bx/math.h>
 #include <bx/readerwriter.h>
 
+#include <queue>
 #include <regex>
 #include <sstream>
 
@@ -34,6 +35,42 @@ namespace babylon
 
     namespace
     {
+        template<typename T>
+        class RecycleSet
+        {
+        public:
+            RecycleSet(T firstId)
+                : m_nextId{ firstId }
+            {}
+
+            RecycleSet() : RecycleSet({ 0 })
+            {}
+
+            T Get()
+            {
+                if (m_queue.empty())
+                {
+                    return m_nextId++;
+                }
+                else
+                {
+                    T next = m_queue.back();
+                    m_queue.pop();
+                    return next;
+                }
+            }
+
+            void Recycle(T id)
+            {
+                assert(id < m_nextId);
+                m_queue.push(id);
+            }
+
+        private:
+            T m_nextId{};
+            std::queue<bgfx::ViewId> m_queue{};
+        };
+
         struct UniformInfo final
         {
             uint8_t Stage{};
@@ -222,6 +259,12 @@ namespace babylon
             // ALPHA_SCREENMODE: SRC + (1 - SRC) * DEST, SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
             BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_INV_SRC_COLOR, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_INV_SRC_ALPHA),
         };
+
+        constexpr std::array<bgfx::TextureFormat::Enum, 2> TEXTURE_FORMAT
+        {
+            bgfx::TextureFormat::RGBA8,
+            bgfx::TextureFormat::RGBA32F
+        };
     }
 
     class NativeEngine::Impl final
@@ -275,6 +318,156 @@ namespace babylon
 
             std::vector<bimg::ImageContainer*> Images{};
             bgfx::TextureHandle Texture{ bgfx::kInvalidHandle };
+        };
+
+        class ViewClearState
+        {
+        public:
+            ViewClearState(uint16_t viewId)
+                : m_viewId{ viewId }
+            {}
+
+            bool Update(const Napi::CallbackInfo& info)
+            {
+                auto r = info[0].As<Napi::Number>().FloatValue();
+                auto g = info[1].As<Napi::Number>().FloatValue();
+                auto b = info[2].As<Napi::Number>().FloatValue();
+                auto a = info[3].IsUndefined() ? 1.f : info[3].As<Napi::Number>().FloatValue();
+                auto backBuffer = info[4].IsUndefined() ? true : info[4].As<Napi::Boolean>().Value();
+                auto depth = info[5].IsUndefined() ? true : info[5].As<Napi::Boolean>().Value();
+                auto stencil = info[6].IsUndefined() ? true : info[6].As<Napi::Boolean>().Value();
+
+                bool needToUpdate = r != m_red
+                    || g != m_green
+                    || b != m_blue
+                    || a != m_alpha
+                    || backBuffer != m_backBuffer
+                    || depth != m_depth
+                    || stencil != m_stencil;
+                if (needToUpdate)
+                {
+                    m_red = r;
+                    m_green = g;
+                    m_blue = b;
+                    m_alpha = a;
+                    m_backBuffer = backBuffer;
+                    m_depth = depth;
+                    m_stencil = stencil;
+
+                    Update();
+                }
+
+                return needToUpdate;
+            }
+
+            void Update() const
+            {
+                // TODO: Backbuffer, depth, and stencil.
+                bgfx::setViewClear(m_viewId, BGFX_CLEAR_COLOR | (m_depth ? BGFX_CLEAR_DEPTH : 0x0), Color());
+                bgfx::touch(m_viewId);
+            }
+
+        private:
+            const uint16_t m_viewId{};
+            float m_red{ 68.f / 255.f };
+            float m_green{ 51.f / 255.f };
+            float m_blue{ 85.f / 255.f };
+            float m_alpha{ 1.f };
+            bool m_backBuffer{ true };
+            bool m_depth{ true };
+            bool m_stencil{ true };
+
+            uint32_t Color() const
+            {
+                uint32_t color = 0x0;
+                color += static_cast<uint8_t>(m_red * std::numeric_limits<uint8_t>::max());
+                color = color << 8;
+                color += static_cast<uint8_t>(m_green * std::numeric_limits<uint8_t>::max());
+                color = color << 8;
+                color += static_cast<uint8_t>(m_blue * std::numeric_limits<uint8_t>::max());
+                color = color << 8;
+                color += static_cast<uint8_t>(m_alpha * std::numeric_limits<uint8_t>::max());
+                return color;
+            }
+        };
+
+        struct FrameBufferData final
+        {
+            FrameBufferData(bgfx::FrameBufferHandle frameBuffer, RecycleSet<bgfx::ViewId>& viewIdSet, uint16_t width, uint16_t height)
+                : FrameBuffer{ frameBuffer }
+                , ViewId{ viewIdSet.Get() }
+                , ViewClearState{ ViewId }
+                , Width{ width }
+                , Height{ height }
+                , m_idSet{ viewIdSet }
+            {
+                assert(ViewId < bgfx::getCaps()->limits.maxViews);
+            }
+
+            FrameBufferData(FrameBufferData&) = delete;
+
+            ~FrameBufferData()
+            {
+                bgfx::destroy(FrameBuffer);
+                m_idSet.Recycle(ViewId);
+            }
+
+            void SetUpView()
+            {
+                bgfx::setViewFrameBuffer(ViewId, FrameBuffer);
+                ViewClearState.Update();
+                bgfx::setViewRect(ViewId, 0, 0, Width, Height);
+            }
+
+            bgfx::FrameBufferHandle FrameBuffer{ bgfx::kInvalidHandle };
+            bgfx::ViewId ViewId{};
+            ViewClearState ViewClearState;
+            uint16_t Width{};
+            uint16_t Height{};
+
+        private:
+            RecycleSet<bgfx::ViewId>& m_idSet;
+        };
+
+        struct FrameBufferManager final
+        {
+            FrameBufferData* CreateNew(bgfx::FrameBufferHandle frameBufferHandle, uint16_t width, uint16_t height)
+            {
+                return new FrameBufferData(frameBufferHandle, m_idSet, width, height);
+            }
+
+            void Bind(FrameBufferData* data)
+            {
+                assert(m_boundFrameBuffer == nullptr);
+                m_boundFrameBuffer = data;
+
+                // TODO: Consider doing this only on bgfx::reset(); the effects of this call don't survive reset, but as
+                // long as there's no reset this doesn't technically need to be called every time the frame buffer is bound.
+                m_boundFrameBuffer->SetUpView();
+
+                // bgfx::setTexture()? Why?
+                // TODO: View order?
+            }
+
+            bool IsFrameBufferBound() const
+            {
+                return m_boundFrameBuffer != nullptr;
+            }
+
+            FrameBufferData& GetBound() const
+            {
+                return *m_boundFrameBuffer;
+            }
+
+            void Unbind(FrameBufferData* data)
+            {
+                assert(m_boundFrameBuffer == data);
+                m_boundFrameBuffer = nullptr;
+            }
+
+        private:
+            RecycleSet<bgfx::ViewId> m_idSet{ 1 };
+            FrameBufferData* m_boundFrameBuffer{ nullptr };
         };
 
         struct ProgramData final
@@ -355,6 +548,9 @@ namespace babylon
         void SetTextureAnisotropicLevel(const Napi::CallbackInfo& info);
         void SetTexture(const Napi::CallbackInfo& info);
         void DeleteTexture(const Napi::CallbackInfo& info);
+        Napi::Value CreateFrameBuffer(const Napi::CallbackInfo& info);
+        void BindFrameBuffer(const Napi::CallbackInfo& info);
+        void UnbindFrameBuffer(const Napi::CallbackInfo& info);
         void DrawIndexed(const Napi::CallbackInfo& info);
         void Draw(const Napi::CallbackInfo& info);
         void Clear(const Napi::CallbackInfo& info);
@@ -377,6 +573,9 @@ namespace babylon
 
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;
+        ViewClearState m_viewClearState;
+
+        FrameBufferManager m_frameBufferManager{};
 
         // Scratch vector used for data alignment.
         std::vector<float> m_scratch;
@@ -387,6 +586,7 @@ namespace babylon
         , m_currentProgram{ nullptr }
         , m_size{ 1024, 768 }
         , m_engineState{ BGFX_STATE_DEFAULT }
+        , m_viewClearState{ 0 }
     {
         bgfx::Init init{};
         init.platformData.nwh = nativeWindowPtr;
@@ -1075,6 +1275,67 @@ namespace babylon
         delete textureData;
     }
 
+    Napi::Value NativeEngine::Impl::CreateFrameBuffer(const Napi::CallbackInfo& info)
+    {
+        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
+        uint16_t width = static_cast<uint16_t>(info[1].As<Napi::Number>().Uint32Value());
+        uint16_t height = static_cast<uint16_t>(info[2].As<Napi::Number>().Uint32Value());
+        bgfx::TextureFormat::Enum format = static_cast<bgfx::TextureFormat::Enum>(info[3].As<Napi::Number>().Uint32Value());
+        int samplingMode = info[4].As<Napi::Number>().Uint32Value();
+        bool generateStencilBuffer = info[5].As<Napi::Boolean>();
+        bool generateDepth = info[6].As<Napi::Boolean>();
+        bool generateMipMaps = info[7].As<Napi::Boolean>();
+
+        bgfx::FrameBufferHandle frameBufferHandle{};
+        if (generateStencilBuffer && !generateDepth)
+        {
+            throw std::exception{ /* Does this case even make any sense? */ };
+        }
+        else if (!generateStencilBuffer && !generateDepth)
+        {
+            frameBufferHandle = bgfx::createFrameBuffer(width, height, TEXTURE_FORMAT[format], BGFX_TEXTURE_RT);
+        }
+        else
+        {
+            auto depthStencilFormat = bgfx::TextureFormat::D32;
+            if (generateStencilBuffer)
+            {
+                depthStencilFormat = bgfx::TextureFormat::D24S8;
+            }
+
+            assert(bgfx::isTextureValid(0, false, 1, TEXTURE_FORMAT[format], BGFX_TEXTURE_RT));
+            assert(bgfx::isTextureValid(0, false, 1, depthStencilFormat, BGFX_TEXTURE_RT));
+
+            std::array<bgfx::TextureHandle, 2> textures
+            {
+                bgfx::createTexture2D(width, height, generateMipMaps, 1, TEXTURE_FORMAT[format], BGFX_TEXTURE_RT),
+                bgfx::createTexture2D(width, height, generateMipMaps, 1, depthStencilFormat, BGFX_TEXTURE_RT)
+            };
+            std::array<bgfx::Attachment, textures.size()> attachments{};
+            for (int idx = 0; idx < attachments.size(); ++idx)
+            {
+                attachments[idx].init(textures[idx]);
+            }
+            frameBufferHandle = bgfx::createFrameBuffer(static_cast<uint8_t>(attachments.size()), attachments.data(), true);
+        }
+
+        textureData->Texture = bgfx::getTexture(frameBufferHandle);
+
+        return Napi::External<FrameBufferData>::New(info.Env(), m_frameBufferManager.CreateNew(frameBufferHandle, width, height));
+    }
+
+    void NativeEngine::Impl::BindFrameBuffer(const Napi::CallbackInfo& info)
+    {
+        const auto frameBufferData = info[0].As<Napi::External<FrameBufferData>>().Data();
+        m_frameBufferManager.Bind(frameBufferData);
+    }
+
+    void NativeEngine::Impl::UnbindFrameBuffer(const Napi::CallbackInfo& info)
+    {
+        const auto frameBufferData = info[0].As<Napi::External<FrameBufferData>>().Data();
+        m_frameBufferManager.Unbind(frameBufferData);
+    }
+
     void NativeEngine::Impl::DrawIndexed(const Napi::CallbackInfo& info)
     {
         const auto fillMode = info[0].As<Napi::Number>().Int32Value();
@@ -1089,7 +1350,7 @@ namespace babylon
             bgfx::setUniform({ it.first }, value.Data.data(), value.ElementLength);
         }
 
-        bgfx::submit(0, m_currentProgram->Program, 0, true);
+        bgfx::submit(m_frameBufferManager.IsFrameBufferBound() ? m_frameBufferManager.GetBound().ViewId : 0, m_currentProgram->Program, 0, true);
     }
 
     void NativeEngine::Impl::Draw(const Napi::CallbackInfo& info)
@@ -1105,16 +1366,14 @@ namespace babylon
 
     void NativeEngine::Impl::Clear(const Napi::CallbackInfo& info)
     {
-        auto r = info[0].As<Napi::Number>().FloatValue();
-        auto g = info[1].As<Napi::Number>().FloatValue();
-        auto b = info[2].As<Napi::Number>().FloatValue();
-        auto a = info[3].IsUndefined() ? 1.f : info[3].As<Napi::Number>().FloatValue();
-        auto backBuffer = info[4].IsUndefined() ? true : info[4].As<Napi::Boolean>().Value();
-        auto depth = info[5].IsUndefined() ? true : info[5].As<Napi::Boolean>().Value();
-        auto stencil = info[6].IsUndefined() ? true : info[6].As<Napi::Boolean>().Value();
-
-        // TODO CHECK: Does this have meaning for BGFX?  BGFX seems to call clear()
-        // on its own, depending on the settings.
+        if (m_frameBufferManager.IsFrameBufferBound())
+        {
+            m_frameBufferManager.GetBound().ViewClearState.Update(info);
+        }
+        else
+        {
+            m_viewClearState.Update(info);
+        }
     }
 
     Napi::Value NativeEngine::Impl::GetRenderWidth(const Napi::CallbackInfo& info)

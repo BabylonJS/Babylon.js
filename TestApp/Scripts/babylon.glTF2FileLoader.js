@@ -1429,6 +1429,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Helper class for working with arrays when loading the glTF asset
  */
@@ -2030,6 +2031,7 @@ var GLTFLoader = /** @class */ (function () {
         else {
             var promises = new Array();
             var babylonMesh_1 = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Mesh"](name, this._babylonScene);
+            babylonMesh_1.overrideMaterialSideOrientation = this._babylonScene.useRightHandedSystem ? babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Material"].CounterClockWiseSideOrientation : babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Material"].ClockWiseSideOrientation;
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh_1);
             promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh_1).then(function (babylonGeometry) {
                 return _this._loadMorphTargetsAsync(context, primitive, babylonMesh_1, babylonGeometry).then(function () {
@@ -2615,25 +2617,7 @@ var GLTFLoader = /** @class */ (function () {
         });
         return bufferView._data;
     };
-    GLTFLoader.prototype._loadIndicesAccessorAsync = function (context, accessor) {
-        if (accessor.type !== "SCALAR" /* SCALAR */) {
-            throw new Error(context + "/type: Invalid value " + accessor.type);
-        }
-        if (accessor.componentType !== 5121 /* UNSIGNED_BYTE */ &&
-            accessor.componentType !== 5123 /* UNSIGNED_SHORT */ &&
-            accessor.componentType !== 5125 /* UNSIGNED_INT */) {
-            throw new Error(context + "/componentType: Invalid value " + accessor.componentType);
-        }
-        if (accessor._data) {
-            return accessor._data;
-        }
-        var bufferView = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
-        accessor._data = this.loadBufferViewAsync("/bufferViews/" + bufferView.index, bufferView).then(function (data) {
-            return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, accessor.count);
-        });
-        return accessor._data;
-    };
-    GLTFLoader.prototype._loadFloatAccessorAsync = function (context, accessor) {
+    GLTFLoader.prototype._loadAccessorAsync = function (context, accessor, constructor) {
         var _this = this;
         if (accessor._data) {
             return accessor._data;
@@ -2642,7 +2626,7 @@ var GLTFLoader = /** @class */ (function () {
         var byteStride = numComponents * babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].GetTypeByteLength(accessor.componentType);
         var length = numComponents * accessor.count;
         if (accessor.bufferView == undefined) {
-            accessor._data = Promise.resolve(new Float32Array(length));
+            accessor._data = Promise.resolve(new constructor(length));
         }
         else {
             var bufferView_1 = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
@@ -2651,18 +2635,18 @@ var GLTFLoader = /** @class */ (function () {
                     return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
                 }
                 else {
-                    var floatData_1 = new Float32Array(length);
-                    babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ForEach(data, accessor.byteOffset || 0, bufferView_1.byteStride || byteStride, numComponents, accessor.componentType, floatData_1.length, accessor.normalized || false, function (value, index) {
-                        floatData_1[index] = value;
+                    var typedArray_1 = new constructor(length);
+                    babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ForEach(data, accessor.byteOffset || 0, bufferView_1.byteStride || byteStride, numComponents, accessor.componentType, typedArray_1.length, accessor.normalized || false, function (value, index) {
+                        typedArray_1[index] = value;
                     });
-                    return floatData_1;
+                    return typedArray_1;
                 }
             });
         }
         if (accessor.sparse) {
             var sparse_1 = accessor.sparse;
-            accessor._data = accessor._data.then(function (view) {
-                var data = view;
+            accessor._data = accessor._data.then(function (data) {
+                var typedArray = data;
                 var indicesBufferView = ArrayItem.Get(context + "/sparse/indices/bufferView", _this._gltf.bufferViews, sparse_1.indices.bufferView);
                 var valuesBufferView = ArrayItem.Get(context + "/sparse/values/bufferView", _this._gltf.bufferViews, sparse_1.values.bufferView);
                 return Promise.all([
@@ -2678,7 +2662,7 @@ var GLTFLoader = /** @class */ (function () {
                     }
                     else {
                         var sparseData = GLTFLoader._GetTypedArray(context + "/sparse/values", accessor.componentType, valuesData, sparse_1.values.byteOffset, sparseLength);
-                        values = new Float32Array(sparseLength);
+                        values = new constructor(sparseLength);
                         babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ForEach(sparseData, 0, byteStride, numComponents, accessor.componentType, values.length, accessor.normalized || false, function (value, index) {
                             values[index] = value;
                         });
@@ -2687,11 +2671,38 @@ var GLTFLoader = /** @class */ (function () {
                     for (var indicesIndex = 0; indicesIndex < indices.length; indicesIndex++) {
                         var dataIndex = indices[indicesIndex] * numComponents;
                         for (var componentIndex = 0; componentIndex < numComponents; componentIndex++) {
-                            data[dataIndex++] = values[valuesIndex++];
+                            typedArray[dataIndex++] = values[valuesIndex++];
                         }
                     }
-                    return data;
+                    return typedArray;
                 });
+            });
+        }
+        return accessor._data;
+    };
+    GLTFLoader.prototype._loadFloatAccessorAsync = function (context, accessor) {
+        return this._loadAccessorAsync(context, accessor, Float32Array);
+    };
+    GLTFLoader.prototype._loadIndicesAccessorAsync = function (context, accessor) {
+        if (accessor.type !== "SCALAR" /* SCALAR */) {
+            throw new Error(context + "/type: Invalid value " + accessor.type);
+        }
+        if (accessor.componentType !== 5121 /* UNSIGNED_BYTE */ &&
+            accessor.componentType !== 5123 /* UNSIGNED_SHORT */ &&
+            accessor.componentType !== 5125 /* UNSIGNED_INT */) {
+            throw new Error(context + "/componentType: Invalid value " + accessor.componentType);
+        }
+        if (accessor._data) {
+            return accessor._data;
+        }
+        if (accessor.sparse) {
+            var constructor = GLTFLoader._GetTypedArrayConstructor(context + "/componentType", accessor.componentType);
+            accessor._data = this._loadAccessorAsync(context, accessor, constructor);
+        }
+        else {
+            var bufferView = ArrayItem.Get(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
+            accessor._data = this.loadBufferViewAsync("/bufferViews/" + bufferView.index, bufferView).then(function (data) {
+                return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, accessor.count);
             });
         }
         return accessor._data;
@@ -2808,7 +2819,7 @@ var GLTFLoader = /** @class */ (function () {
     };
     GLTFLoader.prototype._createDefaultMaterial = function (name, babylonDrawMode) {
         var babylonMaterial = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["PBRMaterial"](name, this._babylonScene);
-        babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Material"].CounterClockWiseSideOrientation : babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Material"].ClockWiseSideOrientation;
+        // Moved to mesh so user can change materials on gltf meshes: babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
         babylonMaterial.fillMode = babylonDrawMode;
         babylonMaterial.enableSpecularAntiAliasing = true;
         babylonMaterial.useRadianceOverAlpha = !this._parent.transparencyAsCoverage;
@@ -2954,6 +2965,9 @@ var GLTFLoader = /** @class */ (function () {
             return extensionPromise;
         }
         this.logOpen("" + context);
+        if (textureInfo.texCoord >= 2) {
+            throw new Error(context + "/texCoord: Invalid value (" + textureInfo.texCoord + ")");
+        }
         var texture = ArrayItem.Get(context + "/index", this._gltf.textures, textureInfo.index);
         var promise = this._loadTextureAsync("/textures/" + textureInfo.index, texture, function (babylonTexture) {
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
@@ -2997,9 +3011,7 @@ var GLTFLoader = /** @class */ (function () {
             promises.push(this.loadImageAsync("/images/" + image.index, image).then(function (data) {
                 var name = image.uri || _this._fileName + "#image" + image.index;
                 var dataUrl = "data:" + _this._uniqueRootUrl + name;
-                babylonTexture.updateURL(dataUrl, 
-                // TODO: Remove this hack once we can load from Blob objects.
-                data.buffer);
+                babylonTexture.updateURL(dataUrl, data);
             }));
         }
         babylonTexture.wrapU = samplerData.wrapU;
@@ -3173,19 +3185,23 @@ var GLTFLoader = /** @class */ (function () {
             }
         }
     };
+    GLTFLoader._GetTypedArrayConstructor = function (context, componentType) {
+        switch (componentType) {
+            case 5120 /* BYTE */: return Int8Array;
+            case 5121 /* UNSIGNED_BYTE */: return Uint8Array;
+            case 5122 /* SHORT */: return Int16Array;
+            case 5123 /* UNSIGNED_SHORT */: return Uint16Array;
+            case 5125 /* UNSIGNED_INT */: return Uint32Array;
+            case 5126 /* FLOAT */: return Float32Array;
+            default: throw new Error(context + ": Invalid component type " + componentType);
+        }
+    };
     GLTFLoader._GetTypedArray = function (context, componentType, bufferView, byteOffset, length) {
         var buffer = bufferView.buffer;
         byteOffset = bufferView.byteOffset + (byteOffset || 0);
+        var constructor = GLTFLoader._GetTypedArrayConstructor(context + "/componentType", componentType);
         try {
-            switch (componentType) {
-                case 5120 /* BYTE */: return new Int8Array(buffer, byteOffset, length);
-                case 5121 /* UNSIGNED_BYTE */: return new Uint8Array(buffer, byteOffset, length);
-                case 5122 /* SHORT */: return new Int16Array(buffer, byteOffset, length);
-                case 5123 /* UNSIGNED_SHORT */: return new Uint16Array(buffer, byteOffset, length);
-                case 5125 /* UNSIGNED_INT */: return new Uint32Array(buffer, byteOffset, length);
-                case 5126 /* FLOAT */: return new Float32Array(buffer, byteOffset, length);
-                default: throw new Error("Invalid component type " + componentType);
-            }
+            return new constructor(buffer, byteOffset, length);
         }
         catch (e) {
             throw new Error(context + ": " + e);
