@@ -24542,6 +24542,10 @@ declare module BABYLON {
          */
         getDirection(localAxis: Vector3): Vector3;
         /**
+         * Returns the current camera absolute rotation
+         */
+        readonly absoluteRotation: Quaternion;
+        /**
          * Gets the direction of the camera relative to a given local axis into a passed vector.
          * @param localAxis Defines the reference axis to provide a relative direction.
          * @param result Defines the vector to store the result in

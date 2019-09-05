@@ -395,6 +395,7 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
         componentDidMount(): void;
         load(file: File): void;
         save(): void;
+        customSave(): void;
         render(): JSX.Element;
     }
 }
@@ -1546,7 +1547,7 @@ declare module "babylonjs-node-editor/globalState" {
         blockKeyboardEvents: boolean;
         customSave?: {
             label: string;
-            action: (data: string) => void;
+            action: (data: string) => Promise<void>;
         };
         constructor();
     }
@@ -1568,7 +1569,7 @@ declare module "babylonjs-node-editor/nodeEditor" {
         hostElement?: HTMLElement;
         customSave?: {
             label: string;
-            action: (data: string) => void;
+            action: (data: string) => Promise<void>;
         };
         customLoadObservable?: Observable<any>;
     }
@@ -1909,6 +1910,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         load(file: File): void;
         save(): void;
+        customSave(): void;
         render(): JSX.Element;
     }
 }
@@ -2871,7 +2873,7 @@ declare module NODEEDITOR {
         blockKeyboardEvents: boolean;
         customSave?: {
             label: string;
-            action: (data: string) => void;
+            action: (data: string) => Promise<void>;
         };
         constructor();
     }
@@ -2891,7 +2893,7 @@ declare module NODEEDITOR {
         hostElement?: HTMLElement;
         customSave?: {
             label: string;
-            action: (data: string) => void;
+            action: (data: string) => Promise<void>;
         };
         customLoadObservable?: BABYLON.Observable<any>;
     }

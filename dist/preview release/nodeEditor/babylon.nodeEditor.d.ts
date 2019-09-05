@@ -314,6 +314,7 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         load(file: File): void;
         save(): void;
+        customSave(): void;
         render(): JSX.Element;
     }
 }
@@ -1276,7 +1277,7 @@ declare module NODEEDITOR {
         blockKeyboardEvents: boolean;
         customSave?: {
             label: string;
-            action: (data: string) => void;
+            action: (data: string) => Promise<void>;
         };
         constructor();
     }
@@ -1296,7 +1297,7 @@ declare module NODEEDITOR {
         hostElement?: HTMLElement;
         customSave?: {
             label: string;
-            action: (data: string) => void;
+            action: (data: string) => Promise<void>;
         };
         customLoadObservable?: BABYLON.Observable<any>;
     }
