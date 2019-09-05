@@ -417,13 +417,17 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureProperty
         globalState: GlobalState;
         node: TextureNodeModel;
     }
-    export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps> {
+    export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps, {
+        isEmbedded: boolean;
+    }> {
+        constructor(props: ITexturePropertyTabComponentProps);
         updateAftertextureLoad(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
          */
         replaceTexture(file: File): void;
+        replaceTextureWithUrl(url: string): void;
         render(): JSX.Element;
     }
 }
@@ -1166,7 +1170,8 @@ declare module "babylonjs-node-editor/components/preview/previewMeshType" {
         Box = 1,
         Torus = 2,
         Cylinder = 3,
-        Plane = 4
+        Plane = 4,
+        Custom = 5
     }
 }
 declare module "babylonjs-node-editor/components/preview/previewManager" {
@@ -1199,6 +1204,7 @@ declare module "babylonjs-node-editor/components/preview/previewMeshControlCompo
     }
     export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
         changeMeshType(newOne: PreviewMeshType): void;
+        useCustomMesh(evt: any): void;
         render(): JSX.Element;
     }
 }
@@ -1927,13 +1933,17 @@ declare module NODEEDITOR {
         globalState: GlobalState;
         node: TextureNodeModel;
     }
-    export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps> {
+    export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps, {
+        isEmbedded: boolean;
+    }> {
+        constructor(props: ITexturePropertyTabComponentProps);
         updateAftertextureLoad(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
          */
         replaceTexture(file: File): void;
+        replaceTextureWithUrl(url: string): void;
         render(): JSX.Element;
     }
 }
@@ -2565,7 +2575,8 @@ declare module NODEEDITOR {
         Box = 1,
         Torus = 2,
         Cylinder = 3,
-        Plane = 4
+        Plane = 4,
+        Custom = 5
     }
 }
 declare module NODEEDITOR {
@@ -2594,6 +2605,7 @@ declare module NODEEDITOR {
     }
     export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
         changeMeshType(newOne: PreviewMeshType): void;
+        useCustomMesh(evt: any): void;
         render(): JSX.Element;
     }
 }

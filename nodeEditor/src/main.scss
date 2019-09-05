@@ -56,7 +56,7 @@
         justify-content: center;
         align-content: center;
         height: 30px;
-        width: calc(100% / 5);
+        width: calc(100% / 6);
         cursor: pointer;
 
         &:hover {
@@ -69,6 +69,11 @@
             background: rgb(51, 122, 183);
             color: white;
         }
+        
+        &.align {
+            justify-content: stretch;
+            text-align: center;
+        }
     }    
 
     #preview-mesh-bar {
@@ -78,6 +83,16 @@
         color: white;
         align-items: center;
         font-size: 18px;    
+
+        #file-picker {
+            display: none;
+        }
+
+        #file-picker-label {
+            width: 100%;
+            background: transparent;
+            cursor: pointer;            
+        }
     }
 
     #preview-config-bar {
@@ -91,11 +106,6 @@
 
         .button {
             width: 60px;
-
-            &.align {
-                justify-content: stretch;
-                text-align: center;
-            }
         }
 
         #color-picker {
