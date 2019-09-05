@@ -425,13 +425,7 @@ namespace babylon
         bgfx::setViewRect(0, 0, 0, m_size.Width, m_size.Height);
     }
 
-    void NativeEngine::Impl::Suspend()
-    {
-        // TODO: Figure out what this is supposed to do.
-    }
-
     // NativeEngine definitions
-
     void NativeEngine::Impl::RequestAnimationFrame(const Napi::CallbackInfo& info)
     {
         DispatchAnimationFrameAsync(Napi::Persistent(info[0].As<Napi::Function>()));
@@ -1174,10 +1168,5 @@ namespace babylon
     void NativeEngine::UpdateRenderTarget()
     {
         m_impl->UpdateRenderTarget();
-    }
-
-    void NativeEngine::Suspend()
-    {
-        m_impl->Suspend();
     }
 }

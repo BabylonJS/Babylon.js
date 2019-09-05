@@ -18,6 +18,10 @@ namespace babylon
 
     RuntimeImpl::~RuntimeImpl()
     {
+        if (m_suspended)
+        {
+            Resume();
+        }
         m_cancelSource.cancel();
         m_thread.join();
     }
@@ -34,7 +38,16 @@ namespace babylon
 
     void RuntimeImpl::Suspend()
     {
-        m_engine->Suspend();
+        std::unique_lock<std::mutex> lock(m_suspendMutex);
+        m_suspended = true;
+        m_suspendVariable.notify_one();
+    }
+
+    void RuntimeImpl::Resume()
+    {
+        std::unique_lock<std::mutex> lock(m_suspendMutex);
+        m_suspended = false;
+        m_suspendVariable.notify_one();
     }
 
     std::string RuntimeImpl::GetAbsoluteUrl(const std::string& url)
@@ -190,6 +203,11 @@ namespace babylon
 
         while (!m_cancelSource.cancelled())
         {
+            // check if suspended
+            {
+                std::unique_lock<std::mutex> lck(m_suspendMutex);
+                m_suspendVariable.wait(lck, [this](){ return !m_suspended;});
+            }
             m_dispatcher.blocking_tick(m_cancelSource);
         }
     }
