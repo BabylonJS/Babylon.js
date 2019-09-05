@@ -96,7 +96,7 @@ export class PreviewManager {
         }
 
         if (this._globalState.rotatePreview) {
-            Animation.CreateAndStartAnimation("turnTable", this._dummy, "rotation.y", 60, 360, this._dummy.rotation.y, this._dummy.rotation.y + 2 * Math.PI, 1);
+            Animation.CreateAndStartAnimation("turnTable", this._dummy, "rotation.y", 60, 1200, this._dummy.rotation.y, this._dummy.rotation.y + 2 * Math.PI, 1);
         }
 
         this._scene.clearColor = this._globalState.backgroundColor;

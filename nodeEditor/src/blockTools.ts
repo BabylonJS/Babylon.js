@@ -79,7 +79,7 @@ export class BlockTools {
             case "ScaleBlock":
                 return new ScaleBlock("Scale");
             case "CrossBlock":
-                return new CrossBlock("Dot");
+                return new CrossBlock("Cross");
             case "DotBlock":
                 return new DotBlock("Dot");
             case "MultiplyBlock":

@@ -42,6 +42,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
     }
 
+    customSave() {
+        this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Saving your material to Babylon.js snippet server...", isError: false});
+        this.props.globalState.customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(() => {
+            this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Material saved successfully", isError: false});
+        }).catch(err => {
+            this.props.globalState.onLogRequiredObservable.notifyObservers({message: err, isError: true});
+        });
+    }
+
     render() {
         if (this.state.currentNode) {
             return (
@@ -88,7 +97,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         {
                             this.props.globalState.customSave && 
                             <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
-                                this.props.globalState.customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState));
+                                this.customSave();
                             }} />
                         }
                         <ButtonLineComponent label="Generate code" onClick={() => {

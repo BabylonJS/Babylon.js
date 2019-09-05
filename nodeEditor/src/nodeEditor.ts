@@ -12,7 +12,7 @@ import { Observable } from 'babylonjs/Misc/observable';
 export interface INodeEditorOptions {
     nodeMaterial: NodeMaterial,
     hostElement?: HTMLElement,
-    customSave?: {label: string, action: (data: string) => void};
+    customSave?: {label: string, action: (data: string) => Promise<void>};
     customLoadObservable?: Observable<any>
 }
 
@@ -68,7 +68,7 @@ export class NodeEditor {
                     popupWindow.close();
                 }
             })
-            window.onbeforeunload = function(event) {
+            window.onbeforeunload = () => {
                 var popupWindow = (Popup as any)["node-editor"];
                 if (popupWindow) {
                     popupWindow.close();
