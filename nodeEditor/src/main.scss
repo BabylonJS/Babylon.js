@@ -135,6 +135,29 @@
     }
 }
 
+.blocker {
+    visibility: hidden;
+    position: absolute;
+    width: calc(100% - 40px);
+    height: 100%;
+    top: 0;
+    left: 0;
+
+    background: rgba(20, 20, 20, 0.95);    
+    font-family: "acumin-pro";
+    color: white;
+    font-size: 24px;
+
+    display: grid;
+    align-content: center;
+    justify-content: center;
+
+    user-select: none;
+
+    padding: 20px;
+    text-align: center;
+}
+
 #log-console {
     grid-row: 2;
     grid-column: 3;
@@ -199,5 +222,11 @@
                 }
             }
         }
+    }
+}
+
+@media (max-width:1000px) {
+    .blocker {
+        visibility: visible;
     }
 }

@@ -36,6 +36,61 @@
         }
     }
 
+    .sliderLine {
+        padding-left: $line-padding-left;
+        height: 30px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+
+        .label {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .slider {
+            grid-column: 2;
+            margin-right: 5px;
+            
+            display: flex;
+            align-items: center;
+
+            .range {
+                -webkit-appearance: none;
+                width: 120px;
+                height: 6px;
+                background: #d3d3d3;
+                border-radius: 5px;
+                outline: none;
+                opacity: 0.7;
+                -webkit-transition: .2s;
+                transition: opacity .2s;
+            }
+            
+            .range:hover {
+                opacity: 1;
+            }
+            
+            .range::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: rgb(51, 122, 183);
+                cursor: pointer;
+            }
+            
+            .range::-moz-range-thumb {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: rgb(51, 122, 183);
+                cursor: pointer;
+            }
+        }                    
+    }     
+
     .textInputLine {
         padding-left: $line-padding-left;
         height: 30px;
