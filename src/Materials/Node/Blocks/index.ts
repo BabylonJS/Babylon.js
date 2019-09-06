@@ -20,7 +20,7 @@ export * from "./lerpBlock";
 export * from "./divideBlock";
 export * from "./subtractBlock";
 export * from "./stepBlock";
-export * from "./oppositeBlock";
+export * from "./oneMinusBlock";
 export * from "./viewDirectionBlock";
 export * from "./fresnelBlock";
 export * from "./maxBlock";

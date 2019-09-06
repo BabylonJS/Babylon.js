@@ -148,26 +148,48 @@ class SettingsPG {
      * Check if we need to restore a BJS version
      */
     restoreVersion() {
-        if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null) {
-            BABYLON = null;
-
+        if (this.mustModifyBJSversion()) {
             this.parent.menuPG.displayWaitDiv();
 
-            var newBJSscript = document.createElement('script');
-            newBJSscript.src = localStorage.getItem("bjs-playground-apiversion");
-            newBJSscript.onload = function () {
-                if(BABYLON.Engine.Version.search('-') != -1) this.parent.menuPG.displayVersionNumber("Latest");
-                else this.parent.menuPG.displayVersionNumber(BABYLON.Engine.Version);
-                this.parent.monacoCreator.setCode(localStorage.getItem("bjs-playground-apiversion-tempcode"));
+            var apiVersion = localStorage.getItem("bjs-playground-apiversion");
+            BABYLON = null;
 
-                localStorage.removeItem("bjs-playground-apiversion");
-                localStorage.removeItem("bjs-playground-apiversion-tempcode");
+            var position = 0;
+            for (var i = 0; i < CONFIG_last_versions.length; i++) {
+                if (CONFIG_last_versions[i][0] == apiVersion) {
+                    position = i;
+                    break;
+                }
+            }
 
-                this.parent.main.compileAndRunFromOutside();
-            }.bind(this);
+            var count = CONFIG_last_versions[position][1].length;
+            for (var i = 0; i < CONFIG_last_versions[position][1].length; i++) {
+                var newBJSscript = document.createElement('script');
+                newBJSscript.src = CONFIG_last_versions[position][1][i];
+                newBJSscript.onload = function () {
+                    count--;
+                    if (count == 0) {
+                        if (BABYLON.Engine.Version.search('-') != -1) this.parent.menuPG.displayVersionNumber("Latest");
+                        else this.parent.menuPG.displayVersionNumber(BABYLON.Engine.Version);
+                        this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
 
-            document.head.appendChild(newBJSscript);
+                        this.parent.monacoCreator.setCode(localStorage.getItem("bjs-playground-apiversion-tempcode"));
+
+                        localStorage.removeItem("bjs-playground-apiversion");
+                        localStorage.removeItem("bjs-playground-apiversion-tempcode");
+
+                        this.parent.main.compileAndRunFromOutside();
+                    }
+                }.bind(this);
+
+                document.head.appendChild(newBJSscript);
+            }
         }
+        else return false;
+    };
+
+    mustModifyBJSversion() {
+        if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null && localStorage.getItem("bjs-playground-apiversion") != "Latest") return true;
         else return false;
     };
 };

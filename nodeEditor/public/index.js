@@ -29,11 +29,12 @@ var checkHash = function () {
                     if (xmlHttp.readyState == 4) {
                         if (xmlHttp.status == 200) {
                             var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
+                            let serializationObject = JSON.parse(snippet.nodeMaterial);
 
                             if (editorDisplayed) {
-                                customLoadObservable.notifyObservers(snippet.nodeMaterial);
+                                customLoadObservable.notifyObservers(serializationObject);
                             } else {
-                                nodeMaterial.loadFromSerialization(snippet.nodeMaterial);
+                                nodeMaterial.loadFromSerialization(serializationObject);
                                 nodeMaterial.build(true);
                                 showEditor();
                             }
@@ -65,38 +66,41 @@ var showEditor = function() {
         customSave: {
             label: "Save as unique URL",
             action: (data) => {
-                var xmlHttp = new XMLHttpRequest();
-                xmlHttp.onreadystatechange = function () {
-                    if (xmlHttp.readyState == 4) {
-                        if (xmlHttp.status == 200) {
-                            var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
-                            var snippet = JSON.parse(xmlHttp.responseText);
-                            var newUrl = baseUrl + "#" + snippet.id;
-                            currentSnippetToken = snippet.id;
-                            if (snippet.version && snippet.version != "0") {
-                                newUrl += "#" + snippet.version;
+                return new Promise((resolve, reject) => {
+                    var xmlHttp = new XMLHttpRequest();
+                    xmlHttp.onreadystatechange = function () {
+                        if (xmlHttp.readyState == 4) {
+                            if (xmlHttp.status == 200) {
+                                var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
+                                var snippet = JSON.parse(xmlHttp.responseText);
+                                var newUrl = baseUrl + "#" + snippet.id;
+                                currentSnippetToken = snippet.id;
+                                if (snippet.version && snippet.version != "0") {
+                                    newUrl += "#" + snippet.version;
+                                }
+                                location.href = newUrl;
+                                resolve();
                             }
-                            location.href = newUrl;
-                        }
-                        else {
-                            console.log("Unable to save your code. Please retry.", null);
+                            else {
+                                reject(`Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`);
+                            }
                         }
                     }
-                }
-    
-                xmlHttp.open("POST", snippetUrl + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
-                xmlHttp.setRequestHeader("Content-Type", "application/json");
-    
-                var dataToSend = {
-                    payload : JSON.stringify({
-                        nodeMaterial: data
-                    }),
-                    name: "",
-                    description: "",
-                    tags: ""
-                };
-    
-                xmlHttp.send(JSON.stringify(dataToSend));
+        
+                    xmlHttp.open("POST", snippetUrl + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
+                    xmlHttp.setRequestHeader("Content-Type", "application/json");
+        
+                    var dataToSend = {
+                        payload : JSON.stringify({
+                            nodeMaterial: data
+                        }),
+                        name: "",
+                        description: "",
+                        tags: ""
+                    };
+        
+                    xmlHttp.send(JSON.stringify(dataToSend));
+                });
             }
         }
     });
@@ -105,8 +109,9 @@ var showEditor = function() {
 // Let's start
 if (BABYLON.Engine.isSupported()) {
     var canvas = document.createElement("canvas");
-    var engine = new BABYLON.Engine(canvas, false);
-    var scene = new BABYLON.Scene(engine);
+    var engine = new BABYLON.Engine(canvas, false, {disableWebGL2Support: true});
+    var scene = new BABYLON.Scene(engine);    
+    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 
     nodeMaterial = new BABYLON.NodeMaterial("node");
 

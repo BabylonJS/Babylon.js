@@ -71,6 +71,9 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
 
+    /** MISC. */
+    public BUMPDIRECTUV = 0;
+
     constructor() {
         super();
         this.rebuild();
@@ -464,9 +467,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         for (var input of node.inputs) {
-            if (!node.isInput) {
-                input.associatedVariableName = "";
-            }
+            input.associatedVariableName = "";
 
             let connectedPoint = input.connectedPoint;
             if (connectedPoint) {

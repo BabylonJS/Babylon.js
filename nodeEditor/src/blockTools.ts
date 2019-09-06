@@ -32,11 +32,12 @@ import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/nodeMaterialSystemValues';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
-import { OppositeBlock } from 'babylonjs/Materials/Node/Blocks/oppositeBlock';
+import { OneMinusBlock } from 'babylonjs/Materials/Node/Blocks/oneMinusBlock';
 import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
 import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
 import { MaxBlock } from 'babylonjs/Materials/Node/Blocks/maxBlock';
 import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
+import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/perturbNormalBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -78,7 +79,7 @@ export class BlockTools {
             case "ScaleBlock":
                 return new ScaleBlock("Scale");
             case "CrossBlock":
-                return new CrossBlock("Dot");
+                return new CrossBlock("Cross");
             case "DotBlock":
                 return new DotBlock("Dot");
             case "MultiplyBlock":
@@ -101,8 +102,8 @@ export class BlockTools {
                 return new SubtractBlock("Subtract"); 
             case "StepBlock":
                 return new StepBlock("Step");        
-            case "OppositeBlock":
-                return new OppositeBlock("Opposite");      
+            case "OneMinusBlock":
+                return new OneMinusBlock("One minus");      
             case "ViewDirectionBlock":
                 return new ViewDirectionBlock("View direction");    
             case "LightInformationBlock":
@@ -110,7 +111,9 @@ export class BlockTools {
             case "MaxBlock":
                 return new MaxBlock("Max");       
             case "MinBlock":
-                return new MinBlock("Min");                                                  
+                return new MinBlock("Min");        
+            case "PerturbNormalBlock":                                          
+                return new PerturbNormalBlock("Perturb normal");        
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;
