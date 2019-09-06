@@ -23,8 +23,11 @@ export class GlobalState {
     onLogRequiredObservable = new Observable<LogEntry>();
     onErrorMessageDialogRequiredObservable = new Observable<string>();
     onPreviewCommandActivated = new Observable<void>();
+    onPreviewBackgroundChanged = new Observable<void>();
+    onAnimationCommandActivated = new Observable<void>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
     previewMeshType: PreviewMeshType;
+    previewMeshFile: File;
     rotatePreview: boolean;
     backgroundColor: Color4;
     blockKeyboardEvents = false;

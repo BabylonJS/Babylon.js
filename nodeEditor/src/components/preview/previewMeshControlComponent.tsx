@@ -26,7 +26,16 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     }
 
     useCustomMesh(evt: any) {
-        this.props.globalState.previewMeshType = PreviewMeshType.Custom;
+        var files: File[] = evt.target.files;
+        if (files && files.length) {
+            let file = files[0];
+
+            this.props.globalState.previewMeshFile = file;
+            this.props.globalState.previewMeshType = PreviewMeshType.Custom;
+            this.props.globalState.onPreviewCommandActivated.notifyObservers();        
+            this.forceUpdate();
+        }
+        (document.getElementById("file-picker")! as HTMLInputElement).value = "";
     }
 
     render() {
