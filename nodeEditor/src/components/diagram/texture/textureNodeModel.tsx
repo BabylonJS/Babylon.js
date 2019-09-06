@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Nullable } from 'babylonjs/types';
-import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { GlobalState } from '../../../globalState';
 import { TexturePropertyTabComponent } from './texturePropertyTabComponent';
 import { NodeCreationOptions, GraphEditor } from '../../../graphEditor';
 import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
+import { Texture } from 'babylonjs/Materials/Textures/texture';
 
 /**
  * Texture node model which stores information about a node editor block
@@ -17,11 +17,11 @@ export class TextureNodeModel extends DefaultNodeModel {
 	/**
 	 * Texture for the node if it exists
 	 */
-    public get texture(): Nullable<BaseTexture> {
+    public get texture(): Nullable<Texture> {
         return this._block.texture;
     }
 
-    public set texture(value: Nullable<BaseTexture>) {
+    public set texture(value: Nullable<Texture>) {
         this._block.texture = value;
     }
 

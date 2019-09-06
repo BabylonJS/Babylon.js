@@ -409,6 +409,67 @@ declare module "babylonjs-node-editor/portal" {
         render(): React.ReactPortal;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/sliderLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    interface ISliderLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        minimum: number;
+        maximum: number;
+        step: number;
+        directValue?: number;
+        useEuler?: boolean;
+        onChange?: (value: number) => void;
+        onInput?: (value: number) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        decimalCount?: number;
+    }
+    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        constructor(props: ISliderLineComponentProps);
+        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        onChange(newValueString: any): void;
+        onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        constructor(props: IFloatLineComponentProps);
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/diagram/texture/texturePropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -433,11 +494,11 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureProperty
 }
 declare module "babylonjs-node-editor/components/diagram/texture/textureNodeModel" {
     import { Nullable } from 'babylonjs/types';
-    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     import { GlobalState } from "babylonjs-node-editor/globalState";
     import { NodeCreationOptions, GraphEditor } from "babylonjs-node-editor/graphEditor";
     import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
+    import { Texture } from 'babylonjs/Materials/Textures/texture';
     /**
      * Texture node model which stores information about a node editor block
      */
@@ -446,7 +507,7 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureNodeMode
         /**
          * Texture for the node if it exists
          */
-        texture: Nullable<BaseTexture>;
+        texture: Nullable<Texture>;
         /**
          * Constructs the node model
          */
@@ -726,35 +787,6 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/color3Pr
         inputBlock: InputBlock;
     }
     export class Color3PropertyTabComponent extends React.Component<IColor3PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
-    interface IFloatLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-    }
-    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        constructor(props: IFloatLineComponentProps);
-        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
         render(): JSX.Element;
     }
 }
@@ -1936,6 +1968,61 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface ISliderLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        minimum: number;
+        maximum: number;
+        step: number;
+        directValue?: number;
+        useEuler?: boolean;
+        onChange?: (value: number) => void;
+        onInput?: (value: number) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        decimalCount?: number;
+    }
+    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        constructor(props: ISliderLineComponentProps);
+        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        onChange(newValueString: any): void;
+        onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        constructor(props: IFloatLineComponentProps);
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface ITexturePropertyTabComponentProps {
         globalState: GlobalState;
         node: TextureNodeModel;
@@ -1956,14 +2043,14 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     /**
-     * Texture node model which stores information about a node editor block
+     * BABYLON.Texture node model which stores information about a node editor block
      */
     export class TextureNodeModel extends DefaultNodeModel {
         private _block;
         /**
-         * Texture for the node if it exists
+         * BABYLON.Texture for the node if it exists
          */
-        texture: BABYLON.Nullable<BABYLON.BaseTexture>;
+        texture: BABYLON.Nullable<BABYLON.Texture>;
         /**
          * Constructs the node model
          */
@@ -2209,32 +2296,6 @@ declare module NODEEDITOR {
         inputBlock: BABYLON.InputBlock;
     }
     export class Color3PropertyTabComponent extends React.Component<IColor3PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface IFloatLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-    }
-    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        constructor(props: IFloatLineComponentProps);
-        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
         render(): JSX.Element;
     }
 }

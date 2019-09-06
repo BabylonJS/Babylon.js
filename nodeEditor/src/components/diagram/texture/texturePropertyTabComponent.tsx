@@ -10,6 +10,8 @@ import { LineContainerComponent } from '../../../sharedComponents/lineContainerC
 import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
 import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
+import { SliderLineComponent } from '../../../sharedComponents/sliderLineComponent';
+import { FloatLineComponent } from '../../../sharedComponents/floatLineComponent';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
@@ -109,9 +111,63 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                     {
                         texture &&
                         <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => {
-                            texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE
+                            texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }} />
+                    }        
+                    {
+                        texture &&
+                        <FloatLineComponent label="Offset U" target={texture} propertyName="uOffset" 
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }
+                    {
+                        texture &&
+                        <FloatLineComponent label="Offset U" target={texture} propertyName="vOffset"
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }
+                    {
+                        texture &&
+                        <FloatLineComponent label="Scale U" target={texture} propertyName="uScale"
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }} />
+                    }
+                    {
+                        texture &&
+                        <FloatLineComponent label="Scale V" target={texture} propertyName="vScale"
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }} />
+                    }
+                    {
+                        texture &&
+                        <SliderLineComponent label="Rotation U" target={texture} propertyName="uAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }
+                    {
+                        texture &&
+                        <SliderLineComponent label="Rotation V" target={texture} propertyName="vAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }                    
+                    {
+                        texture &&
+                        <SliderLineComponent label="Rotation W" target={texture} propertyName="wAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
                     }
                 </LineContainerComponent>
                 <LineContainerComponent title="SOURCE">
