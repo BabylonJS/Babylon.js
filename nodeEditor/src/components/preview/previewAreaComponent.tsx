@@ -15,7 +15,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent>
 
     changeAnimation() {
         this.props.globalState.rotatePreview = !this.props.globalState.rotatePreview;
-        this.props.globalState.onPreviewCommandActivated.notifyObservers();
+        this.props.globalState.onAnimationCommandActivated.notifyObservers();
         this.forceUpdate();
     }
 
@@ -27,7 +27,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent>
         DataStorage.StoreNumber("BackgroundColorB", newColor.b);
 
         this.props.globalState.backgroundColor = Color4.FromColor3(newColor, 1.0);
-        this.props.globalState.onPreviewCommandActivated.notifyObservers();
+        this.props.globalState.onPreviewBackgroundChanged.notifyObservers();
     }
 
     render() {

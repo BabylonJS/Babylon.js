@@ -70834,7 +70834,17 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: "Texture" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.node.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "PROPERTIES" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.node.block })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.node.block }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                            texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                            texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "SOURCE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Embed texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
                         _this.setState({ isEmbedded: value });
@@ -71308,7 +71318,7 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
     }
     PreviewAreaComponent.prototype.changeAnimation = function () {
         this.props.globalState.rotatePreview = !this.props.globalState.rotatePreview;
-        this.props.globalState.onPreviewCommandActivated.notifyObservers();
+        this.props.globalState.onAnimationCommandActivated.notifyObservers();
         this.forceUpdate();
     };
     PreviewAreaComponent.prototype.changeBackground = function (value) {
@@ -71317,7 +71327,7 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
         _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreNumber("BackgroundColorG", newColor.g);
         _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreNumber("BackgroundColorB", newColor.b);
         this.props.globalState.backgroundColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__["Color4"].FromColor3(newColor, 1.0);
-        this.props.globalState.onPreviewCommandActivated.notifyObservers();
+        this.props.globalState.onPreviewBackgroundChanged.notifyObservers();
     };
     PreviewAreaComponent.prototype.render = function () {
         var _this = this;
@@ -71361,6 +71371,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var PreviewManager = /** @class */ (function () {
     function PreviewManager(targetCanvas, globalState) {
         var _this = this;
@@ -71376,6 +71387,12 @@ var PreviewManager = /** @class */ (function () {
         this._onUpdateRequiredObserver = globalState.onUpdateRequiredObservable.add(function () {
             var serializationObject = _this._nodeMaterial.serialize();
             _this._updatePreview(serializationObject);
+        });
+        this._onPreviewBackgroundChangedObserver = globalState.onPreviewBackgroundChanged.add(function () {
+            _this._scene.clearColor = _this._globalState.backgroundColor;
+        });
+        this._onAnimationCommandActivatedObserver = globalState.onAnimationCommandActivated.add(function () {
+            _this._handleAnimations();
         });
         this._engine = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Engine"](targetCanvas, true);
         this._scene = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Scene"](this._engine);
@@ -71393,36 +71410,83 @@ var PreviewManager = /** @class */ (function () {
         var serializationObject = this._nodeMaterial.serialize();
         this._updatePreview(serializationObject);
     }
-    PreviewManager.prototype._refreshPreviewMesh = function () {
+    PreviewManager.prototype._handleAnimations = function () {
         this._scene.stopAllAnimations();
+        if (this._globalState.rotatePreview) {
+            for (var _i = 0, _a = this._scene.rootNodes; _i < _a.length; _i++) {
+                var root = _a[_i];
+                var transformNode = root;
+                if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh") {
+                    if (transformNode.rotationQuaternion) {
+                        transformNode.rotation = transformNode.rotationQuaternion.toEulerAngles();
+                        transformNode.rotationQuaternion = null;
+                    }
+                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Animation"].CreateAndStartAnimation("turnTable", root, "rotation.y", 60, 1200, transformNode.rotation.y, transformNode.rotation.y + 2 * Math.PI, 1);
+                }
+            }
+        }
+    };
+    PreviewManager.prototype._prepareMeshes = function () {
+        // Material
+        for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
+            var mesh = _a[_i];
+            mesh.material = this._material;
+        }
+        // Framing
+        this._camera.useFramingBehavior = true;
+        var framingBehavior = this._camera.getBehaviorByName("Framing");
+        framingBehavior.framingTime = 0;
+        framingBehavior.elevationReturnTime = -1;
+        if (this._scene.meshes.length) {
+            var worldExtends = this._scene.getWorldExtends();
+            this._camera.lowerRadiusLimit = null;
+            this._camera.upperRadiusLimit = null;
+            framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+        }
+        this._camera.pinchPrecision = 200 / this._camera.radius;
+        this._camera.upperRadiusLimit = 5 * this._camera.radius;
+        this._camera.wheelDeltaPercentage = 0.01;
+        this._camera.pinchDeltaPercentage = 0.01;
+        // Animations
+        this._handleAnimations();
+    };
+    PreviewManager.prototype._refreshPreviewMesh = function () {
+        var _this = this;
         if (this._currentType !== this._globalState.previewMeshType) {
             this._currentType = this._globalState.previewMeshType;
-            if (this._dummy) {
-                this._dummy.dispose();
+            if (this._meshes && this._meshes.length) {
+                for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
+                    var mesh = _a[_i];
+                    mesh.dispose();
+                }
             }
+            this._meshes = [];
             switch (this._globalState.previewMeshType) {
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
-                    this._dummy = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateBox("dummy-box", 2, this._scene);
+                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateBox("dummy-box", 2, this._scene));
                     break;
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Sphere:
-                    this._dummy = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("dummy-sphere", 32, 2, this._scene);
+                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("dummy-sphere", 32, 2, this._scene));
                     break;
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Torus:
-                    this._dummy = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateTorus("dummy-torus", 2, 0.5, 32, this._scene);
+                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
                     break;
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Cylinder:
-                    this._dummy = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateCylinder("dummy-cylinder", 2, 1, 1.2, 32, 1, this._scene);
+                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateCylinder("dummy-cylinder", 2, 1, 1.2, 32, 1, this._scene));
                     break;
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Plane:
-                    this._dummy = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateGround("dummy-plane", 2, 2, 128, this._scene);
+                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateGround("dummy-plane", 2, 2, 128, this._scene));
                     break;
+                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Custom:
+                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("file:", this._globalState.previewMeshFile, this._scene).then(function () {
+                        var _a;
+                        (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
+                        _this._prepareMeshes();
+                    });
+                    return;
             }
-            this._dummy.material = this._material;
+            this._prepareMeshes();
         }
-        if (this._globalState.rotatePreview) {
-            babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Animation"].CreateAndStartAnimation("turnTable", this._dummy, "rotation.y", 60, 1200, this._dummy.rotation.y, this._dummy.rotation.y + 2 * Math.PI, 1);
-        }
-        this._scene.clearColor = this._globalState.backgroundColor;
     };
     PreviewManager.prototype._updatePreview = function (serializationObject) {
         if (this._material) {
@@ -71430,17 +71494,25 @@ var PreviewManager = /** @class */ (function () {
         }
         this._material = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].Parse(serializationObject, this._scene);
         this._material.build();
-        this._dummy.material = this._material;
+        for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
+            var mesh = _a[_i];
+            mesh.material = this._material;
+        }
     };
     PreviewManager.prototype.dispose = function () {
         this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
         this._globalState.onPreviewCommandActivated.remove(this._onPreviewCommandActivatedObserver);
         this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
+        this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
+        this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
         if (this._material) {
             this._material.dispose();
         }
         this._camera.dispose();
-        this._dummy.dispose();
+        for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
+            var mesh = _a[_i];
+            mesh.dispose();
+        }
         this._light.dispose();
         this._engine.dispose();
     };
@@ -71489,7 +71561,15 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
         this.forceUpdate();
     };
     PreviewMeshControlComponent.prototype.useCustomMesh = function (evt) {
-        this.props.globalState.previewMeshType = _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Custom;
+        var files = evt.target.files;
+        if (files && files.length) {
+            var file = files[0];
+            this.props.globalState.previewMeshFile = file;
+            this.props.globalState.previewMeshType = _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Custom;
+            this.props.globalState.onPreviewCommandActivated.notifyObservers();
+            this.forceUpdate();
+        }
+        document.getElementById("file-picker").value = "";
     };
     PreviewMeshControlComponent.prototype.render = function () {
         var _this = this;
@@ -72003,6 +72083,8 @@ var GlobalState = /** @class */ (function () {
         this.onLogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onErrorMessageDialogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPreviewCommandActivated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPreviewBackgroundChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onAnimationCommandActivated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.blockKeyboardEvents = false;
         this.previewMeshType = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("PreviewMeshType", _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box);
         var r = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorR", 0.37);
