@@ -683,8 +683,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     <LogComponent globalState={this.props.globalState} />
                 </div>                
                 <MessageDialogComponent globalState={this.props.globalState} />
+                <div className="blocker">
+                    Node Material Editor requires a screen with a minimal resolution of 1000px
+                </div>
             </Portal>
         );
-
     }
 }

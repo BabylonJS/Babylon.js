@@ -24,6 +24,12 @@ export class InputBlock extends NodeMaterialBlock {
     private _type: NodeMaterialBlockConnectionPointTypes;
     private _animationType = AnimatedInputBlockTypes.None;
 
+    /** Gets or set a value used to limit the range of float values */
+    public min: number = 0;
+
+    /** Gets or set a value used to limit the range of float values */
+    public max: number = 0;
+
     /** @hidden */
     public _systemValue: Nullable<NodeMaterialSystemValues> = null;
 
