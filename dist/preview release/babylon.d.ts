@@ -52540,7 +52540,7 @@ declare module BABYLON {
         /**
          * Gets or sets the texture associated with the node
          */
-        texture: Nullable<BaseTexture>;
+        texture: Nullable<Texture>;
         /**
          * Create a new TextureBlock
          * @param name defines the block name
@@ -53054,6 +53054,10 @@ declare module BABYLON {
         private _valueCallback;
         private _type;
         private _animationType;
+        /** Gets or set a value used to limit the range of float values */
+        min: number;
+        /** Gets or set a value used to limit the range of float values */
+        max: number;
         /** @hidden */
         _systemValue: Nullable<NodeMaterialSystemValues>;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
