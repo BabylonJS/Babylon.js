@@ -522,6 +522,10 @@ export class VRExperienceHelper {
      * If the gaze trackers color should be updated when selecting meshes
      */
     public updateGazeTrackerColor = true;
+    /**
+     * If the controller laser color should be updated when selecting meshes
+     */
+    public updateControllerLaserColor = true;
 
     /**
      * The gaze tracking mesh corresponding to the left controller
@@ -2014,6 +2018,10 @@ export class VRExperienceHelper {
      * @param color new color for the ray.
      */
     public changeLaserColor(color: Color3) {
+        if (!this.updateControllerLaserColor) {
+            return;
+        }
+
         if (this._leftController) {
             this._leftController._setLaserPointerColor(color);
 

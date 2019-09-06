@@ -5,7 +5,7 @@ import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { CameraInputsManager } from "./cameraInputsManager";
 import { Scene } from "../scene";
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3, Quaternion } from "../Maths/math.vector";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -1156,6 +1156,17 @@ export class Camera extends Node {
         var result = Vector3.Zero();
 
         this.getDirectionToRef(localAxis, result);
+
+        return result;
+    }
+
+    /**
+     * Returns the current camera absolute rotation
+     */
+    public get absoluteRotation(): Quaternion {
+        var result = Quaternion.Zero();
+
+        this.getWorldMatrix().decompose(undefined, result);
 
         return result;
     }

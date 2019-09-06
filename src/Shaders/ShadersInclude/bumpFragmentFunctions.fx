@@ -61,6 +61,11 @@
 		return perturbNormal(cotangentFrame, texture2D(bumpSampler, uv).xyz, vBumpInfos.y);
 	}
 
+	vec3 perturbNormal(mat3 cotangentFrame, vec3 color)
+	{
+		return perturbNormal(cotangentFrame, color, vBumpInfos.y);
+	}
+
 	// Thanks to http://www.thetenthplanet.de/archives/1180
 	mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)
 	{

@@ -2,7 +2,7 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircle, faRing, faCube, faHockeyPuck, faSquareFull } from '@fortawesome/free-solid-svg-icons';
+import { faCircle, faRing, faCube, faHockeyPuck, faSquareFull, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { PreviewMeshType } from './previewMeshType';
 import { DataStorage } from '../../dataStorage';
 
@@ -18,11 +18,24 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         }
 
         this.props.globalState.previewMeshType = newOne;
-        this.props.globalState.onPreviewMeshTypeChanged.notifyObservers();
+        this.props.globalState.onPreviewCommandActivated.notifyObservers();
 
         DataStorage.StoreNumber("PreviewMeshType", newOne);
 
         this.forceUpdate();
+    }
+
+    useCustomMesh(evt: any) {
+        var files: File[] = evt.target.files;
+        if (files && files.length) {
+            let file = files[0];
+
+            this.props.globalState.previewMeshFile = file;
+            this.props.globalState.previewMeshType = PreviewMeshType.Custom;
+            this.props.globalState.onPreviewCommandActivated.notifyObservers();        
+            this.forceUpdate();
+        }
+        (document.getElementById("file-picker")! as HTMLInputElement).value = "";
     }
 
     render() {
@@ -42,6 +55,12 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                 </div>
                 <div onClick={() => this.changeMeshType(PreviewMeshType.Plane)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Plane ? " selected" : "")}>
                     <FontAwesomeIcon icon={faSquareFull} />
+                </div>                
+                <div className={"button align"}>
+                    <label htmlFor="file-picker" id="file-picker-label">
+                        <FontAwesomeIcon icon={faPlus} />
+                    </label>
+                    <input ref="file-picker" id="file-picker" type="file" onChange={evt => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
                 </div>
             </div>
         );

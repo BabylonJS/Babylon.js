@@ -600,7 +600,8 @@
                 "react-dom",
                 "dagre",
                 "re-resizable",
-                "glTF"
+                "glTF",
+                "file-saver"
             ],
             "umd": {
                 "packageName": "babylonjs-node-editor",

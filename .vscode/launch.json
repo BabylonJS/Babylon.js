@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "configurations": [
         {
-            "name": "Node Material Editor (Chrome)",
+            "name": "Launch Node Material Editor (Chrome)",
             "type": "chrome",
             "request": "launch",
             "url": "http://localhost:1338/nodeEditor/public/index-local.html",

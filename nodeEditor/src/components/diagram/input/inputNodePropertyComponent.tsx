@@ -15,6 +15,8 @@ import { StringTools } from '../../../stringTools';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
 import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
+import { Vector4PropertyTabComponent } from '../../propertyTab/properties/vector4PropertyTabComponent';
+import { MatrixPropertyTabComponent } from '../../propertyTab/properties/matrixPropertyTabComponent';
 
 interface IInputPropertyTabComponentProps {
     globalState: GlobalState;
@@ -46,7 +48,15 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 return (
                     <Vector3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                );            
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                return (
+                    <Vector4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
+            case NodeMaterialBlockConnectionPointTypes.Matrix:
+                return (
+                    <MatrixPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                );                
         }
 
         return null;
