@@ -18,10 +18,13 @@ import { Mesh } from "babylonjs/Meshes/mesh";
 import { GLTFComponent } from "./tools/gltfComponent";
 
 import { GLTFData, GLTF2Export } from "babylonjs-serializers/glTF/2.0/index";
+import { FloatLineComponent } from '../lines/floatLineComponent';
+import { IScreenshotSize } from 'babylonjs/Misc/interfaces/screenshotSize';
+import { NumericInputComponent } from '../lines/numericInputComponent';
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;
-
+    private _screenShotSize: IScreenshotSize = { precision: 1 };
     constructor(props: IPaneComponentProps) {
         super(props);
 
@@ -48,6 +51,13 @@ export class ToolsTabComponent extends PaneComponent {
         const scene = this.props.scene;
         if (scene.activeCamera) {
             Tools.CreateScreenshot(scene.getEngine(), scene.activeCamera, { precision: 1.0 });
+        }
+    }
+
+    captureRender() {
+        const scene = this.props.scene;
+        if (scene.activeCamera) {
+            Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize)
         }
     }
 
@@ -136,6 +146,17 @@ export class ToolsTabComponent extends PaneComponent {
                 <LineContainerComponent globalState={this.props.globalState} title="CAPTURE">
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
+                    <ButtonLineComponent label="Render" onClick={() => this.captureRender()} />
+                    <LineContainerComponent globalState={this.props.globalState} title="Render Settings">
+                        <div className="vector3Line">
+                            <FloatLineComponent label="Precision" target={this._screenShotSize} propertyName='precision' onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <div className="secondLine">
+                                <NumericInputComponent label="Width" value={this._screenShotSize.width ? this._screenShotSize.width : 0} onChange={value => this._screenShotSize.width = value} />
+                                <NumericInputComponent label="Height" value={this._screenShotSize.height ? this._screenShotSize.height : 0} onChange={value => this._screenShotSize.height = value} />
+                            </div>
+                        </div>
+                    </LineContainerComponent>
+
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="REPLAY">
                     <ButtonLineComponent label="Generate replay code" onClick={() => this.exportReplay()} />
