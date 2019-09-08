@@ -387,12 +387,12 @@ export class Image extends Control {
                     // svg object alr exists
                     this._getSVGAttribs(svgExist, elemid);
                 } else {
-                    console.log(elemid + " in here2");
                     // wait for object to load
                     svgExist.addEventListener("load", () => {
                         this._getSVGAttribs(svgExist, elemid);
                     });
                 }
+
             } else {
                 // create document object
                 var svgImage = document.createElement("object");
@@ -408,6 +408,7 @@ export class Image extends Control {
                         this._getSVGAttribs(svgobj, elemid);
                     }
                 };
+
             }
         }
     }
@@ -439,6 +440,7 @@ export class Image extends Control {
                     elem_matrix_e = elem.transform.baseVal.consolidate().matrix.e;
                     elem_matrix_f = elem.transform.baseVal.consolidate().matrix.f;
                 }
+
                 // compute source coordinates and dimensions
                 this.sourceLeft = ((elem_matrix_a * elem_bbox.x + elem_matrix_e) * docwidth) / vb_width;
                 this.sourceTop = ((elem_matrix_d * elem_bbox.y + elem_matrix_f) * docheight) / vb_height;
