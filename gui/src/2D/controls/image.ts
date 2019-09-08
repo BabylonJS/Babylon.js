@@ -376,7 +376,6 @@ export class Image extends Control {
     /**
      * Checks for svg document with icon id present
      */
-
     private _svgCheck(value: string) {
         if ((value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
             var svgsrc = value.split('#')[0];
@@ -384,8 +383,16 @@ export class Image extends Control {
             // check if object alr exist in document
             var svgExist = <HTMLObjectElement> document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
-                // svg object alr exists
-                this._getSVGAttribs(svgExist, elemid);
+                if (svgExist.contentDocument) {
+                    // svg object alr exists
+                    this._getSVGAttribs(svgExist, elemid);
+                } else {
+                    console.log(elemid + " in here2");
+                    // wait for object to load
+                    svgExist.addEventListener("load", () => {
+                        this._getSVGAttribs(svgExist, elemid);
+                    });
+                }
             } else {
                 // create document object
                 var svgImage = document.createElement("object");
@@ -409,7 +416,6 @@ export class Image extends Control {
      * Sets sourceLeft, sourceTop, sourceWidth, sourceHeight automatically
 	 * given external svg file and icon id
      */
-
     private _getSVGAttribs(svgsrc: HTMLObjectElement, elemid: string) {
         var svgDoc = svgsrc.contentDocument;
         // get viewbox width and height, get svg document width and height in px
