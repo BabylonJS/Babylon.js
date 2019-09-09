@@ -25,3 +25,6 @@ export * from "./viewDirectionBlock";
 export * from "./fresnelBlock";
 export * from "./maxBlock";
 export * from "./minBlock";
+export * from "./distanceBlock";
+export * from "./lengthBlock";
+export * from "./negateBlock";

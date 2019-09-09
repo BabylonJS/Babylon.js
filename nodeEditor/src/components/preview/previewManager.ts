@@ -128,7 +128,7 @@ export class PreviewManager {
 
     private _refreshPreviewMesh() {    
 
-        if (this._currentType !== this._globalState.previewMeshType) {
+        if (this._currentType !== this._globalState.previewMeshType || this._currentType === PreviewMeshType.Custom) {
 
             this._currentType = this._globalState.previewMeshType;
             if (this._meshes && this._meshes.length) {
@@ -155,7 +155,13 @@ export class PreviewManager {
                     break;                
                 case PreviewMeshType.Plane:
                     this._meshes.push(Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene));
-                    break;         
+                    break;    
+                case PreviewMeshType.ShaderBall:
+                    SceneLoader.AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(() => {     
+                        this._meshes.push(...this._scene.meshes);
+                        this._prepareMeshes();
+                    });
+                    return;                             
                 case PreviewMeshType.Custom:
                     SceneLoader.AppendAsync("file:", this._globalState.previewMeshFile, this._scene).then(() => {     
                         this._meshes.push(...this._scene.meshes);
