@@ -1216,6 +1216,7 @@ export class NodeMaterial extends PushMaterial {
         let nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene), source, scene, rootUrl);
 
         nodeMaterial.loadFromSerialization(source, rootUrl);
+        nodeMaterial.build();
 
         return nodeMaterial;
     }
