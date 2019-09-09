@@ -174,7 +174,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
 
-        this._previewManager.dispose();
+        if (this._previewManager) {
+            this._previewManager.dispose();
+        }
     }
 
     constructor(props: IGraphEditorProps) {

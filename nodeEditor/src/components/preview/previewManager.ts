@@ -169,15 +169,27 @@ export class PreviewManager {
     }
 
     private _updatePreview(serializationObject: any) {
-        if (this._material) {
-            this._material.dispose();
-        }        
+        let tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
+        try {
+            tempMaterial.build();
 
-        this._material = NodeMaterial.Parse(serializationObject, this._scene);
-        this._material.build();
-
-        for (var mesh of this._meshes) {
-            mesh.material = this._material;
+            if (this._meshes.length) {
+                tempMaterial.forceCompilation(this._meshes[0], () => {
+                    for (var mesh of this._meshes) {
+                        mesh.material = tempMaterial;
+                    }
+        
+                    if (this._material) {
+                        this._material.dispose();
+                    }      
+        
+                    this._material = tempMaterial;    
+                });
+            } else {
+                this._material = tempMaterial;    
+            }
+        } catch(err) {
+            // Ignore the error
         }
     }
 

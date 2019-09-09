@@ -1176,7 +1176,7 @@ export class Engine {
             }
         } else {
             this._gl = <WebGLRenderingContext>canvasOrContext;
-            this._renderingCanvas = this._gl.canvas;
+            this._renderingCanvas = this._gl.canvas as HTMLCanvasElement;
 
             if (this._gl.renderbufferStorageMultisample) {
                 this._webGLVersion = 2.0;
