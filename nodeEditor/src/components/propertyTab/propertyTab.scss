@@ -256,6 +256,10 @@
             padding-right: 5px;  
             border-left: 1px solid rgb(51, 122, 183);
 
+            .no-right-margin {
+                margin-right: 0;
+            }
+
             .numeric {
                 display: grid;
                 grid-template-columns: 1fr auto;
