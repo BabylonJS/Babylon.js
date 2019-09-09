@@ -14553,7 +14553,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Reprasents a camera frustum
+     * Represents a camera frustum
      */
     export class Frustum {
         /**
@@ -53058,6 +53058,8 @@ declare module BABYLON {
         min: number;
         /** Gets or set a value used to limit the range of float values */
         max: number;
+        /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
+        matrixMode: number;
         /** @hidden */
         _systemValue: Nullable<NodeMaterialSystemValues>;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
@@ -64223,6 +64225,10 @@ declare module BABYLON.GUI {
          */
         onImageLoadedObservable: BABYLON.Observable<Image>;
         /**
+         * BABYLON.Observable notified when _sourceLeft, _sourceTop, _sourceWidth and _sourceHeight are computed
+         */
+        onSVGAttributesComputedObservable: BABYLON.Observable<Image>;
+        /**
          * Gets a boolean indicating that the content is loaded
          */
         readonly isLoaded: boolean;
@@ -64284,6 +64290,15 @@ declare module BABYLON.GUI {
          * Gets or sets image source url
          */
         source: BABYLON.Nullable<string>;
+        /**
+         * Checks for svg document with icon id present
+         */
+        private _svgCheck;
+        /**
+         * Sets sourceLeft, sourceTop, sourceWidth, sourceHeight automatically
+         * given external svg file and icon id
+         */
+        private _getSVGAttribs;
         /**
          * Gets or sets the cell width to use when animation sheet is enabled
          * @see http://doc.babylonjs.com/how_to/gui#image

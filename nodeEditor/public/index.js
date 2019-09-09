@@ -35,7 +35,11 @@ var checkHash = function () {
                                 customLoadObservable.notifyObservers(serializationObject);
                             } else {
                                 nodeMaterial.loadFromSerialization(serializationObject);
-                                nodeMaterial.build(true);
+                                try {
+                                    nodeMaterial.build(true);
+                                } catch (err) {
+                                     // Swallow the error here
+                                }
                                 showEditor();
                             }
                         }
