@@ -5601,7 +5601,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 6);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar #file-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n\n@media (max-width: 1000px) {\n  .blocker {\n    visibility: visible; } }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar #file-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n\n@media (max-width: 1000px) {\n  .blocker {\n    visibility: visible; } }\n", ""]);
 
 // exports
 
@@ -68367,6 +68367,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -68442,6 +68445,12 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MaxBlock"]("Max");
             case "MinBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MinBlock"]("Min");
+            case "LengthBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LengthBlock"]("Length");
+            case "DistanceBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["DistanceBlock"]("Distance");
+            case "NegateBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["NegateBlock"]("Negate");
             case "PerturbNormalBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["PerturbNormalBlock"]("Perturb normal");
             case "CosBlock": {
@@ -71299,7 +71308,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         // Block types used to create the menu from
         var allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock"],
+            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "TimeBlock"],
             Interpolation: ["LerpBlock"],
@@ -71503,7 +71512,7 @@ var PreviewManager = /** @class */ (function () {
     };
     PreviewManager.prototype._refreshPreviewMesh = function () {
         var _this = this;
-        if (this._currentType !== this._globalState.previewMeshType) {
+        if (this._currentType !== this._globalState.previewMeshType || this._currentType === _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Custom) {
             this._currentType = this._globalState.previewMeshType;
             if (this._meshes && this._meshes.length) {
                 for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
@@ -71528,6 +71537,13 @@ var PreviewManager = /** @class */ (function () {
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Plane:
                     this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateGround("dummy-plane", 2, 2, 128, this._scene));
                     break;
+                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].ShaderBall:
+                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(function () {
+                        var _a;
+                        (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
+                        _this._prepareMeshes();
+                    });
+                    return;
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Custom:
                     babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("file:", this._globalState.previewMeshFile, this._scene).then(function () {
                         var _a;
@@ -71649,6 +71665,8 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faHockeyPuck"] })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane ? " selected" : "") },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faSquareFull"] })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].ShaderBall); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].ShaderBall ? " selected" : "") },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faDotCircle"] })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button align" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-picker", id: "file-picker-label" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlus"] })),
@@ -71678,7 +71696,8 @@ var PreviewMeshType;
     PreviewMeshType[PreviewMeshType["Torus"] = 2] = "Torus";
     PreviewMeshType[PreviewMeshType["Cylinder"] = 3] = "Cylinder";
     PreviewMeshType[PreviewMeshType["Plane"] = 4] = "Plane";
-    PreviewMeshType[PreviewMeshType["Custom"] = 5] = "Custom";
+    PreviewMeshType[PreviewMeshType["ShaderBall"] = 5] = "ShaderBall";
+    PreviewMeshType[PreviewMeshType["Custom"] = 6] = "Custom";
 })(PreviewMeshType || (PreviewMeshType = {}));
 
 
