@@ -599,6 +599,7 @@ declare module NODEEDITOR {
     interface IOptionsLineComponentProps {
         label: string;
         target: any;
+        className?: string;
         propertyName?: string;
         options: ListLineOption[];
         noDirectUpdate?: boolean;
@@ -716,19 +717,26 @@ declare module NODEEDITOR {
         propertyName: string;
         step?: number;
         onChange?: (newValue: BABYLON.Matrix) => void;
+        onModeChange?: (mode: number) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        mode?: number;
     }
     export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, {
         value: BABYLON.Matrix;
+        mode: number;
+        angle: number;
     }> {
         private _localChange;
         constructor(props: IMatrixLineComponentProps);
         shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: {
             value: BABYLON.Matrix;
+            mode: number;
+            angle: number;
         }): boolean;
         raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
         updateMatrix(): void;
         updateRow(value: BABYLON.Vector4, row: number): void;
+        updateBasedOnMode(value: number): void;
         render(): JSX.Element;
     }
 }

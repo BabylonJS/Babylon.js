@@ -53058,6 +53058,8 @@ declare module BABYLON {
         min: number;
         /** Gets or set a value used to limit the range of float values */
         max: number;
+        /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
+        matrixMode: number;
         /** @hidden */
         _systemValue: Nullable<NodeMaterialSystemValues>;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
