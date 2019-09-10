@@ -2,7 +2,7 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircle, faRing, faCube, faHockeyPuck, faSquareFull, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faCircle, faRing, faCube, faHockeyPuck, faSquareFull, faPlus, faDotCircle } from '@fortawesome/free-solid-svg-icons';
 import { PreviewMeshType } from './previewMeshType';
 import { DataStorage } from '../../dataStorage';
 
@@ -55,7 +55,10 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                 </div>
                 <div onClick={() => this.changeMeshType(PreviewMeshType.Plane)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Plane ? " selected" : "")}>
                     <FontAwesomeIcon icon={faSquareFull} />
-                </div>                
+                </div>      
+                <div onClick={() => this.changeMeshType(PreviewMeshType.ShaderBall)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.ShaderBall ? " selected" : "")}>
+                    <FontAwesomeIcon icon={faDotCircle} />
+                </div>                           
                 <div className={"button align"}>
                     <label htmlFor="file-picker" id="file-picker-label">
                         <FontAwesomeIcon icon={faPlus} />
