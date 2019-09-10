@@ -15551,6 +15551,10 @@ declare module BABYLON {
      * @see http://doc.babylonjs.com/babylon101/materials#texture
      */
     export class Texture extends BaseTexture {
+        /**
+         * Gets or sets a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
+         */
+        static SerializeBuffers: boolean;
         /** @hidden */
         static _CubeTextureParser: (jsonTexture: any, scene: Scene, rootUrl: string) => CubeTexture;
         /** @hidden */

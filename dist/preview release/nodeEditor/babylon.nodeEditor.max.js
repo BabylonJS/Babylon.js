@@ -71966,6 +71966,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../serializationTools */ "./serializationTools.ts");
+/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
+/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
+
+
 
 
 
@@ -72033,6 +72037,10 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reorganize", onClick: function () {
                             _this.props.globalState.onReOrganizedRequiredObservable.notifyObservers();
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "OPTIONS" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Embed textures when saving", isSelected: function () { return _dataStorage__WEBPACK_IMPORTED_MODULE_9__["DataStorage"].ReadBoolean("EmbedTextures", true); }, onSelect: function (value) {
+                            _dataStorage__WEBPACK_IMPORTED_MODULE_9__["DataStorage"].StoreBoolean("EmbedTextures", value);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FILE" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.load(file); }, accept: ".json" }),
@@ -73065,11 +73073,18 @@ var Portal = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SerializationTools", function() { return SerializationTools; });
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
+
+
 var SerializationTools = /** @class */ (function () {
     function SerializationTools() {
     }
     SerializationTools.Serialize = function (material, globalState) {
         var serializationObject = material.serialize();
+        var bufferSerializationState = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers;
+        babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = _dataStorage__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].ReadBoolean("EmbedTextures", true);
         // Store node locations
         for (var _i = 0, _a = material.attachedBlocks; _i < _a.length; _i++) {
             var block = _a[_i];
@@ -73083,6 +73098,7 @@ var SerializationTools = /** @class */ (function () {
                 y: node ? node.y : 0
             });
         }
+        babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = bufferSerializationState;
         return JSON.stringify(serializationObject, undefined, 2);
     };
     SerializationTools.Deserialize = function (serializationObject, globalState) {
@@ -73609,7 +73625,24 @@ var MatrixLineComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
         var matrix = _this.props.target[_this.props.propertyName].clone();
-        _this.state = { value: matrix, mode: _this.props.mode || 0, angle: 0 };
+        var angle = 0;
+        if (_this.props.mode) {
+            var quat = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Quaternion"]();
+            matrix.decompose(undefined, quat);
+            var euler = quat.toEulerAngles();
+            switch (_this.props.mode) {
+                case 1:
+                    angle = euler.x;
+                    break;
+                case 2:
+                    angle = euler.y;
+                    break;
+                case 3:
+                    angle = euler.z;
+                    break;
+            }
+        }
+        _this.state = { value: matrix, mode: _this.props.mode || 0, angle: angle };
         return _this;
     }
     MatrixLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {

@@ -9,6 +9,8 @@ import { StringTools } from '../../stringTools';
 import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
 import { SerializationTools } from '../../serializationTools';
+import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
+import { DataStorage } from '../../dataStorage';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -88,6 +90,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <ButtonLineComponent label="Reorganize" onClick={() => {
                             this.props.globalState.onReOrganizedRequiredObservable.notifyObservers();
                         }} />
+                    </LineContainerComponent>
+                    <LineContainerComponent title="OPTIONS">
+                        <CheckBoxLineComponent label="Embed textures when saving" 
+                            isSelected={() => DataStorage.ReadBoolean("EmbedTextures", true)}
+                            onSelect={(value: boolean) => {
+                                DataStorage.StoreBoolean("EmbedTextures", value);
+                            }}
+                        />
                     </LineContainerComponent>
                     <LineContainerComponent title="FILE">                        
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
