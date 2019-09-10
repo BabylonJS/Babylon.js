@@ -71461,6 +71461,7 @@ var PreviewManager = /** @class */ (function () {
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
         this._camera.wheelPrecision = 20;
+        this._camera.minZ = 0.1;
         this._camera.attachControl(targetCanvas, false);
         this._refreshPreviewMesh();
         this._engine.runRenderLoop(function () {
@@ -72557,7 +72558,7 @@ var GraphEditor = /** @class */ (function (_super) {
                         }
                     }
                     else {
-                        if (!e.link.targetPort && e.link.sourcePort && e.link.sourcePort.position === "input") {
+                        if (!e.link.targetPort && e.link.sourcePort && e.link.sourcePort.position === "input" && !e.link.sourcePort.connection.isConnected) {
                             // Drag from input port, we are going to build an input for it                            
                             var input_1 = e.link.sourcePort;
                             if (input_1.connection.type == babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["NodeMaterialBlockConnectionPointTypes"].AutoDetect) {

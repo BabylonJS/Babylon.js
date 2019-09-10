@@ -393,7 +393,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                             }
                         }
                     } else {
-                        if (!e.link.targetPort && e.link.sourcePort && (e.link.sourcePort as DefaultPortModel).position === "input") {
+                        if (!e.link.targetPort && e.link.sourcePort && (e.link.sourcePort as DefaultPortModel).position === "input" && !(e.link.sourcePort as DefaultPortModel).connection!.isConnected) {
                             // Drag from input port, we are going to build an input for it                            
                             let input = e.link.sourcePort as DefaultPortModel;
 
