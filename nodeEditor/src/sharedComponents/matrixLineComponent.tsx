@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Vector3, Matrix, Vector4 } from "babylonjs/Maths/math";
+import { Vector3, Matrix, Vector4, Quaternion } from "babylonjs/Maths/math";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { Vector4LineComponent } from './vector4LineComponent';
@@ -25,7 +25,28 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
 
         let matrix: Matrix = this.props.target[this.props.propertyName].clone();
 
-        this.state = { value:matrix, mode: this.props.mode || 0, angle: 0 }
+        let angle = 0;
+
+        if (this.props.mode) {
+            let quat = new Quaternion();
+            matrix.decompose(undefined, quat);
+
+            let euler = quat.toEulerAngles();
+
+            switch (this.props.mode) {
+                case 1:
+                    angle = euler.x;
+                    break;
+                case 2:
+                    angle = euler.y;
+                    break;
+                case 3:
+                    angle = euler.z;
+                    break;
+            }
+        }
+
+        this.state = { value:matrix, mode: this.props.mode || 0, angle: angle };
     }
 
     shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: { value: Matrix, mode: number, angle: number }) {
