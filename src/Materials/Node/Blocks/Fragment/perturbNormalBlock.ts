@@ -11,6 +11,9 @@ import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Scene } from '../../../../scene';
 
+import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
+import "../../../../Shaders/ShadersInclude/bumpFragment";
+
 /**
  * Block used to pertub normals based on a normal map
  */
@@ -136,7 +139,8 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             replaceStrings: [
                 { search: /vBumpInfos.y/g, replace: `1.0 / ${this.strength.associatedVariableName}`},
                 { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
-                { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"}
+                { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
+                { search: /defined\(TANGENT\)/g, replace: "defined(IGNORE)" }
             ]
         });
         state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\r\n";
@@ -147,7 +151,8 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                 { search: /vBumpUV/g, replace: uv.associatedVariableName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
                 { search: /normalW=/g, replace: this.output.associatedVariableName + ".xyz = " },
-                { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" }
+                { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" },
+                { search: /defined\(TANGENT\)/g, replace: "defined(IGNORE)" }
             ]
         });
 
