@@ -9,6 +9,10 @@ import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { _TypeStore } from '../../../../Misc/typeStore';
 
+import "../../../../Shaders/ShadersInclude/helperFunctions";
+import "../../../../Shaders/ShadersInclude/imageProcessingDeclaration";
+import "../../../../Shaders/ShadersInclude/imageProcessingFunctions";
+
 /**
  * Block used to add image processing support to fragment shader
  */

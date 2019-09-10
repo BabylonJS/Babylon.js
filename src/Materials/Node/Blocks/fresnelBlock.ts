@@ -7,6 +7,8 @@ import { _TypeStore } from '../../../Misc/typeStore';
 import { InputBlock } from './Input/inputBlock';
 import { NodeMaterial } from '../nodeMaterial';
 
+import "../../../Shaders/ShadersInclude/fresnelFunction";
+
 /**
  * Block used to compute fresnel value
  */
