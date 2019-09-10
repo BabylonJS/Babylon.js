@@ -12,6 +12,9 @@ import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { InputBlock } from '../Input/inputBlock';
 import { _TypeStore } from '../../../../Misc/typeStore';
 
+import "../../../../Shaders/ShadersInclude/bonesDeclaration";
+import "../../../../Shaders/ShadersInclude/bonesVertex";
+
 /**
  * Block used to add support for vertex skinning (bones)
  */

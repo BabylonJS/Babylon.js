@@ -16,6 +16,8 @@ import { InputBlock } from '../Input/inputBlock';
 import { NodeMaterialSystemValues } from '../../nodeMaterialSystemValues';
 import { Constants } from '../../../../Engines/constants';
 
+import "../../../../Shaders/ShadersInclude/reflectionFunction";
+
 /**
  * Block used to read a reflection texture from a sampler
  */
