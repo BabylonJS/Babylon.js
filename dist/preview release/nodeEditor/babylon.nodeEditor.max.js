@@ -73186,7 +73186,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
     }
     CheckBoxLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         var currentState;
-        if (this.props.isSelected) {
+        if (nextProps.isSelected) {
             currentState = nextProps.isSelected();
         }
         else {
