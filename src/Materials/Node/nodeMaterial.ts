@@ -537,6 +537,7 @@ export class NodeMaterial extends PushMaterial {
         this._sharedData.buildId = this._buildId;
         this._sharedData.emitComments = this._options.emitComments;
         this._sharedData.verbose = verbose;
+        this._sharedData.scene = this.getScene();
 
         // Initialize blocks
         let vertexNodes: NodeMaterialBlock[] = [];
