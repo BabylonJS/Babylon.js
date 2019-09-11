@@ -1115,7 +1115,7 @@ var OBJFileLoader = /** @class */ (function () {
         var lines = data.split('\n');
         //Look at each line
         for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].trim();
+            var line = lines[i].trim().replace(/\s\s/g, " ");
             var result;
             //Comment or newLine
             if (line.length === 0 || line.charAt(0) === '#') {
@@ -1479,6 +1479,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STLFileLoader", function() { return STLFileLoader; });
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__);
+
 
 
 

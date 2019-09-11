@@ -106,7 +106,7 @@ export class GUI3DManager implements IDisposable {
     }
 
     private _doPicking(pi: PointerInfo): boolean {
-        if (!this._utilityLayer || !this._utilityLayer.utilityLayerScene.activeCamera) {
+        if (!this._utilityLayer || !this._utilityLayer.shouldRender || !this._utilityLayer.utilityLayerScene.activeCamera) {
             return false;
         }
 

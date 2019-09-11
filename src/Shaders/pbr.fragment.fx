@@ -832,11 +832,16 @@ void main(void) {
     #endif
 
     #ifdef LIGHTMAP
-        vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb;
-        #ifdef GAMMALIGHTMAP
-            lightmapColor = toLinearSpace(lightmapColor);
+        vec4 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset);
+
+        #ifdef RGBDLIGHTMAP
+            lightmapColor.rgb = fromRGBD(lightmapColor);
         #endif
-        lightmapColor *= vLightmapInfos.y;
+
+        #ifdef GAMMALIGHTMAP
+            lightmapColor.rgb = toLinearSpace(lightmapColor.rgb);
+        #endif
+        lightmapColor.rgb *= vLightmapInfos.y;
     #endif
 
     // Direct Lighting Variables
@@ -1215,9 +1220,9 @@ void main(void) {
 #ifdef LIGHTMAP
     #ifndef LIGHTMAPEXCLUDED
         #ifdef USELIGHTMAPASSHADOWMAP
-            finalColor.rgb *= lightmapColor;
+            finalColor.rgb *= lightmapColor.rgb;
         #else
-            finalColor.rgb += lightmapColor;
+            finalColor.rgb += lightmapColor.rgb;
         #endif
     #endif
 #endif

@@ -23,6 +23,11 @@ declare type RenderTargetTexture = import("../../Materials/Textures/renderTarget
  * @see http://doc.babylonjs.com/babylon101/materials#texture
  */
 export class Texture extends BaseTexture {
+    /**
+     * Gets or sets a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
+     */
+    public static SerializeBuffers = true;
+
     /** @hidden */
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
         throw _DevTools.WarnImport("CubeTexture");
@@ -586,9 +591,11 @@ export class Texture extends BaseTexture {
             return null;
         }
 
-        if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
-            serializationObject.base64String = this._buffer;
-            serializationObject.name = serializationObject.name.replace("data:", "");
+        if (Texture.SerializeBuffers) {
+            if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
+                serializationObject.base64String = this._buffer;
+                serializationObject.name = serializationObject.name.replace("data:", "");
+            }
         }
 
         serializationObject.invertY = this._invertY;
@@ -691,6 +698,13 @@ export class Texture extends BaseTexture {
             }
         }, parsedTexture, scene);
 
+        // Clear cache
+        if (texture && texture._texture) {
+            texture._texture._cachedWrapU = null;
+            texture._texture._cachedWrapV = null;
+            texture._texture._cachedWrapR = null;
+        }
+
         // Update Sampling Mode
         if (parsedTexture.samplingMode) {
             var sampling: number = parsedTexture.samplingMode;
@@ -698,7 +712,6 @@ export class Texture extends BaseTexture {
                 texture.updateSamplingMode(sampling);
             }
         }
-
         // Animations
         if (texture && parsedTexture.animations) {
             for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {

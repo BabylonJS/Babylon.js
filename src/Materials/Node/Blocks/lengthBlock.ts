@@ -5,20 +5,18 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to get the opposite of a value
+ * Block used to get the length of a vector
  */
-export class OppositeBlock extends NodeMaterialBlock {
+export class LengthBlock extends NodeMaterialBlock {
     /**
-     * Creates a new OppositeBlock
+     * Creates a new LengthBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
-
-        this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -26,13 +24,13 @@ export class OppositeBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "OppositeBlock";
+        return "LengthBlock";
     }
 
     /**
-     * Gets the input component
+     * Gets the value input component
      */
-    public get input(): NodeMaterialConnectionPoint {
+    public get value(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
@@ -48,10 +46,10 @@ export class OppositeBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = 1. - ${this.input.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = length(${this.value.associatedVariableName});\r\n`;
 
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.OppositeBlock"] = OppositeBlock;
+_TypeStore.RegisteredTypes["BABYLON.LengthBlock"] = LengthBlock;

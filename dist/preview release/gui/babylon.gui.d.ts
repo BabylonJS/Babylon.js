@@ -1440,6 +1440,10 @@ declare module BABYLON.GUI {
          */
         onImageLoadedObservable: BABYLON.Observable<Image>;
         /**
+         * BABYLON.Observable notified when _sourceLeft, _sourceTop, _sourceWidth and _sourceHeight are computed
+         */
+        onSVGAttributesComputedObservable: BABYLON.Observable<Image>;
+        /**
          * Gets a boolean indicating that the content is loaded
          */
         readonly isLoaded: boolean;
@@ -1501,6 +1505,15 @@ declare module BABYLON.GUI {
          * Gets or sets image source url
          */
         source: BABYLON.Nullable<string>;
+        /**
+         * Checks for svg document with icon id present
+         */
+        private _svgCheck;
+        /**
+         * Sets sourceLeft, sourceTop, sourceWidth, sourceHeight automatically
+         * given external svg file and icon id
+         */
+        private _getSVGAttribs;
         /**
          * Gets or sets the cell width to use when animation sheet is enabled
          * @see http://doc.babylonjs.com/how_to/gui#image

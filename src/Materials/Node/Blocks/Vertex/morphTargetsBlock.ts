@@ -12,6 +12,9 @@ import { VertexBuffer } from '../../../../Meshes/buffer';
 import { InputBlock } from '../Input/inputBlock';
 import { _TypeStore } from '../../../../Misc/typeStore';
 
+import "../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration";
+import "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration";
+
 /**
  * Block used to add morph targets support to vertex shader
  */
