@@ -4,6 +4,8 @@ import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
 import { PortHelper } from '../portHelper';
 import { RemapBlock } from 'babylonjs/Materials/Node/Blocks/remapBlock';
+import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 
 /**
  * RemapNodeWidgetProps
@@ -47,10 +49,29 @@ export class RemapNodeWidget extends React.Component<RemapNodeWidgetProps> {
         return null;
     }
 
+    extractInputValue(connectionPoint: NodeMaterialConnectionPoint) {
+        let connectedBlock = connectionPoint.connectedPoint!.ownerBlock;
+
+        if (connectedBlock.isInput) {
+            let inputBlock = connectedBlock as InputBlock;
+
+            if (inputBlock.isUniform && !inputBlock.isSystemValue) {
+                return inputBlock.value;
+            }
+        }
+
+        return "?";
+    }
+
     render() {
-        var inputPorts = PortHelper.GenerateInputPorts(this.props.node, undefined, true);
-        var outputPorts = PortHelper.GenerateOutputPorts(this.props.node, true);
+        var inputPorts = PortHelper.GenerateInputPorts(this.props.node, undefined, false);
+        var outputPorts = PortHelper.GenerateOutputPorts(this.props.node, false);
         let remapBlock = this.props.node!.block! as RemapBlock;
+
+        let sourceRangeX = remapBlock.sourceMin.isConnected ? this.extractInputValue(remapBlock.sourceMin) : remapBlock.sourceRange.x;
+        let sourceRangeY = remapBlock.sourceMax.isConnected ? this.extractInputValue(remapBlock.sourceMax) : remapBlock.sourceRange.y;
+        let targetRangeX = remapBlock.targetMin.isConnected ? this.extractInputValue(remapBlock.targetMin) : remapBlock.targetRange.x;
+        let targetRangeY = remapBlock.targetMax.isConnected ? this.extractInputValue(remapBlock.targetMax) : remapBlock.targetRange.y;
 
         return (
             <div className={"diagramBlock remap"}>
@@ -65,7 +86,7 @@ export class RemapNodeWidget extends React.Component<RemapNodeWidgetProps> {
                 </div>
                 <div className="value">  
                 {
-                    `[${remapBlock.sourceRange.x}, ${remapBlock.sourceRange.y}] -> [${remapBlock.targetRange.x}, ${remapBlock.targetRange.y}]`
+                    `[${sourceRangeX}, ${sourceRangeY}] -> [${targetRangeX}, ${targetRangeY}]`
                 }                 
                 </div>
             </div>

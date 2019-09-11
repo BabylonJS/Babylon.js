@@ -73,6 +73,20 @@ export interface INavigationEnginePlugin {
     createCrowd(maxAgents: number, maxAgentRadius: number, scene: Scene): ICrowd;
 
     /**
+     * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
+     * The queries will try to find a solution within those bounds
+     * default is (1,1,1)
+     * @param extent x,y,z value that define the extent around the queries point of reference
+     */
+    setDefaultQueryExtent(extent: Vector3): void;
+
+    /**
+     * Get the Bounding box extent specified by setDefaultQueryExtent
+     * @returns the box extent values
+     */
+    getDefaultQueryExtent(): Vector3;
+
+    /**
      * Release all resources
      */
     dispose(): void;
@@ -130,6 +144,20 @@ export interface ICrowd {
      * @param destination targeted world position
      */
     agentGoto(index: number, destination: Vector3): void;
+
+    /**
+     * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
+     * The queries will try to find a solution within those bounds
+     * default is (1,1,1)
+     * @param extent x,y,z value that define the extent around the queries point of reference
+     */
+    setDefaultQueryExtent(extent: Vector3): void;
+
+    /**
+     * Get the Bounding box extent specified by setDefaultQueryExtent
+     * @returns the box extent values
+     */
+    getDefaultQueryExtent(): Vector3;
 
     /**
      * Release all resources

@@ -10,13 +10,24 @@ import { LineContainerComponent } from '../../../sharedComponents/lineContainerC
 import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
 import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
+import { SliderLineComponent } from '../../../sharedComponents/sliderLineComponent';
+import { FloatLineComponent } from '../../../sharedComponents/floatLineComponent';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
     node: TextureNodeModel;
 }
 
-export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps> {
+export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps, {isEmbedded: boolean}> {
+
+    constructor(props: ITexturePropertyTabComponentProps) {
+        super(props);
+
+        let texture = this.props.node.texture as BaseTexture;
+
+        this.state = {isEmbedded: !texture || texture.name.substring(0, 4) !== "http"};
+    }
+
 
     updateAftertextureLoad() {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
@@ -34,7 +45,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
 
         let texture = this.props.node.texture as BaseTexture;
         if (!texture) {
-            this.props.node.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, false)
+            this.props.node.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, false);
             texture = this.props.node.texture;
         }
 
@@ -62,17 +73,117 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         }, undefined, true);
     }
 
+    replaceTextureWithUrl(url: string) {
+        let texture = this.props.node.texture as BaseTexture;
+        if (!texture) {
+            this.props.node.texture = new Texture(url, this.props.globalState.nodeMaterial.getScene(), false, false, undefined, () => {
+                this.updateAftertextureLoad();
+            });
+            return;
+        }
+
+        (texture as Texture).updateURL(url, null, () => this.updateAftertextureLoad());
+    }
+
     render() {
+        let url = "";
+
+        let texture = this.props.node.texture as BaseTexture;
+        if (texture && texture.name && texture.name.substring(0, 4) === "http") {
+            url = texture.name;
+        }
+
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Type" value="Texture" />
                     <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                 </LineContainerComponent>
-
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent label="Auto select UV" propertyName="autoSelectUV" target={this.props.node.block!} />
-                    <FileButtonLineComponent label="Replace texture" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                    {
+                        texture &&
+                        <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => {
+                            texture.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }} />
+                    }
+                    {
+                        texture &&
+                        <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => {
+                            texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }} />
+                    }        
+                    {
+                        texture &&
+                        <FloatLineComponent label="Offset U" target={texture} propertyName="uOffset" 
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }
+                    {
+                        texture &&
+                        <FloatLineComponent label="Offset U" target={texture} propertyName="vOffset"
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }
+                    {
+                        texture &&
+                        <FloatLineComponent label="Scale U" target={texture} propertyName="uScale"
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }} />
+                    }
+                    {
+                        texture &&
+                        <FloatLineComponent label="Scale V" target={texture} propertyName="vScale"
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }} />
+                    }
+                    {
+                        texture &&
+                        <SliderLineComponent label="Rotation U" target={texture} propertyName="uAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }
+                    {
+                        texture &&
+                        <SliderLineComponent label="Rotation V" target={texture} propertyName="vAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }                    
+                    {
+                        texture &&
+                        <SliderLineComponent label="Rotation W" target={texture} propertyName="wAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }
+                </LineContainerComponent>
+                <LineContainerComponent title="SOURCE">
+                    <CheckBoxLineComponent label="Embed texture" isSelected={() => this.state.isEmbedded} onSelect={value => {
+                        this.setState({isEmbedded: value});
+                        this.props.node.texture = null;
+                        this.updateAftertextureLoad();
+                    }}/>
+                    {
+                        this.state.isEmbedded &&
+                        <FileButtonLineComponent label="Upload" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                    }
+                    {
+                        !this.state.isEmbedded &&
+                        <TextInputLineComponent label="Link" globalState={this.props.globalState} value={url} onChange={newUrl => this.replaceTextureWithUrl(newUrl)}/>
+                    }
                 </LineContainerComponent>
             </div>
         );

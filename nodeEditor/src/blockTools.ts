@@ -30,13 +30,17 @@ import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
 import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
 import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
+import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/nodeMaterialSystemValues';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
-import { OppositeBlock } from 'babylonjs/Materials/Node/Blocks/oppositeBlock';
+import { OneMinusBlock } from 'babylonjs/Materials/Node/Blocks/oneMinusBlock';
 import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
 import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
 import { MaxBlock } from 'babylonjs/Materials/Node/Blocks/maxBlock';
 import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
+import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/perturbNormalBlock';
+import { LengthBlock } from 'babylonjs/Materials/Node/Blocks/lengthBlock';
+import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
+import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -78,7 +82,7 @@ export class BlockTools {
             case "ScaleBlock":
                 return new ScaleBlock("Scale");
             case "CrossBlock":
-                return new CrossBlock("Dot");
+                return new CrossBlock("Cross");
             case "DotBlock":
                 return new DotBlock("Dot");
             case "MultiplyBlock":
@@ -101,8 +105,8 @@ export class BlockTools {
                 return new SubtractBlock("Subtract"); 
             case "StepBlock":
                 return new StepBlock("Step");        
-            case "OppositeBlock":
-                return new OppositeBlock("Opposite");      
+            case "OneMinusBlock":
+                return new OneMinusBlock("One minus");      
             case "ViewDirectionBlock":
                 return new ViewDirectionBlock("View direction");    
             case "LightInformationBlock":
@@ -110,7 +114,15 @@ export class BlockTools {
             case "MaxBlock":
                 return new MaxBlock("Max");       
             case "MinBlock":
-                return new MinBlock("Min");                                                  
+                return new MinBlock("Min");      
+            case "LengthBlock":
+                return new LengthBlock("Length");   
+            case "DistanceBlock":
+                return new DistanceBlock("Distance");     
+            case "NegateBlock":
+                return new NegateBlock("Negate");                                     
+            case "PerturbNormalBlock":                                          
+                return new PerturbNormalBlock("Perturb normal");        
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;
@@ -153,42 +165,42 @@ export class BlockTools {
             }       
             case "WorldMatrixBlock": {
                 let worldMatrixBlock = new InputBlock("World");
-                worldMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+                worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
                 return worldMatrixBlock;
             }             
             case "WorldViewMatrixBlock": {
                 let worldViewMatrixBlock = new InputBlock("World x View");
-                worldViewMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.WorldView);
+                worldViewMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.WorldView);
                 return worldViewMatrixBlock;
             }             
             case "WorldViewProjectionMatrixBlock": {
                 let worldViewProjectionMatrixBlock = new InputBlock("World x View x Projection");
-                worldViewProjectionMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.WorldViewProjection);
+                worldViewProjectionMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.WorldViewProjection);
                 return worldViewProjectionMatrixBlock;
             }                    
             case "ViewMatrixBlock": {
                 let viewMatrixBlock = new InputBlock("View");
-                viewMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+                viewMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.View);
                 return viewMatrixBlock;
             }                          
             case "ViewProjectionMatrixBlock": {
                 let viewProjectionMatrixBlock = new InputBlock("View x Projection");
-                viewProjectionMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.ViewProjection);
+                viewProjectionMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.ViewProjection);
                 return viewProjectionMatrixBlock;
             }                              
             case "ProjectionMatrixBlock": {
                 let projectionMatrixBlock = new InputBlock("Projection");
-                projectionMatrixBlock.setAsWellKnownValue(NodeMaterialWellKnownValues.Projection);
+                projectionMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.Projection);
                 return projectionMatrixBlock;
             }                                 
             case "CameraPositionBlock": {
                 let cameraPosition = new InputBlock("Camera position");
-                cameraPosition.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+                cameraPosition.setAsSystemValue(NodeMaterialSystemValues.CameraPosition);
                 return cameraPosition;
             }                              
             case "FogColorBlock": {
                 let FogColor = new InputBlock("Fog color");
-                FogColor.setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
+                FogColor.setAsSystemValue(NodeMaterialSystemValues.FogColor);
                 return FogColor;
             }                                   
             case "PositionBlock": {

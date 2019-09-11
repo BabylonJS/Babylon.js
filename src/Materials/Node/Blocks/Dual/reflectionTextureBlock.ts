@@ -13,8 +13,10 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
 import { InputBlock } from '../Input/inputBlock';
-import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { NodeMaterialSystemValues } from '../../nodeMaterialSystemValues';
 import { Constants } from '../../../../Engines/constants';
+
+import "../../../../Shaders/ShadersInclude/reflectionFunction";
 
 /**
  * Block used to read a reflection texture from a sampler
@@ -156,31 +158,31 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         }
 
         if (!this.world.isConnected) {
-            let worldInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.World);
+            let worldInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.World);
 
             if (!worldInput) {
                 worldInput = new InputBlock("world");
-                worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+                worldInput.setAsSystemValue(NodeMaterialSystemValues.World);
             }
             worldInput.output.connectTo(this.world);
         }
 
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.CameraPosition);
+            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition);
 
             if (!cameraPositionInput) {
                 cameraPositionInput = new InputBlock("cameraPosition");
-                cameraPositionInput.setAsWellKnownValue(NodeMaterialWellKnownValues.CameraPosition);
+                cameraPositionInput.setAsSystemValue(NodeMaterialSystemValues.CameraPosition);
             }
             cameraPositionInput.output.connectTo(this.cameraPosition);
         }
 
         if (!this.view.isConnected) {
-            let viewInput = material.getInputBlockByPredicate((b) => b.wellKnownValue === NodeMaterialWellKnownValues.View);
+            let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View);
 
             if (!viewInput) {
                 viewInput = new InputBlock("view");
-                viewInput.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+                viewInput.setAsSystemValue(NodeMaterialSystemValues.View);
             }
             viewInput.output.connectTo(this.view);
         }
