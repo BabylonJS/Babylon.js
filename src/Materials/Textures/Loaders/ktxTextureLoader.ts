@@ -87,6 +87,12 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
 
         engine._setCubeMapTextureParams(loadMipmap);
         texture.isReady = true;
+        texture.onLoadedObservable.notifyObservers(texture);
+        texture.onLoadedObservable.clear();
+
+        if (onLoad) {
+            onLoad();
+        }
     }
 
     /**

@@ -75,6 +75,11 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
             BasisTools.LoadTextureFromTranscodeResult(texture, result);
             texture.getEngine()._setCubeMapTextureParams(hasMipmap);
             texture.isReady = true;
+            texture.onLoadedObservable.notifyObservers(texture);
+            texture.onLoadedObservable.clear();
+            if (onLoad) {
+              onLoad();
+            }
         }).catch((err) => {
             Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
             texture.isReady = true;
