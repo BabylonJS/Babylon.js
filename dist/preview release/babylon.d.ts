@@ -52683,6 +52683,8 @@ declare module BABYLON {
         emitComments: boolean;
         /** Emit build activity */
         verbose: boolean;
+        /** Gets or sets the hosting scene */
+        scene: Scene;
         /**
          * Gets the compilation hints emitted at compilation time
          */

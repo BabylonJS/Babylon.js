@@ -41,9 +41,10 @@ import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/per
 import { LengthBlock } from 'babylonjs/Materials/Node/Blocks/lengthBlock';
 import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
 import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
+import { Scene } from 'babylonjs/scene';
 
 export class BlockTools {
-    public static GetBlockFromString(data: string) {
+    public static GetBlockFromString(data: string, scene: Scene) {
         switch (data) {
             case "BonesBlock":
                 return new BonesBlock("Bones");
@@ -110,7 +111,9 @@ export class BlockTools {
             case "ViewDirectionBlock":
                 return new ViewDirectionBlock("View direction");    
             case "LightInformationBlock":
-                return new LightInformationBlock("Light information");         
+                let lightInformationBlock = new LightInformationBlock("Light information");
+                lightInformationBlock.light = scene.lights.length ? scene.lights[0] : null;
+                return lightInformationBlock;
             case "MaxBlock":
                 return new MaxBlock("Max");       
             case "MinBlock":

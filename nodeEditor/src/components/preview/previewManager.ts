@@ -60,7 +60,6 @@ export class PreviewManager {
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
-        this._light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
 
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
@@ -103,6 +102,11 @@ export class PreviewManager {
             mesh.material = this._material;
         }
 
+        // Light
+        if (!this._scene.lights.length) {
+            this._light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
+        }
+
         // Framing
         this._camera.useFramingBehavior = true;
 
@@ -133,13 +137,16 @@ export class PreviewManager {
 
             this._currentType = this._globalState.previewMeshType;
             if (this._meshes && this._meshes.length) {
-
                 for (var mesh of this._meshes) {
                     mesh.dispose();
                 }
             }
-
             this._meshes = [];
+
+            let lights = this._scene.lights.slice(0);
+            for (var light of lights) {
+                light.dispose();
+            }
         
             switch (this._globalState.previewMeshType) {
                 case PreviewMeshType.Box:
@@ -221,7 +228,12 @@ export class PreviewManager {
         for (var mesh of this._meshes) {
             mesh.dispose();
         }
-        this._light.dispose();
+
+        if (this._light) {
+            this._light.dispose();
+        }
+
+        this._scene.dispose();
         this._engine.dispose();
     }
 }
