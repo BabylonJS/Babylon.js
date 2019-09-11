@@ -12,7 +12,7 @@ export class MeshLODLevel {
      * @param mesh defines the mesh to use to render this level
      */
     constructor(
-        /** Defines the distance where this level should star being displayed */
+        /** Defines the distance where this level should start being displayed */
         public distance: number,
         /** Defines the mesh to use to render this level */
         public mesh: Nullable<Mesh>) {

@@ -2,7 +2,7 @@ import * as React from "react";
 import { InputNodeModel } from './inputNodeModel';
 import { Nullable } from 'babylonjs/types';
 import { GlobalState } from '../../../globalState';
-import { NodeMaterialWellKnownValues } from 'babylonjs/Materials/Node/nodeMaterialWellKnownValues';
+import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/nodeMaterialSystemValues';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { Color3, Vector2, Vector3, Vector4 } from 'babylonjs/Maths/math';
 import { StringTools } from '../../../stringTools';
@@ -63,30 +63,30 @@ export class InputNodeWidget extends React.Component<IInputNodeWidgetProps> {
             if (inputBlock.isAttribute) {
                 value = "mesh." + inputBlock.name;
                 name = StringTools.GetBaseType(inputBlock.output.type);
-            } else if (inputBlock.isWellKnownValue) {
-                switch (inputBlock.wellKnownValue) {
-                    case NodeMaterialWellKnownValues.World:
+            } else if (inputBlock.isSystemValue) {
+                switch (inputBlock.systemValue) {
+                    case NodeMaterialSystemValues.World:
                         value = "World";
                         break;
-                    case NodeMaterialWellKnownValues.WorldView:
+                    case NodeMaterialSystemValues.WorldView:
                         value = "World x View";
                         break;
-                    case NodeMaterialWellKnownValues.WorldViewProjection:
+                    case NodeMaterialSystemValues.WorldViewProjection:
                         value = "World x View x Projection";
                         break;
-                    case NodeMaterialWellKnownValues.View:
+                    case NodeMaterialSystemValues.View:
                         value = "View";
                         break;
-                    case NodeMaterialWellKnownValues.ViewProjection:
+                    case NodeMaterialSystemValues.ViewProjection:
                         value = "View x Projection";
                         break;
-                    case NodeMaterialWellKnownValues.Projection:
+                    case NodeMaterialSystemValues.Projection:
                         value = "Projection";
                         break;
-                    case NodeMaterialWellKnownValues.CameraPosition:
+                    case NodeMaterialSystemValues.CameraPosition:
                         value = "Camera position";
                         break;
-                    case NodeMaterialWellKnownValues.FogColor:
+                    case NodeMaterialSystemValues.FogColor:
                         value = "Fog color";
                         break;
                 }

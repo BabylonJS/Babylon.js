@@ -152,7 +152,9 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 mesh.reservedDataStore = {};
             }
 
-            mesh.reservedDataStore.originalMaterial = mesh.material;
+            if (!mesh.reservedDataStore.originalMaterial) {
+                mesh.reservedDataStore.originalMaterial = mesh.material;
+            }
             const normalMaterial = new (BABYLON as any).NormalMaterial("normalMaterial", scene);
             normalMaterial.disableLighting = true;
             if (mesh.material) {
@@ -180,7 +182,9 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 mesh.reservedDataStore = {};
             }
 
-            mesh.reservedDataStore.originalMaterial = mesh.material;
+            if (!mesh.reservedDataStore.originalMaterial) {
+                mesh.reservedDataStore.originalMaterial = mesh.material;
+            }
             const vertexColorMaterial = new StandardMaterial("vertex colors", scene);
             vertexColorMaterial.disableLighting = true;
             vertexColorMaterial.emissiveColor = Color3.White();
@@ -247,7 +251,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         const scene = mesh.getScene();
 
         const displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
-        const displayVertexColors = mesh.material != null && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial;
+        const displayVertexColors = !!(mesh.material != null && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial);
         const renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
         const renderWireframeOver = (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) ? true : false;
 

@@ -7,6 +7,8 @@ import { _TypeStore } from '../../../Misc/typeStore';
 import { InputBlock } from './Input/inputBlock';
 import { NodeMaterial } from '../nodeMaterial';
 
+import "../../../Shaders/ShadersInclude/fresnelFunction";
+
 /**
  * Block used to compute fresnel value
  */
@@ -91,7 +93,7 @@ export class FresnelBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("fresnelFunction", comments, {removeIfDef: true});
 
-        state.compilationString += this._declareOutput(this.fresnel, state) + ` = computeFresnelTerm(${this.viewDirection.associatedVariableName}, ${this.worldNormal.associatedVariableName}, ${this.bias.associatedVariableName}, ${this.power.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(this.fresnel, state) + ` = computeFresnelTerm(${this.viewDirection.associatedVariableName}.xyz, ${this.worldNormal.associatedVariableName}.xyz, ${this.bias.associatedVariableName}, ${this.power.associatedVariableName});\r\n`;
 
         return this;
     }
