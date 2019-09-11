@@ -175,22 +175,28 @@ export class PreviewManager {
         }
     }
 
+    private _forceCompilationAsync(material: NodeMaterial, mesh: AbstractMesh): Promise<void> {
+        return material.forceCompilationAsync(mesh);
+
+    }
+
     private _updatePreview(serializationObject: any) {
-        let tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
         try {
-            tempMaterial.build();
+            let tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
 
             if (this._meshes.length) {
-                tempMaterial.forceCompilation(this._meshes[0], () => {
+                let tasks = this._meshes.map(m => this._forceCompilationAsync(tempMaterial, m));
+
+                Promise.all(tasks).then(() => {
                     for (var mesh of this._meshes) {
                         mesh.material = tempMaterial;
                     }
-        
+
                     if (this._material) {
                         this._material.dispose();
                     }      
         
-                    this._material = tempMaterial;    
+                    this._material = tempMaterial;  
                 });
             } else {
                 this._material = tempMaterial;    
