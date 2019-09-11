@@ -87,6 +87,7 @@
 - Added `ShaderMaterial.setArray4` ([JonathanTron](https://github.com/JonathanTron/))
 - Added `scene.environmentIntensity` to control the IBL strength overall in a scene ([Sebavan](https://github.com/sebavan/))
 - Added support of image processing for `WaterMaterial` ([julien-moreau](https://github.com/julien-moreau))
+- Added `pbrBRDFConfiguration.useSpecularGlossinessInputEnergyConservation` to allow Specular-Workflow energy conservation to be turned off ([ColorDigital-PS](https://github.com/ColorDigital-PS)).
 
 ### ScreenshotTools
 - Added interface for argument `size` of screenshot methods ([Dok11](https://github.com/Dok11/))
