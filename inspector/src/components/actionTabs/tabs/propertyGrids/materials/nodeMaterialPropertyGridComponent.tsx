@@ -18,6 +18,7 @@ import { Vector2LineComponent } from '../../../lines/vector2LineComponent';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
+import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 
 interface INodeMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -64,7 +65,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
 
     renderInputValues() {
         let configurableInputBlocks = this.props.material.getInputBlocks().filter(block => {
-            return block.visibleInInspector && block.isUniform && !block.isWellKnownValue
+            return block.visibleInInspector && block.isUniform && !block.isSystemValue
         }).sort( (a, b) => {
             return a.name.localeCompare(b.name);
         });
@@ -79,6 +80,21 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                     configurableInputBlocks.map(block => {
                         switch (block.type) {
                             case NodeMaterialBlockConnectionPointTypes.Float:
+                                    let cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
+                                    return (
+                                        <>
+                                            {
+                                                cantDisplaySlider &&
+                                                <FloatLineComponent key={block.name} lockObject={this.props.lockObject} label={block.name} target={block} propertyName="value" 
+                                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                                />
+                                            }        
+                                            {
+                                                !cantDisplaySlider &&
+                                                <SliderLineComponent key={block.name} label={block.name} target={block} propertyName="value" step={0.1} minimum={block.min} maximum={block.max} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                                            }
+                                        </>
+                                    );                                
                                 return (
                                     <FloatLineComponent key={block.name} lockObject={this.props.lockObject} label={block.name} target={block} propertyName="value" 
                                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}

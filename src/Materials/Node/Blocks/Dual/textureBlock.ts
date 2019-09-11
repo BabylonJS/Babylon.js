@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockCo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { BaseTexture } from '../../../Textures/baseTexture';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { InputBlock } from '../Input/inputBlock';
@@ -29,7 +28,7 @@ export class TextureBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the texture associated with the node
      */
-    public texture: Nullable<BaseTexture>;
+    public texture: Nullable<Texture>;
 
     /**
      * Create a new TextureBlock
@@ -109,6 +108,8 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public get target() {
+        // TextureBlock has a special optimizations for uvs that come from the vertex shaders as they can be packed into a single varyings.
+        // But we need to detect uvs coming from fragment then
         if (!this.uv.isConnected) {
             return NodeMaterialBlockTargets.VertexAndFragment;
         }
@@ -251,7 +252,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._transformedUVName}).${swizzle}${complement};\r\n`;
         state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${"vMain" + uvInput.associatedVariableName}).${swizzle}${complement};\r\n`;
+        state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._mainUVName}).${swizzle}${complement};\r\n`;
         state.compilationString += `#endif\r\n`;
     }
 
@@ -293,6 +294,15 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\r\n`;
+        codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\r\n`;
+        codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\r\n`;
+        codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\r\n`;
+        codeString += `${this._codeVariableName}.texture.vAng = ${this.texture.vAng};\r\n`;
+        codeString += `${this._codeVariableName}.texture.wAng = ${this.texture.wAng};\r\n`;
+        codeString += `${this._codeVariableName}.texture.uOffset = ${this.texture.uOffset};\r\n`;
+        codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\r\n`;
+        codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\r\n`;
+        codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\r\n`;
 
         return codeString;
     }
@@ -311,7 +321,7 @@ export class TextureBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture) {
-            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
+            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
     }
 }

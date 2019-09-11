@@ -4,11 +4,16 @@ import { GlobalState } from './globalState';
 import { GraphEditor } from './graphEditor';
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Popup } from "../src/sharedComponents/popup"
+import { SerializationTools } from './serializationTools';
+import { Observable } from 'babylonjs/Misc/observable';
 /**
  * Interface used to specify creation options for the node editor
  */
 export interface INodeEditorOptions {
-    nodeMaterial: NodeMaterial
+    nodeMaterial: NodeMaterial,
+    hostElement?: HTMLElement,
+    customSave?: {label: string, action: (data: string) => Promise<void>};
+    customLoadObservable?: Observable<any>
 }
 
 /**
@@ -29,17 +34,29 @@ export class NodeEditor {
             }
         }
 
-        let hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800)!;
+        let hostElement = options.hostElement;
+        
+        if (!hostElement) {
+            hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800)!;
+        }
+        
         let globalState = new GlobalState();
         globalState.nodeMaterial = options.nodeMaterial
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
+        globalState.customSave = options.customSave;
 
         const graphEditor = React.createElement(GraphEditor, {
             globalState: globalState
         });
 
         ReactDOM.render(graphEditor, hostElement);
+
+        if (options.customLoadObservable) {
+            options.customLoadObservable.add(data => {
+                SerializationTools.Deserialize(data, globalState);
+            })
+        }
 
         this._CurrentState = globalState;
 
@@ -51,7 +68,7 @@ export class NodeEditor {
                     popupWindow.close();
                 }
             })
-            window.onbeforeunload = function(event) {
+            window.onbeforeunload = () => {
                 var popupWindow = (Popup as any)["node-editor"];
                 if (popupWindow) {
                     popupWindow.close();

@@ -5,7 +5,7 @@ var engine = null;
  */
 compileAndRun = function(parent, fpsLabel) {
     // If we need to change the version, don't do this
-    if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null) return;
+    if (parent.settingsPG.mustModifyBJSversion()) return;
 
     try {
         parent.menuPG.hideWaitDiv();
@@ -251,17 +251,19 @@ class Main {
         );
 
         // Restore BJS version if needed
+        var restoreVersionResult = true;
         if (this.parent.settingsPG.restoreVersion() == false) {
             // Check if there a hash in the URL
             this.checkHash();
+            restoreVersionResult = false;
         }
 
         // Load scripts list
-        this.loadScriptsList();
+        this.loadScriptsList(restoreVersionResult);
 
         // -------------------- UI --------------------
 
-        // Display BJS version - Need a check in case of version selection
+        // Display BJS version
         if (BABYLON) this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
         // Run
         this.parent.utils.setToMultipleID("runButton", "click", () => compileAndRun(this.parent, this.fpsLabel));
@@ -311,15 +313,52 @@ class Main {
         }
         // Language (JS / TS)
         this.parent.utils.setToMultipleID("toTSbutton", "click", function () {
-            if (this.parent.settingsPG.ScriptLanguage == "JS") {
+            if(location.hash != null && location.hash != ""){
                 this.parent.settingsPG.ScriptLanguage = "TS";
-                location.reload();
+                window.location = "./";
+            }else{
+                if (this.parent.settingsPG.ScriptLanguage == "JS") {
+                    //revert in case the reload is cancel due to safe mode
+                    if(document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')){
+                        // Message before unload
+                        var languageTSswapper =  function () {
+                            this.parent.settingsPG.ScriptLanguage = "TS";
+                            window.removeEventListener('unload', languageTSswapper.bind(this));
+                        };
+                        window.addEventListener('unload',languageTSswapper.bind(this));
+                        
+                        location.reload();
+                    }
+                    else {
+                        this.parent.settingsPG.ScriptLanguage = "TS";
+                        location.reload();
+                    }
+                }
             }
+           
         }.bind(this));
         this.parent.utils.setToMultipleID("toJSbutton", "click", function () {
-            if (this.parent.settingsPG.ScriptLanguage == "TS") {
+            if(location.hash != null && location.hash != ""){
                 this.parent.settingsPG.ScriptLanguage = "JS";
-                location.reload();
+                window.location = "./";
+            }else{
+                if (this.parent.settingsPG.ScriptLanguage == "TS") {
+                    //revert in case the reload is cancel due to safe mode
+                    if(document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')){
+                        // Message before unload
+                        var LanguageJSswapper =  function () {
+                            this.parent.settingsPG.ScriptLanguage = "JS";
+                            window.removeEventListener('unload', LanguageJSswapper.bind(this));
+                        };
+                        window.addEventListener('unload',LanguageJSswapper.bind(this));
+                        
+                        location.reload();
+                    }
+                    else {
+                        this.parent.settingsPG.ScriptLanguage = "JS";
+                        location.reload();
+                    }
+                }
             }
         }.bind(this));
         // Safe mode
@@ -428,11 +467,11 @@ class Main {
     /**
      * Load the examples scripts list in the database
      */
-    loadScriptsList() {
+    loadScriptsList(restoreVersionResult) {
         var exampleList = document.getElementById("exampleList");
 
         var xhr = new XMLHttpRequest();
-        //Open Typescript or Javascript examples
+        // Open Typescript or Javascript examples
         if (exampleList.className != 'typescript') {
             xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list.json', true);
         }
@@ -496,6 +535,10 @@ class Main {
                                 examplePGLink.classList.add("itemLinePGLink");
                                 examplePGLink.innerText = "Display";
                                 examplePGLink.href = this.scripts[i].samples[ii].PGID;
+                                examplePGLink.addEventListener("click", function() {
+                                    location.href = this.href;
+                                    location.reload();
+                                });
 
                                 exampleContentLink.appendChild(exampleTitle);
                                 exampleContentLink.appendChild(exampleDescr);
@@ -520,7 +563,7 @@ class Main {
                         exampleList.appendChild(noResultContainer);
                     }
 
-                    if (!location.hash) {
+                    if (!location.hash && restoreVersionResult == false) {
                         // Query string
                         var queryString = window.location.search;
 
@@ -577,8 +620,6 @@ class Main {
                         }
                     }
 
-                    // Restore theme
-                    this.parent.settingsPG.restoreTheme(this.parent.monacoCreator);
                     // Restore language
                     this.parent.settingsPG.setScriptLanguage();
                 }
@@ -617,9 +658,13 @@ class Main {
         this.parent.monacoCreator.JsEditor.focus();
     };
 
+    compileAndRunFromOutside() {
+        compileAndRun(this.parent, this.fpsLabel);
+    };
+
     checkSafeMode(message) {
-        if (document.getElementById("safemodeToggle" + this.parent.getCurrentSize) &&
-            document.getElementById("safemodeToggle" + this.parent.getCurrentSize).classList.contains('checked')) {
+        if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()) &&
+            document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
             let confirm = window.confirm(message);
             if (!confirm) {
                 return false;
@@ -670,7 +715,6 @@ class Main {
         document.getElementById("saveFormDescription").readOnly = true;
         document.getElementById("saveFormTags").readOnly = true;
         document.getElementById("saveFormButtonOk").style.display = "none";
-        this.parent.utils.setToMultipleID("metadataButton", "display", "inline-block");
     };
 
     /*

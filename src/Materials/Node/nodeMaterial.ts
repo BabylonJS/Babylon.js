@@ -71,6 +71,9 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
 
+    /** MISC. */
+    public BUMPDIRECTUV = 0;
+
     constructor() {
         super();
         this.rebuild();
@@ -464,9 +467,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         for (var input of node.inputs) {
-            if (!node.isInput) {
-                input.associatedVariableName = "";
-            }
+            input.associatedVariableName = "";
 
             let connectedPoint = input.connectedPoint;
             if (connectedPoint) {
@@ -980,14 +981,14 @@ export class NodeMaterial extends PushMaterial {
         positionInput.setAsAttribute("position");
 
         var worldInput = new InputBlock("world");
-        worldInput.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.World);
+        worldInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.World);
 
         var worldPos = new TransformBlock("worldPos");
         positionInput.connectTo(worldPos);
         worldInput.connectTo(worldPos);
 
         var viewProjectionInput = new InputBlock("viewProjection");
-        viewProjectionInput.setAsWellKnownValue(BABYLON.NodeMaterialWellKnownValues.ViewProjection);
+        viewProjectionInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.ViewProjection);
 
         var worldPosdMultipliedByViewProjection = new TransformBlock("worldPos * viewProjectionTransform");
         worldPos.connectTo(worldPosdMultipliedByViewProjection);
@@ -1215,6 +1216,7 @@ export class NodeMaterial extends PushMaterial {
         let nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene), source, scene, rootUrl);
 
         nodeMaterial.loadFromSerialization(source, rootUrl);
+        nodeMaterial.build();
 
         return nodeMaterial;
     }

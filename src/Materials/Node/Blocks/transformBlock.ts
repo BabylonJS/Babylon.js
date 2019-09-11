@@ -72,6 +72,7 @@ export class TransformBlock extends NodeMaterialBlock {
             switch (vector.connectedPoint.type) {
                 case NodeMaterialBlockConnectionPointTypes.Vector2:
                     state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}, ${this._writeFloat(this.complementW)});\r\n`;
+                    break;
                 case NodeMaterialBlockConnectionPointTypes.Vector3:
                     state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
                     break;

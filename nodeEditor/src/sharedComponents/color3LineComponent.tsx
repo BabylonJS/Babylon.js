@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { Color3 } from "babylonjs/Maths/math";
+import { Color3, Color4 } from "babylonjs/Maths/math";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -46,7 +46,11 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
             });
         }
 
-        this.props.target[this.props.propertyName] = newColor;
+        if (this.props.target[this.props.propertyName].getClassName() === "Color4") {
+            this.props.target[this.props.propertyName] = new Color4(newColor.r, newColor.g, newColor.b, 1.0);
+        } else {
+            this.props.target[this.props.propertyName] = newColor;
+        }
 
         this.setState({ color: newColor });
 

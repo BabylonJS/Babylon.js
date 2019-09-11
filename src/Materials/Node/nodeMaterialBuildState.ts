@@ -31,6 +31,11 @@ export class NodeMaterialBuildState {
      */
     public functions: { [key: string]: string } = {};
     /**
+     * Gets the list of emitted extensions
+     */
+    public extensions: { [key: string]: string } = {};
+
+    /**
      * Gets the target of the compilation state
      */
     public target: NodeMaterialBlockTargets;
@@ -103,6 +108,11 @@ export class NodeMaterialBuildState {
             this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n${this.compilationString}`;
         }
 
+        for (var extensionName in this.extensions) {
+            let extension = this.extensions[extensionName];
+            this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;
+        }
+
         this._builtCompilationString = this.compilationString;
     }
 
@@ -113,6 +123,8 @@ export class NodeMaterialBuildState {
 
     /** @hidden */
     public _getFreeVariableName(prefix: string): string {
+        prefix = prefix.replace(/[^a-zA-Z_]+/g, "");
+
         if (this.sharedData.variableNames[prefix] === undefined) {
             this.sharedData.variableNames[prefix] = 0;
 
@@ -165,6 +177,15 @@ export class NodeMaterialBuildState {
         }
 
         return "";
+    }
+
+    /** @hidden */
+    public _emitExtension(name: string, extension: string) {
+        if (this.extensions[name]) {
+            return;
+        }
+
+        this.extensions[name] = extension;
     }
 
     /** @hidden */

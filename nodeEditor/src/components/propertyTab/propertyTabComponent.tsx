@@ -8,7 +8,9 @@ import { LineContainerComponent } from '../../sharedComponents/lineContainerComp
 import { StringTools } from '../../stringTools';
 import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
-import { INodeLocationInfo } from '../../nodeLocationInfo';
+import { SerializationTools } from '../../serializationTools';
+import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
+import { DataStorage } from '../../dataStorage';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -32,46 +34,23 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     load(file: File) {
         Tools.ReadFile(file, (data) => {
             let decoder = new TextDecoder("utf-8");
-            let serializationObject = JSON.parse(decoder.decode(data));
+            SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
 
-            this.props.globalState.nodeMaterial!.loadFromSerialization(serializationObject, "");
-
-            // Check for id mapping
-            if (serializationObject.locations && serializationObject.map) {
-                let map: {[key: number]: number} = serializationObject.map;
-                let locations: INodeLocationInfo[] = serializationObject.locations;
-
-                for (var location of locations) {
-                    location.blockId = map[location.blockId];
-                }
-            }
-            
-            this.props.globalState.onResetRequiredObservable.notifyObservers(serializationObject.locations);
         }, undefined, true);
     }
 
     save() {
-        let material = this.props.globalState.nodeMaterial;
-        let serializationObject = material.serialize();
-
-        // Store node locations
-        for (var block of material.attachedBlocks) {
-            let node = this.props.globalState.onGetNodeFromBlock(block);
-
-            if (!serializationObject.locations) {
-                serializationObject.locations = [];
-            }
-
-            serializationObject.locations.push({
-                blockId: block.uniqueId,
-                x: node ? node.x : 0,
-                y: node ? node.y : 0
-            });
-        }
-
-        // Output
-        let json = JSON.stringify(serializationObject, undefined, 2);
+        let json = SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
+    }
+
+    customSave() {
+        this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Saving your material to Babylon.js snippet server...", isError: false});
+        this.props.globalState.customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(() => {
+            this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Material saved successfully", isError: false});
+        }).catch(err => {
+            this.props.globalState.onLogRequiredObservable.notifyObservers({message: err, isError: true});
+        });
     }
 
     render() {
@@ -112,11 +91,25 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this.props.globalState.onReOrganizedRequiredObservable.notifyObservers();
                         }} />
                     </LineContainerComponent>
+                    <LineContainerComponent title="OPTIONS">
+                        <CheckBoxLineComponent label="Embed textures when saving" 
+                            isSelected={() => DataStorage.ReadBoolean("EmbedTextures", true)}
+                            onSelect={(value: boolean) => {
+                                DataStorage.StoreBoolean("EmbedTextures", value);
+                            }}
+                        />
+                    </LineContainerComponent>
                     <LineContainerComponent title="FILE">                        
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent label="Save" onClick={() => {
                             this.save();
                         }} />
+                        {
+                            this.props.globalState.customSave && 
+                            <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
+                                this.customSave();
+                            }} />
+                        }
                         <ButtonLineComponent label="Generate code" onClick={() => {
                             StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
                         }} />

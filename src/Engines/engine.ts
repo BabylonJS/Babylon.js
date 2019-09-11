@@ -512,14 +512,14 @@ export class Engine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.15";
+        return "babylonjs@4.1.0-alpha.19";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.15";
+        return "4.1.0-alpha.19";
     }
 
     /**
@@ -1176,7 +1176,7 @@ export class Engine {
             }
         } else {
             this._gl = <WebGLRenderingContext>canvasOrContext;
-            this._renderingCanvas = this._gl.canvas;
+            this._renderingCanvas = this._gl.canvas as HTMLCanvasElement;
 
             if (this._gl.renderbufferStorageMultisample) {
                 this._webGLVersion = 2.0;
@@ -2705,7 +2705,7 @@ export class Engine {
             } else {
                 // number[] or Int32Array, check if 32 bit is necessary
                 for (var index = 0; index < indices.length; index++) {
-                    if (indices[index] > 65535) {
+                    if (indices[index] >= 65535) {
                         return new Uint32Array(indices);
                     }
                 }
@@ -5460,7 +5460,7 @@ export class Engine {
 
     private _bindSamplerUniformToChannel(sourceSlot: number, destination: number) {
         let uniform = this._boundUniforms[sourceSlot];
-        if (uniform._currentState === destination) {
+        if (!uniform || uniform._currentState === destination) {
             return;
         }
         this._gl.uniform1i(uniform, destination);

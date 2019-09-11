@@ -19,6 +19,8 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
         this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
+
+        this.rgb.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -64,7 +66,11 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             if (a.connectedPoint) {
                 state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${a.associatedVariableName});\r\n`;
             } else {
-                state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, 1.0);\r\n`;
+                if (rgb.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Float) {
+                    state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${rgb.associatedVariableName}, ${rgb.associatedVariableName}, 1.0);\r\n`;
+                } else {
+                    state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, 1.0);\r\n`;
+                }
             }
         } else {
             state.sharedData.checks.notConnectedNonOptionalInputs.push(rgba);
