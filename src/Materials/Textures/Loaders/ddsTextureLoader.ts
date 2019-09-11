@@ -103,6 +103,8 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
 
         engine._setCubeMapTextureParams(loadMipmap);
         texture.isReady = true;
+        texture.onLoadedObservable.notifyObservers(texture);
+        texture.onLoadedObservable.clear();
 
         if (onLoad) {
             onLoad({ isDDS: true, width: texture.width, info, data: imgs, texture });
