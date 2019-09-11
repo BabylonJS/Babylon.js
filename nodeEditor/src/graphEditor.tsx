@@ -167,6 +167,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
+
+        if (navigator.userAgent.indexOf("Mobile") !== -1) {
+            ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
+        }
     }
 
     componentWillUnmount() {
@@ -686,7 +690,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 </div>                
                 <MessageDialogComponent globalState={this.props.globalState} />
                 <div className="blocker">
-                    Node Material Editor requires a screen with a minimal resolution of 1000px
+                    Node Material Editor runs only on desktop
                 </div>
             </Portal>
         );

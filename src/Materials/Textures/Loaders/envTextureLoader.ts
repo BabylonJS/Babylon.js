@@ -70,6 +70,8 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
             EnvironmentTextureTools.UploadEnvSpherical(texture, info);
             EnvironmentTextureTools.UploadEnvLevelsAsync(texture, data, info).then(() => {
                 texture.isReady = true;
+                texture.onLoadedObservable.notifyObservers(texture);
+                texture.onLoadedObservable.clear();
                 if (onLoad) {
                     onLoad();
                 }

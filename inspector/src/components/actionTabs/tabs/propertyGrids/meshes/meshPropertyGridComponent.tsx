@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
 import { Tools } from "babylonjs/Misc/tools";
-import { Color3, Vector3 } from "babylonjs/Maths/math";
+import { Color3, Vector3, TmpVectors } from "babylonjs/Maths/math";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { LinesBuilder } from "babylonjs/Meshes/Builders/linesBuilder";
@@ -105,7 +105,9 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         var positions = mesh.getVerticesData(VertexBuffer.PositionKind);
 
         const color = Color3.White();
-        const size = mesh.getBoundingInfo().diagonalLength * 0.05;
+        const bbox = mesh.getBoundingInfo();
+        const diag = bbox.maximum.subtractToRef(bbox.minimum, TmpVectors.Vector3[0]);
+        const size = diag.length() * 0.05;
 
         var lines = [];
         for (var i = 0; i < normals!.length; i += 3) {

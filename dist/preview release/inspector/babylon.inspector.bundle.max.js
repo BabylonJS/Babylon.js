@@ -45942,7 +45942,9 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var normals = mesh.getVerticesData(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].NormalKind);
         var positions = mesh.getVerticesData(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].PositionKind);
         var color = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Color3"].White();
-        var size = mesh.getBoundingInfo().diagonalLength * 0.05;
+        var bbox = mesh.getBoundingInfo();
+        var diag = bbox.maximum.subtractToRef(bbox.minimum, babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["TmpVectors"].Vector3[0]);
+        var size = diag.length() * 0.05;
         var lines = [];
         for (var i = 0; i < normals.length; i += 3) {
             var v1 = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].FromArray(positions, i);

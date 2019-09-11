@@ -266,6 +266,8 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class StringTools {
+        private static _SaveAs;
+        private static _Click;
         /**
          * Gets the base math type of node material block connection point.
          * @param type Type to parse.
@@ -1035,6 +1037,7 @@ declare module NODEEDITOR {
         private _handleAnimations;
         private _prepareMeshes;
         private _refreshPreviewMesh;
+        private _forceCompilationAsync;
         private _updatePreview;
         dispose(): void;
     }
