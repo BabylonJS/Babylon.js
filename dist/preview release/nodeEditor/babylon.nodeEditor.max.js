@@ -70777,6 +70777,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
 /* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+
 
 
 
@@ -70796,6 +70798,12 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         _this.state = { isEmbedded: !texture || texture.name.substring(0, 4) !== "http" };
         return _this;
     }
+    TexturePropertyTabComponent.prototype._generateRandomForCache = function () {
+        return 'xxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function (c) {
+            var r = Math.random() * 10 | 0;
+            return r.toString();
+        });
+    };
     TexturePropertyTabComponent.prototype.updateAftertextureLoad = function () {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
@@ -70854,6 +70862,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         if (texture && texture.name && texture.name.substring(0, 4) === "http") {
             url = texture.name;
         }
+        url = url.replace(/\?nocache=\d+/, "");
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: "Texture" }),
@@ -70907,7 +70916,9 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 this.state.isEmbedded &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
                 !this.state.isEmbedded &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
+                !this.state.isEmbedded && url &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }))));
     };
     return TexturePropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

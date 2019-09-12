@@ -392,6 +392,7 @@ declare module NODEEDITOR {
         isEmbedded: boolean;
     }> {
         constructor(props: ITexturePropertyTabComponentProps);
+        private _generateRandomForCache;
         updateAftertextureLoad(): void;
         /**
          * Replaces the texture of the node
