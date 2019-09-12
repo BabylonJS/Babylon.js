@@ -51761,8 +51761,6 @@ declare module BABYLON {
         private _transformedUVName;
         private _textureTransformName;
         private _textureInfoName;
-        private _mainUVName;
-        private _mainUVDefineName;
         /**
          * Gets or sets the texture associated with the node
          */
@@ -51807,7 +51805,6 @@ declare module BABYLON {
         readonly a: NodeMaterialConnectionPoint;
         readonly target: NodeMaterialBlockTargets;
         autoConfigure(material: NodeMaterial): void;
-        initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
@@ -52162,14 +52159,6 @@ declare module BABYLON {
          * @param useInstances specifies that instances should be used
          */
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
-        /**
-         * Initialize defines for shader compilation
-         * @param mesh defines the mesh to be rendered
-         * @param nodeMaterial defines the node material requesting the update
-         * @param defines defines the material defines to be prepared
-         * @param useInstances specifies that instances should be used
-         */
-        initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         /**
          * Lets the block try to connect some inputs automatically
          * @param material defines the hosting NodeMaterial
