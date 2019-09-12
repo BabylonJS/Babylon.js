@@ -62016,6 +62016,18 @@ interface XRInputSourceChangeEvent {
     removed: Array<XRInputSource>;
     added: Array<XRInputSource>;
 }
+
+/**
+ * @ignore
+ */
+declare module BABYLON.GLTF2.Exporter {
+}
+
+/**
+ * @ignore
+ */
+declare module BABYLON.GLTF1 {
+}
 declare module BABYLON.GUI {
     /**
      * Class used to specific a value and its associated unit
