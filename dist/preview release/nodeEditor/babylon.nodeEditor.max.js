@@ -68356,7 +68356,7 @@ __webpack_require__.r(__webpack_exports__);
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
-    BlockTools.GetBlockFromString = function (data) {
+    BlockTools.GetBlockFromString = function (data, scene) {
         switch (data) {
             case "BonesBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["BonesBlock"]("Bones");
@@ -68423,7 +68423,9 @@ var BlockTools = /** @class */ (function () {
             case "ViewDirectionBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["ViewDirectionBlock"]("View direction");
             case "LightInformationBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LightInformationBlock"]("Light information");
+                var lightInformationBlock = new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["LightInformationBlock"]("Light information");
+                lightInformationBlock.light = scene.lights.length ? scene.lights[0] : null;
+                return lightInformationBlock;
             case "MaxBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_alphaTestBlock__WEBPACK_IMPORTED_MODULE_0__["MaxBlock"]("Max");
             case "MinBlock":
@@ -71440,7 +71442,6 @@ var PreviewManager = /** @class */ (function () {
         this._engine = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Engine"](targetCanvas, true);
         this._scene = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Scene"](this._engine);
         this._camera = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ArcRotateCamera"]("Camera", 0, 0.8, 4, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), this._scene);
-        this._light = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
         this._camera.wheelPrecision = 20;
@@ -71476,6 +71477,10 @@ var PreviewManager = /** @class */ (function () {
             var mesh = _a[_i];
             mesh.material = this._material;
         }
+        // Light
+        if (!this._scene.lights.length) {
+            this._light = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
+        }
         // Framing
         this._camera.useFramingBehavior = true;
         var framingBehavior = this._camera.getBehaviorByName("Framing");
@@ -71505,6 +71510,11 @@ var PreviewManager = /** @class */ (function () {
                 }
             }
             this._meshes = [];
+            var lights = this._scene.lights.slice(0);
+            for (var _b = 0, lights_1 = lights; _b < lights_1.length; _b++) {
+                var light = lights_1[_b];
+                light.dispose();
+            }
             switch (this._globalState.previewMeshType) {
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
                     this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateBox("dummy-box", 2, this._scene));
@@ -71581,7 +71591,10 @@ var PreviewManager = /** @class */ (function () {
             var mesh = _a[_i];
             mesh.dispose();
         }
-        this._light.dispose();
+        if (this._light) {
+            this._light.dispose();
+        }
+        this._scene.dispose();
         this._engine.dispose();
     };
     return PreviewManager;
@@ -72719,7 +72732,7 @@ var GraphEditor = /** @class */ (function (_super) {
             nodeModel = this.addValueNode(data);
         }
         else {
-            var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data);
+            var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene());
             if (block) {
                 this._toAdd = [];
                 block.autoConfigure(this.props.globalState.nodeMaterial);
@@ -73173,7 +73186,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
     }
     CheckBoxLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         var currentState;
-        if (this.props.isSelected) {
+        if (nextProps.isSelected) {
             currentState = nextProps.isSelected();
         }
         else {

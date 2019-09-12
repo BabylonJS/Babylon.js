@@ -3,6 +3,7 @@ import { NodeMaterialBlock } from './nodeMaterialBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
+import { Scene } from '../../scene';
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -84,6 +85,9 @@ export class NodeMaterialBuildStateSharedData {
 
     /** Emit build activity */
     public verbose: boolean;
+
+    /** Gets or sets the hosting scene */
+    public scene: Scene;
 
     /**
      * Gets the compilation hints emitted at compilation time
