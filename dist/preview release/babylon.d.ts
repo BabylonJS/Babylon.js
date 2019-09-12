@@ -53966,7 +53966,9 @@ declare module BABYLON {
         /** Floor */
         Floor = 6,
         /** Ceiling */
-        Ceiling = 7
+        Ceiling = 7,
+        /** Square root */
+        Sqrt = 8
     }
     /**
      * Block used to apply trigonometry operation to floats
@@ -62252,6 +62254,36 @@ declare module BABYLON {
          * @returns This path cursor
          */
         onchange(f: (cursor: PathCursor) => void): PathCursor;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the value of the first parameter raised to the power of the second
+     */
+    export class PowBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new PowBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the value operand input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the power operand input component
+         */
+        readonly power: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {
