@@ -159,8 +159,11 @@ export class PreviewManager {
                     this._meshes.push(Mesh.CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
                     break;
                 case PreviewMeshType.Cylinder:
-                    this._meshes.push(Mesh.CreateCylinder("dummy-cylinder", 2, 1, 1.2, 32, 1, this._scene));
-                    break;                
+                    SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(() => {     
+                        this._meshes.push(...this._scene.meshes);
+                        this._prepareMeshes();
+                    });                    
+                    return;                   
                 case PreviewMeshType.Plane:
                     this._meshes.push(Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene));
                     break;    

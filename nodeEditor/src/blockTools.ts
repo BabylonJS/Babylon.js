@@ -41,6 +41,7 @@ import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/per
 import { LengthBlock } from 'babylonjs/Materials/Node/Blocks/lengthBlock';
 import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
 import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
+import { PowBlock } from 'babylonjs/Materials/Node/Blocks/powBlock';
 import { Scene } from 'babylonjs/scene';
 
 export class BlockTools {
@@ -86,6 +87,8 @@ export class BlockTools {
                 return new CrossBlock("Cross");
             case "DotBlock":
                 return new DotBlock("Dot");
+            case "PowBlock":
+                return new PowBlock("Pow");
             case "MultiplyBlock":
                 return new MultiplyBlock("Multiply");
             case "TransformBlock":
@@ -140,6 +143,11 @@ export class BlockTools {
                 let absBlock = new TrigonometryBlock("Abs");
                 absBlock.operation = TrigonometryBlockOperations.Abs;
                 return absBlock;
+            }            
+            case "SqrtBlock": {
+                let sqrtBlock = new TrigonometryBlock("Sqrt");
+                sqrtBlock.operation = TrigonometryBlockOperations.Sqrt;
+                return sqrtBlock;
             }
             case "ExpBlock": {
                 let expBlock = new TrigonometryBlock("Exp");
