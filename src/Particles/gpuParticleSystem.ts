@@ -1494,10 +1494,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         result.noiseTexture = this.noiseTexture;
-        result.emitter = newEmitter;
-        if (this.particleTexture) {
-            result.particleTexture = new Texture(this.particleTexture.url, this._scene);
-        }
 
         // Clone gradients
         if (this._colorGradients) {
