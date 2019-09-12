@@ -11,7 +11,7 @@ import { MaterialHelper } from "../Materials/materialHelper";
 import { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { Texture } from "../Materials/Textures/texture";
-import { InternalTexture } from "../Materials/Textures/internalTexture"
+import { DynamicTexture } from "../Materials/Textures/dynamicTexture";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import { EngineStore } from "../Engines/engineStore";
@@ -1928,13 +1928,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         result.noiseTexture = this.noiseTexture;
         result.emitter = newEmitter;
         if (this.particleTexture) {
-            if (this.particleTexture.getInternalTexture().dataSource === InternalTexture.DATASOURCE_DYNAMIC) {
-                // clone 
+            if (this.particleTexture instanceof DynamicTexture) {
                 result.particleTexture = this.particleTexture.clone();
-                // copy underlying image data 
-                const ctx = result.particleTexture.getContext();
-                ctx.drawImage(this.particleTexture.getContext().canvas, 0, 0);
-                result.particleTexture.update();
+                const ctx = (<unknown>result.particleTexture as DynamicTexture).getContext();
+                ctx.drawImage((<unknown>this.particleTexture as DynamicTexture).getContext().canvas, 0, 0);
+                (<unknown>result.particleTexture as DynamicTexture).update();
             } else {
                 result.particleTexture = new Texture(this.particleTexture.url, this._scene);
             }
