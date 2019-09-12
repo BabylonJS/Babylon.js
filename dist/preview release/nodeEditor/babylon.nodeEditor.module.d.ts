@@ -489,6 +489,7 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureProperty
         isEmbedded: boolean;
     }> {
         constructor(props: ITexturePropertyTabComponentProps);
+        private _generateRandomForCache;
         updateAftertextureLoad(): void;
         /**
          * Replaces the texture of the node
@@ -2050,6 +2051,7 @@ declare module NODEEDITOR {
         isEmbedded: boolean;
     }> {
         constructor(props: ITexturePropertyTabComponentProps);
+        private _generateRandomForCache;
         updateAftertextureLoad(): void;
         /**
          * Replaces the texture of the node
