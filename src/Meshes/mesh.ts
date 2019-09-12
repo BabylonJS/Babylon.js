@@ -496,7 +496,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     // Methods
-    public instantiateHierarychy(newParent: Nullable<TransformNode> = null): Nullable<TransformNode> {
+    public instantiateHierarchy(newParent: Nullable<TransformNode> = null): Nullable<TransformNode> {
         let instance = this.createInstance("instance of " + (this.name || this.id));
 
         instance.parent = newParent || this.parent;
@@ -509,7 +509,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         for (var child of this.getChildTransformNodes(true)) {
-            child.instantiateHierarychy(instance);
+            child.instantiateHierarchy(instance);
         }
 
         return instance;

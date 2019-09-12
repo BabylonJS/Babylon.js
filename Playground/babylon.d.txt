@@ -13732,7 +13732,7 @@ declare module BABYLON {
          * @param newParent defines the new parent to use for the instance (or clone)
          * @returns an instance (or a clone) of the current node with its hiearchy
          */
-        instantiateHierarychy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
+        instantiateHierarchy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
         /**
          * Prevents the World matrix to be computed any longer
          * @param newWorldMatrix defines an optional matrix to use as world matrix
@@ -23162,7 +23162,7 @@ declare module BABYLON {
          * @param clonePhysicsImpostor When cloning, include cloning mesh physics impostor, default True.
          */
         constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: Nullable<Mesh>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean);
-        instantiateHierarychy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
+        instantiateHierarchy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
         /**
          * Gets the class name
          * @returns the string "Mesh".
