@@ -28,7 +28,7 @@ steps:
     cmake .. -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DBABYLON_NATIVE_PLATFORM="UWP"
   displayName: 'Generate UWP solution'
   
-- task: MSBuild@1
+- task: VSBuild@1
   inputs:
     solution: 'buildUWP/BabylonNative.sln'
     maximumCpuCount: true
