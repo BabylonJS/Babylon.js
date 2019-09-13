@@ -1,14 +1,8 @@
-/**
- * @ignoreChildren
- * @ignore
- */
 declare module "babylonjs-gltf2interface" {
     export = BABYLON.GLTF2;
 }
 /**
  * Module for glTF 2.0 Interface
- * @ignoreChildren
- * @ignore
  */
 declare module BABYLON.GLTF2 {
     /**
