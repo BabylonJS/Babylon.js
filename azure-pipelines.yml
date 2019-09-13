@@ -9,18 +9,18 @@ steps:
     git submodule update --init --recursive
   displayName: 'Checkout dependencies'
 
-#- script: |
-#    mkdir buildWin32
-#    cd buildWin32
-#    cmake ..
-#  displayName: 'Generate Win32 solution'
-#    
-#- task: MSBuild@1
-#  inputs:
-#    solution: 'buildWin32/BabylonNative.sln'
-#    maximumCpuCount: true
-#    configuration: 'Release'
-#  displayName: 'Build WIN32'
+- script: |
+    mkdir buildWin32
+    cd buildWin32
+    cmake ..
+  displayName: 'Generate Win32 solution'
+    
+- task: MSBuild@1
+  inputs:
+    solution: 'buildWin32/BabylonNative.sln'
+    maximumCpuCount: true
+    configuration: 'Release'
+  displayName: 'Build WIN32'
   
 - script: |
     mkdir buildUWP
