@@ -2063,6 +2063,13 @@ declare module BABYLON {
          */
         rotateByQuaternionAroundPointToRef(quaternion: Quaternion, point: Vector3, result: Vector3): Vector3;
         /**
+         * Returns a new Vector3 as the cross product of the current vector and the "other" one
+         * The cross product is then orthogonal to both current and "other"
+         * @param other defines the right operand
+         * @returns the cross product
+         */
+        cross(other: Vector3): Vector3;
+        /**
          * Normalize the current Vector3 with the given input length.
          * Please note that this is an in place operation.
          * @param len the length of the vector
