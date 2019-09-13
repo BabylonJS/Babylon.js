@@ -50,7 +50,7 @@ export class ToolsTabComponent extends PaneComponent {
     captureScreenshot() {
         const scene = this.props.scene;
         if (scene.activeCamera) {
-            Tools.CreateScreenshot(scene.getEngine(), scene.activeCamera, { precision: 1.0 });
+            Tools.CreateScreenshot(scene.getEngine(), scene.activeCamera, this._screenShotSize);
         }
     }
 
