@@ -105,6 +105,7 @@ export class PreviewManager {
         // Light
         if (!this._scene.lights.length) {
             this._light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
+            this._light.intensity = 0.7; // dim the light a bit similar to the default playground.
         }
 
         // Framing
