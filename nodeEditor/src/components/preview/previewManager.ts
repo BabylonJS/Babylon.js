@@ -60,11 +60,11 @@ export class PreviewManager {
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
-        this._light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
 
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
         this._camera.wheelPrecision = 20;
+        this._camera.minZ = 0.1;
         this._camera.attachControl(targetCanvas, false);
 
         this._refreshPreviewMesh();
@@ -102,6 +102,11 @@ export class PreviewManager {
             mesh.material = this._material;
         }
 
+        // Light
+        if (!this._scene.lights.length) {
+            this._light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
+        }
+
         // Framing
         this._camera.useFramingBehavior = true;
 
@@ -128,17 +133,20 @@ export class PreviewManager {
 
     private _refreshPreviewMesh() {    
 
-        if (this._currentType !== this._globalState.previewMeshType) {
+        if (this._currentType !== this._globalState.previewMeshType || this._currentType === PreviewMeshType.Custom) {
 
             this._currentType = this._globalState.previewMeshType;
             if (this._meshes && this._meshes.length) {
-
                 for (var mesh of this._meshes) {
                     mesh.dispose();
                 }
             }
-
             this._meshes = [];
+
+            let lights = this._scene.lights.slice(0);
+            for (var light of lights) {
+                light.dispose();
+            }
         
             switch (this._globalState.previewMeshType) {
                 case PreviewMeshType.Box:
@@ -151,11 +159,20 @@ export class PreviewManager {
                     this._meshes.push(Mesh.CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
                     break;
                 case PreviewMeshType.Cylinder:
-                    this._meshes.push(Mesh.CreateCylinder("dummy-cylinder", 2, 1, 1.2, 32, 1, this._scene));
-                    break;                
+                    SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(() => {     
+                        this._meshes.push(...this._scene.meshes);
+                        this._prepareMeshes();
+                    });                    
+                    return;                   
                 case PreviewMeshType.Plane:
                     this._meshes.push(Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene));
-                    break;         
+                    break;    
+                case PreviewMeshType.ShaderBall:
+                    SceneLoader.AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(() => {     
+                        this._meshes.push(...this._scene.meshes);
+                        this._prepareMeshes();
+                    });
+                    return;                             
                 case PreviewMeshType.Custom:
                     SceneLoader.AppendAsync("file:", this._globalState.previewMeshFile, this._scene).then(() => {     
                         this._meshes.push(...this._scene.meshes);
@@ -168,16 +185,34 @@ export class PreviewManager {
         }
     }
 
+    private _forceCompilationAsync(material: NodeMaterial, mesh: AbstractMesh): Promise<void> {
+        return material.forceCompilationAsync(mesh);
+
+    }
+
     private _updatePreview(serializationObject: any) {
-        if (this._material) {
-            this._material.dispose();
-        }        
+        try {
+            let tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
 
-        this._material = NodeMaterial.Parse(serializationObject, this._scene);
-        this._material.build();
+            if (this._meshes.length) {
+                let tasks = this._meshes.map(m => this._forceCompilationAsync(tempMaterial, m));
 
-        for (var mesh of this._meshes) {
-            mesh.material = this._material;
+                Promise.all(tasks).then(() => {
+                    for (var mesh of this._meshes) {
+                        mesh.material = tempMaterial;
+                    }
+
+                    if (this._material) {
+                        this._material.dispose();
+                    }      
+        
+                    this._material = tempMaterial;  
+                });
+            } else {
+                this._material = tempMaterial;    
+            }
+        } catch(err) {
+            // Ignore the error
         }
     }
 
@@ -196,7 +231,12 @@ export class PreviewManager {
         for (var mesh of this._meshes) {
             mesh.dispose();
         }
-        this._light.dispose();
+
+        if (this._light) {
+            this._light.dispose();
+        }
+
+        this._scene.dispose();
         this._engine.dispose();
     }
 }

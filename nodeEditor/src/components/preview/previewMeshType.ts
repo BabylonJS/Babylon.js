@@ -4,5 +4,6 @@ export enum PreviewMeshType {
     Torus,
     Cylinder,
     Plane,
+    ShaderBall,
     Custom
 }

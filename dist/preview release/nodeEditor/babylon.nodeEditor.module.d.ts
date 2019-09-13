@@ -38,8 +38,13 @@ declare module "babylonjs-node-editor/blockTools" {
     import { MaxBlock } from 'babylonjs/Materials/Node/Blocks/maxBlock';
     import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
     import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/perturbNormalBlock';
+    import { LengthBlock } from 'babylonjs/Materials/Node/Blocks/lengthBlock';
+    import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
+    import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
+    import { PowBlock } from 'babylonjs/Materials/Node/Blocks/powBlock';
+    import { Scene } from 'babylonjs/scene';
     export class BlockTools {
-        static GetBlockFromString(data: string): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | OneMinusBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | PerturbNormalBlock | InputBlock | null;
+        static GetBlockFromString(data: string, scene: Scene): BonesBlock | InstancesBlock | MorphTargetsBlock | AlphaTestBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | PowBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | OneMinusBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | LengthBlock | DistanceBlock | NegateBlock | PerturbNormalBlock | InputBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -340,6 +345,8 @@ declare module "babylonjs-node-editor/sharedComponents/buttonLineComponent" {
 declare module "babylonjs-node-editor/stringTools" {
     import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
     export class StringTools {
+        private static _SaveAs;
+        private static _Click;
         /**
          * Gets the base math type of node material block connection point.
          * @param type Type to parse.
@@ -409,6 +416,67 @@ declare module "babylonjs-node-editor/portal" {
         render(): React.ReactPortal;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/sliderLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    interface ISliderLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        minimum: number;
+        maximum: number;
+        step: number;
+        directValue?: number;
+        useEuler?: boolean;
+        onChange?: (value: number) => void;
+        onInput?: (value: number) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        decimalCount?: number;
+    }
+    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        constructor(props: ISliderLineComponentProps);
+        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        onChange(newValueString: any): void;
+        onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        constructor(props: IFloatLineComponentProps);
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/diagram/texture/texturePropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -421,6 +489,7 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureProperty
         isEmbedded: boolean;
     }> {
         constructor(props: ITexturePropertyTabComponentProps);
+        private _generateRandomForCache;
         updateAftertextureLoad(): void;
         /**
          * Replaces the texture of the node
@@ -433,11 +502,11 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureProperty
 }
 declare module "babylonjs-node-editor/components/diagram/texture/textureNodeModel" {
     import { Nullable } from 'babylonjs/types';
-    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     import { GlobalState } from "babylonjs-node-editor/globalState";
     import { NodeCreationOptions, GraphEditor } from "babylonjs-node-editor/graphEditor";
     import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
+    import { Texture } from 'babylonjs/Materials/Textures/texture';
     /**
      * Texture node model which stores information about a node editor block
      */
@@ -446,7 +515,7 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureNodeMode
         /**
          * Texture for the node if it exists
          */
-        texture: Nullable<BaseTexture>;
+        texture: Nullable<Texture>;
         /**
          * Constructs the node model
          */
@@ -663,6 +732,7 @@ declare module "babylonjs-node-editor/sharedComponents/optionsLineComponent" {
     interface IOptionsLineComponentProps {
         label: string;
         target: any;
+        className?: string;
         propertyName?: string;
         options: ListLineOption[];
         noDirectUpdate?: boolean;
@@ -726,35 +796,6 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/color3Pr
         inputBlock: InputBlock;
     }
     export class Color3PropertyTabComponent extends React.Component<IColor3PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
-    interface IFloatLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-    }
-    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        constructor(props: IFloatLineComponentProps);
-        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
         render(): JSX.Element;
     }
 }
@@ -830,19 +871,26 @@ declare module "babylonjs-node-editor/sharedComponents/matrixLineComponent" {
         propertyName: string;
         step?: number;
         onChange?: (newValue: Matrix) => void;
+        onModeChange?: (mode: number) => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        mode?: number;
     }
     export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, {
         value: Matrix;
+        mode: number;
+        angle: number;
     }> {
         private _localChange;
         constructor(props: IMatrixLineComponentProps);
         shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: {
             value: Matrix;
+            mode: number;
+            angle: number;
         }): boolean;
         raiseOnPropertyChanged(previousValue: Vector3): void;
         updateMatrix(): void;
         updateRow(value: Vector4, row: number): void;
+        updateBasedOnMode(value: number): void;
         render(): JSX.Element;
     }
 }
@@ -1171,7 +1219,8 @@ declare module "babylonjs-node-editor/components/preview/previewMeshType" {
         Torus = 2,
         Cylinder = 3,
         Plane = 4,
-        Custom = 5
+        ShaderBall = 5,
+        Custom = 6
     }
 }
 declare module "babylonjs-node-editor/components/preview/previewManager" {
@@ -1195,6 +1244,7 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
         private _handleAnimations;
         private _prepareMeshes;
         private _refreshPreviewMesh;
+        private _forceCompilationAsync;
         private _updatePreview;
         dispose(): void;
     }
@@ -1610,7 +1660,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.OneMinusBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.PerturbNormalBlock | BABYLON.InputBlock | null;
+        static GetBlockFromString(data: string, scene: BABYLON.Scene): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.AlphaTestBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.OneMinusBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.InputBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -1875,6 +1925,8 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class StringTools {
+        private static _SaveAs;
+        private static _Click;
         /**
          * Gets the base math type of node material block connection point.
          * @param type Type to parse.
@@ -1936,6 +1988,61 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface ISliderLineComponentProps {
+        label: string;
+        target?: any;
+        propertyName?: string;
+        minimum: number;
+        maximum: number;
+        step: number;
+        directValue?: number;
+        useEuler?: boolean;
+        onChange?: (value: number) => void;
+        onInput?: (value: number) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        decimalCount?: number;
+    }
+    export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        constructor(props: ISliderLineComponentProps);
+        shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        onChange(newValueString: any): void;
+        onInput(newValueString: any): void;
+        prepareDataToRead(value: number): number;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        constructor(props: IFloatLineComponentProps);
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface ITexturePropertyTabComponentProps {
         globalState: GlobalState;
         node: TextureNodeModel;
@@ -1944,6 +2051,7 @@ declare module NODEEDITOR {
         isEmbedded: boolean;
     }> {
         constructor(props: ITexturePropertyTabComponentProps);
+        private _generateRandomForCache;
         updateAftertextureLoad(): void;
         /**
          * Replaces the texture of the node
@@ -1956,14 +2064,14 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     /**
-     * Texture node model which stores information about a node editor block
+     * BABYLON.Texture node model which stores information about a node editor block
      */
     export class TextureNodeModel extends DefaultNodeModel {
         private _block;
         /**
-         * Texture for the node if it exists
+         * BABYLON.Texture for the node if it exists
          */
-        texture: BABYLON.Nullable<BABYLON.BaseTexture>;
+        texture: BABYLON.Nullable<BABYLON.Texture>;
         /**
          * Constructs the node model
          */
@@ -2153,6 +2261,7 @@ declare module NODEEDITOR {
     interface IOptionsLineComponentProps {
         label: string;
         target: any;
+        className?: string;
         propertyName?: string;
         options: ListLineOption[];
         noDirectUpdate?: boolean;
@@ -2209,32 +2318,6 @@ declare module NODEEDITOR {
         inputBlock: BABYLON.InputBlock;
     }
     export class Color3PropertyTabComponent extends React.Component<IColor3PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    interface IFloatLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-    }
-    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        constructor(props: IFloatLineComponentProps);
-        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
         render(): JSX.Element;
     }
 }
@@ -2296,19 +2379,26 @@ declare module NODEEDITOR {
         propertyName: string;
         step?: number;
         onChange?: (newValue: BABYLON.Matrix) => void;
+        onModeChange?: (mode: number) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        mode?: number;
     }
     export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, {
         value: BABYLON.Matrix;
+        mode: number;
+        angle: number;
     }> {
         private _localChange;
         constructor(props: IMatrixLineComponentProps);
         shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: {
             value: BABYLON.Matrix;
+            mode: number;
+            angle: number;
         }): boolean;
         raiseOnPropertyChanged(previousValue: BABYLON.Vector3): void;
         updateMatrix(): void;
         updateRow(value: BABYLON.Vector4, row: number): void;
+        updateBasedOnMode(value: number): void;
         render(): JSX.Element;
     }
 }
@@ -2583,7 +2673,8 @@ declare module NODEEDITOR {
         Torus = 2,
         Cylinder = 3,
         Plane = 4,
-        Custom = 5
+        ShaderBall = 5,
+        Custom = 6
     }
 }
 declare module NODEEDITOR {
@@ -2606,6 +2697,7 @@ declare module NODEEDITOR {
         private _handleAnimations;
         private _prepareMeshes;
         private _refreshPreviewMesh;
+        private _forceCompilationAsync;
         private _updatePreview;
         dispose(): void;
     }

@@ -42,6 +42,11 @@ export class Image extends Control {
     public onImageLoadedObservable = new Observable<Image>();
 
     /**
+     * Observable notified when _sourceLeft, _sourceTop, _sourceWidth and _sourceHeight are computed
+     */
+    public onSVGAttributesComputedObservable = new Observable<Image>();
+
+    /**
      * Gets a boolean indicating that the content is loaded
      */
     public get isLoaded(): boolean {
@@ -353,6 +358,10 @@ export class Image extends Control {
         this._loaded = false;
         this._source = value;
 
+        if (value) {
+            this._svgCheck(value);
+        }
+
         this._domImage = document.createElement("img");
 
         this._domImage.onload = () => {
@@ -361,6 +370,84 @@ export class Image extends Control {
         if (value) {
             Tools.SetCorsBehavior(value, this._domImage);
             this._domImage.src = value;
+        }
+    }
+
+    /**
+     * Checks for svg document with icon id present
+     */
+    private _svgCheck(value: string) {
+        if ((value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
+            var svgsrc = value.split('#')[0];
+            var elemid = value.split('#')[1];
+            // check if object alr exist in document
+            var svgExist = <HTMLObjectElement> document.body.querySelector('object[data="' + svgsrc + '"]');
+            if (svgExist) {
+                if (svgExist.contentDocument) {
+                    // svg object alr exists
+                    this._getSVGAttribs(svgExist, elemid);
+                } else {
+                    // wait for object to load
+                    svgExist.addEventListener("load", () => {
+                        this._getSVGAttribs(svgExist, elemid);
+                    });
+                }
+
+            } else {
+                // create document object
+                var svgImage = document.createElement("object");
+                svgImage.data = svgsrc;
+                svgImage.type = "image/svg+xml";
+                svgImage.width = "0%";
+                svgImage.height = "0%";
+                document.body.appendChild(svgImage);
+                // when the object has loaded, get the element attribs
+                svgImage.onload = () => {
+                    var svgobj = <HTMLObjectElement> document.body.querySelector('object[data="' + svgsrc + '"]');
+                    if (svgobj) {
+                        this._getSVGAttribs(svgobj, elemid);
+                    }
+                };
+
+            }
+        }
+    }
+
+    /**
+     * Sets sourceLeft, sourceTop, sourceWidth, sourceHeight automatically
+	 * given external svg file and icon id
+     */
+    private _getSVGAttribs(svgsrc: HTMLObjectElement, elemid: string) {
+        var svgDoc = svgsrc.contentDocument;
+        // get viewbox width and height, get svg document width and height in px
+        if (svgDoc && svgDoc.documentElement) {
+            var vb = svgDoc.documentElement.getAttribute("viewBox");
+            var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
+            var docheight = Number(svgDoc.documentElement.getAttribute("height"));
+            // get element bbox and matrix transform
+            var elem = <SVGGraphicsElement> <unknown> svgDoc.getElementById(elemid);
+            if (elem instanceof SVGElement && vb && docwidth && docheight) {
+                var vb_width = Number(vb.split(" ")[2]);
+                var vb_height = Number(vb.split(" ")[3]);
+                var elem_bbox = elem.getBBox();
+                var elem_matrix_a = 1;
+                var elem_matrix_d = 1;
+                var elem_matrix_e = 0;
+                var elem_matrix_f = 0;
+                if (elem.transform && elem.transform.baseVal.consolidate()) {
+                    elem_matrix_a = elem.transform.baseVal.consolidate().matrix.a;
+                    elem_matrix_d = elem.transform.baseVal.consolidate().matrix.d;
+                    elem_matrix_e = elem.transform.baseVal.consolidate().matrix.e;
+                    elem_matrix_f = elem.transform.baseVal.consolidate().matrix.f;
+                }
+
+                // compute source coordinates and dimensions
+                this.sourceLeft = ((elem_matrix_a * elem_bbox.x + elem_matrix_e) * docwidth) / vb_width;
+                this.sourceTop = ((elem_matrix_d * elem_bbox.y + elem_matrix_f) * docheight) / vb_height;
+                this.sourceWidth = (elem_bbox.width * elem_matrix_a) * (docwidth / vb_width);
+                this.sourceHeight = (elem_bbox.height * elem_matrix_d) * (docheight / vb_height);
+                this.onSVGAttributesComputedObservable.notifyObservers(this);
+            }
         }
     }
 
@@ -648,6 +735,7 @@ export class Image extends Control {
     public dispose() {
         super.dispose();
         this.onImageLoadedObservable.clear();
+        this.onSVGAttributesComputedObservable.clear();
     }
 
     // Static

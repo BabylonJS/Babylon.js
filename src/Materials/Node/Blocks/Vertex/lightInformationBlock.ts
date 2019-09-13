@@ -69,15 +69,26 @@ export class LightInformationBlock extends NodeMaterialBlock {
             return;
         }
 
-        if (!this.light || !this.light.isEnabled) {
+        if (this.light && this.light.isDisposed) {
+            this.light = null;
+        }
+
+        let light = this.light;
+        let scene = nodeMaterial.getScene();
+
+        if (!light && scene.lights.length) {
+            light = scene.lights[0];
+        }
+
+        if (!light || !light.isEnabled) {
             effect.setFloat3(this._lightDataDefineName, 0, 0, 0);
             effect.setFloat3(this._lightColorDefineName, 0, 0, 0);
             return;
         }
 
-        this.light.transferToNodeMaterialEffect(effect, this._lightDataDefineName);
+        light.transferToNodeMaterialEffect(effect, this._lightDataDefineName);
 
-        effect.setColor3(this._lightColorDefineName, this.light.diffuse);
+        effect.setColor3(this._lightColorDefineName, light.diffuse);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -88,7 +99,13 @@ export class LightInformationBlock extends NodeMaterialBlock {
         let direction = this.direction;
         let color = this.color;
 
-        if (!this.light) {
+        let light = this.light;
+
+        if (!light && state.sharedData.scene.lights.length) {
+            light = state.sharedData.scene.lights[0];
+        }
+
+        if (!light) {
             state.compilationString += this._declareOutput(direction, state) + ` = vec3(0.);\r\n`;
             state.compilationString += this._declareOutput(color, state) + ` = vec3(0.);\r\n`;
         } else {
@@ -98,7 +115,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
             this._lightColorDefineName = state._getFreeDefineName("lightColor");
             state._emitUniformFromString(this._lightColorDefineName, "vec3");
 
-            if (this.light instanceof PointLight) {
+            if (light instanceof PointLight) {
                 state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this._lightDataDefineName} - ${this.worldPosition.associatedVariableName}.xyz);\r\n`;
             } else {
                 state.compilationString += this._declareOutput(direction, state) + ` = ${this._lightDataDefineName};\r\n`;

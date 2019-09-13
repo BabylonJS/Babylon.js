@@ -120,7 +120,7 @@
       "inputs": [],
       "type": 8,
       "mode": 1,
-      "wellKnownValue": null,
+      "systemValue": null,
       "animationType": 0,
       "visibleInInspector": false
     },
@@ -131,7 +131,7 @@
       "inputs": [],
       "type": 8,
       "mode": 1,
-      "wellKnownValue": null,
+      "systemValue": null,
       "animationType": 0,
       "visibleInInspector": false
     },
@@ -142,7 +142,7 @@
       "inputs": [],
       "type": 8,
       "mode": 1,
-      "wellKnownValue": null,
+      "systemValue": null,
       "animationType": 0,
       "visibleInInspector": false
     },
@@ -153,7 +153,7 @@
       "inputs": [],
       "type": 4,
       "mode": 1,
-      "wellKnownValue": null,
+      "systemValue": null,
       "animationType": 0,
       "visibleInInspector": false
     },
@@ -195,7 +195,7 @@
       "inputs": [],
       "type": 16,
       "mode": 1,
-      "wellKnownValue": null,
+      "systemValue": null,
       "animationType": 0,
       "visibleInInspector": false
     },
@@ -206,7 +206,7 @@
       "inputs": [],
       "type": 16,
       "mode": 1,
-      "wellKnownValue": null,
+      "systemValue": null,
       "animationType": 0,
       "visibleInInspector": false
     },
@@ -217,7 +217,7 @@
       "inputs": [],
       "type": 128,
       "mode": 0,
-      "wellKnownValue": 1,
+      "systemValue": 1,
       "animationType": 0,
       "visibleInInspector": false
     },
@@ -228,7 +228,7 @@
       "inputs": [],
       "type": 128,
       "mode": 0,
-      "wellKnownValue": 4,
+      "systemValue": 4,
       "animationType": 0,
       "visibleInInspector": false
     },
@@ -270,7 +270,7 @@
       "inputs": [],
       "type": 128,
       "mode": 0,
-      "wellKnownValue": 2,
+      "systemValue": 2,
       "animationType": 0,
       "visibleInInspector": false
     },
@@ -483,7 +483,7 @@
       "inputs": [],
       "type": 8,
       "mode": 1,
-      "wellKnownValue": null,
+      "systemValue": null,
       "animationType": 0,
       "visibleInInspector": false
     },
@@ -494,7 +494,7 @@
       "inputs": [],
       "type": 8,
       "mode": 0,
-      "wellKnownValue": 7,
+      "systemValue": 7,
       "animationType": 0,
       "visibleInInspector": false
     },
@@ -505,7 +505,7 @@
       "inputs": [],
       "type": 32,
       "mode": 0,
-      "wellKnownValue": 8,
+      "systemValue": 8,
       "animationType": 0,
       "visibleInInspector": false,
       "valueType": "BABYLON.Color3",

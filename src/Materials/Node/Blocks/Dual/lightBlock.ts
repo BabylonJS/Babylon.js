@@ -15,6 +15,14 @@ import { Nullable } from '../../../../types';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { Scene } from '../../../../scene';
 
+import "../../../../Shaders/ShadersInclude/lightFragmentDeclaration";
+import "../../../../Shaders/ShadersInclude/lightUboDeclaration";
+import "../../../../Shaders/ShadersInclude/lightFragment";
+import "../../../../Shaders/ShadersInclude/helperFunctions";
+import "../../../../Shaders/ShadersInclude/lightsFragmentFunctions";
+import "../../../../Shaders/ShadersInclude/shadowsFragmentFunctions";
+import "../../../../Shaders/ShadersInclude/shadowsVertex";
+
 /**
  * Block used to add light in the fragment shader
  */

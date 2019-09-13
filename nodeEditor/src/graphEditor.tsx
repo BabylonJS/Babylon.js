@@ -167,6 +167,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
+
+        if (navigator.userAgent.indexOf("Mobile") !== -1) {
+            ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
+        }
     }
 
     componentWillUnmount() {
@@ -174,7 +178,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
 
-        this._previewManager.dispose();
+        if (this._previewManager) {
+            this._previewManager.dispose();
+        }
     }
 
     constructor(props: IGraphEditorProps) {
@@ -391,7 +397,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                             }
                         }
                     } else {
-                        if (!e.link.targetPort && e.link.sourcePort && (e.link.sourcePort as DefaultPortModel).position === "input") {
+                        if (!e.link.targetPort && e.link.sourcePort && (e.link.sourcePort as DefaultPortModel).position === "input" && !(e.link.sourcePort as DefaultPortModel).connection!.isConnected) {
                             // Drag from input port, we are going to build an input for it                            
                             let input = e.link.sourcePort as DefaultPortModel;
 
@@ -577,7 +583,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (data.indexOf("Block") === -1) {
             nodeModel = this.addValueNode(data);
         } else {
-            let block = BlockTools.GetBlockFromString(data);   
+            let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene());   
             
             if (block) {                
                 this._toAdd = [];
@@ -683,8 +689,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     <LogComponent globalState={this.props.globalState} />
                 </div>                
                 <MessageDialogComponent globalState={this.props.globalState} />
+                <div className="blocker">
+                    Node Material Editor runs only on desktop
+                </div>
             </Portal>
         );
-
     }
 }

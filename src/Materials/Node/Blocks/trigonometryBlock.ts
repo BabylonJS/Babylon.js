@@ -26,6 +26,8 @@ export enum TrigonometryBlockOperations {
     Floor,
     /** Ceiling */
     Ceiling,
+    /** Square root */
+    Sqrt,
 }
 
 /**
@@ -108,6 +110,10 @@ export class TrigonometryBlock extends NodeMaterialBlock {
             }
             case TrigonometryBlockOperations.Ceiling: {
                 operation = "ceil";
+                break;
+            }
+            case TrigonometryBlockOperations.Sqrt: {
+                operation = "sqrt";
                 break;
             }
         }

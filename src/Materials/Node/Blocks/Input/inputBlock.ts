@@ -24,6 +24,15 @@ export class InputBlock extends NodeMaterialBlock {
     private _type: NodeMaterialBlockConnectionPointTypes;
     private _animationType = AnimatedInputBlockTypes.None;
 
+    /** Gets or set a value used to limit the range of float values */
+    public min: number = 0;
+
+    /** Gets or set a value used to limit the range of float values */
+    public max: number = 0;
+
+    /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
+    public matrixMode: number = 0;
+
     /** @hidden */
     public _systemValue: Nullable<NodeMaterialSystemValues> = null;
 
@@ -343,8 +352,13 @@ export class InputBlock extends NodeMaterialBlock {
             let valueString = "";
             switch (this.type) {
                 case NodeMaterialBlockConnectionPointTypes.Float:
-                    valueString = this.value.toString();
-                    break;
+                    let returnValue = `${this._codeVariableName}.value = ${this.value};\r\n`;
+
+                    returnValue += `${this._codeVariableName}.min = ${this.min};\r\n`;
+                    returnValue += `${this._codeVariableName}.max = ${this.max};\r\n`;
+                    returnValue += `${this._codeVariableName}.matrixMode = ${this.matrixMode};\r\n`;
+
+                    return returnValue;
                 case NodeMaterialBlockConnectionPointTypes.Vector2:
                     valueString = `new BABYLON.Vector2(${this.value.x}, ${this.value.y})`;
                     break;
@@ -534,6 +548,9 @@ export class InputBlock extends NodeMaterialBlock {
         serializationObject.systemValue = this._systemValue;
         serializationObject.animationType = this._animationType;
         serializationObject.visibleInInspector = this.visibleInInspector;
+        serializationObject.min = this.min;
+        serializationObject.max = this.max;
+        serializationObject.matrixMode = this.matrixMode;
 
         if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
             if (this._storedValue.asArray) {
@@ -556,6 +573,9 @@ export class InputBlock extends NodeMaterialBlock {
         this._systemValue = serializationObject.systemValue || serializationObject.wellKnownValue;
         this._animationType = serializationObject.animationType;
         this.visibleInInspector = serializationObject.visibleInInspector;
+        this.min = serializationObject.min || 0;
+        this.max = serializationObject.max || 0;
+        this.matrixMode = serializationObject.matrixMode || 0;
 
         if (!serializationObject.valueType) {
             return;

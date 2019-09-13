@@ -16,6 +16,7 @@
         "documentationFile": "documentation.d.ts",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
+            "../../dist/preview release/typedoc.d.ts",
             "../../dist/preview release/gui/babylon.gui.d.ts",
             "../../dist/preview release/loaders/babylonjs.loaders.d.ts",
             "../../dist/preview release/serializers/babylonjs.serializers.d.ts",
