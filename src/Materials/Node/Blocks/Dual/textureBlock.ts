@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockCo
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { BaseTexture } from '../../../Textures/baseTexture';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { InputBlock } from '../Input/inputBlock';
@@ -23,13 +22,11 @@ export class TextureBlock extends NodeMaterialBlock {
     private _transformedUVName: string;
     private _textureTransformName: string;
     private _textureInfoName: string;
-    private _mainUVName: string;
-    private _mainUVDefineName: string;
 
     /**
      * Gets or sets the texture associated with the node
      */
-    public texture: Nullable<BaseTexture>;
+    public texture: Nullable<Texture>;
 
     /**
      * Create a new TextureBlock
@@ -159,14 +156,6 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
-        if (!defines._areTexturesDirty) {
-            return;
-        }
-
-        defines.setValue(this._mainUVDefineName, false);
-    }
-
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
@@ -176,12 +165,7 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
-            defines.setValue(this._defineName, true);
-        } else {
-            defines.setValue(this._defineName, false);
-            defines.setValue(this._mainUVDefineName, true);
-        }
+        defines.setValue(this._defineName, !this.texture.getTextureMatrix().isIdentityAs3x2());
     }
 
     public isReady() {
@@ -213,7 +197,6 @@ export class TextureBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         this._defineName = state._getFreeDefineName("UVTRANSFORM");
-        this._mainUVDefineName = state._getFreeDefineName("vMain" + uvInput.associatedVariableName);
 
         if (uvInput.connectedPoint!.ownerBlock.isInput) {
             let uvInputOwnerBlock = uvInput.connectedPoint!.ownerBlock as InputBlock;
@@ -223,20 +206,17 @@ export class TextureBlock extends NodeMaterialBlock {
             }
         }
 
-        this._mainUVName = "vMain" + uvInput.associatedVariableName;
         this._transformedUVName = state._getFreeVariableName("transformedUV");
         this._textureTransformName = state._getFreeVariableName("textureTransform");
         this._textureInfoName = state._getFreeVariableName("textureInfoName");
 
-        state._emitVaryingFromString(this._transformedUVName, "vec2", this._defineName);
-        state._emitVaryingFromString(this._mainUVName, "vec2", this._mainUVDefineName);
-
+        state._emitVaryingFromString(this._transformedUVName, "vec2");
         state._emitUniformFromString(this._textureTransformName, "mat4", this._defineName);
 
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\r\n`;
         state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\r\n`;
+        state.compilationString += `${this._transformedUVName} = ${uvInput.associatedVariableName}.xy;\r\n`;
         state.compilationString += `#endif\r\n`;
     }
 
@@ -250,11 +230,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         const complement = ` * ${this._textureInfoName}`;
 
-        state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._transformedUVName}).${swizzle}${complement};\r\n`;
-        state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._mainUVName}).${swizzle}${complement};\r\n`;
-        state.compilationString += `#endif\r\n`;
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -297,6 +273,13 @@ export class TextureBlock extends NodeMaterialBlock {
         var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\r\n`;
         codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\r\n`;
         codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\r\n`;
+        codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\r\n`;
+        codeString += `${this._codeVariableName}.texture.vAng = ${this.texture.vAng};\r\n`;
+        codeString += `${this._codeVariableName}.texture.wAng = ${this.texture.wAng};\r\n`;
+        codeString += `${this._codeVariableName}.texture.uOffset = ${this.texture.uOffset};\r\n`;
+        codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\r\n`;
+        codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\r\n`;
+        codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\r\n`;
 
         return codeString;
     }
@@ -315,7 +298,7 @@ export class TextureBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture) {
-            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
+            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
     }
 }

@@ -17,6 +17,8 @@ import { TextInputLineComponent } from '../../../sharedComponents/textInputLineC
 import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
 import { Vector4PropertyTabComponent } from '../../propertyTab/properties/vector4PropertyTabComponent';
 import { MatrixPropertyTabComponent } from '../../propertyTab/properties/matrixPropertyTabComponent';
+import { FloatLineComponent } from '../../../sharedComponents/floatLineComponent';
+import { SliderLineComponent } from '../../../sharedComponents/sliderLineComponent';
 
 interface IInputPropertyTabComponentProps {
     globalState: GlobalState;
@@ -32,10 +34,30 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
     renderValue(globalState: GlobalState) {
         let inputBlock = this.props.inputNode.inputBlock;
         switch (inputBlock.type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
+            case NodeMaterialBlockConnectionPointTypes.Float: {
+                let cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
                 return (
-                    <FloatPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                    <>
+                        <FloatLineComponent label="Min" target={inputBlock} propertyName="min" onChange={() => {
+                            this.forceUpdate();
+                        }}></FloatLineComponent>
+                        <FloatLineComponent label="Max" target={inputBlock} propertyName="max" onChange={() => {
+                            this.forceUpdate();
+                        }}></FloatLineComponent>      
+
+                        {
+                            cantDisplaySlider &&
+                            <FloatPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                        }        
+                        {
+                            !cantDisplaySlider &&
+                            <SliderLineComponent label="Value" target={inputBlock} propertyName="value" step={0.1} minimum={inputBlock.min} maximum={inputBlock.max} onChange={() => {
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            }}/>
+                        }
+                    </>
                 );
+            }
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 return (
                     <Vector2PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />

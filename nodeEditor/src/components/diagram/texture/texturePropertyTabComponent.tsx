@@ -10,6 +10,9 @@ import { LineContainerComponent } from '../../../sharedComponents/lineContainerC
 import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
 import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
+import { SliderLineComponent } from '../../../sharedComponents/sliderLineComponent';
+import { FloatLineComponent } from '../../../sharedComponents/floatLineComponent';
+import { ButtonLineComponent } from '../../../sharedComponents/buttonLineComponent';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
@@ -24,6 +27,13 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         let texture = this.props.node.texture as BaseTexture;
 
         this.state = {isEmbedded: !texture || texture.name.substring(0, 4) !== "http"};
+    }
+
+    private _generateRandomForCache() {
+        return 'xxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, (c) => {
+            var r = Math.random() * 10 | 0;
+            return r.toString();
+        });
     }
 
 
@@ -91,6 +101,8 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
             url = texture.name;
         }
 
+        url = url.replace(/\?nocache=\d+/, "");
+        
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
@@ -109,9 +121,63 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                     {
                         texture &&
                         <CheckBoxLineComponent label="Clamp V" isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => {
-                            texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE
+                            texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }} />
+                    }        
+                    {
+                        texture &&
+                        <FloatLineComponent label="Offset U" target={texture} propertyName="uOffset" 
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }
+                    {
+                        texture &&
+                        <FloatLineComponent label="Offset U" target={texture} propertyName="vOffset"
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }
+                    {
+                        texture &&
+                        <FloatLineComponent label="Scale U" target={texture} propertyName="uScale"
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }} />
+                    }
+                    {
+                        texture &&
+                        <FloatLineComponent label="Scale V" target={texture} propertyName="vScale"
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }} />
+                    }
+                    {
+                        texture &&
+                        <SliderLineComponent label="Rotation U" target={texture} propertyName="uAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }
+                    {
+                        texture &&
+                        <SliderLineComponent label="Rotation V" target={texture} propertyName="vAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
+                    }                    
+                    {
+                        texture &&
+                        <SliderLineComponent label="Rotation W" target={texture} propertyName="wAng" minimum={0} maximum={Math.PI * 2} useEuler={true} step={0.1}
+                        onChange={() => {
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}
+                        />
                     }
                 </LineContainerComponent>
                 <LineContainerComponent title="SOURCE">
@@ -127,6 +193,10 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                     {
                         !this.state.isEmbedded &&
                         <TextInputLineComponent label="Link" globalState={this.props.globalState} value={url} onChange={newUrl => this.replaceTextureWithUrl(newUrl)}/>
+                    }
+                    {
+                        !this.state.isEmbedded && url &&
+                        <ButtonLineComponent label="Refresh" onClick={() => this.replaceTextureWithUrl(url + "?nocache=" + this._generateRandomForCache())}/>
                     }
                 </LineContainerComponent>
             </div>

@@ -204,6 +204,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public BRDF_V_HEIGHT_CORRELATED = false;
     public MS_BRDF_ENERGY_CONSERVATION = false;
+    public SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = false;
 
     public SHEEN = false;
     public SHEEN_TEXTURE = false;

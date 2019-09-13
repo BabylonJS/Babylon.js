@@ -38,9 +38,14 @@ import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/li
 import { MaxBlock } from 'babylonjs/Materials/Node/Blocks/maxBlock';
 import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
 import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/perturbNormalBlock';
+import { LengthBlock } from 'babylonjs/Materials/Node/Blocks/lengthBlock';
+import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
+import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
+import { PowBlock } from 'babylonjs/Materials/Node/Blocks/powBlock';
+import { Scene } from 'babylonjs/scene';
 
 export class BlockTools {
-    public static GetBlockFromString(data: string) {
+    public static GetBlockFromString(data: string, scene: Scene) {
         switch (data) {
             case "BonesBlock":
                 return new BonesBlock("Bones");
@@ -82,6 +87,8 @@ export class BlockTools {
                 return new CrossBlock("Cross");
             case "DotBlock":
                 return new DotBlock("Dot");
+            case "PowBlock":
+                return new PowBlock("Pow");
             case "MultiplyBlock":
                 return new MultiplyBlock("Multiply");
             case "TransformBlock":
@@ -107,11 +114,19 @@ export class BlockTools {
             case "ViewDirectionBlock":
                 return new ViewDirectionBlock("View direction");    
             case "LightInformationBlock":
-                return new LightInformationBlock("Light information");         
+                let lightInformationBlock = new LightInformationBlock("Light information");
+                lightInformationBlock.light = scene.lights.length ? scene.lights[0] : null;
+                return lightInformationBlock;
             case "MaxBlock":
                 return new MaxBlock("Max");       
             case "MinBlock":
-                return new MinBlock("Min");        
+                return new MinBlock("Min");      
+            case "LengthBlock":
+                return new LengthBlock("Length");   
+            case "DistanceBlock":
+                return new DistanceBlock("Distance");     
+            case "NegateBlock":
+                return new NegateBlock("Negate");                                     
             case "PerturbNormalBlock":                                          
                 return new PerturbNormalBlock("Perturb normal");        
             case "CosBlock": {
@@ -128,6 +143,11 @@ export class BlockTools {
                 let absBlock = new TrigonometryBlock("Abs");
                 absBlock.operation = TrigonometryBlockOperations.Abs;
                 return absBlock;
+            }            
+            case "SqrtBlock": {
+                let sqrtBlock = new TrigonometryBlock("Sqrt");
+                sqrtBlock.operation = TrigonometryBlockOperations.Sqrt;
+                return sqrtBlock;
             }
             case "ExpBlock": {
                 let expBlock = new TrigonometryBlock("Exp");

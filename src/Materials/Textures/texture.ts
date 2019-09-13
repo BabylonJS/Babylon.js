@@ -13,6 +13,7 @@ import { Engine } from '../../Engines/engine';
 import { TimingTools } from '../../Misc/timingTools';
 import { InstantiationTools } from '../../Misc/instantiationTools';
 import { Plane } from '../../Maths/math.plane';
+import { StringTools } from '../../Misc/stringTools';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -23,6 +24,11 @@ declare type RenderTargetTexture = import("../../Materials/Textures/renderTarget
  * @see http://doc.babylonjs.com/babylon101/materials#texture
  */
 export class Texture extends BaseTexture {
+    /**
+     * Gets or sets a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
+     */
+    public static SerializeBuffers = true;
+
     /** @hidden */
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
         throw _DevTools.WarnImport("CubeTexture");
@@ -580,19 +586,30 @@ export class Texture extends BaseTexture {
      * @returns The JSON representation of the texture
      */
     public serialize(): any {
+        let savedName = this.name;
+        if (!Texture.SerializeBuffers) {
+            if (StringTools.StartsWith(this.name, "data:")) {
+                this.name = "";
+            }
+        }
+
         var serializationObject = super.serialize();
 
         if (!serializationObject) {
             return null;
         }
 
-        if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
-            serializationObject.base64String = this._buffer;
-            serializationObject.name = serializationObject.name.replace("data:", "");
+        if (Texture.SerializeBuffers) {
+            if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
+                serializationObject.base64String = this._buffer;
+                serializationObject.name = serializationObject.name.replace("data:", "");
+            }
         }
 
         serializationObject.invertY = this._invertY;
         serializationObject.samplingMode = this.samplingMode;
+
+        this.name = savedName;
 
         return serializationObject;
     }
