@@ -33,5 +33,5 @@ steps:
     solution: 'buildUWP/BabylonNative.sln'
     maximumCpuCount: true
     configuration: 'Release'
-    msbuildArgs: '/p:AppxPackageSigningEnabled=false'
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false /p:PackageCertificatePassword="$(pfxPassWord)"'
   displayName: 'Build UWP'
