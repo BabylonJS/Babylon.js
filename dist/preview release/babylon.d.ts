@@ -53455,8 +53455,8 @@ declare module BABYLON {
      * Block used to get data information from a light
      */
     export class LightInformationBlock extends NodeMaterialBlock {
-        private _lightDataDefineName;
-        private _lightColorDefineName;
+        private _lightDataUniformName;
+        private _lightColorUniformName;
         /**
          * Gets or sets the light associated with this block
          */
@@ -53483,6 +53483,10 @@ declare module BABYLON {
          * Gets the direction output component
          */
         readonly color: NodeMaterialConnectionPoint;
+        /**
+     * Gets the direction output component
+     */
+        readonly intensity: NodeMaterialConnectionPoint;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
         serialize(): any;

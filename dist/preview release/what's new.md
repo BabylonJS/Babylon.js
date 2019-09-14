@@ -113,6 +113,9 @@
 ### Navigation Mesh
 - Added moveAlong function to cast a segment on mavmesh ([CedricGuillemet](https://github.com/CedricGuillemet/))
 
+### Node Material
+- Added Light intensity output to LightInformationBlock ([Drigax](https://github.com/drigax))
+
 ### Documentation
 - Added a note on shallow bounding of getBoundingInfo ([tibotiber](https://github.com/tibotiber))
 
