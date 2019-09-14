@@ -15,9 +15,9 @@ import { PointLight } from '../../../../Lights/pointLight';
  * Block used to get data information from a light
  */
 export class LightInformationBlock extends NodeMaterialBlock {
-    private _lightDataDefineName: string;
-    private _lightColorDefineName: string;
-    private _lightIntensityDefineName: string;
+    private _lightDataUniformName: string;
+    private _lightColorUniformName: string;
+    private _lightIntensityUniformName: string;
 
     /**
      * Gets or sets the light associated with this block
@@ -90,16 +90,16 @@ export class LightInformationBlock extends NodeMaterialBlock {
         }
 
         if (!light || !light.isEnabled) {
-            effect.setFloat3(this._lightDataDefineName, 0, 0, 0);
-            effect.setFloat3(this._lightColorDefineName, 0, 0, 0);
-            effect.setFloat(this._lightIntensityDefineName, 0);
+            effect.setFloat3(this._lightDataUniformName, 0, 0, 0);
+            effect.setFloat3(this._lightColorUniformName, 0, 0, 0);
+            effect.setFloat(this._lightIntensityUniformName, 0);
             return;
         }
 
-        light.transferToNodeMaterialEffect(effect, this._lightDataDefineName);
+        light.transferToNodeMaterialEffect(effect, this._lightDataUniformName);
 
-        effect.setColor3(this._lightColorDefineName, light.diffuse);
-        effect.setFloat(this._lightIntensityDefineName, light.intensity);
+        effect.setColor3(this._lightColorUniformName, light.diffuse);
+        effect.setFloat(this._lightIntensityUniformName, light.intensity);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -122,23 +122,23 @@ export class LightInformationBlock extends NodeMaterialBlock {
             state.compilationString += this._declareOutput(color, state) + ` = vec3(0.);\r\n`;
             state.compilationString += this._declareOutput(intensity, state) + ` = float(0.);\r\n`;
         } else {
-            this._lightDataDefineName = state._getFreeDefineName("lightData");
-            state._emitUniformFromString(this._lightDataDefineName, "vec3");
+            this._lightDataUniformName = state._getFreeVariableName("lightData");
+            state._emitUniformFromString(this._lightDataUniformName, "vec3");
 
-            this._lightColorDefineName = state._getFreeDefineName("lightColor");
-            state._emitUniformFromString(this._lightColorDefineName, "vec3");
+            this._lightColorUniformName = state._getFreeVariableName("lightColor");
+            state._emitUniformFromString(this._lightColorUniformName, "vec3");
 
-            this._lightIntensityDefineName = state._getFreeDefineName("lightIntensity");
-            state._emitUniformFromString(this._lightIntensityDefineName, "float");
+            this._lightIntensityUniformName = state._getFreeVariableName("lightIntensity");
+            state._emitUniformFromString(this._lightIntensityUniformName, "float");
 
             if (light instanceof PointLight) {
-                state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this._lightDataDefineName} - ${this.worldPosition.associatedVariableName}.xyz);\r\n`;
+                state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this._lightDataUniformName} - ${this.worldPosition.associatedVariableName}.xyz);\r\n`;
             } else {
-                state.compilationString += this._declareOutput(direction, state) + ` = ${this._lightDataDefineName};\r\n`;
+                state.compilationString += this._declareOutput(direction, state) + ` = ${this._lightDataUniformName};\r\n`;
             }
 
-            state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorDefineName};\r\n`;
-            state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightIntensityDefineName};\r\n`;
+            state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorUniformName};\r\n`;
+            state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightIntensityUniformName};\r\n`;
         }
 
         return this;
