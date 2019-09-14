@@ -21,10 +21,12 @@ import { GLTFData, GLTF2Export } from "babylonjs-serializers/glTF/2.0/index";
 import { FloatLineComponent } from '../lines/floatLineComponent';
 import { IScreenshotSize } from 'babylonjs/Misc/interfaces/screenshotSize';
 import { NumericInputComponent } from '../lines/numericInputComponent';
+import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;
     private _screenShotSize: IScreenshotSize = { precision: 1 };
+    private _useWidthHeight = false;
     constructor(props: IPaneComponentProps) {
         super(props);
 
@@ -56,9 +58,19 @@ export class ToolsTabComponent extends PaneComponent {
 
     captureRender() {
         const scene = this.props.scene;
-        if (scene.activeCamera) {
-            Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize)
+        const oldScreenshotSize: IScreenshotSize = {
+            height: this._screenShotSize.height,
+            width: this._screenShotSize.width,
+            precision: this._screenShotSize.precision
+        };
+        if (!this._useWidthHeight) {
+            this._screenShotSize.width = undefined;
+            this._screenShotSize.height = undefined;
         }
+        if (scene.activeCamera) {
+            Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize);
+        }
+        this._screenShotSize = oldScreenshotSize;
     }
 
     recordVideo() {
@@ -147,13 +159,22 @@ export class ToolsTabComponent extends PaneComponent {
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
                     <ButtonLineComponent label="Render" onClick={() => this.captureRender()} />
-                    <LineContainerComponent globalState={this.props.globalState} title="Render Settings">
+                    <LineContainerComponent globalState={this.props.globalState} title="RENDER SETTINGS">
                         <div className="vector3Line">
                             <FloatLineComponent label="Precision" target={this._screenShotSize} propertyName='precision' onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <CheckBoxLineComponent label="Use Width/Height" onSelect={ value => {
+                                this._useWidthHeight = value;
+                                this.forceUpdate();
+                            }
+                            } isSelected={() => this._useWidthHeight} />
+                            {
+                            this._useWidthHeight &&
                             <div className="secondLine">
-                                <NumericInputComponent label="Width" value={this._screenShotSize.width ? this._screenShotSize.width : 0} onChange={value => this._screenShotSize.width = value} />
-                                <NumericInputComponent label="Height" value={this._screenShotSize.height ? this._screenShotSize.height : 0} onChange={value => this._screenShotSize.height = value} />
+                                <NumericInputComponent label="Width" step={1} value={this._screenShotSize.width ? this._screenShotSize.width : 512} onChange={value => this._screenShotSize.width = value} />
+                                <NumericInputComponent label="Height" step={1} value={this._screenShotSize.height ? this._screenShotSize.height : 512} onChange={value => this._screenShotSize.height = value} />
                             </div>
+                            }
+                            
                         </div>
                     </LineContainerComponent>
 
