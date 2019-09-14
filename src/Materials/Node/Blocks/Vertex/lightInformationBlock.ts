@@ -17,6 +17,7 @@ import { PointLight } from '../../../../Lights/pointLight';
 export class LightInformationBlock extends NodeMaterialBlock {
     private _lightDataDefineName: string;
     private _lightColorDefineName: string;
+    private _lightIntensityDefineName: string;
 
     /**
      * Gets or sets the light associated with this block
@@ -33,6 +34,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerOutput("direction", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("color", NodeMaterialBlockConnectionPointTypes.Color3);
+        this.registerOutput("intensity", NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -64,6 +66,13 @@ export class LightInformationBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
+        /**
+     * Gets the direction output component
+     */
+    public get intensity(): NodeMaterialConnectionPoint {
+        return this._outputs[2];
+    }
+
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
@@ -83,12 +92,14 @@ export class LightInformationBlock extends NodeMaterialBlock {
         if (!light || !light.isEnabled) {
             effect.setFloat3(this._lightDataDefineName, 0, 0, 0);
             effect.setFloat3(this._lightColorDefineName, 0, 0, 0);
+            effect.setFloat(this._lightIntensityDefineName, 0);
             return;
         }
 
         light.transferToNodeMaterialEffect(effect, this._lightDataDefineName);
 
         effect.setColor3(this._lightColorDefineName, light.diffuse);
+        effect.setFloat(this._lightIntensityDefineName, light.intensity);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -98,6 +109,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
 
         let direction = this.direction;
         let color = this.color;
+        let intensity = this.intensity;
 
         let light = this.light;
 
@@ -108,12 +120,16 @@ export class LightInformationBlock extends NodeMaterialBlock {
         if (!light) {
             state.compilationString += this._declareOutput(direction, state) + ` = vec3(0.);\r\n`;
             state.compilationString += this._declareOutput(color, state) + ` = vec3(0.);\r\n`;
+            state.compilationString += this._declareOutput(intensity, state) + ` = float(0.);\r\n`;
         } else {
             this._lightDataDefineName = state._getFreeDefineName("lightData");
             state._emitUniformFromString(this._lightDataDefineName, "vec3");
 
             this._lightColorDefineName = state._getFreeDefineName("lightColor");
             state._emitUniformFromString(this._lightColorDefineName, "vec3");
+
+            this._lightIntensityDefineName = state._getFreeDefineName("lightIntensity");
+            state._emitUniformFromString(this._lightIntensityDefineName, "float");
 
             if (light instanceof PointLight) {
                 state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this._lightDataDefineName} - ${this.worldPosition.associatedVariableName}.xyz);\r\n`;
@@ -122,6 +138,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
             }
 
             state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorDefineName};\r\n`;
+            state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightIntensityDefineName};\r\n`;
         }
 
         return this;
