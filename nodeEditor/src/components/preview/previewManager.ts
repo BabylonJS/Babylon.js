@@ -73,9 +73,6 @@ export class PreviewManager {
             this._engine.resize();
             this._scene.render();
         });
-
-        let serializationObject = this._nodeMaterial.serialize();
-        this._updatePreview(serializationObject);
     }
 
     private _handleAnimations() {
@@ -97,11 +94,6 @@ export class PreviewManager {
     }
 
     private _prepareMeshes() {
-        // Material
-        for (var mesh of this._meshes) {
-            mesh.material = this._material;
-        }
-
         // Light
         if (!this._scene.lights.length) {
             this._light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
@@ -129,6 +121,10 @@ export class PreviewManager {
 
         // Animations
         this._handleAnimations();
+
+        // Material        
+        let serializationObject = this._nodeMaterial.serialize();
+        this._updatePreview(serializationObject);
     }
 
     private _refreshPreviewMesh() {    
