@@ -335,6 +335,16 @@ export class NodeMaterialBlock {
     }
 
     /**
+     * Initialize defines for shader compilation
+     * @param mesh defines the mesh to be rendered
+     * @param nodeMaterial defines the node material requesting the update
+     * @param defines defines the material defines to update
+     * @param useInstances specifies that instances should be used
+     */
+    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+    }
+
+    /**
      * Update defines for shader compilation
      * @param mesh defines the mesh to be rendered
      * @param nodeMaterial defines the node material requesting the update
