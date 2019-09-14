@@ -1,0 +1,37 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- script: |
+    git submodule update --init --recursive
+  displayName: 'Checkout dependencies'
+
+- script: |
+    mkdir buildWin32
+    cd buildWin32
+    cmake ..
+  displayName: 'Generate Win32 solution'
+    
+- task: MSBuild@1
+  inputs:
+    solution: 'buildWin32/BabylonNative.sln'
+    maximumCpuCount: true
+    configuration: 'Release'
+  displayName: 'Build WIN32'
+  
+- script: |
+    mkdir buildUWP
+    cd buildUWP
+    cmake .. -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DBABYLON_NATIVE_PLATFORM="UWP"
+  displayName: 'Generate UWP solution'
+  
+- task: VSBuild@1
+  inputs:
+    solution: 'buildUWP/BabylonNative.sln'
+    maximumCpuCount: true
+    configuration: 'Release'
+    msbuildArgs: '/p:AppxPackageSigningEnabled=false'
+  displayName: 'Build UWP'
