@@ -17,7 +17,6 @@ import { PointLight } from '../../../../Lights/pointLight';
 export class LightInformationBlock extends NodeMaterialBlock {
     private _lightDataUniformName: string;
     private _lightColorUniformName: string;
-    private _lightIntensityUniformName: string;
 
     /**
      * Gets or sets the light associated with this block
@@ -91,15 +90,13 @@ export class LightInformationBlock extends NodeMaterialBlock {
 
         if (!light || !light.isEnabled) {
             effect.setFloat3(this._lightDataUniformName, 0, 0, 0);
-            effect.setFloat3(this._lightColorUniformName, 0, 0, 0);
-            effect.setFloat(this._lightIntensityUniformName, 0);
+            effect.setFloat4(this._lightColorUniformName, 0, 0, 0, 0);
             return;
         }
 
         light.transferToNodeMaterialEffect(effect, this._lightDataUniformName);
 
-        effect.setColor3(this._lightColorUniformName, light.diffuse);
-        effect.setFloat(this._lightIntensityUniformName, light.intensity);
+        effect.setColor4(this._lightColorUniformName, light.diffuse, light.intensity);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -117,19 +114,15 @@ export class LightInformationBlock extends NodeMaterialBlock {
             light = state.sharedData.scene.lights[0];
         }
 
+        this._lightDataUniformName = state._getFreeVariableName("lightData");
+        this._lightColorUniformName = state._getFreeVariableName("lightColor");
+
         if (!light) {
             state.compilationString += this._declareOutput(direction, state) + ` = vec3(0.);\r\n`;
             state.compilationString += this._declareOutput(color, state) + ` = vec3(0.);\r\n`;
-            state.compilationString += this._declareOutput(intensity, state) + ` = float(0.);\r\n`;
         } else {
-            this._lightDataUniformName = state._getFreeVariableName("lightData");
             state._emitUniformFromString(this._lightDataUniformName, "vec3");
-
-            this._lightColorUniformName = state._getFreeVariableName("lightColor");
-            state._emitUniformFromString(this._lightColorUniformName, "vec3");
-
-            this._lightIntensityUniformName = state._getFreeVariableName("lightIntensity");
-            state._emitUniformFromString(this._lightIntensityUniformName, "float");
+            state._emitUniformFromString(this._lightColorUniformName, "vec4");
 
             if (light instanceof PointLight) {
                 state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this._lightDataUniformName} - ${this.worldPosition.associatedVariableName}.xyz);\r\n`;
@@ -137,8 +130,8 @@ export class LightInformationBlock extends NodeMaterialBlock {
                 state.compilationString += this._declareOutput(direction, state) + ` = ${this._lightDataUniformName};\r\n`;
             }
 
-            state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorUniformName};\r\n`;
-            state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightIntensityUniformName};\r\n`;
+            state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorUniformName}.rgb;\r\n`;
+            state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightColorUniformName}.a;\r\n`;
         }
 
         return this;
