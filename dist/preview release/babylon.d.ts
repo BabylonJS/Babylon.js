@@ -53457,7 +53457,6 @@ declare module BABYLON {
     export class LightInformationBlock extends NodeMaterialBlock {
         private _lightDataUniformName;
         private _lightColorUniformName;
-        private _lightIntensityUniformName;
         /**
          * Gets or sets the light associated with this block
          */

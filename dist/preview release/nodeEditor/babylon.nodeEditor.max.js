@@ -64952,8 +64952,6 @@ var PreviewManager = /** @class */ (function () {
             _this._engine.resize();
             _this._scene.render();
         });
-        var serializationObject = this._nodeMaterial.serialize();
-        this._updatePreview(serializationObject);
     }
     PreviewManager.prototype._handleAnimations = function () {
         this._scene.stopAllAnimations();
@@ -64972,11 +64970,6 @@ var PreviewManager = /** @class */ (function () {
         }
     };
     PreviewManager.prototype._prepareMeshes = function () {
-        // Material
-        for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
-            var mesh = _a[_i];
-            mesh.material = this._material;
-        }
         // Light
         if (!this._scene.lights.length) {
             this._light = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
@@ -64998,6 +64991,9 @@ var PreviewManager = /** @class */ (function () {
         this._camera.pinchDeltaPercentage = 0.01;
         // Animations
         this._handleAnimations();
+        // Material        
+        var serializationObject = this._nodeMaterial.serialize();
+        this._updatePreview(serializationObject);
     };
     PreviewManager.prototype._refreshPreviewMesh = function () {
         var _this = this;
