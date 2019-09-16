@@ -311,6 +311,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/numericInputComp
         value: number;
         step?: number;
         onChange: (value: number) => void;
+        precision?: number;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -1775,10 +1776,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
     import { Node } from "babylonjs/node";
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
+        private _screenShotSize;
+        private _useWidthHeight;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
         captureScreenshot(): void;
+        captureRender(): void;
         recordVideo(): void;
         shouldExport(node: Node): boolean;
         exportGLTF(): void;
@@ -2586,6 +2590,7 @@ declare module INSPECTOR {
         value: number;
         step?: number;
         onChange: (value: number) => void;
+        precision?: number;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -3684,10 +3689,13 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
+        private _screenShotSize;
+        private _useWidthHeight;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
         captureScreenshot(): void;
+        captureRender(): void;
         recordVideo(): void;
         shouldExport(node: BABYLON.Node): boolean;
         exportGLTF(): void;
