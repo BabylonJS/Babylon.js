@@ -188,6 +188,7 @@ namespace babylon
         };
 
         babylon::Env env{ GetModulePath().u8string().data(), std::move(executeOnScriptThread) };
+
         m_env = &env;
         auto hostScopeGuard = gsl::finally([this] { m_env = nullptr; });
 
