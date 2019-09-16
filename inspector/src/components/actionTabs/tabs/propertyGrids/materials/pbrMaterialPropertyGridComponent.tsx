@@ -38,13 +38,18 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         this.props.material.debugMode = state ? 62 : 0;
     }
 
+    switchRoughnessMode(state: boolean) {
+        this.props.material.debugMode = state ? 63 : 0;
+    }
+
     renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>) {
         const material = this.props.material;
 
         return (
-            <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">
+            <LineContainerComponent globalState={this.props.globalState} title="CHANNELS">
                 <TextureLinkLineComponent label="Albedo" texture={material.albedoTexture} propertyName="albedoTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent customDebugAction={state => this.switchMetallicMode(state)} label="Metallic" texture={material.metallicTexture} propertyName="metallicTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                <TextureLinkLineComponent customDebugAction={state => this.switchRoughnessMode(state)} label="Roughness" texture={material.metallicTexture} propertyName="metallicTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Reflection" texture={material.reflectionTexture} propertyName="reflectionTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Refraction" texture={material.refractionTexture} propertyName="refractionTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Micro-surface" texture={material.microSurfaceTexture} propertyName="microSurfaceTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
