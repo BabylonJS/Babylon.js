@@ -24,18 +24,21 @@ export class GlobalState {
     onErrorMessageDialogRequiredObservable = new Observable<string>();
     onPreviewCommandActivated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
+    onBackFaceCullingChanged = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
     previewMeshType: PreviewMeshType;
     previewMeshFile: File;
     rotatePreview: boolean;
     backgroundColor: Color4;
+    backFaceCulling: boolean;
     blockKeyboardEvents = false;
     
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
     public constructor() {
         this.previewMeshType = DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box);
+        this.backFaceCulling = DataStorage.ReadBoolean("BackFaceCulling", true);
 
         let r = DataStorage.ReadNumber("BackgroundColorR", 0.37);
         let g = DataStorage.ReadNumber("BackgroundColorG", 0.37);

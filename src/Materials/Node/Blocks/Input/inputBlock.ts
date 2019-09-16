@@ -573,7 +573,7 @@ export class InputBlock extends NodeMaterialBlock {
             return finalOutput;
         }
         return "";
-    }    
+    }
 
     public serialize(): any {
         let serializationObject = super.serialize();
