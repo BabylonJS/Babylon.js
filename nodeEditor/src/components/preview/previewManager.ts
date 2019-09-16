@@ -22,6 +22,7 @@ export class PreviewManager {
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
+    private _onBackFaceCullingChangedObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
     private _light: HemisphericLight;
@@ -55,6 +56,11 @@ export class PreviewManager {
 
         this._onAnimationCommandActivatedObserver = globalState.onAnimationCommandActivated.add(() => {
             this._handleAnimations();
+        });
+
+        this._onBackFaceCullingChangedObserver = globalState.onBackFaceCullingChanged.add(() => {
+            let serializationObject = this._nodeMaterial.serialize();
+            this._updatePreview(serializationObject);
         });
 
         this._engine = new Engine(targetCanvas, true);
@@ -190,6 +196,8 @@ export class PreviewManager {
         try {
             let tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
 
+            tempMaterial.backFaceCulling = this._globalState.backFaceCulling;
+
             if (this._meshes.length) {
                 let tasks = this._meshes.map(m => this._forceCompilationAsync(tempMaterial, m));
 
@@ -218,6 +226,7 @@ export class PreviewManager {
         this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
+        this._globalState.onBackFaceCullingChanged.remove(this._onBackFaceCullingChangedObserver);
 
         if (this._material) {
             this._material.dispose();

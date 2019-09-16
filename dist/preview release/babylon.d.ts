@@ -52029,6 +52029,44 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum defining the mode of a NodeMaterialBlockConnectionPoint
+     */
+    export enum NodeMaterialBlockConnectionPointMode {
+        /** Value is an uniform */
+        Uniform = 0,
+        /** Value is a mesh attribute */
+        Attribute = 1,
+        /** Value is a varying between vertex and fragment shaders */
+        Varying = 2,
+        /** Mode is undefined */
+        Undefined = 3
+    }
+}
+declare module BABYLON {
+    /**
+     * Enum used to define system values e.g. values automatically provided by the system
+     */
+    export enum NodeMaterialSystemValues {
+        /** World */
+        World = 1,
+        /** View */
+        View = 2,
+        /** Projection */
+        Projection = 3,
+        /** ViewProjection */
+        ViewProjection = 4,
+        /** WorldView */
+        WorldView = 5,
+        /** WorldViewProjection */
+        WorldViewProjection = 6,
+        /** CameraPosition */
+        CameraPosition = 7,
+        /** Fog Color */
+        FogColor = 8
+    }
+}
+declare module BABYLON {
+    /**
      * Root class for all node material optimizers
      */
     export class NodeMaterialOptimizer {
@@ -52131,29 +52169,6 @@ declare module BABYLON {
          */
         readonly a: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Enum used to define system values e.g. values automatically provided by the system
-     */
-    export enum NodeMaterialSystemValues {
-        /** World */
-        World = 1,
-        /** View */
-        View = 2,
-        /** Projection */
-        Projection = 3,
-        /** ViewProjection */
-        ViewProjection = 4,
-        /** WorldView */
-        WorldView = 5,
-        /** WorldViewProjection */
-        WorldViewProjection = 6,
-        /** CameraPosition */
-        CameraPosition = 7,
-        /** Fog Color */
-        FogColor = 8
     }
 }
 declare module BABYLON {
@@ -52733,6 +52748,10 @@ declare module BABYLON {
          */
         uniforms: string[];
         /**
+        * Gets the list of emitted constants
+        */
+        constants: string[];
+        /**
          * Gets the list of emitted uniform buffers
          */
         uniformBuffers: string[];
@@ -52772,6 +52791,8 @@ declare module BABYLON {
         _attributeDeclaration: string;
         /** @hidden */
         _uniformDeclaration: string;
+        /** @hidden */
+        _constantDeclaration: string;
         /** @hidden */
         _samplerDeclaration: string;
         /** @hidden */
@@ -53048,21 +53069,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Enum defining the mode of a NodeMaterialBlockConnectionPoint
-     */
-    export enum NodeMaterialBlockConnectionPointMode {
-        /** Value is an uniform */
-        Uniform = 0,
-        /** Value is a mesh attribute */
-        Attribute = 1,
-        /** Value is a varying between vertex and fragment shaders */
-        Varying = 2,
-        /** Mode is undefined */
-        Undefined = 3
-    }
-}
-declare module BABYLON {
-    /**
      * Enum defining the type of animations supported by InputBlock
      */
     export enum AnimatedInputBlockTypes {
@@ -53093,6 +53099,8 @@ declare module BABYLON {
         _systemValue: Nullable<NodeMaterialSystemValues>;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
+        /** Gets or sets a boolean indicating that the value of this input will not change after a build */
+        isConstant: boolean;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -53181,13 +53189,14 @@ declare module BABYLON {
          * Set the input block to its default value (based on its type)
          */
         setDefaultValue(): void;
-        protected _dumpPropertiesCode(): string;
+        private _emitConstant;
         private _emit;
         /** @hidden */
         _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix): void;
         /** @hidden */
         _transmit(effect: Effect, scene: Scene): void;
         protected _buildBlock(state: NodeMaterialBuildState): void;
+        protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
@@ -53457,6 +53466,7 @@ declare module BABYLON {
     export class LightInformationBlock extends NodeMaterialBlock {
         private _lightDataUniformName;
         private _lightColorUniformName;
+        private _lightTypeDefineName;
         /**
          * Gets or sets the light associated with this block
          */
@@ -53488,40 +53498,8 @@ declare module BABYLON {
      */
         readonly intensity: NodeMaterialConnectionPoint;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-        serialize(): any;
-        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to add an alpha test in the fragment shader
-     */
-    export class AlphaTestBlock extends NodeMaterialBlock {
-        /**
-         * Gets or sets the alpha value where alpha testing happens
-         */
-        alphaCutOff: number;
-        /**
-         * Create a new AlphaTestBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the color input component
-         */
-        readonly color: NodeMaterialConnectionPoint;
-        /**
-         * Gets the alpha input component
-         */
-        readonly alpha: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-        protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
@@ -53611,6 +53589,32 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to discard a pixel if a value is smaller than a cutoff
+     */
+    export class DiscardBlock extends NodeMaterialBlock {
+        /**
+         * Create a new DiscardBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the color input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the cutoff input component
+         */
+        readonly cutoff: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {

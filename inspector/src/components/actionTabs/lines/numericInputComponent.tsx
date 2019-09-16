@@ -53,7 +53,6 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         this.props.onChange(valueAsNumber);
     }
 
-
     render() {
         return (
             <div className="numeric">

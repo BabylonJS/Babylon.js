@@ -1,22 +1,24 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { Nullable } from '../../../../types';
 import { Scene } from '../../../../scene';
 import { Effect } from '../../../effect';
-import { NodeMaterial } from '../../nodeMaterial';
+import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Light } from '../../../../Lights/light';
 import { PointLight } from '../../../../Lights/pointLight';
+import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 /**
  * Block used to get data information from a light
  */
 export class LightInformationBlock extends NodeMaterialBlock {
     private _lightDataUniformName: string;
     private _lightColorUniformName: string;
+    private _lightTypeDefineName: string;
 
     /**
      * Gets or sets the light associated with this block
@@ -99,40 +101,40 @@ export class LightInformationBlock extends NodeMaterialBlock {
         effect.setColor4(this._lightColorUniformName, light.diffuse, light.intensity);
     }
 
+    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        if (!defines._areLightsDirty) {
+            return;
+        }
+
+        let light = this.light;
+        defines.setValue(this._lightTypeDefineName, light && light instanceof PointLight ? true : false);
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         state.sharedData.bindableBlocks.push(this);
+        state.sharedData.blocksWithDefines.push(this);
 
         let direction = this.direction;
         let color = this.color;
         let intensity = this.intensity;
 
-        let light = this.light;
-
-        if (!light && state.sharedData.scene.lights.length) {
-            light = state.sharedData.scene.lights[0];
-        }
-
         this._lightDataUniformName = state._getFreeVariableName("lightData");
         this._lightColorUniformName = state._getFreeVariableName("lightColor");
+        this._lightTypeDefineName = state._getFreeDefineName("LIGHTPOINTTYPE");
 
-        if (!light) {
-            state.compilationString += this._declareOutput(direction, state) + ` = vec3(0.);\r\n`;
-            state.compilationString += this._declareOutput(color, state) + ` = vec3(0.);\r\n`;
-        } else {
-            state._emitUniformFromString(this._lightDataUniformName, "vec3");
-            state._emitUniformFromString(this._lightColorUniformName, "vec4");
+        state._emitUniformFromString(this._lightDataUniformName, "vec3");
+        state._emitUniformFromString(this._lightColorUniformName, "vec4");
 
-            if (light instanceof PointLight) {
-                state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this._lightDataUniformName} - ${this.worldPosition.associatedVariableName}.xyz);\r\n`;
-            } else {
-                state.compilationString += this._declareOutput(direction, state) + ` = ${this._lightDataUniformName};\r\n`;
-            }
+        state.compilationString += `#if ${this._lightTypeDefineName}\r\n`;
+        state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this._lightDataUniformName} - ${this.worldPosition.associatedVariableName}.xyz);\r\n`;
+        state.compilationString += `#else\r\n`;
+        state.compilationString += this._declareOutput(direction, state) + ` = ${this._lightDataUniformName};\r\n`;
+        state.compilationString += `#endif\r\n`;
 
-            state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorUniformName}.rgb;\r\n`;
-            state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightColorUniformName}.a;\r\n`;
-        }
+        state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorUniformName}.rgb;\r\n`;
+        state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightColorUniformName}.a;\r\n`;
 
         return this;
     }
