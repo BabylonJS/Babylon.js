@@ -1,11 +1,3 @@
-//
-//  ViewController.m
-//  TestApp.macOS
-//
-//  Created by Cedric Guillemet on 8/7/19.
-//  Copyright © 2019 Babylon team. All rights reserved.
-//
-
 #import "ViewController.h"
 #import <Babylon/RuntimeApple.h>
 #import <Shared/InputManager.h>
@@ -19,7 +11,9 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    runtime = std::make_unique<babylon::RuntimeApple>(nullptr, ".");
+    NSBundle *main = [NSBundle mainBundle];
+    NSURL * resourceUrl = [main resourceURL];
+    runtime = std::make_unique<babylon::RuntimeApple>(nullptr, [resourceUrl fileSystemRepresentation]);
     inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
     InputManager::Initialize(*runtime, *inputBuffer);
 }

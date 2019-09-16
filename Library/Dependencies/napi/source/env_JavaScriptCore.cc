@@ -1,6 +1,5 @@
 #include <napi/env.h>
 #include <napi/js_native_api_types.h>
-//#include <libplatform/libplatform.h>
 
 namespace babylon
 {
