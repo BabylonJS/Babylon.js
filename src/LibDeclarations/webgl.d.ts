@@ -45,6 +45,9 @@ interface WebGLRenderingContext {
     UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
 
+    MIN: number;
+    MAX: number;
+
     /* Multiple Render Targets */
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
