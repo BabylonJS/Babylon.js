@@ -27,7 +27,7 @@ import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { LightNodeModel } from './components/diagram/light/lightNodeModel';
 import { LightNodeFactory } from './components/diagram/light/lightNodeFactory';
 import { DataStorage } from './dataStorage';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Nullable } from 'babylonjs/types';
 import { MessageDialogComponent } from './sharedComponents/messageDialog';
