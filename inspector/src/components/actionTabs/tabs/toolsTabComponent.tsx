@@ -158,26 +158,25 @@ export class ToolsTabComponent extends PaneComponent {
                 <LineContainerComponent globalState={this.props.globalState} title="CAPTURE">
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
-                    <ButtonLineComponent label="Render" onClick={() => this.captureRender()} />
-                    <LineContainerComponent globalState={this.props.globalState} title="RENDER SETTINGS">
-                        <div className="vector3Line">
-                            <FloatLineComponent label="Precision" target={this._screenShotSize} propertyName='precision' onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <CheckBoxLineComponent label="Use Width/Height" onSelect={ value => {
-                                this._useWidthHeight = value;
-                                this.forceUpdate();
-                            }
-                            } isSelected={() => this._useWidthHeight} />
-                            {
-                            this._useWidthHeight &&
-                            <div className="secondLine">
-                                <NumericInputComponent label="Width" step={1} value={this._screenShotSize.width ? this._screenShotSize.width : 512} onChange={value => this._screenShotSize.width = value} />
-                                <NumericInputComponent label="Height" step={1} value={this._screenShotSize.height ? this._screenShotSize.height : 512} onChange={value => this._screenShotSize.height = value} />
-                            </div>
-                            }
-                            
+                </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="CAPTURE WITH RTT">
+                    <ButtonLineComponent label="Capture" onClick={() => this.captureRender()} />
+                    <div className="vector3Line">
+                        <FloatLineComponent label="Precision" target={this._screenShotSize} propertyName='precision' onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <CheckBoxLineComponent label="Use Width/Height" onSelect={ value => {
+                            this._useWidthHeight = value;
+                            this.forceUpdate();
+                        }
+                        } isSelected={() => this._useWidthHeight} />
+                        {
+                        this._useWidthHeight &&
+                        <div className="secondLine">
+                            <NumericInputComponent label="Width" precision={0} step={1} value={this._screenShotSize.width ? this._screenShotSize.width : 512} onChange={value => this._screenShotSize.width = value} />
+                            <NumericInputComponent label="Height" precision={0} step={1} value={this._screenShotSize.height ? this._screenShotSize.height : 512} onChange={value => this._screenShotSize.height = value} />
                         </div>
-                    </LineContainerComponent>
-
+                        }
+                        
+                    </div>
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="REPLAY">
                     <ButtonLineComponent label="Generate replay code" onClick={() => this.exportReplay()} />
