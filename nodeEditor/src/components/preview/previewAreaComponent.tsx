@@ -2,7 +2,7 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faStop, faPalette } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faStop, faPalette, faCheckDouble } from '@fortawesome/free-solid-svg-icons';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { DataStorage } from '../../dataStorage';
 
@@ -30,6 +30,13 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent>
         this.props.globalState.onPreviewBackgroundChanged.notifyObservers();
     }
 
+    changeBackFaceCulling(value: boolean) {        
+        this.props.globalState.backFaceCulling = value;
+        DataStorage.StoreBoolean("BackFaceCulling", value);
+        this.props.globalState.onBackFaceCullingChanged.notifyObservers();
+        this.forceUpdate();
+    }
+
     render() {
         return (
             <>
@@ -37,15 +44,24 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent>
                     <canvas id="preview-canvas"/>
                 </div>                
                 <div id="preview-config-bar">
-                    <div onClick={() => this.changeAnimation()} className={"button"}>
+                    <div                     
+                        title="Turn-table animation"
+                        onClick={() => this.changeAnimation()} className={"button"}>
                         <FontAwesomeIcon icon={this.props.globalState.rotatePreview ? faStop : faPlay} />
                     </div>
-                    <div className={"button align"}>
+                    <div 
+                        title="Background color"
+                        className={"button align"}>
                         <label htmlFor="color-picker" id="color-picker-label">
                             <FontAwesomeIcon icon={faPalette} />
                         </label>
                         <input ref="color-picker" id="color-picker" type="color" onChange={evt => this.changeBackground(evt.target.value)} />
-                    </div>
+                    </div>                        
+                    <div
+                        title="Render without back face culling"
+                        onClick={() => this.changeBackFaceCulling(!this.props.globalState.backFaceCulling)} className={"button" + (!this.props.globalState.backFaceCulling ? " selected" : "")}>
+                        <FontAwesomeIcon icon={faCheckDouble} />
+                    </div>  
                 </div>
             </>
         );
