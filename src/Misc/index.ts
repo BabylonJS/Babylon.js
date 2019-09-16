@@ -40,3 +40,4 @@ export * from "./fileRequest";
 export * from "./customAnimationFrameRequester";
 export * from "./retryStrategy";
 export * from "./loadFileError";
+export * from "./interfaces/screenshotSize";
