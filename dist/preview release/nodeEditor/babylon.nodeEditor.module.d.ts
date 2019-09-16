@@ -1232,6 +1232,7 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
         private _onAnimationCommandActivatedObserver;
         private _onUpdateRequiredObserver;
         private _onPreviewBackgroundChangedObserver;
+        private _onBackFaceCullingChangedObserver;
         private _engine;
         private _scene;
         private _light;
@@ -1489,6 +1490,7 @@ declare module "babylonjs-node-editor/components/preview/previewAreaComponent" {
     export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent> {
         changeAnimation(): void;
         changeBackground(value: string): void;
+        changeBackFaceCulling(value: boolean): void;
         render(): JSX.Element;
     }
 }
@@ -1601,12 +1603,14 @@ declare module "babylonjs-node-editor/globalState" {
         onErrorMessageDialogRequiredObservable: Observable<string>;
         onPreviewCommandActivated: Observable<void>;
         onPreviewBackgroundChanged: Observable<void>;
+        onBackFaceCullingChanged: Observable<void>;
         onAnimationCommandActivated: Observable<void>;
         onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
         previewMeshFile: File;
         rotatePreview: boolean;
         backgroundColor: Color4;
+        backFaceCulling: boolean;
         blockKeyboardEvents: boolean;
         customSave?: {
             label: string;
@@ -2685,6 +2689,7 @@ declare module NODEEDITOR {
         private _onAnimationCommandActivatedObserver;
         private _onUpdateRequiredObserver;
         private _onPreviewBackgroundChangedObserver;
+        private _onBackFaceCullingChangedObserver;
         private _engine;
         private _scene;
         private _light;
@@ -2895,6 +2900,7 @@ declare module NODEEDITOR {
     export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent> {
         changeAnimation(): void;
         changeBackground(value: string): void;
+        changeBackFaceCulling(value: boolean): void;
         render(): JSX.Element;
     }
 }
@@ -2982,12 +2988,14 @@ declare module NODEEDITOR {
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
         onPreviewCommandActivated: BABYLON.Observable<void>;
         onPreviewBackgroundChanged: BABYLON.Observable<void>;
+        onBackFaceCullingChanged: BABYLON.Observable<void>;
         onAnimationCommandActivated: BABYLON.Observable<void>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
         previewMeshFile: File;
         rotatePreview: boolean;
         backgroundColor: BABYLON.Color4;
+        backFaceCulling: boolean;
         blockKeyboardEvents: boolean;
         customSave?: {
             label: string;

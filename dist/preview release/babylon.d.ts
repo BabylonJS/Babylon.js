@@ -53189,7 +53189,6 @@ declare module BABYLON {
          * Set the input block to its default value (based on its type)
          */
         setDefaultValue(): void;
-        protected _dumpPropertiesCode(): string;
         private _emitConstant;
         private _emit;
         /** @hidden */
@@ -53197,6 +53196,7 @@ declare module BABYLON {
         /** @hidden */
         _transmit(effect: Effect, scene: Scene): void;
         protected _buildBlock(state: NodeMaterialBuildState): void;
+        protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
