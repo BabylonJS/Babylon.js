@@ -3,7 +3,7 @@ import { DefaultNodeModel } from './defaultNodeModel';
 import { DefaultPortModel } from './port/defaultPortModel';
 import { Nullable } from 'babylonjs/types';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { DefaultPortWidget } from './port/defaultPortWidget';
 import { BlockTools } from '../../blockTools';
 
