@@ -68354,6 +68354,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -68441,6 +68442,8 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NegateBlock"]("Negate");
             case "PerturbNormalBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["PerturbNormalBlock"]("Perturb normal");
+            case "RandomNumberBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["RandomNumberBlock"]("Random number");
             case "CosBlock": {
                 var cosBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Cos");
                 cosBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Cos;
@@ -71314,7 +71317,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         // Block types used to create the menu from
         var allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock"],
+            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock", "RandomNumberBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "TimeBlock"],
             Interpolation: ["LerpBlock"],
