@@ -53220,9 +53220,13 @@ declare module BABYLON {
         /** @hidden */
         _enforceAssociatedVariableName: boolean;
         /**
-         * Gets or sets the additional types supported byt this connection point
+         * Gets or sets the additional types supported by this connection point
          */
         acceptedConnectionPointTypes: NodeMaterialBlockConnectionPointTypes[];
+        /**
+         * Gets or sets the additional types excluded by this connection point
+         */
+        excludedConnectionPointTypes: NodeMaterialBlockConnectionPointTypes[];
         /**
          * Gets or sets the associated variable name in the shader
          */
