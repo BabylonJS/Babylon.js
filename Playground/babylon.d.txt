@@ -4071,6 +4071,45 @@ declare module BABYLON {
          * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
          */
         static readonly ALPHA_SCREENMODE: number;
+        /**
+         * Defines that alpha blending to SRC + DST
+         * Alpha will be set to SRC ALPHA + DST ALPHA
+         */
+        static readonly ALPHA_ONEONE_ONEONE: number;
+        /**
+         * Defines that alpha blending to SRC * DST ALPHA + DST
+         * Alpha will be set to 0
+         */
+        static readonly ALPHA_ALPHATOCOLOR: number;
+        /**
+         * Defines that alpha blending to SRC * (1 - DST) + DST * (1 - SRC)
+         */
+        static readonly ALPHA_REVERSEONEMINUS: number;
+        /**
+         * Defines that alpha blending to SRC + DST * (1 - SRC ALPHA)
+         * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
+         */
+        static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA: number;
+        /**
+         * Defines that alpha blending to SRC + DST
+         * Alpha will be set to SRC ALPHA
+         */
+        static readonly ALPHA_ONEONE_ONEZERO: number;
+        /** Defines that alpha blending equation a SUM */
+        static readonly ALPHA_EQUATION_ADD: number;
+        /** Defines that alpha blending equation a SUBSTRACTION */
+        static readonly ALPHA_EQUATION_SUBSTRACT: number;
+        /** Defines that alpha blending equation a REVERSE SUBSTRACTION */
+        static readonly ALPHA_EQUATION_REVERSE_SUBTRACT: number;
+        /** Defines that alpha blending equation a MAX operation */
+        static readonly ALPHA_EQUATION_MAX: number;
+        /** Defines that alpha blending equation a MIN operation */
+        static readonly ALPHA_EQUATION_MIN: number;
+        /**
+         * Defines that alpha blending equation a DARKEN operation:
+         * It takes the min of the src and sums the alpha channels.
+         */
+        static readonly ALPHA_EQUATION_DARKEN: number;
         /** Defines that the ressource is not delayed*/
         static readonly DELAYLOADSTATE_NONE: number;
         /** Defines that the ressource was successfully delay loaded */
@@ -29253,6 +29292,8 @@ declare module BABYLON {
         };
         /** Max number of texture samples for MSAA */
         maxMSAASamples: number;
+        /** Defines if the blend min max extension is supported */
+        blendMinMax: boolean;
     }
     /** Interface defining initialization parameters for Engine class */
     export interface EngineOptions extends WebGLContextAttributes {
@@ -29747,6 +29788,8 @@ declare module BABYLON {
         protected _alphaState: _AlphaState;
         /** @hidden */
         protected _alphaMode: number;
+        /** @hidden */
+        protected _alphaEquation: number;
         /** @hidden */private _internalTexturesCache: InternalTexture[];
         /** @hidden */
         protected _activeChannel: number;
@@ -30710,6 +30753,16 @@ declare module BABYLON {
          * @returns the current alpha mode
          */
         getAlphaMode(): number;
+        /**
+         * Sets the current alpha equation
+         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+         */
+        setAlphaEquation(equation: number): void;
+        /**
+         * Gets the current alpha equation.
+         * @returns the current alpha equation
+         */
+        getAlphaEquation(): number;
         /**
          * Clears the list of texture accessible through engine.
          * This can help preventing texture load conflict due to name collision.
@@ -61555,6 +61608,9 @@ interface WebGLRenderingContext {
 
     UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
+
+    MIN: number;
+    MAX: number;
 
     /* Multiple Render Targets */
     drawBuffers(buffers: number[]): void;
