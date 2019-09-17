@@ -13,6 +13,7 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Root class used for all 2D controls
@@ -1833,6 +1834,60 @@ export class Control {
         this._fontOffset = Control._GetFontOffset(this._font);
     }
 
+    public _parseFromXml(node : any, parent: any, linkParent: any) {
+        if (parent && linkParent) {
+            parent.addControl(guiNode);
+        }
+
+        for (let i = 0; i < node.attributes.length; i++) {
+
+            if (node.attributes[i].name.toLowerCase().includes("datasource")) {
+                continue;
+            }
+
+            if (node.attributes[i].name.toLowerCase().includes("observable")) {
+
+                let element = this._getChainElement(node.attributes[i].value);
+                guiNode[node.attributes[i].name].add(element);
+
+                continue;
+            } else if (node.attributes[i].name == "linkWithMesh") {
+                if (this._parentClass) {
+                    guiNode.linkWithMesh(this._parentClass[node.attributes[i].value]);
+                } else {
+                    guiNode.linkWithMesh(window[node.attributes[i].value]);
+                }
+            } else if (node.attributes[i].value.startsWith("{{") && node.attributes[i].value.endsWith("}}")) {
+                let element = this._getChainElement(node.attributes[i].value.substring(2, node.attributes[i].value.length - 2));
+                guiNode[node.attributes[i].name] = element;
+            } else if (!this._objectAttributes[node.attributes[i].name]) {
+                if (node.attributes[i].value == "true" || node.attributes[i].value == "false") {
+                    guiNode[node.attributes[i].name] = (node.attributes[i].value == 'true');
+                } else {
+                    guiNode[node.attributes[i].name] = !isNaN(Number(node.attributes[i].value)) ? Number(node.attributes[i].value) : node.attributes[i].value;
+                }
+            } else {
+                guiNode[node.attributes[i].name] = this._getClassAttribute(node.attributes[i].value);
+            }
+        }
+
+        if (!node.attributes.getNamedItem("id")) {
+            this._nodes[node.nodeName + Object.keys(this._nodes).length + "_gen"] = guiNode;
+            return guiNode;
+        }
+
+        if (!this._nodes[node.attributes.getNamedItem("id").nodeValue]) {
+            this._nodes[node.attributes.getNamedItem("id").nodeValue] = guiNode;
+        } else {
+            throw "XmlLoader Exception : Duplicate ID, every element should have an unique ID attribute";
+        }
+        return guiNode;
+
+    } catch (e) {
+        throw "XmlLoader Exception : Error parsing Control " + node.nodeName + "," + e + ".";
+    }
+    }
+
     /** Releases associated resources */
     public dispose() {
         this.onDirtyObservable.clear();
@@ -1967,3 +2022,4 @@ export class Control {
         context.translate(-x, -y);
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Control"] = Control;

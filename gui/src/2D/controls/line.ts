@@ -7,6 +7,7 @@ import { Scene } from "babylonjs/scene";
 import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /** Class used to render 2D lines */
 export class Line extends Control {
@@ -245,3 +246,4 @@ export class Line extends Control {
         }
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Line"] = Line;

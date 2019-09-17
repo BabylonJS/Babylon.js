@@ -1,4 +1,5 @@
 import { Control } from "./control";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /** Class used to render a grid  */
 export class DisplayGrid extends Control {
@@ -219,3 +220,4 @@ export class DisplayGrid extends Control {
         return "DisplayGrid";
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.DisplayGrid"] = DisplayGrid;

@@ -1,6 +1,7 @@
 import { BaseSlider } from "./baseSlider";
 import { Measure } from "../../measure";
 import { Image } from "../image";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create slider controls based on images
@@ -161,3 +162,4 @@ export class ImageBasedSlider extends BaseSlider {
         context.restore();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.ImageBasedSlider"] = ImageBasedSlider;
