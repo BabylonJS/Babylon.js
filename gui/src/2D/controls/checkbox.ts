@@ -4,6 +4,7 @@ import { Vector2 } from "babylonjs/Maths/math";
 import { Control } from "./control";
 import { StackPanel } from "./stackPanel";
 import { TextBlock } from "./textBlock";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to represent a 2D checkbox
@@ -175,3 +176,4 @@ export class Checkbox extends Control {
         return panel;
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Checkbox"] = Checkbox;

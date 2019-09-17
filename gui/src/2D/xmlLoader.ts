@@ -1,6 +1,7 @@
 /**
 * Class used to load GUI via XML.
 */
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 export class XmlLoader {
     private _nodes: any = {};
@@ -33,10 +34,10 @@ export class XmlLoader {
         }
     }
 
-    private _getChainElement(attributeValue: any, isGlobal: boolean = false): any {
+    private _getChainElement(attributeValue: any): any {
         let element = window;
 
-        if (this._parentClass && !isGlobal) {
+        if (this._parentClass) {
             element = this._parentClass;
         }
         let value = attributeValue;
@@ -49,9 +50,15 @@ export class XmlLoader {
 
     }
 
+    private _getClassAttribute(attributeName : string) : any {
+        const attribute = attributeName.split(".");
+        const className = _TypeStore.GetClass("BABYLON.GUI." + attribute[0]);
+        return className[attribute[1]];
+    }
+
     private _createGuiElement(node: any, parent: any, linkParent: boolean = true): void {
         try {
-            let className = this._getChainElement("BABYLON.GUI." + node.nodeName, true);
+            let className = _TypeStore.GetClass("BABYLON.GUI." + node.nodeName);
             let guiNode = new className();
 
             if (parent && linkParent) {
@@ -86,7 +93,7 @@ export class XmlLoader {
                         guiNode[node.attributes[i].name] = !isNaN(Number(node.attributes[i].value)) ? Number(node.attributes[i].value) : node.attributes[i].value;
                     }
                 } else {
-                    guiNode[node.attributes[i].name] = this._getChainElement("BABYLON.GUI." + node.attributes[i].value, true);
+                    guiNode[node.attributes[i].name] = this._getClassAttribute(node.attributes[i].value);
                 }
             }
 
@@ -98,12 +105,12 @@ export class XmlLoader {
             if (!this._nodes[node.attributes.getNamedItem("id").nodeValue]) {
                 this._nodes[node.attributes.getNamedItem("id").nodeValue] = guiNode;
             } else {
-                throw "GUILoader Exception : Duplicate ID, every element should have an unique ID attribute";
+                throw "XmlLoader Exception : Duplicate ID, every element should have an unique ID attribute";
             }
             return guiNode;
 
         } catch (e) {
-            throw "GUILoader Exception : Error parsing Control " + node.nodeName + "," + e + ".";
+            throw "XmlLoader Exception : Error parsing Control " + node.nodeName + "," + e + ".";
         }
     }
 
@@ -124,13 +131,13 @@ export class XmlLoader {
                 continue;
             }
             if (rows[i].nodeName != "Row") {
-                throw "GUILoader Exception : Expecting Row node, received " + rows[i].nodeName;
+                throw "XmlLoader Exception : Expecting Row node, received " + rows[i].nodeName;
             }
             rowNumber += 1;
             columns = rows[i].children;
 
             if (!rows[i].attributes.getNamedItem("height")) {
-                throw "GUILoader Exception : Height must be defined for grid rows";
+                throw "XmlLoader Exception : Height must be defined for grid rows";
             }
             height = Number(rows[i].attributes.getNamedItem("height").nodeValue);
             isPixel = rows[i].attributes.getNamedItem("isPixel") ? JSON.parse(rows[i].attributes.getNamedItem("isPixel").nodeValue) : false;
@@ -141,16 +148,16 @@ export class XmlLoader {
                     continue;
                 }
                 if (columns[j].nodeName != "Column") {
-                    throw "GUILoader Exception : Expecting Column node, received " + columns[j].nodeName;
+                    throw "XmlLoader Exception : Expecting Column node, received " + columns[j].nodeName;
                 }
                 columnNumber += 1;
                 if (rowNumber > 0 && columnNumber > totalColumnsNumber) {
-                    throw "GUILoader Exception : In the Grid element, the number of columns is defined in the first row, do not add more columns in the subsequent rows.";
+                    throw "XmlLoader Exception : In the Grid element, the number of columns is defined in the first row, do not add more columns in the subsequent rows.";
                 }
 
                 if (rowNumber == 0) {
                     if (!columns[j].attributes.getNamedItem("width")) {
-                        throw "GUILoader Exception : Width must be defined for all the grid columns in the first row";
+                        throw "XmlLoader Exception : Width must be defined for all the grid columns in the first row";
                     }
                     width = Number(columns[j].attributes.getNamedItem("width").nodeValue);
                     isPixel = columns[j].attributes.getNamedItem("isPixel") ? JSON.parse(columns[j].attributes.getNamedItem("isPixel").nodeValue) : false;
@@ -207,12 +214,12 @@ export class XmlLoader {
     private _parseElementsFromSource(node: any, guiNode: any, parent: any): void {
         let dataSource = node.attributes.getNamedItem("dataSource").value;
         if (!dataSource.includes(" in ")) {
-            throw "GUILoader Exception : Malformed XML, Data Source must include an in";
+            throw "XmlLoader Exception : Malformed XML, Data Source must include an in";
         } else {
             let isArray = true;
             let splittedSource = dataSource.split(" in ");
             if (splittedSource.length < 2) {
-                throw "GUILoader Exception : Malformed XML, Data Source must an iterator and a source";
+                throw "XmlLoader Exception : Malformed XML, Data Source must an iterator and a source";
             }
             let source = splittedSource[1];
             if (source.startsWith("{") && source.endsWith("}")) {
@@ -305,7 +312,7 @@ export class XmlLoader {
         xhttp.onreadystatechange = function(this: XmlLoader) {
             if (xhttp.readyState == 4 && xhttp.status == 200) {
                 if (!xhttp.responseXML) {
-                    throw "GUILoader Exception : XML file is malformed or corrupted.";
+                    throw "XmlLoader Exception : XML file is malformed or corrupted.";
                 }
 
                 let xmlDoc = xhttp.responseXML.documentElement;

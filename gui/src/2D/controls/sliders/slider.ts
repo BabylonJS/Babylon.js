@@ -1,4 +1,5 @@
 import { BaseSlider } from "./baseSlider";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create slider controls
@@ -238,3 +239,4 @@ export class Slider extends BaseSlider {
         context.restore();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Slider"] = Slider;
