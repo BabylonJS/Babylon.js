@@ -1,3 +1,5 @@
+name: continuous-integration
+
 on:
   push:
     branches:
