@@ -53835,6 +53835,32 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to get a random number
+     */
+    export class RandomNumberBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new RandomNumberBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the seed input component
+         */
+        readonly seed: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Effect Render Options
      */
     export interface IEffectRendererOptions {
