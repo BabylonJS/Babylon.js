@@ -43,6 +43,7 @@ import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
 import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
 import { PowBlock } from 'babylonjs/Materials/Node/Blocks/powBlock';
 import { Scene } from 'babylonjs/scene';
+import { RandomNumberBlock } from 'babylonjs/Materials/Node/Blocks/randomNumberBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene) {
@@ -128,7 +129,9 @@ export class BlockTools {
             case "NegateBlock":
                 return new NegateBlock("Negate");                                     
             case "PerturbNormalBlock":                                          
-                return new PerturbNormalBlock("Perturb normal");        
+                return new PerturbNormalBlock("Perturb normal");                     
+            case "RandomNumberBlock":                                          
+                return new RandomNumberBlock("Random number");         
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;
