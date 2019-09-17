@@ -42127,7 +42127,7 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadFile(file, function (data) {
             var blob = new Blob([data], { type: "octet/stream" });
             var url = URL.createObjectURL(blob);
-            var texture = new babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Texture"](url, material.getScene());
+            var texture = new babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Texture"](url, material.getScene(), false, false);
             material[_this.props.propertyName] = texture;
             _this.forceUpdate();
         }, undefined, true);
