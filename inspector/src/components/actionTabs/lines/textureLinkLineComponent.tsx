@@ -140,7 +140,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             var blob = new Blob([data], { type: "octet/stream" });
             var url = URL.createObjectURL(blob);
 
-            let texture = new Texture(url, material.getScene());
+            let texture = new Texture(url, material.getScene(), false, false);
 
             (material as any)[this.props.propertyName!] = texture;
 
