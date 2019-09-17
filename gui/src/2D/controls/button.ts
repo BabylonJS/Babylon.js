@@ -5,6 +5,7 @@ import { Rectangle } from "./rectangle";
 import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create 2D buttons
@@ -263,3 +264,4 @@ export class Button extends Rectangle {
         return result;
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Button"] = Button;
