@@ -1,9 +1,6 @@
 name: continuous-integration
 
-on:
-  push:
-    branches:
-      - master
+on: [push]
 
 jobs:
   build:
