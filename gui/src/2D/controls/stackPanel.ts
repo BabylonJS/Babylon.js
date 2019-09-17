@@ -3,6 +3,7 @@ import { Tools } from "babylonjs/Misc/tools";
 import { Container } from "./container";
 import { Measure } from "../measure";
 import { Control } from "./control";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create a 2D stack panel container
@@ -193,3 +194,4 @@ export class StackPanel extends Container {
         super._postMeasure();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.StackPanel"] = StackPanel;
