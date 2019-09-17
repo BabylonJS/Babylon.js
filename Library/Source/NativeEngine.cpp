@@ -1118,7 +1118,7 @@ namespace babylon
         auto backBuffer = info[4].IsUndefined() ? true : info[4].As<Napi::Boolean>().Value();
         auto depth = info[5].IsUndefined() ? true : info[5].As<Napi::Boolean>().Value();
         auto stencil = info[6].IsUndefined() ? true : info[6].As<Napi::Boolean>().Value();
-
+        bgfx::touch(0);
         // TODO CHECK: Does this have meaning for BGFX?  BGFX seems to call clear()
         // on its own, depending on the settings.
     }

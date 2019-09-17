@@ -21,8 +21,27 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
 }
 
+void MacLogMessage(const char *outputString)
+{
+    NSLog(@"%s", outputString);
+}
+
+void MacWarnMessage(const char *outputString)
+{
+    NSLog(@"%s", outputString);
+}
+
+void MacErrorMessage(const char *outputString)
+{
+    NSLog(@"%s", outputString);
+}
+
 - (void)viewDidAppear {
     [super viewDidAppear];
+    
+    babylon::Runtime::RegisterLogOutput(MacLogMessage);
+    babylon::Runtime::RegisterWarnOutput(MacWarnMessage);
+    babylon::Runtime::RegisterErrorOutput(MacErrorMessage);
     
     NSWindow* nativeWindow = [[self view] window];
     runtime = std::make_unique<babylon::RuntimeApple>((__bridge void*)nativeWindow, "file:///Users/cedricguillemet/dev/BabylonJS/BabylonNative/TestApp");
