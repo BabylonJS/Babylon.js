@@ -90,6 +90,7 @@ export class GamepadManager {
                     disconnectedGamepad._isConnected = false;
 
                     this.onGamepadDisconnectedObservable.notifyObservers(disconnectedGamepad);
+                    disconnectedGamepad.dispose && disconnectedGamepad.dispose();
                     break;
                 }
             }
