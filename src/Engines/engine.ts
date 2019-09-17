@@ -1566,8 +1566,8 @@ export class Engine {
             const blendMinMaxExtension = this._gl.getExtension('EXT_blend_minmax');
             if (blendMinMaxExtension != null) {
                 this._caps.blendMinMax = true;
-                this._gl.MIN = blendMinMaxExtension.MAX_EXT;
-                this._gl.MAX = blendMinMaxExtension.MIN_EXT;
+                this._gl.MAX = blendMinMaxExtension.MAX_EXT;
+                this._gl.MIN = blendMinMaxExtension.MIN_EXT;
             } else {
                 this._caps.blendMinMax = false;
             }
