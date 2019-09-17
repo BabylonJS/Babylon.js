@@ -23,7 +23,7 @@ export class ClampBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("value", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);        
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
