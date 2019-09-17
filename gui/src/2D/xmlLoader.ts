@@ -1,8 +1,8 @@
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
+
 /**
 * Class used to load GUI via XML.
 */
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
-
 export class XmlLoader {
     private _nodes: any = {};
 
