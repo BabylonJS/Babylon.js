@@ -8,7 +8,6 @@ import { TextBlock } from "./textBlock";
 import { InputText } from "./inputText";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
-
 /**
  * Class used to store key control properties
  */
