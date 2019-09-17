@@ -195,6 +195,8 @@ export class EngineCapabilities {
     };
     /** Max number of texture samples for MSAA */
     public maxMSAASamples = 1;
+    /** Defines if the blend min max extension is supported */
+    public blendMinMax: boolean;
 }
 
 /** Interface defining initialization parameters for Engine class */
@@ -842,7 +844,9 @@ export class Engine {
     /** @hidden */
     protected _alphaState = new _AlphaState();
     /** @hidden */
-    protected _alphaMode = Engine.ALPHA_DISABLE;
+    protected _alphaMode = Engine.ALPHA_ADD;
+    /** @hidden */
+    protected _alphaEquation = Engine.ALPHA_DISABLE;
 
     // Cache
     /** @hidden */
@@ -1552,6 +1556,20 @@ export class Engine {
 
             if (vertex_highp && fragment_highp) {
                 this._caps.highPrecisionShaderSupported = vertex_highp.precision !== 0 && fragment_highp.precision !== 0;
+            }
+        }
+
+        if (this._webGLVersion > 1) {
+            this._caps.blendMinMax = true;
+        }
+        else {
+            const blendMinMaxExtension = this._gl.getExtension('EXT_blend_minmax');
+            if (blendMinMaxExtension != null) {
+                this._caps.blendMinMax = true;
+                this._gl.MIN = blendMinMaxExtension.MAX_EXT;
+                this._gl.MAX = blendMinMaxExtension.MIN_EXT;
+            } else {
+                this._caps.blendMinMax = false;
             }
         }
 
@@ -3980,6 +3998,27 @@ export class Engine {
                 this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
                 this._alphaState.alphaBlend = true;
                 break;
+
+            case Constants.ALPHA_ONEONE_ONEONE:
+                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ONE, this._gl.ONE);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Constants.ALPHA_ALPHATOCOLOR:
+                this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ZERO);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Constants.ALPHA_REVERSEONEMINUS:
+                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE_MINUS_DST_COLOR, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE_MINUS_DST_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA:
+                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
+                this._alphaState.alphaBlend = true;
+                break;
+            case Constants.ALPHA_ONEONE_ONEZERO:
+                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ONE, this._gl.ZERO);
+                this._alphaState.alphaBlend = true;
+                break;
         }
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
@@ -3994,6 +4033,46 @@ export class Engine {
      */
     public getAlphaMode(): number {
         return this._alphaMode;
+    }
+
+    /**
+     * Sets the current alpha equation
+     * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+     */
+    public setAlphaEquation(equation: number): void {
+        if (this._alphaEquation === equation) {
+            return;
+        }
+
+        switch (equation) {
+            case Constants.ALPHA_EQUATION_ADD:
+                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_ADD, this._gl.FUNC_ADD);
+                break;
+            case Constants.ALPHA_EQUATION_SUBSTRACT:
+                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_SUBTRACT, this._gl.FUNC_SUBTRACT);
+                break;
+            case Constants.ALPHA_EQUATION_REVERSE_SUBTRACT:
+                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_REVERSE_SUBTRACT, this._gl.FUNC_REVERSE_SUBTRACT);
+                break;
+            case Constants.ALPHA_EQUATION_MAX:
+                this._alphaState.setAlphaEquationParameters(this._gl.MAX, this._gl.MAX);
+                break;
+            case Constants.ALPHA_EQUATION_MIN:
+                this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.MIN);
+                break;
+            case Constants.ALPHA_EQUATION_DARKEN:
+                this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.FUNC_ADD);
+                break;
+        }
+        this._alphaEquation = equation;
+    }
+
+    /**
+     * Gets the current alpha equation.
+     * @returns the current alpha equation
+     */
+    public getAlphaEquation(): number {
+        return this._alphaEquation;
     }
 
     // Textures
