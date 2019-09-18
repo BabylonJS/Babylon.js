@@ -1,4 +1,7 @@
 export * from "./constants";
+export * from "./engineCapabilities";
+export * from "./instancingAttributeInfo";
+export * from "./baseEngine";
 export * from "./engine";
 export * from "./engine.backwardCompatibility";
 export * from "./engineStore";
