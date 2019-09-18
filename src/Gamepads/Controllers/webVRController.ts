@@ -156,7 +156,7 @@ export abstract class WebVRController extends PoseEnabledController {
      */
     public dispose(): void {
         super.dispose();
-        
+
         this._defaultModel = null;
 
         this.onTriggerStateChangedObservable.clear();
