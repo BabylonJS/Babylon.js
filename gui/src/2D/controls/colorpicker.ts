@@ -9,6 +9,7 @@ import { Button } from "./button";
 import { Grid } from "./grid";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { TextBlock } from "../controls/textBlock";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
@@ -1513,3 +1514,4 @@ export class ColorPicker extends Control {
         });
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.ColorPicker"] = ColorPicker;
