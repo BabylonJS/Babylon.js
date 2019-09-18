@@ -5,6 +5,8 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { PoseEnabledController, ExtendedGamepadButton, MutableGamepadButton } from "./poseEnabledController";
 import { StickValues, GamepadButtonChanges } from "../../Gamepads/gamepad";
+import { Nullable } from '../../types';
+
 /**
  * Defines the WebVRController object that represents controllers tracked in 3D space
  */
