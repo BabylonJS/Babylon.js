@@ -2948,6 +2948,54 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+    * Class used to load GUI via XML.
+    */
+    export class XmlLoader {
+        private _nodes;
+        private _nodeTypes;
+        private _isLoaded;
+        private _objectAttributes;
+        private _parentClass;
+        /**
+        * Create a new xml loader
+        * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
+        */
+        constructor(parentClass?: null);
+        private _getChainElement;
+        private _getClassAttribute;
+        private _createGuiElement;
+        private _parseGrid;
+        private _parseElement;
+        private _prepareSourceElement;
+        private _parseElementsFromSource;
+        private _parseXml;
+        /**
+         * Gets if the loading has finished.
+         * @returns whether the loading has finished or not
+        */
+        isLoaded(): boolean;
+        /**
+         * Gets a loaded node / control by id.
+         * @param id the Controls id set in the xml
+         * @returns element of type Control
+        */
+        getNodeById(id: string): any;
+        /**
+         * Gets all loaded nodes / controls
+         * @returns Array of controls
+        */
+        getNodes(): any;
+        /**
+         * Initiates the xml layout loading
+         * @param xmlFile defines the xml layout to load
+         * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
+         * @param callback defines the callback called on layout load.
+         */
+        loadLayout(xmlFile: any, rootNode: any, callback: any): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to create containers for controls
      */
     export class Container3D extends Control3D {

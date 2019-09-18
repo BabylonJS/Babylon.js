@@ -104,11 +104,13 @@
 - Added `Ray.intersectsAxis` to translate screen to axis coordinates without checking collisions ([horusscope](https://github.com/horusscope))
 
 ### GUI
+- Added `xmlLoader` to load GUI layouts from XML ([null0924](https://github.com/null0924))
 - Added `disableMobilePrompt` option to InputText for OculusQuest(and other android base VR devices) ([shinyoshiaki](https://github.com/shinyoshiaki))
 - Added `Button.delegatePickingToChildren` to let buttons delegate hit testing to embedded controls ([Deltakosh](https://github.com/deltakosh/))
 - Added `Container.maxLayoutCycle` and `Container.logLayoutCycleErrors` to get more control over layout cycles ([Deltakosh](https://github.com/deltakosh/))
 - Added `StackPanel.ignoreLayoutWarnings` to disable console warnings when controls with percentage size are added to a StackPanel ([Deltakosh](https://github.com/deltakosh/))
 - Added `_getSVGAttribs` functionality for loading multiple svg icons from an external svg file via icon id.([lockphase](https://github.com/lockphase/))
+
 
 
 ### Navigation Mesh

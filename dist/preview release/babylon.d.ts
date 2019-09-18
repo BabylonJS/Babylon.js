@@ -14419,7 +14419,7 @@ declare module BABYLON {
         /**
          * Internal, the default controller model for the controller
          */
-        protected _defaultModel: AbstractMesh;
+        protected _defaultModel: Nullable<AbstractMesh>;
         /**
          * Fired when the trigger state has changed
          */
@@ -14461,7 +14461,7 @@ declare module BABYLON {
         /**
          * The default controller model for the controller
          */
-        readonly defaultModel: AbstractMesh;
+        readonly defaultModel: Nullable<AbstractMesh>;
         /**
          * Creates a new WebVRController from a gamepad
          * @param vrGamepad the gamepad that the WebVRController should be created from
