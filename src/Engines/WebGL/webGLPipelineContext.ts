@@ -1,10 +1,10 @@
 import { IPipelineContext } from '../IPipelineContext';
-import { Engine } from '../engine';
 import { Nullable } from '../../types';
+import { BaseEngine } from '../baseEngine';
 
 /** @hidden */
 export class WebGLPipelineContext implements IPipelineContext {
-    public engine: Engine;
+    public engine: BaseEngine;
     public program: Nullable<WebGLProgram>;
     public context?: WebGLRenderingContext;
     public vertexShader?: WebGLShader;

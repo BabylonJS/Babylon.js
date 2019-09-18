@@ -1,11 +1,11 @@
-import { Engine } from "../../Engines/engine";
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Logger } from '../../Misc/logger';
 import { RenderTargetCreationOptions } from '../../Materials/Textures/renderTargetCreationOptions';
 import { Constants } from '../constants';
+import { BaseEngine } from '../baseEngine';
 
-declare module "../../Engines/engine" {
-    export interface Engine {
+declare module "../../Engines/baseEngine" {
+    export interface BaseEngine {
         /**
          * Creates a new render target cube texture
          * @param size defines the size of the texture
@@ -16,7 +16,7 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.createRenderTargetCubeTexture = function(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
+BaseEngine.prototype.createRenderTargetCubeTexture = function(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
     let fullOptions = {
         generateMipMaps: true,
         generateDepthBuffer: true,

@@ -20,6 +20,7 @@
 //   ../../../../../Tools/Gulp/babylonjs/Maths/math
 //   ../../../../../Tools/Gulp/babylonjs-loaders/glTF/glTFFileLoader
 //   ../../../../../Tools/Gulp/babylonjs/Materials/Textures/baseTexture
+//   ../../../../../Tools/Gulp/babylonjs/Engines/baseEngine
 //   ../../../../../Tools/Gulp/babylonjs/Misc/sceneOptimizer
 //   ../../../../../Tools/Gulp/babylonjs/Cameras/arcRotateCamera
 //   ../../../../../Tools/Gulp/babylonjs/Lights/light

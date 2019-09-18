@@ -1,6 +1,7 @@
 import { Constants } from "../Engines/constants";
 import { PostProcess } from "../PostProcesses/postProcess";
 import "../Shaders/rgbdDecode.fragment";
+import { Engine } from '../Engines/engine';
 
 declare type Texture = import("../Materials/Textures/texture").Texture;
 
@@ -20,7 +21,7 @@ export class RGBDTextureTools {
 
         texture.onLoadObservable.addOnce(() => {
             // Gets everything ready.
-            let engine = internalTexture.getEngine();
+            let engine = internalTexture.getEngine() as Engine;
             let caps = engine.getCaps();
             let expandTexture = false;
 

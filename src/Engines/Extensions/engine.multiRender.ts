@@ -1,12 +1,12 @@
-import { Engine } from "../../Engines/engine";
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { IMultiRenderTargetOptions } from '../../Materials/Textures/multiRenderTarget';
 import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
 import { Constants } from '../constants';
+import { BaseEngine } from '../baseEngine';
 
-declare module "../../Engines/engine" {
-    export interface Engine {
+declare module "../../Engines/baseEngine" {
+    export interface BaseEngine {
         /**
          * Unbind a list of render target textures from the webGL context
          * This is used only when drawBuffer extension or webGL2 are active
@@ -36,7 +36,7 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
+BaseEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     this._currentRenderTarget = null;
 
     // If MSAA, we need to bitblt back to main texture
@@ -93,7 +93,7 @@ Engine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: Inte
     this._bindUnboundFramebuffer(null);
 };
 
-Engine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
+BaseEngine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
     var generateMipMaps = false;
     var generateDepthBuffer = true;
     var generateStencilBuffer = false;
@@ -251,7 +251,7 @@ Engine.prototype.createMultipleRenderTarget = function(size: any, options: IMult
     return textures;
 };
 
-Engine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number): number {
+BaseEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number): number {
     if (this.webGLVersion < 2 || !textures || textures.length == 0) {
         return 1;
     }
