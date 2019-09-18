@@ -3,7 +3,7 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { Material } from "babylonjs/Materials/material";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Engine } from "babylonjs/Engines/engine";
+import { Constants } from "babylonjs/Engines/constants";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
@@ -43,13 +43,13 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         ];
 
         var alphaModeOptions = [
-            { label: "Combine", value: Engine.ALPHA_COMBINE },
-            { label: "One one", value: Engine.ALPHA_ONEONE },
-            { label: "Add", value: Engine.ALPHA_ADD },
-            { label: "Subtract", value: Engine.ALPHA_SUBTRACT },
-            { label: "Multiply", value: Engine.ALPHA_MULTIPLY },
-            { label: "Maximized", value: Engine.ALPHA_MAXIMIZED },
-            { label: "Pre-multiplied", value: Engine.ALPHA_PREMULTIPLIED },
+            { label: "Combine", value: Constants.ALPHA_COMBINE },
+            { label: "One one", value: Constants.ALPHA_ONEONE },
+            { label: "Add", value: Constants.ALPHA_ADD },
+            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
+            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
+            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
         ];
 
         return (

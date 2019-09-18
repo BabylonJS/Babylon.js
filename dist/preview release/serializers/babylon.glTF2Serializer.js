@@ -2828,7 +2828,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             }
         }
         if (babylonStandardMaterial.alpha < 1.0 || babylonStandardMaterial.opacityTexture) {
-            if (babylonStandardMaterial.alphaMode === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Engine"].ALPHA_COMBINE) {
+            if (babylonStandardMaterial.alphaMode === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Constants"].ALPHA_COMBINE) {
                 glTFMaterial.alphaMode = "BLEND" /* BLEND */;
             }
             else {
@@ -2936,12 +2936,12 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             var hostingScene;
-            var textureType = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Engine"].TEXTURETYPE_UNSIGNED_INT;
+            var textureType = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT;
             var engine = _this._exporter._getLocalEngine();
             hostingScene = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Scene"](engine);
             // Create a temporary texture with the texture buffer data
-            var tempTexture = engine.createRawTexture(buffer, width, height, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Engine"].TEXTUREFORMAT_RGBA, false, true, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, null, textureType);
-            var postProcess = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["PostProcess"]("pass", "pass", null, null, 1, null, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, engine, false, undefined, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Engine"].TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
+            var tempTexture = engine.createRawTexture(buffer, width, height, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTUREFORMAT_RGBA, false, true, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, null, textureType);
+            var postProcess = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["PostProcess"]("pass", "pass", null, null, 1, null, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, engine, false, undefined, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
             postProcess.getEffect().executeWhenCompiled(function () {
                 postProcess.onApply = function (effect) {
                     effect._bindTexture("textureSampler", tempTexture);
@@ -3512,7 +3512,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         return Promise.all(promises).then(function (result) { });
     };
     _GLTFMaterialExporter.prototype.getPixelsFromTexture = function (babylonTexture) {
-        var pixels = babylonTexture.textureType === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Engine"].TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() : babylonTexture.readPixels();
+        var pixels = babylonTexture.textureType === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() : babylonTexture.readPixels();
         return pixels;
     };
     /**
