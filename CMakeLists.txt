@@ -3,6 +3,12 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project(BabylonNative)
 
+if (APPLE)
+    # without this option on azure pipelines, there is a mismatch with math.h giving a lot of undefined functions on macOS.
+    # only enabled for Apple as there is no issue for UWP/WIN32
+    set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
+endif()
+
 set(SUPPORTED_PLATFORMS "Win32" "UWP" "Android" "Apple")
 if (ANDROID)
     set(BABYLON_NATIVE_PLATFORM "Android" CACHE STRING "Target platform for Babylon Native.")
