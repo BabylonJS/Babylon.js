@@ -28,6 +28,11 @@ namespace babylon
         m_impl->Suspend();
     }
 
+    void Runtime::Resume()
+    {
+        m_impl->Resume();
+    }
+
     void Runtime::LoadScript(const std::string& url)
     {
         m_impl->LoadScript(url);

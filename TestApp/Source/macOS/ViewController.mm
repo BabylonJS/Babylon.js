@@ -1,11 +1,3 @@
-//
-//  ViewController.m
-//  TestApp.macOS
-//
-//  Created by Cedric Guillemet on 8/7/19.
-//  Copyright © 2019 Babylon team. All rights reserved.
-//
-
 #import "ViewController.h"
 #import <Babylon/RuntimeApple.h>
 #import <Shared/InputManager.h>
@@ -42,9 +34,13 @@ void MacErrorMessage(const char *outputString)
     babylon::Runtime::RegisterLogOutput(MacLogMessage);
     babylon::Runtime::RegisterWarnOutput(MacWarnMessage);
     babylon::Runtime::RegisterErrorOutput(MacErrorMessage);
-    
+
+    NSBundle *main = [NSBundle mainBundle];
+    NSURL * resourceUrl = [main resourceURL];
+
     NSWindow* nativeWindow = [[self view] window];
-    runtime = std::make_unique<babylon::RuntimeApple>((__bridge void*)nativeWindow, "file:///Users/cedricguillemet/dev/BabylonJS/BabylonNative/TestApp");
+    runtime = std::make_unique<babylon::RuntimeApple>((__bridge void*)nativeWindow, [resourceUrl fileSystemRepresentation]);
+
     inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
     InputManager::Initialize(*runtime, *inputBuffer);
     

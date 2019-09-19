@@ -19,6 +19,7 @@ namespace babylon
         void UpdateSize(float width, float height);
         void UpdateRenderTarget();
         void Suspend();
+        void Resume();
 
         std::string GetAbsoluteUrl(const std::string& url);
         template<typename T> arcana::task<T, std::exception_ptr> LoadUrlAsync(const std::string& url);
@@ -50,7 +51,10 @@ namespace babylon
 
         arcana::manual_dispatcher<babylon_dispatcher::work_size> m_dispatcher{};
         arcana::cancellation_source m_cancelSource{};
-        std::mutex m_taskMutex{};
+        std::mutex m_taskMutex;
+        std::mutex m_suspendMutex;
+        std::condition_variable m_suspendVariable;
+        bool m_suspended{ false };
 
         std::unique_ptr<NativeEngine> m_engine{};
 

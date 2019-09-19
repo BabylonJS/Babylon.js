@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/babylonjs/ContinousIntegration/_apis/build/status/BabylonNative%20CI?branchName=master)](https://dev.azure.com/babylonjs/ContinousIntegration/_build/latest?definitionId=6&branchName=master)
+
 # Babylon Native
 
 Build cross-platform native applications with the power of the Babylon.js JavaScript framework.

@@ -15,7 +15,6 @@ namespace babylon
         void Initialize(Napi::Env& env);
         void UpdateSize(float width, float height);
         void UpdateRenderTarget();
-        void Suspend();
 
     private:
         class Impl;

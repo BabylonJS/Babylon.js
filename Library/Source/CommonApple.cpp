@@ -2,5 +2,13 @@
 
 namespace babylon
 {
-    // Apple stub
+    Filepath GetModulePath()
+    {
+        return {};
+    }
+    std::string GetUrlFromPath(const Filepath& path)
+    {
+        return {};
+    }
+
 }

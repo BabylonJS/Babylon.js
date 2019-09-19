@@ -21,6 +21,7 @@ namespace babylon
         void UpdateSize(float width, float height);
         void UpdateRenderTarget();
         void Suspend();
+        void Resume();
 
         void LoadScript(const std::string& url);
         void Eval(const std::string& string, const std::string& sourceUrl);

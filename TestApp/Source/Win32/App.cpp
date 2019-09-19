@@ -214,6 +214,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+        case WM_SYSCOMMAND:
+        {
+            if ((wParam & 0xFFF0) == SC_MINIMIZE) 
+            {
+                runtime->Suspend();
+            }
+            else if ((wParam & 0xFFF0) == SC_RESTORE)
+            {
+                runtime->Resume();
+            }
+            DefWindowProc(hWnd, message, wParam, lParam);
+            break;
+        }
         case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
