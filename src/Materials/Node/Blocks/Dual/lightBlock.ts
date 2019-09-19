@@ -45,6 +45,8 @@ export class LightBlock extends NodeMaterialBlock {
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("glossiness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("diffusColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("specularColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("diffuseOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("specularOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -84,6 +86,20 @@ export class LightBlock extends NodeMaterialBlock {
     */
     public get glossiness(): NodeMaterialConnectionPoint {
         return this._inputs[3];
+    }
+
+    /**
+    * Gets the diffuse color component
+    */
+    public get diffuseColor(): NodeMaterialConnectionPoint {
+        return this._inputs[4];
+    }
+
+    /**
+    * Gets the specular color component
+    */
+    public get specularColor(): NodeMaterialConnectionPoint {
+        return this._inputs[5];
     }
 
     /**
@@ -276,9 +292,9 @@ export class LightBlock extends NodeMaterialBlock {
         let diffuseOutput = this.diffuseOutput;
         let specularOutput = this.specularOutput;
 
-        state.compilationString += this._declareOutput(diffuseOutput, state) + ` = diffuseBase;\r\n`;
+        state.compilationString += this._declareOutput(diffuseOutput, state) + ` = diffuseBase${this.diffuseColor.isConnected ? " * " + this.diffuseColor.associatedVariableName : ""};\r\n`;
         if (specularOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(specularOutput, state) + ` = specularBase;\r\n`;
+            state.compilationString += this._declareOutput(specularOutput, state) + ` = specularBase${this.specularColor.isConnected ? " * " + this.specularColor.associatedVariableName : ""};\r\n`;
         }
 
         return this;
