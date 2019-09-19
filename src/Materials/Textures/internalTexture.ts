@@ -7,7 +7,7 @@ import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/ind
 import { Constants } from "../../Engines/constants";
 import { _DevTools } from '../../Misc/devTools';
 
-declare type BaseEngine = import("../../Engines/baseEngine").BaseEngine;
+declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTexture;
 
 /**
@@ -237,13 +237,13 @@ export class InternalTexture {
     /** @hidden */
     public _references: number = 1;
 
-    private _engine: BaseEngine;
+    private _engine: ThinEngine;
 
     /**
      * Gets the Engine the texture belongs to.
      * @returns The babylon engine
      */
-    public getEngine(): BaseEngine {
+    public getEngine(): ThinEngine {
         return this._engine;
     }
 
@@ -260,7 +260,7 @@ export class InternalTexture {
      * @param dataSource defines the type of data that will be used
      * @param delayAllocation if the texture allocation should be delayed (default: false)
      */
-    constructor(engine: BaseEngine, dataSource: number, delayAllocation = false) {
+    constructor(engine: ThinEngine, dataSource: number, delayAllocation = false) {
         this._engine = engine;
         this._dataSource = dataSource;
 

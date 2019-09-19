@@ -118,7 +118,7 @@ export interface EngineOptions extends WebGLContextAttributes {
 /**
  * The base engine class (root of all engines)
  */
-export class BaseEngine {
+export class ThinEngine {
     /** Use this array to turn off some WebGL2 features on known buggy browsers version */
     public static ExceptionList = [
         { key: "Chrome\/63\.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },

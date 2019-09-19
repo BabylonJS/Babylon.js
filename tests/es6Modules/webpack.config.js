@@ -4,7 +4,7 @@ const config = require("../../Tools/Config/config");
 module.exports = {
     context: path.resolve(__dirname),
     entry: {
-        baseEngineOnly: path.resolve(__dirname, 'baseEngineOnly.ts'),
+        thinEngineOnly: path.resolve(__dirname, 'thinEngineOnly.ts'),
         // engineOnly: path.resolve(__dirname, 'engineOnly.ts'),
         // sceneOnly: path.resolve(__dirname, 'sceneOnly.ts'),
         // minGridMaterial: path.resolve(__dirname, 'minGridMaterial.ts'),

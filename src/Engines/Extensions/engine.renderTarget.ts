@@ -2,10 +2,10 @@ import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Logger } from '../../Misc/logger';
 import { RenderTargetCreationOptions } from '../../Materials/Textures/renderTargetCreationOptions';
 import { Constants } from '../constants';
-import { BaseEngine } from '../baseEngine';
+import { ThinEngine } from '../thinEngine';
 
-declare module "../../Engines/baseEngine" {
-    export interface BaseEngine {
+declare module "../../Engines/thinEngine" {
+    export interface ThinEngine {
         /**
          * Creates a new render target cube texture
          * @param size defines the size of the texture
@@ -16,7 +16,7 @@ declare module "../../Engines/baseEngine" {
     }
 }
 
-BaseEngine.prototype.createRenderTargetCubeTexture = function(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
+ThinEngine.prototype.createRenderTargetCubeTexture = function(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
     let fullOptions = {
         generateMipMaps: true,
         generateDepthBuffer: true,
