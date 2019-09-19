@@ -2,7 +2,7 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faStop, faPalette, faCheckDouble } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faStop, faPalette, faCheckDouble, faSun, faLocationArrow } from '@fortawesome/free-solid-svg-icons';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { DataStorage } from '../../dataStorage';
 
@@ -62,6 +62,26 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent>
                         onClick={() => this.changeBackFaceCulling(!this.props.globalState.backFaceCulling)} className={"button" + (!this.props.globalState.backFaceCulling ? " selected" : "")}>
                         <FontAwesomeIcon icon={faCheckDouble} />
                     </div>  
+                    <div
+                        title="Turn on/off hemispheric light"  
+                        onClick={() => {
+                            this.props.globalState.hemisphericLight = !this.props.globalState.hemisphericLight;                            
+                            DataStorage.StoreBoolean("HemisphericLight", this.props.globalState.hemisphericLight);
+                            this.props.globalState.onLightUpdated.notifyObservers();
+                            this.forceUpdate();
+                        }} className={"button" + (this.props.globalState.hemisphericLight ? " selected" : "")}>
+                        <FontAwesomeIcon icon={faSun} />
+                    </div>    
+                    <div
+                        title="Turn on/off direction light #0"  
+                        onClick={() => {
+                            this.props.globalState.directionalLight0 = !this.props.globalState.directionalLight0;                       
+                            DataStorage.StoreBoolean("DirectionalLight0", this.props.globalState.directionalLight0);
+                            this.props.globalState.onLightUpdated.notifyObservers();
+                            this.forceUpdate();
+                        }} className={"button" + (this.props.globalState.directionalLight0 ? " selected" : "")}>
+                        <FontAwesomeIcon icon={faLocationArrow} />
+                    </div>                  
                 </div>
             </>
         );
