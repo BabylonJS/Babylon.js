@@ -43,8 +43,9 @@ export class LightBlock extends NodeMaterialBlock {
 
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
-
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("glossiness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
+
         this.registerOutput("diffuseOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("specularOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
     }
@@ -76,6 +77,13 @@ export class LightBlock extends NodeMaterialBlock {
     */
     public get cameraPosition(): NodeMaterialConnectionPoint {
         return this._inputs[2];
+    }
+
+    /**
+    * Gets the glossiness component
+    */
+    public get glossiness(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
     }
 
     /**
@@ -247,7 +255,7 @@ export class LightBlock extends NodeMaterialBlock {
             }
             state.compilationString += `lightingInfo info;\r\n`;
             state.compilationString += `float shadow = 1.;\r\n`;
-            state.compilationString += `float glossiness = 0.;\r\n`;
+            state.compilationString += `float glossiness = ${this.glossiness.isConnected ? this.glossiness.associatedVariableName : "64.0"};\r\n`;
             state.compilationString += `vec3 diffuseBase = vec3(0., 0., 0.);\r\n`;
             state.compilationString += `vec3 specularBase = vec3(0., 0., 0.);\r\n`;
             state.compilationString += `vec3 normalW = ${this.worldNormal.associatedVariableName}.xyz;\r\n`;

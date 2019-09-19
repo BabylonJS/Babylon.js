@@ -53722,6 +53722,10 @@ declare module BABYLON {
         */
         readonly cameraPosition: NodeMaterialConnectionPoint;
         /**
+        * Gets the glossiness component
+        */
+        readonly glossiness: NodeMaterialConnectionPoint;
+        /**
          * Gets the diffuse output component
          */
         readonly diffuseOutput: NodeMaterialConnectionPoint;

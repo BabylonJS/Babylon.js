@@ -14,6 +14,7 @@ import { SceneLoader } from 'babylonjs/Loading/sceneLoader';
 import { TransformNode } from 'babylonjs/Meshes/transformNode';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
+import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -23,9 +24,9 @@ export class PreviewManager {
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
     private _onBackFaceCullingChangedObserver: Nullable<Observer<void>>;
+    private _onLightUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
-    private _light: HemisphericLight;
     private _meshes: AbstractMesh[];
     private _camera: ArcRotateCamera;
     private _material: NodeMaterial;
@@ -44,6 +45,10 @@ export class PreviewManager {
         this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add(() => {
             this._refreshPreviewMesh();
         });
+
+        this._onLightUpdatedObserver = globalState.onLightUpdated.add(() => {
+            this._prepareLights();
+        });        
 
         this._onUpdateRequiredObserver = globalState.onUpdateRequiredObservable.add(() => {
             let serializationObject = this._nodeMaterial.serialize();
@@ -99,11 +104,26 @@ export class PreviewManager {
         }
     }
 
-    private _prepareMeshes() {
-        // Light
-        if (!this._scene.lights.length) {
-            this._light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
+    private _prepareLights() {
+        // Remove current lights
+        let currentLights = this._scene.lights.slice(0);
+
+        for (var light of currentLights) {
+            light.dispose();
         }
+
+        // Create new lights based on settings
+        if (this._globalState.hemisphericLight) {
+            new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);            
+        }
+
+        if (this._globalState.directionalLight0) {
+            new DirectionalLight("Directional light #0", new Vector3(-1, -1, 0), this._scene);            
+        }
+    }
+
+    private _prepareMeshes() {
+        this._prepareLights();
 
         // Framing
         this._camera.useFramingBehavior = true;
@@ -227,6 +247,7 @@ export class PreviewManager {
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
         this._globalState.onBackFaceCullingChanged.remove(this._onBackFaceCullingChangedObserver);
+        this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
 
         if (this._material) {
             this._material.dispose();
@@ -235,10 +256,6 @@ export class PreviewManager {
         this._camera.dispose();
         for (var mesh of this._meshes) {
             mesh.dispose();
-        }
-
-        if (this._light) {
-            this._light.dispose();
         }
 
         this._scene.dispose();
