@@ -4278,61 +4278,7 @@ declare module BABYLON {
     /**
      * @hidden
      **/
-    export class _AlphaState {
-        private _isAlphaBlendDirty;
-        private _isBlendFunctionParametersDirty;
-        private _isBlendEquationParametersDirty;
-        private _isBlendConstantsDirty;
-        private _alphaBlend;
-        private _blendFunctionParameters;
-        private _blendEquationParameters;
-        private _blendConstants;
-        /**
-         * Initializes the state.
-         */
-        constructor();
-        readonly isDirty: boolean;
-        alphaBlend: boolean;
-        setAlphaBlendConstants(r: number, g: number, b: number, a: number): void;
-        setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void;
-        setAlphaEquationParameters(rgb: number, alpha: number): void;
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    export class _DepthCullingState {
-        private _isDepthTestDirty;
-        private _isDepthMaskDirty;
-        private _isDepthFuncDirty;
-        private _isCullFaceDirty;
-        private _isCullDirty;
-        private _isZOffsetDirty;
-        private _isFrontFaceDirty;
-        private _depthTest;
-        private _depthMask;
-        private _depthFunc;
-        private _cull;
-        private _cullFace;
-        private _zOffset;
-        private _frontFace;
-        /**
-         * Initializes the state.
-         */
-        constructor();
-        readonly isDirty: boolean;
-        zOffset: number;
-        cullFace: Nullable<number>;
-        cull: Nullable<boolean>;
-        depthFunc: Nullable<number>;
-        depthMask: boolean;
-        depthTest: boolean;
-        frontFace: Nullable<number>;
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
+    export class _TimeToken {private _startTimeQuery: Nullable<WebGLQuery>;private _endTimeQuery: Nullable<WebGLQuery>;private _timeElapsedQuery: Nullable<WebGLQuery>;private _timeElapsedQueryEnded: boolean;
     }
 }
 declare module BABYLON {
@@ -4785,50 +4731,6 @@ declare module BABYLON {
          * Detailled logging while loading
          */
         static readonly SCENELOADER_DETAILED_LOGGING: number;
-    }
-}
-declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    export class _StencilState {
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
-        static readonly ALWAYS: number;
-        /** Passed to stencilOperation to specify that stencil value must be kept */
-        static readonly KEEP: number;
-        /** Passed to stencilOperation to specify that stencil value must be replaced */
-        static readonly REPLACE: number;
-        private _isStencilTestDirty;
-        private _isStencilMaskDirty;
-        private _isStencilFuncDirty;
-        private _isStencilOpDirty;
-        private _stencilTest;
-        private _stencilMask;
-        private _stencilFunc;
-        private _stencilFuncRef;
-        private _stencilFuncMask;
-        private _stencilOpStencilFail;
-        private _stencilOpDepthFail;
-        private _stencilOpStencilDepthPass;
-        readonly isDirty: boolean;
-        stencilFunc: number;
-        stencilFuncRef: number;
-        stencilFuncMask: number;
-        stencilOpStencilFail: number;
-        stencilOpDepthFail: number;
-        stencilOpStencilDepthPass: number;
-        stencilMask: number;
-        stencilTest: boolean;
-        constructor();
-        reset(): void;
-        apply(gl: WebGLRenderingContext): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    export class _TimeToken {private _startTimeQuery: Nullable<WebGLQuery>;private _endTimeQuery: Nullable<WebGLQuery>;private _timeElapsedQuery: Nullable<WebGLQuery>;private _timeElapsedQueryEnded: boolean;
     }
 }
 declare module BABYLON {
@@ -7123,6 +7025,74 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+    /** @hidden */
+    export class WebGLDataBuffer extends DataBuffer {
+        private _buffer;
+        constructor(resource: WebGLBuffer);
+        readonly underlyingResource: any;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGLPipelineContext implements IPipelineContext {
+        engine: ThinEngine;
+        program: Nullable<WebGLProgram>;
+        context?: WebGLRenderingContext;
+        vertexShader?: WebGLShader;
+        fragmentShader?: WebGLShader;
+        isParallelCompiled: boolean;
+        onCompiled?: () => void;
+        transformFeedback?: WebGLTransformFeedback | null;
+        readonly isAsync: boolean;
+        readonly isReady: boolean;private _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
+    }
+}
+declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Create an uniform buffer
+             * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+             * @param elements defines the content of the uniform buffer
+             * @returns the webGL uniform buffer
+             */
+            createUniformBuffer(elements: FloatArray): DataBuffer;
+            /**
+             * Create a dynamic uniform buffer
+             * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+             * @param elements defines the content of the uniform buffer
+             * @returns the webGL uniform buffer
+             */
+            createDynamicUniformBuffer(elements: FloatArray): DataBuffer;
+            /**
+             * Update an existing uniform buffer
+             * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+             * @param uniformBuffer defines the target uniform buffer
+             * @param elements defines the content to update
+             * @param offset defines the offset in the uniform buffer where update should start
+             * @param count defines the size of the data to update
+             */
+            updateUniformBuffer(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void;
+            /**
+             * Bind an uniform buffer to the current webGL context
+             * @param buffer defines the buffer to bind
+             */
+            bindUniformBuffer(buffer: Nullable<DataBuffer>): void;
+            /**
+             * Bind a buffer to the current webGL context at a given location
+             * @param buffer defines the buffer to bind
+             * @param location defines the index where to bind the buffer
+             */
+            bindUniformBufferBase(buffer: DataBuffer, location: number): void;
+            /**
+             * Bind a specific block at a given index in a specific shader program
+             * @param pipelineContext defines the pipeline context to use
+             * @param blockName defines the block name
+             * @param index defines the index where to bind the block
+             */
+            bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void;
+        }
+}
+declare module BABYLON {
     /**
      * Uniform buffer objects.
      *
@@ -7494,7 +7464,7 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-        interface BaseEngine {
+        interface ThinEngine {
             /**
              * Creates a depth stencil cube texture.
              * This is only available in WebGL 2.
@@ -12229,7 +12199,7 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-        interface BaseEngine {
+        interface Engine {
             /**
              * Creates a raw texture
              * @param data defines the data to store in the texture
@@ -15868,6 +15838,29 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Creates a dynamic texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param generateMipMaps defines if the engine should generate the mip levels
+             * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+             * @returns the dynamic texture inside an InternalTexture
+             */
+            createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
+            /**
+             * Update the content of a dynamic texture
+             * @param texture defines the texture to update
+             * @param canvas defines the canvas containing the source
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param premulAlpha defines if alpha is stored as premultiplied
+             * @param format defines the format of the data
+             * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+             */
+            updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+        }
+}
+declare module BABYLON {
     /**
      * A class extending Texture allowing drawing on a texture
      * @see http://doc.babylonjs.com/how_to/dynamictexture
@@ -15991,7 +15984,7 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-        interface BaseEngine {
+        interface ThinEngine {
             /**
              * Creates a new render target cube texture
              * @param size defines the size of the texture
@@ -16442,7 +16435,7 @@ declare module BABYLON {
         protected _rampGradients: Nullable<Array<Color3Gradient>>;
         protected _colorRemapGradients: Nullable<Array<FactorGradient>>;
         protected _alphaRemapGradients: Nullable<Array<FactorGradient>>;
-        protected _hasTargetStopDurationDependantGradient(): Nullable<boolean>;
+        protected _hasTargetStopDurationDependantGradient(): boolean | null;
         /**
          * Defines the delay in milliseconds before starting the system (0 by default)
          */
@@ -27805,7 +27798,7 @@ declare module BABYLON {
          * @param onError Callback that will be called if an error occurs during shader compilation.
          * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
          */
-        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | BaseEngine, samplers?: Nullable<string[]>, engine?: BaseEngine, defines?: Nullable<string>, fallbacks?: Nullable<EffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
+        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: Nullable<string[]>, engine?: ThinEngine, defines?: Nullable<string>, fallbacks?: Nullable<EffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
         private _useFinalCode;
         /**
          * Unique key for this effect
@@ -28348,34 +28341,109 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    export class DepthCullingState {
+        private _isDepthTestDirty;
+        private _isDepthMaskDirty;
+        private _isDepthFuncDirty;
+        private _isCullFaceDirty;
+        private _isCullDirty;
+        private _isZOffsetDirty;
+        private _isFrontFaceDirty;
+        private _depthTest;
+        private _depthMask;
+        private _depthFunc;
+        private _cull;
+        private _cullFace;
+        private _zOffset;
+        private _frontFace;
+        /**
+         * Initializes the state.
+         */
+        constructor();
+        readonly isDirty: boolean;
+        zOffset: number;
+        cullFace: Nullable<number>;
+        cull: Nullable<boolean>;
+        depthFunc: Nullable<number>;
+        depthMask: boolean;
+        depthTest: boolean;
+        frontFace: Nullable<number>;
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    export class StencilState {
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
+        static readonly ALWAYS: number;
+        /** Passed to stencilOperation to specify that stencil value must be kept */
+        static readonly KEEP: number;
+        /** Passed to stencilOperation to specify that stencil value must be replaced */
+        static readonly REPLACE: number;
+        private _isStencilTestDirty;
+        private _isStencilMaskDirty;
+        private _isStencilFuncDirty;
+        private _isStencilOpDirty;
+        private _stencilTest;
+        private _stencilMask;
+        private _stencilFunc;
+        private _stencilFuncRef;
+        private _stencilFuncMask;
+        private _stencilOpStencilFail;
+        private _stencilOpDepthFail;
+        private _stencilOpStencilDepthPass;
+        readonly isDirty: boolean;
+        stencilFunc: number;
+        stencilFuncRef: number;
+        stencilFuncMask: number;
+        stencilOpStencilFail: number;
+        stencilOpDepthFail: number;
+        stencilOpStencilDepthPass: number;
+        stencilMask: number;
+        stencilTest: boolean;
+        constructor();
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    export class AlphaState {
+        private _isAlphaBlendDirty;
+        private _isBlendFunctionParametersDirty;
+        private _isBlendEquationParametersDirty;
+        private _isBlendConstantsDirty;
+        private _alphaBlend;
+        private _blendFunctionParameters;
+        private _blendEquationParameters;
+        private _blendConstants;
+        /**
+         * Initializes the state.
+         */
+        constructor();
+        readonly isDirty: boolean;
+        alphaBlend: boolean;
+        setAlphaBlendConstants(r: number, g: number, b: number, a: number): void;
+        setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void;
+        setAlphaEquationParameters(rgb: number, alpha: number): void;
+        reset(): void;
+        apply(gl: WebGLRenderingContext): void;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export class WebGL2ShaderProcessor implements IShaderProcessor {
         attributeProcessor(attribute: string): string;
         varyingProcessor(varying: string, isFragment: boolean): string;
         postProcessor(code: string, defines: string[], isFragment: boolean): string;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class WebGLDataBuffer extends DataBuffer {
-        private _buffer;
-        constructor(resource: WebGLBuffer);
-        readonly underlyingResource: any;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class WebGLPipelineContext implements IPipelineContext {
-        engine: BaseEngine;
-        program: Nullable<WebGLProgram>;
-        context?: WebGLRenderingContext;
-        vertexShader?: WebGLShader;
-        fragmentShader?: WebGLShader;
-        isParallelCompiled: boolean;
-        onCompiled?: () => void;
-        transformFeedback?: WebGLTransformFeedback | null;
-        readonly isAsync: boolean;
-        readonly isReady: boolean;private _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
     }
 }
 declare module BABYLON {
@@ -28409,6 +28477,17 @@ declare module BABYLON {
          */
         attributeName: string;
     }
+}
+declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Update a video texture
+             * @param texture defines the texture to update
+             * @param video defines the video element to use
+             * @param invertY defines if data must be stored with Y axis inverted
+             */
+            updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
+        }
 }
 declare module BABYLON {
     /**
@@ -28538,15 +28617,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines the interface used by objects containing a viewport (like a camera)
-     */
-    interface IViewportOwnerLike {
-        /**
-         * Gets or sets the viewport
-         */
-        viewport: IViewportLike;
-    }
-    /**
      * Defines the interface used by objects working like Scene
      * @hidden
      */
@@ -28600,7 +28670,7 @@ declare module BABYLON {
     /**
      * The base engine class (root of all engines)
      */
-    export class BaseEngine {
+    export class ThinEngine {
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
         static ExceptionList: ({
             key: string;
@@ -28692,19 +28762,17 @@ declare module BABYLON {
         private _glVersion;
         private _glRenderer;
         private _glVendor;
-        private _videoTextureSupported;
+        /** @hidden */private _videoTextureSupported: boolean;
         protected _renderingQueueLaunched: boolean;
         protected _activeRenderLoops: (() => void)[];
-        private _deterministicLockstep;
-        private _lockstepMaxSteps;
         /**
          * Observable signaled when a context lost event is raised
          */
-        onContextLostObservable: Observable<BaseEngine>;
+        onContextLostObservable: Observable<ThinEngine>;
         /**
          * Observable signaled when a context restored event is raised
          */
-        onContextRestoredObservable: Observable<BaseEngine>;
+        onContextRestoredObservable: Observable<ThinEngine>;
         private _onContextLost;
         private _onContextRestored;
         protected _contextWasLost: boolean;
@@ -28719,15 +28787,11 @@ declare module BABYLON {
          */
         disableVertexArrayObjects: boolean;
         /** @hidden */
-        protected _depthCullingState: _DepthCullingState;
+        protected _depthCullingState: DepthCullingState;
         /** @hidden */
-        protected _stencilState: _StencilState;
+        protected _stencilState: StencilState;
         /** @hidden */
-        protected _alphaState: _AlphaState;
-        /** @hidden */
-        protected _alphaMode: number;
-        /** @hidden */
-        protected _alphaEquation: number;
+        protected _alphaState: AlphaState;
         /** @hidden */private _internalTexturesCache: InternalTexture[];
         /** @hidden */
         protected _activeChannel: number;
@@ -28811,7 +28875,6 @@ declare module BABYLON {
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
         constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
-        private _disableTouchAction;
         private _rebuildInternalTextures;
         private _rebuildEffects;
         /**
@@ -28840,18 +28903,6 @@ declare module BABYLON {
          */
         resetTextureCache(): void;
         /**
-         * Gets a boolean indicating that the engine is running in deterministic lock step mode
-         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
-         * @returns true if engine is in deterministic lock step mode
-         */
-        isDeterministicLockStep(): boolean;
-        /**
-         * Gets the max steps when engine is running in deterministic lock step
-         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
-         * @returns the max steps
-         */
-        getLockstepMaxSteps(): number;
-        /**
          * Gets an object containing information about the current webGL context
          * @returns an object containing the vender, the renderer and the version of the current webGL context
          */
@@ -28860,50 +28911,6 @@ declare module BABYLON {
             renderer: string;
             version: string;
         };
-        /**
-         * Gets current aspect ratio
-         * @param viewportOwner defines the camera to use to get the aspect ratio
-         * @param useScreen defines if screen size must be used (or the current render target if any)
-         * @returns a number defining the aspect ratio
-         */
-        getAspectRatio(viewportOwner: IViewportOwnerLike, useScreen?: boolean): number;
-        /**
-         * Gets current screen aspect ratio
-         * @returns a number defining the aspect ratio
-         */
-        getScreenAspectRatio(): number;
-        /**
-         * Gets the current render width
-         * @param useScreen defines if screen size must be used (or the current render target if any)
-         * @returns a number defining the current render width
-         */
-        getRenderWidth(useScreen?: boolean): number;
-        /**
-         * Gets the current render height
-         * @param useScreen defines if screen size must be used (or the current render target if any)
-         * @returns a number defining the current render height
-         */
-        getRenderHeight(useScreen?: boolean): number;
-        /**
-         * Gets the HTML canvas attached with the current webGL context
-         * @returns a HTML canvas
-         */
-        getRenderingCanvas(): Nullable<HTMLCanvasElement>;
-        /**
-         * Gets host window
-         * @returns the host window object
-         */
-        getHostWindow(): Window;
-        /**
-         * Gets host document
-         * @returns the host document object
-         */
-        getHostDocument(): Document;
-        /**
-         * Gets the client rect of the HTML canvas attached with the current webGL context
-         * @returns a client rectanglee
-         */
-        getRenderingCanvasClientRect(): Nullable<ClientRect>;
         /**
          * Defines the hardware scaling level.
          * By default the hardware scaling level is computed from the window device ratio.
@@ -28929,142 +28936,33 @@ declare module BABYLON {
          */
         getCaps(): EngineCapabilities;
         /**
-         * Gets the current depth function
-         * @returns a number defining the depth function
-         */
-        getDepthFunction(): Nullable<number>;
-        /**
-         * Sets the current depth function
-         * @param depthFunc defines the function to use
-         */
-        setDepthFunction(depthFunc: number): void;
-        /**
-         * Sets the current depth function to GREATER
-         */
-        setDepthFunctionToGreater(): void;
-        /**
-         * Sets the current depth function to GEQUAL
-         */
-        setDepthFunctionToGreaterOrEqual(): void;
-        /**
-         * Sets the current depth function to LESS
-         */
-        setDepthFunctionToLess(): void;
-        private _cachedStencilBuffer;
-        private _cachedStencilFunction;
-        private _cachedStencilMask;
-        private _cachedStencilOperationPass;
-        private _cachedStencilOperationFail;
-        private _cachedStencilOperationDepthFail;
-        private _cachedStencilReference;
-        /**
-         * Caches the the state of the stencil buffer
-         */
-        cacheStencilState(): void;
-        /**
-         * Restores the state of the stencil buffer
-         */
-        restoreStencilState(): void;
-        /**
-         * Sets the current depth function to LEQUAL
-         */
-        setDepthFunctionToLessOrEqual(): void;
-        /**
-         * Gets a boolean indicating if stencil buffer is enabled
-         * @returns the current stencil buffer state
-         */
-        getStencilBuffer(): boolean;
-        /**
-         * Enable or disable the stencil buffer
-         * @param enable defines if the stencil buffer must be enabled or disabled
-         */
-        setStencilBuffer(enable: boolean): void;
-        /**
-         * Gets the current stencil mask
-         * @returns a number defining the new stencil mask to use
-         */
-        getStencilMask(): number;
-        /**
-         * Sets the current stencil mask
-         * @param mask defines the new stencil mask to use
-         */
-        setStencilMask(mask: number): void;
-        /**
-         * Gets the current stencil function
-         * @returns a number defining the stencil function to use
-         */
-        getStencilFunction(): number;
-        /**
-         * Gets the current stencil reference value
-         * @returns a number defining the stencil reference value to use
-         */
-        getStencilFunctionReference(): number;
-        /**
-         * Gets the current stencil mask
-         * @returns a number defining the stencil mask to use
-         */
-        getStencilFunctionMask(): number;
-        /**
-         * Sets the current stencil function
-         * @param stencilFunc defines the new stencil function to use
-         */
-        setStencilFunction(stencilFunc: number): void;
-        /**
-         * Sets the current stencil reference
-         * @param reference defines the new stencil reference to use
-         */
-        setStencilFunctionReference(reference: number): void;
-        /**
-         * Sets the current stencil mask
-         * @param mask defines the new stencil mask to use
-         */
-        setStencilFunctionMask(mask: number): void;
-        /**
-         * Gets the current stencil operation when stencil fails
-         * @returns a number defining stencil operation to use when stencil fails
-         */
-        getStencilOperationFail(): number;
-        /**
-         * Gets the current stencil operation when depth fails
-         * @returns a number defining stencil operation to use when depth fails
-         */
-        getStencilOperationDepthFail(): number;
-        /**
-         * Gets the current stencil operation when stencil passes
-         * @returns a number defining stencil operation to use when stencil passes
-         */
-        getStencilOperationPass(): number;
-        /**
-         * Sets the stencil operation to use when stencil fails
-         * @param operation defines the stencil operation to use when stencil fails
-         */
-        setStencilOperationFail(operation: number): void;
-        /**
-         * Sets the stencil operation to use when depth fails
-         * @param operation defines the stencil operation to use when depth fails
-         */
-        setStencilOperationDepthFail(operation: number): void;
-        /**
-         * Sets the stencil operation to use when stencil passes
-         * @param operation defines the stencil operation to use when stencil passes
-         */
-        setStencilOperationPass(operation: number): void;
-        /**
-         * Sets a boolean indicating if the dithering state is enabled or disabled
-         * @param value defines the dithering state
-         */
-        setDitheringState(value: boolean): void;
-        /**
-         * Sets a boolean indicating if the rasterizer state is enabled or disabled
-         * @param value defines the rasterizer state
-         */
-        setRasterizerState(value: boolean): void;
-        /**
          * stop executing a render loop function and remove it from the execution array
          * @param renderFunction defines the function to be removed. If not provided all functions will be removed.
          */
         stopRenderLoop(renderFunction?: () => void): void;
         /** @hidden */private _renderLoop(): void;
+        /**
+         * Gets the HTML canvas attached with the current webGL context
+         * @returns a HTML canvas
+         */
+        getRenderingCanvas(): Nullable<HTMLCanvasElement>;
+        /**
+         * Gets host window
+         * @returns the host window object
+         */
+        getHostWindow(): Window;
+        /**
+         * Gets the current render width
+         * @param useScreen defines if screen size must be used (or the current render target if any)
+         * @returns a number defining the current render width
+         */
+        getRenderWidth(useScreen?: boolean): number;
+        /**
+         * Gets the current render height
+         * @param useScreen defines if screen size must be used (or the current render target if any)
+         * @returns a number defining the current render height
+         */
+        getRenderHeight(useScreen?: boolean): number;
         /**
          * Can be used to override the current requestAnimationFrame requester.
          * @hidden
@@ -29083,27 +28981,6 @@ declare module BABYLON {
          * @param stencil defines if the stencil buffer must be cleared
          */
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
-        /**
-         * Executes a scissor clear (ie. a clear on a specific portion of the screen)
-         * @param x defines the x-coordinate of the top left corner of the clear rectangle
-         * @param y defines the y-coordinate of the corner of the clear rectangle
-         * @param width defines the width of the clear rectangle
-         * @param height defines the height of the clear rectangle
-         * @param clearColor defines the clear color
-         */
-        scissorClear(x: number, y: number, width: number, height: number, clearColor: IColor4Like): void;
-        /**
-         * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
-         * @param x defines the x-coordinate of the top left corner of the clear rectangle
-         * @param y defines the y-coordinate of the corner of the clear rectangle
-         * @param width defines the width of the clear rectangle
-         * @param height defines the height of the clear rectangle
-         */
-        enableScissor(x: number, y: number, width: number, height: number): void;
-        /**
-         * Disable previously set scissor test rectangle
-         */
-        disableScissor(): void;
         private _viewportCached;
         /** @hidden */private _viewport(x: number, y: number, width: number, height: number): void;
         /**
@@ -29113,15 +28990,6 @@ declare module BABYLON {
          * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
          */
         setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void;
-        /**
-         * Directly set the WebGL Viewport
-         * @param x defines the x coordinate of the viewport (in screen space)
-         * @param y defines the y coordinate of the viewport (in screen space)
-         * @param width defines the width of the viewport (in screen space)
-         * @param height defines the height of the viewport (in screen space)
-         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
-         */
-        setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike>;
         /**
          * Begin a new frame
          */
@@ -29160,11 +29028,6 @@ declare module BABYLON {
          */
         unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
         /**
-         * Force the mipmap generation for the given render target texture
-         * @param texture defines the render target texture to use
-         */
-        generateMipMapsForCubemap(texture: InternalTexture): void;
-        /**
          * Force a webGL flush (ie. a flush of all waiting webGL commands)
          */
         flushFramebuffer(): void;
@@ -29172,29 +29035,6 @@ declare module BABYLON {
          * Unbind the current render target and bind the default framebuffer
          */
         restoreDefaultFramebuffer(): void;
-        /**
-         * Create an uniform buffer
-         * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
-         * @param elements defines the content of the uniform buffer
-         * @returns the webGL uniform buffer
-         */
-        createUniformBuffer(elements: FloatArray): DataBuffer;
-        /**
-         * Create a dynamic uniform buffer
-         * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
-         * @param elements defines the content of the uniform buffer
-         * @returns the webGL uniform buffer
-         */
-        createDynamicUniformBuffer(elements: FloatArray): DataBuffer;
-        /**
-         * Update an existing uniform buffer
-         * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
-         * @param uniformBuffer defines the target uniform buffer
-         * @param elements defines the content to update
-         * @param offset defines the offset in the uniform buffer where update should start
-         * @param count defines the size of the data to update
-         */
-        updateUniformBuffer(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void;
         private _resetVertexBufferBinding;
         /**
          * Creates a vertex buffer
@@ -29238,24 +29078,6 @@ declare module BABYLON {
          * @param buffer defines the buffer to bind
          */
         bindArrayBuffer(buffer: Nullable<DataBuffer>): void;
-        /**
-         * Bind an uniform buffer to the current webGL context
-         * @param buffer defines the buffer to bind
-         */
-        bindUniformBuffer(buffer: Nullable<DataBuffer>): void;
-        /**
-         * Bind a buffer to the current webGL context at a given location
-         * @param buffer defines the buffer to bind
-         * @param location defines the index where to bind the buffer
-         */
-        bindUniformBufferBase(buffer: DataBuffer, location: number): void;
-        /**
-         * Bind a specific block at a given index in a specific shader program
-         * @param pipelineContext defines the pipeline context to use
-         * @param blockName defines the block name
-         * @param index defines the index where to bind the block
-         */
-        bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void;
         private bindIndexBuffer;
         private bindBuffer;
         /**
@@ -29391,7 +29213,7 @@ declare module BABYLON {
          * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
          * @returns the new Effect
          */
-        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | BaseEngine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
+        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
         protected static _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion?: string): string;
         private _compileShader;
         private _compileRawShader;
@@ -29584,79 +29406,17 @@ declare module BABYLON {
          */
         setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: IColor4Like): void;
         /**
-         * Set various states to the webGL context
-         * @param culling defines backface culling state
-         * @param zOffset defines the value to apply to zOffset (0 by default)
-         * @param force defines if states must be applied even if cache is up to date
-         * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+         * Gets the depth culling state manager
          */
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        readonly depthCullingState: DepthCullingState;
         /**
-         * Set the z offset to apply to current rendering
-         * @param value defines the offset to apply
+         * Gets the alpha state manager
          */
-        setZOffset(value: number): void;
+        readonly alphaState: AlphaState;
         /**
-         * Gets the current value of the zOffset
-         * @returns the current zOffset state
+         * Gets the stencil state manager
          */
-        getZOffset(): number;
-        /**
-         * Enable or disable depth buffering
-         * @param enable defines the state to set
-         */
-        setDepthBuffer(enable: boolean): void;
-        /**
-         * Gets a boolean indicating if depth writing is enabled
-         * @returns the current depth writing state
-         */
-        getDepthWrite(): boolean;
-        /**
-         * Enable or disable depth writing
-         * @param enable defines the state to set
-         */
-        setDepthWrite(enable: boolean): void;
-        /**
-         * Enable or disable color writing
-         * @param enable defines the state to set
-         */
-        setColorWrite(enable: boolean): void;
-        /**
-         * Gets a boolean indicating if color writing is enabled
-         * @returns the current color writing state
-         */
-        getColorWrite(): boolean;
-        /**
-         * Sets alpha constants used by some alpha blending modes
-         * @param r defines the red component
-         * @param g defines the green component
-         * @param b defines the blue component
-         * @param a defines the alpha component
-         */
-        setAlphaConstants(r: number, g: number, b: number, a: number): void;
-        /**
-         * Sets the current alpha mode
-         * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
-         * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-         */
-        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-        /**
-         * Gets the current alpha mode
-         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-         * @returns the current alpha mode
-         */
-        getAlphaMode(): number;
-        /**
-         * Sets the current alpha equation
-         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
-         */
-        setAlphaEquation(equation: number): void;
-        /**
-         * Gets the current alpha equation.
-         * @returns the current alpha equation
-         */
-        getAlphaEquation(): number;
+        readonly stencilState: StencilState;
         /**
          * Clears the list of texture accessible through engine.
          * This can help preventing texture load conflict due to name collision.
@@ -29718,6 +29478,48 @@ declare module BABYLON {
         /**
          * @hidden
          */private _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void;
+        /**
+         * Creates a raw texture
+         * @param data defines the data to store in the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param format defines the format of the data
+         * @param generateMipMaps defines if the engine should generate the mip levels
+         * @param invertY defines if data must be stored with Y axis inverted
+         * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+         * @param compression defines the compression used (null by default)
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @returns the raw texture inside an InternalTexture
+         */
+        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
+        /**
+         * Creates a new raw cube texture
+         * @param data defines the array of data to use to create each face
+         * @param size defines the size of the textures
+         * @param format defines the format of the data
+         * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param generateMipMaps  defines if the engine should generate the mip levels
+         * @param invertY defines if data must be stored with Y axis inverted
+         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+         * @param compression defines the compression used (null by default)
+         * @returns the cube texture as an InternalTexture
+         */
+        createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>): InternalTexture;
+        /**
+         * Creates a new raw 3D texture
+         * @param data defines the data used to create the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param depth defines the depth of the texture
+         * @param format defines the format of the texture
+         * @param generateMipMaps defines if the engine must generate mip levels
+         * @param invertY defines if data must be stored with Y axis inverted
+         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+         * @param compression defines the compressed used (can be null)
+         * @param textureType defines the compressed used (can be null)
+         * @returns a new raw 3D texture (stored in an InternalTexture)
+         */
+        createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, textureType?: number): InternalTexture;
         private _unpackFlipYCached;
         /**
          * In case you are sharing the context with other applications, it might
@@ -29728,37 +29530,11 @@ declare module BABYLON {
         /** @hidden */private _unpackFlipY(value: boolean): void;
         /** @hidden */private _getUnpackAlignement(): number;
         /**
-         * Creates a dynamic texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param generateMipMaps defines if the engine should generate the mip levels
-         * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-         * @returns the dynamic texture inside an InternalTexture
-         */
-        createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
-        /**
          * Update the sampling mode of a given texture
          * @param samplingMode defines the required sampling mode
          * @param texture defines the texture to update
          */
         updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
-        /**
-         * Update the content of a dynamic texture
-         * @param texture defines the texture to update
-         * @param canvas defines the canvas containing the source
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param premulAlpha defines if alpha is stored as premultiplied
-         * @param format defines the format of the data
-         * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
-         */
-        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
-        /**
-         * Update a video texture
-         * @param texture defines the texture to update
-         * @param video defines the video element to use
-         * @param invertY defines if data must be stored with Y axis inverted
-         */
-        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
         /**
          * Updates a depth texture Comparison Mode and Function.
          * If the comparison Function is equal to 0, the mode will be set to none.
@@ -29795,25 +29571,7 @@ declare module BABYLON {
          * @param renderTarget The render target to set the frame buffer for
          */
         setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void;
-        /**
-         * Creates a new render target texture
-         * @param size defines the size of the texture
-         * @param options defines the options used to create the texture
-         * @returns a new render target texture stored in an InternalTexture
-         */
-        createRenderTargetTexture(size: number | {
-            width: number;
-            height: number;
-        }, options: boolean | RenderTargetCreationOptions): InternalTexture;
         /** @hidden */private _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples?: number): Nullable<WebGLRenderbuffer>;
-        /**
-         * Updates the sample count of a render target texture
-         * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
-         * @param texture defines the texture to update
-         * @param samples defines the sample count to set
-         * @returns the effective sample count (could be 0 if multisample render targets are not supported)
-         */
-        updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number;
         /** @hidden */private _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */private _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number, babylonInternalFormat?: number, useTextureWidthAndHeight?: boolean): void;
         /** @hidden */private _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
@@ -29823,7 +29581,6 @@ declare module BABYLON {
          */private _setCubeMapTextureParams(loadMipmap: boolean): void;
         protected _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<ISceneLike>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void;
         private _prepareWebGLTexture;
-        /** @hidden */private _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView;
         /** @hidden */private _releaseFramebufferObjects(texture: InternalTexture): void;
         /** @hidden */private _releaseTexture(texture: InternalTexture): void;
         protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
@@ -29840,18 +29597,6 @@ declare module BABYLON {
         /** @hidden */private _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate?: boolean, force?: boolean): boolean;
         /** @hidden */private _bindTexture(channel: number, texture: Nullable<InternalTexture>): void;
         /**
-         * Sets a texture to the webGL context from a postprocess
-         * @param channel defines the channel to use
-         * @param postProcess defines the source postprocess
-         */
-        setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>): void;
-        /**
-         * Binds the output of the passed in post process to the texture channel specified
-         * @param channel The channel the texture should be bound to
-         * @param postProcess The post process which's output should be bound
-         */
-        setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>): void;
-        /**
          * Unbind all textures from the webGL context
          */
         unbindAllTextures(): void;
@@ -29862,13 +29607,6 @@ declare module BABYLON {
          * @param texture The texture to apply
          */
         setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>): void;
-        /**
-         * Sets a depth stencil texture from a render target to the according uniform.
-         * @param channel The texture channel
-         * @param uniform The uniform to set
-         * @param texture The render target texture containing the depth stencil texture to apply
-         */
-        setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>): void;
         private _bindSamplerUniformToChannel;
         private _getTextureWrapMode;
         protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray?: boolean, depthStencilTexture?: boolean): boolean;
@@ -29882,15 +29620,6 @@ declare module BABYLON {
         /** @hidden */private _setAnisotropicLevel(target: number, texture: BaseTexture): void;
         private _setTextureParameterFloat;
         private _setTextureParameterInteger;
-        /**
-         * Reads pixels from the current frame buffer. Please note that this function can be slow
-         * @param x defines the x coordinate of the rectangle where pixels must be read
-         * @param y defines the y coordinate of the rectangle where pixels must be read
-         * @param width defines the width of the rectangle where pixels must be read
-         * @param height defines the height of the rectangle where pixels must be read
-         * @returns a Uint8Array containing RGBA colors
-         */
-        readPixels(x: number, y: number, width: number, height: number): Uint8Array;
         /**
          * Unbind all vertex attributes from the webGL context
          */
@@ -29914,18 +29643,6 @@ declare module BABYLON {
          */
         attachContextRestoredEvent(callback: ((event: WebGLContextEvent) => void)): void;
         /**
-         * Gets the source code of the vertex shader associated with a specific webGL program
-         * @param program defines the program to use
-         * @returns a string containing the source code of the vertex shader associated with the program
-         */
-        getVertexShaderSource(program: WebGLProgram): Nullable<string>;
-        /**
-         * Gets the source code of the fragment shader associated with a specific webGL program
-         * @param program defines the program to use
-         * @returns a string containing the source code of the fragment shader associated with the program
-         */
-        getFragmentShaderSource(program: WebGLProgram): Nullable<string>;
-        /**
          * Get the current error code of the webGL context
          * @returns the error code
          * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getError
@@ -29939,7 +29656,6 @@ declare module BABYLON {
         /** @hidden */private _getRGBABufferInternalSizedFormat(type: number, format?: number): number;
         /** @hidden */private _getRGBAMultiSampleBufferFormat(type: number): number;
         /** @hidden */private _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
-        /** @hidden */private _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
@@ -29979,20 +29695,6 @@ declare module BABYLON {
          * @returns frame number
          */
         static QueueNewFrame(func: () => void, requester?: any): number;
-        /**
-         * Ask the browser to promote the current element to pointerlock mode
-         * @param element defines the DOM element to promote
-         */private static _RequestPointerlock(element: HTMLElement): void;
-        /**
-         * Asks the browser to exit pointerlock mode
-         */private static _ExitPointerlock(): void;
-        /**
-         * Ask the browser to promote the current element to fullscreen rendering mode
-         * @param element defines the DOM element to promote
-         */private static _RequestFullscreen(element: HTMLElement): void;
-        /**
-         * Asks the browser to exit fullscreen mode
-         */private static _ExitFullscreen(): void;
     }
 }
 declare module BABYLON {
@@ -30171,7 +29873,7 @@ declare module BABYLON {
          * Gets the Engine the texture belongs to.
          * @returns The babylon engine
          */
-        getEngine(): BaseEngine;
+        getEngine(): ThinEngine;
         /**
          * Gets the data source type of the texture (can be one of the InternalTexture.DATASOURCE_XXXX)
          */
@@ -30182,7 +29884,7 @@ declare module BABYLON {
          * @param dataSource defines the type of data that will be used
          * @param delayAllocation if the texture allocation should be delayed (default: false)
          */
-        constructor(engine: BaseEngine, dataSource: number, delayAllocation?: boolean);
+        constructor(engine: ThinEngine, dataSource: number, delayAllocation?: boolean);
         /**
          * Increments the number of references (ie. the number of Texture that point to it)
          */
@@ -30548,9 +30250,46 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Interface for performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
+     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
      */
-    export interface IPerformanceMonitor {
+    export class PerformanceMonitor {
+        private _enabled;
+        private _rollingFrameTime;
+        private _lastFrameTimeMs;
+        /**
+         * constructor
+         * @param frameSampleSize The number of samples required to saturate the sliding window
+         */
+        constructor(frameSampleSize?: number);
+        /**
+         * Samples current frame
+         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
+         */
+        sampleFrame(timeMs?: number): void;
+        /**
+         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFrameTime: number;
+        /**
+         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFrameTimeVariance: number;
+        /**
+         * Returns the frame time of the most recent frame
+         */
+        readonly instantaneousFrameTime: number;
+        /**
+         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFPS: number;
+        /**
+         * Returns the average framerate in frames per second using the most recent frame time
+         */
+        readonly instantaneousFPS: number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         */
+        readonly isSaturated: boolean;
         /**
          * Enables contributions to the sliding window sample set
          */
@@ -30561,30 +30300,63 @@ declare module BABYLON {
          */
         disable(): void;
         /**
-         * Samples current frame
-         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
+         * Returns true if sampling is enabled
          */
-        sampleFrame(timeMs?: number): void;
+        readonly isEnabled: boolean;
         /**
-         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         * Resets performance monitor
          */
-        averageFrameTime: number;
+        reset(): void;
+    }
+    /**
+     * RollingAverage
+     *
+     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
+     */
+    export class RollingAverage {
         /**
-         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         * Current average
          */
-        averageFrameTimeVariance: number;
+        average: number;
         /**
-         * Returns the frame time of the most recent frame
+         * Current variance
          */
-        instantaneousFrameTime: number;
+        variance: number;
+        protected _samples: Array<number>;
+        protected _sampleCount: number;
+        protected _pos: number;
+        protected _m2: number;
         /**
-         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
+         * constructor
+         * @param length The number of samples required to saturate the sliding window
          */
-        averageFPS: number;
+        constructor(length: number);
         /**
-         * Returns the average framerate in frames per second using the most recent frame time
+         * Adds a sample to the sample set
+         * @param v The sample value
          */
-        instantaneousFPS: number;
+        add(v: number): void;
+        /**
+         * Returns previously added values or null if outside of history or outside the sliding window domain
+         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
+         * @return Value previously recorded with add() or null if outside of range
+         */
+        history(i: number): number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         * @return true if sample-set saturated
+         */
+        isSaturated(): boolean;
+        /**
+         * Resets the rolling average (equivalent to 0 samples taken so far)
+         */
+        reset(): void;
+        /**
+         * Wraps a value around the sample range boundaries
+         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
+         * @return Wrapped position in sample range
+         */
+        protected _wrapPosition(i: number): number;
     }
 }
 declare module BABYLON {
@@ -30598,9 +30370,206 @@ declare module BABYLON {
         vrSupported: boolean;
     }
     /**
+     * Defines the interface used by objects containing a viewport (like a camera)
+     */
+    interface IViewportOwnerLike {
+        /**
+         * Gets or sets the viewport
+         */
+        viewport: IViewportLike;
+    }
+    /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
      */
-    export class Engine extends BaseEngine {
+    export class Engine extends ThinEngine {
+        /** Defines that alpha blending is disabled */
+        static readonly ALPHA_DISABLE: number;
+        /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
+        static readonly ALPHA_ADD: number;
+        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
+        static readonly ALPHA_COMBINE: number;
+        /** Defines that alpha blending to DEST - SRC * DEST */
+        static readonly ALPHA_SUBTRACT: number;
+        /** Defines that alpha blending to SRC * DEST */
+        static readonly ALPHA_MULTIPLY: number;
+        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
+        static readonly ALPHA_MAXIMIZED: number;
+        /** Defines that alpha blending to SRC + DEST */
+        static readonly ALPHA_ONEONE: number;
+        /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
+        static readonly ALPHA_PREMULTIPLIED: number;
+        /**
+         * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
+         * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
+         */
+        static readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
+        /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
+        static readonly ALPHA_INTERPOLATE: number;
+        /**
+         * Defines that alpha blending to SRC + (1 - SRC) * DEST
+         * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
+         */
+        static readonly ALPHA_SCREENMODE: number;
+        /** Defines that the ressource is not delayed*/
+        static readonly DELAYLOADSTATE_NONE: number;
+        /** Defines that the ressource was successfully delay loaded */
+        static readonly DELAYLOADSTATE_LOADED: number;
+        /** Defines that the ressource is currently delay loading */
+        static readonly DELAYLOADSTATE_LOADING: number;
+        /** Defines that the ressource is delayed and has not started loading */
+        static readonly DELAYLOADSTATE_NOTLOADED: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
+        static readonly NEVER: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
+        static readonly ALWAYS: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
+        static readonly LESS: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
+        static readonly EQUAL: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
+        static readonly LEQUAL: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
+        static readonly GREATER: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
+        static readonly GEQUAL: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
+        static readonly NOTEQUAL: number;
+        /** Passed to stencilOperation to specify that stencil value must be kept */
+        static readonly KEEP: number;
+        /** Passed to stencilOperation to specify that stencil value must be replaced */
+        static readonly REPLACE: number;
+        /** Passed to stencilOperation to specify that stencil value must be incremented */
+        static readonly INCR: number;
+        /** Passed to stencilOperation to specify that stencil value must be decremented */
+        static readonly DECR: number;
+        /** Passed to stencilOperation to specify that stencil value must be inverted */
+        static readonly INVERT: number;
+        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
+        static readonly INCR_WRAP: number;
+        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
+        static readonly DECR_WRAP: number;
+        /** Texture is not repeating outside of 0..1 UVs */
+        static readonly TEXTURE_CLAMP_ADDRESSMODE: number;
+        /** Texture is repeating outside of 0..1 UVs */
+        static readonly TEXTURE_WRAP_ADDRESSMODE: number;
+        /** Texture is repeating and mirrored */
+        static readonly TEXTURE_MIRROR_ADDRESSMODE: number;
+        /** ALPHA */
+        static readonly TEXTUREFORMAT_ALPHA: number;
+        /** LUMINANCE */
+        static readonly TEXTUREFORMAT_LUMINANCE: number;
+        /** LUMINANCE_ALPHA */
+        static readonly TEXTUREFORMAT_LUMINANCE_ALPHA: number;
+        /** RGB */
+        static readonly TEXTUREFORMAT_RGB: number;
+        /** RGBA */
+        static readonly TEXTUREFORMAT_RGBA: number;
+        /** RED */
+        static readonly TEXTUREFORMAT_RED: number;
+        /** RED (2nd reference) */
+        static readonly TEXTUREFORMAT_R: number;
+        /** RG */
+        static readonly TEXTUREFORMAT_RG: number;
+        /** RED_INTEGER */
+        static readonly TEXTUREFORMAT_RED_INTEGER: number;
+        /** RED_INTEGER (2nd reference) */
+        static readonly TEXTUREFORMAT_R_INTEGER: number;
+        /** RG_INTEGER */
+        static readonly TEXTUREFORMAT_RG_INTEGER: number;
+        /** RGB_INTEGER */
+        static readonly TEXTUREFORMAT_RGB_INTEGER: number;
+        /** RGBA_INTEGER */
+        static readonly TEXTUREFORMAT_RGBA_INTEGER: number;
+        /** UNSIGNED_BYTE */
+        static readonly TEXTURETYPE_UNSIGNED_BYTE: number;
+        /** UNSIGNED_BYTE (2nd reference) */
+        static readonly TEXTURETYPE_UNSIGNED_INT: number;
+        /** FLOAT */
+        static readonly TEXTURETYPE_FLOAT: number;
+        /** HALF_FLOAT */
+        static readonly TEXTURETYPE_HALF_FLOAT: number;
+        /** BYTE */
+        static readonly TEXTURETYPE_BYTE: number;
+        /** SHORT */
+        static readonly TEXTURETYPE_SHORT: number;
+        /** UNSIGNED_SHORT */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT: number;
+        /** INT */
+        static readonly TEXTURETYPE_INT: number;
+        /** UNSIGNED_INT */
+        static readonly TEXTURETYPE_UNSIGNED_INTEGER: number;
+        /** UNSIGNED_SHORT_4_4_4_4 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4: number;
+        /** UNSIGNED_SHORT_5_5_5_1 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1: number;
+        /** UNSIGNED_SHORT_5_6_5 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5: number;
+        /** UNSIGNED_INT_2_10_10_10_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV: number;
+        /** UNSIGNED_INT_24_8 */
+        static readonly TEXTURETYPE_UNSIGNED_INT_24_8: number;
+        /** UNSIGNED_INT_10F_11F_11F_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV: number;
+        /** UNSIGNED_INT_5_9_9_9_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV: number;
+        /** FLOAT_32_UNSIGNED_INT_24_8_REV */
+        static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV: number;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        static readonly TEXTURE_NEAREST_SAMPLINGMODE: number;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        static readonly TEXTURE_BILINEAR_SAMPLINGMODE: number;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        static readonly TEXTURE_TRILINEAR_SAMPLINGMODE: number;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
+        /** mag = nearest and min = nearest and mip = nearest */
+        static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST: number;
+        /** mag = nearest and min = linear and mip = nearest */
+        static readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST: number;
+        /** mag = nearest and min = linear and mip = linear */
+        static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR: number;
+        /** mag = nearest and min = linear and mip = none */
+        static readonly TEXTURE_NEAREST_LINEAR: number;
+        /** mag = nearest and min = nearest and mip = none */
+        static readonly TEXTURE_NEAREST_NEAREST: number;
+        /** mag = linear and min = nearest and mip = nearest */
+        static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST: number;
+        /** mag = linear and min = nearest and mip = linear */
+        static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR: number;
+        /** mag = linear and min = linear and mip = none */
+        static readonly TEXTURE_LINEAR_LINEAR: number;
+        /** mag = linear and min = nearest and mip = none */
+        static readonly TEXTURE_LINEAR_NEAREST: number;
+        /** Explicit coordinates mode */
+        static readonly TEXTURE_EXPLICIT_MODE: number;
+        /** Spherical coordinates mode */
+        static readonly TEXTURE_SPHERICAL_MODE: number;
+        /** Planar coordinates mode */
+        static readonly TEXTURE_PLANAR_MODE: number;
+        /** Cubic coordinates mode */
+        static readonly TEXTURE_CUBIC_MODE: number;
+        /** Projection coordinates mode */
+        static readonly TEXTURE_PROJECTION_MODE: number;
+        /** Skybox coordinates mode */
+        static readonly TEXTURE_SKYBOX_MODE: number;
+        /** Inverse Cubic coordinates mode */
+        static readonly TEXTURE_INVCUBIC_MODE: number;
+        /** Equirectangular coordinates mode */
+        static readonly TEXTURE_EQUIRECTANGULAR_MODE: number;
+        /** Equirectangular Fixed coordinates mode */
+        static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE: number;
+        /** Equirectangular Fixed Mirrored coordinates mode */
+        static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE: number;
+        /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
+        static readonly SCALEMODE_FLOOR: number;
+        /** Defines that texture rescaling will look for the nearest power of 2 size */
+        static readonly SCALEMODE_NEAREST: number;
+        /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
+        static readonly SCALEMODE_CEILING: number;
         /**
          * Returns the current npm package of the sdk
          */
@@ -30625,11 +30594,6 @@ declare module BABYLON {
          * @param predicate defines a predicate used to filter which materials should be affected
          */
         static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
-        /**
-         * Factory used to create the performance monitor
-         * @returns a new PerformanceMonitor
-         */
-        static DefaultPerformanceMonitorFactory(): IPerformanceMonitor;
         /**
          * Method called to create the default loading screen.
          * This can be overriden in your own app.
@@ -30720,6 +30684,12 @@ declare module BABYLON {
         private _pointerLockRequested;
         private _dummyFramebuffer;
         private _rescalePostProcess;
+        /** @hidden */
+        protected _alphaMode: number;
+        /** @hidden */
+        protected _alphaEquation: number;
+        private _deterministicLockstep;
+        private _lockstepMaxSteps;
         protected readonly _supportsHardwareTextureRescaling: boolean;
         private _fps;
         private _deltaTime;
@@ -30732,7 +30702,7 @@ declare module BABYLON {
          * Gets the performance monitor attached to this engine
          * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
          */
-        readonly performanceMonitor: IPerformanceMonitor;
+        readonly performanceMonitor: PerformanceMonitor;
         private _onFocus;
         private _onBlur;
         private _onCanvasPointerOut;
@@ -30748,6 +30718,281 @@ declare module BABYLON {
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
         constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        /**
+         * Gets current aspect ratio
+         * @param viewportOwner defines the camera to use to get the aspect ratio
+         * @param useScreen defines if screen size must be used (or the current render target if any)
+         * @returns a number defining the aspect ratio
+         */
+        getAspectRatio(viewportOwner: IViewportOwnerLike, useScreen?: boolean): number;
+        /**
+         * Gets current screen aspect ratio
+         * @returns a number defining the aspect ratio
+         */
+        getScreenAspectRatio(): number;
+        /**
+         * Gets host document
+         * @returns the host document object
+         */
+        getHostDocument(): Document;
+        /**
+         * Gets the client rect of the HTML canvas attached with the current webGL context
+         * @returns a client rectanglee
+         */
+        getRenderingCanvasClientRect(): Nullable<ClientRect>;
+        /**
+         * Gets a boolean indicating that the engine is running in deterministic lock step mode
+         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         * @returns true if engine is in deterministic lock step mode
+         */
+        isDeterministicLockStep(): boolean;
+        /**
+         * Gets the max steps when engine is running in deterministic lock step
+         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         * @returns the max steps
+         */
+        getLockstepMaxSteps(): number;
+        /**
+         * Force the mipmap generation for the given render target texture
+         * @param texture defines the render target texture to use
+         */
+        generateMipMapsForCubemap(texture: InternalTexture): void;
+        /** States */
+        /**
+         * Set various states to the webGL context
+         * @param culling defines backface culling state
+         * @param zOffset defines the value to apply to zOffset (0 by default)
+         * @param force defines if states must be applied even if cache is up to date
+         * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+         */
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        /**
+         * Set the z offset to apply to current rendering
+         * @param value defines the offset to apply
+         */
+        setZOffset(value: number): void;
+        /**
+         * Gets the current value of the zOffset
+         * @returns the current zOffset state
+         */
+        getZOffset(): number;
+        /**
+         * Enable or disable depth buffering
+         * @param enable defines the state to set
+         */
+        setDepthBuffer(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if depth writing is enabled
+         * @returns the current depth writing state
+         */
+        getDepthWrite(): boolean;
+        /**
+         * Enable or disable depth writing
+         * @param enable defines the state to set
+         */
+        setDepthWrite(enable: boolean): void;
+        /**
+         * Enable or disable color writing
+         * @param enable defines the state to set
+         */
+        setColorWrite(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if color writing is enabled
+         * @returns the current color writing state
+         */
+        getColorWrite(): boolean;
+        /**
+         * Sets alpha constants used by some alpha blending modes
+         * @param r defines the red component
+         * @param g defines the green component
+         * @param b defines the blue component
+         * @param a defines the alpha component
+         */
+        setAlphaConstants(r: number, g: number, b: number, a: number): void;
+        /**
+         * Sets the current alpha mode
+         * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
+         * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+         */
+        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
+        /**
+         * Gets the current alpha mode
+         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+         * @returns the current alpha mode
+         */
+        getAlphaMode(): number;
+        /**
+         * Sets the current alpha equation
+         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+         */
+        setAlphaEquation(equation: number): void;
+        /**
+         * Gets the current alpha equation.
+         * @returns the current alpha equation
+         */
+        getAlphaEquation(): number;
+        /**
+         * Gets a boolean indicating if stencil buffer is enabled
+         * @returns the current stencil buffer state
+         */
+        getStencilBuffer(): boolean;
+        /**
+         * Enable or disable the stencil buffer
+         * @param enable defines if the stencil buffer must be enabled or disabled
+         */
+        setStencilBuffer(enable: boolean): void;
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the new stencil mask to use
+         */
+        getStencilMask(): number;
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */
+        setStencilMask(mask: number): void;
+        /**
+         * Gets the current stencil function
+         * @returns a number defining the stencil function to use
+         */
+        getStencilFunction(): number;
+        /**
+         * Gets the current stencil reference value
+         * @returns a number defining the stencil reference value to use
+         */
+        getStencilFunctionReference(): number;
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the stencil mask to use
+         */
+        getStencilFunctionMask(): number;
+        /**
+         * Sets the current stencil function
+         * @param stencilFunc defines the new stencil function to use
+         */
+        setStencilFunction(stencilFunc: number): void;
+        /**
+         * Sets the current stencil reference
+         * @param reference defines the new stencil reference to use
+         */
+        setStencilFunctionReference(reference: number): void;
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */
+        setStencilFunctionMask(mask: number): void;
+        /**
+         * Gets the current stencil operation when stencil fails
+         * @returns a number defining stencil operation to use when stencil fails
+         */
+        getStencilOperationFail(): number;
+        /**
+         * Gets the current stencil operation when depth fails
+         * @returns a number defining stencil operation to use when depth fails
+         */
+        getStencilOperationDepthFail(): number;
+        /**
+         * Gets the current stencil operation when stencil passes
+         * @returns a number defining stencil operation to use when stencil passes
+         */
+        getStencilOperationPass(): number;
+        /**
+         * Sets the stencil operation to use when stencil fails
+         * @param operation defines the stencil operation to use when stencil fails
+         */
+        setStencilOperationFail(operation: number): void;
+        /**
+         * Sets the stencil operation to use when depth fails
+         * @param operation defines the stencil operation to use when depth fails
+         */
+        setStencilOperationDepthFail(operation: number): void;
+        /**
+         * Sets the stencil operation to use when stencil passes
+         * @param operation defines the stencil operation to use when stencil passes
+         */
+        setStencilOperationPass(operation: number): void;
+        /**
+         * Sets a boolean indicating if the dithering state is enabled or disabled
+         * @param value defines the dithering state
+         */
+        setDitheringState(value: boolean): void;
+        /**
+         * Sets a boolean indicating if the rasterizer state is enabled or disabled
+         * @param value defines the rasterizer state
+         */
+        setRasterizerState(value: boolean): void;
+        /**
+         * Gets the current depth function
+         * @returns a number defining the depth function
+         */
+        getDepthFunction(): Nullable<number>;
+        /**
+         * Sets the current depth function
+         * @param depthFunc defines the function to use
+         */
+        setDepthFunction(depthFunc: number): void;
+        /**
+         * Sets the current depth function to GREATER
+         */
+        setDepthFunctionToGreater(): void;
+        /**
+         * Sets the current depth function to GEQUAL
+         */
+        setDepthFunctionToGreaterOrEqual(): void;
+        /**
+         * Sets the current depth function to LESS
+         */
+        setDepthFunctionToLess(): void;
+        /**
+         * Sets the current depth function to LEQUAL
+         */
+        setDepthFunctionToLessOrEqual(): void;
+        private _cachedStencilBuffer;
+        private _cachedStencilFunction;
+        private _cachedStencilMask;
+        private _cachedStencilOperationPass;
+        private _cachedStencilOperationFail;
+        private _cachedStencilOperationDepthFail;
+        private _cachedStencilReference;
+        /**
+         * Caches the the state of the stencil buffer
+         */
+        cacheStencilState(): void;
+        /**
+         * Restores the state of the stencil buffer
+         */
+        restoreStencilState(): void;
+        /**
+         * Directly set the WebGL Viewport
+         * @param x defines the x coordinate of the viewport (in screen space)
+         * @param y defines the y coordinate of the viewport (in screen space)
+         * @param width defines the width of the viewport (in screen space)
+         * @param height defines the height of the viewport (in screen space)
+         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
+         */
+        setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike>;
+        /**
+         * Executes a scissor clear (ie. a clear on a specific portion of the screen)
+         * @param x defines the x-coordinate of the top left corner of the clear rectangle
+         * @param y defines the y-coordinate of the corner of the clear rectangle
+         * @param width defines the width of the clear rectangle
+         * @param height defines the height of the clear rectangle
+         * @param clearColor defines the clear color
+         */
+        scissorClear(x: number, y: number, width: number, height: number, clearColor: IColor4Like): void;
+        /**
+         * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
+         * @param x defines the x-coordinate of the top left corner of the clear rectangle
+         * @param y defines the y-coordinate of the corner of the clear rectangle
+         * @param width defines the width of the clear rectangle
+         * @param height defines the height of the clear rectangle
+         */
+        enableScissor(x: number, y: number, width: number, height: number): void;
+        /**
+         * Disable previously set scissor test rectangle
+         */
+        disableScissor(): void;
         /**
          * Initializes a webVR display and starts listening to display change events
          * The onVRDisplayChangedObservable will be notified upon these changes
@@ -30769,6 +31014,48 @@ declare module BABYLON {
          */
         isVRPresenting(): boolean;
         /** @hidden */private _requestVRFrame(): void;
+        /** @hidden */private _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
+        /**
+        * Gets the source code of the vertex shader associated with a specific webGL program
+        * @param program defines the program to use
+        * @returns a string containing the source code of the vertex shader associated with the program
+        */
+        getVertexShaderSource(program: WebGLProgram): Nullable<string>;
+        /**
+         * Gets the source code of the fragment shader associated with a specific webGL program
+         * @param program defines the program to use
+         * @returns a string containing the source code of the fragment shader associated with the program
+         */
+        getFragmentShaderSource(program: WebGLProgram): Nullable<string>;
+        /**
+         * Reads pixels from the current frame buffer. Please note that this function can be slow
+         * @param x defines the x coordinate of the rectangle where pixels must be read
+         * @param y defines the y coordinate of the rectangle where pixels must be read
+         * @param width defines the width of the rectangle where pixels must be read
+         * @param height defines the height of the rectangle where pixels must be read
+         * @returns a Uint8Array containing RGBA colors
+         */
+        readPixels(x: number, y: number, width: number, height: number): Uint8Array;
+        /**
+         * Sets a depth stencil texture from a render target to the according uniform.
+         * @param channel The texture channel
+         * @param uniform The uniform to set
+         * @param texture The render target texture containing the depth stencil texture to apply
+         */
+        setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>): void;
+        /**
+         * Sets a texture to the webGL context from a postprocess
+         * @param channel defines the channel to use
+         * @param postProcess defines the source postprocess
+         */
+        setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>): void;
+        /**
+         * Binds the output of the passed in post process to the texture channel specified
+         * @param channel The channel the texture should be bound to
+         * @param postProcess The post process which's output should be bound
+         */
+        setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>): void;
+        /** @hidden */private _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView;
         protected _rebuildBuffers(): void;private _renderLoop(): void;
         /**
          * Toggle full screen mode
@@ -30829,8 +31116,27 @@ declare module BABYLON {
          */
         getDeltaTime(): number;
         private _measureFps;
+        /**
+         * Creates a new render target texture
+         * @param size defines the size of the texture
+         * @param options defines the options used to create the texture
+         * @returns a new render target texture stored in an InternalTexture
+         */
+        createRenderTargetTexture(size: number | {
+            width: number;
+            height: number;
+        }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        /**
+         * Updates the sample count of a render target texture
+         * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
+         * @param texture defines the texture to update
+         * @param samples defines the sample count to set
+         * @returns the effective sample count (could be 0 if multisample render targets are not supported)
+         */
+        updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number;
         /** @hidden */private _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         dispose(): void;
+        private _disableTouchAction;
         /**
          * Display the loading screen
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
@@ -30860,6 +31166,21 @@ declare module BABYLON {
          * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
          */
         loadingUIBackgroundColor: string;
+        /** Pointerlock and fullscreen */
+        /**
+         * Ask the browser to promote the current element to pointerlock mode
+         * @param element defines the DOM element to promote
+         */private static _RequestPointerlock(element: HTMLElement): void;
+        /**
+         * Asks the browser to exit pointerlock mode
+         */private static _ExitPointerlock(): void;
+        /**
+         * Ask the browser to promote the current element to fullscreen rendering mode
+         * @param element defines the DOM element to promote
+         */private static _RequestFullscreen(element: HTMLElement): void;
+        /**
+         * Asks the browser to exit fullscreen mode
+         */private static _ExitFullscreen(): void;
     }
 }
 declare module BABYLON {
@@ -43191,7 +43512,7 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-        interface BaseEngine {
+        interface ThinEngine {
             /**
              * Unbind a list of render target textures from the webGL context
              * This is used only when drawBuffer extension or webGL2 are active
@@ -47364,9 +47685,9 @@ declare module BABYLON {
          * Uploads DDS Levels to a Babylon Texture
          * @hidden
          */
-        static UploadDDSLevels(engine: BaseEngine, texture: InternalTexture, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex?: number, currentFace?: number): void;
+        static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex?: number, currentFace?: number): void;
     }
-        interface BaseEngine {
+        interface ThinEngine {
             /**
              * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
              * @param rootUrl defines the url where the file to load is located
@@ -60881,117 +61202,6 @@ declare module BABYLON {
          * Reload the current scene from the loaded files
          */
         reload(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
-     */
-    export class PerformanceMonitor implements IPerformanceMonitor {
-        private _enabled;
-        private _rollingFrameTime;
-        private _lastFrameTimeMs;
-        /**
-         * constructor
-         * @param frameSampleSize The number of samples required to saturate the sliding window
-         */
-        constructor(frameSampleSize?: number);
-        /**
-         * Samples current frame
-         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
-         */
-        sampleFrame(timeMs?: number): void;
-        /**
-         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFrameTime: number;
-        /**
-         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFrameTimeVariance: number;
-        /**
-         * Returns the frame time of the most recent frame
-         */
-        readonly instantaneousFrameTime: number;
-        /**
-         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFPS: number;
-        /**
-         * Returns the average framerate in frames per second using the most recent frame time
-         */
-        readonly instantaneousFPS: number;
-        /**
-         * Returns true if enough samples have been taken to completely fill the sliding window
-         */
-        readonly isSaturated: boolean;
-        /**
-         * Enables contributions to the sliding window sample set
-         */
-        enable(): void;
-        /**
-         * Disables contributions to the sliding window sample set
-         * Samples will not be interpolated over the disabled period
-         */
-        disable(): void;
-        /**
-         * Returns true if sampling is enabled
-         */
-        readonly isEnabled: boolean;
-        /**
-         * Resets performance monitor
-         */
-        reset(): void;
-    }
-    /**
-     * RollingAverage
-     *
-     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
-     */
-    export class RollingAverage {
-        /**
-         * Current average
-         */
-        average: number;
-        /**
-         * Current variance
-         */
-        variance: number;
-        protected _samples: Array<number>;
-        protected _sampleCount: number;
-        protected _pos: number;
-        protected _m2: number;
-        /**
-         * constructor
-         * @param length The number of samples required to saturate the sliding window
-         */
-        constructor(length: number);
-        /**
-         * Adds a sample to the sample set
-         * @param v The sample value
-         */
-        add(v: number): void;
-        /**
-         * Returns previously added values or null if outside of history or outside the sliding window domain
-         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
-         * @return Value previously recorded with add() or null if outside of range
-         */
-        history(i: number): number;
-        /**
-         * Returns true if enough samples have been taken to completely fill the sliding window
-         * @return true if sample-set saturated
-         */
-        isSaturated(): boolean;
-        /**
-         * Resets the rolling average (equivalent to 0 samples taken so far)
-         */
-        reset(): void;
-        /**
-         * Wraps a value around the sample range boundaries
-         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
-         * @return Wrapped position in sample range
-         */
-        protected _wrapPosition(i: number): number;
     }
 }
 declare module BABYLON {

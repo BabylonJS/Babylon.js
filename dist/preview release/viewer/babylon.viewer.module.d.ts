@@ -21,7 +21,7 @@
 //   ../../../../../Tools/Gulp/babylonjs/Maths/math
 //   ../../../../../Tools/Gulp/babylonjs-loaders/glTF/glTFFileLoader
 //   ../../../../../Tools/Gulp/babylonjs/Materials/Textures/baseTexture
-//   ../../../../../Tools/Gulp/babylonjs/Engines/baseEngine
+//   ../../../../../Tools/Gulp/babylonjs/Engines/thinEngine
 //   ../../../../../Tools/Gulp/babylonjs/Misc/sceneOptimizer
 //   ../../../../../Tools/Gulp/babylonjs/Cameras/arcRotateCamera
 //   ../../../../../Tools/Gulp/babylonjs/Lights/light
@@ -1064,7 +1064,7 @@ declare module 'babylonjs-viewer/configuration' {
 declare module 'babylonjs-viewer/configuration/configuration' {
     import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from 'babylonjs-viewer/configuration/interfaces';
     import { IEnvironmentMapConfiguration } from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
-    import { EngineOptions } from 'babylonjs/Engines/baseEngine';
+    import { EngineOptions } from 'babylonjs/Engines/thinEngine';
     export function getConfigurationKey(key: string, configObject: any): any;
     export interface ViewerConfiguration {
             version?: string;
