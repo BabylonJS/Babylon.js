@@ -13,7 +13,7 @@ import { _DevTools } from '../Misc/devTools';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { ICustomAnimationFrameRequester } from '../Misc/customAnimationFrameRequester';
-import { BaseEngine, EngineOptions } from './baseEngine';
+import { ThinEngine, EngineOptions } from './thinEngine';
 import { Constants } from './constants';
 import { PerformanceMonitor } from '../Misc';
 
@@ -34,7 +34,7 @@ export interface IDisplayChangedEventArgs {
 /**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
  */
-export class Engine extends BaseEngine {
+export class Engine extends ThinEngine {
     // Const statics
 
     /** Defines that alpha blending is disabled */
@@ -243,14 +243,14 @@ export class Engine extends BaseEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return BaseEngine.NpmPackage;
+        return ThinEngine.NpmPackage;
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return BaseEngine.Version;
+        return ThinEngine.Version;
     }
 
     /** Gets the list of created engines */

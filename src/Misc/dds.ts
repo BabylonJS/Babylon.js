@@ -9,7 +9,7 @@ import { Scene } from '../scene';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 
 import "../Engines/Extensions/engine.cubeTexture";
-import { BaseEngine } from '../Engines/baseEngine';
+import { ThinEngine } from '../Engines/thinEngine';
 
 // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
 // All values and structures referenced from:
@@ -445,7 +445,7 @@ export class DDSTools {
      * Uploads DDS Levels to a Babylon Texture
      * @hidden
      */
-    public static UploadDDSLevels(engine: BaseEngine, texture: InternalTexture, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number) {
+    public static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number) {
         var sphericalPolynomialFaces: Nullable<Array<ArrayBufferView>> = null;
         if (info.sphericalPolynomial) {
             sphericalPolynomialFaces = new Array<ArrayBufferView>();
@@ -661,8 +661,8 @@ export class DDSTools {
     }
 }
 
-declare module "../Engines/baseEngine" {
-    export interface BaseEngine {
+declare module "../Engines/thinEngine" {
+    export interface ThinEngine {
         /**
          * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
          * @param rootUrl defines the url where the file to load is located
@@ -697,7 +697,7 @@ declare module "../Engines/baseEngine" {
  * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
  * @returns the cube texture as an InternalTexture
  */
-BaseEngine.prototype.createPrefilteredCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number,
+ThinEngine.prototype.createPrefilteredCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number,
     onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
     onError: Nullable<(message?: string, exception?: any) => void> = null,
     format?: number, forcedExtension: any = null,

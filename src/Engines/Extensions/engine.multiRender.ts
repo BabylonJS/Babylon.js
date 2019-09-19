@@ -3,10 +3,10 @@ import { IMultiRenderTargetOptions } from '../../Materials/Textures/multiRenderT
 import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
 import { Constants } from '../constants';
-import { BaseEngine } from '../baseEngine';
+import { ThinEngine } from '../thinEngine';
 
-declare module "../../Engines/baseEngine" {
-    export interface BaseEngine {
+declare module "../../Engines/thinEngine" {
+    export interface ThinEngine {
         /**
          * Unbind a list of render target textures from the webGL context
          * This is used only when drawBuffer extension or webGL2 are active
@@ -36,7 +36,7 @@ declare module "../../Engines/baseEngine" {
     }
 }
 
-BaseEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
+ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     this._currentRenderTarget = null;
 
     // If MSAA, we need to bitblt back to main texture
@@ -93,7 +93,7 @@ BaseEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: 
     this._bindUnboundFramebuffer(null);
 };
 
-BaseEngine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
+ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
     var generateMipMaps = false;
     var generateDepthBuffer = true;
     var generateStencilBuffer = false;
@@ -251,7 +251,7 @@ BaseEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
     return textures;
 };
 
-BaseEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number): number {
+ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number): number {
     if (this.webGLVersion < 2 || !textures || textures.length == 0) {
         return 1;
     }

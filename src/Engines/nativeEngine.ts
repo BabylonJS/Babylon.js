@@ -20,7 +20,7 @@ import { WebRequest } from '../Misc/webRequest';
 import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
 import { Logger } from "../Misc/logger";
 import { Constants } from './constants';
-import { BaseEngine } from './baseEngine';
+import { ThinEngine } from './thinEngine';
 import { EngineCapabilities } from './engineCapabilities';
 
 interface INativeEngine {
@@ -381,8 +381,8 @@ export class NativeEngine extends Engine {
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
         const program = this._native.createProgram(
-            BaseEngine._ConcatenateShader(vertexCode, defines),
-            BaseEngine._ConcatenateShader(fragmentCode, defines)
+            ThinEngine._ConcatenateShader(vertexCode, defines),
+            ThinEngine._ConcatenateShader(fragmentCode, defines)
         );
         this.onAfterShaderCompilationObservable.notifyObservers(this);
         return program;
