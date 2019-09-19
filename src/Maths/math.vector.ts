@@ -1161,6 +1161,16 @@ export class Vector3 {
     }
 
     /**
+     * Returns a new Vector3 as the cross product of the current vector and the "other" one
+     * The cross product is then orthogonal to both current and "other"
+     * @param other defines the right operand
+     * @returns the cross product
+     */
+    public cross(other: Vector3) {
+        return Vector3.Cross(this, other);
+    }
+
+    /**
      * Normalize the current Vector3 with the given input length.
      * Please note that this is an in place operation.
      * @param len the length of the vector

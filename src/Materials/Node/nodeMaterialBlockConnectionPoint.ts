@@ -1,5 +1,5 @@
-import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { Nullable } from '../../types';
 import { InputBlock } from './Blocks/Input/inputBlock';
 
@@ -29,9 +29,14 @@ export class NodeMaterialConnectionPoint {
     public _enforceAssociatedVariableName = false;
 
     /**
-     * Gets or sets the additional types supported byt this connection point
+     * Gets or sets the additional types supported by this connection point
      */
     public acceptedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
+
+    /**
+     * Gets or sets the additional types excluded by this connection point
+     */
+    public excludedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
 
     /**
      * Gets or sets the associated variable name in the shader
@@ -215,6 +220,11 @@ export class NodeMaterialConnectionPoint {
             return (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1);
         }
 
+        // Excluded
+        if ((connectionPoint.excludedConnectionPointTypes && connectionPoint.excludedConnectionPointTypes.indexOf(this.type) !== -1)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -226,7 +236,7 @@ export class NodeMaterialConnectionPoint {
      */
     public connectTo(connectionPoint: NodeMaterialConnectionPoint, ignoreConstraints = false): NodeMaterialConnectionPoint {
         if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
-            throw "Cannot connect two different connection types.";
+            throw "Cannot connect these two connectors.";
         }
 
         this._endpoints.push(connectionPoint);

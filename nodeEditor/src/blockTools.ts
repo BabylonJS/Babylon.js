@@ -1,4 +1,4 @@
-import { AlphaTestBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock';
+import { DiscardBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/discardBlock';
 import { BonesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/bonesBlock';
 import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
 import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
@@ -23,14 +23,14 @@ import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
 import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
 import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
 import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { FresnelBlock } from 'babylonjs/Materials/Node/Blocks/fresnelBlock';
 import { LerpBlock } from 'babylonjs/Materials/Node/Blocks/lerpBlock';
 import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
 import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
 import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/nodeMaterialSystemValues';
+import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/Enums/nodeMaterialSystemValues';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 import { OneMinusBlock } from 'babylonjs/Materials/Node/Blocks/oneMinusBlock';
 import { ViewDirectionBlock } from 'babylonjs/Materials/Node/Blocks/viewDirectionBlock';
@@ -41,9 +41,12 @@ import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/per
 import { LengthBlock } from 'babylonjs/Materials/Node/Blocks/lengthBlock';
 import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
 import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
+import { PowBlock } from 'babylonjs/Materials/Node/Blocks/powBlock';
+import { Scene } from 'babylonjs/scene';
+import { RandomNumberBlock } from 'babylonjs/Materials/Node/Blocks/randomNumberBlock';
 
 export class BlockTools {
-    public static GetBlockFromString(data: string) {
+    public static GetBlockFromString(data: string, scene: Scene) {
         switch (data) {
             case "BonesBlock":
                 return new BonesBlock("Bones");
@@ -51,8 +54,8 @@ export class BlockTools {
                 return new InstancesBlock("Instances");
             case "MorphTargetsBlock":
                 return new MorphTargetsBlock("MorphTargets");
-            case "AlphaTestBlock":
-                return new AlphaTestBlock("AlphaTest");
+            case "DiscardBlock":
+                return new DiscardBlock("Discard");
             case "ImageProcessingBlock":
                 return new ImageProcessingBlock("ImageProcessing");
             case "ColorMergerBlock":
@@ -85,6 +88,8 @@ export class BlockTools {
                 return new CrossBlock("Cross");
             case "DotBlock":
                 return new DotBlock("Dot");
+            case "PowBlock":
+                return new PowBlock("Pow");
             case "MultiplyBlock":
                 return new MultiplyBlock("Multiply");
             case "TransformBlock":
@@ -110,7 +115,9 @@ export class BlockTools {
             case "ViewDirectionBlock":
                 return new ViewDirectionBlock("View direction");    
             case "LightInformationBlock":
-                return new LightInformationBlock("Light information");         
+                let lightInformationBlock = new LightInformationBlock("Light information");
+                lightInformationBlock.light = scene.lights.length ? scene.lights[0] : null;
+                return lightInformationBlock;
             case "MaxBlock":
                 return new MaxBlock("Max");       
             case "MinBlock":
@@ -122,7 +129,9 @@ export class BlockTools {
             case "NegateBlock":
                 return new NegateBlock("Negate");                                     
             case "PerturbNormalBlock":                                          
-                return new PerturbNormalBlock("Perturb normal");        
+                return new PerturbNormalBlock("Perturb normal");                     
+            case "RandomNumberBlock":                                          
+                return new RandomNumberBlock("Random number");         
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;
@@ -137,6 +146,11 @@ export class BlockTools {
                 let absBlock = new TrigonometryBlock("Abs");
                 absBlock.operation = TrigonometryBlockOperations.Abs;
                 return absBlock;
+            }            
+            case "SqrtBlock": {
+                let sqrtBlock = new TrigonometryBlock("Sqrt");
+                sqrtBlock.operation = TrigonometryBlockOperations.Sqrt;
+                return sqrtBlock;
             }
             case "ExpBlock": {
                 let expBlock = new TrigonometryBlock("Exp");

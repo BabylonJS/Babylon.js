@@ -1029,7 +1029,9 @@ void main(void) {
     // _____________________________ Energy Conservation  ___________________________
     // Apply Energy Conservation.
     #ifndef METALLICWORKFLOW
-        surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+        #ifdef SPECULAR_GLOSSINESS_ENERGY_CONSERVATION
+            surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+        #endif
     #endif
 
     // _____________________________ Irradiance ______________________________________

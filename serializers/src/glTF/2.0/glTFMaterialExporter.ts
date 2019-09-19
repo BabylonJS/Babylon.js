@@ -13,10 +13,10 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { PBRMetallicRoughnessMaterial } from "babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial";
 import { PostProcess } from "babylonjs/PostProcesses/postProcess";
-import { Engine } from "babylonjs/Engines/engine";
 import { Scene } from "babylonjs/scene";
 
 import { _Exporter } from "./glTFExporter";
+import { Constants } from 'babylonjs/Engines/constants';
 
 /**
  * Interface for storing specular glossiness factors
@@ -344,7 +344,7 @@ export class _GLTFMaterialExporter {
         }
 
         if (babylonStandardMaterial.alpha < 1.0 || babylonStandardMaterial.opacityTexture) {
-            if (babylonStandardMaterial.alphaMode === Engine.ALPHA_COMBINE) {
+            if (babylonStandardMaterial.alphaMode === Constants.ALPHA_COMBINE) {
                 glTFMaterial.alphaMode = MaterialAlphaMode.BLEND;
             }
             else {
@@ -467,14 +467,14 @@ export class _GLTFMaterialExporter {
         return new Promise<string>((resolve, reject) => {
             let hostingScene: Scene;
 
-            const textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            const textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
             const engine = this._exporter._getLocalEngine();
 
             hostingScene = new Scene(engine);
 
             // Create a temporary texture with the texture buffer data
-            const tempTexture = engine.createRawTexture(buffer, width, height, Engine.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
-            const postProcess = new PostProcess("pass", "pass", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
+            const tempTexture = engine.createRawTexture(buffer, width, height, Constants.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
+            const postProcess = new PostProcess("pass", "pass", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Constants.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
             postProcess.getEffect().executeWhenCompiled(() => {
                 postProcess.onApply = (effect) => {
                     effect._bindTexture("textureSampler", tempTexture);
@@ -1109,7 +1109,7 @@ export class _GLTFMaterialExporter {
     }
 
     private getPixelsFromTexture(babylonTexture: BaseTexture): Uint8Array | Float32Array {
-        const pixels = babylonTexture.textureType === Engine.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as Uint8Array : babylonTexture.readPixels() as Float32Array;
+        const pixels = babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as Uint8Array : babylonTexture.readPixels() as Float32Array;
         return pixels;
     }
 

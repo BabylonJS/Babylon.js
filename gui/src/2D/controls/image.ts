@@ -4,6 +4,7 @@ import { Tools } from "babylonjs/Misc/tools";
 
 import { Control } from "./control";
 import { Measure } from "../measure";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create 2D images
@@ -750,3 +751,4 @@ export class Image extends Control {
     /** NINE_PATCH */
     public static readonly STRETCH_NINE_PATCH = 4;
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Image"] = Image;

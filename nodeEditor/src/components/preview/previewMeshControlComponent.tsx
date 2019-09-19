@@ -41,25 +41,37 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     render() {
         return (
             <div id="preview-mesh-bar">
-                <div onClick={() => this.changeMeshType(PreviewMeshType.Box)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Box ? " selected" : "")}>
+                <div
+                    title="Preview with a cube" 
+                    onClick={() => this.changeMeshType(PreviewMeshType.Box)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Box ? " selected" : "")}>
                     <FontAwesomeIcon icon={faCube} />
                 </div>
-                <div onClick={() => this.changeMeshType(PreviewMeshType.Sphere)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Sphere ? " selected" : "")}>
+                <div
+                    title="Preview with a sphere"  
+                    onClick={() => this.changeMeshType(PreviewMeshType.Sphere)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Sphere ? " selected" : "")}>
                     <FontAwesomeIcon icon={faCircle} />
                 </div>
-                <div onClick={() => this.changeMeshType(PreviewMeshType.Torus)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Torus ? " selected" : "")}>
+                <div
+                    title="Preview with a torus"  
+                    onClick={() => this.changeMeshType(PreviewMeshType.Torus)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Torus ? " selected" : "")}>
                     <FontAwesomeIcon icon={faRing} />
                 </div>
-                <div onClick={() => this.changeMeshType(PreviewMeshType.Cylinder)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Cylinder ? " selected" : "")}>
+                <div
+                    title="Preview with a cylinder"  
+                    onClick={() => this.changeMeshType(PreviewMeshType.Cylinder)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Cylinder ? " selected" : "")}>
                     <FontAwesomeIcon icon={faHockeyPuck} />
                 </div>
-                <div onClick={() => this.changeMeshType(PreviewMeshType.Plane)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Plane ? " selected" : "")}>
+                <div
+                    title="Preview with a plane"  
+                    onClick={() => this.changeMeshType(PreviewMeshType.Plane)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Plane ? " selected" : "")}>
                     <FontAwesomeIcon icon={faSquareFull} />
                 </div>      
-                <div onClick={() => this.changeMeshType(PreviewMeshType.ShaderBall)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.ShaderBall ? " selected" : "")}>
+                <div
+                    title="Preview with a shader ball"  
+                    onClick={() => this.changeMeshType(PreviewMeshType.ShaderBall)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.ShaderBall ? " selected" : "")}>
                     <FontAwesomeIcon icon={faDotCircle} />
                 </div>                           
-                <div className={"button align"}>
+                <div className={"button align"} title="Preview with a custom mesh" >
                     <label htmlFor="file-picker" id="file-picker-label">
                         <FontAwesomeIcon icon={faPlus} />
                     </label>

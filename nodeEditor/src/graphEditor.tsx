@@ -27,7 +27,7 @@ import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 import { LightNodeModel } from './components/diagram/light/lightNodeModel';
 import { LightNodeFactory } from './components/diagram/light/lightNodeFactory';
 import { DataStorage } from './dataStorage';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Nullable } from 'babylonjs/types';
 import { MessageDialogComponent } from './sharedComponents/messageDialog';
@@ -166,6 +166,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this.props.globalState.hostDocument!.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
 
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
+        }
+
+        if (navigator.userAgent.indexOf("Mobile") !== -1) {
+            ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
     }
 
@@ -579,7 +583,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (data.indexOf("Block") === -1) {
             nodeModel = this.addValueNode(data);
         } else {
-            let block = BlockTools.GetBlockFromString(data);   
+            let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene());   
             
             if (block) {                
                 this._toAdd = [];
@@ -686,7 +690,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 </div>                
                 <MessageDialogComponent globalState={this.props.globalState} />
                 <div className="blocker">
-                    Node Material Editor requires a screen with a minimal resolution of 1000px
+                    Node Material Editor runs only on desktop
                 </div>
             </Portal>
         );

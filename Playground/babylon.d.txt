@@ -491,210 +491,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
-     */
-    export class PerformanceMonitor {
-        private _enabled;
-        private _rollingFrameTime;
-        private _lastFrameTimeMs;
-        /**
-         * constructor
-         * @param frameSampleSize The number of samples required to saturate the sliding window
-         */
-        constructor(frameSampleSize?: number);
-        /**
-         * Samples current frame
-         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
-         */
-        sampleFrame(timeMs?: number): void;
-        /**
-         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFrameTime: number;
-        /**
-         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFrameTimeVariance: number;
-        /**
-         * Returns the frame time of the most recent frame
-         */
-        readonly instantaneousFrameTime: number;
-        /**
-         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFPS: number;
-        /**
-         * Returns the average framerate in frames per second using the most recent frame time
-         */
-        readonly instantaneousFPS: number;
-        /**
-         * Returns true if enough samples have been taken to completely fill the sliding window
-         */
-        readonly isSaturated: boolean;
-        /**
-         * Enables contributions to the sliding window sample set
-         */
-        enable(): void;
-        /**
-         * Disables contributions to the sliding window sample set
-         * Samples will not be interpolated over the disabled period
-         */
-        disable(): void;
-        /**
-         * Returns true if sampling is enabled
-         */
-        readonly isEnabled: boolean;
-        /**
-         * Resets performance monitor
-         */
-        reset(): void;
-    }
-    /**
-     * RollingAverage
-     *
-     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
-     */
-    export class RollingAverage {
-        /**
-         * Current average
-         */
-        average: number;
-        /**
-         * Current variance
-         */
-        variance: number;
-        protected _samples: Array<number>;
-        protected _sampleCount: number;
-        protected _pos: number;
-        protected _m2: number;
-        /**
-         * constructor
-         * @param length The number of samples required to saturate the sliding window
-         */
-        constructor(length: number);
-        /**
-         * Adds a sample to the sample set
-         * @param v The sample value
-         */
-        add(v: number): void;
-        /**
-         * Returns previously added values or null if outside of history or outside the sliding window domain
-         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
-         * @return Value previously recorded with add() or null if outside of range
-         */
-        history(i: number): number;
-        /**
-         * Returns true if enough samples have been taken to completely fill the sliding window
-         * @return true if sample-set saturated
-         */
-        isSaturated(): boolean;
-        /**
-         * Resets the rolling average (equivalent to 0 samples taken so far)
-         */
-        reset(): void;
-        /**
-         * Wraps a value around the sample range boundaries
-         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
-         * @return Wrapped position in sample range
-         */
-        protected _wrapPosition(i: number): number;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class implement a typical dictionary using a string as key and the generic type T as value.
-     * The underlying implementation relies on an associative array to ensure the best performances.
-     * The value can be anything including 'null' but except 'undefined'
-     */
-    export class StringDictionary<T> {
-        /**
-         * This will clear this dictionary and copy the content from the 'source' one.
-         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
-         * @param source the dictionary to take the content from and copy to this dictionary
-         */
-        copyFrom(source: StringDictionary<T>): void;
-        /**
-         * Get a value based from its key
-         * @param key the given key to get the matching value from
-         * @return the value if found, otherwise undefined is returned
-         */
-        get(key: string): T | undefined;
-        /**
-         * Get a value from its key or add it if it doesn't exist.
-         * This method will ensure you that a given key/data will be present in the dictionary.
-         * @param key the given key to get the matching value from
-         * @param factory the factory that will create the value if the key is not present in the dictionary.
-         * The factory will only be invoked if there's no data for the given key.
-         * @return the value corresponding to the key.
-         */
-        getOrAddWithFactory(key: string, factory: (key: string) => T): T;
-        /**
-         * Get a value from its key if present in the dictionary otherwise add it
-         * @param key the key to get the value from
-         * @param val if there's no such key/value pair in the dictionary add it with this value
-         * @return the value corresponding to the key
-         */
-        getOrAdd(key: string, val: T): T;
-        /**
-         * Check if there's a given key in the dictionary
-         * @param key the key to check for
-         * @return true if the key is present, false otherwise
-         */
-        contains(key: string): boolean;
-        /**
-         * Add a new key and its corresponding value
-         * @param key the key to add
-         * @param value the value corresponding to the key
-         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
-         */
-        add(key: string, value: T): boolean;
-        /**
-         * Update a specific value associated to a key
-         * @param key defines the key to use
-         * @param value defines the value to store
-         * @returns true if the value was updated (or false if the key was not found)
-         */
-        set(key: string, value: T): boolean;
-        /**
-         * Get the element of the given key and remove it from the dictionary
-         * @param key defines the key to search
-         * @returns the value associated with the key or null if not found
-         */
-        getAndRemove(key: string): Nullable<T>;
-        /**
-         * Remove a key/value from the dictionary.
-         * @param key the key to remove
-         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
-         */
-        remove(key: string): boolean;
-        /**
-         * Clear the whole content of the dictionary
-         */
-        clear(): void;
-        /**
-         * Gets the current count
-         */
-        readonly count: number;
-        /**
-         * Execute a callback on each key/val of the dictionary.
-         * Note that you can remove any element in this dictionary in the callback implementation
-         * @param callback the callback to execute on a given key/value pair
-         */
-        forEach(callback: (key: string, val: T) => void): void;
-        /**
-         * Execute a callback on every occurrence of the dictionary until it returns a valid TRes object.
-         * If the callback returns null or undefined the method will iterate to the next key/value pair
-         * Note that you can remove any element in this dictionary in the callback implementation
-         * @param callback the callback to execute, if it return a valid T instanced object the enumeration will stop and the object will be returned
-         * @returns the first item
-         */
-        first<TRes>(callback: (key: string, val: T) => TRes): TRes | null;
-        private _count;
-        private _data;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to store gfx data (like WebGLBuffer)
      */
     export class DataBuffer {
@@ -2062,6 +1858,13 @@ declare module BABYLON {
          * @returns the resulting vector
          */
         rotateByQuaternionAroundPointToRef(quaternion: Quaternion, point: Vector3, result: Vector3): Vector3;
+        /**
+         * Returns a new Vector3 as the cross product of the current vector and the "other" one
+         * The cross product is then orthogonal to both current and "other"
+         * @param other defines the right operand
+         * @returns the cross product
+         */
+        cross(other: Vector3): Vector3;
         /**
          * Normalize the current Vector3 with the given input length.
          * Please note that this is an in place operation.
@@ -4064,6 +3867,45 @@ declare module BABYLON {
          * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
          */
         static readonly ALPHA_SCREENMODE: number;
+        /**
+         * Defines that alpha blending to SRC + DST
+         * Alpha will be set to SRC ALPHA + DST ALPHA
+         */
+        static readonly ALPHA_ONEONE_ONEONE: number;
+        /**
+         * Defines that alpha blending to SRC * DST ALPHA + DST
+         * Alpha will be set to 0
+         */
+        static readonly ALPHA_ALPHATOCOLOR: number;
+        /**
+         * Defines that alpha blending to SRC * (1 - DST) + DST * (1 - SRC)
+         */
+        static readonly ALPHA_REVERSEONEMINUS: number;
+        /**
+         * Defines that alpha blending to SRC + DST * (1 - SRC ALPHA)
+         * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
+         */
+        static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA: number;
+        /**
+         * Defines that alpha blending to SRC + DST
+         * Alpha will be set to SRC ALPHA
+         */
+        static readonly ALPHA_ONEONE_ONEZERO: number;
+        /** Defines that alpha blending equation a SUM */
+        static readonly ALPHA_EQUATION_ADD: number;
+        /** Defines that alpha blending equation a SUBSTRACTION */
+        static readonly ALPHA_EQUATION_SUBSTRACT: number;
+        /** Defines that alpha blending equation a REVERSE SUBSTRACTION */
+        static readonly ALPHA_EQUATION_REVERSE_SUBTRACT: number;
+        /** Defines that alpha blending equation a MAX operation */
+        static readonly ALPHA_EQUATION_MAX: number;
+        /** Defines that alpha blending equation a MIN operation */
+        static readonly ALPHA_EQUATION_MIN: number;
+        /**
+         * Defines that alpha blending equation a DARKEN operation:
+         * It takes the min of the src and sums the alpha channels.
+         */
+        static readonly ALPHA_EQUATION_DARKEN: number;
         /** Defines that the ressource is not delayed*/
         static readonly DELAYLOADSTATE_NONE: number;
         /** Defines that the ressource was successfully delay loaded */
@@ -13732,7 +13574,7 @@ declare module BABYLON {
          * @param newParent defines the new parent to use for the instance (or clone)
          * @returns an instance (or a clone) of the current node with its hiearchy
          */
-        instantiateHierarychy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
+        instantiateHierarchy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
         /**
          * Prevents the World matrix to be computed any longer
          * @param newWorldMatrix defines an optional matrix to use as world matrix
@@ -14212,7 +14054,7 @@ declare module BABYLON {
         /**
          * Internal, the default controller model for the controller
          */
-        protected _defaultModel: AbstractMesh;
+        protected _defaultModel: Nullable<AbstractMesh>;
         /**
          * Fired when the trigger state has changed
          */
@@ -14254,7 +14096,7 @@ declare module BABYLON {
         /**
          * The default controller model for the controller
          */
-        readonly defaultModel: AbstractMesh;
+        readonly defaultModel: Nullable<AbstractMesh>;
         /**
          * Creates a new WebVRController from a gamepad
          * @param vrGamepad the gamepad that the WebVRController should be created from
@@ -15746,6 +15588,87 @@ declare module BABYLON {
          * @param updateFunc defines the callback function used to get the final value from the selected gradients
          */
         static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * A class extending Texture allowing drawing on a texture
+     * @see http://doc.babylonjs.com/how_to/dynamictexture
+     */
+    export class DynamicTexture extends Texture {
+        private _generateMipMaps;
+        private _canvas;
+        private _context;
+        private _engine;
+        /**
+         * Creates a DynamicTexture
+         * @param name defines the name of the texture
+         * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
+         * @param scene defines the scene where you want the texture
+         * @param generateMipMaps defines the use of MinMaps or not (default is false)
+         * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
+         * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
+         */
+        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number);
+        /**
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "DynamicTexture"
+         */
+        getClassName(): string;
+        /**
+         * Gets the current state of canRescale
+         */
+        readonly canRescale: boolean;
+        private _recreate;
+        /**
+         * Scales the texture
+         * @param ratio the scale factor to apply to both width and height
+         */
+        scale(ratio: number): void;
+        /**
+         * Resizes the texture
+         * @param width the new width
+         * @param height the new height
+         */
+        scaleTo(width: number, height: number): void;
+        /**
+         * Gets the context of the canvas used by the texture
+         * @returns the canvas context of the dynamic texture
+         */
+        getContext(): CanvasRenderingContext2D;
+        /**
+         * Clears the texture
+         */
+        clear(): void;
+        /**
+         * Updates the texture
+         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
+         * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
+         */
+        update(invertY?: boolean, premulAlpha?: boolean): void;
+        /**
+         * Draws text onto the texture
+         * @param text defines the text to be drawn
+         * @param x defines the placement of the text from the left
+         * @param y defines the placement of the text from the top when invertY is true and from the bottom when false
+         * @param font defines the font to be used with font-style, font-size, font-name
+         * @param color defines the color used for the text
+         * @param clearColor defines the color for the canvas, use null to not overwrite canvas
+         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
+         * @param update defines whether texture is immediately update (default is true)
+         */
+        drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update?: boolean): void;
+        /**
+         * Clones the texture
+         * @returns the clone of the texture.
+         */
+        clone(): DynamicTexture;
+        /**
+         * Serializes the dynamic texture.  The scene should be ready before the dynamic texture is serialized
+         * @returns a serialized dynamic texture object
+         */
+        serialize(): any;
+        /** @hidden */private _rebuild(): void;
     }
 }
 declare module BABYLON {
@@ -23162,7 +23085,7 @@ declare module BABYLON {
          * @param clonePhysicsImpostor When cloning, include cloning mesh physics impostor, default True.
          */
         constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: Nullable<Mesh>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean);
-        instantiateHierarychy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
+        instantiateHierarchy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
         /**
          * Gets the class name
          * @returns the string "Mesh".
@@ -28906,6 +28829,117 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
+     */
+    export class PerformanceMonitor {
+        private _enabled;
+        private _rollingFrameTime;
+        private _lastFrameTimeMs;
+        /**
+         * constructor
+         * @param frameSampleSize The number of samples required to saturate the sliding window
+         */
+        constructor(frameSampleSize?: number);
+        /**
+         * Samples current frame
+         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
+         */
+        sampleFrame(timeMs?: number): void;
+        /**
+         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFrameTime: number;
+        /**
+         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFrameTimeVariance: number;
+        /**
+         * Returns the frame time of the most recent frame
+         */
+        readonly instantaneousFrameTime: number;
+        /**
+         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFPS: number;
+        /**
+         * Returns the average framerate in frames per second using the most recent frame time
+         */
+        readonly instantaneousFPS: number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         */
+        readonly isSaturated: boolean;
+        /**
+         * Enables contributions to the sliding window sample set
+         */
+        enable(): void;
+        /**
+         * Disables contributions to the sliding window sample set
+         * Samples will not be interpolated over the disabled period
+         */
+        disable(): void;
+        /**
+         * Returns true if sampling is enabled
+         */
+        readonly isEnabled: boolean;
+        /**
+         * Resets performance monitor
+         */
+        reset(): void;
+    }
+    /**
+     * RollingAverage
+     *
+     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
+     */
+    export class RollingAverage {
+        /**
+         * Current average
+         */
+        average: number;
+        /**
+         * Current variance
+         */
+        variance: number;
+        protected _samples: Array<number>;
+        protected _sampleCount: number;
+        protected _pos: number;
+        protected _m2: number;
+        /**
+         * constructor
+         * @param length The number of samples required to saturate the sliding window
+         */
+        constructor(length: number);
+        /**
+         * Adds a sample to the sample set
+         * @param v The sample value
+         */
+        add(v: number): void;
+        /**
+         * Returns previously added values or null if outside of history or outside the sliding window domain
+         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
+         * @return Value previously recorded with add() or null if outside of range
+         */
+        history(i: number): number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         * @return true if sample-set saturated
+         */
+        isSaturated(): boolean;
+        /**
+         * Resets the rolling average (equivalent to 0 samples taken so far)
+         */
+        reset(): void;
+        /**
+         * Wraps a value around the sample range boundaries
+         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
+         * @return Wrapped position in sample range
+         */
+        protected _wrapPosition(i: number): number;
+    }
+}
+declare module BABYLON {
+    /**
      * Settings for finer control over video usage
      */
     export interface VideoTextureSettings {
@@ -29165,6 +29199,8 @@ declare module BABYLON {
         };
         /** Max number of texture samples for MSAA */
         maxMSAASamples: number;
+        /** Defines if the blend min max extension is supported */
+        blendMinMax: boolean;
     }
     /** Interface defining initialization parameters for Engine class */
     export interface EngineOptions extends WebGLContextAttributes {
@@ -29251,7 +29287,6 @@ declare module BABYLON {
          * @param predicate defines a predicate used to filter which materials should be affected
          */
         static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
-        /** @hidden */private static _TextureLoaders: IInternalTextureLoader[];
         /** Defines that alpha blending is disabled */
         static readonly ALPHA_DISABLE: number;
         /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
@@ -29440,6 +29475,7 @@ declare module BABYLON {
         static readonly SCALEMODE_NEAREST: number;
         /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
         static readonly SCALEMODE_CEILING: number;
+        /** @hidden */private static _TextureLoaders: IInternalTextureLoader[];
         /**
          * Returns the current npm package of the sdk
          */
@@ -29635,13 +29671,13 @@ declare module BABYLON {
          * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#handling-webgl-context-lost
          */
         doNotHandleContextLost: boolean;
-        private _performanceMonitor;
         private _fps;
         private _deltaTime;
         /**
          * Turn this value on if you want to pause FPS computation when in background
          */
         disablePerformanceMonitorInBackground: boolean;
+        private _performanceMonitor;
         /**
          * Gets the performance monitor attached to this engine
          * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
@@ -29659,6 +29695,8 @@ declare module BABYLON {
         protected _alphaState: _AlphaState;
         /** @hidden */
         protected _alphaMode: number;
+        /** @hidden */
+        protected _alphaEquation: number;
         /** @hidden */private _internalTexturesCache: InternalTexture[];
         /** @hidden */
         protected _activeChannel: number;
@@ -29695,7 +29733,6 @@ declare module BABYLON {
         /** @hidden */private _workingContext: Nullable<CanvasRenderingContext2D>;
         private _rescalePostProcess;
         private _dummyFramebuffer;
-        private _externalData;
         /** @hidden */private _bindedRenderFunction: any;
         private _vaoRecordInProgress;
         private _mustWipeVertexAttributes;
@@ -30178,6 +30215,7 @@ declare module BABYLON {
          * @returns the new WebGL static buffer
          */
         createVertexBuffer(data: DataArray): DataBuffer;
+        private _createVertexBuffer;
         /**
          * Creates a dynamic vertex buffer
          * @param data the data for the dynamic vertex buffer
@@ -30623,6 +30661,16 @@ declare module BABYLON {
          */
         getAlphaMode(): number;
         /**
+         * Sets the current alpha equation
+         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+         */
+        setAlphaEquation(equation: number): void;
+        /**
+         * Gets the current alpha equation.
+         * @returns the current alpha equation
+         */
+        getAlphaEquation(): number;
+        /**
          * Clears the list of texture accessible through engine.
          * This can help preventing texture load conflict due to name collision.
          */
@@ -30862,34 +30910,6 @@ declare module BABYLON {
          * @returns a Uint8Array containing RGBA colors
          */
         readPixels(x: number, y: number, width: number, height: number): Uint8Array;
-        /**
-         * Add an externaly attached data from its key.
-         * This method call will fail and return false, if such key already exists.
-         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
-         * @param key the unique key that identifies the data
-         * @param data the data object to associate to the key for this Engine instance
-         * @return true if no such key were already present and the data was added successfully, false otherwise
-         */
-        addExternalData<T>(key: string, data: T): boolean;
-        /**
-         * Get an externaly attached data from its key
-         * @param key the unique key that identifies the data
-         * @return the associated data, if present (can be null), or undefined if not present
-         */
-        getExternalData<T>(key: string): T;
-        /**
-         * Get an externaly attached data from its key, create it using a factory if it's not already present
-         * @param key the unique key that identifies the data
-         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
-         * @return the associated data, can be null if the factory returned null.
-         */
-        getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T;
-        /**
-         * Remove an externaly attached data from the Engine instance
-         * @param key the unique key that identifies the data
-         * @return true if the data was successfully removed, false if it doesn't exist
-         */
-        removeExternalData(key: string): boolean;
         /**
          * Unbind all vertex attributes from the webGL context
          */
@@ -31696,6 +31716,99 @@ declare module BABYLON {
          * @returns the created async loop object
          */
         static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout?: number): AsyncLoop;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class implement a typical dictionary using a string as key and the generic type T as value.
+     * The underlying implementation relies on an associative array to ensure the best performances.
+     * The value can be anything including 'null' but except 'undefined'
+     */
+    export class StringDictionary<T> {
+        /**
+         * This will clear this dictionary and copy the content from the 'source' one.
+         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
+         * @param source the dictionary to take the content from and copy to this dictionary
+         */
+        copyFrom(source: StringDictionary<T>): void;
+        /**
+         * Get a value based from its key
+         * @param key the given key to get the matching value from
+         * @return the value if found, otherwise undefined is returned
+         */
+        get(key: string): T | undefined;
+        /**
+         * Get a value from its key or add it if it doesn't exist.
+         * This method will ensure you that a given key/data will be present in the dictionary.
+         * @param key the given key to get the matching value from
+         * @param factory the factory that will create the value if the key is not present in the dictionary.
+         * The factory will only be invoked if there's no data for the given key.
+         * @return the value corresponding to the key.
+         */
+        getOrAddWithFactory(key: string, factory: (key: string) => T): T;
+        /**
+         * Get a value from its key if present in the dictionary otherwise add it
+         * @param key the key to get the value from
+         * @param val if there's no such key/value pair in the dictionary add it with this value
+         * @return the value corresponding to the key
+         */
+        getOrAdd(key: string, val: T): T;
+        /**
+         * Check if there's a given key in the dictionary
+         * @param key the key to check for
+         * @return true if the key is present, false otherwise
+         */
+        contains(key: string): boolean;
+        /**
+         * Add a new key and its corresponding value
+         * @param key the key to add
+         * @param value the value corresponding to the key
+         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
+         */
+        add(key: string, value: T): boolean;
+        /**
+         * Update a specific value associated to a key
+         * @param key defines the key to use
+         * @param value defines the value to store
+         * @returns true if the value was updated (or false if the key was not found)
+         */
+        set(key: string, value: T): boolean;
+        /**
+         * Get the element of the given key and remove it from the dictionary
+         * @param key defines the key to search
+         * @returns the value associated with the key or null if not found
+         */
+        getAndRemove(key: string): Nullable<T>;
+        /**
+         * Remove a key/value from the dictionary.
+         * @param key the key to remove
+         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
+         */
+        remove(key: string): boolean;
+        /**
+         * Clear the whole content of the dictionary
+         */
+        clear(): void;
+        /**
+         * Gets the current count
+         */
+        readonly count: number;
+        /**
+         * Execute a callback on each key/val of the dictionary.
+         * Note that you can remove any element in this dictionary in the callback implementation
+         * @param callback the callback to execute on a given key/value pair
+         */
+        forEach(callback: (key: string, val: T) => void): void;
+        /**
+         * Execute a callback on every occurrence of the dictionary until it returns a valid TRes object.
+         * If the callback returns null or undefined the method will iterate to the next key/value pair
+         * Note that you can remove any element in this dictionary in the callback implementation
+         * @param callback the callback to execute, if it return a valid T instanced object the enumeration will stop and the object will be returned
+         * @returns the first item
+         */
+        first<TRes>(callback: (key: string, val: T) => TRes): TRes | null;
+        private _count;
+        private _data;
     }
 }
 declare module BABYLON {
@@ -39695,87 +39808,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /**
-     * A class extending Texture allowing drawing on a texture
-     * @see http://doc.babylonjs.com/how_to/dynamictexture
-     */
-    export class DynamicTexture extends Texture {
-        private _generateMipMaps;
-        private _canvas;
-        private _context;
-        private _engine;
-        /**
-         * Creates a DynamicTexture
-         * @param name defines the name of the texture
-         * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
-         * @param scene defines the scene where you want the texture
-         * @param generateMipMaps defines the use of MinMaps or not (default is false)
-         * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
-         * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
-         */
-        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number);
-        /**
-         * Get the current class name of the texture useful for serialization or dynamic coding.
-         * @returns "DynamicTexture"
-         */
-        getClassName(): string;
-        /**
-         * Gets the current state of canRescale
-         */
-        readonly canRescale: boolean;
-        private _recreate;
-        /**
-         * Scales the texture
-         * @param ratio the scale factor to apply to both width and height
-         */
-        scale(ratio: number): void;
-        /**
-         * Resizes the texture
-         * @param width the new width
-         * @param height the new height
-         */
-        scaleTo(width: number, height: number): void;
-        /**
-         * Gets the context of the canvas used by the texture
-         * @returns the canvas context of the dynamic texture
-         */
-        getContext(): CanvasRenderingContext2D;
-        /**
-         * Clears the texture
-         */
-        clear(): void;
-        /**
-         * Updates the texture
-         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
-         * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
-         */
-        update(invertY?: boolean, premulAlpha?: boolean): void;
-        /**
-         * Draws text onto the texture
-         * @param text defines the text to be drawn
-         * @param x defines the placement of the text from the left
-         * @param y defines the placement of the text from the top when invertY is true and from the bottom when false
-         * @param font defines the font to be used with font-style, font-size, font-name
-         * @param color defines the color used for the text
-         * @param clearColor defines the color for the canvas, use null to not overwrite canvas
-         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
-         * @param update defines whether texture is immediately update (default is true)
-         */
-        drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update?: boolean): void;
-        /**
-         * Clones the texture
-         * @returns the clone of the texture.
-         */
-        clone(): DynamicTexture;
-        /**
-         * Serializes the dynamic texture.  The scene should be ready before the dynamic texture is serialized
-         * @returns a serialized dynamic texture object
-         */
-        serialize(): any;
-        /** @hidden */private _rebuild(): void;
-    }
-}
-declare module BABYLON {
     /** @hidden */
     export var imageProcessingPixelShader: {
         name: string;
@@ -43396,7 +43428,7 @@ declare module BABYLON {
         setAlphaConstants(r: number, g: number, b: number, a: number): void;
         /**
          * Sets the current alpha mode
-         * @param mode defines the mode to use (one of the BABYLON.Engine.ALPHA_XXX)
+         * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
          * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
          * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
          */
@@ -45484,6 +45516,7 @@ declare module BABYLON {
         BRDF_V_HEIGHT_CORRELATED: boolean;
         MS_BRDF_ENERGY_CONSERVATION: boolean;
         SPHERICAL_HARMONICS: boolean;
+        SPECULAR_GLOSSINESS_ENERGY_CONSERVATION: boolean;
         /** @hidden */private _areMiscDirty: boolean;
     }
     /**
@@ -45506,6 +45539,12 @@ declare module BABYLON {
          * less GPU intensive at the drawback of a lower quality.
          */
         static DEFAULT_USE_SPHERICAL_HARMONICS: boolean;
+        /**
+         * Default value used for activating energy conservation for the specular workflow.
+         * If activated, the albedo color is multiplied with (1. - maxChannel(specular color)).
+         * If deactivated, a material is only physically plausible, when (albedo color + specular color) < 1.
+         */
+        static DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION: boolean;
         private _useEnergyConservation;
         /**
          * Defines if the material uses energy conservation.
@@ -45530,6 +45569,14 @@ declare module BABYLON {
          * to the ground truth.
          */
         useSphericalHarmonics: boolean;
+        private _useSpecularGlossinessInputEnergyConservation;
+        /**
+         * Defines if the material uses energy conservation, when the specular workflow is active.
+         * If activated, the albedo color is multiplied with (1. - maxChannel(specular color)).
+         * If deactivated, a material is only physically plausible, when (albedo color + specular color) < 1.
+         * In the deactivated case, the material author has to ensure energy conservation, for a physically plausible rendering.
+         */
+        useSpecularGlossinessInputEnergyConservation: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsMiscDirty;
         /** @hidden */private _markAllSubMeshesAsMiscDirty(): void;
@@ -46188,6 +46235,7 @@ declare module BABYLON {
         ANISOTROPIC_TEXTUREDIRECTUV: number;
         BRDF_V_HEIGHT_CORRELATED: boolean;
         MS_BRDF_ENERGY_CONSERVATION: boolean;
+        SPECULAR_GLOSSINESS_ENERGY_CONSERVATION: boolean;
         SHEEN: boolean;
         SHEEN_TEXTURE: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
@@ -51216,6 +51264,44 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum defining the mode of a NodeMaterialBlockConnectionPoint
+     */
+    export enum NodeMaterialBlockConnectionPointMode {
+        /** Value is an uniform */
+        Uniform = 0,
+        /** Value is a mesh attribute */
+        Attribute = 1,
+        /** Value is a varying between vertex and fragment shaders */
+        Varying = 2,
+        /** Mode is undefined */
+        Undefined = 3
+    }
+}
+declare module BABYLON {
+    /**
+     * Enum used to define system values e.g. values automatically provided by the system
+     */
+    export enum NodeMaterialSystemValues {
+        /** World */
+        World = 1,
+        /** View */
+        View = 2,
+        /** Projection */
+        Projection = 3,
+        /** ViewProjection */
+        ViewProjection = 4,
+        /** WorldView */
+        WorldView = 5,
+        /** WorldViewProjection */
+        WorldViewProjection = 6,
+        /** CameraPosition */
+        CameraPosition = 7,
+        /** Fog Color */
+        FogColor = 8
+    }
+}
+declare module BABYLON {
+    /**
      * Root class for all node material optimizers
      */
     export class NodeMaterialOptimizer {
@@ -51317,29 +51403,6 @@ declare module BABYLON {
          */
         readonly a: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Enum used to define system values e.g. values automatically provided by the system
-     */
-    export enum NodeMaterialSystemValues {
-        /** World */
-        World = 1,
-        /** View */
-        View = 2,
-        /** Projection */
-        Projection = 3,
-        /** ViewProjection */
-        ViewProjection = 4,
-        /** WorldView */
-        WorldView = 5,
-        /** WorldViewProjection */
-        WorldViewProjection = 6,
-        /** CameraPosition */
-        CameraPosition = 7,
-        /** Fog Color */
-        FogColor = 8
     }
 }
 declare module BABYLON {
@@ -51872,6 +51935,8 @@ declare module BABYLON {
         emitComments: boolean;
         /** Emit build activity */
         verbose: boolean;
+        /** Gets or sets the hosting scene */
+        scene: Scene;
         /**
          * Gets the compilation hints emitted at compilation time
          */
@@ -51913,6 +51978,10 @@ declare module BABYLON {
          */
         uniforms: string[];
         /**
+        * Gets the list of emitted constants
+        */
+        constants: string[];
+        /**
          * Gets the list of emitted uniform buffers
          */
         uniformBuffers: string[];
@@ -51949,6 +52018,7 @@ declare module BABYLON {
         /** @hidden */private _vertexState: NodeMaterialBuildState;
         /** @hidden */private _attributeDeclaration: string;
         /** @hidden */private _uniformDeclaration: string;
+        /** @hidden */private _constantDeclaration: string;
         /** @hidden */private _samplerDeclaration: string;
         /** @hidden */private _varyingTransfer: string;
         private _repeatableContentAnchorIndex;
@@ -52137,6 +52207,14 @@ declare module BABYLON {
          */
         provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks): void;
         /**
+         * Initialize defines for shader compilation
+         * @param mesh defines the mesh to be rendered
+         * @param nodeMaterial defines the node material requesting the update
+         * @param defines defines the material defines to update
+         * @param useInstances specifies that instances should be used
+         */
+        initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        /**
          * Update defines for shader compilation
          * @param mesh defines the mesh to be rendered
          * @param nodeMaterial defines the node material requesting the update
@@ -52144,14 +52222,6 @@ declare module BABYLON {
          * @param useInstances specifies that instances should be used
          */
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
-        /**
-         * Initialize defines for shader compilation
-         * @param mesh defines the mesh to be rendered
-         * @param nodeMaterial defines the node material requesting the update
-         * @param defines defines the material defines to be prepared
-         * @param useInstances specifies that instances should be used
-         */
-        initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         /**
          * Lets the block try to connect some inputs automatically
          * @param material defines the hosting NodeMaterial
@@ -52204,21 +52274,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Enum defining the mode of a NodeMaterialBlockConnectionPoint
-     */
-    export enum NodeMaterialBlockConnectionPointMode {
-        /** Value is an uniform */
-        Uniform = 0,
-        /** Value is a mesh attribute */
-        Attribute = 1,
-        /** Value is a varying between vertex and fragment shaders */
-        Varying = 2,
-        /** Mode is undefined */
-        Undefined = 3
-    }
-}
-declare module BABYLON {
-    /**
      * Enum defining the type of animations supported by InputBlock
      */
     export enum AnimatedInputBlockTypes {
@@ -52248,6 +52303,8 @@ declare module BABYLON {
         /** @hidden */private _systemValue: Nullable<NodeMaterialSystemValues>;
         /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
         visibleInInspector: boolean;
+        /** Gets or sets a boolean indicating that the value of this input will not change after a build */
+        isConstant: boolean;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -52336,11 +52393,12 @@ declare module BABYLON {
          * Set the input block to its default value (based on its type)
          */
         setDefaultValue(): void;
-        protected _dumpPropertiesCode(): string;
+        private _emitConstant;
         private _emit;
         /** @hidden */private _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix): void;
         /** @hidden */private _transmit(effect: Effect, scene: Scene): void;
         protected _buildBlock(state: NodeMaterialBuildState): void;
+        protected _dumpPropertiesCode(): string;
         serialize(): any;private _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
@@ -52358,9 +52416,13 @@ declare module BABYLON {
         private _type;
         /** @hidden */private _enforceAssociatedVariableName: boolean;
         /**
-         * Gets or sets the additional types supported byt this connection point
+         * Gets or sets the additional types supported by this connection point
          */
         acceptedConnectionPointTypes: NodeMaterialBlockConnectionPointTypes[];
+        /**
+         * Gets or sets the additional types excluded by this connection point
+         */
+        excludedConnectionPointTypes: NodeMaterialBlockConnectionPointTypes[];
         /**
          * Gets or sets the associated variable name in the shader
          */
@@ -52602,8 +52664,9 @@ declare module BABYLON {
      * Block used to get data information from a light
      */
     export class LightInformationBlock extends NodeMaterialBlock {
-        private _lightDataDefineName;
-        private _lightColorDefineName;
+        private _lightDataUniformName;
+        private _lightColorUniformName;
+        private _lightTypeDefineName;
         /**
          * Gets or sets the light associated with this block
          */
@@ -52630,40 +52693,13 @@ declare module BABYLON {
          * Gets the direction output component
          */
         readonly color: NodeMaterialConnectionPoint;
-        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-        serialize(): any;private _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to add an alpha test in the fragment shader
+        /**
+     * Gets the direction output component
      */
-    export class AlphaTestBlock extends NodeMaterialBlock {
-        /**
-         * Gets or sets the alpha value where alpha testing happens
-         */
-        alphaCutOff: number;
-        /**
-         * Create a new AlphaTestBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the color input component
-         */
-        readonly color: NodeMaterialConnectionPoint;
-        /**
-         * Gets the alpha input component
-         */
-        readonly alpha: NodeMaterialConnectionPoint;
+        readonly intensity: NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-        protected _dumpPropertiesCode(): string;
         serialize(): any;private _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
@@ -52755,6 +52791,32 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to discard a pixel if a value is smaller than a cutoff
+     */
+    export class DiscardBlock extends NodeMaterialBlock {
+        /**
+         * Create a new DiscardBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the color input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the cutoff input component
+         */
+        readonly cutoff: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
@@ -52828,6 +52890,18 @@ declare module BABYLON {
         * Gets the camera (or eye) position component
         */
         readonly cameraPosition: NodeMaterialConnectionPoint;
+        /**
+        * Gets the glossiness component
+        */
+        readonly glossiness: NodeMaterialConnectionPoint;
+        /**
+        * Gets the diffuse color component
+        */
+        readonly diffuseColor: NodeMaterialConnectionPoint;
+        /**
+        * Gets the specular color component
+        */
+        readonly specularColor: NodeMaterialConnectionPoint;
         /**
          * Gets the diffuse output component
          */
@@ -53125,7 +53199,9 @@ declare module BABYLON {
         /** Floor */
         Floor = 6,
         /** Ceiling */
-        Ceiling = 7
+        Ceiling = 7,
+        /** Square root */
+        Sqrt = 8
     }
     /**
      * Block used to apply trigonometry operation to floats
@@ -53704,6 +53780,62 @@ declare module BABYLON {
          * Gets the value input component
          */
         readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the value of the first parameter raised to the power of the second
+     */
+    export class PowBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new PowBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the value operand input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the power operand input component
+         */
+        readonly power: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get a random number
+     */
+    export class RandomNumberBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new RandomNumberBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the seed input component
+         */
+        readonly seed: NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */
@@ -61487,6 +61619,9 @@ interface WebGLRenderingContext {
     UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
 
+    MIN: number;
+    MAX: number;
+
     /* Multiple Render Targets */
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
@@ -61976,6 +62111,18 @@ interface XRInputSourceChangeEvent {
     session: XRSession;
     removed: Array<XRInputSource>;
     added: Array<XRInputSource>;
+}
+
+/**
+ * @ignore
+ */
+declare module BABYLON.GLTF2.Exporter {
+}
+
+/**
+ * @ignore
+ */
+declare module BABYLON.GLTF1 {
 }
 declare module BABYLON.GUI {
     /**
@@ -64807,6 +64954,54 @@ declare module BABYLON.GUI {
          * Dispose and release associated resources.
          */
         dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+    * Class used to load GUI via XML.
+    */
+    export class XmlLoader {
+        private _nodes;
+        private _nodeTypes;
+        private _isLoaded;
+        private _objectAttributes;
+        private _parentClass;
+        /**
+        * Create a new xml loader
+        * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
+        */
+        constructor(parentClass?: null);
+        private _getChainElement;
+        private _getClassAttribute;
+        private _createGuiElement;
+        private _parseGrid;
+        private _parseElement;
+        private _prepareSourceElement;
+        private _parseElementsFromSource;
+        private _parseXml;
+        /**
+         * Gets if the loading has finished.
+         * @returns whether the loading has finished or not
+        */
+        isLoaded(): boolean;
+        /**
+         * Gets a loaded node / control by id.
+         * @param id the Controls id set in the xml
+         * @returns element of type Control
+        */
+        getNodeById(id: string): any;
+        /**
+         * Gets all loaded nodes / controls
+         * @returns Array of controls
+        */
+        getNodes(): any;
+        /**
+         * Initiates the xml layout loading
+         * @param xmlFile defines the xml layout to load
+         * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
+         * @param callback defines the callback called on layout load.
+         */
+        loadLayout(xmlFile: any, rootNode: any, callback: any): void;
     }
 }
 declare module BABYLON.GUI {
@@ -68552,17 +68747,11 @@ declare module BABYLON {
         static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean): any;
     }
 }
-/**
- * @ignoreChildren
- * @ignore
- */
 declare module "babylonjs-gltf2interface" {
     export = BABYLON.GLTF2;
 }
 /**
  * Module for glTF 2.0 Interface
- * @ignoreChildren
- * @ignore
  */
 declare module BABYLON.GLTF2 {
     /**
@@ -69411,6 +69600,7 @@ declare module BABYLON.GLTF2 {
 
     /**
      * The glTF validation results
+     * @ignore
      */
     interface IGLTFValidationResults {
         info: {
@@ -69442,16 +69632,23 @@ declare module BABYLON.GLTF2 {
      * The glTF validation options
      */
     interface IGLTFValidationOptions {
+        /** Uri to use */
         uri?: string;
+        /** Function used to load external resources */
         externalResourceFunction?: (uri: string) => Promise<Uint8Array>;
+        /** Boolean indicating that we need to validate accessor data */
         validateAccessorData?: boolean;
+        /** max number of issues allowed */
         maxIssues?: number;
+        /** Ignored issues */
         ignoredIssues?: Array<string>;
+        /** Value to override severy settings */
         severityOverrides?: Object;
     }
 
     /**
      * The glTF validator object
+     * @ignore
      */
     interface IGLTFValidator {
         validateBytes: (data: Uint8Array, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;

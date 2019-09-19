@@ -13,6 +13,7 @@ import { Engine } from '../../Engines/engine';
 import { TimingTools } from '../../Misc/timingTools';
 import { InstantiationTools } from '../../Misc/instantiationTools';
 import { Plane } from '../../Maths/math.plane';
+import { StringTools } from '../../Misc/stringTools';
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -585,6 +586,13 @@ export class Texture extends BaseTexture {
      * @returns The JSON representation of the texture
      */
     public serialize(): any {
+        let savedName = this.name;
+        if (!Texture.SerializeBuffers) {
+            if (StringTools.StartsWith(this.name, "data:")) {
+                this.name = "";
+            }
+        }
+
         var serializationObject = super.serialize();
 
         if (!serializationObject) {
@@ -600,6 +608,8 @@ export class Texture extends BaseTexture {
 
         serializationObject.invertY = this._invertY;
         serializationObject.samplingMode = this.samplingMode;
+
+        this.name = savedName;
 
         return serializationObject;
     }

@@ -10,7 +10,7 @@ import { NodeMaterialBuildState } from './nodeMaterialBuildState';
 import { EffectCreationOptions, EffectFallbacks } from '../effect';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { Observable, Observer } from '../../Misc/observable';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { SubMesh } from '../../Meshes/subMesh';
 import { MaterialDefines } from '../../Materials/materialDefines';
@@ -537,6 +537,7 @@ export class NodeMaterial extends PushMaterial {
         this._sharedData.buildId = this._buildId;
         this._sharedData.emitComments = this._options.emitComments;
         this._sharedData.verbose = verbose;
+        this._sharedData.scene = this.getScene();
 
         // Initialize blocks
         let vertexNodes: NodeMaterialBlock[] = [];
@@ -563,6 +564,7 @@ export class NodeMaterial extends PushMaterial {
         // Fragment
         this._fragmentCompilationState.uniforms = this._vertexCompilationState.uniforms.slice(0);
         this._fragmentCompilationState._uniformDeclaration = this._vertexCompilationState._uniformDeclaration;
+        this._fragmentCompilationState._constantDeclaration = this._vertexCompilationState._constantDeclaration;
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
 
         for (var fragmentOutputNode of fragmentNodes) {

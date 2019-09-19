@@ -41274,7 +41274,7 @@ var NumericInputComponent = /** @class */ (function (_super) {
     function NumericInputComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { value: _this.props.value.toFixed(3) };
+        _this.state = { value: _this.props.value.toFixed(_this.props.precision !== undefined ? _this.props.precision : 3) };
         return _this;
     }
     NumericInputComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -41283,7 +41283,7 @@ var NumericInputComponent = /** @class */ (function (_super) {
             return true;
         }
         if (nextProps.value.toString() !== nextState.value) {
-            nextState.value = nextProps.value.toFixed(3);
+            nextState.value = nextProps.value.toFixed(this.props.precision !== undefined ? this.props.precision : 3);
             return true;
         }
         return false;
@@ -42127,7 +42127,7 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadFile(file, function (data) {
             var blob = new Blob([data], { type: "octet/stream" });
             var url = URL.createObjectURL(blob);
-            var texture = new babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Texture"](url, material.getScene());
+            var texture = new babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Texture"](url, material.getScene(), false, false);
             material[_this.props.propertyName] = texture;
             _this.forceUpdate();
         }, undefined, true);
@@ -44937,13 +44937,13 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Alpha blend and test", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["PBRMaterial"].PBRMATERIAL_ALPHATESTANDBLEND },
         ];
         var alphaModeOptions = [
-            { label: "Combine", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_COMBINE },
-            { label: "One one", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_ONEONE },
-            { label: "Add", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_ADD },
-            { label: "Subtract", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_SUBTRACT },
-            { label: "Multiply", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_MULTIPLY },
-            { label: "Maximized", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_MAXIMIZED },
-            { label: "Pre-multiplied", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_PREMULTIPLIED },
+            { label: "Combine", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_COMBINE },
+            { label: "One one", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_ONEONE },
+            { label: "Add", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_ADD },
+            { label: "Subtract", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_SUBTRACT },
+            { label: "Multiply", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_MULTIPLY },
+            { label: "Maximized", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_PREMULTIPLIED },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: material, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -45224,12 +45224,16 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
     PBRMaterialPropertyGridComponent.prototype.switchMetallicMode = function (state) {
         this.props.material.debugMode = state ? 62 : 0;
     };
+    PBRMaterialPropertyGridComponent.prototype.switchRoughnessMode = function (state) {
+        this.props.material.debugMode = state ? 63 : 0;
+    };
     PBRMaterialPropertyGridComponent.prototype.renderTextures = function (onDebugSelectionChangeObservable) {
         var _this = this;
         var material = this.props.material;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CHANNELS" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Albedo", texture: material.albedoTexture, propertyName: "albedoTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { customDebugAction: function (state) { return _this.switchMetallicMode(state); }, label: "Metallic", texture: material.metallicTexture, propertyName: "metallicTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { customDebugAction: function (state) { return _this.switchRoughnessMode(state); }, label: "Roughness", texture: material.metallicTexture, propertyName: "metallicTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Reflection", texture: material.reflectionTexture, propertyName: "reflectionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Refraction", texture: material.refractionTexture, propertyName: "refractionTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Micro-surface", texture: material.microSurfaceTexture, propertyName: "microSurfaceTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
@@ -45942,7 +45946,9 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var normals = mesh.getVerticesData(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].NormalKind);
         var positions = mesh.getVerticesData(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].PositionKind);
         var color = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Color3"].White();
-        var size = mesh.getBoundingInfo().diagonalLength * 0.05;
+        var bbox = mesh.getBoundingInfo();
+        var diag = bbox.maximum.subtractToRef(bbox.minimum, babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["TmpVectors"].Vector3[0]);
+        var size = diag.length() * 0.05;
         var lines = [];
         for (var i = 0; i < normals.length; i += 3) {
             var v1 = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Vector3"].FromArray(positions, i);
@@ -47363,6 +47369,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _tools_gltfComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./tools/gltfComponent */ "./components/actionTabs/tabs/tools/gltfComponent.tsx");
 /* harmony import */ var babylonjs_serializers_glTF_2_0_index__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs-serializers/glTF/2.0/index */ "babylonjs-serializers/glTF/2.0/index");
 /* harmony import */ var babylonjs_serializers_glTF_2_0_index__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_serializers_glTF_2_0_index__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_numericInputComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../lines/numericInputComponent */ "./components/actionTabs/lines/numericInputComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+
+
+
 
 
 
@@ -47380,6 +47392,8 @@ var ToolsTabComponent = /** @class */ (function (_super) {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ToolsTabComponent, _super);
     function ToolsTabComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._screenShotSize = { precision: 1 };
+        _this._useWidthHeight = false;
         _this.state = { tag: "Record video" };
         return _this;
     }
@@ -47400,8 +47414,24 @@ var ToolsTabComponent = /** @class */ (function (_super) {
     ToolsTabComponent.prototype.captureScreenshot = function () {
         var scene = this.props.scene;
         if (scene.activeCamera) {
-            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].CreateScreenshot(scene.getEngine(), scene.activeCamera, { precision: 1.0 });
+            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].CreateScreenshot(scene.getEngine(), scene.activeCamera, this._screenShotSize);
         }
+    };
+    ToolsTabComponent.prototype.captureRender = function () {
+        var scene = this.props.scene;
+        var oldScreenshotSize = {
+            height: this._screenShotSize.height,
+            width: this._screenShotSize.width,
+            precision: this._screenShotSize.precision
+        };
+        if (!this._useWidthHeight) {
+            this._screenShotSize.width = undefined;
+            this._screenShotSize.height = undefined;
+        }
+        if (scene.activeCamera) {
+            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize);
+        }
+        this._screenShotSize = oldScreenshotSize;
     };
     ToolsTabComponent.prototype.recordVideo = function () {
         var _this = this;
@@ -47474,6 +47504,18 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CAPTURE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Screenshot", onClick: function () { return _this.captureScreenshot(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: this.state.tag, onClick: function () { return _this.recordVideo(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CAPTURE WITH RTT" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Capture", onClick: function () { return _this.captureRender(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Precision", target: this._screenShotSize, propertyName: 'precision', onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_10__["CheckBoxLineComponent"], { label: "Use Width/Height", onSelect: function (value) {
+                            _this._useWidthHeight = value;
+                            _this.forceUpdate();
+                        }, isSelected: function () { return _this._useWidthHeight; } }),
+                    this._useWidthHeight &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_numericInputComponent__WEBPACK_IMPORTED_MODULE_9__["NumericInputComponent"], { label: "Width", precision: 0, step: 1, value: this._screenShotSize.width ? this._screenShotSize.width : 512, onChange: function (value) { return _this._screenShotSize.width = value; } }),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_numericInputComponent__WEBPACK_IMPORTED_MODULE_9__["NumericInputComponent"], { label: "Height", precision: 0, step: 1, value: this._screenShotSize.height ? this._screenShotSize.height : 512, onChange: function (value) { return _this._screenShotSize.height = value; } })))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "REPLAY" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate replay code", onClick: function () { return _this.exportReplay(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Reset", onClick: function () { return _this.resetReplay(); } })),

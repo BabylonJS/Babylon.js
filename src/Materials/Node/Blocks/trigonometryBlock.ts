@@ -1,8 +1,8 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { Scene } from '../../../scene';
 
@@ -26,6 +26,8 @@ export enum TrigonometryBlockOperations {
     Floor,
     /** Ceiling */
     Ceiling,
+    /** Square root */
+    Sqrt,
 }
 
 /**
@@ -108,6 +110,10 @@ export class TrigonometryBlock extends NodeMaterialBlock {
             }
             case TrigonometryBlockOperations.Ceiling: {
                 operation = "ceil";
+                break;
+            }
+            case TrigonometryBlockOperations.Sqrt: {
+                operation = "sqrt";
                 break;
             }
         }
