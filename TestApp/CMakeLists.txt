@@ -44,7 +44,11 @@ elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
     set(PLIST_FILE "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Info.plist")
 
     set(STORYBOARD "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Base.lproj/Main.storyboard")
-    set(RESOURCE_FILES ${STORYBOARD})
+    set(JSSCRIPT "${CMAKE_CURRENT_LIST_DIR}/Scripts/babylon.glTF2FileLoader.js"
+                "${CMAKE_CURRENT_LIST_DIR}/Scripts/babylon.max.js"
+                "${CMAKE_CURRENT_LIST_DIR}/Scripts/experience.js"
+                "${CMAKE_CURRENT_LIST_DIR}/Scripts/playground_runner.js")
+    set(RESOURCE_FILES ${STORYBOARD} ${JSSCRIPT})
 
     set(SOURCES
         ${SOURCES}

@@ -39,14 +39,14 @@ void MacErrorMessage(const char *outputString)
     NSURL * resourceUrl = [main resourceURL];
 
     NSWindow* nativeWindow = [[self view] window];
-    runtime = std::make_unique<babylon::RuntimeApple>((__bridge void*)nativeWindow, [resourceUrl fileSystemRepresentation]);
+    runtime = std::make_unique<babylon::RuntimeApple>((__bridge void*)nativeWindow, [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String]);
 
     inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
     InputManager::Initialize(*runtime, *inputBuffer);
     
-    runtime->LoadScript("Scripts/babylon.max.js");
-    runtime->LoadScript("Scripts/babylon.glTF2FileLoader.js");
-    runtime->LoadScript("Scripts/experience.js");
+    runtime->LoadScript("babylon.max.js");
+    runtime->LoadScript("babylon.glTF2FileLoader.js");
+    runtime->LoadScript("experience.js");
 }
 
 - (void)setRepresentedObject:(id)representedObject {
