@@ -153,6 +153,11 @@ if(WINDOWS_STORE)
     target_link_libraries(Library PRIVATE arcana)
 endif()
 
+if(APPLE)
+    target_link_libraries(Library
+        PRIVATE spirv-cross-msl)
+endif()
+
 if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
 target_link_libraries(Library
     PRIVATE "crypt32.lib"

@@ -93,7 +93,6 @@ napi_status napi_create_reference(napi_env env,
     return napi_ok;
 }
 
-
 napi_status napi_delete_reference(napi_env env, napi_ref ref) {
     auto info = reinterpret_cast<RefInfo*>(ref);
     
@@ -120,7 +119,6 @@ napi_status napi_get_reference_value(napi_env env,
     }
     return napi_ok;
 }
-
 
 napi_status napi_create_string_utf8(napi_env env,
                                     const char* str,
@@ -200,7 +198,6 @@ napi_status napi_is_exception_pending(napi_env env, bool* result) {
     return napi_ok;
 }
 
-
 JSValueRef JSCFunctionCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception)
 {
     auto iter = constructorCB.find(function);
@@ -244,14 +241,14 @@ napi_status napi_call_function(napi_env env,
                                napi_value* result) {
     auto context = env->m_globalContext;
     
-    std::vector<JSValueRef> args(argc + 1);
-    args[0] = reinterpret_cast<JSValueRef>(recv);
+    std::vector<JSValueRef> args(argc);
+    //args[0] = reinterpret_cast<JSValueRef>(recv);
     for (size_t i = 0; i < argc; i++) {
-        args[i + 1] = reinterpret_cast<JSValueRef>(argv[i]);
+        args[i] = reinterpret_cast<JSValueRef>(argv[i]);
     }
     
     JSObjectRef globalObject = JSContextGetGlobalObject(context);
-    JSValueRef jsResult = JSObjectCallAsFunction(context, reinterpret_cast<JSObjectRef>(func), /*JSObjectRef thisObject*/globalObject, argc+1, args.data(), NULL);
+    JSValueRef jsResult = JSObjectCallAsFunction(context, reinterpret_cast<JSObjectRef>(func), /*JSObjectRef thisObject*/globalObject, argc, args.data(), NULL);
     
     if (result != nullptr) {
         *result = reinterpret_cast<napi_value>(const_cast<OpaqueJSValue*>(jsResult));
@@ -630,7 +627,6 @@ napi_status napi_get_arraybuffer_info(napi_env env,
     return napi_ok;
 }
 
-
 napi_status napi_get_cb_info(
     napi_env env,               // [in] NAPI environment handle
     napi_callback_info cbinfo,  // [in] Opaque callback-info handle
@@ -850,7 +846,6 @@ napi_status napi_typeof(napi_env env, napi_value vv, napi_valuetype* result) {
     return napi_ok;
 }
 
-
 napi_status napi_wrap(napi_env env,
                       napi_value js_object,
                       void* native_object,
@@ -861,7 +856,6 @@ napi_status napi_wrap(napi_env env,
     assert(JSObjectSetPrivate(object, native_object));
     return napi_ok;
 }
-
 
 napi_status napi_unwrap(napi_env env, napi_value js_object, void** result) {
     JSObjectRef object = reinterpret_cast<JSObjectRef>(js_object);
@@ -941,11 +935,11 @@ napi_status napi_define_properties(napi_env env,
                                    size_t property_count,
                                    const napi_property_descriptor* properties) {
     return napi_ok;
-JSObjectRef obj = reinterpret_cast<JSObjectRef>(object);
-auto context = env->m_globalContext;
+    JSObjectRef obj = reinterpret_cast<JSObjectRef>(object);
+    auto context = env->m_globalContext;
 
-for (size_t i = 0; i < property_count; i++) {
-    const napi_property_descriptor* p = properties + i;
+    for (size_t i = 0; i < property_count; i++) {
+        const napi_property_descriptor* p = properties + i;
 
     /*JsValueRef descriptor;
     CHECK_JSRT(JsCreateObject(&descriptor));
