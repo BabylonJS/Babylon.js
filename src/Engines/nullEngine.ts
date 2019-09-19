@@ -7,7 +7,6 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Constants } from "./constants";
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
@@ -460,7 +459,7 @@ export class NullEngine extends Engine {
             return;
         }
 
-        this._alphaState.alphaBlend = (mode !== Constants.ALPHA_DISABLE);
+        this.alphaState.alphaBlend = (mode !== Constants.ALPHA_DISABLE);
 
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
@@ -494,9 +493,9 @@ export class NullEngine extends Engine {
         if (bruteForce) {
             this._currentProgram = null;
 
-            this._stencilState.reset();
-            this._depthCullingState.reset();
-            this._alphaState.reset();
+            this.stencilState.reset();
+            this.depthCullingState.reset();
+            this.alphaState.reset();
         }
 
         this._cachedVertexBuffers = null;

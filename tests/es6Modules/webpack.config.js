@@ -5,10 +5,10 @@ module.exports = {
     context: path.resolve(__dirname),
     entry: {
         thinEngineOnly: path.resolve(__dirname, 'thinEngineOnly.ts'),
-        // engineOnly: path.resolve(__dirname, 'engineOnly.ts'),
-        // sceneOnly: path.resolve(__dirname, 'sceneOnly.ts'),
-        // minGridMaterial: path.resolve(__dirname, 'minGridMaterial.ts'),
-        // minStandardMaterial: path.resolve(__dirname, 'minStandardMaterial.ts')
+        engineOnly: path.resolve(__dirname, 'engineOnly.ts'),
+        sceneOnly: path.resolve(__dirname, 'sceneOnly.ts'),
+        minGridMaterial: path.resolve(__dirname, 'minGridMaterial.ts'),
+        minStandardMaterial: path.resolve(__dirname, 'minStandardMaterial.ts')
     },
     output: {
         filename: '[name].js',
@@ -24,5 +24,5 @@ module.exports = {
             loader: 'ts-loader'
         }]
     },
-    mode: "development"
+    mode: "production"
 };

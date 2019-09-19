@@ -3,9 +3,9 @@ import { Nullable, int } from "../../types";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 import { _DevTools } from '../../Misc/devTools';
+import { Engine } from '../../Engines/engine';
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTexture;
@@ -354,7 +354,7 @@ export class InternalTexture {
                         height: this.height
                     };
 
-                    proxy = this._engine.createRenderTargetTexture(size, options);
+                    proxy = (this._engine as Engine).createRenderTargetTexture(size, options);
                 }
                 proxy._swapAndDie(this);
 

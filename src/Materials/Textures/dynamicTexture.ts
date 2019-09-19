@@ -5,8 +5,9 @@ import { ISize } from "../../Maths/math.size";
 import { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
+import "../../Engines/Extensions/engine.dynamicTexture";
+
 /**
  * A class extending Texture allowing drawing on a texture
  * @see http://doc.babylonjs.com/how_to/dynamictexture
