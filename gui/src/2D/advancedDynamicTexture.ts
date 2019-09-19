@@ -18,6 +18,7 @@ import { Container } from "./controls/container";
 import { Control } from "./controls/control";
 import { Style } from "./style";
 import { Measure } from "./measure";
+import { Constants } from 'babylonjs/Engines/constants';
 /**
 * Interface used to define a control that can receive focus
 */
@@ -284,7 +285,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
    * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
    */
     constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
-        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
+        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA);
         scene = this.getScene();
         if (!scene || !this._texture) {
             return;

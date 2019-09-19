@@ -2,8 +2,8 @@ import { Nullable } from '../types';
 import { Tools } from './tools';
 import { Texture } from '../Materials/Textures/texture';
 import { InternalTexture } from '../Materials/Textures/internalTexture';
-import { Engine } from '../Engines/engine';
 import { Scalar } from '../Maths/math.scalar';
+import { Constants } from '../Engines/constants';
 
 /**
  * Info about the .basis files
@@ -185,24 +185,24 @@ export class BasisTools {
             texture._invertVScale = texture.invertY;
             if (transcodeResult.format === -1) {
                 // No compatable compressed format found, fallback to RGB
-                texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                texture.format = Engine.TEXTUREFORMAT_RGB;
+                texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                texture.format = Constants.TEXTUREFORMAT_RGB;
 
                 if (texture.getEngine().webGLVersion < 2 && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
                     // Create non power of two texture
                     let source = new InternalTexture(texture.getEngine(), InternalTexture.DATASOURCE_TEMP);
 
                     texture._invertVScale = texture.invertY;
-                    source.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                    source.format = Engine.TEXTUREFORMAT_RGB;
+                    source.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                    source.format = Constants.TEXTUREFORMAT_RGB;
                     // Fallback requires aligned width/height
                     source.width = (rootImage.width + 3) & ~3;
                     source.height = (rootImage.height + 3) & ~3;
                     texture.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, source, true);
-                    texture.getEngine()._uploadDataToTextureDirectly(source, rootImage.transcodedPixels, i, 0, Engine.TEXTUREFORMAT_RGB, true);
+                    texture.getEngine()._uploadDataToTextureDirectly(source, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
 
                     // Resize to power of two
-                    source.getEngine()._rescaleTexture(source, texture, texture.getEngine().scenes[0], source.getEngine()._getInternalFormat(Engine.TEXTUREFORMAT_RGB), () => {
+                    source.getEngine()._rescaleTexture(source, texture, texture.getEngine().scenes[0], source.getEngine()._getInternalFormat(Constants.TEXTUREFORMAT_RGB), () => {
                         source.getEngine()._releaseTexture(source);
                         source.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, texture, true);
                     });
@@ -213,7 +213,7 @@ export class BasisTools {
                     // Upload directly
                     texture.width = (rootImage.width + 3) & ~3;
                     texture.height = (rootImage.height + 3) & ~3;
-                    texture.getEngine()._uploadDataToTextureDirectly(texture, rootImage.transcodedPixels, i, 0, Engine.TEXTUREFORMAT_RGB, true);
+                    texture.getEngine()._uploadDataToTextureDirectly(texture, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
                 }
 
             }else {

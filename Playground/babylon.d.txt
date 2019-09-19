@@ -491,210 +491,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
-     */
-    export class PerformanceMonitor {
-        private _enabled;
-        private _rollingFrameTime;
-        private _lastFrameTimeMs;
-        /**
-         * constructor
-         * @param frameSampleSize The number of samples required to saturate the sliding window
-         */
-        constructor(frameSampleSize?: number);
-        /**
-         * Samples current frame
-         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
-         */
-        sampleFrame(timeMs?: number): void;
-        /**
-         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFrameTime: number;
-        /**
-         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFrameTimeVariance: number;
-        /**
-         * Returns the frame time of the most recent frame
-         */
-        readonly instantaneousFrameTime: number;
-        /**
-         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
-         */
-        readonly averageFPS: number;
-        /**
-         * Returns the average framerate in frames per second using the most recent frame time
-         */
-        readonly instantaneousFPS: number;
-        /**
-         * Returns true if enough samples have been taken to completely fill the sliding window
-         */
-        readonly isSaturated: boolean;
-        /**
-         * Enables contributions to the sliding window sample set
-         */
-        enable(): void;
-        /**
-         * Disables contributions to the sliding window sample set
-         * Samples will not be interpolated over the disabled period
-         */
-        disable(): void;
-        /**
-         * Returns true if sampling is enabled
-         */
-        readonly isEnabled: boolean;
-        /**
-         * Resets performance monitor
-         */
-        reset(): void;
-    }
-    /**
-     * RollingAverage
-     *
-     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
-     */
-    export class RollingAverage {
-        /**
-         * Current average
-         */
-        average: number;
-        /**
-         * Current variance
-         */
-        variance: number;
-        protected _samples: Array<number>;
-        protected _sampleCount: number;
-        protected _pos: number;
-        protected _m2: number;
-        /**
-         * constructor
-         * @param length The number of samples required to saturate the sliding window
-         */
-        constructor(length: number);
-        /**
-         * Adds a sample to the sample set
-         * @param v The sample value
-         */
-        add(v: number): void;
-        /**
-         * Returns previously added values or null if outside of history or outside the sliding window domain
-         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
-         * @return Value previously recorded with add() or null if outside of range
-         */
-        history(i: number): number;
-        /**
-         * Returns true if enough samples have been taken to completely fill the sliding window
-         * @return true if sample-set saturated
-         */
-        isSaturated(): boolean;
-        /**
-         * Resets the rolling average (equivalent to 0 samples taken so far)
-         */
-        reset(): void;
-        /**
-         * Wraps a value around the sample range boundaries
-         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
-         * @return Wrapped position in sample range
-         */
-        protected _wrapPosition(i: number): number;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class implement a typical dictionary using a string as key and the generic type T as value.
-     * The underlying implementation relies on an associative array to ensure the best performances.
-     * The value can be anything including 'null' but except 'undefined'
-     */
-    export class StringDictionary<T> {
-        /**
-         * This will clear this dictionary and copy the content from the 'source' one.
-         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
-         * @param source the dictionary to take the content from and copy to this dictionary
-         */
-        copyFrom(source: StringDictionary<T>): void;
-        /**
-         * Get a value based from its key
-         * @param key the given key to get the matching value from
-         * @return the value if found, otherwise undefined is returned
-         */
-        get(key: string): T | undefined;
-        /**
-         * Get a value from its key or add it if it doesn't exist.
-         * This method will ensure you that a given key/data will be present in the dictionary.
-         * @param key the given key to get the matching value from
-         * @param factory the factory that will create the value if the key is not present in the dictionary.
-         * The factory will only be invoked if there's no data for the given key.
-         * @return the value corresponding to the key.
-         */
-        getOrAddWithFactory(key: string, factory: (key: string) => T): T;
-        /**
-         * Get a value from its key if present in the dictionary otherwise add it
-         * @param key the key to get the value from
-         * @param val if there's no such key/value pair in the dictionary add it with this value
-         * @return the value corresponding to the key
-         */
-        getOrAdd(key: string, val: T): T;
-        /**
-         * Check if there's a given key in the dictionary
-         * @param key the key to check for
-         * @return true if the key is present, false otherwise
-         */
-        contains(key: string): boolean;
-        /**
-         * Add a new key and its corresponding value
-         * @param key the key to add
-         * @param value the value corresponding to the key
-         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
-         */
-        add(key: string, value: T): boolean;
-        /**
-         * Update a specific value associated to a key
-         * @param key defines the key to use
-         * @param value defines the value to store
-         * @returns true if the value was updated (or false if the key was not found)
-         */
-        set(key: string, value: T): boolean;
-        /**
-         * Get the element of the given key and remove it from the dictionary
-         * @param key defines the key to search
-         * @returns the value associated with the key or null if not found
-         */
-        getAndRemove(key: string): Nullable<T>;
-        /**
-         * Remove a key/value from the dictionary.
-         * @param key the key to remove
-         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
-         */
-        remove(key: string): boolean;
-        /**
-         * Clear the whole content of the dictionary
-         */
-        clear(): void;
-        /**
-         * Gets the current count
-         */
-        readonly count: number;
-        /**
-         * Execute a callback on each key/val of the dictionary.
-         * Note that you can remove any element in this dictionary in the callback implementation
-         * @param callback the callback to execute on a given key/value pair
-         */
-        forEach(callback: (key: string, val: T) => void): void;
-        /**
-         * Execute a callback on every occurrence of the dictionary until it returns a valid TRes object.
-         * If the callback returns null or undefined the method will iterate to the next key/value pair
-         * Note that you can remove any element in this dictionary in the callback implementation
-         * @param callback the callback to execute, if it return a valid T instanced object the enumeration will stop and the object will be returned
-         * @returns the first item
-         */
-        first<TRes>(callback: (key: string, val: T) => TRes): TRes | null;
-        private _count;
-        private _data;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to store gfx data (like WebGLBuffer)
      */
     export class DataBuffer {
@@ -29033,6 +28829,117 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
+     */
+    export class PerformanceMonitor {
+        private _enabled;
+        private _rollingFrameTime;
+        private _lastFrameTimeMs;
+        /**
+         * constructor
+         * @param frameSampleSize The number of samples required to saturate the sliding window
+         */
+        constructor(frameSampleSize?: number);
+        /**
+         * Samples current frame
+         * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
+         */
+        sampleFrame(timeMs?: number): void;
+        /**
+         * Returns the average frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFrameTime: number;
+        /**
+         * Returns the variance frame time in milliseconds over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFrameTimeVariance: number;
+        /**
+         * Returns the frame time of the most recent frame
+         */
+        readonly instantaneousFrameTime: number;
+        /**
+         * Returns the average framerate in frames per second over the sliding window (or the subset of frames sampled so far)
+         */
+        readonly averageFPS: number;
+        /**
+         * Returns the average framerate in frames per second using the most recent frame time
+         */
+        readonly instantaneousFPS: number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         */
+        readonly isSaturated: boolean;
+        /**
+         * Enables contributions to the sliding window sample set
+         */
+        enable(): void;
+        /**
+         * Disables contributions to the sliding window sample set
+         * Samples will not be interpolated over the disabled period
+         */
+        disable(): void;
+        /**
+         * Returns true if sampling is enabled
+         */
+        readonly isEnabled: boolean;
+        /**
+         * Resets performance monitor
+         */
+        reset(): void;
+    }
+    /**
+     * RollingAverage
+     *
+     * Utility to efficiently compute the rolling average and variance over a sliding window of samples
+     */
+    export class RollingAverage {
+        /**
+         * Current average
+         */
+        average: number;
+        /**
+         * Current variance
+         */
+        variance: number;
+        protected _samples: Array<number>;
+        protected _sampleCount: number;
+        protected _pos: number;
+        protected _m2: number;
+        /**
+         * constructor
+         * @param length The number of samples required to saturate the sliding window
+         */
+        constructor(length: number);
+        /**
+         * Adds a sample to the sample set
+         * @param v The sample value
+         */
+        add(v: number): void;
+        /**
+         * Returns previously added values or null if outside of history or outside the sliding window domain
+         * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
+         * @return Value previously recorded with add() or null if outside of range
+         */
+        history(i: number): number;
+        /**
+         * Returns true if enough samples have been taken to completely fill the sliding window
+         * @return true if sample-set saturated
+         */
+        isSaturated(): boolean;
+        /**
+         * Resets the rolling average (equivalent to 0 samples taken so far)
+         */
+        reset(): void;
+        /**
+         * Wraps a value around the sample range boundaries
+         * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
+         * @return Wrapped position in sample range
+         */
+        protected _wrapPosition(i: number): number;
+    }
+}
+declare module BABYLON {
+    /**
      * Settings for finer control over video usage
      */
     export interface VideoTextureSettings {
@@ -29380,7 +29287,6 @@ declare module BABYLON {
          * @param predicate defines a predicate used to filter which materials should be affected
          */
         static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
-        /** @hidden */private static _TextureLoaders: IInternalTextureLoader[];
         /** Defines that alpha blending is disabled */
         static readonly ALPHA_DISABLE: number;
         /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
@@ -29569,6 +29475,7 @@ declare module BABYLON {
         static readonly SCALEMODE_NEAREST: number;
         /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
         static readonly SCALEMODE_CEILING: number;
+        /** @hidden */private static _TextureLoaders: IInternalTextureLoader[];
         /**
          * Returns the current npm package of the sdk
          */
@@ -29764,13 +29671,13 @@ declare module BABYLON {
          * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#handling-webgl-context-lost
          */
         doNotHandleContextLost: boolean;
-        private _performanceMonitor;
         private _fps;
         private _deltaTime;
         /**
          * Turn this value on if you want to pause FPS computation when in background
          */
         disablePerformanceMonitorInBackground: boolean;
+        private _performanceMonitor;
         /**
          * Gets the performance monitor attached to this engine
          * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
@@ -29826,7 +29733,6 @@ declare module BABYLON {
         /** @hidden */private _workingContext: Nullable<CanvasRenderingContext2D>;
         private _rescalePostProcess;
         private _dummyFramebuffer;
-        private _externalData;
         /** @hidden */private _bindedRenderFunction: any;
         private _vaoRecordInProgress;
         private _mustWipeVertexAttributes;
@@ -30309,6 +30215,7 @@ declare module BABYLON {
          * @returns the new WebGL static buffer
          */
         createVertexBuffer(data: DataArray): DataBuffer;
+        private _createVertexBuffer;
         /**
          * Creates a dynamic vertex buffer
          * @param data the data for the dynamic vertex buffer
@@ -31003,34 +30910,6 @@ declare module BABYLON {
          * @returns a Uint8Array containing RGBA colors
          */
         readPixels(x: number, y: number, width: number, height: number): Uint8Array;
-        /**
-         * Add an externaly attached data from its key.
-         * This method call will fail and return false, if such key already exists.
-         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
-         * @param key the unique key that identifies the data
-         * @param data the data object to associate to the key for this Engine instance
-         * @return true if no such key were already present and the data was added successfully, false otherwise
-         */
-        addExternalData<T>(key: string, data: T): boolean;
-        /**
-         * Get an externaly attached data from its key
-         * @param key the unique key that identifies the data
-         * @return the associated data, if present (can be null), or undefined if not present
-         */
-        getExternalData<T>(key: string): T;
-        /**
-         * Get an externaly attached data from its key, create it using a factory if it's not already present
-         * @param key the unique key that identifies the data
-         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
-         * @return the associated data, can be null if the factory returned null.
-         */
-        getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T;
-        /**
-         * Remove an externaly attached data from the Engine instance
-         * @param key the unique key that identifies the data
-         * @return true if the data was successfully removed, false if it doesn't exist
-         */
-        removeExternalData(key: string): boolean;
         /**
          * Unbind all vertex attributes from the webGL context
          */
@@ -31837,6 +31716,99 @@ declare module BABYLON {
          * @returns the created async loop object
          */
         static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout?: number): AsyncLoop;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class implement a typical dictionary using a string as key and the generic type T as value.
+     * The underlying implementation relies on an associative array to ensure the best performances.
+     * The value can be anything including 'null' but except 'undefined'
+     */
+    export class StringDictionary<T> {
+        /**
+         * This will clear this dictionary and copy the content from the 'source' one.
+         * If the T value is a custom object, it won't be copied/cloned, the same object will be used
+         * @param source the dictionary to take the content from and copy to this dictionary
+         */
+        copyFrom(source: StringDictionary<T>): void;
+        /**
+         * Get a value based from its key
+         * @param key the given key to get the matching value from
+         * @return the value if found, otherwise undefined is returned
+         */
+        get(key: string): T | undefined;
+        /**
+         * Get a value from its key or add it if it doesn't exist.
+         * This method will ensure you that a given key/data will be present in the dictionary.
+         * @param key the given key to get the matching value from
+         * @param factory the factory that will create the value if the key is not present in the dictionary.
+         * The factory will only be invoked if there's no data for the given key.
+         * @return the value corresponding to the key.
+         */
+        getOrAddWithFactory(key: string, factory: (key: string) => T): T;
+        /**
+         * Get a value from its key if present in the dictionary otherwise add it
+         * @param key the key to get the value from
+         * @param val if there's no such key/value pair in the dictionary add it with this value
+         * @return the value corresponding to the key
+         */
+        getOrAdd(key: string, val: T): T;
+        /**
+         * Check if there's a given key in the dictionary
+         * @param key the key to check for
+         * @return true if the key is present, false otherwise
+         */
+        contains(key: string): boolean;
+        /**
+         * Add a new key and its corresponding value
+         * @param key the key to add
+         * @param value the value corresponding to the key
+         * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
+         */
+        add(key: string, value: T): boolean;
+        /**
+         * Update a specific value associated to a key
+         * @param key defines the key to use
+         * @param value defines the value to store
+         * @returns true if the value was updated (or false if the key was not found)
+         */
+        set(key: string, value: T): boolean;
+        /**
+         * Get the element of the given key and remove it from the dictionary
+         * @param key defines the key to search
+         * @returns the value associated with the key or null if not found
+         */
+        getAndRemove(key: string): Nullable<T>;
+        /**
+         * Remove a key/value from the dictionary.
+         * @param key the key to remove
+         * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
+         */
+        remove(key: string): boolean;
+        /**
+         * Clear the whole content of the dictionary
+         */
+        clear(): void;
+        /**
+         * Gets the current count
+         */
+        readonly count: number;
+        /**
+         * Execute a callback on each key/val of the dictionary.
+         * Note that you can remove any element in this dictionary in the callback implementation
+         * @param callback the callback to execute on a given key/value pair
+         */
+        forEach(callback: (key: string, val: T) => void): void;
+        /**
+         * Execute a callback on every occurrence of the dictionary until it returns a valid TRes object.
+         * If the callback returns null or undefined the method will iterate to the next key/value pair
+         * Note that you can remove any element in this dictionary in the callback implementation
+         * @param callback the callback to execute, if it return a valid T instanced object the enumeration will stop and the object will be returned
+         * @returns the first item
+         */
+        first<TRes>(callback: (key: string, val: T) => TRes): TRes | null;
+        private _count;
+        private _data;
     }
 }
 declare module BABYLON {
@@ -43456,7 +43428,7 @@ declare module BABYLON {
         setAlphaConstants(r: number, g: number, b: number, a: number): void;
         /**
          * Sets the current alpha mode
-         * @param mode defines the mode to use (one of the BABYLON.Engine.ALPHA_XXX)
+         * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
          * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
          * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
          */
@@ -52918,6 +52890,18 @@ declare module BABYLON {
         * Gets the camera (or eye) position component
         */
         readonly cameraPosition: NodeMaterialConnectionPoint;
+        /**
+        * Gets the glossiness component
+        */
+        readonly glossiness: NodeMaterialConnectionPoint;
+        /**
+        * Gets the diffuse color component
+        */
+        readonly diffuseColor: NodeMaterialConnectionPoint;
+        /**
+        * Gets the specular color component
+        */
+        readonly specularColor: NodeMaterialConnectionPoint;
         /**
          * Gets the diffuse output component
          */
