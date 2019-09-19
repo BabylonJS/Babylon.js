@@ -38,6 +38,12 @@ struct CallbackInfo
     bool isConstructCall{ false };
 };
 
+struct RefInfo
+{
+    JSValueRef value;
+    uint32_t count;
+};
+
 std::map<JSObjectRef, JSC_cbInfo*> constructorCB;
 std::map<JSValueRef, VFTable*> vfTable;
 
@@ -66,12 +72,6 @@ napi_status napi_create_error(napi_env env,
     *result = reinterpret_cast<napi_value>(errorObject);
     return napi_ok;
 }
-
-struct RefInfo
-{
-    JSValueRef value;
-    uint32_t count;
-};
 
 napi_status napi_create_reference(napi_env env,
                                   napi_value v,
@@ -198,8 +198,7 @@ napi_status napi_is_exception_pending(napi_env env, bool* result) {
     return napi_ok;
 }
 
-JSValueRef JSCFunctionCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception)
-{
+JSValueRef JSCFunctionCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
     auto iter = constructorCB.find(function);
     assert(iter != constructorCB.end());
     JSC_cbInfo *cbInfo = iter->second;
@@ -223,7 +222,6 @@ napi_status napi_create_function(napi_env env,
                                  napi_value* result) {
 
     auto context = env->m_globalContext;
-    //JSObjectRef globalObject = JSContextGetGlobalObject(context);
     JSStringRef str = JSStringCreateWithUTF8CString(utf8name);
     JSObjectRef function = JSObjectMakeFunctionWithCallback(context, str, JSCFunctionCallback);
     JSC_cbInfo *cbInfo = new JSC_cbInfo{cb, callback_data, nullptr, env};
@@ -241,14 +239,14 @@ napi_status napi_call_function(napi_env env,
                                napi_value* result) {
     auto context = env->m_globalContext;
     
-    std::vector<JSValueRef> args(argc);
-    //args[0] = reinterpret_cast<JSValueRef>(recv);
+    std::vector<JSValueRef> args(argc + 1);
+    args[0] = reinterpret_cast<JSValueRef>(recv);
     for (size_t i = 0; i < argc; i++) {
-        args[i] = reinterpret_cast<JSValueRef>(argv[i]);
+        args[i + 1] = reinterpret_cast<JSValueRef>(argv[i]);
     }
     
     JSObjectRef globalObject = JSContextGetGlobalObject(context);
-    JSValueRef jsResult = JSObjectCallAsFunction(context, reinterpret_cast<JSObjectRef>(func), /*JSObjectRef thisObject*/globalObject, argc, args.data(), NULL);
+    JSValueRef jsResult = JSObjectCallAsFunction(context, reinterpret_cast<JSObjectRef>(func), globalObject, argc + 1, args.data(), NULL);
     
     if (result != nullptr) {
         *result = reinterpret_cast<napi_value>(const_cast<OpaqueJSValue*>(jsResult));
@@ -287,10 +285,6 @@ napi_status napi_escape_handle(napi_env env,
 napi_status napi_coerce_to_string(napi_env env,
                                   napi_value v,
                                   napi_value* result) {
-    //JSStringRef stringRef = JSValueToStringCopy(env->m_globalContext, reinterpret_cast<JSValueRef>(v), NULL);
-    //*result = JSStringGetUTF8CString(stringRef, buf, bufsize);
-    //JSStringRelease(stringRef);
-    //*result = reinterpret_cast<napi_value>(stringRef);
     *result = v;
     return napi_ok;
 }
@@ -317,21 +311,13 @@ napi_status napi_create_symbol(napi_env env,
     return napi_ok;
 }
 
-template<int functionIndex> JSValueRef JSCStaticMethod(JSContextRef ctx, JSObjectRef function, JSObjectRef object, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception){
+template<int functionIndex> JSValueRef JSCStaticMethod(JSContextRef ctx, JSObjectRef function, JSObjectRef object, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
     // vf table
     auto iter = vfTable.find(object);
     assert(iter != vfTable.end());
     
     const VFTable& vfTable = *iter->second;
     const VFTableEntry& entry = vfTable.vfTable[functionIndex];
-    
-    /*
-    char errorStr[1024];
-    size_t errorStrSize{ 0 };
-    
-        OpaqueJSValue *exceptionValue = const_cast<OpaqueJSValue*>(function);
-        napi_get_value_string_utf8(constructorCB.begin()->second->env, reinterpret_cast<napi_value>(exceptionValue), errorStr, sizeof(errorStr), &errorStrSize);
-        */
     
     CallbackInfo callbackInfo;
     callbackInfo.argc = argumentCount;
@@ -345,19 +331,12 @@ template<int functionIndex> JSValueRef JSCStaticMethod(JSContextRef ctx, JSObjec
     return JSValueMakeUndefined(ctx);
 }
 
-void JSCFinalize(JSObjectRef object){
-    //FilesystemPrivate *fs = static_cast<FilesystemPrivate*>(JSObjectGetPrivate(object));
-    //delete fs;
+void JSCFinalize(JSObjectRef object) {
     // todo
 }
 
-JSObjectRef JSCCallAsConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception){
-    /*FilesystemPrivate *fs = new FilesystemPrivate();
-    
-    JSStringRef pathString = JSValueToStringCopy(ctx, arguments[0], nullptr);
-    setAttributes(fs, JSStringToStdString(pathString));
-    JSObjectSetPrivate(constructor, static_cast<void*>(fs));
-    */
+JSObjectRef JSCCallAsConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+
     auto iter = constructorCB.find(constructor);
     assert(iter != constructorCB.end());
     JSC_cbInfo *cbInfo = iter->second;
@@ -383,13 +362,11 @@ JSObjectRef JSCCallAsConstructor(JSContextRef ctx, JSObjectRef constructor, size
     return jsValue;
 }
 
-bool JSCSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception)
-{
+bool JSCSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception) {
     return false;
 }
 
-JSValueRef JSCGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception)
-{
+JSValueRef JSCGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
     auto iter = constructorCB.find(object);
     assert(iter != constructorCB.end());
     return JSValueMakeUndefined(ctx);
@@ -412,12 +389,8 @@ napi_status napi_define_class(napi_env env,
     JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
     classDefinition.className = utf8name;
     classDefinition.attributes = kJSClassAttributeNone;
-    /*classDefinition.staticFunctions = staticFunctions;
-    classDefinition.staticValues = staticValues;
-    */
     classDefinition.finalize = JSCFinalize;
-    //classDefinition.callAsConstructor = JSCCallAsConstructor;
-        
+   
 
     int instancePropertyCount = 0;
     int staticPropertyCount = 0;
@@ -443,8 +416,7 @@ napi_status napi_define_class(napi_env env,
     }
 
     JSStaticValue* staticValues = new JSStaticValue[staticPropertyCount+1];
-    for (auto i = 0;i<staticPropertyCount;i++)
-    {
+    for (auto i = 0;i<staticPropertyCount;i++) {
         staticValues[i] = {instanceDescriptors[i].utf8name, JSCGetProperty, JSCSetProperty, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete};
     }
     staticValues[staticPropertyCount] = {0, 0, 0, 0};
@@ -457,8 +429,7 @@ napi_status napi_define_class(napi_env env,
     VFTable vfTable;
     vfTable.env = env;
     vfTable.vfTable.resize(instancePropertyCount);
-    for (auto i = 0;i<instancePropertyCount;i++)
-    {
+    for (auto i = 0;i<instancePropertyCount;i++) {
         JSObjectCallAsFunctionCallback method{ nullptr };
         if (i == 0) method = JSCStaticMethod<0>;
         if (i == 1) method = JSCStaticMethod<1>;
@@ -532,82 +503,10 @@ napi_status napi_define_class(napi_env env,
     JSObjectRef ctor = JSObjectMakeConstructor(context, classDef, JSCCallAsConstructor);
     JSObjectSetProperty(context, globalObj, str, ctor, kJSPropertyAttributeNone, nullptr);
     
-    
-    JSObjectRef classObj = JSObjectMake(context, classDef, NULL);
-    //JSObjectSetProperty(context, globalObj, str, classObj, kJSPropertyAttributeNone, NULL);
-
     JSC_cbInfo *cbInfo = new JSC_cbInfo{cb, data, classDef, env, vfTable};
     constructorCB[ctor] = cbInfo;
-    //assert(JSObjectSetPrivate(classObj, static_cast<void*>(cbInfo)));
-#if 0
 
-  JSValueRef constructor;
-  JSValueRef prototype = nullptr;
-/*
-  jsrtimpl::ExternalCallback* externalCallback =
-    new jsrtimpl::ExternalCallback(env, cb, data);
-  if (externalCallback == nullptr) {
-    return napi_set_last_error(napi_generic_failure);
-  }
-
-  
-  CHECK_JSRT(JsCreateEnhancedFunction(jsrtimpl::ExternalCallback::Callback,
-                                      namestring,
-                                      externalCallback,
-                                      &constructor));
-
-  CHECK_JSRT(JsSetObjectBeforeCollectCallback(
-    constructor, externalCallback, jsrtimpl::ExternalCallback::Finalize));
-
-  JsPropertyIdRef pid = nullptr;
-  
-  CHECK_JSRT(JsCreatePropertyId(STR_AND_LENGTH("prototype"), &pid));
-  CHECK_JSRT(JsGetProperty(constructor, pid, &prototype));
-
-  CHECK_JSRT(JsCreatePropertyId(STR_AND_LENGTH("constructor"), &pid));
-  CHECK_JSRT(JsSetProperty(prototype, pid, constructor, false));
-*/
-  int instancePropertyCount = 0;
-  int staticPropertyCount = 0;
-  for (size_t i = 0; i < property_count; i++) {
-    if ((properties[i].attributes & napi_static) != 0) {
-      staticPropertyCount++;
-    } else {
-      instancePropertyCount++;
-    }
-  }
-
-  std::vector<napi_property_descriptor> staticDescriptors;
-  std::vector<napi_property_descriptor> instanceDescriptors;
-  staticDescriptors.reserve(staticPropertyCount);
-  instanceDescriptors.reserve(instancePropertyCount);
-
-  for (size_t i = 0; i < property_count; i++) {
-    if ((properties[i].attributes & napi_static) != 0) {
-      staticDescriptors.push_back(properties[i]);
-    } else {
-      instanceDescriptors.push_back(properties[i]);
-    }
-  }
-
-  if (staticPropertyCount > 0) {
-    /*CHECK_NAPI*/(napi_define_properties(env,
-                                      reinterpret_cast<napi_value>(classObj),
-                                      staticDescriptors.size(),
-                                      staticDescriptors.data()));
-  }
-
-  if (instancePropertyCount > 0) {
-    /*CHECK_NAPI*/(napi_define_properties(env,
-                                      reinterpret_cast<napi_value>(classObj),
-                                      instanceDescriptors.size(),
-                                      instanceDescriptors.data()));
-  }
-
-  //*result = reinterpret_cast<napi_value>(constructor);
-
-#endif
-    //JSStringRelease(str);
+    JSStringRelease(str);
     *result = reinterpret_cast<napi_value>(ctor);
     return napi_ok;
 }
@@ -720,7 +619,6 @@ napi_status napi_get_typedarray_info(napi_env env,
         dumpException(env, exception);
     }
     
-    
     size_t arrayByteOffset = JSObjectGetTypedArrayByteOffset(context, array, NULL);
     size_t elementCount = JSObjectGetTypedArrayLength(context, array, nullptr);
     JSTypedArrayType jsType = JSValueGetTypedArrayType(context, array, nullptr);
@@ -755,12 +653,11 @@ napi_status napi_get_typedarray_info(napi_env env,
                 break;
             default:
                 assert(0);
-                //return napi_set_last_error(napi_generic_failure);
         }
     }
 
     if (length != nullptr) {
-        *length = elementCount;//static_cast<size_t>(byteLength / elementSize);
+        *length = elementCount;
     }
     
     if (data != nullptr) {
@@ -831,17 +728,6 @@ napi_status napi_typeof(napi_env env, napi_value vv, napi_valuetype* result) {
         case kJSTypeObject: *result = napi_object; break;
         default:
             assert(0);
-        //case JsSymbol: *result = napi_symbol; break;
-        //case JsError: *result = napi_object; break;
-        /*
-        default:
-            bool hasExternalData;
-            if (JsHasExternalData(value, &hasExternalData) != JsNoError) {
-                hasExternalData = false;
-            }
-            
-            *result = hasExternalData ? napi_external : napi_object;
-            break;*/
     }
     return napi_ok;
 }
@@ -854,6 +740,9 @@ napi_status napi_wrap(napi_env env,
                       napi_ref* result) {
     JSObjectRef object = reinterpret_cast<JSObjectRef>(js_object);
     assert(JSObjectSetPrivate(object, native_object));
+    if (result) {
+        *result = reinterpret_cast<napi_ref>(object);
+    }
     return napi_ok;
 }
 
@@ -914,8 +803,6 @@ napi_status napi_new_instance(napi_env env,
     auto iter = constructorCB.find(ctor);
     assert(iter != constructorCB.end());
 
-    JSC_cbInfo *cbInfo = iter->second;
-    
     assert(JSObjectIsConstructor(env->m_globalContext, ctor));
     OpaqueJSValue* jsValue = const_cast<OpaqueJSValue*>(JSObjectCallAsConstructor(env->m_globalContext, ctor, argc, reinterpret_cast<const JSValueRef*>(argv), NULL));
     napi_value value = reinterpret_cast<napi_value>(jsValue);
@@ -924,8 +811,7 @@ napi_status napi_new_instance(napi_env env,
     return napi_ok;
 }
 
-JSValueRef JSObjectCallAsFunctionCallbackDefault (JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception)
-{
+JSValueRef JSObjectCallAsFunctionCallbackDefault (JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
     assert(0);
     return JSValueMakeNull(ctx);
 }
@@ -934,109 +820,6 @@ napi_status napi_define_properties(napi_env env,
                                    const napi_value object,
                                    size_t property_count,
                                    const napi_property_descriptor* properties) {
-    return napi_ok;
-    JSObjectRef obj = reinterpret_cast<JSObjectRef>(object);
-    auto context = env->m_globalContext;
-
-    for (size_t i = 0; i < property_count; i++) {
-        const napi_property_descriptor* p = properties + i;
-
-    /*JsValueRef descriptor;
-    CHECK_JSRT(JsCreateObject(&descriptor));
-
-    JsValueRef configurable;
-    CHECK_JSRT(
-      JsBoolToBoolean((p->attributes & napi_configurable), &configurable));
-    CHECK_JSRT(
-      JsSetProperty(descriptor, configurableProperty, configurable, true));
-
-    JsValueRef enumerable;
-    CHECK_JSRT(JsBoolToBoolean((p->attributes & napi_enumerable), &enumerable));
-    CHECK_JSRT(JsSetProperty(descriptor, enumerableProperty, enumerable, true));
-*/
-    JSStringRef str;
-    if (p->utf8name)
-    {
-     str = JSStringCreateWithUTF8CString(p->utf8name);
-    }
-    else //if(p->name)
-    {
-        str = reinterpret_cast<JSStringRef>(p->name);
-    }
-
-    if (p->getter != nullptr || p->setter != nullptr) {
-      /*napi_value property_name;
-      CHECK_NAPI(
-        jsrtimpl::JsNameValueFromPropertyDescriptor(p, &property_name));
-*/
-      if (p->getter != nullptr) {
-  /*      JsPropertyIdRef getProperty;
-        CHECK_JSRT(JsCreatePropertyId(STR_AND_LENGTH("get"), &getProperty));
-        JsValueRef getter;
-        CHECK_NAPI(napi_create_property_function(env, property_name,
-          p->getter, p->data, reinterpret_cast<napi_value*>(&getter)));
-        CHECK_JSRT(JsSetProperty(descriptor, getProperty, getter, true));*/
-          
-          JSObjectRef funcObj = JSObjectMakeFunctionWithCallback(context, str, JSObjectCallAsFunctionCallbackDefault);
-          JSObjectSetProperty(context, obj, str, funcObj, kJSPropertyAttributeNone, NULL/*&exception*/);
-      }
-
-      if (p->setter != nullptr) {
-        /*JsPropertyIdRef setProperty;
-        CHECK_JSRT(JsCreatePropertyId(STR_AND_LENGTH("set"), &setProperty));
-        JsValueRef setter;
-        CHECK_NAPI(napi_create_property_function(env, property_name,
-          p->setter, p->data, reinterpret_cast<napi_value*>(&setter)));
-        CHECK_JSRT(JsSetProperty(descriptor, setProperty, setter, true));*/
-          JSObjectRef funcObj = JSObjectMakeFunctionWithCallback(context, str, JSObjectCallAsFunctionCallbackDefault);
-          JSObjectSetProperty(context, obj, str, funcObj, kJSPropertyAttributeNone, NULL/*&exception*/);
-      }
-    } else if (p->method != nullptr) {
-      JSObjectRef funcObj = JSObjectMakeFunctionWithCallback(context, str, JSObjectCallAsFunctionCallbackDefault);
-      JSObjectSetProperty(context, obj, str, funcObj, kJSPropertyAttributeNone, NULL/*&exception*/);
-      /*napi_value property_name;
-      CHECK_NAPI(
-        jsrtimpl::JsNameValueFromPropertyDescriptor(p, &property_name));
-
-      JsPropertyIdRef valueProperty;
-      CHECK_JSRT(JsCreatePropertyId(STR_AND_LENGTH("value"), &valueProperty));
-      JsValueRef method;
-      CHECK_NAPI(napi_create_property_function(env, property_name,
-        p->method, p->data, reinterpret_cast<napi_value*>(&method)));
-      CHECK_JSRT(JsSetProperty(descriptor, valueProperty, method, true));*/
-    } else {
-      /*RETURN_STATUS_IF_FALSE(p->value != nullptr, napi_invalid_arg);
-
-      JsPropertyIdRef writableProperty;
-      CHECK_JSRT(JsCreatePropertyId(STR_AND_LENGTH("writable"),
-                                    &writableProperty));
-      JsValueRef writable;
-      CHECK_JSRT(JsBoolToBoolean((p->attributes & napi_writable), &writable));
-      CHECK_JSRT(JsSetProperty(descriptor, writableProperty, writable, true));
-
-      JsPropertyIdRef valueProperty;
-      CHECK_JSRT(JsCreatePropertyId(STR_AND_LENGTH("value"), &valueProperty));
-      CHECK_JSRT(JsSetProperty(descriptor, valueProperty,
-        reinterpret_cast<JsValueRef>(p->value), true));*/
-    }
-
-    /*JsPropertyIdRef nameProperty;
-    CHECK_NAPI(jsrtimpl::JsPropertyIdFromPropertyDescriptor(p, &nameProperty));
-    bool result;
-    CHECK_JSRT(JsDefineProperty(
-      reinterpret_cast<JsValueRef>(object),
-      reinterpret_cast<JsPropertyIdRef>(nameProperty),
-      reinterpret_cast<JsValueRef>(descriptor),
-      &result));
-      */
-    if (p->utf8name)
-    {
-     //JSStringRelease(str);
-    }
-  }
-
-
-
     return napi_ok;
 }
 
