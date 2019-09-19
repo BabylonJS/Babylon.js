@@ -539,13 +539,15 @@ napi_status napi_get_cb_info(
     if (this_arg) {
         *this_arg = callbackInfo->thisArg;
     }
+    
     if (argc) {
         *argc = callbackInfo->argc;
     }
-    //*argv = callbackInfo->argv;
+
     if (data) {
         *data = callbackInfo->data;
     }
+    
     if (argv != nullptr) {
         //CHECK_ARG(argc);
         
