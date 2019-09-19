@@ -52895,6 +52895,14 @@ declare module BABYLON {
         */
         readonly glossiness: NodeMaterialConnectionPoint;
         /**
+        * Gets the diffuse color component
+        */
+        readonly diffuseColor: NodeMaterialConnectionPoint;
+        /**
+        * Gets the specular color component
+        */
+        readonly specularColor: NodeMaterialConnectionPoint;
+        /**
          * Gets the diffuse output component
          */
         readonly diffuseOutput: NodeMaterialConnectionPoint;
