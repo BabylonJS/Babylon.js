@@ -30601,6 +30601,14 @@ declare module BABYLON {
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
      */
     export class Engine extends BaseEngine {
+        /**
+         * Returns the current npm package of the sdk
+         */
+        static readonly NpmPackage: string;
+        /**
+         * Returns the current version of the framework
+         */
+        static readonly Version: string;
         /** Gets the list of created engines */
         static readonly Instances: Engine[];
         /**

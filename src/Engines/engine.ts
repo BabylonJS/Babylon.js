@@ -13,9 +13,9 @@ import { _DevTools } from '../Misc/devTools';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { ICustomAnimationFrameRequester } from '../Misc/customAnimationFrameRequester';
-import { IPerformanceMonitor } from '../Misc/IPerformanceMonitor';
 import { BaseEngine, EngineOptions } from './baseEngine';
 import { Constants } from './constants';
+import { PerformanceMonitor } from '../Misc';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -35,6 +35,208 @@ export interface IDisplayChangedEventArgs {
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
  */
 export class Engine extends BaseEngine {
+    // Const statics
+
+    /** Defines that alpha blending is disabled */
+    public static readonly ALPHA_DISABLE = Constants.ALPHA_DISABLE;
+    /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
+    public static readonly ALPHA_ADD = Constants.ALPHA_ADD;
+    /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
+    public static readonly ALPHA_COMBINE = Constants.ALPHA_COMBINE;
+    /** Defines that alpha blending to DEST - SRC * DEST */
+    public static readonly ALPHA_SUBTRACT = Constants.ALPHA_SUBTRACT;
+    /** Defines that alpha blending to SRC * DEST */
+    public static readonly ALPHA_MULTIPLY = Constants.ALPHA_MULTIPLY;
+    /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
+    public static readonly ALPHA_MAXIMIZED = Constants.ALPHA_MAXIMIZED;
+    /** Defines that alpha blending to SRC + DEST */
+    public static readonly ALPHA_ONEONE = Constants.ALPHA_ONEONE;
+    /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
+    public static readonly ALPHA_PREMULTIPLIED = Constants.ALPHA_PREMULTIPLIED;
+    /**
+     * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
+     * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
+     */
+    public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
+    /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
+    public static readonly ALPHA_INTERPOLATE = Constants.ALPHA_INTERPOLATE;
+    /**
+     * Defines that alpha blending to SRC + (1 - SRC) * DEST
+     * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
+     */
+    public static readonly ALPHA_SCREENMODE = Constants.ALPHA_SCREENMODE;
+
+    /** Defines that the ressource is not delayed*/
+    public static readonly DELAYLOADSTATE_NONE = Constants.DELAYLOADSTATE_NONE;
+    /** Defines that the ressource was successfully delay loaded */
+    public static readonly DELAYLOADSTATE_LOADED = Constants.DELAYLOADSTATE_LOADED;
+    /** Defines that the ressource is currently delay loading */
+    public static readonly DELAYLOADSTATE_LOADING = Constants.DELAYLOADSTATE_LOADING;
+    /** Defines that the ressource is delayed and has not started loading */
+    public static readonly DELAYLOADSTATE_NOTLOADED = Constants.DELAYLOADSTATE_NOTLOADED;
+
+    // Depht or Stencil test Constants.
+    /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
+    public static readonly NEVER = Constants.NEVER;
+    /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
+    public static readonly ALWAYS = Constants.ALWAYS;
+    /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
+    public static readonly LESS = Constants.LESS;
+    /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
+    public static readonly EQUAL = Constants.EQUAL;
+    /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
+    public static readonly LEQUAL = Constants.LEQUAL;
+    /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
+    public static readonly GREATER = Constants.GREATER;
+    /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
+    public static readonly GEQUAL = Constants.GEQUAL;
+    /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
+    public static readonly NOTEQUAL = Constants.NOTEQUAL;
+
+    // Stencil Actions Constants.
+    /** Passed to stencilOperation to specify that stencil value must be kept */
+    public static readonly KEEP = Constants.KEEP;
+    /** Passed to stencilOperation to specify that stencil value must be replaced */
+    public static readonly REPLACE = Constants.REPLACE;
+    /** Passed to stencilOperation to specify that stencil value must be incremented */
+    public static readonly INCR = Constants.INCR;
+    /** Passed to stencilOperation to specify that stencil value must be decremented */
+    public static readonly DECR = Constants.DECR;
+    /** Passed to stencilOperation to specify that stencil value must be inverted */
+    public static readonly INVERT = Constants.INVERT;
+    /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
+    public static readonly INCR_WRAP = Constants.INCR_WRAP;
+    /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
+    public static readonly DECR_WRAP = Constants.DECR_WRAP;
+
+    /** Texture is not repeating outside of 0..1 UVs */
+    public static readonly TEXTURE_CLAMP_ADDRESSMODE = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+    /** Texture is repeating outside of 0..1 UVs */
+    public static readonly TEXTURE_WRAP_ADDRESSMODE = Constants.TEXTURE_WRAP_ADDRESSMODE;
+    /** Texture is repeating and mirrored */
+    public static readonly TEXTURE_MIRROR_ADDRESSMODE = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+
+    /** ALPHA */
+    public static readonly TEXTUREFORMAT_ALPHA = Constants.TEXTUREFORMAT_ALPHA;
+    /** LUMINANCE */
+    public static readonly TEXTUREFORMAT_LUMINANCE = Constants.TEXTUREFORMAT_LUMINANCE;
+    /** LUMINANCE_ALPHA */
+    public static readonly TEXTUREFORMAT_LUMINANCE_ALPHA = Constants.TEXTUREFORMAT_LUMINANCE_ALPHA;
+    /** RGB */
+    public static readonly TEXTUREFORMAT_RGB = Constants.TEXTUREFORMAT_RGB;
+    /** RGBA */
+    public static readonly TEXTUREFORMAT_RGBA = Constants.TEXTUREFORMAT_RGBA;
+    /** RED */
+    public static readonly TEXTUREFORMAT_RED = Constants.TEXTUREFORMAT_RED;
+    /** RED (2nd reference) */
+    public static readonly TEXTUREFORMAT_R = Constants.TEXTUREFORMAT_R;
+    /** RG */
+    public static readonly TEXTUREFORMAT_RG = Constants.TEXTUREFORMAT_RG;
+    /** RED_INTEGER */
+    public static readonly TEXTUREFORMAT_RED_INTEGER = Constants.TEXTUREFORMAT_RED_INTEGER;
+    /** RED_INTEGER (2nd reference) */
+    public static readonly TEXTUREFORMAT_R_INTEGER = Constants.TEXTUREFORMAT_R_INTEGER;
+    /** RG_INTEGER */
+    public static readonly TEXTUREFORMAT_RG_INTEGER = Constants.TEXTUREFORMAT_RG_INTEGER;
+    /** RGB_INTEGER */
+    public static readonly TEXTUREFORMAT_RGB_INTEGER = Constants.TEXTUREFORMAT_RGB_INTEGER;
+    /** RGBA_INTEGER */
+    public static readonly TEXTUREFORMAT_RGBA_INTEGER = Constants.TEXTUREFORMAT_RGBA_INTEGER;
+
+    /** UNSIGNED_BYTE */
+    public static readonly TEXTURETYPE_UNSIGNED_BYTE = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+    /** UNSIGNED_BYTE (2nd reference) */
+    public static readonly TEXTURETYPE_UNSIGNED_INT = Constants.TEXTURETYPE_UNSIGNED_INT;
+    /** FLOAT */
+    public static readonly TEXTURETYPE_FLOAT = Constants.TEXTURETYPE_FLOAT;
+    /** HALF_FLOAT */
+    public static readonly TEXTURETYPE_HALF_FLOAT = Constants.TEXTURETYPE_HALF_FLOAT;
+    /** BYTE */
+    public static readonly TEXTURETYPE_BYTE = Constants.TEXTURETYPE_BYTE;
+    /** SHORT */
+    public static readonly TEXTURETYPE_SHORT = Constants.TEXTURETYPE_SHORT;
+    /** UNSIGNED_SHORT */
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT = Constants.TEXTURETYPE_UNSIGNED_SHORT;
+    /** INT */
+    public static readonly TEXTURETYPE_INT = Constants.TEXTURETYPE_INT;
+    /** UNSIGNED_INT */
+    public static readonly TEXTURETYPE_UNSIGNED_INTEGER = Constants.TEXTURETYPE_UNSIGNED_INTEGER;
+    /** UNSIGNED_SHORT_4_4_4_4 */
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 = Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4;
+    /** UNSIGNED_SHORT_5_5_5_1 */
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1;
+    /** UNSIGNED_SHORT_5_6_5 */
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5 = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+    /** UNSIGNED_INT_2_10_10_10_REV */
+    public static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV = Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV;
+    /** UNSIGNED_INT_24_8 */
+    public static readonly TEXTURETYPE_UNSIGNED_INT_24_8 = Constants.TEXTURETYPE_UNSIGNED_INT_24_8;
+    /** UNSIGNED_INT_10F_11F_11F_REV */
+    public static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV = Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
+    /** UNSIGNED_INT_5_9_9_9_REV */
+    public static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV;
+    /** FLOAT_32_UNSIGNED_INT_24_8_REV */
+    public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV;
+
+    /** nearest is mag = nearest and min = nearest and mip = linear */
+    public static readonly TEXTURE_NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    /** Bilinear is mag = linear and min = linear and mip = nearest */
+    public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+    /** Trilinear is mag = linear and min = linear and mip = linear */
+    public static readonly TEXTURE_TRILINEAR_SAMPLINGMODE = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+    /** nearest is mag = nearest and min = nearest and mip = linear */
+    public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR;
+    /** Bilinear is mag = linear and min = linear and mip = nearest */
+    public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
+    /** Trilinear is mag = linear and min = linear and mip = linear */
+    public static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR = Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
+    /** mag = nearest and min = nearest and mip = nearest */
+    public static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST = Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
+    /** mag = nearest and min = linear and mip = nearest */
+    public static readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST = Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
+    /** mag = nearest and min = linear and mip = linear */
+    public static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR = Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
+    /** mag = nearest and min = linear and mip = none */
+    public static readonly TEXTURE_NEAREST_LINEAR = Constants.TEXTURE_NEAREST_LINEAR;
+    /** mag = nearest and min = nearest and mip = none */
+    public static readonly TEXTURE_NEAREST_NEAREST = Constants.TEXTURE_NEAREST_NEAREST;
+    /** mag = linear and min = nearest and mip = nearest */
+    public static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST = Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
+    /** mag = linear and min = nearest and mip = linear */
+    public static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR = Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
+    /** mag = linear and min = linear and mip = none */
+    public static readonly TEXTURE_LINEAR_LINEAR = Constants.TEXTURE_LINEAR_LINEAR;
+    /** mag = linear and min = nearest and mip = none */
+    public static readonly TEXTURE_LINEAR_NEAREST = Constants.TEXTURE_LINEAR_NEAREST;
+
+    /** Explicit coordinates mode */
+    public static readonly TEXTURE_EXPLICIT_MODE = Constants.TEXTURE_EXPLICIT_MODE;
+    /** Spherical coordinates mode */
+    public static readonly TEXTURE_SPHERICAL_MODE = Constants.TEXTURE_SPHERICAL_MODE;
+    /** Planar coordinates mode */
+    public static readonly TEXTURE_PLANAR_MODE = Constants.TEXTURE_PLANAR_MODE;
+    /** Cubic coordinates mode */
+    public static readonly TEXTURE_CUBIC_MODE = Constants.TEXTURE_CUBIC_MODE;
+    /** Projection coordinates mode */
+    public static readonly TEXTURE_PROJECTION_MODE = Constants.TEXTURE_PROJECTION_MODE;
+    /** Skybox coordinates mode */
+    public static readonly TEXTURE_SKYBOX_MODE = Constants.TEXTURE_SKYBOX_MODE;
+    /** Inverse Cubic coordinates mode */
+    public static readonly TEXTURE_INVCUBIC_MODE = Constants.TEXTURE_INVCUBIC_MODE;
+    /** Equirectangular coordinates mode */
+    public static readonly TEXTURE_EQUIRECTANGULAR_MODE = Constants.TEXTURE_EQUIRECTANGULAR_MODE;
+    /** Equirectangular Fixed coordinates mode */
+    public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE = Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE;
+    /** Equirectangular Fixed Mirrored coordinates mode */
+    public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE = Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
+
+    // Texture rescaling mode
+    /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
+    public static readonly SCALEMODE_FLOOR = Constants.SCALEMODE_FLOOR;
+    /** Defines that texture rescaling will look for the nearest power of 2 size */
+    public static readonly SCALEMODE_NEAREST = Constants.SCALEMODE_NEAREST;
+    /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
+    public static readonly SCALEMODE_CEILING = Constants.SCALEMODE_CEILING;    
 
     /**
      * Returns the current npm package of the sdk
@@ -83,14 +285,6 @@ export class Engine extends BaseEngine {
                 engine.scenes[sceneIndex].markAllMaterialsAsDirty(flag, predicate);
             }
         }
-    }
-
-    /**
-     * Factory used to create the performance monitor
-     * @returns a new PerformanceMonitor
-     */
-    public static DefaultPerformanceMonitorFactory(): IPerformanceMonitor {
-        throw _DevTools.WarnImport("PerformanceMonitor");
     }
 
     /**
@@ -223,15 +417,12 @@ export class Engine extends BaseEngine {
      */
     public disablePerformanceMonitorInBackground = false;
 
-    private _performanceMonitor: Nullable<IPerformanceMonitor> = null;
+    private _performanceMonitor = new PerformanceMonitor();
     /**
      * Gets the performance monitor attached to this engine
      * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
      */
-    public get performanceMonitor(): IPerformanceMonitor {
-        if (!this._performanceMonitor) {
-            this._performanceMonitor = Engine.DefaultPerformanceMonitorFactory();
-        }
+    public get performanceMonitor(): PerformanceMonitor {
         return this._performanceMonitor;
     }
 
@@ -278,14 +469,14 @@ export class Engine extends BaseEngine {
             canvas.addEventListener("blur", this._onCanvasBlur);
 
             this._onBlur = () => {
-                if (this.disablePerformanceMonitorInBackground && this._performanceMonitor) {
+                if (this.disablePerformanceMonitorInBackground) {
                     this._performanceMonitor.disable();
                 }
                 this._windowIsBackground = true;
             };
 
             this._onFocus = () => {
-                if (this.disablePerformanceMonitorInBackground && this._performanceMonitor) {
+                if (this.disablePerformanceMonitorInBackground) {
                     this._performanceMonitor.enable();
                 }
                 this._windowIsBackground = false;
@@ -701,9 +892,6 @@ export class Engine extends BaseEngine {
     }
 
     private _measureFps(): void {
-        if (!this._performanceMonitor) {
-            return;
-        }
         this._performanceMonitor.sampleFrame();
         this._fps = this._performanceMonitor.averageFPS;
         this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
