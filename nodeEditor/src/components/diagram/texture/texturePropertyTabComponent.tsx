@@ -29,6 +29,12 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         this.state = {isEmbedded: !texture || texture.name.substring(0, 4) !== "http"};
     }
 
+    UNSAFE_componentWillUpdate(nextProps: ITexturePropertyTabComponentProps, nextState: {isEmbedded: boolean}) {
+        let texture = nextProps.node.texture as BaseTexture;
+
+        nextState.isEmbedded = !texture || texture.name.substring(0, 4) !== "http";
+    }
+
     private _generateRandomForCache() {
         return 'xxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, (c) => {
             var r = Math.random() * 10 | 0;
