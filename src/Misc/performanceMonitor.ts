@@ -1,12 +1,10 @@
 import { Nullable } from "../types";
 import { PrecisionDate } from "./precisionDate";
-import { IPerformanceMonitor } from './IPerformanceMonitor';
-import { Engine } from '../Engines/engine';
 
 /**
  * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
  */
-export class PerformanceMonitor implements IPerformanceMonitor {
+export class PerformanceMonitor {
 
     private _enabled: boolean = true;
     private _rollingFrameTime: RollingAverage;
@@ -225,5 +223,3 @@ export class RollingAverage {
         return ((i % max) + max) % max;
     }
 }
-
-Engine.DefaultPerformanceMonitorFactory = () => { return new PerformanceMonitor(); };
