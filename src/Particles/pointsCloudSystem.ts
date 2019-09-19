@@ -18,11 +18,11 @@ import { Scalar } from "../Maths/math.scalar";
 /** Defines the 3 color options */
 export class PointColor {
     /** color value */
-    public static COLOR: number = 0;
+    public static COLOR: number = 2;
     /** uv value */
     public static UV: number = 1;
     /** random value */
-    public static RANDOM: number = 2;
+    public static RANDOM: number = 0;
     /** color value */
     public static STATED: number = 3;
 }
@@ -69,6 +69,7 @@ export class PointsCloudSystem implements IDisposable {
     public _size: number; //size of each point particle
 
     private _scene: Scene;
+    private _promises: Array<Promise<any>> = [];
     private _positions: number[] = new Array<number>();
     private _indices: number[] = new Array<number>();
     private _normals: number[] = new Array<number>();
@@ -87,6 +88,7 @@ export class PointsCloudSystem implements IDisposable {
     private _computeParticleTexture: boolean = true;
     private _computeParticleRotation: boolean = true;
     private _computeBoundingBox: boolean = false;
+    private _isReady: boolean = false;
 
     /**
      * Creates a PCS (Points Cloud System) object
@@ -111,9 +113,19 @@ export class PointsCloudSystem implements IDisposable {
     /**
      * Builds the PCS underlying mesh. Returns a standard Mesh.
      * If no points were added to the PCS, the returned mesh is just a single point.
-     * @returns the created mesh
+     * @returns a promise for the created mesh
      */
-    public buildMesh(): Mesh {
+    public buildMeshAsync(): Promise<Mesh> {
+        return Promise.all(this._promises).then(() => {
+            this._isReady = true;
+            return this._buildMesh();
+        });
+    }
+
+    /**
+     * @hidden
+     */
+    private _buildMesh(): Promise<Mesh> {
         if (this.nbParticles === 0) {
             this.addPoints(1);
         }
@@ -128,7 +140,9 @@ export class PointsCloudSystem implements IDisposable {
         if (this._uvs32.length > 0) {
             vertexData.set(this._uvs32, VertexBuffer.UVKind);
         }
+        var ec = 0; //emissive color value 0 for UVs, 1 for color
         if (this._colors32.length > 0) {
+            ec = 1;
             vertexData.set(this._colors32, VertexBuffer.ColorKind);
         }
         var mesh = new Mesh(this.name, this._scene);
@@ -145,13 +159,13 @@ export class PointsCloudSystem implements IDisposable {
         }
 
         var mat = new StandardMaterial("point cloud material", this._scene);
-        mat.emissiveColor = new Color3(1, 1, 1);
+        mat.emissiveColor = new Color3(ec, ec, ec);
         mat.disableLighting = true;
         mat.pointsCloud = true;
         mat.pointSize = this._size;
         mesh.material = mat;
 
-        return mesh;
+        return new Promise((resolve) => resolve(mesh));
     }
 
     // adds a new particle object in the particles array
@@ -174,7 +188,6 @@ export class PointsCloudSystem implements IDisposable {
         var greenIndex = colorIndices[1];
         var blueIndex = colorIndices[2];
         var alphaIndex = colorIndices[3];
-
         var redForCoord = imageData[redIndex];
         var greenForCoord = imageData[greenIndex];
         var blueForCoord = imageData[blueIndex];
@@ -182,7 +195,7 @@ export class PointsCloudSystem implements IDisposable {
         return new Color4(redForCoord / 255, greenForCoord / 255, blueForCoord / 255, alphaForCoord);
     }
 
-    private _setPointsColorOrUV(mesh: Mesh, pointsGroup: PointsGroup, isVolume: boolean, colorFromTexture?: boolean, color?: Color4) {
+    private _setPointsColorOrUV(mesh: Mesh, pointsGroup: PointsGroup, isVolume: boolean, colorFromTexture?: boolean, hasTexture?: boolean, color?: Color4) {
         if (isVolume) {
             mesh.updateFacetData();
         }
@@ -194,6 +207,18 @@ export class PointsCloudSystem implements IDisposable {
         var meshInd = <IndicesArray>mesh.getIndices();
         var meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
         var meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
+
+        var place = Vector3.Zero();
+        mesh.computeWorldMatrix();
+        var meshMatrix: Matrix = mesh.getWorldMatrix();
+        if (!meshMatrix.isIdentity()) {
+            for (var p = 0; p < meshPos.length / 3; p++) {
+                Vector3.TransformCoordinatesFromFloatsToRef(meshPos[3 * p], meshPos[3 * p + 1], meshPos[3 * p + 2], meshMatrix, place);
+                meshPos[3 * p] = place.x;
+                meshPos[3 * p + 1] = place.y;
+                meshPos[3 * p + 2] = place.z;
+            }
+        }
 
         var idxPoints: number = 0;
 
@@ -298,7 +323,7 @@ export class PointsCloudSystem implements IDisposable {
                 uv2.subtractToRef(uv1, uvec1);
             }
 
-            if (meshCol) {
+            if (meshCol && colorFromTexture) {
                 col0X = meshCol[4 * id0];
                 col0Y = meshCol[4 * id0 + 1];
                 col0Z = meshCol[4 * id0 + 2];
@@ -314,27 +339,20 @@ export class PointsCloudSystem implements IDisposable {
                 col1.subtractToRef(col0, colvec0);
                 col2.subtractToRef(col1, colvec1);
             }
-            else {
-                //sets all point colors to white
-                col0.set(1, 1, 1, 1);
-                colvec0.set(0, 0, 0, 0);
-                colvec1.set(0, 0, 0, 0);
-            }
 
-            if (colorFromTexture !== undefined) {
-                if (!colorFromTexture && color !== undefined) {
+            if (colorFromTexture === undefined && color !== undefined) {
                     col0.set(color.r, color.g, color.b, 1);
                     colvec0.set(0, 0, 0, 0);
                     colvec1.set(0, 0, 0, 0);
-                }
             }
 
             var width: number;
+            var height: number;
             var pointColors: Color4;
             var particle: CloudPoint;
 
             for (var i = 0; i < pointsGroup._groupDensity[index]; i++) {
-                idxPoints = this.nbParticles;
+                idxPoints = this.particles.length;
                 this._addParticle(idxPoints, pointsGroup, this._groupCounter, index + i);
                 particle = this.particles[idxPoints];
                 //form a point inside the facet v0, v1, v2;
@@ -362,33 +380,42 @@ export class PointsCloudSystem implements IDisposable {
                 }
                 particle.position = facetPoint.clone();
                 this._positions.push(particle.position.x, particle.position.y, particle.position.z);
-                if (meshUV !== undefined) {
-                    uvPoint = uv0.add(uvec0.scale(lamda)).add(uvec1.scale(lamda * mu));
-                    if (colorFromTexture && pointsGroup._groupImageData !== null) {
-                        width = pointsGroup._groupImgWidth;
-                        pointColors = this._getColorIndicesForCoord(pointsGroup, Math.floor(uvPoint.x * width), Math.round((1 - uvPoint.y) * width), width);
-                        particle.color = pointColors;
-                        this._colors.push(pointColors.r, pointColors.g, pointColors.b, pointColors.a);
-                    }
-                    else {
-                        if (colorFromTexture === undefined) {
-                            colPoint = col0.set(Math.random(), Math.random(), Math.random(), 1);
+                if (colorFromTexture !== undefined) {
+                    if (meshUV) {
+                        uvPoint = uv0.add(uvec0.scale(lamda)).add(uvec1.scale(lamda * mu));
+                        if (colorFromTexture) { //Set particle color to texture color
+                            if (hasTexture && pointsGroup._groupImageData !== null) {
+                                width = pointsGroup._groupImgWidth;
+                                height = pointsGroup._groupImgHeight;
+                                pointColors = this._getColorIndicesForCoord(pointsGroup, Math.floor(uvPoint.x * width), Math.round((1 - uvPoint.y) * height), width);
+                                particle.color = pointColors;
+                                this._colors.push(pointColors.r, pointColors.g, pointColors.b, pointColors.a);
+                            }
+                            else {
+                                if (meshCol) { //failure in texture and colors available
+                                    colPoint = col0.add(colvec0.scale(lamda)).add(colvec1.scale(lamda * mu));
+                                    particle.color = new Color4(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
+                                    this._colors.push(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
+                                }
+                                else {
+                                    colPoint = col0.set(Math.random(), Math.random(), Math.random(), 1);
+                                    particle.color = new Color4(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
+                                    this._colors.push(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
+                                }
+                            }
                         }
-                        else {
-                            colPoint = col0.add(colvec0.scale(lamda)).add(colvec1.scale(lamda * mu));
+                        else { //Set particle uv based on a mesh uv
+                            particle.uv = uvPoint.clone();
+                            this._uvs.push(particle.uv.x, particle.uv.y);
                         }
-                        particle.uv = uvPoint.clone();
-                        this._uvs.push(particle.uv.x, particle.uv.y);
-                        particle.color = new Color4(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
-                        this._colors.push(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
                     }
                 }
                 else {
-                    if (colorFromTexture === undefined) {
-                        colPoint = col0.set(Math.random(), Math.random(), Math.random(), 1);
+                    if (color) {
+                        colPoint = col0.add(colvec0.scale(lamda)).add(colvec1.scale(lamda * mu));
                     }
                     else {
-                        colPoint = col0.add(colvec0.scale(lamda)).add(colvec1.scale(lamda * mu));
+                        colPoint = col0.set(Math.random(), Math.random(), Math.random(), 1);
                     }
                     particle.color = new Color4(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
                     this._colors.push(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
@@ -403,7 +430,7 @@ export class PointsCloudSystem implements IDisposable {
         if (mesh.material === null) {
             Logger.Warn(mesh.name + "has no material.");
             pointsGroup._groupImageData = null;
-            this._setPointsColorOrUV(mesh, pointsGroup, isVolume, false);
+            this._setPointsColorOrUV(mesh, pointsGroup, isVolume, true, false);
             return;
         }
 
@@ -411,30 +438,40 @@ export class PointsCloudSystem implements IDisposable {
         if (mat.diffuseTexture === null && mat.emissiveTexture === null) {
             Logger.Warn(mesh.name + "has no useable texture.");
             pointsGroup._groupImageData = null;
-            this._setPointsColorOrUV(mesh, pointsGroup, isVolume, false);
+            this._setPointsColorOrUV(mesh, pointsGroup, isVolume, true, false);
             return;
         }
         if (mat.diffuseTexture!._texture === null && mat.emissiveTexture!._texture === null) {
             Logger.Warn(mesh.name + "has no useable texture.");
             pointsGroup._groupImageData = null;
-            this._setPointsColorOrUV(mesh, pointsGroup, isVolume, false);
+            this._setPointsColorOrUV(mesh, pointsGroup, isVolume, true, false);
             return;
         }
+        var clone = <Mesh>mesh.clone();
+        clone.setEnabled(false);
         if (mat.diffuseTexture !== null) {
-            (<Texture>mat.diffuseTexture).onLoadObservable.add(() => {
-                pointsGroup._groupImageData = mat.diffuseTexture!.readPixels();
-                pointsGroup._groupImgWidth = mat.diffuseTexture!._texture!.width;
-                pointsGroup._groupImgHeight = mat.diffuseTexture!._texture!.height;
-                this._setPointsColorOrUV(mesh, pointsGroup, isVolume, true);
-            });
+            this._promises.push(new Promise((resolve) => {
+                (<Texture>mat.diffuseTexture).onLoadObservable.add(() => {
+                    pointsGroup._groupImageData = mat.diffuseTexture!.readPixels();
+                    pointsGroup._groupImgWidth = mat.diffuseTexture!._texture!.width;
+                    pointsGroup._groupImgHeight = mat.diffuseTexture!._texture!.height;
+                    this._setPointsColorOrUV(clone, pointsGroup, isVolume, true, true);
+                    clone.dispose();
+                    resolve();
+                });
+            }));
         }
         else {
-            (<Texture>mat.emissiveTexture).onLoadObservable.add(() => {
-                pointsGroup._groupImageData = mat.emissiveTexture!.readPixels();
-                pointsGroup._groupImgWidth = mat.emissiveTexture!._texture!.width;
-                pointsGroup._groupImgHeight = mat.emissiveTexture!._texture!.height;
-                this._setPointsColorOrUV(mesh, pointsGroup, isVolume, true);
-            });
+            this._promises.push(new Promise((resolve) => {
+                (<Texture>mat.emissiveTexture).onLoadObservable.add(() => {
+                    pointsGroup._groupImageData = mat.emissiveTexture!.readPixels();
+                    pointsGroup._groupImgWidth = mat.emissiveTexture!._texture!.width;
+                    pointsGroup._groupImgHeight = mat.emissiveTexture!._texture!.height;
+                    this._setPointsColorOrUV(clone, pointsGroup, isVolume, true);
+                    clone.dispose();
+                    resolve();
+                });
+            }));
         }
     }
 
@@ -557,11 +594,11 @@ export class PointsCloudSystem implements IDisposable {
      * @returns the number of groups in the system
      */
     public addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4): number {
-        var colored = colorWith ? colorWith : PointColor.COLOR;
+        var colored = colorWith ? colorWith : PointColor.RANDOM;
         if (isNaN(colored) ||  colored < 0 || colored > 3) {
-            colored = PointColor.COLOR ;
+            colored = PointColor.RANDOM ;
         }
-
+        color = color ? color : new Color4(1, 1, 1, 1);
         var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         var meshInd = <IndicesArray>mesh.getIndices();
 
@@ -574,13 +611,13 @@ export class PointsCloudSystem implements IDisposable {
                 this._colorFromTexture(mesh, pointsGroup, false);
                 break;
             case PointColor.UV:
-                this._setPointsColorOrUV(mesh, pointsGroup, false, false);
+                this._setPointsColorOrUV(mesh, pointsGroup, false, false, false);
                 break;
             case PointColor.RANDOM:
                 this._setPointsColorOrUV(mesh, pointsGroup, false);
                 break;
             case PointColor.STATED:
-                this._setPointsColorOrUV(mesh, pointsGroup, false, false, color);
+                this._setPointsColorOrUV(mesh, pointsGroup, false, undefined, undefined, color);
                 break;
         }
         this.nbParticles += nb;
@@ -593,14 +630,15 @@ export class PointsCloudSystem implements IDisposable {
      * @param mesh is any Mesh object that will be used as a surface model for the points
      * @param nb (positive integer) the number of particles to be created from this model
      * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible),
-     * @param color (color3) to be used when colorWith is stated
+     * @param color (color4) to be used when colorWith is stated
      * @returns the number of groups in the system
      */
     public addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4): number {
-        var colored = colorWith ? colorWith : PointColor.COLOR;
+        var colored = colorWith ? colorWith : PointColor.RANDOM;
         if (isNaN(colored) ||  colored < 0 || colored > 3) {
-            colored = PointColor.COLOR ;
+            colored = PointColor.RANDOM;
         }
+        color = color ? color : new Color4(1, 1, 1, 1);
 
         var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         var meshInd = <IndicesArray>mesh.getIndices();
@@ -614,13 +652,13 @@ export class PointsCloudSystem implements IDisposable {
                 this._colorFromTexture(mesh, pointsGroup, true);
                 break;
             case PointColor.UV:
-                this._setPointsColorOrUV(mesh, pointsGroup, true, false);
-                break;
+                this._setPointsColorOrUV(mesh, pointsGroup, true, false, false);
+            break;
             case PointColor.RANDOM:
                 this._setPointsColorOrUV(mesh, pointsGroup, true);
                 break;
             case PointColor.STATED:
-                this._setPointsColorOrUV(mesh, pointsGroup, true, false, color);
+                this._setPointsColorOrUV(mesh, pointsGroup, true, undefined, undefined, color);
                 break;
         }
         this.nbParticles += nb;
@@ -638,7 +676,7 @@ export class PointsCloudSystem implements IDisposable {
      * @returns the PCS.
      */
     public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): PointsCloudSystem {
-        if (!this._updatable) {
+        if (!this._updatable  || !this._isReady) {
             return this;
         }
 
