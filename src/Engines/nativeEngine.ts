@@ -19,6 +19,7 @@ import { IPipelineContext } from './IPipelineContext';
 import { WebRequest } from '../Misc/webRequest';
 import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
 import { Logger } from "../Misc/logger";
+import { Constants } from './constants';
 
 interface INativeEngine {
     requestAnimationFrame(callback: () => void): void;
@@ -529,7 +530,7 @@ export class NativeEngine extends Engine {
 
     /**
      * Sets the current alpha mode
-     * @param mode defines the mode to use (one of the BABYLON.Engine.ALPHA_XXX)
+     * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
      * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      */
@@ -541,7 +542,7 @@ export class NativeEngine extends Engine {
         this._native.setBlendMode(mode);
 
         if (!noDepthWriteChange) {
-            this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
+            this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
         }
 
         this._alphaMode = mode;
@@ -785,7 +786,7 @@ export class NativeEngine extends Engine {
         noMipmap: boolean,
         invertY: boolean,
         scene: Nullable<Scene>,
-        samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | Blob> = null,
@@ -1022,8 +1023,8 @@ export class NativeEngine extends Engine {
                 texture._lodGenerationScale = specularInfo.lodGenerationScale;
                 const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(data, info);
 
-                texture.format = Engine.TEXTUREFORMAT_RGBA;
-                texture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+                texture.format = Constants.TEXTUREFORMAT_RGBA;
+                texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
                 texture.generateMipMaps = true;
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
@@ -1060,29 +1061,29 @@ export class NativeEngine extends Engine {
     // Returns a NativeFilter.XXXX value.
     private _getSamplingFilter(samplingMode: number): number {
         switch (samplingMode) {
-            case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
+            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
                 return NativeFilter.MINLINEAR_MAGLINEAR_MIPPOINT;
-            case Engine.TEXTURE_TRILINEAR_SAMPLINGMODE:
+            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
                 return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
-            case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
+            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
                 return NativeFilter.MINPOINT_MAGPOINT_MIPLINEAR;
-            case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
                 return NativeFilter.MINPOINT_MAGPOINT_MIPPOINT;
-            case Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
                 return NativeFilter.MINLINEAR_MAGPOINT_MIPPOINT;
-            case Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
                 return NativeFilter.MINLINEAR_MAGPOINT_MIPLINEAR;
-            case Engine.TEXTURE_NEAREST_LINEAR:
+            case Constants.TEXTURE_NEAREST_LINEAR:
                 return NativeFilter.MINLINEAR_MAGPOINT_MIPLINEAR;
-            case Engine.TEXTURE_NEAREST_NEAREST:
+            case Constants.TEXTURE_NEAREST_NEAREST:
                 return NativeFilter.MINPOINT_MAGPOINT_MIPPOINT;
-            case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
                 return NativeFilter.MINPOINT_MAGLINEAR_MIPPOINT;
-            case Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
                 return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
-            case Engine.TEXTURE_LINEAR_LINEAR:
+            case Constants.TEXTURE_LINEAR_LINEAR:
                 return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
-            case Engine.TEXTURE_LINEAR_NEAREST:
+            case Constants.TEXTURE_LINEAR_NEAREST:
                 return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
             default:
                 throw new Error("Unexpected sampling mode: " + samplingMode + ".");
@@ -1090,10 +1091,10 @@ export class NativeEngine extends Engine {
     }
 
     private static _GetNativeTextureFormat(format: number, type: number): number {
-        if (format == Engine.TEXTUREFORMAT_RGBA && type == Engine.TEXTURETYPE_UNSIGNED_INT) {
+        if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
             return NativeTextureFormat.RGBA8;
         }
-        else if (format == Engine.TEXTUREFORMAT_RGBA && type == Engine.TEXTURETYPE_FLOAT) {
+        else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
             return NativeTextureFormat.RGBA32F;
         }
         else {
@@ -1108,33 +1109,33 @@ export class NativeEngine extends Engine {
             fullOptions.generateMipMaps = options.generateMipMaps;
             fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
             fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-            fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
-            fullOptions.samplingMode = options.samplingMode === undefined ? Engine.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            fullOptions.format = options.format === undefined ? Engine.TEXTUREFORMAT_RGBA : options.format;
+            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+            fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.generateDepthBuffer = true;
             fullOptions.generateStencilBuffer = false;
-            fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-            fullOptions.samplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
-            fullOptions.format = Engine.TEXTUREFORMAT_RGBA;
+            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+            fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
         }
 
-        if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
         var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
 
         var width = (<{ width: number, height: number }>size).width || <number>size;
         var height = (<{ width: number, height: number }>size).height || <number>size;
 
-        if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
@@ -1241,7 +1242,7 @@ export class NativeEngine extends Engine {
         if ((<VideoTexture>texture).video) {
             this._activeChannel = channel;
             (<VideoTexture>texture).update();
-        } else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
+        } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) { // Delay loading
             texture.delayLoad();
             return false;
         }
@@ -1297,11 +1298,11 @@ export class NativeEngine extends Engine {
     // Returns a NativeAddressMode.XXX value.
     private _getAddressMode(wrapMode: number): number {
         switch (wrapMode) {
-            case Engine.TEXTURE_WRAP_ADDRESSMODE:
+            case Constants.TEXTURE_WRAP_ADDRESSMODE:
                 return NativeAddressMode.WRAP;
-            case Engine.TEXTURE_CLAMP_ADDRESSMODE:
+            case Constants.TEXTURE_CLAMP_ADDRESSMODE:
                 return NativeAddressMode.CLAMP;
-            case Engine.TEXTURE_MIRROR_ADDRESSMODE:
+            case Constants.TEXTURE_MIRROR_ADDRESSMODE:
                 return NativeAddressMode.MIRROR;
             default:
                 throw new Error("Unexpected wrap mode: " + wrapMode + ".");

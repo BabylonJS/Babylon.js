@@ -98,7 +98,7 @@ export class PostProcess {
      * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
      *
      */
-    public scaleMode = Engine.SCALEMODE_FLOOR;
+    public scaleMode = Constants.SCALEMODE_FLOOR;
     /**
     * Force textures to be a power of two (default: false)
     */

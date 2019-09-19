@@ -496,20 +496,22 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     // Methods
-    public instantiateHierarychy(newParent: Nullable<TransformNode> = null): Nullable<TransformNode> {
-        let instance = this.createInstance("instance of " + (this.name || this.id));
+    public instantiateHierarchy(newParent: Nullable<TransformNode> = null): Nullable<TransformNode> {
+        let instance = this.getTotalVertices() > 0 ? this.createInstance("instance of " + (this.name || this.id)) :  this.clone("Clone of " +  (this.name || this.id), newParent || this.parent, true);
 
-        instance.parent = newParent || this.parent;
-        instance.position = this.position.clone();
-        instance.scaling = this.scaling.clone();
-        if (this.rotationQuaternion)  {
-            instance.rotationQuaternion = this.rotationQuaternion.clone();
-        } else {
-            instance.rotation = this.rotation.clone();
+        if (instance) {
+            instance.parent = newParent || this.parent;
+            instance.position = this.position.clone();
+            instance.scaling = this.scaling.clone();
+            if (this.rotationQuaternion)  {
+                instance.rotationQuaternion = this.rotationQuaternion.clone();
+            } else {
+                instance.rotation = this.rotation.clone();
+            }
         }
 
         for (var child of this.getChildTransformNodes(true)) {
-            child.instantiateHierarychy(instance);
+            child.instantiateHierarchy(instance);
         }
 
         return instance;

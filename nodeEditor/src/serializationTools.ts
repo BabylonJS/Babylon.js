@@ -6,10 +6,10 @@ import { DataStorage } from './dataStorage';
 
 export class SerializationTools {
     public static Serialize(material: NodeMaterial, globalState: GlobalState) {
-        let serializationObject = material.serialize();
-
         let bufferSerializationState = Texture.SerializeBuffers;
         Texture.SerializeBuffers = DataStorage.ReadBoolean("EmbedTextures", true);
+
+        let serializationObject = material.serialize();
 
         // Store node locations
         for (var block of material.attachedBlocks) {

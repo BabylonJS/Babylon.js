@@ -28,3 +28,5 @@ export * from "./minBlock";
 export * from "./distanceBlock";
 export * from "./lengthBlock";
 export * from "./negateBlock";
+export * from "./powBlock";
+export * from "./randomNumberBlock";

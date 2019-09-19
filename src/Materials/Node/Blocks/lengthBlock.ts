@@ -1,8 +1,8 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 /**
  * Block used to get the length of a vector
@@ -17,6 +17,9 @@ export class LengthBlock extends NodeMaterialBlock {
 
         this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
+
+        this._inputs[0].excludedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Matrix);
     }
 
     /**
