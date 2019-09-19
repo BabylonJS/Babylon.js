@@ -3,6 +3,7 @@ import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { IMultiRenderTargetOptions } from '../../Materials/Textures/multiRenderTarget';
 import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
+import { Constants } from '../constants';
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -99,8 +100,8 @@ Engine.prototype.createMultipleRenderTarget = function(size: any, options: IMult
     var generateDepthTexture = false;
     var textureCount = 1;
 
-    var defaultType = Engine.TEXTURETYPE_UNSIGNED_INT;
-    var defaultSamplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
+    var defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
+    var defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
 
     var types = new Array<number>();
     var samplingModes = new Array<number>();
@@ -137,18 +138,18 @@ Engine.prototype.createMultipleRenderTarget = function(size: any, options: IMult
         var samplingMode = samplingModes[i] || defaultSamplingMode;
         var type = types[i] || defaultType;
 
-        if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-            samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-            samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
 
         var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
-        if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = Engine.TEXTURETYPE_UNSIGNED_INT;
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            type = Constants.TEXTURETYPE_UNSIGNED_INT;
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 

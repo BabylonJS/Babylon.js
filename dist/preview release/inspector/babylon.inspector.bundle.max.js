@@ -44937,13 +44937,13 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Alpha blend and test", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["PBRMaterial"].PBRMATERIAL_ALPHATESTANDBLEND },
         ];
         var alphaModeOptions = [
-            { label: "Combine", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_COMBINE },
-            { label: "One one", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_ONEONE },
-            { label: "Add", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_ADD },
-            { label: "Subtract", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_SUBTRACT },
-            { label: "Multiply", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_MULTIPLY },
-            { label: "Maximized", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_MAXIMIZED },
-            { label: "Pre-multiplied", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALPHA_PREMULTIPLIED },
+            { label: "Combine", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_COMBINE },
+            { label: "One one", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_ONEONE },
+            { label: "Add", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_ADD },
+            { label: "Subtract", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_SUBTRACT },
+            { label: "Multiply", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_MULTIPLY },
+            { label: "Maximized", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_PREMULTIPLIED },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: material, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),

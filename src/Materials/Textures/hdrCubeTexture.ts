@@ -1,7 +1,6 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
-import { Engine } from "../../Engines/engine";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
@@ -141,7 +140,7 @@ export class HDRCubeTexture extends BaseTexture {
             if (!scene.useDelayedTextureLoading) {
                 this.loadTexture();
             } else {
-                this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+                this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
         } else if (onLoad) {
             if (this._texture.isReady) {
@@ -244,8 +243,8 @@ export class HDRCubeTexture extends BaseTexture {
         let scene = this.getScene();
         if (scene) {
             this._texture = scene.getEngine().createRawCubeTextureFromUrl(this.url, scene, this._size,
-                Engine.TEXTUREFORMAT_RGB,
-                scene.getEngine().getCaps().textureFloat ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_UNSIGNED_INT,
+                Constants.TEXTUREFORMAT_RGB,
+                scene.getEngine().getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT,
                 this._noMipmap,
                 callback,
                 null, this._onLoad, this._onError);
@@ -273,11 +272,11 @@ export class HDRCubeTexture extends BaseTexture {
 
     // Methods
     public delayLoad(): void {
-        if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
+        if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
             return;
         }
 
-        this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
+        this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
         this._texture = this._getFromCache(this.url, this._noMipmap);
 
         if (!this._texture) {

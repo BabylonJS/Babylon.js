@@ -2,6 +2,7 @@ import { Engine } from "../../Engines/engine";
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Logger } from '../../Misc/logger';
 import { RenderTargetCreationOptions } from '../../Materials/Textures/renderTargetCreationOptions';
+import { Constants } from '../constants';
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -20,20 +21,20 @@ Engine.prototype.createRenderTargetCubeTexture = function(size: number, options?
         generateMipMaps: true,
         generateDepthBuffer: true,
         generateStencilBuffer: false,
-        type: Engine.TEXTURETYPE_UNSIGNED_INT,
-        samplingMode: Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        format: Engine.TEXTUREFORMAT_RGBA,
+        type: Constants.TEXTURETYPE_UNSIGNED_INT,
+        samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        format: Constants.TEXTUREFORMAT_RGBA,
         ...options
     };
     fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
 
-    if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
         // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-        fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
     }
-    else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+    else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
         // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-        fullOptions.samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
     }
     var gl = this._gl;
 
@@ -42,8 +43,8 @@ Engine.prototype.createRenderTargetCubeTexture = function(size: number, options?
 
     var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps);
 
-    if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-        fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+        fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
         Logger.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
     }
 

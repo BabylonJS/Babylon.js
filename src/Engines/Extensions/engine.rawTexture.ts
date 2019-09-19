@@ -6,6 +6,7 @@ import { Logger } from '../../Misc/logger';
 import { Tools } from '../../Misc/tools';
 import { Scene } from '../../scene';
 import { WebRequest } from '../../Misc/webRequest';
+import { Constants } from '../constants';
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -173,7 +174,7 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.updateRawTexture = function(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Engine.TEXTURETYPE_UNSIGNED_INT): void {
+Engine.prototype.updateRawTexture = function(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
     if (!texture) {
         return;
     }
@@ -212,7 +213,7 @@ Engine.prototype.updateRawTexture = function(texture: Nullable<InternalTexture>,
     texture.isReady = true;
 };
 
-Engine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Engine.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+Engine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
     var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RAW);
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -271,12 +272,12 @@ Engine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBufferView[
     // Mipmap generation needs a sized internal format that is both color-renderable and texture-filterable
     if (textureType === gl.FLOAT && !this._caps.textureFloatLinearFiltering) {
         generateMipMaps = false;
-        samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+        samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         Logger.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
     }
     else if (textureType === this._gl.HALF_FLOAT_OES && !this._caps.textureHalfFloatLinearFiltering) {
         generateMipMaps = false;
-        samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+        samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         Logger.Warn("Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
     }
     else if (textureType === gl.FLOAT && !this._caps.textureFloatRender) {
@@ -379,7 +380,7 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
     mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
     onLoad: Nullable<() => void> = null,
     onError: Nullable<(message?: string, exception?: any) => void> = null,
-    samplingMode: number = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE,
+    samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
     invertY: boolean = false): InternalTexture {
 
     var gl = this._gl;
@@ -452,7 +453,7 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
     return texture;
 };
 
-Engine.prototype.createRawTexture3D = function(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+Engine.prototype.createRawTexture3D = function(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
     var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RAW3D);
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -490,7 +491,7 @@ Engine.prototype.createRawTexture3D = function(data: Nullable<ArrayBufferView>, 
     return texture;
 };
 
-Engine.prototype.updateRawTexture3D = function(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT): void {
+Engine.prototype.updateRawTexture3D = function(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
     var internalType = this._getWebGLTextureType(textureType);
     var internalFormat = this._getInternalFormat(format);
     var internalSizedFomat = this._getRGBABufferInternalSizedFormat(textureType, format);

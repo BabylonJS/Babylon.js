@@ -490,6 +490,9 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureProperty
         isEmbedded: boolean;
     }> {
         constructor(props: ITexturePropertyTabComponentProps);
+        UNSAFE_componentWillUpdate(nextProps: ITexturePropertyTabComponentProps, nextState: {
+            isEmbedded: boolean;
+        }): void;
         private _generateRandomForCache;
         updateAftertextureLoad(): void;
         /**
@@ -1234,9 +1237,9 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
         private _onUpdateRequiredObserver;
         private _onPreviewBackgroundChangedObserver;
         private _onBackFaceCullingChangedObserver;
+        private _onLightUpdatedObserver;
         private _engine;
         private _scene;
-        private _light;
         private _meshes;
         private _camera;
         private _material;
@@ -1244,6 +1247,7 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
         private _currentType;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
+        private _prepareLights;
         private _prepareMeshes;
         private _refreshPreviewMesh;
         private _forceCompilationAsync;
@@ -1603,6 +1607,7 @@ declare module "babylonjs-node-editor/globalState" {
         onLogRequiredObservable: Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: Observable<string>;
         onPreviewCommandActivated: Observable<void>;
+        onLightUpdated: Observable<void>;
         onPreviewBackgroundChanged: Observable<void>;
         onBackFaceCullingChanged: Observable<void>;
         onAnimationCommandActivated: Observable<void>;
@@ -1613,6 +1618,8 @@ declare module "babylonjs-node-editor/globalState" {
         backgroundColor: Color4;
         backFaceCulling: boolean;
         blockKeyboardEvents: boolean;
+        hemisphericLight: boolean;
+        directionalLight0: boolean;
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;
@@ -2056,6 +2063,9 @@ declare module NODEEDITOR {
         isEmbedded: boolean;
     }> {
         constructor(props: ITexturePropertyTabComponentProps);
+        UNSAFE_componentWillUpdate(nextProps: ITexturePropertyTabComponentProps, nextState: {
+            isEmbedded: boolean;
+        }): void;
         private _generateRandomForCache;
         updateAftertextureLoad(): void;
         /**
@@ -2691,9 +2701,9 @@ declare module NODEEDITOR {
         private _onUpdateRequiredObserver;
         private _onPreviewBackgroundChangedObserver;
         private _onBackFaceCullingChangedObserver;
+        private _onLightUpdatedObserver;
         private _engine;
         private _scene;
-        private _light;
         private _meshes;
         private _camera;
         private _material;
@@ -2701,6 +2711,7 @@ declare module NODEEDITOR {
         private _currentType;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
+        private _prepareLights;
         private _prepareMeshes;
         private _refreshPreviewMesh;
         private _forceCompilationAsync;
@@ -2988,6 +2999,7 @@ declare module NODEEDITOR {
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
         onPreviewCommandActivated: BABYLON.Observable<void>;
+        onLightUpdated: BABYLON.Observable<void>;
         onPreviewBackgroundChanged: BABYLON.Observable<void>;
         onBackFaceCullingChanged: BABYLON.Observable<void>;
         onAnimationCommandActivated: BABYLON.Observable<void>;
@@ -2998,6 +3010,8 @@ declare module NODEEDITOR {
         backgroundColor: BABYLON.Color4;
         backFaceCulling: boolean;
         blockKeyboardEvents: boolean;
+        hemisphericLight: boolean;
+        directionalLight0: boolean;
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;
