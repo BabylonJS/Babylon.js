@@ -8,6 +8,7 @@ import { IPipelineContext } from '../Engines/IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
+import { ThinEngine } from '../Engines/thinEngine';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -289,7 +290,8 @@ export class Effect implements IDisposable {
      * @param onError Callback that will be called if an error occurs during shader compilation.
      * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
      */
-    constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers: Nullable<string[]> = null, engine?: Engine, defines: Nullable<string> = null,
+    constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers: Nullable<string[]> = null,
+        engine?: ThinEngine, defines: Nullable<string> = null,
         fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
         this.name = baseName;
 
