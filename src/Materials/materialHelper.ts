@@ -10,11 +10,12 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
 
 import { UniformBuffer } from "./uniformBuffer";
-import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
+import { Effect, EffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
 import { Color3, TmpColors } from '../Maths/math.color';
+import { EffectFallbacks } from './effectFallbacks';
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for
@@ -487,7 +488,7 @@ export class MaterialHelper {
             uniformBuffersList = options.uniformBuffersNames;
             samplersList = options.samplers;
             defines = options.defines;
-            maxSimultaneousLights = options.maxSimultaneousLights;
+            maxSimultaneousLights = options.maxSimultaneousLights || 0;
         } else {
             uniformsList = <string[]>uniformsListOrOptions;
             if (!samplersList) {

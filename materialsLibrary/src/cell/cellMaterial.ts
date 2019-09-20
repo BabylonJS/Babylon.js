@@ -3,7 +3,7 @@ import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, Ser
 import { Matrix } from "babylonjs/Maths/math.vector";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
+import { EffectCreationOptions } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -18,6 +18,7 @@ import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 import "./cell.fragment";
 import "./cell.vertex";
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 class CellMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

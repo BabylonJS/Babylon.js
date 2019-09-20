@@ -9,7 +9,7 @@ import { VertexBuffer } from "../../Meshes/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
+import { Effect, EffectCreationOptions } from "../../Materials/effect";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
@@ -27,6 +27,7 @@ import { Color3 } from '../../Maths/math.color';
 
 import "../../Shaders/background.fragment";
 import "../../Shaders/background.vertex";
+import { EffectFallbacks } from '../effectFallbacks';
 
 /**
  * Background material defines definition.
