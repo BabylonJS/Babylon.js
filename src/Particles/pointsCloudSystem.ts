@@ -195,7 +195,7 @@ export class PointsCloudSystem implements IDisposable {
         return new Color4(redForCoord / 255, greenForCoord / 255, blueForCoord / 255, alphaForCoord);
     }
 
-    private _setPointsColorOrUV(mesh: Mesh, pointsGroup: PointsGroup, isVolume: boolean, colorFromTexture?: boolean, hasTexture?: boolean, color?: Color4) {
+    private _setPointsColorOrUV(mesh: Mesh, pointsGroup: PointsGroup, isVolume: boolean, colorFromTexture?: boolean, hasTexture?: boolean, color?: Color4, range?: number) {
         if (isVolume) {
             mesh.updateFacetData();
         }
@@ -273,10 +273,11 @@ export class PointsCloudSystem implements IDisposable {
 
         var lamda:  number = 0;
         var mu:  number = 0;
+        range = range ? range : 0;
 
         var facetPoint: Vector3;
         var uvPoint: Vector2;
-        var colPoint: Vector4;
+        var colPoint: Vector4 = new Vector4(0, 0, 0, 0);
 
         var norm = Vector3.Zero();
         var tang = Vector3.Zero();
@@ -327,12 +328,15 @@ export class PointsCloudSystem implements IDisposable {
                 col0X = meshCol[4 * id0];
                 col0Y = meshCol[4 * id0 + 1];
                 col0Z = meshCol[4 * id0 + 2];
+                col0A = meshCol[4 * id0 + 3];
                 col1X = meshCol[4 * id1];
                 col1Y = meshCol[4 * id1 + 1];
                 col1Z = meshCol[4 * id1 + 2];
+                col1A = meshCol[4 * id1 + 3];
                 col2X = meshCol[4 * id2];
                 col2Y = meshCol[4 * id2 + 1];
                 col2Z = meshCol[4 * id2 + 2];
+                col2A = meshCol[4 * id2 + 3];
                 col0.set(col0X, col0Y, col0Z, col0A);
                 col1.set(col1X, col1Y, col1Z, col1A);
                 col2.set(col2X, col2Y, col2Z, col2A);
@@ -340,14 +344,16 @@ export class PointsCloudSystem implements IDisposable {
                 col2.subtractToRef(col1, colvec1);
             }
 
-            if (colorFromTexture === undefined && color !== undefined) {
-                    col0.set(color.r, color.g, color.b, 1);
-                    colvec0.set(0, 0, 0, 0);
-                    colvec1.set(0, 0, 0, 0);
-            }
-
             var width: number;
             var height: number;
+            var deltaS: number;
+            var deltaV: number;
+            var h: number;
+            var s: number;
+            var v: number;
+            var hsvCol: Color3;
+            var statedColor: Color3 = new Color3(0, 0, 0);
+            var colPoint3: Color3 = new Color3(0, 0, 0);
             var pointColors: Color4;
             var particle: CloudPoint;
 
@@ -412,7 +418,27 @@ export class PointsCloudSystem implements IDisposable {
                 }
                 else {
                     if (color) {
-                        colPoint = col0.add(colvec0.scale(lamda)).add(colvec1.scale(lamda * mu));
+                        statedColor.set(color.r, color.g, color.b);
+                        deltaS = Scalar.RandomRange(-range, range);
+                        deltaV = Scalar.RandomRange(-range, range);
+                        hsvCol = statedColor.toHSV();
+                        h = hsvCol.r;
+                        s = hsvCol.g + deltaS;
+                        v = hsvCol.b + deltaV;
+                        if (s < 0) {
+                            s = 0;
+                        }
+                        if (s > 1) {
+                            s = 1;
+                        }
+                        if (h < 0) {
+                            h = 0;
+                        }
+                        if (h > 1) {
+                            h = 1;
+                        }
+                        Color3.HSVtoRGBToRef(h, s, v, colPoint3);
+                        colPoint.set(colPoint3.r, colPoint3.g, colPoint3.b, 1);
                     }
                     else {
                         colPoint = col0.set(Math.random(), Math.random(), Math.random(), 1);
@@ -593,7 +619,7 @@ export class PointsCloudSystem implements IDisposable {
      * @param color (color3) to be used when colorWith is stated
      * @returns the number of groups in the system
      */
-    public addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4): number {
+    public addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number {
         var colored = colorWith ? colorWith : PointColor.RANDOM;
         if (isNaN(colored) ||  colored < 0 || colored > 3) {
             colored = PointColor.RANDOM ;
@@ -617,7 +643,7 @@ export class PointsCloudSystem implements IDisposable {
                 this._setPointsColorOrUV(mesh, pointsGroup, false);
                 break;
             case PointColor.STATED:
-                this._setPointsColorOrUV(mesh, pointsGroup, false, undefined, undefined, color);
+                this._setPointsColorOrUV(mesh, pointsGroup, false, undefined, undefined, color, range);
                 break;
         }
         this.nbParticles += nb;
@@ -633,7 +659,7 @@ export class PointsCloudSystem implements IDisposable {
      * @param color (color4) to be used when colorWith is stated
      * @returns the number of groups in the system
      */
-    public addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4): number {
+    public addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number {
         var colored = colorWith ? colorWith : PointColor.RANDOM;
         if (isNaN(colored) ||  colored < 0 || colored > 3) {
             colored = PointColor.RANDOM;
@@ -658,7 +684,7 @@ export class PointsCloudSystem implements IDisposable {
                 this._setPointsColorOrUV(mesh, pointsGroup, true);
                 break;
             case PointColor.STATED:
-                this._setPointsColorOrUV(mesh, pointsGroup, true, undefined, undefined, color);
+                this._setPointsColorOrUV(mesh, pointsGroup, true, undefined, undefined, color, range);
                 break;
         }
         this.nbParticles += nb;
