@@ -7,6 +7,7 @@ import { InternalTexture } from "./internalTexture";
 import { CubeTexture } from "./cubeTexture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
+import { Engine } from '../../Engines/engine';
 
 /**
  * Raw cube texture where the raw buffers are passed in
@@ -43,7 +44,7 @@ export class RawCubeTexture extends CubeTexture {
      * @param level defines which level of the texture to update
      */
     public update(data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null): void {
-        this._texture!.getEngine().updateRawCubeTexture(this._texture!, data, format, type, invertY, compression);
+        (this._texture!.getEngine() as Engine).updateRawCubeTexture(this._texture!, data, format, type, invertY, compression);
     }
 
     /**
