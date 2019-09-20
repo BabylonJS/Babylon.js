@@ -1,6 +1,6 @@
 import { EngineStore } from './engineStore';
 import { IInternalTextureLoader } from '../Materials/Textures/internalTextureLoader';
-import { Effect, EffectCreationOptions, EffectFallbacks } from '../Materials/effect';
+import { Effect, EffectCreationOptions } from '../Materials/effect';
 import { _DevTools } from '../Misc/devTools';
 import { IShaderProcessor } from './Processors/iShaderProcessor';
 import { UniformBuffer } from '../Materials/uniformBuffer';
@@ -29,6 +29,7 @@ import { FileTools } from '../Misc/fileTools';
 import { DepthTextureCreationOptions } from './depthTextureCreationOptions';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
+import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 
 declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
@@ -1989,7 +1990,8 @@ export class ThinEngine {
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
      * @returns the new Effect
      */
-    public createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks,
+    public createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string,
+        fallbacks?: IEffectFallbacks,
         onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
         var vertex = baseName.vertexElement || baseName.vertex || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName;

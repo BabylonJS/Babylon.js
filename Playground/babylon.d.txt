@@ -5142,6 +5142,28 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Interface used to define common properties for effect fallbacks
+     */
+    export interface IEffectFallbacks {
+        /**
+         * Removes the defines that should be removed when falling back.
+         * @param currentDefines defines the current define statements for the shader.
+         * @param effect defines the current effect we try to compile
+         * @returns The resulting defines with defines of the current rank removed.
+         */
+        reduce(currentDefines: string, effect: Effect): string;
+        /**
+         * Removes the fallback from the bound mesh.
+         */
+        unBindMesh(): void;
+        /**
+         * Checks to see if more fallbacks are still availible.
+         */
+        hasMoreFallbacks: boolean;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to evalaute queries containing `and` and `or` operators
      */
     export class AndOrNotEvaluator {
@@ -8778,6 +8800,45 @@ declare module BABYLON {
          * @returns The current light
          */
         setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): IShadowLight;
+    }
+}
+declare module BABYLON {
+    /**
+     * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.
+     * (Eg. Start at high quality with reflection and fog, if fps is low, remove reflection, if still low remove fog)
+     */
+    export class EffectFallbacks implements IEffectFallbacks {
+        private _defines;
+        private _currentRank;
+        private _maxRank;
+        private _mesh;
+        /**
+         * Removes the fallback from the bound mesh.
+         */
+        unBindMesh(): void;
+        /**
+         * Adds a fallback on the specified property.
+         * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
+         * @param define The name of the define in the shader
+         */
+        addFallback(rank: number, define: string): void;
+        /**
+         * Sets the mesh to use CPU skinning when needing to fallback.
+         * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
+         * @param mesh The mesh to use the fallbacks.
+         */
+        addCPUSkinningFallback(rank: number, mesh: AbstractMesh): void;
+        /**
+         * Checks to see if more fallbacks are still availible.
+         */
+        readonly hasMoreFallbacks: boolean;
+        /**
+         * Removes the defines that should be removed when falling back.
+         * @param currentDefines defines the current define statements for the shader.
+         * @param effect defines the current effect we try to compile
+         * @returns The resulting defines with defines of the current rank removed.
+         */
+        reduce(currentDefines: string, effect: Effect): string;
     }
 }
 declare module BABYLON {
@@ -27625,43 +27686,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.
-     * (Eg. Start at high quality with reflection and fog, if fps is low, remove reflection, if still low remove fog)
-     */
-    export class EffectFallbacks {
-        private _defines;
-        private _currentRank;
-        private _maxRank;
-        private _mesh;
-        /**
-         * Removes the fallback from the bound mesh.
-         */
-        unBindMesh(): void;
-        /**
-         * Adds a fallback on the specified property.
-         * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
-         * @param define The name of the define in the shader
-         */
-        addFallback(rank: number, define: string): void;
-        /**
-         * Sets the mesh to use CPU skinning when needing to fallback.
-         * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
-         * @param mesh The mesh to use the fallbacks.
-         */
-        addCPUSkinningFallback(rank: number, mesh: AbstractMesh): void;
-        /**
-         * Checks to see if more fallbacks are still availible.
-         */
-        readonly hasMoreFallbacks: boolean;
-        /**
-         * Removes the defines that should be removed when falling back.
-         * @param currentDefines defines the current define statements for the shader.
-         * @param effect defines the current effect we try to compile
-         * @returns The resulting defines with defines of the current rank removed.
-         */
-        reduce(currentDefines: string, effect: Effect): string;
-    }
-    /**
      * Options to be used when creating an effect.
      */
     export class EffectCreationOptions {
@@ -27688,7 +27712,7 @@ declare module BABYLON {
         /**
          * Possible fallbacks for this effect to improve performance when needed.
          */
-        fallbacks: Nullable<EffectFallbacks>;
+        fallbacks: Nullable<IEffectFallbacks>;
         /**
          * Callback that will be called when the shader is compiled.
          */
@@ -27700,15 +27724,15 @@ declare module BABYLON {
         /**
          * Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
          */
-        indexParameters: any;
+        indexParameters?: any;
         /**
          * Max number of lights that can be used in the shader.
          */
-        maxSimultaneousLights: number;
+        maxSimultaneousLights?: number;
         /**
          * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
          */
-        transformFeedbackVaryings: Nullable<string[]>;
+        transformFeedbackVaryings?: Nullable<string[]>;
     }
     /**
      * Effect containing vertex and fragment shader that can be executed on an object.
@@ -27799,7 +27823,7 @@ declare module BABYLON {
          * @param onError Callback that will be called if an error occurs during shader compilation.
          * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
          */
-        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: Nullable<string[]>, engine?: ThinEngine, defines?: Nullable<string>, fallbacks?: Nullable<EffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
+        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: Nullable<string[]>, engine?: ThinEngine, defines?: Nullable<string>, fallbacks?: Nullable<IEffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
         private _useFinalCode;
         /**
          * Unique key for this effect
@@ -29210,7 +29234,7 @@ declare module BABYLON {
          * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
          * @returns the new Effect
          */
-        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
+        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string, fallbacks?: IEffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
         protected static _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion?: string): string;
         private _compileShader;
         private _compileRawShader;
