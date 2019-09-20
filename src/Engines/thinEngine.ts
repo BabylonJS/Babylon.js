@@ -183,11 +183,6 @@ export class ThinEngine {
     public isFullscreen = false;
 
     /**
-     * Gets a boolean indicating if the pointer is currently locked
-     */
-    public isPointerLock = false;
-
-    /**
      * Gets or sets a boolean indicating if back faces must be culled (true by default)
      */
     public cullBackFaces = true;
@@ -370,7 +365,7 @@ export class ThinEngine {
 
     // Hardware supported Compressed Textures
     protected _texturesSupported = new Array<string>();
-    
+
     /** @hidden */
     public _textureFormatInUse: Nullable<string>;
 
