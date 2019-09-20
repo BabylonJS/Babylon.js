@@ -6,7 +6,7 @@ import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { EffectCreationOptions, EffectFallbacks } from "babylonjs/Materials/effect";
+import { EffectCreationOptions } from "babylonjs/Materials/effect";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -17,6 +17,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./gradient.fragment";
 import "./gradient.vertex";
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 class GradientMaterialDefines extends MaterialDefines {
     public EMISSIVE = false;

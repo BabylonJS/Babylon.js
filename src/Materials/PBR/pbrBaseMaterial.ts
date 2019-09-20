@@ -20,7 +20,7 @@ import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSub
 import { Color3, TmpColors } from '../../Maths/math.color';
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
-import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
+import { Effect, EffectCreationOptions } from "../../Materials/effect";
 import { Material } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
@@ -37,6 +37,7 @@ import { IAnimatable } from '../../Animations/animatable.interface';
 
 import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
+import { EffectFallbacks } from '../effectFallbacks';
 
 /**
  * Manages the defines for the PBR Material.
