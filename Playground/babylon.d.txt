@@ -37,14 +37,15 @@ declare module BABYLON {
      * Type modifier to make all the properties of an object Readonly recursively
      */
     export type DeepImmutable<T> = T extends Primitive ? T : T extends Array<infer U> ? DeepImmutableArray<U> : DeepImmutableObject<T>;
+    /**
+     * Type modifier to make object properties readonly.
+     */
+    export type DeepImmutableObject<T> = {
+        readonly [K in keyof T]: DeepImmutable<T[K]>;
+    };
     /** @hidden */
     interface DeepImmutableArray<T> extends ReadonlyArray<DeepImmutable<T>> {
     }
-    /** @hidden */
-    /** @hidden */
-    type DeepImmutableObject<T> = {
-        readonly [K in keyof T]: DeepImmutable<T[K]>;
-    };
 }
 declare module BABYLON {
     /**
@@ -28714,10 +28715,6 @@ declare module BABYLON {
          */
         isFullscreen: boolean;
         /**
-         * Gets a boolean indicating if the pointer is currently locked
-         */
-        isPointerLock: boolean;
-        /**
          * Gets or sets a boolean indicating if back faces must be culled (true by default)
          */
         cullBackFaces: boolean;
@@ -28836,7 +28833,7 @@ declare module BABYLON {
         private _nextFreeTextureSlots;
         private _maxSimultaneousTextures;
         private _activeRequests;
-        private _texturesSupported;
+        protected _texturesSupported: string[];
         /** @hidden */private _textureFormatInUse: Nullable<string>;
         protected readonly _supportsHardwareTextureRescaling: boolean;
         /**
@@ -29428,27 +29425,6 @@ declare module BABYLON {
          * @param bruteForce defines a boolean to force clearing ALL caches (including stencil, detoh and alpha states)
          */
         wipeCaches(bruteForce?: boolean): void;
-        /**
-         * Set the compressed texture format to use, based on the formats you have, and the formats
-         * supported by the hardware / browser.
-         *
-         * Khronos Texture Container (.ktx) files are used to support this.  This format has the
-         * advantage of being specifically designed for OpenGL.  Header elements directly correspond
-         * to API arguments needed to compressed textures.  This puts the burden on the container
-         * generator to house the arcane code for determining these for current & future formats.
-         *
-         * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
-         * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-         *
-         * Note: The result of this call is not taken into account when a texture is base64.
-         *
-         * @param formatsAvailable defines the list of those format families you have created
-         * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
-         *
-         * Current families are astc, dxt, pvrtc, etc2, & etc1.
-         * @returns The extension selected.
-         */
-        setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string>;
         /** @hidden */private _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): {
             min: number;
             mag: number;
@@ -30625,6 +30601,10 @@ declare module BABYLON {
          */
         postProcesses: PostProcess[];
         /**
+         * Gets a boolean indicating if the pointer is currently locked
+         */
+        isPointerLock: boolean;
+        /**
          * Observable event triggered each time the rendering canvas is resized
          */
         onResizeObservable: Observable<Engine>;
@@ -31088,6 +31068,27 @@ declare module BABYLON {
          */
         endFrame(): void;
         resize(): void;
+        /**
+         * Set the compressed texture format to use, based on the formats you have, and the formats
+         * supported by the hardware / browser.
+         *
+         * Khronos Texture Container (.ktx) files are used to support this.  This format has the
+         * advantage of being specifically designed for OpenGL.  Header elements directly correspond
+         * to API arguments needed to compressed textures.  This puts the burden on the container
+         * generator to house the arcane code for determining these for current & future formats.
+         *
+         * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
+         * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
+         *
+         * Note: The result of this call is not taken into account when a texture is base64.
+         *
+         * @param formatsAvailable defines the list of those format families you have created
+         * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
+         *
+         * Current families are astc, dxt, pvrtc, etc2, & etc1.
+         * @returns The extension selected.
+         */
+        setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string>;
         /**
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
@@ -53308,6 +53309,18 @@ declare module BABYLON {
         * Gets the camera (or eye) position component
         */
         readonly cameraPosition: NodeMaterialConnectionPoint;
+        /**
+        * Gets the glossiness component
+        */
+        readonly glossiness: NodeMaterialConnectionPoint;
+        /**
+        * Gets the diffuse color component
+        */
+        readonly diffuseColor: NodeMaterialConnectionPoint;
+        /**
+        * Gets the specular color component
+        */
+        readonly specularColor: NodeMaterialConnectionPoint;
         /**
          * Gets the diffuse output component
          */

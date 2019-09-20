@@ -342,6 +342,11 @@ export class Engine extends ThinEngine {
      */
     public postProcesses = new Array<PostProcess>();
 
+    /**
+     * Gets a boolean indicating if the pointer is currently locked
+     */
+    public isPointerLock = false;
+
     // Observables
 
     /**
@@ -1498,7 +1503,7 @@ export class Engine extends ThinEngine {
         // and possibly fail the 2nd time
         this._textureFormatInUse = null;
         return null;
-    }    
+    }
 
     /**
      * Force a specific size of the canvas

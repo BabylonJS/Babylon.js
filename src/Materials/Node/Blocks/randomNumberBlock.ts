@@ -57,7 +57,7 @@ export class RandomNumberBlock extends NodeMaterialBlock {
         let comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
 
-        state.compilationString += this._declareOutput(output, state) + ` = rand(${this.seed.associatedVariableName}.xy);\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = getRand(${this.seed.associatedVariableName}.xy);\r\n`;
 
         return this;
     }
