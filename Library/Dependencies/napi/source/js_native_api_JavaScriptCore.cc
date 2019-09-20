@@ -77,6 +77,32 @@ void dumpException(napi_env env, JSValueRef exception)
     }
 }
 
+napi_status napi_get_value_bool(napi_env env, napi_value v, bool* result) {
+    bool boolean = JSValueToBoolean(env->m_globalContext, reinterpret_cast<JSValueRef>(v));
+    *result = boolean;
+    return napi_ok;
+}
+
+napi_status napi_get_value_double(napi_env env, napi_value v, double* result) {
+    double dblValue = JSValueToNumber(env->m_globalContext, reinterpret_cast<JSValueRef>(v), NULL);
+    *result = dblValue;
+    return napi_ok;
+}
+
+napi_status napi_get_value_int32(napi_env env, napi_value v, int32_t* result) {
+    double dblValue = JSValueToNumber(env->m_globalContext, reinterpret_cast<JSValueRef>(v), NULL);
+    *result = int32_t(dblValue);
+    return napi_ok;
+}
+
+napi_status napi_get_value_uint32(napi_env env,
+                                  napi_value v,
+                                  uint32_t* result) {
+    double dblValue = JSValueToNumber(env->m_globalContext, reinterpret_cast<JSValueRef>(v), NULL);
+    *result = uint32_t(dblValue);
+    return napi_ok;
+}
+
 napi_status napi_create_double(napi_env env,
                                double value,
                                napi_value* result) {
@@ -567,20 +593,15 @@ napi_status napi_define_class(napi_env env,
 napi_status napi_get_array_length(napi_env env,
                                   napi_value v,
                                   uint32_t* result) {
-    //JSObjectRef object = JSObjectGetTypedArrayBuffer(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), NULL);
-    
     assert(JSValueIsArray(env->m_globalContext, reinterpret_cast<JSObjectRef>(v)));
     
+    bool hasLength = JSObjectHasProperty(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), JSStringCreateWithUTF8CString("length"));
+    assert(hasLength);
     
-    JSValueRef exception;
-    size_t elementCount = JSObjectGetTypedArrayLength(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), &exception);
-    //elementCount = JSObjectGetArrayBufferByteLength(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), &exception);
-
-    //dumpException(env, exception);
-    if (result)
-    {
-        *result = uint32_t(elementCount);
-    }
+    JSValueRef lengthValue = JSObjectGetProperty(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), JSStringCreateWithUTF8CString("length"), NULL);
+    double length = JSValueToNumber(env->m_globalContext, lengthValue, NULL);
+    
+    *result = uint32_t(length);
     return napi_ok;
 }
 
@@ -753,32 +774,6 @@ napi_status napi_get_typedarray_info(napi_env env,
     
     return napi_ok;
 }                                         
-
-napi_status napi_get_value_bool(napi_env env, napi_value v, bool* result) {
-    bool boolean = JSValueToBoolean(env->m_globalContext, reinterpret_cast<JSValueRef>(v));
-    *result = boolean;
-    return napi_ok;
-}
-
-napi_status napi_get_value_double(napi_env env, napi_value v, double* result) {
-    double dblValue = JSValueToNumber(env->m_globalContext, reinterpret_cast<JSValueRef>(v), NULL);
-    *result = dblValue;
-    return napi_ok;
-}
-
-napi_status napi_get_value_int32(napi_env env, napi_value v, int32_t* result) {
-    double dblValue = JSValueToNumber(env->m_globalContext, reinterpret_cast<JSValueRef>(v), NULL);
-    *result = int32_t(dblValue);
-    return napi_ok;
-}
-
-napi_status napi_get_value_uint32(napi_env env,
-                                  napi_value v,
-                                  uint32_t* result) {
-    double dblValue = JSValueToNumber(env->m_globalContext, reinterpret_cast<JSValueRef>(v), NULL);
-    *result = uint32_t(dblValue);
-    return napi_ok;
-}
 
 napi_status napi_run_script(napi_env env,
                             napi_value script,

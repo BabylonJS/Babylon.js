@@ -838,7 +838,7 @@ namespace babylon
         const auto program = info[0].As<Napi::External<ProgramData>>().Data();
         const auto names = info[1].As<Napi::Array>();
 
-        auto length = 1;//names.Length();
+        auto length = names.Length();
         auto uniforms = Napi::Array::New(info.Env(), length);
         for (uint32_t index = 0; index < length; ++index)
         {
