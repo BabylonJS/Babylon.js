@@ -768,6 +768,21 @@ namespace babylon
                 {
                     const uint32_t location = compiler.get_decoration(stageInput.id, spv::DecorationLocation);
                     AppendBytes(vertexBytes, bgfx::attribToId(static_cast<bgfx::Attrib::Enum>(location)));
+                    
+                    std::string attributeName = stageInput.name;
+                    if (attributeName == "a_position")
+                        attributeName = "position";
+                    else if (attributeName == "a_normal")
+                        attributeName = "normal";
+                    else if (attributeName == "a_tangent")
+                        attributeName = "tangent";
+                    else if (attributeName == "a_color")
+                        attributeName = "color";
+                    else if (attributeName == "a_index")
+                        attributeName = "matricesIndices";
+                    else if (attributeName == "a_weight")
+                        attributeName = "matricesWeights";
+                    
                     attributeLocations[stageInput.name] = location;
                 }
 
@@ -823,7 +838,7 @@ namespace babylon
         const auto program = info[0].As<Napi::External<ProgramData>>().Data();
         const auto names = info[1].As<Napi::Array>();
 
-        auto length = names.Length();
+        auto length = 1;//names.Length();
         auto uniforms = Napi::Array::New(info.Env(), length);
         for (uint32_t index = 0; index < length; ++index)
         {
