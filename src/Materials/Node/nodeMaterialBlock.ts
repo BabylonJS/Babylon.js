@@ -3,7 +3,7 @@ import { NodeMaterialBuildState } from './nodeMaterialBuildState';
 import { Nullable } from '../../types';
 import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
-import { Effect, EffectFallbacks } from '../effect';
+import { Effect } from '../effect';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
 import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
@@ -11,6 +11,7 @@ import { InputBlock } from './Blocks/Input/inputBlock';
 import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
 import { Scene } from '../../scene';
 import { _TypeStore } from '../../Misc/typeStore';
+import { EffectFallbacks } from '../effectFallbacks';
 
 /**
  * Defines a block that can be used inside a node based material

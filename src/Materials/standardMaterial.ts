@@ -15,7 +15,7 @@ import { Mesh } from "../Meshes/mesh";
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
-import { EffectFallbacks, EffectCreationOptions } from "./effect";
+import { EffectCreationOptions } from "./effect";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
@@ -30,6 +30,7 @@ import { MaterialFlags } from "./materialFlags";
 import "../Shaders/default.fragment";
 import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
+import { EffectFallbacks } from './effectFallbacks';
 
 /** @hidden */
 export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {

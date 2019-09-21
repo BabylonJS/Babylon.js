@@ -9,7 +9,6 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Texture } from '../Materials/Textures/texture';
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {

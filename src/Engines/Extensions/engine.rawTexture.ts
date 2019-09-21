@@ -1,5 +1,4 @@
 import { Nullable } from "../../types";
-import { Engine } from "../../Engines/engine";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Logger } from '../../Misc/logger';
@@ -7,6 +6,7 @@ import { Tools } from '../../Misc/tools';
 import { Scene } from '../../scene';
 import { WebRequest } from '../../Misc/webRequest';
 import { Constants } from '../constants';
+import { Engine } from '../engine';
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -384,7 +384,7 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
     invertY: boolean = false): InternalTexture {
 
     var gl = this._gl;
-    var texture = this.createRawCubeTexture(null, size, format, type, !noMipmap, invertY, samplingMode);
+    var texture = this.createRawCubeTexture(null, size, format, type, !noMipmap, invertY, samplingMode, null);
     scene._addPendingData(texture);
     texture.url = url;
     this._internalTexturesCache.push(texture);

@@ -15,6 +15,7 @@ import "../Engines/Extensions/engine.renderTarget";
 
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
+import { Engine } from '../Engines/engine';
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
@@ -153,7 +154,7 @@ export class EnvironmentTextureTools {
             return Promise.reject("The cube texture is invalid (not prefiltered).");
         }
 
-        let engine = internalTexture.getEngine();
+        let engine = internalTexture.getEngine() as Engine;
         if (engine && engine.premultipliedAlpha) {
             return Promise.reject("Env texture can only be created when the engine is created with the premultipliedAlpha option set to false.");
         }
@@ -393,7 +394,7 @@ export class EnvironmentTextureTools {
         const mipmapsCount = Math.round(Scalar.Log2(texture.width)) + 1;
 
         // Gets everything ready.
-        let engine = texture.getEngine();
+        let engine = texture.getEngine() as Engine;
         let expandTexture = false;
         let generateNonLODTextures = false;
         let rgbdPostProcess: Nullable<PostProcess> = null;

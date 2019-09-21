@@ -3,11 +3,11 @@ import { Nullable, int } from "../../types";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 import { _DevTools } from '../../Misc/devTools';
+import { Engine } from '../../Engines/engine';
 
-declare type Engine = import("../../Engines/engine").Engine;
+declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTexture;
 
 /**
@@ -237,13 +237,13 @@ export class InternalTexture {
     /** @hidden */
     public _references: number = 1;
 
-    private _engine: Engine;
+    private _engine: ThinEngine;
 
     /**
      * Gets the Engine the texture belongs to.
      * @returns The babylon engine
      */
-    public getEngine(): Engine {
+    public getEngine(): ThinEngine {
         return this._engine;
     }
 
@@ -260,7 +260,7 @@ export class InternalTexture {
      * @param dataSource defines the type of data that will be used
      * @param delayAllocation if the texture allocation should be delayed (default: false)
      */
-    constructor(engine: Engine, dataSource: number, delayAllocation = false) {
+    constructor(engine: ThinEngine, dataSource: number, delayAllocation = false) {
         this._engine = engine;
         this._dataSource = dataSource;
 
@@ -354,7 +354,7 @@ export class InternalTexture {
                         height: this.height
                     };
 
-                    proxy = this._engine.createRenderTargetTexture(size, options);
+                    proxy = (this._engine as Engine).createRenderTargetTexture(size, options);
                 }
                 proxy._swapAndDie(this);
 
