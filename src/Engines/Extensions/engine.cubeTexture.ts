@@ -1,4 +1,4 @@
-import { Engine, DepthTextureCreationOptions } from "../../Engines/engine";
+import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
@@ -6,9 +6,10 @@ import { Scene } from '../../scene';
 import { IInternalTextureLoader } from '../../Materials/Textures/internalTextureLoader';
 import { WebRequest } from '../../Misc/webRequest';
 import { FileTools } from '../../Misc/fileTools';
+import { DepthTextureCreationOptions } from '../depthTextureCreationOptions';
 
-declare module "../../Engines/engine" {
-    export interface Engine {
+declare module "../../Engines/thinEngine" {
+    export interface ThinEngine {
         /**
          * Creates a depth stencil cube texture.
          * This is only available in WebGL 2.
@@ -88,7 +89,7 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype._createDepthStencilCubeTexture = function(size: number, options: DepthTextureCreationOptions): InternalTexture {
+ThinEngine.prototype._createDepthStencilCubeTexture = function(size: number, options: DepthTextureCreationOptions): InternalTexture {
     var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_UNKNOWN);
     internalTexture.isCube = true;
 
@@ -124,7 +125,7 @@ Engine.prototype._createDepthStencilCubeTexture = function(size: number, options
     return internalTexture;
 };
 
-Engine.prototype._partialLoadFile = function(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
+ThinEngine.prototype._partialLoadFile = function(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
     var onload = (data: string | ArrayBuffer) => {
         loadedFiles[index] = data;
         (<any>loadedFiles)._internalCount++;
@@ -143,7 +144,7 @@ Engine.prototype._partialLoadFile = function(url: string, index: number, loadedF
     this._loadFile(url, onload, undefined, undefined, true, onerror);
 };
 
-Engine.prototype._cascadeLoadFiles = function(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
+ThinEngine.prototype._cascadeLoadFiles = function(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
     var loadedFiles: (string | ArrayBuffer)[] = [];
     (<any>loadedFiles)._internalCount = 0;
 
@@ -152,7 +153,7 @@ Engine.prototype._cascadeLoadFiles = function(scene: Nullable<Scene>, onfinish: 
     }
 };
 
-Engine.prototype._cascadeLoadImgs = function(scene: Nullable<Scene>,
+ThinEngine.prototype._cascadeLoadImgs = function(scene: Nullable<Scene>,
     onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) {
 
     var loadedImages: HTMLImageElement[] = [];
@@ -163,7 +164,7 @@ Engine.prototype._cascadeLoadImgs = function(scene: Nullable<Scene>,
     }
 };
 
-Engine.prototype._partialLoadImg = function(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
+ThinEngine.prototype._partialLoadImg = function(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
     onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) {
 
     var img: HTMLImageElement;
@@ -197,7 +198,7 @@ Engine.prototype._partialLoadImg = function(url: string, index: number, loadedIm
     }
 };
 
-Engine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
+ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
     var gl = this._gl;
 
     var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
@@ -216,7 +217,7 @@ Engine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<S
     var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
 
     let loader: Nullable<IInternalTextureLoader> = null;
-    for (let availableLoader of Engine._TextureLoaders) {
+    for (let availableLoader of ThinEngine._TextureLoaders) {
         if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, this._textureFormatInUse, fallback, false, false)) {
             loader = availableLoader;
             break;
@@ -268,7 +269,7 @@ Engine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<S
         }
 
         this._cascadeLoadImgs(scene, (imgs) => {
-            var width = this.needPOTTextures ? Engine.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
+            var width = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
             var height = width;
 
             this._prepareWorkingCanvas();

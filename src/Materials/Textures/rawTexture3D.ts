@@ -41,7 +41,7 @@ export class RawTexture3D extends Texture {
             generateMipMaps,
             invertY,
             samplingMode,
-            undefined,
+            null,
             textureType
         );
 

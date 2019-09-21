@@ -7,7 +7,7 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh } from '../../Meshes/mesh';
 import { Engine } from '../../Engines/engine';
 import { NodeMaterialBuildState } from './nodeMaterialBuildState';
-import { EffectCreationOptions, EffectFallbacks } from '../effect';
+import { EffectCreationOptions } from '../effect';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { Observable, Observer } from '../../Misc/observable';
 import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
@@ -28,6 +28,7 @@ import { SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
 import { FileTools } from '../../Misc/fileTools';
+import { EffectFallbacks } from '../effectFallbacks';
 
 // declare NODEEDITOR namespace for compilation issue
 declare var NODEEDITOR: any;

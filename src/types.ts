@@ -52,9 +52,12 @@ export type DeepImmutable<T> = T extends Primitive
   : /* T extends Map<infer K, infer V> ? DeepImmutableMap<K, V> : // es2015+ only */
   DeepImmutableObject<T>;
 
+/**
+ * Type modifier to make object properties readonly.
+ */
+export type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[K]> };
+
 /** @hidden */
 interface DeepImmutableArray<T> extends ReadonlyArray<DeepImmutable<T>> { }
 /** @hidden */
 /* interface DeepImmutableMap<K, V> extends ReadonlyMap<DeepImmutable<K>, DeepImmutable<V>> {} // es2015+ only */
-/** @hidden */
-type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[K]> };
