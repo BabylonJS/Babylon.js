@@ -34,3 +34,5 @@ export * from "./arcTan2Block";
 export * from "./smoothStepBlock";
 export * from "./reciprocalBlock";
 export * from "./replaceColorBlock";
+export * from "./posterizeBlock";
+export * from "./waveBlock";
