@@ -113,6 +113,9 @@ export class InputBlock extends NodeMaterialBlock {
                     case NodeMaterialSystemValues.FogColor:
                         this._type = NodeMaterialBlockConnectionPointTypes.Color3;
                         return this._type;
+                    case NodeMaterialSystemValues.DeltaTime:
+                        this._type = NodeMaterialBlockConnectionPointTypes.Float;
+                        return this._type;
                 }
             }
         }
@@ -484,6 +487,8 @@ export class InputBlock extends NodeMaterialBlock {
                 case NodeMaterialSystemValues.FogColor:
                     effect.setColor3(variableName, scene.fogColor);
                     break;
+                case NodeMaterialSystemValues.DeltaTime:
+                    effect.setFloat(variableName, scene.deltaTime / 1000.0);
             }
             return;
         }
