@@ -39,21 +39,6 @@ namespace glslang
             auto compiler = std::make_unique<spirv_cross::CompilerMSL>(parser.get_parsed_ir());
 
             shaderResult = compiler->compile();
-/*
-            std::string sourceNoStruct(shaderResult.data(), shaderResult.size());
-            const std::string frame = "struct Frame\n{";
-            const std::string frameEnd = "};";
-            size_t pos = sourceNoStruct.find(frame);
-            if (pos != std::string::npos)
-            {
-                sourceNoStruct.replace(pos, frame.size(), "");
-                pos = shaderResult.find(frameEnd, pos);
-                if (pos != std::string::npos)
-                {
-                    sourceNoStruct.replace(pos, frameEnd.size(), "");
-                }
-            }
-            shaderResult = sourceNoStruct;*/
             
             std::string sourceNoStruct(shaderResult.data(), shaderResult.size());
             const std::string main0 = "main0(";
@@ -63,22 +48,42 @@ namespace glslang
                 sourceNoStruct.replace(pos, main0.size(), "xlatMtlMain(");
             }
             
-            const std::string frame0 = "Frame";
-            pos = sourceNoStruct.find(frame0);
-            if (pos != std::string::npos)
+            // WIP for constant names, Needed by bgfx.
             {
-                sourceNoStruct.replace(pos, frame0.size(), "_mtl_u");
-                while(1)
+                const std::string frame0 = "_22";
+                pos = sourceNoStruct.find(frame0);
+                if (pos != std::string::npos)
                 {
-                    pos = sourceNoStruct.find(frame0);
-                    if (pos == std::string::npos)
-                    {
-                        break;
-                    }
                     sourceNoStruct.replace(pos, frame0.size(), "_mtl_u");
+                    while(1)
+                    {
+                        pos = sourceNoStruct.find(frame0);
+                        if (pos == std::string::npos)
+                        {
+                            break;
+                        }
+                        sourceNoStruct.replace(pos, frame0.size(), "_mtl_u");
+                    }
                 }
             }
             
+            {
+                const std::string frame0 = "_69";
+                pos = sourceNoStruct.find(frame0);
+                if (pos != std::string::npos)
+                {
+                    sourceNoStruct.replace(pos, frame0.size(), "_mtl_u");
+                    while(1)
+                    {
+                        pos = sourceNoStruct.find(frame0);
+                        if (pos == std::string::npos)
+                        {
+                            break;
+                        }
+                        sourceNoStruct.replace(pos, frame0.size(), "_mtl_u");
+                    }
+                }
+            }
             
             shaderResult = sourceNoStruct;
             return std::move(compiler);

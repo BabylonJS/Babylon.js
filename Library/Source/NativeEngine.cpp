@@ -783,7 +783,7 @@ namespace babylon
                     else if (attributeName == "a_weight")
                         attributeName = "matricesWeights";
                     
-                    attributeLocations[stageInput.name] = location;
+                    attributeLocations[attributeName] = location;
                 }
 
                 AppendBytes(vertexBytes, static_cast<uint16_t>(compiler.get_declared_struct_size(compiler.get_type(uniformBuffer.base_type_id))));

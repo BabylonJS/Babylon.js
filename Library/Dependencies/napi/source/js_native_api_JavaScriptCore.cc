@@ -381,6 +381,7 @@ template<int functionIndex> JSValueRef JSCStaticMethod(JSContextRef ctx, JSObjec
     callbackInfo.data = entry.data;
     callbackInfo.isConstructCall = false;
     callbackInfo.newTarget = 0;
+
     napi_value retValue = entry.cb(vfTable.env, reinterpret_cast<napi_callback_info>(&callbackInfo));
     
     return reinterpret_cast<JSValueRef>(retValue);
@@ -623,18 +624,7 @@ napi_status napi_get_cb_info(
     void** data) {         // [out] Receives the data pointer for the callback.
   
     CallbackInfo * callbackInfo = reinterpret_cast<CallbackInfo*>(cbinfo);
-    if (this_arg) {
-        *this_arg = callbackInfo->thisArg;
-    }
-    
-    if (argc) {
-        *argc = callbackInfo->argc;
-    }
 
-    if (data) {
-        *data = callbackInfo->data;
-    }
-    
     if (argv != nullptr) {
         //CHECK_ARG(argc);
         
@@ -652,6 +642,18 @@ napi_status napi_get_cb_info(
                 argv[i] = undefined;
             }
         }
+    }
+    
+    if (this_arg) {
+        *this_arg = callbackInfo->thisArg;
+    }
+    
+    if (argc) {
+        *argc = callbackInfo->argc;
+    }
+    
+    if (data) {
+        *data = callbackInfo->data;
     }
     
     return napi_ok;
