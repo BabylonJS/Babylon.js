@@ -1567,7 +1567,19 @@ export class Engine extends ThinEngine {
         context.attachShader(shaderProgram, vertexShader);
         context.attachShader(shaderProgram, fragmentShader);
 
+        if (this.webGLVersion > 1 && transformFeedbackVaryings) {
+            let transformFeedback = this.createTransformFeedback();
+
+            this.bindTransformFeedback(transformFeedback);
+            this.setTranformFeedbackVaryings(shaderProgram, transformFeedbackVaryings);
+            pipelineContext.transformFeedback = transformFeedback;
+        }
+
         context.linkProgram(shaderProgram);
+
+        if (this.webGLVersion > 1 && transformFeedbackVaryings) {
+            this.bindTransformFeedback(null);
+        }
 
         pipelineContext.context = context;
         pipelineContext.vertexShader = vertexShader;
