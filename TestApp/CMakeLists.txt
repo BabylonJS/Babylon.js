@@ -60,7 +60,7 @@ elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
 endif()
 
 if(APPLE)
-find_library(JSCORE_LIBRARY JavaScriptCore)
+    find_library(JSCORE_LIBRARY JavaScriptCore)
 endif()
 
 set(WIN32_EXECUTABLE TRUE)

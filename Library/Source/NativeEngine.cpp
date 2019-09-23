@@ -356,7 +356,6 @@ namespace babylon
 
                     Update();
                 }
-                bgfx::touch(0);
                 return needToUpdate;
             }
 
