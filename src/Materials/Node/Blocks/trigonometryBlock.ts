@@ -33,15 +33,19 @@ export enum TrigonometryBlockOperations {
     /** Tangent */
     Tan,
     /** Arc tangent */
-    ATan,
+    ArcTan,
     /** Arc cosinus */
-    ACos,
+    ArcCos,
     /** Arc sinus */
-    ASin,
+    ArcSin,
     /** Fraction */
     Fract,
     /** Sign */
-    Sign
+    Sign,
+    /** To radians (from degrees) */
+    Radians,
+    /** To degrees (from radians) */
+    Degrees
 }
 
 /**
@@ -138,15 +142,15 @@ export class TrigonometryBlock extends NodeMaterialBlock {
                 operation = "tan";
                 break;
             }
-            case TrigonometryBlockOperations.ATan: {
+            case TrigonometryBlockOperations.ArcTan: {
                 operation = "atan";
                 break;
             }
-            case TrigonometryBlockOperations.ACos: {
+            case TrigonometryBlockOperations.ArcCos: {
                 operation = "acos";
                 break;
             }
-            case TrigonometryBlockOperations.ASin: {
+            case TrigonometryBlockOperations.ArcSin: {
                 operation = "asin";
                 break;
             }
@@ -156,6 +160,14 @@ export class TrigonometryBlock extends NodeMaterialBlock {
             }
             case TrigonometryBlockOperations.Sign: {
                 operation = "sign";
+                break;
+            }
+            case TrigonometryBlockOperations.Radians: {
+                operation = "radians";
+                break;
+            }
+            case TrigonometryBlockOperations.Degrees: {
+                operation = "degrees";
                 break;
             }
         }

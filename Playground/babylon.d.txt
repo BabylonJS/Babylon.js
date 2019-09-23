@@ -13062,6 +13062,10 @@ declare module BABYLON {
             * Stops and removes all animations that have been applied to the scene
             */
             stopAllAnimations(): void;
+            /**
+             * Gets the current delta time used by animation engine
+             */
+            deltaTime: number;
         }
         interface Bone {
             /**
@@ -51740,7 +51744,9 @@ declare module BABYLON {
         /** CameraPosition */
         CameraPosition = 7,
         /** Fog Color */
-        FogColor = 8
+        FogColor = 8,
+        /** Delta time */
+        DeltaTime = 9
     }
 }
 declare module BABYLON {
@@ -52247,6 +52253,7 @@ declare module BABYLON {
      */
     export class TextureBlock extends NodeMaterialBlock {
         private _defineName;
+        private _linearDefineName;
         private _samplerName;
         private _transformedUVName;
         private _textureTransformName;
@@ -53654,15 +53661,19 @@ declare module BABYLON {
         /** Tangent */
         Tan = 10,
         /** Arc tangent */
-        ATan = 11,
+        ArcTan = 11,
         /** Arc cosinus */
-        ACos = 12,
+        ArcCos = 12,
         /** Arc sinus */
-        ASin = 13,
+        ArcSin = 13,
         /** Fraction */
         Fract = 14,
         /** Sign */
-        Sign = 15
+        Sign = 15,
+        /** To radians (from degrees) */
+        Radians = 16,
+        /** To degrees (from radians) */
+        Degrees = 17
     }
     /**
      * Block used to apply trigonometry operation to floats
@@ -53986,7 +53997,7 @@ declare module BABYLON {
      */
     export class StepBlock extends NodeMaterialBlock {
         /**
-         * Creates a new AddBlock
+         * Creates a new StepBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -54297,6 +54308,134 @@ declare module BABYLON {
          * Gets the seed input component
          */
         readonly seed: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to compute arc tangent of 2 values
+     */
+    export class ArcTan2Block extends NodeMaterialBlock {
+        /**
+         * Creates a new ArcTan2Block
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the x operand input component
+         */
+        readonly x: NodeMaterialConnectionPoint;
+        /**
+         * Gets the y operand input component
+         */
+        readonly y: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to smooth step a value
+     */
+    export class SmoothStepBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new SmoothStepBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the value operand input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the first edge operand input component
+         */
+        readonly edge0: NodeMaterialConnectionPoint;
+        /**
+         * Gets the second edge operand input component
+         */
+        readonly edge1: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the reciprocal (1 / x) of a value
+     */
+    export class ReciprocalBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ReciprocalBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to replace a color by another one
+     */
+    export class ReplaceColorBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ReplaceColorBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the value input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the reference input component
+         */
+        readonly reference: NodeMaterialConnectionPoint;
+        /**
+         * Gets the distance input component
+         */
+        readonly distance: NodeMaterialConnectionPoint;
+        /**
+         * Gets the replacement input component
+         */
+        readonly replacement: NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */

@@ -13,11 +13,14 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
 
+import "../../../../Shaders/ShadersInclude/helperFunctions";
+
 /**
  * Block used to read a texture from a sampler
  */
 export class TextureBlock extends NodeMaterialBlock {
     private _defineName: string;
+    private _linearDefineName: string;
     private _samplerName: string;
     private _transformedUVName: string;
     private _textureTransformName: string;
@@ -167,19 +170,22 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        if (!defines._areTexturesDirty) {
-            return;
-        }
-
         if (!this.texture || !this.texture.getTextureMatrix) {
             return;
         }
 
-        if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
-            defines.setValue(this._defineName, true);
-        } else {
-            defines.setValue(this._defineName, false);
-            defines.setValue(this._mainUVDefineName, true);
+        defines.setValue(this._linearDefineName, !this.texture.gammaSpace);
+        if (!defines._areTexturesDirty) {
+            return;
+        }
+
+        if (this._isMixed) {
+            if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
+                defines.setValue(this._defineName, true);
+            } else {
+                defines.setValue(this._defineName, false);
+                defines.setValue(this._mainUVDefineName, true);
+            }
         }
     }
 
@@ -254,6 +260,10 @@ export class TextureBlock extends NodeMaterialBlock {
         state.compilationString += `#else\r\n`;
         state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._mainUVName}).${swizzle}${complement};\r\n`;
         state.compilationString += `#endif\r\n`;
+
+        state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
+        state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
+        state.compilationString += `#endif\r\n`;
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -273,9 +283,14 @@ export class TextureBlock extends NodeMaterialBlock {
         state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
 
         // Fragment
+        this._linearDefineName = state._getFreeDefineName("ISLINEAR");
+        state.sharedData.blocksWithDefines.push(this);
         state.sharedData.bindableBlocks.push(this);
+
+        let comments = `//${this.name}`;
+        state._emitFunctionFromInclude("helperFunctions", comments);
+
         if (this._isMixed) {
-            state.sharedData.blocksWithDefines.push(this);
             state._emitUniformFromString(this._textureInfoName, "float");
         }
 
@@ -303,6 +318,7 @@ export class TextureBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\r\n`;
         codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\r\n`;
         codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\r\n`;
+        codeString += `${this._codeVariableName}.texture.gammaSpace = ${this.texture.gammaSpace};\r\n`;
 
         return codeString;
     }

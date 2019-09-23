@@ -89,6 +89,9 @@ export class InputNodeWidget extends React.Component<IInputNodeWidgetProps> {
                     case NodeMaterialSystemValues.FogColor:
                         value = "Fog color";
                         break;
+                    case NodeMaterialSystemValues.DeltaTime:
+                        value = "Delta time";
+                        break;
                 }
             } else {
                 if (!inputBlock || !inputBlock.isUniform) {
@@ -127,7 +130,7 @@ export class InputNodeWidget extends React.Component<IInputNodeWidgetProps> {
         }
 
         return (
-            <div className={"diagramBlock input" + (inputBlock && inputBlock.isAttribute ? " attribute" : "")} style={{
+            <div className={"diagramBlock input" + (inputBlock && inputBlock.isAttribute ? " attribute" : "")+ (inputBlock && inputBlock.isConstant ? " constant" : "")} style={{
                 background: color
             }}>
                 <div className="header">
