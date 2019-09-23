@@ -152,6 +152,41 @@ export class BlockTools {
                 sqrtBlock.operation = TrigonometryBlockOperations.Sqrt;
                 return sqrtBlock;
             }
+            case "ACosBlock": {
+                let acosBlock = new TrigonometryBlock("ACos");
+                acosBlock.operation = TrigonometryBlockOperations.ACos;
+                return acosBlock;
+            }
+            case "ASinBlock": {
+                let asinBlock = new TrigonometryBlock("ASin");
+                asinBlock.operation = TrigonometryBlockOperations.ASin;
+                return asinBlock;
+            }
+            case "TanBlock": {
+                let tanBlock = new TrigonometryBlock("Tan");
+                tanBlock.operation = TrigonometryBlockOperations.Tan;
+                return tanBlock;
+            }
+            case "ATanBlock": {
+                let atanBlock = new TrigonometryBlock("ATan");
+                atanBlock.operation = TrigonometryBlockOperations.ATan;
+                return atanBlock;
+            }
+            case "FractBlock": {
+                let fractBlock = new TrigonometryBlock("Fract");
+                fractBlock.operation = TrigonometryBlockOperations.Fract;
+                return fractBlock;
+            }
+            case "SignBlock": {
+                let signBlock = new TrigonometryBlock("Sign");
+                signBlock.operation = TrigonometryBlockOperations.Sign;
+                return signBlock;
+            }            
+            case "LogBlock": {
+                let logBlock = new TrigonometryBlock("Log");
+                logBlock.operation = TrigonometryBlockOperations.Log;
+                return logBlock;
+            }                                                            
             case "ExpBlock": {
                 let expBlock = new TrigonometryBlock("Exp");
                 expBlock.operation = TrigonometryBlockOperations.Exp;

@@ -30,8 +30,19 @@ export class TrigonometryPropertyTabComponentProps extends React.Component<ITrig
             {label: "Exp2", value: TrigonometryBlockOperations.Exp2},
             {label: "Round", value: TrigonometryBlockOperations.Round},
             {label: "Ceiling", value: TrigonometryBlockOperations.Ceiling},
-            {label: "Floor", value: TrigonometryBlockOperations.Floor}
+            {label: "Floor", value: TrigonometryBlockOperations.Floor},
+            {label: "ACos", value: TrigonometryBlockOperations.ACos},
+            {label: "ASin", value: TrigonometryBlockOperations.ASin},
+            {label: "ATan", value: TrigonometryBlockOperations.ATan},
+            {label: "Tan", value: TrigonometryBlockOperations.Tan},
+            {label: "Log", value: TrigonometryBlockOperations.Log},
+            {label: "Fract", value: TrigonometryBlockOperations.Fract},
+            {label: "Sign", value: TrigonometryBlockOperations.Sign}
         ];
+
+        operationOptions.sort((a, b) => {
+            return a.label.localeCompare(b.label);
+        })
         
         return (
             <div>

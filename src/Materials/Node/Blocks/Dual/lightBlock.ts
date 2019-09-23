@@ -271,7 +271,7 @@ export class LightBlock extends NodeMaterialBlock {
             }
             state.compilationString += `lightingInfo info;\r\n`;
             state.compilationString += `float shadow = 1.;\r\n`;
-            state.compilationString += `float glossiness = ${this.glossiness.isConnected ? this.glossiness.associatedVariableName : "1.0"} * 512.0;\r\n`;
+            state.compilationString += `float glossiness = pow(${this.glossiness.isConnected ? this.glossiness.associatedVariableName : "1.0"}, 4.0) * 1024.0;\r\n`;
             state.compilationString += `vec3 diffuseBase = vec3(0., 0., 0.);\r\n`;
             state.compilationString += `vec3 specularBase = vec3(0., 0., 0.);\r\n`;
             state.compilationString += `vec3 normalW = ${this.worldNormal.associatedVariableName}.xyz;\r\n`;
