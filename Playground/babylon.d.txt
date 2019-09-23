@@ -54445,6 +54445,79 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to posterize a value
+     * @see https://en.wikipedia.org/wiki/Posterization
+     */
+    export class PosterizeBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new PosterizeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the value input component
+         */
+        readonly value: NodeMaterialConnectionPoint;
+        /**
+         * Gets the steps input component
+         */
+        readonly steps: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Operations supported by the Wave block
+     */
+    export enum WaveBlockKind {
+        /** SawTooth */
+        SawTooth = 0,
+        /** Square */
+        Square = 1,
+        /** Triangle */
+        Triangle = 2
+    }
+    /**
+     * Block used to apply wave operation to floats
+     */
+    export class WaveBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the kibnd of wave to be applied by the block
+         */
+        kind: WaveBlockKind;
+        /**
+         * Creates a new WaveBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        serialize(): any;private _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Effect Render Options
      */
     export interface IEffectRendererOptions {
