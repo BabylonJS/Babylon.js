@@ -30,9 +30,11 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
     }
 
     UNSAFE_componentWillUpdate(nextProps: ITexturePropertyTabComponentProps, nextState: {isEmbedded: boolean}) {
-        let texture = nextProps.node.texture as BaseTexture;
+        if (nextProps.node !== this.props.node) {
+            let texture = nextProps.node.texture as BaseTexture;
 
-        nextState.isEmbedded = !texture || texture.name.substring(0, 4) !== "http";
+            nextState.isEmbedded = !texture || texture.name.substring(0, 4) !== "http";
+        }
     }
 
     private _generateRandomForCache() {
@@ -148,7 +150,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                     }
                     {
                         texture &&
-                        <FloatLineComponent label="Offset U" target={texture} propertyName="vOffset"
+                        <FloatLineComponent label="Offset V" target={texture} propertyName="vOffset"
                         onChange={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}

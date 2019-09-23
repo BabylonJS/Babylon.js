@@ -49,6 +49,7 @@ import { ReplaceColorBlock } from 'babylonjs/Materials/Node/Blocks/replaceColorB
 import { PosterizeBlock } from 'babylonjs/Materials/Node/Blocks/posterizeBlock';
 import { ArcTan2Block } from 'babylonjs/Materials/Node/Blocks/arcTan2Block';
 import { ReciprocalBlock } from 'babylonjs/Materials/Node/Blocks/reciprocalBlock';
+import { WaveBlock, WaveBlockKind } from 'babylonjs/Materials/Node/Blocks/waveBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene) {
@@ -237,6 +238,21 @@ export class BlockTools {
                 floorBlock.operation = TrigonometryBlockOperations.Floor;
                 return floorBlock;
             }       
+            case "SawToothWaveBlock": {
+                let sawToothWaveBlock = new WaveBlock("SawTooth wave");
+                sawToothWaveBlock.kind = WaveBlockKind.SawTooth;
+                return sawToothWaveBlock;
+            }     
+            case "SquareWaveBlock": {
+                let squareWaveBlock = new WaveBlock("Square wave");
+                squareWaveBlock.kind = WaveBlockKind.Square;
+                return squareWaveBlock;
+            }     
+            case "TriangleWaveBlock": {
+                let triangleWaveBlock = new WaveBlock("Triangle wave");
+                triangleWaveBlock.kind = WaveBlockKind.Triangle;
+                return triangleWaveBlock;
+            }
             case "WorldMatrixBlock": {
                 let worldMatrixBlock = new InputBlock("World");
                 worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
