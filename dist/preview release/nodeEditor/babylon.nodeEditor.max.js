@@ -68359,6 +68359,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -68454,6 +68456,8 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["RandomNumberBlock"]("Random number");
             case "ReplaceColorBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReplaceColorBlock"]("Replace color");
+            case "PosterizeBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["PosterizeBlock"]("Posterize");
             case "ArcTan2Block":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ArcTan2Block"]("ArcTan2");
             case "CosBlock": {
@@ -68545,6 +68549,21 @@ var BlockTools = /** @class */ (function () {
                 var floorBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Floor");
                 floorBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Floor;
                 return floorBlock;
+            }
+            case "SawToothWaveBlock": {
+                var sawToothWaveBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlock"]("SawTooth wave");
+                sawToothWaveBlock.kind = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlockKind"].SawTooth;
+                return sawToothWaveBlock;
+            }
+            case "SquareWaveBlock": {
+                var squareWaveBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlock"]("Square wave");
+                squareWaveBlock.kind = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlockKind"].Square;
+                return squareWaveBlock;
+            }
+            case "TriangleWaveBlock": {
+                var triangleWaveBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlock"]("Triangle wave");
+                triangleWaveBlock.kind = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlockKind"].Triangle;
+                return triangleWaveBlock;
             }
             case "WorldMatrixBlock": {
                 var worldMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World");
@@ -70872,8 +70891,10 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         return _this;
     }
     TexturePropertyTabComponent.prototype.UNSAFE_componentWillUpdate = function (nextProps, nextState) {
-        var texture = nextProps.node.texture;
-        nextState.isEmbedded = !texture || texture.name.substring(0, 4) !== "http";
+        if (nextProps.node !== this.props.node) {
+            var texture = nextProps.node.texture;
+            nextState.isEmbedded = !texture || texture.name.substring(0, 4) !== "http";
+        }
     };
     TexturePropertyTabComponent.prototype._generateRandomForCache = function () {
         return 'xxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function (c) {
@@ -70968,7 +70989,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Offset U", target: texture, propertyName: "vOffset", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture &&
@@ -71409,7 +71430,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         var allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock", "RandomNumberBlock", "ReciprocalBlock"],
-            Color_Management: ["ReplaceColorBlock"],
+            Color_Management: ["ReplaceColorBlock", "PosterizeBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "TimeBlock", "DeltaTimeBlock"],
             Interpolation: ["LerpBlock", "SmoothStepBlock"],
@@ -71419,7 +71440,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ReflectionTextureBlock", "ViewDirectionBlock", "PerturbNormalBlock"],
-            Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock"],
+            Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "TriangleWaveBlock", "SquareWaveBlock"],
             Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
         };
         // Create node menu
