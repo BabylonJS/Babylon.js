@@ -54176,6 +54176,10 @@ declare module BABYLON {
         */
         readonly glossiness: NodeMaterialConnectionPoint;
         /**
+        * Gets the glossinness power component
+        */
+        readonly glossPower: NodeMaterialConnectionPoint;
+        /**
         * Gets the diffuse color component
         */
         readonly diffuseColor: NodeMaterialConnectionPoint;
@@ -54485,7 +54489,21 @@ declare module BABYLON {
         /** Ceiling */
         Ceiling = 7,
         /** Square root */
-        Sqrt = 8
+        Sqrt = 8,
+        /** Log */
+        Log = 9,
+        /** Tangent */
+        Tan = 10,
+        /** Arc tangent */
+        ATan = 11,
+        /** Arc cosinus */
+        ACos = 12,
+        /** Arc sinus */
+        ASin = 13,
+        /** Fraction */
+        Fract = 14,
+        /** Sign */
+        Sign = 15
     }
     /**
      * Block used to apply trigonometry operation to floats

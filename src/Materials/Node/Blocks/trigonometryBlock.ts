@@ -28,6 +28,20 @@ export enum TrigonometryBlockOperations {
     Ceiling,
     /** Square root */
     Sqrt,
+    /** Log */
+    Log,
+    /** Tangent */
+    Tan,
+    /** Arc tangent */
+    ATan,
+    /** Arc cosinus */
+    ACos,
+    /** Arc sinus */
+    ASin,
+    /** Fraction */
+    Fract,
+    /** Sign */
+    Sign
 }
 
 /**
@@ -114,6 +128,34 @@ export class TrigonometryBlock extends NodeMaterialBlock {
             }
             case TrigonometryBlockOperations.Sqrt: {
                 operation = "sqrt";
+                break;
+            }
+            case TrigonometryBlockOperations.Log: {
+                operation = "log";
+                break;
+            }
+            case TrigonometryBlockOperations.Tan: {
+                operation = "tan";
+                break;
+            }
+            case TrigonometryBlockOperations.ATan: {
+                operation = "atan";
+                break;
+            }
+            case TrigonometryBlockOperations.ACos: {
+                operation = "acos";
+                break;
+            }
+            case TrigonometryBlockOperations.ASin: {
+                operation = "asin";
+                break;
+            }
+            case TrigonometryBlockOperations.Fract: {
+                operation = "fract";
+                break;
+            }
+            case TrigonometryBlockOperations.Sign: {
+                operation = "sign";
                 break;
             }
         }
