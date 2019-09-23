@@ -29,6 +29,7 @@ import { LerpBlock } from 'babylonjs/Materials/Node/Blocks/lerpBlock';
 import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
 import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
 import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
+import { SmoothStepBlock } from 'babylonjs/Materials/Node/Blocks/smoothStepBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/Enums/nodeMaterialSystemValues';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
@@ -44,6 +45,9 @@ import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
 import { PowBlock } from 'babylonjs/Materials/Node/Blocks/powBlock';
 import { Scene } from 'babylonjs/scene';
 import { RandomNumberBlock } from 'babylonjs/Materials/Node/Blocks/randomNumberBlock';
+import { ReplaceColorBlock } from 'babylonjs/Materials/Node/Blocks/replaceColorBlock';
+import { ArcTan2Block } from 'babylonjs/Materials/Node/Blocks/arcTan2Block';
+import { ReciprocalBlock } from 'babylonjs/Materials/Node/Blocks/reciprocalBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene) {
@@ -110,8 +114,12 @@ export class BlockTools {
                 return new SubtractBlock("Subtract"); 
             case "StepBlock":
                 return new StepBlock("Step");        
+            case "SmoothStepBlock":
+                return new SmoothStepBlock("Smooth step");        
             case "OneMinusBlock":
-                return new OneMinusBlock("One minus");      
+                return new OneMinusBlock("One minus");          
+            case "ReciprocalBlock":
+                return new ReciprocalBlock("Reciprocal");    
             case "ViewDirectionBlock":
                 return new ViewDirectionBlock("View direction");    
             case "LightInformationBlock":
@@ -132,6 +140,10 @@ export class BlockTools {
                 return new PerturbNormalBlock("Perturb normal");                     
             case "RandomNumberBlock":                                          
                 return new RandomNumberBlock("Random number");         
+            case "ReplaceColorBlock":                                          
+                return new ReplaceColorBlock("Replace color");                             
+            case "ArcTan2Block":                                          
+                return new ArcTan2Block("ArcTan2");          
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;
@@ -152,14 +164,14 @@ export class BlockTools {
                 sqrtBlock.operation = TrigonometryBlockOperations.Sqrt;
                 return sqrtBlock;
             }
-            case "ACosBlock": {
-                let acosBlock = new TrigonometryBlock("ACos");
-                acosBlock.operation = TrigonometryBlockOperations.ACos;
+            case "ArcCosBlock": {
+                let acosBlock = new TrigonometryBlock("ArcCos");
+                acosBlock.operation = TrigonometryBlockOperations.ArcCos;
                 return acosBlock;
             }
-            case "ASinBlock": {
-                let asinBlock = new TrigonometryBlock("ASin");
-                asinBlock.operation = TrigonometryBlockOperations.ASin;
+            case "ArcSinBlock": {
+                let asinBlock = new TrigonometryBlock("ArcSin");
+                asinBlock.operation = TrigonometryBlockOperations.ArcSin;
                 return asinBlock;
             }
             case "TanBlock": {
@@ -167,9 +179,9 @@ export class BlockTools {
                 tanBlock.operation = TrigonometryBlockOperations.Tan;
                 return tanBlock;
             }
-            case "ATanBlock": {
-                let atanBlock = new TrigonometryBlock("ATan");
-                atanBlock.operation = TrigonometryBlockOperations.ATan;
+            case "ArcTanBlock": {
+                let atanBlock = new TrigonometryBlock("ArcTan");
+                atanBlock.operation = TrigonometryBlockOperations.ArcTan;
                 return atanBlock;
             }
             case "FractBlock": {
@@ -197,6 +209,16 @@ export class BlockTools {
                 exp2Block.operation = TrigonometryBlockOperations.Exp2;
                 return exp2Block;
             }
+            case "DegreesToRadiansBlock": {
+                let degreesToRadiansBlock = new TrigonometryBlock("Degrees to radians");
+                degreesToRadiansBlock.operation = TrigonometryBlockOperations.Radians;
+                return degreesToRadiansBlock;
+            }
+            case "RadiansToDegreesBlock": {
+                let radiansToDegreesBlock = new TrigonometryBlock("Radians to degrees");
+                radiansToDegreesBlock.operation = TrigonometryBlockOperations.Degrees;
+                return radiansToDegreesBlock;
+            }                        
             case "RoundBlock": {
                 let roundBlock = new TrigonometryBlock("Round");
                 roundBlock.operation = TrigonometryBlockOperations.Round;
@@ -292,6 +314,11 @@ export class BlockTools {
                 timeBlock.animationType = AnimatedInputBlockTypes.Time;
                 return timeBlock;
             }   
+            case "DeltaTimeBlock": {
+                let deltaTimeBlock = new InputBlock("Delta time");                
+                deltaTimeBlock.setAsSystemValue(NodeMaterialSystemValues.DeltaTime);
+                return deltaTimeBlock;
+            }               
         }
 
         return null;

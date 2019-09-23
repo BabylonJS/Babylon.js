@@ -31,13 +31,15 @@ export class TrigonometryPropertyTabComponentProps extends React.Component<ITrig
             {label: "Round", value: TrigonometryBlockOperations.Round},
             {label: "Ceiling", value: TrigonometryBlockOperations.Ceiling},
             {label: "Floor", value: TrigonometryBlockOperations.Floor},
-            {label: "ACos", value: TrigonometryBlockOperations.ACos},
-            {label: "ASin", value: TrigonometryBlockOperations.ASin},
-            {label: "ATan", value: TrigonometryBlockOperations.ATan},
+            {label: "ArcCos", value: TrigonometryBlockOperations.ArcCos},
+            {label: "ArcSin", value: TrigonometryBlockOperations.ArcSin},
+            {label: "ArcTan", value: TrigonometryBlockOperations.ArcTan},
             {label: "Tan", value: TrigonometryBlockOperations.Tan},
             {label: "Log", value: TrigonometryBlockOperations.Log},
             {label: "Fract", value: TrigonometryBlockOperations.Fract},
-            {label: "Sign", value: TrigonometryBlockOperations.Sign}
+            {label: "Sign", value: TrigonometryBlockOperations.Sign},
+            {label: "Radians to degrees", value: TrigonometryBlockOperations.Degrees},
+            {label: "Degrees to radians", value: TrigonometryBlockOperations.Radians}
         ];
 
         operationOptions.sort((a, b) => {

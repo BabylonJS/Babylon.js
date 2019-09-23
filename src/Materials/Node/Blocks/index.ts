@@ -30,3 +30,7 @@ export * from "./lengthBlock";
 export * from "./negateBlock";
 export * from "./powBlock";
 export * from "./randomNumberBlock";
+export * from "./arcTan2Block";
+export * from "./smoothStepBlock";
+export * from "./reciprocalBlock";
+export * from "./replaceColorBlock";
