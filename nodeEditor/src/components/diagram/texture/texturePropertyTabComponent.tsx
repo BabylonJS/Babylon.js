@@ -116,7 +116,14 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                     <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
-                    <CheckBoxLineComponent label="Auto select UV" propertyName="autoSelectUV" target={this.props.node.block!} />
+                    <CheckBoxLineComponent label="Auto select UV" propertyName="autoSelectUV" target={this.props.node.block!} onValueChanged={() => {                        
+                        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                    }}/> {
+                        texture &&
+                        <CheckBoxLineComponent label="Gamma space" propertyName="gammaSpace" target={texture} onValueChanged={() => {                        
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}/>
+                    }
                     {
                         texture &&
                         <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => {

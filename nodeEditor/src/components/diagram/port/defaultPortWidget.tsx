@@ -23,7 +23,6 @@ export class DefaultPortWidget extends BaseWidget<IDefaultPortWidgetProps, PortS
 	render() {
 		return (
 			<div
-				title={this.props.name}
 				style={this.props.style}
 				{...this.getProps()}
 				onMouseEnter={() => {

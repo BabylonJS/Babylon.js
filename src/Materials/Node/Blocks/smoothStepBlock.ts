@@ -5,18 +5,19 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to step a value
+ * Block used to smooth step a value
  */
-export class StepBlock extends NodeMaterialBlock {
+export class SmoothStepBlock extends NodeMaterialBlock {
     /**
-     * Creates a new StepBlock
+     * Creates a new SmoothStepBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("value", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerInput("edge", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("edge0", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("edge1", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
 
     }
@@ -26,7 +27,7 @@ export class StepBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "StepBlock";
+        return "SmoothStepBlock";
     }
 
     /**
@@ -37,10 +38,17 @@ export class StepBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the edge operand input component
+     * Gets the first edge operand input component
      */
-    public get edge(): NodeMaterialConnectionPoint {
+    public get edge0(): NodeMaterialConnectionPoint {
         return this._inputs[1];
+    }
+
+    /**
+     * Gets the second edge operand input component
+     */
+    public get edge1(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
     }
 
     /**
@@ -55,10 +63,10 @@ export class StepBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = step(${this.edge.associatedVariableName}, ${this.value.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = smoothstep(${this.edge0.associatedVariableName}, ${this.edge1.associatedVariableName}, ${this.value.associatedVariableName});\r\n`;
 
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.StepBlock"] = StepBlock;
+_TypeStore.RegisteredTypes["BABYLON.SmoothStepBlock"] = SmoothStepBlock;

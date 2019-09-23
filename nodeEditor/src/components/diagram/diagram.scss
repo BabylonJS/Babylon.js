@@ -80,6 +80,10 @@
         background: #40866E;
     }
 
+    &.constant {
+        background: gray;
+    }
+
     &.output {
         background: rgb(106, 44, 131);
         color:white;

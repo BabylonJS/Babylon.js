@@ -86,7 +86,9 @@ export class PortHelper {
 
                 if (!includeOnly || includeOnly.indexOf(port.name) !== -1) {
                     inputPorts.push(
-                        <div key={key} className="input-port">
+                        <div key={key}                         
+				            title={port.name}
+                            className="input-port">
                             <div className="input-port-plug">
                                 <div className="input-port-border">                                
                                 </div>

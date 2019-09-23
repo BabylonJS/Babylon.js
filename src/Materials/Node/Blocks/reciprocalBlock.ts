@@ -5,20 +5,21 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to step a value
+ * Block used to get the reciprocal (1 / x) of a value
  */
-export class StepBlock extends NodeMaterialBlock {
+export class ReciprocalBlock extends NodeMaterialBlock {
     /**
-     * Creates a new StepBlock
+     * Creates a new ReciprocalBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("value", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerInput("edge", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
+        this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this._outputs[0].excludedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Matrix);
     }
 
     /**
@@ -26,21 +27,14 @@ export class StepBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "StepBlock";
+        return "ReciprocalBlock";
     }
 
     /**
-     * Gets the value operand input component
+     * Gets the input component
      */
-    public get value(): NodeMaterialConnectionPoint {
+    public get input(): NodeMaterialConnectionPoint {
         return this._inputs[0];
-    }
-
-    /**
-     * Gets the edge operand input component
-     */
-    public get edge(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
     }
 
     /**
@@ -55,10 +49,10 @@ export class StepBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = step(${this.edge.associatedVariableName}, ${this.value.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = 1. / ${this.input.associatedVariableName};\r\n`;
 
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.StepBlock"] = StepBlock;
+_TypeStore.RegisteredTypes["BABYLON.ReciprocalBlock"] = ReciprocalBlock;

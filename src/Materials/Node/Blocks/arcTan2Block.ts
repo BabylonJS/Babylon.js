@@ -5,20 +5,19 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to step a value
+ * Block used to compute arc tangent of 2 values
  */
-export class StepBlock extends NodeMaterialBlock {
+export class ArcTan2Block extends NodeMaterialBlock {
     /**
-     * Creates a new StepBlock
+     * Creates a new ArcTan2Block
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("value", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerInput("edge", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("x", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("y", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
-
     }
 
     /**
@@ -26,20 +25,20 @@ export class StepBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "StepBlock";
+        return "ArcTan2Block";
     }
 
     /**
-     * Gets the value operand input component
+     * Gets the x operand input component
      */
-    public get value(): NodeMaterialConnectionPoint {
+    public get x(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the edge operand input component
+     * Gets the y operand input component
      */
-    public get edge(): NodeMaterialConnectionPoint {
+    public get y(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
@@ -55,10 +54,10 @@ export class StepBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = step(${this.edge.associatedVariableName}, ${this.value.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = atan(${this.x.associatedVariableName}, ${this.y.associatedVariableName});\r\n`;
 
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.StepBlock"] = StepBlock;
+_TypeStore.RegisteredTypes["BABYLON.ArcTan2Block"] = ArcTan2Block;
