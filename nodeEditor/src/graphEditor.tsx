@@ -54,6 +54,9 @@ import { PreviewAreaComponent } from './components/preview/previewAreaComponent'
 import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
 import { GradientNodeModel } from './components/diagram/gradient/gradientNodeModel';
 import { GradientNodeFactory } from './components/diagram/gradient/gradientNodeFactory';
+import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
+import { ReflectionTextureNodeFactory } from './components/diagram/reflectionTexture/reflectionTextureNodeFactory';
+import { ReflectionTextureNodeModel } from './components/diagram/reflectionTexture/reflectionTextureNodeModel';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -112,6 +115,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
        
         if (options.nodeMaterialBlock instanceof TextureBlock) {
             newNode = new TextureNodeModel();
+        } else if (options.nodeMaterialBlock instanceof ReflectionTextureBlock) {
+            newNode = new ReflectionTextureNodeModel();            
         } else if (options.nodeMaterialBlock instanceof LightBlock) {
             newNode = new LightNodeModel();
         } else if (options.nodeMaterialBlock instanceof InputBlock) {
@@ -203,6 +208,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine.registerNodeFactory(new ClampNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new LightInformationNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new GradientNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new ReflectionTextureNodeFactory(this.props.globalState));
         this._engine.registerLinkFactory(new AdvancedLinkFactory());
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {

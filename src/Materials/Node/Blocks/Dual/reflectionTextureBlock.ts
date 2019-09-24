@@ -10,13 +10,13 @@ import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Nullable } from '../../../../types';
 import { _TypeStore } from '../../../../Misc/typeStore';
-import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
 import { InputBlock } from '../Input/inputBlock';
 import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { Constants } from '../../../../Engines/constants';
 
 import "../../../../Shaders/ShadersInclude/reflectionFunction";
+import { CubeTexture } from '../../../Textures/cubeTexture';
 
 /**
  * Block used to read a reflection texture from a sampler
@@ -266,6 +266,17 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
+        if (!this.texture) {
+            if (state.target === NodeMaterialBlockTargets.Fragment) {
+                for (var output of this._outputs) {
+                    if (output.hasEndpoints) {
+                        state.compilationString += `${this._declareOutput(output, state)} = vec3(0.).${output.name};\r\n`;
+                    }
+                }
+            }
+            return;
+        }
+
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             this._define3DName = state._getFreeDefineName("REFLECTIONMAP_3D");
             this._defineCubicName = state._getFreeDefineName("REFLECTIONMAP_CUBIC");
@@ -401,7 +412,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture) {
-            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
+            this.texture = CubeTexture.Parse(serializationObject.texture, scene, rootUrl);
         }
     }
 }

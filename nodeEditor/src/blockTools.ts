@@ -76,7 +76,7 @@ export class BlockTools {
             case "TextureBlock":
                 return new TextureBlock("Texture");
             case "ReflectionTextureBlock":
-                return new ReflectionTextureBlock("Texture");                
+                return new ReflectionTextureBlock("Reflection texture");                
             case "LightBlock":
                 return new LightBlock("Lights");
             case "FogBlock":
