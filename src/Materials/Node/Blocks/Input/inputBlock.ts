@@ -347,10 +347,10 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 
-    private _emitConstant() {
+    private _emitConstant(state: NodeMaterialBuildState) {
         switch (this.type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
-                return `${this.value}`;
+                return `${state._emitFloat(this.value)}`;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 return `vec2(${this.value.x}, ${this.value.y})`;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
@@ -378,7 +378,7 @@ export class InputBlock extends NodeMaterialBlock {
                     return;
                 }
                 state.constants.push(this.associatedVariableName);
-                state._constantDeclaration += this._declareOutput(this.output, state) + ` = ${this._emitConstant()};\r\n`;
+                state._constantDeclaration += this._declareOutput(this.output, state) + ` = ${this._emitConstant(state)};\r\n`;
                 return;
             }
 

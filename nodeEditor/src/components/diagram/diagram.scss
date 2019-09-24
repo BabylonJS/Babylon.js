@@ -76,6 +76,13 @@
         }        
     }
 
+    &.gradient {
+        .outputs, .inputs {
+            transform: translateY(5px);
+        }        
+        height: 70px;
+    }
+
     &.attribute {
         background: #40866E;
     }
