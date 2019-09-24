@@ -2616,6 +2616,8 @@ export class ThinEngine {
             this._alphaState.reset();
 
             this._unpackFlipYCached = null;
+
+            this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
         }
 
         this._resetVertexBufferBinding();
