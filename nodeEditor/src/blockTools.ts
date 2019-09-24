@@ -49,6 +49,7 @@ import { ReplaceColorBlock } from 'babylonjs/Materials/Node/Blocks/replaceColorB
 import { PosterizeBlock } from 'babylonjs/Materials/Node/Blocks/posterizeBlock';
 import { ArcTan2Block } from 'babylonjs/Materials/Node/Blocks/arcTan2Block';
 import { ReciprocalBlock } from 'babylonjs/Materials/Node/Blocks/reciprocalBlock';
+import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
 import { WaveBlock, WaveBlockKind } from 'babylonjs/Materials/Node/Blocks/waveBlock';
 
 export class BlockTools {
@@ -147,7 +148,9 @@ export class BlockTools {
             case "PosterizeBlock":                                          
                 return new PosterizeBlock("Posterize");                              
             case "ArcTan2Block":                                          
-                return new ArcTan2Block("ArcTan2");          
+                return new ArcTan2Block("ArcTan2");                            
+            case "GradientBlock":                                          
+                return new GradientBlock("Gradient");            
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;

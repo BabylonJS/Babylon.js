@@ -351,4 +351,13 @@ export class NodeMaterialBuildState {
             this._uniformDeclaration += `#endif\r\n`;
         }
     }
+
+    /** @hidden */
+    public _emitFloat(value: number) {
+        if (value.toString() === value.toFixed(0)) {
+            return `${value}.0`;
+        }
+
+        return value.toString();
+    }
 }
