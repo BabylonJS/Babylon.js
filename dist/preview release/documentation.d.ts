@@ -28145,6 +28145,10 @@ declare module BABYLON {
          */
         readonly textureFormat: number;
         /**
+         * Indicates that textures need to be re-calculated for all materials
+         */
+        protected _markAllSubMeshesAsTexturesDirty(): void;
+        /**
          * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
          * This will returns an RGBA array buffer containing either in values (0-255) or
          * float values (0-1) depending of the underlying buffer type.
