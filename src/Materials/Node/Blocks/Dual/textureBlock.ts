@@ -170,15 +170,15 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        if (!defines._areTexturesDirty) {
+            return;
+        }
+
         if (!this.texture || !this.texture.getTextureMatrix) {
             return;
         }
 
         defines.setValue(this._linearDefineName, !this.texture.gammaSpace);
-        if (!defines._areTexturesDirty) {
-            return;
-        }
-
         if (this._isMixed) {
             if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
                 defines.setValue(this._defineName, true);

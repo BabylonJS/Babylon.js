@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
+import { serialize, SerializationHelper, serializeAsTexture, expandToProperty } from "../../Misc/decorators";
 import { Observer, Observable } from "../../Misc/observable";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Nullable } from "../../types";
@@ -205,6 +205,7 @@ export class BaseTexture implements IAnimatable {
      * This only impacts the PBR and Background materials
      */
     @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public gammaSpace = true;
 
     /**
@@ -592,6 +593,19 @@ export class BaseTexture implements IAnimatable {
         }
 
         return (this._texture.format !== undefined) ? this._texture.format : Constants.TEXTUREFORMAT_RGBA;
+    }
+
+    /**
+     * Indicates that textures need to be re-calculated for all materials
+     */
+    protected _markAllSubMeshesAsTexturesDirty() {
+        let scene = this.getScene();
+
+        if (!scene) {
+            return;
+        }
+
+        scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     /**
