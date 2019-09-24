@@ -48,7 +48,6 @@ struct RefInfo {
 
 std::map<JSObjectRef, ClassTable*> constructorCB;
 std::map<JSValueRef, FunctionTable*> FunctionTables;
-std::map<JSObjectRef, void*> externals;
 
 void dumpException(napi_env env, JSValueRef exception) {
   char errorStr[1024];
@@ -885,21 +884,23 @@ napi_status napi_create_external(napi_env env,
                  napi_finalize finalize_cb,
                  void* finalize_hint,
                  napi_value* result) {
-
-  JSObjectRef jsObject = JSObjectMake(env->m_globalContext, nullptr, data);
-  //assert(JSObjectGetPrivate(jsObject) == result); this is failing
-  externals[jsObject] = data;
+  static JSClassRef classDef = nullptr;
+  if (!classDef)
+  {
+      JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
+      classDefinition.className = "dummyClass";
+      classDef = JSClassCreate(&classDefinition);
+  }
+    
+  JSObjectRef jsObject = JSObjectMake(env->m_globalContext, classDef, data);
+  assert(JSObjectGetPrivate(jsObject) == data);
   *result = reinterpret_cast<napi_value>(jsObject);
   return napi_ok;
 }
 
 napi_status napi_get_value_external(napi_env env, napi_value v, void** result) {
   JSObjectRef jsObject = reinterpret_cast<JSObjectRef>(v);
-  //return napi_unwrap(env, v, result);
-  auto iter = externals.find(jsObject);
-  assert(iter != externals.end());
-  *result = iter->second;
-  return napi_ok;
+  return napi_unwrap(env, v, result);
 }
 
 napi_status napi_create_arraybuffer(napi_env env,
