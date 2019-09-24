@@ -273,7 +273,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     /**
      * Defines if UVs are optimized by default during load.
      */
-    public static OPTIMIZE_WITH_UV = false;
+    public static OPTIMIZE_WITH_UV = true;
     /**
      * Invert model on y-axis (does a model scaling inversion)
      */

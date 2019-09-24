@@ -49,9 +49,10 @@ declare module "babylonjs-node-editor/blockTools" {
     import { PosterizeBlock } from 'babylonjs/Materials/Node/Blocks/posterizeBlock';
     import { ArcTan2Block } from 'babylonjs/Materials/Node/Blocks/arcTan2Block';
     import { ReciprocalBlock } from 'babylonjs/Materials/Node/Blocks/reciprocalBlock';
+    import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
     import { WaveBlock } from 'babylonjs/Materials/Node/Blocks/waveBlock';
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: Scene): BonesBlock | InstancesBlock | MorphTargetsBlock | DiscardBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | PowBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | SmoothStepBlock | OneMinusBlock | ReciprocalBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | LengthBlock | DistanceBlock | NegateBlock | PerturbNormalBlock | RandomNumberBlock | ReplaceColorBlock | PosterizeBlock | ArcTan2Block | WaveBlock | InputBlock | null;
+        static GetBlockFromString(data: string, scene: Scene): BonesBlock | InstancesBlock | MorphTargetsBlock | DiscardBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | PowBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | DivideBlock | SubtractBlock | StepBlock | SmoothStepBlock | OneMinusBlock | ReciprocalBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | LengthBlock | DistanceBlock | NegateBlock | PerturbNormalBlock | RandomNumberBlock | ReplaceColorBlock | PosterizeBlock | ArcTan2Block | GradientBlock | WaveBlock | InputBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -1505,6 +1506,82 @@ declare module "babylonjs-node-editor/components/preview/previewAreaComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/components/diagram/gradient/gradientStepComponent" {
+    import * as React from 'react';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+    interface IGradientStepComponentProps {
+        globalState: GlobalState;
+        step: GradientBlockColorStep;
+        lineIndex: number;
+        onDelete: () => void;
+        onUpdateStep: () => void;
+    }
+    export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
+        gradient: number;
+    }> {
+        constructor(props: IGradientStepComponentProps);
+        updateColor(color: string): void;
+        updateStep(gradient: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/gradient/gradientNodePropertyComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { GradientNodeModel } from "babylonjs-node-editor/components/diagram/gradient/gradientNodeModel";
+    import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+    interface IGradientPropertyTabComponentProps {
+        globalState: GlobalState;
+        gradientNode: GradientNodeModel;
+    }
+    export class GradientPropertyTabComponentProps extends React.Component<IGradientPropertyTabComponentProps> {
+        constructor(props: IGradientPropertyTabComponentProps);
+        forceRebuild(): void;
+        deleteStep(step: GradientBlockColorStep): void;
+        addNewStep(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/gradient/gradientNodeModel" {
+    import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+    export class GradientNodeModel extends DefaultNodeModel {
+        readonly gradientBlock: GradientBlock;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/gradient/gradientNodeWidget" {
+    import * as React from "react";
+    import { GradientNodeModel } from "babylonjs-node-editor/components/diagram/gradient/gradientNodeModel";
+    import { Nullable } from 'babylonjs/types';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    export interface IGradientNodeWidgetProps {
+        node: Nullable<GradientNodeModel>;
+        globalState: GlobalState;
+    }
+    export class GradientNodeWidget extends React.Component<IGradientNodeWidgetProps> {
+        constructor(props: IGradientNodeWidgetProps);
+        renderValue(value: string): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/gradient/gradientNodeFactory" {
+    import * as SRD from "storm-react-diagrams";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { GradientNodeModel } from "babylonjs-node-editor/components/diagram/gradient/gradientNodeModel";
+    export class GradientNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        constructor(globalState: GlobalState);
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: GradientNodeModel): JSX.Element;
+        getNewInstance(): GradientNodeModel;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
@@ -1678,7 +1755,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: BABYLON.Scene): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.WaveBlock | BABYLON.InputBlock | null;
+        static GetBlockFromString(data: string, scene: BABYLON.Scene): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.WaveBlock | BABYLON.InputBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -2920,6 +2997,65 @@ declare module NODEEDITOR {
         changeBackground(value: string): void;
         changeBackFaceCulling(value: boolean): void;
         render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IGradientStepComponentProps {
+        globalState: GlobalState;
+        step: BABYLON.GradientBlockColorStep;
+        lineIndex: number;
+        onDelete: () => void;
+        onUpdateStep: () => void;
+    }
+    export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
+        gradient: number;
+    }> {
+        constructor(props: IGradientStepComponentProps);
+        updateColor(color: string): void;
+        updateStep(gradient: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IGradientPropertyTabComponentProps {
+        globalState: GlobalState;
+        gradientNode: GradientNodeModel;
+    }
+    export class GradientPropertyTabComponentProps extends React.Component<IGradientPropertyTabComponentProps> {
+        constructor(props: IGradientPropertyTabComponentProps);
+        forceRebuild(): void;
+        deleteStep(step: BABYLON.GradientBlockColorStep): void;
+        addNewStep(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class GradientNodeModel extends DefaultNodeModel {
+        readonly gradientBlock: BABYLON.GradientBlock;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IGradientNodeWidgetProps {
+        node: BABYLON.Nullable<GradientNodeModel>;
+        globalState: GlobalState;
+    }
+    export class GradientNodeWidget extends React.Component<IGradientNodeWidgetProps> {
+        constructor(props: IGradientNodeWidgetProps);
+        renderValue(value: string): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class GradientNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        constructor(globalState: GlobalState);
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: GradientNodeModel): JSX.Element;
+        getNewInstance(): GradientNodeModel;
     }
 }
 declare module NODEEDITOR {

@@ -53335,6 +53335,8 @@ declare module BABYLON {
         _emitVaryingFromString(name: string, type: string, define?: string, notDefine?: boolean): boolean;
         /** @hidden */
         _emitUniformFromString(name: string, type: string, define?: string, notDefine?: boolean): void;
+        /** @hidden */
+        _emitFloat(value: number): string;
     }
 }
 declare module BABYLON {

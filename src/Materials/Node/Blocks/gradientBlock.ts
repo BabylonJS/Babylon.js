@@ -19,7 +19,7 @@ export class GradientBlockColorStep {
     public constructor(
         /**
          * Gets or sets a value indicating which step this color is associated with (between 0 and 1)
-         */     
+         */
         public step: number,
         /**
          * Gets or sets the color associated with this step
@@ -94,8 +94,8 @@ export class GradientBlock extends NodeMaterialBlock {
 
         let tempColor = state._getFreeVariableName("gradientTempColor");
         let tempPosition = state._getFreeVariableName("gradientTempPosition");
-        
-        state.compilationString += `vec3 ${tempColor} = ${this._writeColorConstant(0)};\r\n`;        
+
+        state.compilationString += `vec3 ${tempColor} = ${this._writeColorConstant(0)};\r\n`;
         state.compilationString += `float ${tempPosition};\r\n`;
 
         let gradientSource = this.gradient.associatedVariableName;
@@ -127,9 +127,9 @@ export class GradientBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.colorSteps = [];
-        
+
         for (var step of serializationObject.colorSteps) {
-            this.colorSteps.push(new GradientBlockColorStep(step.step, new Color3(step.color.r, step.color.g, step.color.b)))
+            this.colorSteps.push(new GradientBlockColorStep(step.step, new Color3(step.color.r, step.color.g, step.color.b)));
         }
     }
 
@@ -141,7 +141,7 @@ export class GradientBlock extends NodeMaterialBlock {
         }
 
         return codeString;
-    }    
+    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.GradientBlock"] = GradientBlock;
