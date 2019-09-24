@@ -2924,7 +2924,7 @@ export class ThinEngine {
             else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
                 FileTools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null);
             }
-            else {
+            else if (buffer){
                 onload(<HTMLImageElement>buffer);
             }
         }
