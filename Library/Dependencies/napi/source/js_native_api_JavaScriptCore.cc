@@ -187,7 +187,7 @@ napi_status napi_get_boolean(napi_env env, bool value, napi_value* result) {
 }
 
 napi_status napi_get_last_error_info(napi_env env,
-                   const napi_extended_error_info** result) {
+                  const napi_extended_error_info** result) {
   assert(0);
   return napi_ok;
 }
@@ -240,7 +240,7 @@ JSValueRef JSCFunctionCallback(JSContextRef ctx, JSObjectRef function, JSObjectR
   
   CallbackInfo callbackInfo;
   callbackInfo.argc = argumentCount;
-  OpaqueJSValue ** valueRef = const_cast<OpaqueJSValue **>(arguments);
+  OpaqueJSValue** valueRef = const_cast<OpaqueJSValue **>(arguments);
   callbackInfo.argv = reinterpret_cast<napi_value*>(valueRef);
   callbackInfo.data = cbInfo->data;
   callbackInfo.thisArg = reinterpret_cast<napi_value>(thisObject);
@@ -259,7 +259,7 @@ napi_status napi_create_function(napi_env env,
   auto context = env->m_globalContext;
   JSStringRef str = JSStringCreateWithUTF8CString(utf8name);
   JSObjectRef function = JSObjectMakeFunctionWithCallback(context, str, JSCFunctionCallback);
-  ClassTable *cbInfo = new ClassTable{cb, callback_data, nullptr, env};
+  ClassTable* cbInfo = new ClassTable{cb, callback_data, nullptr, env};
   constructorCB[function] = cbInfo;
   *result = reinterpret_cast<napi_value>(function);
   JSStringRelease(str);
@@ -416,11 +416,11 @@ JSValueRef JSCGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef prop
   auto iter = FunctionTables.find(object);
   assert(iter != FunctionTables.end());
   
+  size_t stringSize = JSStringGetMaximumUTF8CStringSize(propertyName);
+  std::unique_ptr<char> cstr = std::make_unique<char>(stringSize);
+  JSStringGetUTF8CString(propertyName, cstr.get(), stringSize);
   
-  char propertyStr[1024];
-  /*size_t length =*/JSStringGetUTF8CString(propertyName, propertyStr, sizeof(propertyStr));
-  
-  auto propertyIter = iter->second->properties.find(std::string(propertyStr));
+  auto propertyIter = iter->second->properties.find(std::string(cstr.get()));
   assert(propertyIter != iter->second->properties.end());
   
   auto prop = propertyIter->second;
@@ -583,9 +583,7 @@ napi_status napi_get_array_length(napi_env env,
                   napi_value v,
                   uint32_t* result) {
   assert(JSValueIsArray(env->m_globalContext, reinterpret_cast<JSObjectRef>(v)));
-  
-  bool hasLength = JSObjectHasProperty(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), JSStringCreateWithUTF8CString("length"));
-  assert(hasLength);
+  assert(JSObjectHasProperty(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), JSStringCreateWithUTF8CString("length")));
   
   JSValueRef lengthValue = JSObjectGetProperty(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), JSStringCreateWithUTF8CString("length"), nullptr);
   double length = JSValueToNumber(env->m_globalContext, lengthValue, nullptr);
@@ -803,7 +801,8 @@ napi_status napi_wrap(napi_env env,
             void* finalize_hint,
             napi_ref* result) {
   JSObjectRef object = reinterpret_cast<JSObjectRef>(js_object);
-  assert(JSObjectSetPrivate(object, native_object));
+  JSObjectSetPrivate(object, native_object);
+  assert(JSObjectGetPrivate(object) == native_object);
   if (result) {
     *result = reinterpret_cast<napi_ref>(object);
   }
