@@ -48,7 +48,9 @@ export class PortHelper {
                 let style = this._GetPortStyle(port.connection!.type);
 
                 outputPorts.push(
-                    <div key={key} className="output-port">
+                    <div key={key}                                    
+				        title={port.name}
+                        className="output-port">
                         {
                             !ignoreLabel &&
                             <div className="output-port-label">
