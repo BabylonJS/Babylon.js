@@ -55,5 +55,20 @@ void MacErrorMessage(const char *outputString)
     // Update the view, if already loaded.
 }
 
+- (void)mouseDown:(NSEvent *)theEvent {
+    
+    inputBuffer->SetPointerDown(true);
+}
+
+- (void)mouseDragged:(NSEvent *)theEvent {
+    
+    NSPoint eventLocation = [theEvent locationInWindow];
+    inputBuffer->SetPointerPosition(eventLocation.x, eventLocation.y);
+}
+
+- (void)mouseUp:(NSEvent *)theEvent {
+    
+    inputBuffer->SetPointerDown(false);
+}
 
 @end
