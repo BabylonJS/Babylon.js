@@ -1903,8 +1903,6 @@ export class Engine extends ThinEngine {
     public dispose(): void {
         this.hideLoadingUI();
 
-        super.dispose();
-
         this.onNewSceneAddedObservable.clear();
 
         // Release postProcesses
@@ -1952,6 +1950,8 @@ export class Engine extends ThinEngine {
             document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
             document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
         }
+
+        super.dispose();
 
         // Remove from Instances
         var index = Engine.Instances.indexOf(this);
