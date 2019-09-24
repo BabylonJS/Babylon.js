@@ -7,29 +7,29 @@
 #include <map>
 #include <napi/napi.h>
 
-struct function_table_entry {
+struct FunctionTableEntry {
   napi_callback cb;
-  void *data;
+  void* data;
 };
 
-struct function_table_property {
+struct FunctionTableProperty {
   napi_callback getter;
   napi_callback setter;
-  void *data;
+  void* data;
 };
 
-struct function_table {
+struct FunctionTable {
   napi_env env;
-  std::vector<function_table_entry> table;
-  std::map<std::string, function_table_property> properties;
+  std::vector<FunctionTableEntry> table;
+  std::map<std::string, FunctionTableProperty> properties;
 };
 
-struct JSC_cbInfo {
+struct ClassTable {
   napi_callback cb;
   void* data;
   JSClassRef classRef;
   napi_env env;
-  function_table function_table;
+  FunctionTable FunctionTable;
 };
 
 struct CallbackInfo {
@@ -46,8 +46,8 @@ struct RefInfo {
   uint32_t count;
 };
 
-std::map<JSObjectRef, JSC_cbInfo*> constructorCB;
-std::map<JSValueRef, function_table*> function_tables;
+std::map<JSObjectRef, ClassTable*> constructorCB;
+std::map<JSValueRef, FunctionTable*> FunctionTables;
 std::map<JSObjectRef, void*> externals;
 
 void dumpException(napi_env env, JSValueRef exception) {
@@ -237,7 +237,7 @@ napi_status napi_is_exception_pending(napi_env env, bool* result) {
 JSValueRef JSCFunctionCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
   auto iter = constructorCB.find(function);
   assert(iter != constructorCB.end());
-  JSC_cbInfo *cbInfo = iter->second;
+  ClassTable *cbInfo = iter->second;
   
   CallbackInfo callbackInfo;
   callbackInfo.argc = argumentCount;
@@ -260,7 +260,7 @@ napi_status napi_create_function(napi_env env,
   auto context = env->m_globalContext;
   JSStringRef str = JSStringCreateWithUTF8CString(utf8name);
   JSObjectRef function = JSObjectMakeFunctionWithCallback(context, str, JSCFunctionCallback);
-  JSC_cbInfo *cbInfo = new JSC_cbInfo{cb, callback_data, nullptr, env};
+  ClassTable *cbInfo = new ClassTable{cb, callback_data, nullptr, env};
   constructorCB[function] = cbInfo;
   *result = reinterpret_cast<napi_value>(function);
   JSStringRelease(str);
@@ -355,11 +355,11 @@ napi_status napi_create_symbol(napi_env env,
 
 template<int functionIndex> JSValueRef JSCStaticMethod(JSContextRef ctx, JSObjectRef function, JSObjectRef object, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
   // vf table
-  auto iter = function_tables.find(object);
-  assert(iter != function_tables.end());
+  auto iter = FunctionTables.find(object);
+  assert(iter != FunctionTables.end());
   
-  const function_table& table = *iter->second;
-  const function_table_entry& entry = table.table[functionIndex];
+  const FunctionTable& table = *iter->second;
+  const FunctionTableEntry& entry = table.table[functionIndex];
   
   CallbackInfo callbackInfo;
   callbackInfo.argc = argumentCount;
@@ -385,14 +385,14 @@ JSObjectRef JSCCallAsConstructor(JSContextRef ctx, JSObjectRef constructor, size
 
   auto iter = constructorCB.find(constructor);
   assert(iter != constructorCB.end());
-  JSC_cbInfo *cbInfo = iter->second;
+  ClassTable *cbInfo = iter->second;
   
   
   assert(JSObjectIsConstructor(ctx, constructor));
   OpaqueJSValue* jsValue = const_cast<OpaqueJSValue*>(JSObjectMake(ctx, cbInfo->classRef, nullptr));
   napi_value value = reinterpret_cast<napi_value>(jsValue);
   
-  function_tables[jsValue] = &cbInfo->function_table;
+  FunctionTables[jsValue] = &cbInfo->FunctionTable;
   
   // callback will wrap the pointer itself
   CallbackInfo callbackInfo;
@@ -414,8 +414,8 @@ bool JSCSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyNa
 }
 
 JSValueRef JSCGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
-  auto iter = function_tables.find(object);
-  assert(iter != function_tables.end());
+  auto iter = FunctionTables.find(object);
+  assert(iter != FunctionTables.end());
   
   
   char propertyStr[1024];
@@ -481,7 +481,7 @@ napi_status napi_define_class(napi_env env,
     }
   }
 
-  function_table table;
+  FunctionTable table;
   
   JSStaticValue* staticValues = new JSStaticValue[propertyCount+1];
   for (auto i = 0;i<propertyCount;i++) {
@@ -572,7 +572,7 @@ napi_status napi_define_class(napi_env env,
   JSObjectRef ctor = JSObjectMakeConstructor(context, classDef, JSCCallAsConstructor);
   JSObjectSetProperty(context, globalObj, str, ctor, kJSPropertyAttributeNone, nullptr);
   
-  JSC_cbInfo *cbInfo = new JSC_cbInfo{cb, data, classDef, env, table};
+  ClassTable *cbInfo = new ClassTable{cb, data, classDef, env, table};
   constructorCB[ctor] = cbInfo;
 
   JSStringRelease(str);
@@ -863,7 +863,7 @@ napi_status napi_new_instance(napi_env env,
   assert(JSObjectIsConstructor(env->m_globalContext, ctor));
   OpaqueJSValue* jsValue = const_cast<OpaqueJSValue*>(JSObjectCallAsConstructor(env->m_globalContext, ctor, argc, reinterpret_cast<const JSValueRef*>(argv), nullptr));
   napi_value value = reinterpret_cast<napi_value>(jsValue);
-  function_tables[jsValue] = &iter->second->function_table;
+  FunctionTables[jsValue] = &iter->second->FunctionTable;
   *result = value;
   return napi_ok;
 }
