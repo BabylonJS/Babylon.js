@@ -7,28 +7,24 @@
 #include <map>
 #include <napi/napi.h>
 
-struct function_table_entry
-{
+struct function_table_entry {
   napi_callback cb;
   void *data;
 };
 
-struct function_table_property
-{
+struct function_table_property {
   napi_callback getter;
   napi_callback setter;
   void *data;
 };
 
-struct function_table
-{
+struct function_table {
   napi_env env;
   std::vector<function_table_entry> table;
   std::map<std::string, function_table_property> properties;
 };
 
-struct JSC_cbInfo
-{
+struct JSC_cbInfo {
   napi_callback cb;
   void* data;
   JSClassRef classRef;
@@ -36,8 +32,7 @@ struct JSC_cbInfo
   function_table function_table;
 };
 
-struct CallbackInfo
-{
+struct CallbackInfo {
   napi_value newTarget;
   napi_value thisArg;
   napi_value* argv;
@@ -46,8 +41,7 @@ struct CallbackInfo
   bool isConstructCall{ false };
 };
 
-struct RefInfo
-{
+struct RefInfo {
   JSValueRef value;
   uint32_t count;
 };
@@ -56,21 +50,16 @@ std::map<JSObjectRef, JSC_cbInfo*> constructorCB;
 std::map<JSValueRef, function_table*> function_tables;
 std::map<JSObjectRef, void*> externals;
 
-void dumpException(napi_env env, JSValueRef exception)
-{
+void dumpException(napi_env env, JSValueRef exception) {
   char errorStr[1024];
   size_t errorStrSize{ 0 };
 
-  if (!JSValueIsNull(env->m_globalContext, exception))
-  {
+  if (!JSValueIsNull(env->m_globalContext, exception)) {
     // Getting error string
-    if (JSValueIsString(env->m_globalContext, exception))
-    {
+    if (JSValueIsString(env->m_globalContext, exception)) {
       OpaqueJSValue* ncstr = const_cast<OpaqueJSValue*>(exception);
       /*size_t length =*/ JSStringGetUTF8CString(reinterpret_cast<JSStringRef>(ncstr), errorStr, sizeof(errorStr));
-    }
-    else
-    {
+    } else {
       OpaqueJSValue *exceptionValue = const_cast<OpaqueJSValue*>(exception);
       napi_get_value_string_utf8(env, reinterpret_cast<napi_value>(exceptionValue), errorStr, sizeof(errorStr), &errorStrSize);
     }
