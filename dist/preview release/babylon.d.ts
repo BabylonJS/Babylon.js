@@ -55365,6 +55365,64 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to store a color step for the GradientBlock
+     */
+    export class GradientBlockColorStep {
+        /**
+         * Gets or sets a value indicating which step this color is associated with (between 0 and 1)
+         */
+        step: number;
+        /**
+         * Gets or sets the color associated with this step
+         */
+        color: Color3;
+        /**
+         * Creates a new GradientBlockColorStep
+         * @param step defines a value indicating which step this color is associated with (between 0 and 1)
+         * @param color defines the color associated with this step
+         */
+        constructor(
+        /**
+         * Gets or sets a value indicating which step this color is associated with (between 0 and 1)
+         */
+        step: number, 
+        /**
+         * Gets or sets the color associated with this step
+         */
+        color: Color3);
+    }
+    /**
+     * Block used to return a color from a gradient based on an input value between 0 and 1
+     */
+    export class GradientBlock extends NodeMaterialBlock {
+        colorSteps: GradientBlockColorStep[];
+        /**
+         * Creates a new GradientBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the gradient input component
+         */
+        readonly gradient: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        private _writeColorConstant;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        protected _dumpPropertiesCode(): string;
+    }
+}
+declare module BABYLON {
+    /**
      * Effect Render Options
      */
     export interface IEffectRendererOptions {
