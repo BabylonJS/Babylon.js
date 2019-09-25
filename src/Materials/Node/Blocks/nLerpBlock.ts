@@ -5,11 +5,11 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to lerp between 2 values
+ * Block used to normalize lerp between 2 values
  */
-export class LerpBlock extends NodeMaterialBlock {
+export class NLerpBlock extends NodeMaterialBlock {
     /**
-     * Creates a new LerpBlock
+     * Creates a new NLerpBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -29,7 +29,7 @@ export class LerpBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "LerpBlock";
+        return "NLerpBlock";
     }
 
     /**
@@ -65,10 +65,10 @@ export class LerpBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = mix(${this.left.associatedVariableName} , ${this.right.associatedVariableName}, ${this.gradient.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = normalize(mix(${this.left.associatedVariableName} , ${this.right.associatedVariableName}, ${this.gradient.associatedVariableName}));\r\n`;
 
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.LerpBlock"] = LerpBlock;
+_TypeStore.RegisteredTypes["BABYLON.NLerpBlock"] = NLerpBlock;

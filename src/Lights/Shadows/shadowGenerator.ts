@@ -839,7 +839,6 @@ export class ShadowGenerator implements IShadowGenerator {
             this._shadowMap.uniqueId = this._storedUniqueId;
         }
 
-
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
             this._currentFaceIndex = faceIndex;
