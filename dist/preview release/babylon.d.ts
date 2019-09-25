@@ -7628,6 +7628,7 @@ declare module BABYLON {
         readonly noMipmap: boolean;
         private _noMipmap;
         private _files;
+        protected _forcedExtension: Nullable<string>;
         private _extensions;
         private _textureMatrix;
         private _format;
@@ -55397,6 +55398,9 @@ declare module BABYLON {
      * Block used to return a color from a gradient based on an input value between 0 and 1
      */
     export class GradientBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the list of color steps
+         */
         colorSteps: GradientBlockColorStep[];
         /**
          * Creates a new GradientBlock

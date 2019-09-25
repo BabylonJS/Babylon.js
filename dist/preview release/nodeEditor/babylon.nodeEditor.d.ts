@@ -384,9 +384,27 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    /**
+     * BABYLON.Texture node model which stores information about a node editor block
+     */
+    export class ReflectionTextureNodeModel extends DefaultNodeModel {
+        private _block;
+        /**
+         * BABYLON.Texture for the node if it exists
+         */
+        texture: BABYLON.Nullable<BABYLON.BaseTexture>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
+    }
+}
+declare module NODEEDITOR {
     interface ITexturePropertyTabComponentProps {
         globalState: GlobalState;
-        node: TextureNodeModel;
+        node: TextureNodeModel | ReflectionTextureNodeModel;
     }
     export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps, {
         isEmbedded: boolean;
@@ -396,7 +414,7 @@ declare module NODEEDITOR {
             isEmbedded: boolean;
         }): void;
         private _generateRandomForCache;
-        updateAftertextureLoad(): void;
+        updateAfterTextureLoad(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
@@ -1302,6 +1320,50 @@ declare module NODEEDITOR {
         constructor(globalState: GlobalState);
         generateReactWidget(diagramEngine: SRD.DiagramEngine, node: GradientNodeModel): JSX.Element;
         getNewInstance(): GradientNodeModel;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface IReflectionTextureNodeWidgetProps {
+        node: BABYLON.Nullable<ReflectionTextureNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class ReflectionTextureNodeWidget extends React.Component<IReflectionTextureNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: IReflectionTextureNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class ReflectionTextureNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a TextureNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: ReflectionTextureNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns texture node model
+         */
+        getNewInstance(): ReflectionTextureNodeModel;
     }
 }
 declare module NODEEDITOR {

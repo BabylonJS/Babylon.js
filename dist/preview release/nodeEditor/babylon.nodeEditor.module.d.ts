@@ -485,13 +485,38 @@ declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/components/diagram/reflectionTexture/reflectionTextureNodeModel" {
+    import { Nullable } from 'babylonjs/types';
+    import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { NodeCreationOptions, GraphEditor } from "babylonjs-node-editor/graphEditor";
+    import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
+    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    /**
+     * Texture node model which stores information about a node editor block
+     */
+    export class ReflectionTextureNodeModel extends DefaultNodeModel {
+        private _block;
+        /**
+         * Texture for the node if it exists
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
+    }
+}
 declare module "babylonjs-node-editor/components/diagram/texture/texturePropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
     import { TextureNodeModel } from "babylonjs-node-editor/components/diagram/texture/textureNodeModel";
+    import { ReflectionTextureNodeModel } from "babylonjs-node-editor/components/diagram/reflectionTexture/reflectionTextureNodeModel";
     interface ITexturePropertyTabComponentProps {
         globalState: GlobalState;
-        node: TextureNodeModel;
+        node: TextureNodeModel | ReflectionTextureNodeModel;
     }
     export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps, {
         isEmbedded: boolean;
@@ -501,7 +526,7 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureProperty
             isEmbedded: boolean;
         }): void;
         private _generateRandomForCache;
-        updateAftertextureLoad(): void;
+        updateAfterTextureLoad(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
@@ -1582,6 +1607,57 @@ declare module "babylonjs-node-editor/components/diagram/gradient/gradientNodeFa
         getNewInstance(): GradientNodeModel;
     }
 }
+declare module "babylonjs-node-editor/components/diagram/reflectionTexture/reflectionTextureNodeWidget" {
+    import * as React from "react";
+    import { Nullable } from 'babylonjs/types';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { ReflectionTextureNodeModel } from "babylonjs-node-editor/components/diagram/reflectionTexture/reflectionTextureNodeModel";
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface IReflectionTextureNodeWidgetProps {
+        node: Nullable<ReflectionTextureNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class ReflectionTextureNodeWidget extends React.Component<IReflectionTextureNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: IReflectionTextureNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/diagram/reflectionTexture/reflectionTextureNodeFactory" {
+    import * as SRD from "storm-react-diagrams";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { ReflectionTextureNodeModel } from "babylonjs-node-editor/components/diagram/reflectionTexture/reflectionTextureNodeModel";
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class ReflectionTextureNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a TextureNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: ReflectionTextureNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns texture node model
+         */
+        getNewInstance(): ReflectionTextureNodeModel;
+    }
+}
 declare module "babylonjs-node-editor/graphEditor" {
     import { LinkModel } from "storm-react-diagrams";
     import * as React from "react";
@@ -2138,9 +2214,27 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    /**
+     * BABYLON.Texture node model which stores information about a node editor block
+     */
+    export class ReflectionTextureNodeModel extends DefaultNodeModel {
+        private _block;
+        /**
+         * BABYLON.Texture for the node if it exists
+         */
+        texture: BABYLON.Nullable<BABYLON.BaseTexture>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
+    }
+}
+declare module NODEEDITOR {
     interface ITexturePropertyTabComponentProps {
         globalState: GlobalState;
-        node: TextureNodeModel;
+        node: TextureNodeModel | ReflectionTextureNodeModel;
     }
     export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps, {
         isEmbedded: boolean;
@@ -2150,7 +2244,7 @@ declare module NODEEDITOR {
             isEmbedded: boolean;
         }): void;
         private _generateRandomForCache;
-        updateAftertextureLoad(): void;
+        updateAfterTextureLoad(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
@@ -3056,6 +3150,50 @@ declare module NODEEDITOR {
         constructor(globalState: GlobalState);
         generateReactWidget(diagramEngine: SRD.DiagramEngine, node: GradientNodeModel): JSX.Element;
         getNewInstance(): GradientNodeModel;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface IReflectionTextureNodeWidgetProps {
+        node: BABYLON.Nullable<ReflectionTextureNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class ReflectionTextureNodeWidget extends React.Component<IReflectionTextureNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: IReflectionTextureNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class ReflectionTextureNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a TextureNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: ReflectionTextureNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns texture node model
+         */
+        getNewInstance(): ReflectionTextureNodeModel;
     }
 }
 declare module NODEEDITOR {

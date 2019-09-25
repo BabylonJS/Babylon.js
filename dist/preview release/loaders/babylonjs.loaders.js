@@ -1403,7 +1403,7 @@ var OBJFileLoader = /** @class */ (function () {
     /**
      * Defines if UVs are optimized by default during load.
      */
-    OBJFileLoader.OPTIMIZE_WITH_UV = false;
+    OBJFileLoader.OPTIMIZE_WITH_UV = true;
     /**
      * Invert model on y-axis (does a model scaling inversion)
      */
