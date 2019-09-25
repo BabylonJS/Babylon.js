@@ -930,7 +930,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * Use a position to define the current camera related information like aplha, beta and radius
+     * Use a position to define the current camera related information like alpha, beta and radius
      * @param position Defines the position to set the camera at
      */
     public setPosition(position: Vector3): void {
