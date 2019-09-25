@@ -594,7 +594,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (data.indexOf("Block") === -1) {
             nodeModel = this.addValueNode(data);
         } else {
-            let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene());   
+            let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);   
             
             if (block) {                
                 this._toAdd = [];
