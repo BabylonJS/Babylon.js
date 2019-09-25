@@ -70,7 +70,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
             } else {
                 this.props.node.texture = new CubeTexture("", this.props.globalState.nodeMaterial.getScene());
                 texture = this.props.node.texture;
-                texture.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
+                texture.coordinatesMode = Texture.CUBIC_MODE;
             }
         }
 

@@ -85,7 +85,7 @@ export class CubeTexture extends BaseTexture {
     private _files: Nullable<string[]> = null;
 
     @serialize("forcedExtension")
-    protected _forcedExtension: Nullable<string> = null;    
+    protected _forcedExtension: Nullable<string> = null;
 
     @serialize("extensions")
     private _extensions: Nullable<string[]> = null;
