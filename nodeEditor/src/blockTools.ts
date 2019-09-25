@@ -51,9 +51,10 @@ import { ArcTan2Block } from 'babylonjs/Materials/Node/Blocks/arcTan2Block';
 import { ReciprocalBlock } from 'babylonjs/Materials/Node/Blocks/reciprocalBlock';
 import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
 import { WaveBlock, WaveBlockKind } from 'babylonjs/Materials/Node/Blocks/waveBlock';
+import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 
 export class BlockTools {
-    public static GetBlockFromString(data: string, scene: Scene) {
+    public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
             case "BonesBlock":
                 return new BonesBlock("Bones");
@@ -340,7 +341,47 @@ export class BlockTools {
                 let deltaTimeBlock = new InputBlock("Delta time");                
                 deltaTimeBlock.setAsSystemValue(NodeMaterialSystemValues.DeltaTime);
                 return deltaTimeBlock;
-            }               
+            }      
+            case "WorldPositionBlock": {
+                let worldPositionBlock = nodeMaterial.getInputBlockByPredicate(b => b.isAttribute && b.name === "position");                
+                if (!worldPositionBlock) {
+                    worldPositionBlock = new InputBlock("position");
+                    worldPositionBlock.setAsAttribute("position");
+                }
+
+                let worldMatrixBlock = nodeMaterial.getInputBlockByPredicate(b => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);  
+
+                if (!worldMatrixBlock) {
+                    worldMatrixBlock = new InputBlock("World");
+                    worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
+                }
+
+                let transformBlock = new TransformBlock("World position");
+                worldPositionBlock.connectTo(transformBlock);
+                worldMatrixBlock.connectTo(transformBlock);
+
+                return transformBlock;
+            }        
+            case "WorldNormalBlock": {
+                let worldNormalBlock = nodeMaterial.getInputBlockByPredicate(b => b.isAttribute && b.name === "normal");                
+                if (!worldNormalBlock) {
+                    worldNormalBlock = new InputBlock("normal");
+                    worldNormalBlock.setAsAttribute("normal");
+                }
+
+                let worldMatrixBlock = nodeMaterial.getInputBlockByPredicate(b => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);  
+
+                if (!worldMatrixBlock) {
+                    worldMatrixBlock = new InputBlock("World");
+                    worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
+                }
+
+                let transformBlock = new TransformBlock("World normal");
+                worldNormalBlock.connectTo(transformBlock);
+                worldMatrixBlock.connectTo(transformBlock);
+
+                return transformBlock;
+            }                  
         }
 
         return null;
