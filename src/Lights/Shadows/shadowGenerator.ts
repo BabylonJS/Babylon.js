@@ -761,6 +761,7 @@ export class ShadowGenerator implements IShadowGenerator {
     private _currentFaceIndexCache = 0;
     private _textureType: number;
     private _defaultTextureMatrix = Matrix.Identity();
+    private _storedUniqueId: Nullable<number>;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -834,6 +835,9 @@ export class ShadowGenerator implements IShadowGenerator {
         this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
         this._shadowMap.renderParticles = false;
         this._shadowMap.ignoreCameraViewport = true;
+        if (this._storedUniqueId) {
+            this._shadowMap.uniqueId = this._storedUniqueId;
+        }
 
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
@@ -877,6 +881,7 @@ export class ShadowGenerator implements IShadowGenerator {
         });
 
         this._shadowMap.onResizeObservable.add((RTT) => {
+            this._storedUniqueId = this._shadowMap!.uniqueId;
             this._mapSize = RTT.getRenderSize();
             this._light._markMeshesAsLightDirty();
             this.recreateShadowMap();

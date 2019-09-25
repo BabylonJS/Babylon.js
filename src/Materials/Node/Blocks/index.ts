@@ -37,3 +37,4 @@ export * from "./replaceColorBlock";
 export * from "./posterizeBlock";
 export * from "./waveBlock";
 export * from "./gradientBlock";
+export * from "./nLerpBlock";

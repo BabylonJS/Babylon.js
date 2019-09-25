@@ -8,6 +8,7 @@ import { PostProcess } from "babylonjs/PostProcesses/postProcess";
 import { PassPostProcess, PassCubePostProcess } from "babylonjs/PostProcesses/passPostProcess";
 
 import { GlobalState } from "../../../components/globalState";
+import { ButtonLineComponent } from './buttonLineComponent';
 
 interface ITextureLineComponentProps {
     texture: BaseTexture;
@@ -184,30 +185,38 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         var texture = this.props.texture;
 
         return (
-            <div className="textureLine">
+            <>
+                <div className="textureLine">
+                    {
+                        !this.props.hideChannelSelect && texture.isCube &&
+                        <div className="control3D">
+                            <button className={this.state.face === 0 ? "px command selected" : "px command"} onClick={() => this.setState({ face: 0 })}>PX</button>
+                            <button className={this.state.face === 1 ? "nx command selected" : "nx command"} onClick={() => this.setState({ face: 1 })}>NX</button>
+                            <button className={this.state.face === 2 ? "py command selected" : "py command"} onClick={() => this.setState({ face: 2 })}>PY</button>
+                            <button className={this.state.face === 3 ? "ny command selected" : "ny command"} onClick={() => this.setState({ face: 3 })}>NY</button>
+                            <button className={this.state.face === 4 ? "pz command selected" : "pz command"} onClick={() => this.setState({ face: 4 })}>PZ</button>
+                            <button className={this.state.face === 5 ? "nz command selected" : "nz command"} onClick={() => this.setState({ face: 5 })}>NZ</button>
+                        </div>
+                    }
+                    {
+                        !this.props.hideChannelSelect && !texture.isCube &&
+                        <div className="control">
+                            <button className={this.state.channel === ChannelToDisplay.R ? "red command selected" : "red command"} onClick={() => this.setState({ channel: ChannelToDisplay.R })}>R</button>
+                            <button className={this.state.channel === ChannelToDisplay.G ? "green command selected" : "green command"} onClick={() => this.setState({ channel: ChannelToDisplay.G })}>G</button>
+                            <button className={this.state.channel === ChannelToDisplay.B ? "blue command selected" : "blue command"} onClick={() => this.setState({ channel: ChannelToDisplay.B })}>B</button>
+                            <button className={this.state.channel === ChannelToDisplay.A ? "alpha command selected" : "alpha command"} onClick={() => this.setState({ channel: ChannelToDisplay.A })}>A</button>
+                            <button className={this.state.channel === ChannelToDisplay.All ? "all command selected" : "all command"} onClick={() => this.setState({ channel: ChannelToDisplay.All })}>ALL</button>
+                        </div>
+                    }
+                    <canvas ref="canvas" className="preview" />
+                </div>
                 {
-                    !this.props.hideChannelSelect && texture.isCube &&
-                    <div className="control3D">
-                        <button className={this.state.face === 0 ? "px command selected" : "px command"} onClick={() => this.setState({ face: 0 })}>PX</button>
-                        <button className={this.state.face === 1 ? "nx command selected" : "nx command"} onClick={() => this.setState({ face: 1 })}>NX</button>
-                        <button className={this.state.face === 2 ? "py command selected" : "py command"} onClick={() => this.setState({ face: 2 })}>PY</button>
-                        <button className={this.state.face === 3 ? "ny command selected" : "ny command"} onClick={() => this.setState({ face: 3 })}>NY</button>
-                        <button className={this.state.face === 4 ? "pz command selected" : "pz command"} onClick={() => this.setState({ face: 4 })}>PZ</button>
-                        <button className={this.state.face === 5 ? "nz command selected" : "nz command"} onClick={() => this.setState({ face: 5 })}>NZ</button>
-                    </div>
+                    texture.isRenderTarget &&
+                    <ButtonLineComponent label="Refresh" onClick={() => {
+                        this.updatePreview();
+                    }} />
                 }
-                {
-                    !this.props.hideChannelSelect && !texture.isCube &&
-                    <div className="control">
-                        <button className={this.state.channel === ChannelToDisplay.R ? "red command selected" : "red command"} onClick={() => this.setState({ channel: ChannelToDisplay.R })}>R</button>
-                        <button className={this.state.channel === ChannelToDisplay.G ? "green command selected" : "green command"} onClick={() => this.setState({ channel: ChannelToDisplay.G })}>G</button>
-                        <button className={this.state.channel === ChannelToDisplay.B ? "blue command selected" : "blue command"} onClick={() => this.setState({ channel: ChannelToDisplay.B })}>B</button>
-                        <button className={this.state.channel === ChannelToDisplay.A ? "alpha command selected" : "alpha command"} onClick={() => this.setState({ channel: ChannelToDisplay.A })}>A</button>
-                        <button className={this.state.channel === ChannelToDisplay.All ? "all command selected" : "all command"} onClick={() => this.setState({ channel: ChannelToDisplay.All })}>ALL</button>
-                    </div>
-                }
-                <canvas ref="canvas" className="preview" />
-            </div>
+            </>
         );
     }
 }

@@ -23,6 +23,7 @@ import { GlobalState } from "../../../../../components/globalState";
 import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
@@ -126,6 +127,26 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Width" value={texture.getSize().width.toString()} />
                     <TextLineComponent label="Height" value={texture.getSize().height.toString()} />
+                    {
+                        texture.isRenderTarget &&
+                        <ButtonLineComponent label="Scale up" onClick={() => {
+                            let scene = texture.getScene()!;
+                            texture.scale(2);
+                            setTimeout(() => {
+                                this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueID(texture.uniqueId));
+                            });
+                        }} />
+                    }
+                    {
+                        texture.isRenderTarget &&
+                        <ButtonLineComponent label="Scale down" onClick={() => {                            
+                            let scene = texture.getScene()!;
+                            texture.scale(0.5);
+                            setTimeout(() => {
+                                this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueID(texture.uniqueId));
+                            });
+                        }} />
+                    }
                     {
                         extension &&
                         <TextLineComponent label="File format" value={extension} />
