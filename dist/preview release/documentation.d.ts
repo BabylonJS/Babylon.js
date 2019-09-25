@@ -26886,6 +26886,7 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
          */
         inspectableCustomProperties: IInspectable[];
+        private _doNotSerialize;
         /**
          * Gets or sets a boolean used to define if the node must be serialized
          */
@@ -36644,7 +36645,7 @@ declare module BABYLON {
          */
         rebuildAnglesAndRadius(): void;
         /**
-         * Use a position to define the current camera related information like aplha, beta and radius
+         * Use a position to define the current camera related information like alpha, beta and radius
          * @param position Defines the position to set the camera at
          */
         setPosition(position: Vector3): void;
