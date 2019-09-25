@@ -13459,6 +13459,9 @@ var Button3D = /** @class */ (function (_super) {
                 this._facadeTexture.rootContainer.scaleY = this._contentScaleRatio;
                 this._facadeTexture.premulAlpha = true;
             }
+            else {
+                this._facadeTexture.rootContainer.clearControls();
+            }
             this._facadeTexture.addControl(value);
             this._applyFacade(this._facadeTexture);
         },

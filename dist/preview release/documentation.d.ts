@@ -7628,6 +7628,7 @@ declare module BABYLON {
         readonly noMipmap: boolean;
         private _noMipmap;
         private _files;
+        protected _forcedExtension: Nullable<string>;
         private _extensions;
         private _textureMatrix;
         private _format;
@@ -26885,6 +26886,7 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
          */
         inspectableCustomProperties: IInspectable[];
+        private _doNotSerialize;
         /**
          * Gets or sets a boolean used to define if the node must be serialized
          */
@@ -36643,7 +36645,7 @@ declare module BABYLON {
          */
         rebuildAnglesAndRadius(): void;
         /**
-         * Use a position to define the current camera related information like aplha, beta and radius
+         * Use a position to define the current camera related information like alpha, beta and radius
          * @param position Defines the position to set the camera at
          */
         setPosition(position: Vector3): void;
@@ -53335,6 +53337,8 @@ declare module BABYLON {
         _emitVaryingFromString(name: string, type: string, define?: string, notDefine?: boolean): boolean;
         /** @hidden */
         _emitUniformFromString(name: string, type: string, define?: string, notDefine?: boolean): void;
+        /** @hidden */
+        _emitFloat(value: number): string;
     }
 }
 declare module BABYLON {
@@ -55361,6 +55365,67 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store a color step for the GradientBlock
+     */
+    export class GradientBlockColorStep {
+        /**
+         * Gets or sets a value indicating which step this color is associated with (between 0 and 1)
+         */
+        step: number;
+        /**
+         * Gets or sets the color associated with this step
+         */
+        color: Color3;
+        /**
+         * Creates a new GradientBlockColorStep
+         * @param step defines a value indicating which step this color is associated with (between 0 and 1)
+         * @param color defines the color associated with this step
+         */
+        constructor(
+        /**
+         * Gets or sets a value indicating which step this color is associated with (between 0 and 1)
+         */
+        step: number, 
+        /**
+         * Gets or sets the color associated with this step
+         */
+        color: Color3);
+    }
+    /**
+     * Block used to return a color from a gradient based on an input value between 0 and 1
+     */
+    export class GradientBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the list of color steps
+         */
+        colorSteps: GradientBlockColorStep[];
+        /**
+         * Creates a new GradientBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the gradient input component
+         */
+        readonly gradient: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        private _writeColorConstant;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        protected _dumpPropertiesCode(): string;
     }
 }
 declare module BABYLON {

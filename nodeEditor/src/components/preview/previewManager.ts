@@ -169,6 +169,8 @@ export class PreviewManager {
             for (var light of lights) {
                 light.dispose();
             }
+
+            this._engine.releaseEffects();
         
             switch (this._globalState.previewMeshType) {
                 case PreviewMeshType.Box:
@@ -209,7 +211,6 @@ export class PreviewManager {
 
     private _forceCompilationAsync(material: NodeMaterial, mesh: AbstractMesh): Promise<void> {
         return material.forceCompilationAsync(mesh);
-
     }
 
     private _updatePreview(serializationObject: any) {
