@@ -93,7 +93,7 @@ export class PreviewManager {
             for (var root of this._scene.rootNodes) {
                 let transformNode = root as TransformNode;
 
-                if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh") {
+                if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh" || transformNode.getClassName() === "GroundMesh") {
                     if (transformNode.rotationQuaternion) {
                         transformNode.rotation = transformNode.rotationQuaternion.toEulerAngles();
                         transformNode.rotationQuaternion = null;
