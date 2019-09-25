@@ -121,6 +121,7 @@
 
 ### Documentation
 - Added a note on shallow bounding of getBoundingInfo ([tibotiber](https://github.com/tibotiber))
+- Added a typo fix to the ArcRotateCamera setPosition method description ([schm-dt](https://github.com/schm-dt))
 
 ## Bug fixes
 - Fixed Textblock line spacing evaluation when linespacing > 0 ([Deltakosh](https://github.com/deltakosh/))
