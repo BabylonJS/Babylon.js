@@ -5,7 +5,7 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to lerp 2 values
+ * Block used to lerp between 2 values
  */
 export class LerpBlock extends NodeMaterialBlock {
     /**

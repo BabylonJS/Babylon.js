@@ -26,6 +26,7 @@ import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { FresnelBlock } from 'babylonjs/Materials/Node/Blocks/fresnelBlock';
 import { LerpBlock } from 'babylonjs/Materials/Node/Blocks/lerpBlock';
+import { NLerpBlock } from 'babylonjs/Materials/Node/Blocks/nLerpBlock';
 import { DivideBlock } from 'babylonjs/Materials/Node/Blocks/divideBlock';
 import { SubtractBlock } from 'babylonjs/Materials/Node/Blocks/subtractBlock';
 import { StepBlock } from 'babylonjs/Materials/Node/Blocks/stepBlock';
@@ -112,6 +113,8 @@ export class BlockTools {
                 return new FresnelBlock("Fresnel");
             case "LerpBlock":
                 return new LerpBlock("Lerp");
+            case "NLerpBlock":
+                return new NLerpBlock("NLerp");
             case "DivideBlock":
                 return new DivideBlock("Divide");
             case "SubtractBlock":

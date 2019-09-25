@@ -9694,6 +9694,7 @@ declare module BABYLON {
         private _currentFaceIndexCache;
         private _textureType;
         private _defaultTextureMatrix;
+        private _storedUniqueId;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
@@ -54749,7 +54750,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to lerp 2 values
+     * Block used to lerp between 2 values
      */
     export class LerpBlock extends NodeMaterialBlock {
         /**
@@ -55426,6 +55427,40 @@ declare module BABYLON {
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
         protected _dumpPropertiesCode(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to normalize lerp between 2 values
+     */
+    export class NLerpBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new NLerpBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        readonly left: NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        readonly right: NodeMaterialConnectionPoint;
+        /**
+         * Gets the gradient operand input component
+         */
+        readonly gradient: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {
