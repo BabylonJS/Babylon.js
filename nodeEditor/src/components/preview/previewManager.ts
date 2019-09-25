@@ -24,6 +24,7 @@ export class PreviewManager {
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
     private _onBackFaceCullingChangedObserver: Nullable<Observer<void>>;
+    private _onDepthPrePassChangedObserver: Nullable<Observer<void>>;
     private _onLightUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
@@ -64,9 +65,12 @@ export class PreviewManager {
         });
 
         this._onBackFaceCullingChangedObserver = globalState.onBackFaceCullingChanged.add(() => {
-            let serializationObject = this._nodeMaterial.serialize();
-            this._updatePreview(serializationObject);
+            this._material.backFaceCulling = this._globalState.backFaceCulling;
         });
+
+        this._onDepthPrePassChangedObserver = globalState.onDepthPrePassChanged.add(() => {
+            this._material.needDepthPrePass = this._globalState.depthPrePass;
+        });        
 
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
@@ -218,6 +222,7 @@ export class PreviewManager {
             let tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
 
             tempMaterial.backFaceCulling = this._globalState.backFaceCulling;
+            tempMaterial.needDepthPrePass = this._globalState.depthPrePass;
 
             if (this._meshes.length) {
                 let tasks = this._meshes.map(m => this._forceCompilationAsync(tempMaterial, m));
@@ -248,6 +253,7 @@ export class PreviewManager {
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
         this._globalState.onBackFaceCullingChanged.remove(this._onBackFaceCullingChangedObserver);
+        this._globalState.onDepthPrePassChanged.remove(this._onDepthPrePassChangedObserver);
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
 
         if (this._material) {
