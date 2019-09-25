@@ -100,10 +100,25 @@ export class Node implements IBehaviorAware<Node> {
      */
     public inspectableCustomProperties: IInspectable[];
 
+    private _doNotSerialize = false;
     /**
      * Gets or sets a boolean used to define if the node must be serialized
      */
-    public doNotSerialize = false;
+    public get doNotSerialize() {
+        if (this._doNotSerialize) {
+            return true;
+        }
+
+        if (this._parentNode) {
+            return this._parentNode.doNotSerialize;
+        }
+
+        return false;
+    }
+
+    public set doNotSerialize(value: boolean) {
+        this._doNotSerialize = value;
+    }
 
     /** @hidden */
     public _isDisposed = false;

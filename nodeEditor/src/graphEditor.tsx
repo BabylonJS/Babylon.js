@@ -51,6 +51,12 @@ import { LightInformationNodeFactory } from './components/diagram/lightInformati
 import { LightInformationNodeModel } from './components/diagram/lightInformation/lightInformationNodeModel';
 import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
 import { PreviewAreaComponent } from './components/preview/previewAreaComponent';
+import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+import { GradientNodeModel } from './components/diagram/gradient/gradientNodeModel';
+import { GradientNodeFactory } from './components/diagram/gradient/gradientNodeFactory';
+import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
+import { ReflectionTextureNodeFactory } from './components/diagram/reflectionTexture/reflectionTextureNodeFactory';
+import { ReflectionTextureNodeModel } from './components/diagram/reflectionTexture/reflectionTextureNodeModel';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -109,6 +115,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
        
         if (options.nodeMaterialBlock instanceof TextureBlock) {
             newNode = new TextureNodeModel();
+        } else if (options.nodeMaterialBlock instanceof ReflectionTextureBlock) {
+            newNode = new ReflectionTextureNodeModel();            
         } else if (options.nodeMaterialBlock instanceof LightBlock) {
             newNode = new LightNodeModel();
         } else if (options.nodeMaterialBlock instanceof InputBlock) {
@@ -121,6 +129,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             newNode = new ClampNodeModel();        
         } else if (options.nodeMaterialBlock instanceof LightInformationBlock) {
             newNode = new LightInformationNodeModel();
+        } else if (options.nodeMaterialBlock instanceof GradientBlock) {
+            newNode = new GradientNodeModel();
         } else {
             newNode = new GenericNodeModel();
         }
@@ -197,13 +207,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this._engine.registerNodeFactory(new TrigonometryNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new ClampNodeFactory(this.props.globalState));
         this._engine.registerNodeFactory(new LightInformationNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new GradientNodeFactory(this.props.globalState));
+        this._engine.registerNodeFactory(new ReflectionTextureNodeFactory(this.props.globalState));
         this._engine.registerLinkFactory(new AdvancedLinkFactory());
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
             if (this.props.globalState.nodeMaterial) {
                 this.buildMaterial();
             }
-            this.forceUpdate();
         });
 
         this.props.globalState.onResetRequiredObservable.add((locations) => {
@@ -213,8 +224,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
         });
 
-        this.props.globalState.onUpdateRequiredObservable.add(() => {
-            this.forceUpdate();
+        this.props.globalState.onUpdateRequiredObservable.add(() => {          
+            this._engine.repaintCanvas();  
         });
 
         this.props.globalState.onZoomToFitRequiredObservable.add(() => {
