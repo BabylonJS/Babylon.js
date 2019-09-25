@@ -26,6 +26,7 @@ export class GlobalState {
     onLightUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
     onBackFaceCullingChanged = new Observable<void>();
+    onDepthPrePassChanged = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
     previewMeshType: PreviewMeshType;
@@ -33,6 +34,7 @@ export class GlobalState {
     rotatePreview: boolean;
     backgroundColor: Color4;
     backFaceCulling: boolean;
+    depthPrePass: boolean;
     blockKeyboardEvents = false;
     hemisphericLight: boolean;
     directionalLight0: boolean;
@@ -42,6 +44,7 @@ export class GlobalState {
     public constructor() {
         this.previewMeshType = DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box);
         this.backFaceCulling = DataStorage.ReadBoolean("BackFaceCulling", true);
+        this.depthPrePass = DataStorage.ReadBoolean("DepthPrePass", false);
         this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", true);
         this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", true);
 
