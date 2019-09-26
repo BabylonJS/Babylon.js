@@ -551,16 +551,16 @@ declare module "../scene" {
         * Stops and removes all animations that have been applied to the scene
         */
         stopAllAnimations(): void;
+
+        /**
+         * Gets the current delta time used by animation engine
+         */
+        deltaTime: number;
     }
 }
 
 Scene.prototype._animate = function(): void {
     if (!this.animationsEnabled) {
-        return;
-    }
-
-    const animatables = this._activeAnimatables;
-    if (animatables.length === 0) {
         return;
     }
 
@@ -573,10 +573,16 @@ Scene.prototype._animate = function(): void {
         this._animationTimeLast = now;
     }
 
-    var deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
-    this._animationTime += deltaTime;
-    const animationTime = this._animationTime;
+    this.deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
     this._animationTimeLast = now;
+
+    const animatables = this._activeAnimatables;
+    if (animatables.length === 0) {
+        return;
+    }
+
+    this._animationTime += this.deltaTime;
+    const animationTime = this._animationTime;
 
     for (let index = 0; index < animatables.length; index++) {
         let animatable = animatables[index];

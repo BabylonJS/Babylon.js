@@ -267,7 +267,9 @@ export class SubMesh extends BaseSubMesh implements ICullable {
             this.refreshBoundingInfo();
             boundingInfo = this.getBoundingInfo();
         }
-        (<BoundingInfo>boundingInfo).update(world);
+        if (boundingInfo) {
+            (<BoundingInfo>boundingInfo).update(world);
+        }
         return this;
     }
 

@@ -5,7 +5,6 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { Tags } from "babylonjs/Misc/tags";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
-import { EffectFallbacks } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -20,6 +19,7 @@ import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 import "./fire.fragment";
 import "./fire.vertex";
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 class FireMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

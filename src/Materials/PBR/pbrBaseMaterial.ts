@@ -12,7 +12,6 @@ import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { IMaterialClearCoatDefines, PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
 import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
 import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
@@ -21,7 +20,7 @@ import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSub
 import { Color3, TmpColors } from '../../Maths/math.color';
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
-import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
+import { Effect, EffectCreationOptions } from "../../Materials/effect";
 import { Material } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
@@ -38,6 +37,7 @@ import { IAnimatable } from '../../Animations/animatable.interface';
 
 import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
+import { EffectFallbacks } from '../effectFallbacks';
 
 /**
  * Manages the defines for the PBR Material.

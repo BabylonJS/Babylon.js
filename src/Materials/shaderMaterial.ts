@@ -8,10 +8,11 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
-import { EffectFallbacks, EffectCreationOptions } from "./effect";
+import { EffectCreationOptions } from "./effect";
 import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
+import { EffectFallbacks } from './effectFallbacks';
 
 /**
  * Defines the options associated with the creation of a shader material.

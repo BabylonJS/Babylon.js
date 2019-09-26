@@ -230,7 +230,7 @@ Engine.prototype.disableVR = function() {
     }
 };
 
-Engine.prototype._connectVREvents = function(canvas: HTMLCanvasElement, document: any) {
+Engine.prototype._connectVREvents = function(canvas?: HTMLCanvasElement, document?: any) {
     this._onVRDisplayPointerRestricted = () => {
         if (canvas) {
             canvas.requestPointerLock();

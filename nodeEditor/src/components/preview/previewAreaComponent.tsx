@@ -2,7 +2,7 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faStop, faPalette, faCheckDouble, faSun, faLocationArrow } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faStop, faPalette, faCheckDouble, faSun, faLocationArrow, faClone } from '@fortawesome/free-solid-svg-icons';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { DataStorage } from '../../dataStorage';
 
@@ -37,6 +37,13 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent>
         this.forceUpdate();
     }
 
+    changeDepthPrePass(value: boolean) {        
+        this.props.globalState.depthPrePass = value;
+        DataStorage.StoreBoolean("DepthPrePass", value);
+        this.props.globalState.onDepthPrePassChanged.notifyObservers();
+        this.forceUpdate();
+    }    
+
     render() {
         return (
             <>
@@ -62,6 +69,11 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent>
                         onClick={() => this.changeBackFaceCulling(!this.props.globalState.backFaceCulling)} className={"button" + (!this.props.globalState.backFaceCulling ? " selected" : "")}>
                         <FontAwesomeIcon icon={faCheckDouble} />
                     </div>  
+                    <div
+                        title="Render with depth pre-pass"
+                        onClick={() => this.changeDepthPrePass(!this.props.globalState.depthPrePass)} className={"button" + (this.props.globalState.depthPrePass ? " selected" : "")}>
+                        <FontAwesomeIcon icon={faClone} />
+                    </div>                     
                     <div
                         title="Turn on/off hemispheric light"  
                         onClick={() => {

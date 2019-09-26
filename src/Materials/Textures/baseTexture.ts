@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
+import { serialize, SerializationHelper, serializeAsTexture, expandToProperty } from "../../Misc/decorators";
 import { Observer, Observable } from "../../Misc/observable";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Nullable } from "../../types";
@@ -8,7 +8,6 @@ import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { GUID } from '../../Misc/guid';
@@ -206,6 +205,7 @@ export class BaseTexture implements IAnimatable {
      * This only impacts the PBR and Background materials
      */
     @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public gammaSpace = true;
 
     /**
@@ -593,6 +593,19 @@ export class BaseTexture implements IAnimatable {
         }
 
         return (this._texture.format !== undefined) ? this._texture.format : Constants.TEXTUREFORMAT_RGBA;
+    }
+
+    /**
+     * Indicates that textures need to be re-calculated for all materials
+     */
+    protected _markAllSubMeshesAsTexturesDirty() {
+        let scene = this.getScene();
+
+        if (!scene) {
+            return;
+        }
+
+        scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     /**

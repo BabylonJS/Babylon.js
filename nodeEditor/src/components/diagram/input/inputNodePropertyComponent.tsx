@@ -102,6 +102,9 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     { label: "None", value: AnimatedInputBlockTypes.None },
                     { label: "Time", value: AnimatedInputBlockTypes.Time },
                 ];
+                systemValuesOptions = [ 
+                    { label: "Delta time", value: NodeMaterialSystemValues.DeltaTime }
+                ]
                 break;      
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 systemValuesOptions = [

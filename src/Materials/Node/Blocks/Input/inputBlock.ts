@@ -113,6 +113,9 @@ export class InputBlock extends NodeMaterialBlock {
                     case NodeMaterialSystemValues.FogColor:
                         this._type = NodeMaterialBlockConnectionPointTypes.Color3;
                         return this._type;
+                    case NodeMaterialSystemValues.DeltaTime:
+                        this._type = NodeMaterialBlockConnectionPointTypes.Float;
+                        return this._type;
                 }
             }
         }
@@ -344,10 +347,10 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 
-    private _emitConstant() {
+    private _emitConstant(state: NodeMaterialBuildState) {
         switch (this.type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
-                return `${this.value}`;
+                return `${state._emitFloat(this.value)}`;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 return `vec2(${this.value.x}, ${this.value.y})`;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
@@ -375,7 +378,7 @@ export class InputBlock extends NodeMaterialBlock {
                     return;
                 }
                 state.constants.push(this.associatedVariableName);
-                state._constantDeclaration += this._declareOutput(this.output, state) + ` = ${this._emitConstant()};\r\n`;
+                state._constantDeclaration += this._declareOutput(this.output, state) + ` = ${this._emitConstant(state)};\r\n`;
                 return;
             }
 
@@ -484,6 +487,8 @@ export class InputBlock extends NodeMaterialBlock {
                 case NodeMaterialSystemValues.FogColor:
                     effect.setColor3(variableName, scene.fogColor);
                     break;
+                case NodeMaterialSystemValues.DeltaTime:
+                    effect.setFloat(variableName, scene.deltaTime / 1000.0);
             }
             return;
         }
