@@ -1,4 +1,4 @@
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
+import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Logger } from '../../Misc/logger';
 import { RenderTargetCreationOptions } from '../../Materials/Textures/renderTargetCreationOptions';
 import { Constants } from '../constants';
@@ -45,7 +45,7 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
     }
     var gl = this._gl;
 
-    var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
+    var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
     this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
 
     var width = (<{ width: number, height: number }>size).width || <number>size;

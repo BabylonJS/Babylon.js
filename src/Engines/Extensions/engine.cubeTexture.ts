@@ -1,5 +1,5 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
+import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
 import { Scene } from '../../scene';
@@ -90,7 +90,7 @@ declare module "../../Engines/thinEngine" {
 }
 
 ThinEngine.prototype._createDepthStencilCubeTexture = function(size: number, options: DepthTextureCreationOptions): InternalTexture {
-    var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_UNKNOWN);
+    var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown);
     internalTexture.isCube = true;
 
     if (this.webGLVersion === 1) {
@@ -201,7 +201,7 @@ ThinEngine.prototype._partialLoadImg = function(url: string, index: number, load
 ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
     var gl = this._gl;
 
-    var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
+    var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
     texture.isCube = true;
     texture.url = rootUrl;
     texture.generateMipMaps = !noMipmap;
