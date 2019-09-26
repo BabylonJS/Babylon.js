@@ -615,8 +615,9 @@ export class PointsCloudSystem implements IDisposable {
      * Adds points to the PCS from the surface of the model shape
      * @param mesh is any Mesh object that will be used as a surface model for the points
      * @param nb (positive integer) the number of particles to be created from this model
-     * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible),
+     * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible)
      * @param color (color3) to be used when colorWith is stated
+     * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
      * @returns the number of groups in the system
      */
     public addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number {
@@ -657,6 +658,7 @@ export class PointsCloudSystem implements IDisposable {
      * @param nb (positive integer) the number of particles to be created from this model
      * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible),
      * @param color (color4) to be used when colorWith is stated
+     * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
      * @returns the number of groups in the system
      */
     public addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number {
