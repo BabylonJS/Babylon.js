@@ -1468,7 +1468,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 batchCache.visibleInstances[subMeshId] = visibleInstances[defaultRenderId];
             }
         }
-        batchCache.hardwareInstancedRendering[subMeshId] = this._instanceDataStorage.hardwareInstancedRendering && (batchCache.visibleInstances[subMeshId] !== null) && (batchCache.visibleInstances[subMeshId] !== undefined);
+        batchCache.hardwareInstancedRendering[subMeshId] = 
+                        this._instanceDataStorage.hardwareInstancedRendering 
+                        && (batchCache.visibleInstances[subMeshId] !== null) 
+                        && (batchCache.visibleInstances[subMeshId] !== undefined);
         this._instanceDataStorage.previousBatch = batchCache;
         return batchCache;
     }
@@ -1688,15 +1691,27 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var sideOrientation: Nullable<number>;
 
-        if (!instanceDataStorage.isFrozen) {
+        if (!instanceDataStorage.isFrozen && this._effectiveMaterial.backFaceCulling) {
+            let mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
                 sideOrientation = this._effectiveMaterial.sideOrientation;
             }
-            if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
+            if (mainDeterminant < 0) {
                 sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
             }
             instanceDataStorage.sideOrientation = sideOrientation!;
+
+            let visibleInstances = batch.visibleInstances[subMesh._id];
+            if (visibleInstances) {
+                for (var instance of visibleInstances) {
+                    if (mainDeterminant !== instance._getWorldMatrixDeterminant()) {
+                        this._effectiveMaterial.backFaceCulling = false; // Turn off back face culling as one of the instance is having an incompatible world matrix
+                        break;
+                    }
+                }
+            }
+
         } else {
             sideOrientation = instanceDataStorage.sideOrientation;
         }
