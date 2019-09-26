@@ -10,6 +10,8 @@ import { IInspectable } from '../Misc/iInspectable';
 import { Engine } from '../Engines/engine';
 import { Color4 } from '../Maths/math.color';
 
+import "../Engines/Extensions/engine.renderTarget";
+
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
 declare type WebVRFreeCamera = import("../Cameras/VR/webVRCamera").WebVRFreeCamera;
