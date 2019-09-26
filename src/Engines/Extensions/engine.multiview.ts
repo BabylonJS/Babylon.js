@@ -1,7 +1,7 @@
 import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
 import { Scene } from "../../scene";
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
+import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Nullable } from '../../types';
 import { RenderTargetTexture } from '../../Materials/Textures/renderTargetTexture';
 import { Matrix, TmpVectors } from '../../Maths/math.vector';
@@ -34,7 +34,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function(width: number, he
         throw "Multiview is not supported";
     }
 
-    var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_UNKNOWN, true);
+    var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
     internalTexture.width = width;
     internalTexture.height = height;
     internalTexture._framebuffer = gl.createFramebuffer();

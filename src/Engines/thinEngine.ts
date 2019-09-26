@@ -12,7 +12,7 @@ import { DepthCullingState } from '../States/depthCullingState';
 import { StencilState } from '../States/stencilState';
 import { AlphaState } from '../States/alphaCullingState';
 import { Constants } from './constants';
-import { InternalTexture } from '../Materials/Textures/internalTexture';
+import { InternalTexture, InternalTextureSource } from '../Materials/Textures/internalTexture';
 import { IViewportLike, IColor4Like } from '../Maths/math.like';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { IFileRequest } from '../Misc/fileRequest';
@@ -333,7 +333,7 @@ export class ThinEngine {
     /** @hidden */
     public _currentRenderTarget: Nullable<InternalTexture>;
     private _uintIndicesCurrentlySet = false;
-    private _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
+    protected _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
     /** @hidden */
     protected _currentFramebuffer: Nullable<WebGLFramebuffer> = null;
     private _currentBufferPointers = new Array<BufferPointer>();
@@ -892,7 +892,7 @@ export class ThinEngine {
      * @returns "Engine" string
      */
     public getClassName(): string {
-        return "Engine";
+        return "ThinEngine";
     }
 
     /**
@@ -1375,29 +1375,6 @@ export class ThinEngine {
     }
 
     /**
-     * Update a dynamic index buffer
-     * @param indexBuffer defines the target index buffer
-     * @param indices defines the data to update
-     * @param offset defines the offset in the target index buffer where update should start
-     */
-    public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
-        // Force cache update
-        this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
-        this.bindIndexBuffer(indexBuffer);
-        var arrayBuffer;
-
-        if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
-            arrayBuffer = indices;
-        } else {
-            arrayBuffer = indexBuffer.is32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
-        }
-
-        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
-
-        this._resetIndexBufferBinding();
-    }
-
-    /**
      * Updates a dynamic vertex buffer.
      * @param vertexBuffer the vertex buffer to update
      * @param data the data used to update the vertex buffer
@@ -1434,7 +1411,7 @@ export class ThinEngine {
         this._resetVertexBufferBinding();
     }
 
-    private _resetIndexBufferBinding(): void {
+    protected _resetIndexBufferBinding(): void {
         this.bindIndexBuffer(null);
         this._cachedIndexBuffer = null;
     }
@@ -1514,7 +1491,7 @@ export class ThinEngine {
         this._gl.uniformBlockBinding(program, uniformLocation, index);
     }
 
-    private bindIndexBuffer(buffer: Nullable<DataBuffer>): void {
+    protected bindIndexBuffer(buffer: Nullable<DataBuffer>): void {
         if (!this._vaoRecordInProgress) {
             this._unbindVertexArrayObject();
         }
@@ -2762,7 +2739,7 @@ export class ThinEngine {
         var fromBlob = url.substr(0, 5) === "blob:";
         var isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
-        let texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
+        let texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
 
         // establish the file extension, if possible
         var lastDot = url.lastIndexOf('.');
@@ -2900,7 +2877,7 @@ export class ThinEngine {
                         return false;
                     } else {
                         // Using shaders when possible to rescale because canvas.drawImage is lossy
-                        let source = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
+                        let source = new InternalTexture(this, InternalTextureSource.Temp);
                         this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
                         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
 
@@ -3149,7 +3126,7 @@ export class ThinEngine {
      * @returns The texture
      */
     private _createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions): InternalTexture {
-        var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_DEPTHTEXTURE);
+        var internalTexture = new InternalTexture(this, InternalTextureSource.Depth);
 
         if (!this._caps.depthTextureExtension) {
             Logger.Error("Depth texture is not supported by your browser or hardware.");
@@ -3188,74 +3165,6 @@ export class ThinEngine {
         this._bindTextureDirectly(gl.TEXTURE_2D, null);
 
         return internalTexture;
-    }
-
-    /**
-     * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
-     * @param renderTarget The render target to set the frame buffer for
-     */
-    public setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void {
-        // Create the framebuffer
-        var internalTexture = renderTarget.getInternalTexture();
-        if (!internalTexture || !internalTexture._framebuffer || !renderTarget.depthStencilTexture) {
-            return;
-        }
-
-        var gl = this._gl;
-        var depthStencilTexture = renderTarget.depthStencilTexture;
-
-        this._bindUnboundFramebuffer(internalTexture._framebuffer);
-        if (depthStencilTexture.isCube) {
-            if (depthStencilTexture._generateStencilBuffer) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
-            }
-            else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
-            }
-        }
-        else {
-            if (depthStencilTexture._generateStencilBuffer) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
-            }
-            else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
-            }
-        }
-        this._bindUnboundFramebuffer(null);
-    }
-
-    /** @hidden */
-    public _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): Nullable<WebGLRenderbuffer> {
-        var depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
-        var gl = this._gl;
-
-        // Create the depth/stencil buffer
-        if (generateStencilBuffer) {
-            depthStencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-
-            if (samples > 1) {
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH24_STENCIL8, width, height);
-            } else {
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
-            }
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-        }
-        else if (generateDepthBuffer) {
-            depthStencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-
-            if (samples > 1) {
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT16, width, height);
-            } else {
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-            }
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-        }
-
-        return depthStencilBuffer;
     }
 
     /** @hidden */
@@ -3403,6 +3312,40 @@ export class ThinEngine {
         }
 
         this._prepareWebGLTextureContinuation(texture, scene, noMipmap, isCompressed, samplingMode);
+    }
+
+    /** @hidden */
+    public _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): Nullable<WebGLRenderbuffer> {
+        var depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
+        var gl = this._gl;
+
+        // Create the depth/stencil buffer
+        if (generateStencilBuffer) {
+            depthStencilBuffer = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+
+            if (samples > 1) {
+                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH24_STENCIL8, width, height);
+            } else {
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
+            }
+
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+        }
+        else if (generateDepthBuffer) {
+            depthStencilBuffer = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+
+            if (samples > 1) {
+                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT16, width, height);
+            } else {
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+            }
+
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+        }
+
+        return depthStencilBuffer;
     }
 
     /** @hidden */

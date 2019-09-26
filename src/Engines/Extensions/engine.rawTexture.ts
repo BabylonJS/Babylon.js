@@ -1,6 +1,6 @@
 import { Nullable } from "../../types";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
+import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Logger } from '../../Misc/logger';
 import { Tools } from '../../Misc/tools';
 import { Scene } from '../../scene';
@@ -214,7 +214,7 @@ Engine.prototype.updateRawTexture = function(texture: Nullable<InternalTexture>,
 };
 
 Engine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-    var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RAW);
+    var texture = new InternalTexture(this, InternalTextureSource.Raw);
     texture.baseWidth = width;
     texture.baseHeight = height;
     texture.width = width;
@@ -254,7 +254,7 @@ Engine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBufferView[
     generateMipMaps: boolean, invertY: boolean, samplingMode: number,
     compression: Nullable<string> = null): InternalTexture {
     var gl = this._gl;
-    var texture = new InternalTexture(this, InternalTexture.DATASOURCE_CUBERAW);
+    var texture = new InternalTexture(this, InternalTextureSource.CubeRaw);
     texture.isCube = true;
     texture.format = format;
     texture.type = type;
@@ -454,7 +454,7 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
 };
 
 Engine.prototype.createRawTexture3D = function(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-    var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RAW3D);
+    var texture = new InternalTexture(this, InternalTextureSource.Raw3D);
     texture.baseWidth = width;
     texture.baseHeight = height;
     texture.baseDepth = depth;

@@ -3,7 +3,7 @@ import { Tools } from "./tools";
 import { Vector3 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { Constants } from "../Engines/constants";
@@ -465,7 +465,7 @@ export class EnvironmentTextureTools {
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                     let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
-                    let glTextureFromLod = new InternalTexture(engine, InternalTexture.DATASOURCE_TEMP);
+                    let glTextureFromLod = new InternalTexture(engine, InternalTextureSource.Temp);
                     glTextureFromLod.isCube = true;
                     glTextureFromLod.invertY = true;
                     glTextureFromLod.generateMipMaps = false;
@@ -634,7 +634,7 @@ export class EnvironmentTextureTools {
 
     /** @hidden */
     public static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> {
-        internalTexture._dataSource = InternalTexture.DATASOURCE_CUBERAW_RGBD;
+        internalTexture._source = InternalTextureSource.CubeRawRGBD;
         internalTexture._bufferViewArrayArray = data;
         internalTexture._lodGenerationScale = lodScale;
         internalTexture._lodGenerationOffset = lodOffset;
