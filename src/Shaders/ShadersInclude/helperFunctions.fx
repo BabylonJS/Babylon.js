@@ -53,6 +53,11 @@ vec3 toGammaSpace(vec3 color)
     return pow(color, vec3(GammaEncodePowerApprox));
 }
 
+float toGammaSpace(float color)
+{
+    return pow(color, GammaEncodePowerApprox);
+}
+
 float square(float value)
 {
     return value * value;
@@ -103,8 +108,4 @@ vec3 fromRGBD(vec4 rgbd) {
     // return rgbd.rgb * ((rgbdMaxRange / 255.0) / rgbd.a);
 
     return rgbd.rgb / rgbd.a;
-}
-
-float rand(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }

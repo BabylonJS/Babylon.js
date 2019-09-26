@@ -9,7 +9,7 @@ import { _TypeStore } from '../../../Misc/typeStore';
  */
 export class StepBlock extends NodeMaterialBlock {
     /**
-     * Creates a new AddBlock
+     * Creates a new StepBlock
      * @param name defines the block name
      */
     public constructor(name: string) {

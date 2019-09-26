@@ -538,7 +538,7 @@ export class RenderTargetTexture extends Texture {
      * @param ratio the ratio to apply to the texture size in order to compute the new target size
      */
     public scale(ratio: number): void {
-        var newSize = this.getRenderSize() * ratio;
+        var newSize = Math.max(1, this.getRenderSize() * ratio);
 
         this.resize(newSize);
     }

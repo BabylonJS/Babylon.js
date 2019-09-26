@@ -1,7 +1,7 @@
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: BABYLON.Scene): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.OneMinusBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.InputBlock | null;
+        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.WaveBlock | BABYLON.InputBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -384,9 +384,27 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    /**
+     * BABYLON.Texture node model which stores information about a node editor block
+     */
+    export class ReflectionTextureNodeModel extends DefaultNodeModel {
+        private _block;
+        /**
+         * BABYLON.Texture for the node if it exists
+         */
+        texture: BABYLON.Nullable<BABYLON.BaseTexture>;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+        prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor): void;
+    }
+}
+declare module NODEEDITOR {
     interface ITexturePropertyTabComponentProps {
         globalState: GlobalState;
-        node: TextureNodeModel;
+        node: TextureNodeModel | ReflectionTextureNodeModel;
     }
     export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps, {
         isEmbedded: boolean;
@@ -396,7 +414,7 @@ declare module NODEEDITOR {
             isEmbedded: boolean;
         }): void;
         private _generateRandomForCache;
-        updateAftertextureLoad(): void;
+        updateAfterTextureLoad(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
@@ -1030,6 +1048,7 @@ declare module NODEEDITOR {
         private _onUpdateRequiredObserver;
         private _onPreviewBackgroundChangedObserver;
         private _onBackFaceCullingChangedObserver;
+        private _onDepthPrePassChangedObserver;
         private _onLightUpdatedObserver;
         private _engine;
         private _scene;
@@ -1242,7 +1261,111 @@ declare module NODEEDITOR {
         changeAnimation(): void;
         changeBackground(value: string): void;
         changeBackFaceCulling(value: boolean): void;
+        changeDepthPrePass(value: boolean): void;
         render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IGradientStepComponentProps {
+        globalState: GlobalState;
+        step: BABYLON.GradientBlockColorStep;
+        lineIndex: number;
+        onDelete: () => void;
+        onUpdateStep: () => void;
+    }
+    export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
+        gradient: number;
+    }> {
+        constructor(props: IGradientStepComponentProps);
+        updateColor(color: string): void;
+        updateStep(gradient: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IGradientPropertyTabComponentProps {
+        globalState: GlobalState;
+        gradientNode: GradientNodeModel;
+    }
+    export class GradientPropertyTabComponentProps extends React.Component<IGradientPropertyTabComponentProps> {
+        constructor(props: IGradientPropertyTabComponentProps);
+        forceRebuild(): void;
+        deleteStep(step: BABYLON.GradientBlockColorStep): void;
+        addNewStep(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class GradientNodeModel extends DefaultNodeModel {
+        readonly gradientBlock: BABYLON.GradientBlock;
+        /**
+         * Constructs the node model
+         */
+        constructor();
+        renderProperties(globalState: GlobalState): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IGradientNodeWidgetProps {
+        node: BABYLON.Nullable<GradientNodeModel>;
+        globalState: GlobalState;
+    }
+    export class GradientNodeWidget extends React.Component<IGradientNodeWidgetProps> {
+        constructor(props: IGradientNodeWidgetProps);
+        renderValue(value: string): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class GradientNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        constructor(globalState: GlobalState);
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: GradientNodeModel): JSX.Element;
+        getNewInstance(): GradientNodeModel;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * GenericNodeWidgetProps
+     */
+    export interface IReflectionTextureNodeWidgetProps {
+        node: BABYLON.Nullable<ReflectionTextureNodeModel>;
+        globalState: GlobalState;
+    }
+    /**
+     * Used to display a node block for the node editor
+     */
+    export class ReflectionTextureNodeWidget extends React.Component<IReflectionTextureNodeWidgetProps> {
+        /**
+         * Creates a GenericNodeWidget
+         * @param props
+         */
+        constructor(props: IReflectionTextureNodeWidgetProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    /**
+     * Node factory which creates editor nodes
+     */
+    export class ReflectionTextureNodeFactory extends SRD.AbstractNodeFactory {
+        private _globalState;
+        /**
+         * Constructs a TextureNodeFactory
+         */
+        constructor(globalState: GlobalState);
+        /**
+         * Generates a node widget
+         * @param diagramEngine diagram engine
+         * @param node node to generate
+         * @returns node widget jsx
+         */
+        generateReactWidget(diagramEngine: SRD.DiagramEngine, node: ReflectionTextureNodeModel): JSX.Element;
+        /**
+         * Gets a new instance of a node model
+         * @returns texture node model
+         */
+        getNewInstance(): ReflectionTextureNodeModel;
     }
 }
 declare module NODEEDITOR {
@@ -1331,6 +1454,7 @@ declare module NODEEDITOR {
         onLightUpdated: BABYLON.Observable<void>;
         onPreviewBackgroundChanged: BABYLON.Observable<void>;
         onBackFaceCullingChanged: BABYLON.Observable<void>;
+        onDepthPrePassChanged: BABYLON.Observable<void>;
         onAnimationCommandActivated: BABYLON.Observable<void>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => NodeModel;
         previewMeshType: PreviewMeshType;
@@ -1338,6 +1462,7 @@ declare module NODEEDITOR {
         rotatePreview: boolean;
         backgroundColor: BABYLON.Color4;
         backFaceCulling: boolean;
+        depthPrePass: boolean;
         blockKeyboardEvents: boolean;
         hemisphericLight: boolean;
         directionalLight0: boolean;

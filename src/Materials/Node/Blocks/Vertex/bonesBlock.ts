@@ -5,7 +5,7 @@ import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { Mesh } from '../../../../Meshes/mesh';
-import { Effect, EffectFallbacks } from '../../../effect';
+import { Effect } from '../../../effect';
 import { MaterialHelper } from '../../../materialHelper';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
@@ -14,6 +14,7 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 
 import "../../../../Shaders/ShadersInclude/bonesDeclaration";
 import "../../../../Shaders/ShadersInclude/bonesVertex";
+import { EffectFallbacks } from '../../../effectFallbacks';
 
 /**
  * Block used to add support for vertex skinning (bones)

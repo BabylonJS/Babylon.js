@@ -48,7 +48,9 @@ export class PortHelper {
                 let style = this._GetPortStyle(port.connection!.type);
 
                 outputPorts.push(
-                    <div key={key} className="output-port">
+                    <div key={key}                                    
+				        title={port.name}
+                        className="output-port">
                         {
                             !ignoreLabel &&
                             <div className="output-port-label">
@@ -86,7 +88,9 @@ export class PortHelper {
 
                 if (!includeOnly || includeOnly.indexOf(port.name) !== -1) {
                     inputPorts.push(
-                        <div key={key} className="input-port">
+                        <div key={key}                         
+				            title={port.name}
+                            className="input-port">
                             <div className="input-port-plug">
                                 <div className="input-port-border">                                
                                 </div>

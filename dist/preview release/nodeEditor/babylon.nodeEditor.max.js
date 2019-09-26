@@ -5525,7 +5525,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .input-port-border {\n  border-color: #00c0ff !important; }\n\n.srd-node--selected .output-port-border {\n  border-color: #00c0ff !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 10px;\n  transform: scale(1); }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: greenyellow !important; }\n\n.diagramBlock {\n  background: white;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 20px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n  .diagramBlock.trigonometry {\n    background: #405c86;\n    color: white; }\n    .diagramBlock.trigonometry .value {\n      grid-row: 2; }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 3; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 16px;\n    border-top-left-radius: 16px;\n    font-size: 16px;\n    text-align: center;\n    margin-top: -1px;\n    transform: scaleX(1.001);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 10px calc(100% - 10px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -8px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 12px; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-border {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          border: 4px solid black;\n          width: 4px;\n          height: 7px;\n          border-right: 0;\n          position: absolute;\n          border-bottom-left-radius: 10px;\n          border-top-left-radius: 10px;\n          transform: translateX(-2px) scale(1.2); }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 2px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 10px) 10px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 3px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 12px; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-border {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          border: 4px solid black;\n          width: 4px;\n          border-left: 0;\n          border-left: 0;\n          transform: translateX(9px) scale(1.2);\n          border-bottom-right-radius: 10px;\n          border-top-right-radius: 10px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 2px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 16px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
+exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .input-port-border {\n  border-color: #00c0ff !important; }\n\n.srd-node--selected .output-port-border {\n  border-color: #00c0ff !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 10px;\n  transform: scale(1); }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: greenyellow !important; }\n\n.diagramBlock {\n  background: white;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 20px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n  .diagramBlock.trigonometry {\n    background: #405c86;\n    color: white; }\n    .diagramBlock.trigonometry .value {\n      grid-row: 2; }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 3; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.gradient {\n    height: 70px; }\n    .diagramBlock.gradient .outputs, .diagramBlock.gradient .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.constant {\n    background: gray; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 16px;\n    border-top-left-radius: 16px;\n    font-size: 16px;\n    text-align: center;\n    margin-top: -1px;\n    transform: scaleX(1.001);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 10px calc(100% - 10px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -8px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 12px; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-border {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          border: 4px solid black;\n          width: 4px;\n          height: 7px;\n          border-right: 0;\n          position: absolute;\n          border-bottom-left-radius: 10px;\n          border-top-left-radius: 10px;\n          transform: translateX(-2px) scale(1.2); }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 2px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 10px) 10px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 3px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 12px; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-border {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          border: 4px solid black;\n          width: 4px;\n          border-left: 0;\n          border-left: 0;\n          transform: translateX(9px) scale(1.2);\n          border-bottom-right-radius: 10px;\n          border-top-right-radius: 10px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 2px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 16px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
 
 // exports
 
@@ -5582,7 +5582,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#propertyTab {\n  color: white;\n  background: #333333; }\n  #propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #propertyTab #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #propertyTab #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #propertyTab .sliderLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .sliderLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .sliderLine .slider {\n      grid-column: 2;\n      margin-right: 5px;\n      display: flex;\n      align-items: center; }\n      #propertyTab .sliderLine .slider .range {\n        -webkit-appearance: none;\n        width: 120px;\n        height: 6px;\n        background: #d3d3d3;\n        border-radius: 5px;\n        outline: none;\n        opacity: 0.7;\n        -webkit-transition: .2s;\n        transition: opacity .2s; }\n      #propertyTab .sliderLine .slider .range:hover {\n        opacity: 1; }\n      #propertyTab .sliderLine .slider .range::-webkit-slider-thumb {\n        -webkit-appearance: none;\n        appearance: none;\n        width: 14px;\n        height: 14px;\n        border-radius: 50%;\n        background: #337ab7;\n        cursor: pointer; }\n      #propertyTab .sliderLine .slider .range::-moz-range-thumb {\n        width: 14px;\n        height: 14px;\n        border-radius: 50%;\n        background: #337ab7;\n        cursor: pointer; }\n  #propertyTab .textInputLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .textInputLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #propertyTab .textInputLine .value input {\n        width: calc(100% - 5px); }\n  #propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #555555;\n        height: 30px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #propertyTab .floatLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .floatLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .floatLine .value {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .floatLine .value input {\n        width: 110px; }\n  #propertyTab .vector3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n  #propertyTab .checkBoxLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .checkBoxLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .checkBoxLine .checkBox {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      #propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #propertyTab .listLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .listLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #propertyTab .listLine .options select {\n        width: 115px; }\n  #propertyTab .color3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .color3Line .firstLine {\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      #propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        display: flex;\n        align-items: center; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"] {\n          -webkit-appearance: none;\n          border: 1px solid rgba(255, 255, 255, 0.5);\n          padding: 0;\n          width: 30px;\n          height: 20px; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n          padding: 0; }\n        #propertyTab .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n          border: none; }\n        #propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .textLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #propertyTab .textLine .value.check {\n        color: green; }\n      #propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
+exports.push([module.i, "#propertyTab {\n  color: white;\n  background: #333333; }\n  #propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #propertyTab #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #propertyTab #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 6px;\n    background: #d3d3d3;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #propertyTab .range:hover {\n    opacity: 1; }\n  #propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  #propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  #propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #propertyTab .sliderLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .sliderLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .sliderLine .slider {\n      grid-column: 2;\n      margin-right: 5px;\n      display: flex;\n      align-items: center; }\n  #propertyTab .textInputLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .textInputLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #propertyTab .textInputLine .value input {\n        width: calc(100% - 5px); }\n  #propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #555555;\n        height: 30px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 30px 30px 40px auto 20px 5px;\n    margin-top: 5px;\n    margin-left: 5px; }\n    #propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: 5px; }\n      #propertyTab .gradient-step .step-slider input {\n        width: unset; }\n    #propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n  #propertyTab .floatLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #propertyTab .floatLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .floatLine .value {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .floatLine .value input {\n        width: 110px; }\n  #propertyTab .vector3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #propertyTab .buttonLine button:active {\n      background: #282828; }\n    #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n  #propertyTab .checkBoxLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .checkBoxLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .checkBoxLine .checkBox {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      #propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      #propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #propertyTab .listLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .listLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #propertyTab .listLine .options select {\n        width: 115px; }\n  #propertyTab .color3Line {\n    padding-left: 5px;\n    display: grid; }\n    #propertyTab .color3Line .firstLine {\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      #propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        display: flex;\n        align-items: center; }\n        #propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #propertyTab .textLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #propertyTab .textLine .value.check {\n        color: green; }\n      #propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
 
 // exports
 
@@ -68355,10 +68355,18 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+
+
+
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
-    BlockTools.GetBlockFromString = function (data, scene) {
+    BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
             case "BonesBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["BonesBlock"]("Bones");
@@ -68381,7 +68389,7 @@ var BlockTools = /** @class */ (function () {
             case "TextureBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"]("Texture");
             case "ReflectionTextureBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectionTextureBlock"]("Texture");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectionTextureBlock"]("Reflection texture");
             case "LightBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["LightBlock"]("Lights");
             case "FogBlock":
@@ -68416,14 +68424,20 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["FresnelBlock"]("Fresnel");
             case "LerpBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["LerpBlock"]("Lerp");
+            case "NLerpBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NLerpBlock"]("NLerp");
             case "DivideBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DivideBlock"]("Divide");
             case "SubtractBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SubtractBlock"]("Subtract");
             case "StepBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["StepBlock"]("Step");
+            case "SmoothStepBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SmoothStepBlock"]("Smooth step");
             case "OneMinusBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["OneMinusBlock"]("One minus");
+            case "ReciprocalBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReciprocalBlock"]("Reciprocal");
             case "ViewDirectionBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ViewDirectionBlock"]("View direction");
             case "LightInformationBlock":
@@ -68444,6 +68458,14 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["PerturbNormalBlock"]("Perturb normal");
             case "RandomNumberBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["RandomNumberBlock"]("Random number");
+            case "ReplaceColorBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReplaceColorBlock"]("Replace color");
+            case "PosterizeBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["PosterizeBlock"]("Posterize");
+            case "ArcTan2Block":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ArcTan2Block"]("ArcTan2");
+            case "GradientBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["GradientBlock"]("Gradient");
             case "CosBlock": {
                 var cosBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Cos");
                 cosBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Cos;
@@ -68464,6 +68486,41 @@ var BlockTools = /** @class */ (function () {
                 sqrtBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Sqrt;
                 return sqrtBlock;
             }
+            case "ArcCosBlock": {
+                var acosBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("ArcCos");
+                acosBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].ArcCos;
+                return acosBlock;
+            }
+            case "ArcSinBlock": {
+                var asinBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("ArcSin");
+                asinBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].ArcSin;
+                return asinBlock;
+            }
+            case "TanBlock": {
+                var tanBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Tan");
+                tanBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Tan;
+                return tanBlock;
+            }
+            case "ArcTanBlock": {
+                var atanBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("ArcTan");
+                atanBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].ArcTan;
+                return atanBlock;
+            }
+            case "FractBlock": {
+                var fractBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Fract");
+                fractBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Fract;
+                return fractBlock;
+            }
+            case "SignBlock": {
+                var signBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Sign");
+                signBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Sign;
+                return signBlock;
+            }
+            case "LogBlock": {
+                var logBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Log");
+                logBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Log;
+                return logBlock;
+            }
             case "ExpBlock": {
                 var expBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Exp");
                 expBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Exp;
@@ -68473,6 +68530,16 @@ var BlockTools = /** @class */ (function () {
                 var exp2Block = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Exp2");
                 exp2Block.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Exp2;
                 return exp2Block;
+            }
+            case "DegreesToRadiansBlock": {
+                var degreesToRadiansBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Degrees to radians");
+                degreesToRadiansBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Radians;
+                return degreesToRadiansBlock;
+            }
+            case "RadiansToDegreesBlock": {
+                var radiansToDegreesBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Radians to degrees");
+                radiansToDegreesBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Degrees;
+                return radiansToDegreesBlock;
             }
             case "RoundBlock": {
                 var roundBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Round");
@@ -68488,6 +68555,21 @@ var BlockTools = /** @class */ (function () {
                 var floorBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Floor");
                 floorBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Floor;
                 return floorBlock;
+            }
+            case "SawToothWaveBlock": {
+                var sawToothWaveBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlock"]("SawTooth wave");
+                sawToothWaveBlock.kind = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlockKind"].SawTooth;
+                return sawToothWaveBlock;
+            }
+            case "SquareWaveBlock": {
+                var squareWaveBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlock"]("Square wave");
+                squareWaveBlock.kind = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlockKind"].Square;
+                return squareWaveBlock;
+            }
+            case "TriangleWaveBlock": {
+                var triangleWaveBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlock"]("Triangle wave");
+                triangleWaveBlock.kind = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WaveBlockKind"].Triangle;
+                return triangleWaveBlock;
             }
             case "WorldMatrixBlock": {
                 var worldMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World");
@@ -68568,6 +68650,43 @@ var BlockTools = /** @class */ (function () {
                 var timeBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Time", undefined, babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Float);
                 timeBlock.animationType = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["AnimatedInputBlockTypes"].Time;
                 return timeBlock;
+            }
+            case "DeltaTimeBlock": {
+                var deltaTimeBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Delta time");
+                deltaTimeBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].DeltaTime);
+                return deltaTimeBlock;
+            }
+            case "WorldPositionBlock": {
+                var worldPositionBlock = nodeMaterial.getInputBlockByPredicate(function (b) { return b.isAttribute && b.name === "position"; });
+                if (!worldPositionBlock) {
+                    worldPositionBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("position");
+                    worldPositionBlock.setAsAttribute("position");
+                }
+                var worldMatrixBlock = nodeMaterial.getInputBlockByPredicate(function (b) { return b.isSystemValue && b.systemValue === babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World; });
+                if (!worldMatrixBlock) {
+                    worldMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World");
+                    worldMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World);
+                }
+                var transformBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TransformBlock"]("World position");
+                worldPositionBlock.connectTo(transformBlock);
+                worldMatrixBlock.connectTo(transformBlock);
+                return transformBlock;
+            }
+            case "WorldNormalBlock": {
+                var worldNormalBlock = nodeMaterial.getInputBlockByPredicate(function (b) { return b.isAttribute && b.name === "normal"; });
+                if (!worldNormalBlock) {
+                    worldNormalBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("normal");
+                    worldNormalBlock.setAsAttribute("normal");
+                }
+                var worldMatrixBlock = nodeMaterial.getInputBlockByPredicate(function (b) { return b.isSystemValue && b.systemValue === babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World; });
+                if (!worldMatrixBlock) {
+                    worldMatrixBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("World");
+                    worldMatrixBlock.setAsSystemValue(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialSystemValues"].World);
+                }
+                var transformBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TransformBlock"]("World normal");
+                worldNormalBlock.connectTo(transformBlock);
+                worldMatrixBlock.connectTo(transformBlock);
+                return transformBlock;
             }
         }
         return null;
@@ -69145,6 +69264,283 @@ var GenericNodeWidget = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/diagram/gradient/gradientNodeFactory.tsx":
+/*!*************************************************************!*\
+  !*** ./components/diagram/gradient/gradientNodeFactory.tsx ***!
+  \*************************************************************/
+/*! exports provided: GradientNodeFactory */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GradientNodeFactory", function() { return GradientNodeFactory; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _gradientNodeWidget__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./gradientNodeWidget */ "./components/diagram/gradient/gradientNodeWidget.tsx");
+/* harmony import */ var _gradientNodeModel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gradientNodeModel */ "./components/diagram/gradient/gradientNodeModel.tsx");
+
+
+
+
+
+var GradientNodeFactory = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeFactory, _super);
+    function GradientNodeFactory(globalState) {
+        var _this = _super.call(this, "gradient") || this;
+        _this._globalState = globalState;
+        return _this;
+    }
+    GradientNodeFactory.prototype.generateReactWidget = function (diagramEngine, node) {
+        return react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_gradientNodeWidget__WEBPACK_IMPORTED_MODULE_3__["GradientNodeWidget"], { node: node, globalState: this._globalState });
+    };
+    GradientNodeFactory.prototype.getNewInstance = function () {
+        return new _gradientNodeModel__WEBPACK_IMPORTED_MODULE_4__["GradientNodeModel"]();
+    };
+    return GradientNodeFactory;
+}(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["AbstractNodeFactory"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/gradient/gradientNodeModel.tsx":
+/*!***********************************************************!*\
+  !*** ./components/diagram/gradient/gradientNodeModel.tsx ***!
+  \***********************************************************/
+/*! exports provided: GradientNodeModel */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GradientNodeModel", function() { return GradientNodeModel; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
+/* harmony import */ var _gradientNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./gradientNodePropertyComponent */ "./components/diagram/gradient/gradientNodePropertyComponent.tsx");
+
+
+
+
+var GradientNodeModel = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeModel, _super);
+    /**
+     * Constructs the node model
+     */
+    function GradientNodeModel() {
+        return _super.call(this, "gradient") || this;
+    }
+    Object.defineProperty(GradientNodeModel.prototype, "gradientBlock", {
+        get: function () {
+            return this.block;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    GradientNodeModel.prototype.renderProperties = function (globalState) {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gradientNodePropertyComponent__WEBPACK_IMPORTED_MODULE_3__["GradientPropertyTabComponentProps"], { globalState: globalState, gradientNode: this }));
+    };
+    return GradientNodeModel;
+}(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/gradient/gradientNodePropertyComponent.tsx":
+/*!***********************************************************************!*\
+  !*** ./components/diagram/gradient/gradientNodePropertyComponent.tsx ***!
+  \***********************************************************************/
+/*! exports provided: GradientPropertyTabComponentProps */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GradientPropertyTabComponentProps", function() { return GradientPropertyTabComponentProps; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
+/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/gradientBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _gradientStepComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./gradientStepComponent */ "./components/diagram/gradient/gradientStepComponent.tsx");
+/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+
+
+
+
+
+
+
+
+
+var GradientPropertyTabComponentProps = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientPropertyTabComponentProps, _super);
+    function GradientPropertyTabComponentProps(props) {
+        return _super.call(this, props) || this;
+    }
+    GradientPropertyTabComponentProps.prototype.forceRebuild = function () {
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+    };
+    GradientPropertyTabComponentProps.prototype.deleteStep = function (step) {
+        var gradientBlock = this.props.gradientNode.gradientBlock;
+        var index = gradientBlock.colorSteps.indexOf(step);
+        if (index > -1) {
+            gradientBlock.colorSteps.splice(index, 1);
+            this.forceRebuild();
+            this.forceUpdate();
+        }
+    };
+    GradientPropertyTabComponentProps.prototype.addNewStep = function () {
+        var gradientBlock = this.props.gradientNode.gradientBlock;
+        var newStep = new babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__["GradientBlockColorStep"](1.0, babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__["Color3"].White());
+        gradientBlock.colorSteps.push(newStep);
+        this.forceRebuild();
+        this.forceUpdate();
+    };
+    GradientPropertyTabComponentProps.prototype.render = function () {
+        var _this = this;
+        var gradientBlock = this.props.gradientNode.gradientBlock;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: gradientBlock, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: gradientBlock.getClassName() })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "STEPS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Add new step", onClick: function () { return _this.addNewStep(); } }),
+                gradientBlock.colorSteps.map(function (c, i) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gradientStepComponent__WEBPACK_IMPORTED_MODULE_6__["GradientStepComponent"], { globalState: _this.props.globalState, onUpdateStep: function () { return _this.forceRebuild(); }, key: c.step, lineIndex: i, step: c, onDelete: function () { return _this.deleteStep(c); } }));
+                }))));
+    };
+    return GradientPropertyTabComponentProps;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/gradient/gradientNodeWidget.tsx":
+/*!************************************************************!*\
+  !*** ./components/diagram/gradient/gradientNodeWidget.tsx ***!
+  \************************************************************/
+/*! exports provided: GradientNodeWidget */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GradientNodeWidget", function() { return GradientNodeWidget; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
+
+
+
+var GradientNodeWidget = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeWidget, _super);
+    function GradientNodeWidget(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {};
+        if (_this.props.node) {
+            _this.props.node.addListener({
+                selectionChanged: function () {
+                    var selected = _this.props.node.selected;
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(selected ? _this.props.node : null);
+                }
+            });
+        }
+        return _this;
+    }
+    GradientNodeWidget.prototype.renderValue = function (value) {
+        if (value) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value-text" }, value));
+        }
+        return null;
+    };
+    GradientNodeWidget.prototype.render = function () {
+        var inputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateInputPorts(this.props.node, undefined, true);
+        var outputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateOutputPorts(this.props.node, true);
+        var gradientBlock = this.props.node.block;
+        var gradients = gradientBlock.colorSteps.map(function (c) { return "rgb(" + c.color.r * 255 + ", " + c.color.g * 255 + ", " + c.color.b * 255 + ") " + c.step * 100 + "%"; });
+        var style = {
+            background: gradients.length ? "linear-gradient(90deg, " + gradients.join(", ") + ")" : 'black'
+        };
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock gradient", style: style },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, gradientBlock.name),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" })));
+    };
+    return GradientNodeWidget;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/gradient/gradientStepComponent.tsx":
+/*!***************************************************************!*\
+  !*** ./components/diagram/gradient/gradientStepComponent.tsx ***!
+  \***************************************************************/
+/*! exports provided: GradientStepComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GradientStepComponent", function() { return GradientStepComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var GradientStepComponent = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientStepComponent, _super);
+    function GradientStepComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { gradient: props.step.step };
+        return _this;
+    }
+    GradientStepComponent.prototype.updateColor = function (color) {
+        this.props.step.color = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__["Color3"].FromHexString(color);
+        this.props.onUpdateStep();
+        this.forceUpdate();
+    };
+    GradientStepComponent.prototype.updateStep = function (gradient) {
+        this.props.step.step = gradient;
+        this.setState({ gradient: gradient });
+        this.props.onUpdateStep();
+    };
+    GradientStepComponent.prototype.render = function () {
+        var _this = this;
+        var step = this.props.step;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-step" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step" }, "#" + this.props.lineIndex),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "color", value: step.color.toHexString(), onChange: function (evt) { return _this.updateColor(evt.target.value); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-value" }, step.step.toFixed(2)),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-slider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: 0.01, min: 0, max: 1.0, value: step.step, onChange: function (evt) { return _this.updateStep(parseFloat(evt.target.value)); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-delete", onClick: function () { return _this.props.onDelete(); } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faTrash"] }))));
+    };
+    return GradientStepComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/diagram/input/inputNodeFactory.tsx":
 /*!*******************************************************!*\
   !*** ./components/diagram/input/inputNodeFactory.tsx ***!
@@ -69353,6 +69749,9 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                     { label: "None", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None },
                     { label: "Time", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].Time },
                 ];
+                systemValuesOptions = [
+                    { label: "Delta time", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialSystemValues"].DeltaTime }
+                ];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Matrix:
                 systemValuesOptions = [
@@ -69557,6 +69956,9 @@ var InputNodeWidget = /** @class */ (function (_super) {
                     case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].FogColor:
                         value = "Fog color";
                         break;
+                    case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialSystemValues"].DeltaTime:
+                        value = "Delta time";
+                        break;
                 }
             }
             else {
@@ -69595,7 +69997,7 @@ var InputNodeWidget = /** @class */ (function (_super) {
         else {
             name = "Not connected input";
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (inputBlock && inputBlock.isAttribute ? " attribute" : ""), style: {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (inputBlock && inputBlock.isAttribute ? " attribute" : "") + (inputBlock && inputBlock.isConstant ? " constant" : ""), style: {
                 background: color
             } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, name),
@@ -70313,7 +70715,7 @@ var PortHelper = /** @class */ (function () {
             if (port.position === "output") {
                 var typeIndicator = this._GetPortTypeIndicator(port.connection);
                 var style = this._GetPortStyle(port.connection.type);
-                outputPorts.push(react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { key: key, className: "output-port" },
+                outputPorts.push(react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { key: key, title: port.name, className: "output-port" },
                     !ignoreLabel &&
                         react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "output-port-label" }, port.connection.name),
                     react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "output-port-plug" },
@@ -70336,7 +70738,7 @@ var PortHelper = /** @class */ (function () {
                 var typeIndicator = this._GetPortTypeIndicator(port.connection);
                 var style = this._GetPortStyle(port.connection.type);
                 if (!includeOnly || includeOnly.indexOf(port.name) !== -1) {
-                    inputPorts.push(react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { key: key, className: "input-port" },
+                    inputPorts.push(react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { key: key, title: port.name, className: "input-port" },
                         react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "input-port-plug" },
                             react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { className: "input-port-border" }),
                             react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_port_defaultPortWidget__WEBPACK_IMPORTED_MODULE_2__["DefaultPortWidget"], { key: key, name: port.name, node: node, style: style }),
@@ -70350,6 +70752,180 @@ var PortHelper = /** @class */ (function () {
     };
     return PortHelper;
 }());
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/reflectionTexture/reflectionTextureNodeFactory.tsx":
+/*!*******************************************************************************!*\
+  !*** ./components/diagram/reflectionTexture/reflectionTextureNodeFactory.tsx ***!
+  \*******************************************************************************/
+/*! exports provided: ReflectionTextureNodeFactory */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReflectionTextureNodeFactory", function() { return ReflectionTextureNodeFactory; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! storm-react-diagrams */ "../../node_modules/storm-react-diagrams/dist/main.js");
+/* harmony import */ var storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./reflectionTextureNodeModel */ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx");
+/* harmony import */ var _reflectionTextureNodeWidget__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./reflectionTextureNodeWidget */ "./components/diagram/reflectionTexture/reflectionTextureNodeWidget.tsx");
+
+
+
+
+
+/**
+ * Node factory which creates editor nodes
+ */
+var ReflectionTextureNodeFactory = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeFactory, _super);
+    /**
+     * Constructs a TextureNodeFactory
+     */
+    function ReflectionTextureNodeFactory(globalState) {
+        var _this = _super.call(this, "reflectiontexture") || this;
+        _this._globalState = globalState;
+        return _this;
+    }
+    /**
+     * Generates a node widget
+     * @param diagramEngine diagram engine
+     * @param node node to generate
+     * @returns node widget jsx
+     */
+    ReflectionTextureNodeFactory.prototype.generateReactWidget = function (diagramEngine, node) {
+        return react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_reflectionTextureNodeWidget__WEBPACK_IMPORTED_MODULE_4__["ReflectionTextureNodeWidget"], { node: node, globalState: this._globalState });
+    };
+    /**
+     * Gets a new instance of a node model
+     * @returns texture node model
+     */
+    ReflectionTextureNodeFactory.prototype.getNewInstance = function () {
+        return new _reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureNodeModel"]();
+    };
+    return ReflectionTextureNodeFactory;
+}(storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["AbstractNodeFactory"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx":
+/*!*****************************************************************************!*\
+  !*** ./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx ***!
+  \*****************************************************************************/
+/*! exports provided: ReflectionTextureNodeModel */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReflectionTextureNodeModel", function() { return ReflectionTextureNodeModel; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../defaultNodeModel */ "./components/diagram/defaultNodeModel.ts");
+/* harmony import */ var _texture_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../texture/texturePropertyTabComponent */ "./components/diagram/texture/texturePropertyTabComponent.tsx");
+
+
+
+
+/**
+ * Texture node model which stores information about a node editor block
+ */
+var ReflectionTextureNodeModel = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeModel, _super);
+    /**
+     * Constructs the node model
+     */
+    function ReflectionTextureNodeModel() {
+        return _super.call(this, "reflectiontexture") || this;
+    }
+    Object.defineProperty(ReflectionTextureNodeModel.prototype, "texture", {
+        /**
+         * Texture for the node if it exists
+         */
+        get: function () {
+            return this._block.texture;
+        },
+        set: function (value) {
+            this._block.texture = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ReflectionTextureNodeModel.prototype.renderProperties = function (globalState) {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_texture_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["TexturePropertyTabComponent"], { globalState: globalState, node: this }));
+    };
+    ReflectionTextureNodeModel.prototype.prepare = function (options, nodes, model, graphEditor) {
+        this._block = options.nodeMaterialBlock;
+        _super.prototype.prepare.call(this, options, nodes, model, graphEditor);
+    };
+    return ReflectionTextureNodeModel;
+}(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
+
+
+
+/***/ }),
+
+/***/ "./components/diagram/reflectionTexture/reflectionTextureNodeWidget.tsx":
+/*!******************************************************************************!*\
+  !*** ./components/diagram/reflectionTexture/reflectionTextureNodeWidget.tsx ***!
+  \******************************************************************************/
+/*! exports provided: ReflectionTextureNodeWidget */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReflectionTextureNodeWidget", function() { return ReflectionTextureNodeWidget; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/textureLineComponent */ "./sharedComponents/textureLineComponent.tsx");
+/* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
+
+
+
+
+/**
+ * Used to display a node block for the node editor
+ */
+var ReflectionTextureNodeWidget = /** @class */ (function (_super) {
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeWidget, _super);
+    /**
+     * Creates a GenericNodeWidget
+     * @param props
+     */
+    function ReflectionTextureNodeWidget(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {};
+        if (_this.props.node) {
+            _this.props.node.addListener({
+                selectionChanged: function () {
+                    var selected = _this.props.node.selected;
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(selected ? _this.props.node : null);
+                }
+            });
+        }
+        return _this;
+    }
+    ReflectionTextureNodeWidget.prototype.render = function () {
+        // Input/Output ports
+        var outputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_3__["PortHelper"].GenerateOutputPorts(this.props.node, false);
+        var inputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_3__["PortHelper"].GenerateInputPorts(this.props.node);
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock texture-block" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, this.props.node.block.name),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
+            this.props.node && this.props.node.texture &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextureLineComponent"], { ref: "textureView", width: 140, height: 140, texture: this.props.node.texture, hideChannelSelect: true })));
+    };
+    return ReflectionTextureNodeWidget;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
 
@@ -70776,13 +71352,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
-/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
-/* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
-/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
-/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
-/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
-/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+/* harmony import */ var _textureNodeModel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./textureNodeModel */ "./components/diagram/texture/textureNodeModel.tsx");
+/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
+/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+/* harmony import */ var _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../reflectionTexture/reflectionTextureNodeModel */ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx");
+
+
+
 
 
 
@@ -70804,8 +71385,10 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         return _this;
     }
     TexturePropertyTabComponent.prototype.UNSAFE_componentWillUpdate = function (nextProps, nextState) {
-        var texture = nextProps.node.texture;
-        nextState.isEmbedded = !texture || texture.name.substring(0, 4) !== "http";
+        if (nextProps.node !== this.props.node) {
+            var texture = nextProps.node.texture;
+            nextState.isEmbedded = !texture || texture.name.substring(0, 4) !== "http";
+        }
     };
     TexturePropertyTabComponent.prototype._generateRandomForCache = function () {
         return 'xxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function (c) {
@@ -70813,7 +71396,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
             return r.toString();
         });
     };
-    TexturePropertyTabComponent.prototype.updateAftertextureLoad = function () {
+    TexturePropertyTabComponent.prototype.updateAfterTextureLoad = function () {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
     };
@@ -70828,8 +71411,15 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
         var texture = this.props.node.texture;
         if (!texture) {
-            this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, false);
-            texture = this.props.node.texture;
+            if (this.props.node instanceof _textureNodeModel__WEBPACK_IMPORTED_MODULE_4__["TextureNodeModel"]) {
+                this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, false);
+                texture = this.props.node.texture;
+            }
+            else {
+                this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["CubeTexture"]("", this.props.globalState.nodeMaterial.getScene());
+                texture = this.props.node.texture;
+                texture.coordinatesMode = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE;
+            }
         }
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ReadFile(file, function (data) {
             var blob = new Blob([data], { type: "octet/stream" });
@@ -70837,7 +71427,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
             reader.readAsDataURL(blob);
             reader.onloadend = function () {
                 var base64data = reader.result;
-                if (texture.isCube) {
+                if (texture.isCube || _this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_12__["ReflectionTextureNodeModel"]) {
                     var extension = undefined;
                     if (file.name.toLowerCase().indexOf(".dds") > 0) {
                         extension = ".dds";
@@ -70845,10 +71435,10 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                     else if (file.name.toLowerCase().indexOf(".env") > 0) {
                         extension = ".env";
                     }
-                    texture.updateURL(base64data, extension, function () { return _this.updateAftertextureLoad(); });
+                    texture.updateURL(base64data, extension, function () { return _this.updateAfterTextureLoad(); });
                 }
                 else {
-                    texture.updateURL(base64data, null, function () { return _this.updateAftertextureLoad(); });
+                    texture.updateURL(base64data, null, function () { return _this.updateAfterTextureLoad(); });
                 }
             };
         }, undefined, true);
@@ -70858,11 +71448,23 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         var texture = this.props.node.texture;
         if (!texture) {
             this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](url, this.props.globalState.nodeMaterial.getScene(), false, false, undefined, function () {
-                _this.updateAftertextureLoad();
+                _this.updateAfterTextureLoad();
             });
             return;
         }
-        texture.updateURL(url, null, function () { return _this.updateAftertextureLoad(); });
+        if (texture.isCube || this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_12__["ReflectionTextureNodeModel"]) {
+            var extension = undefined;
+            if (url.toLowerCase().indexOf(".dds") > 0) {
+                extension = ".dds";
+            }
+            else if (url.toLowerCase().indexOf(".env") > 0) {
+                extension = ".env";
+            }
+            texture.updateURL(url, extension, function () { return _this.updateAfterTextureLoad(); });
+        }
+        else {
+            texture.updateURL(url, null, function () { return _this.updateAfterTextureLoad(); });
+        }
     };
     TexturePropertyTabComponent.prototype.render = function () {
         var _this = this;
@@ -70872,62 +71474,70 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
             url = texture.name;
         }
         url = url.replace(/\?nocache=\d+/, "");
+        var isInReflectionMode = this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_12__["ReflectionTextureNodeModel"];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "GENERAL" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: "Texture" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.node.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "PROPERTIES" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.node.block }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_6__["LineContainerComponent"], { title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Type", value: "Texture" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.node.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_6__["LineContainerComponent"], { title: "PROPERTIES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.node.block, onValueChanged: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                    } }),
+                " ",
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
                             texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
                             texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Offset U", target: texture, propertyName: "vOffset", onChange: function () {
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rotation U", target: texture, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "Rotation U", target: texture, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rotation V", target: texture, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "Rotation V", target: texture, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rotation W", target: texture, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "Rotation W", target: texture, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "SOURCE" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Embed texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_6__["LineContainerComponent"], { title: "SOURCE" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Embed texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
                         _this.setState({ isEmbedded: value });
                         _this.props.node.texture = null;
-                        _this.updateAftertextureLoad();
+                        _this.updateAfterTextureLoad();
                     } }),
                 this.state.isEmbedded &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
                 !this.state.isEmbedded &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
                 !this.state.isEmbedded && url &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_11__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }))));
     };
     return TexturePropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -71083,8 +71693,20 @@ var TrigonometryPropertyTabComponentProps = /** @class */ (function (_super) {
             { label: "Exp2", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Exp2 },
             { label: "Round", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Round },
             { label: "Ceiling", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Ceiling },
-            { label: "Floor", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Floor }
+            { label: "Floor", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Floor },
+            { label: "ArcCos", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].ArcCos },
+            { label: "ArcSin", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].ArcSin },
+            { label: "ArcTan", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].ArcTan },
+            { label: "Tan", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Tan },
+            { label: "Log", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Log },
+            { label: "Fract", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Fract },
+            { label: "Sign", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Sign },
+            { label: "Radians to degrees", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Degrees },
+            { label: "Degrees to radians", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__["TrigonometryBlockOperations"].Radians }
         ];
+        operationOptions.sort(function (a, b) {
+            return a.label.localeCompare(b.label);
+        });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: trigonometryBlock, onChange: function () {
@@ -71321,17 +71943,18 @@ var NodeListComponent = /** @class */ (function (_super) {
         // Block types used to create the menu from
         var allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock", "RandomNumberBlock"],
+            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock", "RandomNumberBlock", "ReciprocalBlock"],
+            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "TimeBlock"],
-            Interpolation: ["LerpBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "TimeBlock", "DeltaTimeBlock"],
+            Interpolation: ["LerpBlock", "SmoothStepBlock", "NLerpBlock"],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
-            Mesh_Attributes: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock"],
+            Mesh_Attributes: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock"],
             Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ReflectionTextureBlock", "ViewDirectionBlock", "PerturbNormalBlock"],
-            Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock"],
+            Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "TriangleWaveBlock", "SquareWaveBlock"],
             Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
         };
         // Create node menu
@@ -71408,6 +72031,12 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
         this.props.globalState.onBackFaceCullingChanged.notifyObservers();
         this.forceUpdate();
     };
+    PreviewAreaComponent.prototype.changeDepthPrePass = function (value) {
+        this.props.globalState.depthPrePass = value;
+        _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreBoolean("DepthPrePass", value);
+        this.props.globalState.onDepthPrePassChanged.notifyObservers();
+        this.forceUpdate();
+    };
     PreviewAreaComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
@@ -71422,6 +72051,8 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "color-picker", id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render without back face culling", onClick: function () { return _this.changeBackFaceCulling(!_this.props.globalState.backFaceCulling); }, className: "button" + (!this.props.globalState.backFaceCulling ? " selected" : "") },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCheckDouble"] })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render with depth pre-pass", onClick: function () { return _this.changeDepthPrePass(!_this.props.globalState.depthPrePass); }, className: "button" + (this.props.globalState.depthPrePass ? " selected" : "") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faClone"] })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off hemispheric light", onClick: function () {
                         _this.props.globalState.hemisphericLight = !_this.props.globalState.hemisphericLight;
                         _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreBoolean("HemisphericLight", _this.props.globalState.hemisphericLight);
@@ -71494,8 +72125,10 @@ var PreviewManager = /** @class */ (function () {
             _this._handleAnimations();
         });
         this._onBackFaceCullingChangedObserver = globalState.onBackFaceCullingChanged.add(function () {
-            var serializationObject = _this._nodeMaterial.serialize();
-            _this._updatePreview(serializationObject);
+            _this._material.backFaceCulling = _this._globalState.backFaceCulling;
+        });
+        this._onDepthPrePassChangedObserver = globalState.onDepthPrePassChanged.add(function () {
+            _this._material.needDepthPrePass = _this._globalState.depthPrePass;
         });
         this._engine = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Engine"](targetCanvas, true);
         this._scene = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Scene"](this._engine);
@@ -71517,7 +72150,7 @@ var PreviewManager = /** @class */ (function () {
             for (var _i = 0, _a = this._scene.rootNodes; _i < _a.length; _i++) {
                 var root = _a[_i];
                 var transformNode = root;
-                if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh") {
+                if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh" || transformNode.getClassName() === "GroundMesh") {
                     if (transformNode.rotationQuaternion) {
                         transformNode.rotation = transformNode.rotationQuaternion.toEulerAngles();
                         transformNode.rotationQuaternion = null;
@@ -71581,6 +72214,7 @@ var PreviewManager = /** @class */ (function () {
                 var light = lights_1[_b];
                 light.dispose();
             }
+            this._engine.releaseEffects();
             switch (this._globalState.previewMeshType) {
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
                     this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateBox("dummy-box", 2, this._scene));
@@ -71627,6 +72261,7 @@ var PreviewManager = /** @class */ (function () {
         try {
             var tempMaterial_1 = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].Parse(serializationObject, this._scene);
             tempMaterial_1.backFaceCulling = this._globalState.backFaceCulling;
+            tempMaterial_1.needDepthPrePass = this._globalState.depthPrePass;
             if (this._meshes.length) {
                 var tasks = this._meshes.map(function (m) { return _this._forceCompilationAsync(tempMaterial_1, m); });
                 Promise.all(tasks).then(function () {
@@ -71655,6 +72290,7 @@ var PreviewManager = /** @class */ (function () {
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
         this._globalState.onBackFaceCullingChanged.remove(this._onBackFaceCullingChangedObserver);
+        this._globalState.onDepthPrePassChanged.remove(this._onDepthPrePassChangedObserver);
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
         if (this._material) {
             this._material.dispose();
@@ -72250,10 +72886,12 @@ var GlobalState = /** @class */ (function () {
         this.onLightUpdated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPreviewBackgroundChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onBackFaceCullingChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onDepthPrePassChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onAnimationCommandActivated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.blockKeyboardEvents = false;
         this.previewMeshType = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("PreviewMeshType", _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box);
         this.backFaceCulling = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("BackFaceCulling", true);
+        this.depthPrePass = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DepthPrePass", false);
         this.hemisphericLight = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("HemisphericLight", true);
         this.directionalLight0 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight0", true);
         var r = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorR", 0.37);
@@ -72315,6 +72953,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_diagram_lightInformation_lightInformationNodeFactory__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./components/diagram/lightInformation/lightInformationNodeFactory */ "./components/diagram/lightInformation/lightInformationNodeFactory.tsx");
 /* harmony import */ var _components_diagram_lightInformation_lightInformationNodeModel__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./components/diagram/lightInformation/lightInformationNodeModel */ "./components/diagram/lightInformation/lightInformationNodeModel.tsx");
 /* harmony import */ var _components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./components/preview/previewAreaComponent */ "./components/preview/previewAreaComponent.tsx");
+/* harmony import */ var _components_diagram_gradient_gradientNodeModel__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./components/diagram/gradient/gradientNodeModel */ "./components/diagram/gradient/gradientNodeModel.tsx");
+/* harmony import */ var _components_diagram_gradient_gradientNodeFactory__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./components/diagram/gradient/gradientNodeFactory */ "./components/diagram/gradient/gradientNodeFactory.tsx");
+/* harmony import */ var _components_diagram_reflectionTexture_reflectionTextureNodeFactory__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./components/diagram/reflectionTexture/reflectionTextureNodeFactory */ "./components/diagram/reflectionTexture/reflectionTextureNodeFactory.tsx");
+/* harmony import */ var _components_diagram_reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./components/diagram/reflectionTexture/reflectionTextureNodeModel */ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx");
+
+
+
+
+
+
 
 
 
@@ -72389,12 +73037,13 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._engine.registerNodeFactory(new _components_diagram_trigonometry_trigonometryNodeFactory__WEBPACK_IMPORTED_MODULE_26__["TrigonometryNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_clamp_clampNodeFactory__WEBPACK_IMPORTED_MODULE_28__["ClampNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_lightInformation_lightInformationNodeFactory__WEBPACK_IMPORTED_MODULE_30__["LightInformationNodeFactory"](_this.props.globalState));
+        _this._engine.registerNodeFactory(new _components_diagram_gradient_gradientNodeFactory__WEBPACK_IMPORTED_MODULE_34__["GradientNodeFactory"](_this.props.globalState));
+        _this._engine.registerNodeFactory(new _components_diagram_reflectionTexture_reflectionTextureNodeFactory__WEBPACK_IMPORTED_MODULE_35__["ReflectionTextureNodeFactory"](_this.props.globalState));
         _this._engine.registerLinkFactory(new _components_diagram_link_advancedLinkFactory__WEBPACK_IMPORTED_MODULE_20__["AdvancedLinkFactory"]());
         _this.props.globalState.onRebuildRequiredObservable.add(function () {
             if (_this.props.globalState.nodeMaterial) {
                 _this.buildMaterial();
             }
-            _this.forceUpdate();
         });
         _this.props.globalState.onResetRequiredObservable.add(function (locations) {
             _this.build(false, locations);
@@ -72403,7 +73052,7 @@ var GraphEditor = /** @class */ (function (_super) {
             }
         });
         _this.props.globalState.onUpdateRequiredObservable.add(function () {
-            _this.forceUpdate();
+            _this._engine.repaintCanvas();
         });
         _this.props.globalState.onZoomToFitRequiredObservable.add(function () {
             _this.zoomToFit();
@@ -72485,6 +73134,9 @@ var GraphEditor = /** @class */ (function (_super) {
         if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["TextureBlock"]) {
             newNode = new _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_9__["TextureNodeModel"]();
         }
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["ReflectionTextureBlock"]) {
+            newNode = new _components_diagram_reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_36__["ReflectionTextureNodeModel"]();
+        }
         else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["LightBlock"]) {
             newNode = new _components_diagram_light_lightNodeModel__WEBPACK_IMPORTED_MODULE_15__["LightNodeModel"]();
         }
@@ -72502,6 +73154,9 @@ var GraphEditor = /** @class */ (function (_super) {
         }
         else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["LightInformationBlock"]) {
             newNode = new _components_diagram_lightInformation_lightInformationNodeModel__WEBPACK_IMPORTED_MODULE_31__["LightInformationNodeModel"]();
+        }
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["GradientBlock"]) {
+            newNode = new _components_diagram_gradient_gradientNodeModel__WEBPACK_IMPORTED_MODULE_33__["GradientNodeModel"]();
         }
         else {
             newNode = new _components_diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_4__["GenericNodeModel"]();
@@ -72807,7 +73462,7 @@ var GraphEditor = /** @class */ (function (_super) {
             nodeModel = this.addValueNode(data);
         }
         else {
-            var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene());
+            var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
             if (block) {
                 this._toAdd = [];
                 block.autoConfigure(this.props.globalState.nodeMaterial);

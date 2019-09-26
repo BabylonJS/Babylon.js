@@ -934,8 +934,7 @@ var OBJFileLoader = /** @class */ (function () {
             curPositionInIndices = 0;
         };
         /**
-         * Create triangles from polygons by recursion
-         * The best to understand how it works is to draw it in the same time you get the recursion.
+         * Create triangles from polygons
          * It is important to notice that a triangle is a polygon
          * We get 5 patterns of face defined in OBJ File :
          * facePattern1 = ["1","2","3","4","5","6"]
@@ -947,15 +946,11 @@ var OBJFileLoader = /** @class */ (function () {
          * @param face Array[String] The indices of elements
          * @param v Integer The variable to increment
          */
-        var getTriangles = function (face, v) {
+        var getTriangles = function (faces, v) {
             //Work for each element of the array
-            if (v + 1 < face.length) {
+            for (var faceIndex = v; faceIndex < faces.length - 1; faceIndex++) {
                 //Add on the triangle variable the indexes to obtain triangles
-                triangles.push(face[0], face[v], face[v + 1]);
-                //Incrementation for recursion
-                v += 1;
-                //Recursion
-                getTriangles(face, v);
+                triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
             }
             //Result obtained after 2 iterations:
             //Pattern1 => triangle = ["1","2","3","1","3","4"];
@@ -1408,7 +1403,7 @@ var OBJFileLoader = /** @class */ (function () {
     /**
      * Defines if UVs are optimized by default during load.
      */
-    OBJFileLoader.OPTIMIZE_WITH_UV = false;
+    OBJFileLoader.OPTIMIZE_WITH_UV = true;
     /**
      * Invert model on y-axis (does a model scaling inversion)
      */

@@ -5,7 +5,7 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
-import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
+import { EffectCreationOptions } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -19,6 +19,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./mix.fragment";
 import "./mix.vertex";
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 class MixMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

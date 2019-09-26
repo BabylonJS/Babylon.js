@@ -15,11 +15,10 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Effect, EffectFallbacks } from "../Materials/effect";
+import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Constants } from "../Engines/constants";
@@ -28,6 +27,7 @@ import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
 import { _DevTools } from '../Misc/devTools';
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { EffectFallbacks } from '../Materials/effectFallbacks';
 
 /**
  * Effect layer options. This helps customizing the behaviour
