@@ -125,6 +125,10 @@
             color:white;    
         }
 
+        input::placeholder {
+            color: lightgray;
+        }
+
         input:focus  {
             box-shadow: none;
             outline: none;

@@ -1,7 +1,7 @@
 import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { Constants } from "../Engines/constants";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
@@ -717,7 +717,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function(rootUrl: string, sc
         else if (loadData.info.sphericalPolynomial) {
             texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
         }
-        texture._dataSource = InternalTexture.DATASOURCE_CUBEPREFILTERED;
+        texture._source = InternalTextureSource.CubePrefiltered;
 
         if (this.getCaps().textureLOD) {
             // Do not add extra process if texture lod is supported.
@@ -747,7 +747,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function(rootUrl: string, sc
             let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
             let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
-            var glTextureFromLod = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
+            var glTextureFromLod = new InternalTexture(this, InternalTextureSource.Temp);
             glTextureFromLod.type = texture.type;
             glTextureFromLod.format = texture.format;
             glTextureFromLod.width = Math.pow(2, Math.max(Scalar.Log2(width) - mipmapIndex, 0));

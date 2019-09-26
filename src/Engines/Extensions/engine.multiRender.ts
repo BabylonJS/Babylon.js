@@ -1,4 +1,4 @@
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
+import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { IMultiRenderTargetOptions } from '../../Materials/Textures/multiRenderTarget';
 import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
@@ -153,7 +153,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
-        var texture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
+        var texture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
         var attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
 
         textures.push(texture);
@@ -198,7 +198,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
 
     if (generateDepthTexture && this._caps.depthTextureExtension) {
         // Depth texture
-        var depthTexture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
+        var depthTexture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, depthTexture._webGLTexture);
