@@ -1,7 +1,7 @@
 import { Observable } from "../Misc/observable";
 import { Nullable, IndicesArray } from "../types";
 import { Scene } from "../scene";
-import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { IAudioEngine } from "../Audio/audioEngine";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
