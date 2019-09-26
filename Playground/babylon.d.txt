@@ -406,9 +406,28 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Interface used to define the mechanism to get data from the network
+     */
+    export interface IWebRequest {
+        /**
+         * Returns client's response url
+         */
+        responseURL: string;
+        /**
+         * Returns client's status
+         */
+        status: number;
+        /**
+         * Returns client's status as a text
+         */
+        statusText: string;
+    }
+}
+declare module BABYLON {
+    /**
      * Extended version of XMLHttpRequest with support for customizations (headers, ...)
      */
-    export class WebRequest {
+    export class WebRequest implements IWebRequest {
         private _xhr;
         /**
          * Custom HTTP Request Headers to be sent with XMLHttpRequests
@@ -8284,6 +8303,20 @@ declare module BABYLON {
         name: string;
         shader: string;
     };
+}
+declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Creates a new render target texture
+             * @param size defines the size of the texture
+             * @param options defines the options used to create the texture
+             * @returns a new render target texture stored in an InternalTexture
+             */
+            createRenderTargetTexture(size: number | {
+                width: number;
+                height: number;
+            }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        }
 }
 declare module BABYLON {
     /** Defines supported spaces */
@@ -28298,86 +28331,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * This class is used to track a performance counter which is number based.
-     * The user has access to many properties which give statistics of different nature.
-     *
-     * The implementer can track two kinds of Performance Counter: time and count.
-     * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
-     * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
-     */
-    export class PerfCounter {
-        /**
-         * Gets or sets a global boolean to turn on and off all the counters
-         */
-        static Enabled: boolean;
-        /**
-         * Returns the smallest value ever
-         */
-        readonly min: number;
-        /**
-         * Returns the biggest value ever
-         */
-        readonly max: number;
-        /**
-         * Returns the average value since the performance counter is running
-         */
-        readonly average: number;
-        /**
-         * Returns the average value of the last second the counter was monitored
-         */
-        readonly lastSecAverage: number;
-        /**
-         * Returns the current value
-         */
-        readonly current: number;
-        /**
-         * Gets the accumulated total
-         */
-        readonly total: number;
-        /**
-         * Gets the total value count
-         */
-        readonly count: number;
-        /**
-         * Creates a new counter
-         */
-        constructor();
-        /**
-         * Call this method to start monitoring a new frame.
-         * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
-         */
-        fetchNewFrame(): void;
-        /**
-         * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
-         * @param newCount the count value to add to the monitored count
-         * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
-         */
-        addCount(newCount: number, fetchResult: boolean): void;
-        /**
-         * Start monitoring this performance counter
-         */
-        beginMonitoring(): void;
-        /**
-         * Compute the time lapsed since the previous beginMonitoring() call.
-         * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
-         */
-        endMonitoring(newFrame?: boolean): void;
-        private _fetchResult;
-        private _startMonitoringTime;
-        private _min;
-        private _max;
-        private _average;
-        private _current;
-        private _totalValueCount;
-        private _totalAccumulated;
-        private _lastSecAverage;
-        private _lastSecAccumulated;
-        private _lastSecTime;
-        private _lastSecValueCount;
-    }
-}
-declare module BABYLON {
-    /**
      * @hidden
      **/
     export class DepthCullingState {
@@ -28790,7 +28743,6 @@ declare module BABYLON {
         /** @hidden */private _caps: EngineCapabilities;
         private _isStencilEnable;
         protected _colorWrite: boolean;
-        /** @hidden */private _drawCalls: PerfCounter;
         private _glVersion;
         private _glRenderer;
         private _glVendor;
@@ -29223,6 +29175,8 @@ declare module BABYLON {
          */
         drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
         private _drawMode;
+        /** @hidden */
+        protected _reportDrawCall(): void;
         /** @hidden */private _releaseEffect(effect: Effect): void;
         /** @hidden */private _deletePipelineContext(pipelineContext: IPipelineContext): void;
         /**
@@ -29654,7 +29608,7 @@ declare module BABYLON {
         /** @hidden */private _getInternalFormat(format: number): number;
         /** @hidden */private _getRGBABufferInternalSizedFormat(type: number, format?: number): number;
         /** @hidden */private _getRGBAMultiSampleBufferFormat(type: number): number;
-        /** @hidden */private _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
+        /** @hidden */private _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest;
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
@@ -30365,6 +30319,86 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * This class is used to track a performance counter which is number based.
+     * The user has access to many properties which give statistics of different nature.
+     *
+     * The implementer can track two kinds of Performance Counter: time and count.
+     * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
+     * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
+     */
+    export class PerfCounter {
+        /**
+         * Gets or sets a global boolean to turn on and off all the counters
+         */
+        static Enabled: boolean;
+        /**
+         * Returns the smallest value ever
+         */
+        readonly min: number;
+        /**
+         * Returns the biggest value ever
+         */
+        readonly max: number;
+        /**
+         * Returns the average value since the performance counter is running
+         */
+        readonly average: number;
+        /**
+         * Returns the average value of the last second the counter was monitored
+         */
+        readonly lastSecAverage: number;
+        /**
+         * Returns the current value
+         */
+        readonly current: number;
+        /**
+         * Gets the accumulated total
+         */
+        readonly total: number;
+        /**
+         * Gets the total value count
+         */
+        readonly count: number;
+        /**
+         * Creates a new counter
+         */
+        constructor();
+        /**
+         * Call this method to start monitoring a new frame.
+         * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
+         */
+        fetchNewFrame(): void;
+        /**
+         * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
+         * @param newCount the count value to add to the monitored count
+         * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
+         */
+        addCount(newCount: number, fetchResult: boolean): void;
+        /**
+         * Start monitoring this performance counter
+         */
+        beginMonitoring(): void;
+        /**
+         * Compute the time lapsed since the previous beginMonitoring() call.
+         * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
+         */
+        endMonitoring(newFrame?: boolean): void;
+        private _fetchResult;
+        private _startMonitoringTime;
+        private _min;
+        private _max;
+        private _average;
+        private _current;
+        private _totalValueCount;
+        private _totalAccumulated;
+        private _lastSecAverage;
+        private _lastSecAccumulated;
+        private _lastSecTime;
+        private _lastSecValueCount;
+    }
+}
+declare module BABYLON {
+    /**
      * Defines the interface used by display changed events
      */
     export interface IDisplayChangedEventArgs {
@@ -30701,6 +30735,7 @@ declare module BABYLON {
         protected readonly _supportsHardwareTextureRescaling: boolean;
         private _fps;
         private _deltaTime;
+        /** @hidden */private _drawCalls: PerfCounter;
         /**
          * Turn this value on if you want to pause FPS computation when in background
          */
@@ -31001,6 +31036,7 @@ declare module BABYLON {
          * Disable previously set scissor test rectangle
          */
         disableScissor(): void;
+        protected _reportDrawCall(): void;
         /**
          * Initializes a webVR display and starts listening to display change events
          * The onVRDisplayChangedObservable will be notified upon these changes
@@ -31157,16 +31193,6 @@ declare module BABYLON {
          * @param offset defines the offset in the target index buffer where update should start
          */
         updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
-        /**
-         * Creates a new render target texture
-         * @param size defines the size of the texture
-         * @param options defines the options used to create the texture
-         * @returns a new render target texture stored in an InternalTexture
-         */
-        createRenderTargetTexture(size: number | {
-            width: number;
-            height: number;
-        }, options: boolean | RenderTargetCreationOptions): InternalTexture;
         /**
          * Updates the sample count of a render target texture
          * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
@@ -51633,7 +51659,7 @@ declare module BABYLON {
         /**
          * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
          */
-        engine: Nullable<Engine>;
+        engine: Nullable<ThinEngine>;
         /**
          * Defines the scene the texture belongs to. It is not mandatory if you define an engine.
          */
@@ -54654,7 +54680,7 @@ declare module BABYLON {
          * @param engine the engine to use for rendering
          * @param options defines the options of the effect renderer
          */
-        constructor(engine: Engine, options?: IEffectRendererOptions);
+        constructor(engine: ThinEngine, options?: IEffectRendererOptions);
         /**
          * Sets the current viewport in normalized coordinates 0-1
          * @param viewport Defines the viewport to set (defaults to 0 0 1 1)
@@ -54694,7 +54720,7 @@ declare module BABYLON {
         /**
          * Engine to use to create the effect
          */
-        engine: Engine;
+        engine: ThinEngine;
         /**
          * Fragment shader for the effect
          */

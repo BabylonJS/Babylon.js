@@ -1,12 +1,14 @@
 import { Nullable } from '../types';
 import { Texture } from '../Materials/Textures/texture';
-import { Engine } from '../Engines/engine';
+import { ThinEngine } from '../Engines/thinEngine';
 import { VertexBuffer } from '../Meshes/buffer';
 import { Viewport } from '../Maths/math.viewport';
 import { Constants } from '../Engines/constants';
 import { Observable } from '../Misc/observable';
 import { Effect } from './effect';
 import { DataBuffer } from '../Meshes/dataBuffer';
+
+import "../Engines/Extensions/engine.renderTarget";
 
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";
@@ -75,7 +77,7 @@ export class EffectRenderer {
      * @param engine the engine to use for rendering
      * @param options defines the options of the effect renderer
      */
-    constructor(private engine: Engine, options: IEffectRendererOptions = EffectRenderer._DefaultOptions) {
+    constructor(private engine: ThinEngine, options: IEffectRendererOptions = EffectRenderer._DefaultOptions) {
         options = {
             ...EffectRenderer._DefaultOptions,
             ...options,
@@ -87,8 +89,8 @@ export class EffectRenderer {
         this._indexBuffer = engine.createIndexBuffer(options.indices!);
 
         // No need here for full screen render.
-        engine.setDepthBuffer(false);
-        engine.setStencilBuffer(false);
+        engine.depthCullingState.depthTest = false;
+        engine.stencilState.stencilTest = false;
     }
 
     /**
@@ -206,7 +208,7 @@ interface EffectWrapperCreationOptions {
     /**
      * Engine to use to create the effect
      */
-    engine: Engine;
+    engine: ThinEngine;
     /**
      * Fragment shader for the effect
      */
