@@ -20,6 +20,7 @@ import { RenderTargetTexture } from '../Materials/Textures/renderTargetTexture';
 import { PerformanceMonitor } from '../Misc/performanceMonitor';
 import { Logger } from '../Misc/logger';
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { PerfCounter } from '../Misc/perfCounter';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -440,6 +441,10 @@ export class Engine extends ThinEngine {
     // FPS
     private _fps = 60;
     private _deltaTime = 0;
+
+    /** @hidden */
+    public _drawCalls = new PerfCounter();
+
     /**
      * Turn this value on if you want to pause FPS computation when in background
      */
@@ -1172,6 +1177,10 @@ export class Engine extends ThinEngine {
         let gl = this._gl;
 
         gl.disable(gl.SCISSOR_TEST);
+    }
+
+    protected _reportDrawCall() {
+        this._drawCalls.addCount(1, false);
     }
 
     /**

@@ -4,9 +4,9 @@ import { InternalTexture, InternalTextureSource } from '../../Materials/Textures
 import { Logger } from '../../Misc/logger';
 import { Tools } from '../../Misc/tools';
 import { Scene } from '../../scene';
-import { WebRequest } from '../../Misc/webRequest';
 import { Constants } from '../constants';
 import { Engine } from '../engine';
+import { IWebRequest } from '../../Misc/interfaces/iWebRequest';
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -389,7 +389,7 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
     texture.url = url;
     this._internalTexturesCache.push(texture);
 
-    var onerror = (request?: WebRequest, exception?: any) => {
+    var onerror = (request?: IWebRequest, exception?: any) => {
         scene._removePendingData(texture);
         if (onError && request) {
             onError(request.status + " " + request.statusText, exception);

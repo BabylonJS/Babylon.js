@@ -48778,7 +48778,7 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                     if (!this._posDragEnd) {
                         // Record movement for generating replay code
                         this._posDragEnd = manager.gizmos.positionGizmo.onDragEndObservable.add(function () {
-                            if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedMesh) {
+                            if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedMesh && manager.gizmos.positionGizmo.attachedMesh.reservedDataStore) {
                                 var lightGizmo = manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo;
                                 var obj = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedMesh;
                                 if (obj.position) {
