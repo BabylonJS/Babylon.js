@@ -591,9 +591,6 @@ export class ThinEngine {
             if (!this._gl) {
                 throw new Error("WebGL not supported");
             }
-
-            // Ensures a consistent color space unpacking of textures cross browser.
-            this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
         } else {
             this._gl = <WebGLRenderingContext>canvasOrContext;
             this._renderingCanvas = this._gl.canvas as HTMLCanvasElement;
@@ -607,6 +604,9 @@ export class ThinEngine {
                 options.stencil = attributes.stencil;
             }
         }
+
+        // Ensures a consistent color space unpacking of textures cross browser.
+        this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
 
         if (options.useHighPrecisionFloats !== undefined) {
             this._highPrecisionShadersAllowed = options.useHighPrecisionFloats;
@@ -2594,6 +2594,7 @@ export class ThinEngine {
 
             this._unpackFlipYCached = null;
 
+            this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
             this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
         }
 
