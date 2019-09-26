@@ -1,7 +1,9 @@
+import { IWebRequest } from './interfaces/iWebRequest';
+
 /**
  * Extended version of XMLHttpRequest with support for customizations (headers, ...)
  */
-export class WebRequest {
+export class WebRequest implements IWebRequest {
     private _xhr = new XMLHttpRequest();
 
     /**
