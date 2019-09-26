@@ -792,9 +792,9 @@ export class PointsCloudSystem implements IDisposable {
                 }
             }
             else {
-                particleGlobalPosition.x = particlePosition.x;
-                particleGlobalPosition.y = particlePosition.y;
-                particleGlobalPosition.z = particlePosition.z;
+                particleGlobalPosition.x = 0;
+                particleGlobalPosition.y = 0;
+                particleGlobalPosition.z = 0;
 
                 if (this._computeParticleRotation) {
                     const rotMatrixValues = rotMatrix.m;
