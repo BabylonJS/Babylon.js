@@ -17,6 +17,7 @@ import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.renderTarget";
+import "../../Engines/Extensions/engine.renderTargetCube";
 import { InstancedMesh } from '../../Meshes/instancedMesh';
 import { Engine } from '../../Engines/engine';
 
