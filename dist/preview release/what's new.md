@@ -13,6 +13,7 @@
   - WebXR webVR parity helpers (Vive, WMR, Oculus Rift) ([TrevorDev](https://github.com/TrevorDev))
 
 ## Updates
+- Added Point Cloud Particle System ([JohnK](https://github.com/BabylonJSGuide/))
 
 ### General
 - Added support for dual shock gamepads ([Deltakosh](https://github.com/deltakosh/))
