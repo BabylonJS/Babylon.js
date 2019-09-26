@@ -69715,7 +69715,7 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                     cantDisplaySlider &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
                     !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_16__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: 0.1, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_16__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: (inputBlock.max - inputBlock.min) / 100.0, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
                                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             } })));
             }
@@ -74203,7 +74203,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
         var currentValue = _this.props.target[_this.props.propertyName];
-        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 3)) : "0" };
+        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 2)) : "0" };
         _this._store = currentValue;
         return _this;
     }
@@ -74213,7 +74213,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var newValue = nextProps.target[nextProps.propertyName];
-        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
+        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 2) : "0";
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
             return true;
@@ -74238,6 +74238,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
         if (/[^0-9\.\-]/g.test(valueString)) {
             return;
         }
+        valueString = valueString.replace(/(.+\...).+/, "$1");
         var valueAsNumber;
         if (this.props.isInteger) {
             valueAsNumber = parseInt(valueString);

@@ -1,7 +1,7 @@
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
+import { Nullable, IndicesArray } from "../types";
 import { Scene } from "../scene";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { IAudioEngine } from "../Audio/audioEngine";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
@@ -17,8 +17,7 @@ import { Constants } from './constants';
 import { IViewportLike, IColor4Like } from '../Maths/math.like';
 import { RenderTargetTexture } from '../Materials/Textures/renderTargetTexture';
 import { PerformanceMonitor } from '../Misc/performanceMonitor';
-
-import "./Extensions/engine.renderTarget";
+import { DataBuffer } from '../Meshes/dataBuffer';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -1691,6 +1690,63 @@ export class Engine extends ThinEngine {
         this._performanceMonitor.sampleFrame();
         this._fps = this._performanceMonitor.averageFPS;
         this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
+    }
+
+    /**
+     * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
+     * @param renderTarget The render target to set the frame buffer for
+     */
+    public setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void {
+        // Create the framebuffer
+        var internalTexture = renderTarget.getInternalTexture();
+        if (!internalTexture || !internalTexture._framebuffer || !renderTarget.depthStencilTexture) {
+            return;
+        }
+
+        var gl = this._gl;
+        var depthStencilTexture = renderTarget.depthStencilTexture;
+
+        this._bindUnboundFramebuffer(internalTexture._framebuffer);
+        if (depthStencilTexture.isCube) {
+            if (depthStencilTexture._generateStencilBuffer) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
+            }
+            else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
+            }
+        }
+        else {
+            if (depthStencilTexture._generateStencilBuffer) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
+            }
+            else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
+            }
+        }
+        this._bindUnboundFramebuffer(null);
+    }
+
+    /**
+     * Update a dynamic index buffer
+     * @param indexBuffer defines the target index buffer
+     * @param indices defines the data to update
+     * @param offset defines the offset in the target index buffer where update should start
+     */
+    public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
+        // Force cache update
+        this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
+        this.bindIndexBuffer(indexBuffer);
+        var arrayBuffer;
+
+        if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
+            arrayBuffer = indices;
+        } else {
+            arrayBuffer = indexBuffer.is32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
+        }
+
+        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
+
+        this._resetIndexBufferBinding();
     }
 
     /**

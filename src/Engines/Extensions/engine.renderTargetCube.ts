@@ -1,4 +1,4 @@
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
+import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Logger } from '../../Misc/logger';
 import { RenderTargetCreationOptions } from '../../Materials/Textures/renderTargetCreationOptions';
 import { Constants } from '../constants';
@@ -38,7 +38,7 @@ ThinEngine.prototype.createRenderTargetCubeTexture = function(size: number, opti
     }
     var gl = this._gl;
 
-    var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
+    var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
 
     var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps);
