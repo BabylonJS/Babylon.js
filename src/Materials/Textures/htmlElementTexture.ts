@@ -3,8 +3,8 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { Matrix } from '../../Maths/math.vector';
 
-import "../Engines/Extensions/engine.dynamicTexture";
-import "../Engines/Extensions/engine.videoTexture";
+import "../../Engines/Extensions/engine.dynamicTexture";
+import "../../Engines/Extensions/engine.videoTexture";
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type Scene = import("../../scene").Scene;
