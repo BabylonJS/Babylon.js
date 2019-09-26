@@ -3,7 +3,10 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { Matrix } from '../../Maths/math.vector';
 
-declare type Engine = import("../../Engines/engine").Engine;
+import "../../Engines/Extensions/engine.dynamicTexture";
+import "../../Engines/Extensions/engine.videoTexture";
+
+declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type Scene = import("../../scene").Scene;
 
 /**
@@ -21,7 +24,7 @@ export interface IHtmlElementTextureOptions {
     /**
      * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
      */
-    engine: Nullable<Engine>;
+    engine: Nullable<ThinEngine>;
     /**
      * Defines the scene the texture belongs to. It is not mandatory if you define an engine.
      */
@@ -51,7 +54,7 @@ export class HtmlElementTexture extends BaseTexture {
     };
 
     private _textureMatrix: Matrix;
-    private _engine: Engine;
+    private _engine: ThinEngine;
     private _isVideo: boolean;
     private _generateMipMaps: boolean;
     private _samplingMode: number;
