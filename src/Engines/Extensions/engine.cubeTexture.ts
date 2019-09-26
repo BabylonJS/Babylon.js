@@ -4,9 +4,9 @@ import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
 import { Scene } from '../../scene';
 import { IInternalTextureLoader } from '../../Materials/Textures/internalTextureLoader';
-import { WebRequest } from '../../Misc/webRequest';
 import { FileTools } from '../../Misc/fileTools';
 import { DepthTextureCreationOptions } from '../depthTextureCreationOptions';
+import { IWebRequest } from '../../Misc/interfaces/iWebRequest';
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -125,7 +125,8 @@ ThinEngine.prototype._createDepthStencilCubeTexture = function(size: number, opt
     return internalTexture;
 };
 
-ThinEngine.prototype._partialLoadFile = function(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
+ThinEngine.prototype._partialLoadFile = function(url: string, index: number, loadedFiles: (string | ArrayBuffer)[],
+        onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
     var onload = (data: string | ArrayBuffer) => {
         loadedFiles[index] = data;
         (<any>loadedFiles)._internalCount++;
@@ -135,7 +136,7 @@ ThinEngine.prototype._partialLoadFile = function(url: string, index: number, loa
         }
     };
 
-    const onerror = (request?: WebRequest, exception?: any) => {
+    const onerror = (request?: IWebRequest, exception?: any) => {
         if (onErrorCallBack && request) {
             onErrorCallBack(request.status + " " + request.statusText, exception);
         }
@@ -224,7 +225,7 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
         }
     }
 
-    let onInternalError = (request?: WebRequest, exception?: any) => {
+    let onInternalError = (request?: IWebRequest, exception?: any) => {
         if (loader) {
             const fallbackUrl = loader.getFallbackTextureUrl(texture.url, this._textureFormatInUse);
             Logger.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");

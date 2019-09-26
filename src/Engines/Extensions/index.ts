@@ -7,5 +7,6 @@ export * from "./engine.videoTexture";
 export * from "./engine.multiRender";
 export * from "./engine.cubeTexture";
 export * from "./engine.renderTarget";
+export * from "./engine.renderTargetCube";
 export * from "./engine.webVR";
 export * from "./engine.uniformBuffer";
