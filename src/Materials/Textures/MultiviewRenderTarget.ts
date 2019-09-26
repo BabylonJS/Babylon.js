@@ -1,6 +1,6 @@
 import { RenderTargetTexture } from '../Textures/renderTargetTexture';
 import { Scene } from '../../scene';
-import { InternalTexture } from '../Textures/internalTexture';
+import { InternalTextureSource } from '../Textures/internalTexture';
 
 /**
  * Renders to multiple views with a single draw call
@@ -13,7 +13,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
      * @param size the size of the render target (used for each view)
      */
     constructor(scene: Scene, size: number | { width: number, height: number } | { ratio: number } = 512) {
-        super("multiview rtt", size, scene, false, true, InternalTexture.DATASOURCE_UNKNOWN, false, undefined, false, false, true, undefined, true);
+        super("multiview rtt", size, scene, false, true, InternalTextureSource.Unknown, false, undefined, false, false, true, undefined, true);
         var internalTexture = scene.getEngine().createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
         internalTexture.isMultiview = true;
         this._texture = internalTexture;
