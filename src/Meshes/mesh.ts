@@ -1468,9 +1468,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 batchCache.visibleInstances[subMeshId] = visibleInstances[defaultRenderId];
             }
         }
-        batchCache.hardwareInstancedRendering[subMeshId] = 
-                        this._instanceDataStorage.hardwareInstancedRendering 
-                        && (batchCache.visibleInstances[subMeshId] !== null) 
+        batchCache.hardwareInstancedRendering[subMeshId] =
+                        this._instanceDataStorage.hardwareInstancedRendering
+                        && (batchCache.visibleInstances[subMeshId] !== null)
                         && (batchCache.visibleInstances[subMeshId] !== undefined);
         this._instanceDataStorage.previousBatch = batchCache;
         return batchCache;
